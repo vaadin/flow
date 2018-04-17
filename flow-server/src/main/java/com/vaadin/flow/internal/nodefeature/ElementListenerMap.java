@@ -18,12 +18,15 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
+import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
@@ -34,6 +37,7 @@ import com.vaadin.flow.internal.StateNode;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Map of DOM events with server-side listeners. The key set of this map
@@ -48,6 +52,45 @@ public class ElementListenerMap extends NodeMap {
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
+    private static class ExpressionSettings {
+        private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
+
+        public void markAsFilter() {
+            // Add a dummy filter debounce
+            addDebouncePhases(0, EnumSet.noneOf(DebouncePhase.class));
+        }
+
+        public void addDebouncePhases(int timeout, Set<DebouncePhase> phases) {
+            debounceSettings.merge(Integer.valueOf(timeout), phases,
+                    (phases1, phases2) -> {
+                        EnumSet<DebouncePhase> merge = EnumSet.copyOf(phases1);
+                        merge.addAll(phases2);
+                        return merge;
+                    });
+        }
+
+        public JsonValue toJson() {
+            if (debounceSettings.isEmpty()) {
+                return Json.create(false);
+            } else if (debounceSettings.size() == 1
+                    && debounceSettings.containsKey(Integer.valueOf(0))) {
+                // Shorthand if only debounce is a dummy filter debounce
+                return Json.create(true);
+            } else {
+                return debounceSettings.entrySet().stream().map(entry -> {
+                    StringBuilder phasesBuilder = new StringBuilder();
+                    entry.getValue().forEach(
+                            phase -> phasesBuilder.append(phase.getCode()));
+
+                    return JsonUtils.createArray(
+                            Json.create(entry.getKey().intValue()),
+                            Json.create(phasesBuilder.toString()));
+                }).collect(JsonUtils.asArray());
+            }
+
+        }
+    }
+
     private static class DomEventListenerWrapper
             implements DomListenerRegistration {
         private final String type;
@@ -57,6 +100,9 @@ public class ElementListenerMap extends NodeMap {
         private DisabledUpdateMode mode;
         private Set<String> eventDataExpressions;
         private String filter;
+
+        private int debounceTimeout = 0;
+        private EnumSet<DebouncePhase> debouncePhases = null;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
                 String type, DomEventListener origin) {
@@ -77,17 +123,12 @@ public class ElementListenerMap extends NodeMap {
                         "The event data expression must not be null");
             }
 
-            Map<String, Boolean> previous = listenerMap
-                    .collectEventExpressions(type);
-
             if (eventDataExpressions == null) {
                 eventDataExpressions = new HashSet<>();
             }
             eventDataExpressions.add(eventData);
 
-            if (!previous.containsKey(eventData)) {
-                listenerMap.updateEventSettings(type);
-            }
+            listenerMap.updateEventSettings(type);
 
             return this;
         }
@@ -106,15 +147,9 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration setFilter(String filter) {
-            Map<String, Boolean> previous = listenerMap
-                    .collectEventExpressions(type);
-
             this.filter = filter;
 
-            if (!Boolean.TRUE.equals(previous.get(filter))) {
-                // Expression was not previously used as a filter
-                listenerMap.updateEventSettings(type);
-            }
+            listenerMap.updateEventSettings(type);
 
             return this;
         }
@@ -136,6 +171,35 @@ public class ElementListenerMap extends NodeMap {
             }
 
             return eventData.getBoolean(filter);
+        }
+
+        @Override
+        public DomListenerRegistration debounce(int timeout,
+                DebouncePhase firstPhase, DebouncePhase... additionalPhases) {
+            if (timeout < 0) {
+                throw new IllegalArgumentException(
+                        "Timeout cannot be negative");
+            }
+
+            debounceTimeout = timeout;
+
+            if (timeout == 0) {
+                debouncePhases = null;
+            } else {
+                debouncePhases = EnumSet.of(firstPhase, additionalPhases);
+            }
+
+            listenerMap.updateEventSettings(type);
+
+            return this;
+        }
+
+        public boolean matchesPhase(DebouncePhase phase) {
+            if (debouncePhases == null) {
+                return phase == DebouncePhase.LEADING;
+            } else {
+                return debouncePhases.contains(phase);
+            }
         }
     }
 
@@ -196,30 +260,36 @@ public class ElementListenerMap extends NodeMap {
         return typeListeners;
     }
 
-    // Map<Expression, IsFilter>
-    private Map<String, Boolean> collectEventExpressions(String eventType) {
-        HashMap<String, Boolean> expressions = new HashMap<>();
+    private Map<String, ExpressionSettings> collectEventExpressions(
+            String eventType) {
+        Map<String, ExpressionSettings> expressions = new HashMap<>();
+        boolean hasUnfilteredListener = false;
+        boolean hasFilteredListener = false;
+
+        Function<String, ExpressionSettings> ensureExpression = expression -> expressions
+                .computeIfAbsent(expression, (key -> new ExpressionSettings()));
 
         Collection<DomEventListenerWrapper> wrappers = getWrappers(eventType);
 
-        // Pass 1: Collect data expressions as non-filter expressions
         for (DomEventListenerWrapper wrapper : wrappers) {
             if (wrapper.eventDataExpressions != null) {
-                wrapper.eventDataExpressions.forEach(expression -> expressions
-                        .put(expression, Boolean.FALSE));
+                wrapper.eventDataExpressions.forEach(ensureExpression::apply);
             }
-        }
 
-        // Pass 2: Collect filters
-        boolean hasUnfilteredListener = false;
-        boolean hasFilteredListener = false;
-        for (DomEventListenerWrapper wrapper : wrappers) {
             String filter = wrapper.getFilter();
             if (filter == null) {
                 hasUnfilteredListener = true;
             } else {
                 hasFilteredListener = true;
-                expressions.put(filter, Boolean.TRUE);
+                ensureExpression.apply(filter).markAsFilter();
+            }
+
+            int timeout = wrapper.debounceTimeout;
+            if (timeout > 0) {
+                String effectiveFilter = filter != null ? filter
+                        : ALWAYS_TRUE_FILTER;
+                ensureExpression.apply(effectiveFilter)
+                        .addDebouncePhases(timeout, wrapper.debouncePhases);
             }
         }
 
@@ -231,19 +301,21 @@ public class ElementListenerMap extends NodeMap {
              * Include a filter that always passes to ensure that unfiltered
              * listeners are still notified.
              */
-            expressions.put(ALWAYS_TRUE_FILTER, Boolean.TRUE);
+            ensureExpression.apply(ALWAYS_TRUE_FILTER).markAsFilter();
         }
 
         return expressions;
     }
 
     private void updateEventSettings(String eventType) {
-        Map<String, Boolean> eventSettings = collectEventExpressions(eventType);
+        Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
+                eventType);
         JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
-                Json::create);
+                ExpressionSettings::toJson);
 
         ConstantPoolKey constantPoolKey = new ConstantPoolKey(
                 eventSettingsJson);
+
         put(eventType, constantPoolKey);
     }
 
@@ -292,7 +364,8 @@ public class ElementListenerMap extends NodeMap {
         for (DomEventListenerWrapper wrapper : typeListeners) {
             if ((isElementEnabled
                     || DisabledUpdateMode.ALWAYS.equals(wrapper.mode))
-                    && wrapper.matchesFilter(event.getEventData())) {
+                    && wrapper.matchesFilter(event.getEventData())
+                    && wrapper.matchesPhase(event.getPhase())) {
                 listeners.add(wrapper.origin);
             }
         }

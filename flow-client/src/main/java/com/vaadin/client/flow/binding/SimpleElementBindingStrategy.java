@@ -16,6 +16,7 @@
 package com.vaadin.client.flow.binding;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -46,6 +47,7 @@ import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
@@ -56,6 +58,7 @@ import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import jsinterop.annotations.JsFunction;
 
@@ -1143,9 +1146,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsonObject expressionSettings = constantPool.get(expressionConstantKey);
         String[] expressions = expressionSettings.keys();
 
-        boolean noFilters = true;
-        boolean atLeastOneFilterMatched = false;
-
         JsonObject eventData;
         if (expressions.length == 0) {
             eventData = null;
@@ -1160,21 +1160,92 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                         (Element) element);
 
                 eventData.put(expressionString, expressionValue);
-
-                boolean useAsFilter = expressionSettings
-                        .getBoolean(expressionString);
-                if (useAsFilter) {
-                    boolean filterMatched = expressionValue.asBoolean();
-
-                    noFilters = false;
-                    atLeastOneFilterMatched |= filterMatched;
-                }
             }
         }
 
-        if (noFilters || atLeastOneFilterMatched) {
-            node.getTree().sendEventToServer(node, type, eventData);
+        boolean sendNow = resolveFilters(element, node, type,
+                expressionSettings, eventData);
+
+        if (sendNow) {
+            // Send if there were not filters or at least one matched
+            sendEventToServer(node, type, eventData, null);
         }
+    }
+
+    private static void sendEventToServer(StateNode node, String type,
+            JsonObject eventData, String debouncePhase) {
+        if (debouncePhase == null) {
+            if (eventData != null) {
+                eventData.remove(JsonConstants.EVENT_DATA_PHASE);
+            }
+        } else {
+            if (eventData == null) {
+                eventData = Json.createObject();
+            }
+            eventData.put(JsonConstants.EVENT_DATA_PHASE, debouncePhase);
+        }
+
+        node.getTree().sendEventToServer(node, type, eventData);
+    }
+
+    private static boolean resolveFilters(Node element, StateNode node,
+            String eventType, JsonObject expressionSettings,
+            JsonObject eventData) {
+
+        boolean noFilters = true;
+        boolean atLeastOneFilterMatched = false;
+
+        for (String expression : expressionSettings.keys()) {
+            JsonValue settings = expressionSettings.get(expression);
+
+            boolean hasDebounce = settings.getType() == JsonType.ARRAY;
+
+            if (!hasDebounce && !settings.asBoolean()) {
+                continue;
+            }
+            noFilters = false;
+
+            boolean filterMatched = eventData != null
+                    && eventData.getBoolean(expression);
+            if (hasDebounce && filterMatched) {
+                String debouncerId = "on-" + eventType + ":" + expression;
+
+                // Count as a match only if at least one debounce is eager
+                filterMatched = resolveDebounces(element, debouncerId,
+                        (JsonArray) settings,
+                        triggerdPhase -> sendEventToServer(node, eventType,
+                                eventData, triggerdPhase));
+            }
+
+            atLeastOneFilterMatched |= filterMatched;
+        }
+
+        return noFilters || atLeastOneFilterMatched;
+    }
+
+    private static boolean resolveDebounces(Node element, String debouncerId,
+            JsonArray debounceList, Consumer<String> command) {
+        boolean atLeastOneEager = false;
+
+        for (int i = 0; i < debounceList.length(); i++) {
+            JsonArray debounceSettings = debounceList.getArray(i);
+
+            double timeout = debounceSettings.getNumber(0);
+
+            if (timeout == 0) {
+                atLeastOneEager = true;
+                continue;
+            }
+
+            String phases = debounceSettings.getString(1);
+
+            boolean eager = Debouncer.getOrCreate(element, debouncerId, timeout)
+                    .trigger(phases, command);
+
+            atLeastOneEager |= eager;
+        }
+
+        return atLeastOneEager;
     }
 
     private EventRemover bindClassList(Element element, StateNode node) {

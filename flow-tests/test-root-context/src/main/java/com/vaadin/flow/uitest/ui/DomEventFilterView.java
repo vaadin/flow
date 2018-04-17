@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -24,15 +25,33 @@ public class DomEventFilterView extends AbstractDivView {
     private final Element messages = new Element("div");
 
     public DomEventFilterView() {
-        Element input = new Element("input");
-        input.setAttribute("id", "input");
+        Element space = new Element("input");
+        space.setAttribute("id", "space");
+        space.setAttribute("placeholder", "With space listener");
 
-        input.addEventListener("keypress",
+        space.addEventListener("keypress",
                 e -> addMessage("Space listener triggered"))
                 .setFilter("event.key == ' '");
 
+        Element debounce = new Element("input");
+        debounce.setAttribute("id", "debounce");
+        debounce.setAttribute("placeholder", "With debounce listeners");
+
+        debounce.addEventListener("input",
+                e -> addMessage("Trailing: "
+                        + e.getEventData().getString("element.value")))
+                .debounce(1000).addEventData("element.value");
+        debounce.addEventListener("input",
+                e -> addMessage("Leading: "
+                        + e.getEventData().getString("element.value")))
+                .debounce(1000, DebouncePhase.LEADING);
+        debounce.addEventListener("input",
+                e -> addMessage("Throttle: "
+                        + e.getEventData().getString("element.value")))
+                .throttle(1000);
+
         messages.setAttribute("id", "messages");
-        getElement().appendChild(input, messages);
+        getElement().appendChild(space, debounce, messages);
     }
 
     private void addMessage(String message) {
