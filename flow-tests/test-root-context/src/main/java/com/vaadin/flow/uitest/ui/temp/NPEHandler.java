@@ -16,9 +16,9 @@
 package com.vaadin.flow.uitest.ui.temp;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.BeforeEnterEvent;
 
 /**
  * @author Vaadin Ltd
@@ -31,6 +31,11 @@ public class NPEHandler extends Div
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NullPointerException> parameter) {
         getElement().setText("NPE is thrown " + event.getLocation().getPath());
+
+        // Explicitly assign as Exception to avoid #3902
+        Exception exception = parameter.getException();
+        exception.printStackTrace();
+
         setId("no-route");
         return 500;
     }
