@@ -143,8 +143,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.0.0-beta4",
-        "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.TextFieldElement#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-field.html")
 public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>

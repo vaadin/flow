@@ -22,7 +22,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
@@ -167,6 +169,69 @@ public class MapSyncRpcHandlerTest {
         Assert.assertTrue(testPropertyValue instanceof JsonValue);
     }
 
+    @Test
+    public void disabledElement_updateDisallowed_updateIsNotDone()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        UI ui = new UI();
+        ui.getElement().appendChild(element);
+
+        element.setEnabled(false);
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
+                DisabledUpdateMode.ONLY_WHEN_ENABLED);
+
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+
+        Assert.assertNotEquals(NEW_VALUE,
+                element.getPropertyRaw(TEST_PROPERTY));
+    }
+
+    @Test
+    public void disabledElement_updateIsAllowed_updateIsDone()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        UI ui = new UI();
+        ui.getElement().appendChild(element);
+
+        element.setEnabled(false);
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
+                DisabledUpdateMode.ALWAYS);
+
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+
+        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+    }
+
+    @Test
+    public void implicitlyDisabledElement_updateIsAllowed_updateIsDone()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        UI ui = new UI();
+        ui.getElement().appendChild(element);
+
+        ui.setEnabled(false);
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
+                DisabledUpdateMode.ALWAYS);
+
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+
+        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+    }
+
+    @Test
+    public void noSyncPropertiesFeature_doesntThrow() {
+        StateNode noSyncProperties = new StateNode(ElementPropertyMap.class);
+
+        ElementPropertyMap map = noSyncProperties
+                .getFeature(ElementPropertyMap.class);
+
+        new MapSyncRpcHandler().handleNode(noSyncProperties,
+                createSyncPropertyInvocation(noSyncProperties, TEST_PROPERTY,
+                        NEW_VALUE));
+
+        Assert.assertEquals(NEW_VALUE, map.getProperty(TEST_PROPERTY));
+    }
+
     private static void sendSynchronizePropertyEvent(Element element, UI ui,
             String eventType, Serializable value) throws Exception {
         new MapSyncRpcHandler().handle(ui,
@@ -175,7 +240,11 @@ public class MapSyncRpcHandlerTest {
 
     private static JsonObject createSyncPropertyInvocation(Element element,
             String property, Serializable value) {
-        StateNode node = element.getNode();
+        return createSyncPropertyInvocation(element.getNode(), property, value);
+    }
+
+    private static JsonObject createSyncPropertyInvocation(StateNode node,
+            String property, Serializable value) {
         // Copied from ServerConnector
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_NODE, node.getId());

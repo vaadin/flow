@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.HasClickListeners;
 import com.vaadin.flow.component.HasText;
 
 /**
@@ -38,7 +38,7 @@ public final class BehaviorRegistry {
     private static final Map<String, List<Class<?>>> REGISTRY = new LinkedHashMap<>();
 
     static {
-        put(HasClickListeners.class, "Polymer.PaperButtonBehavior",
+        put(ClickNotifier.class, "Polymer.PaperButtonBehavior",
                 "Polymer.GestureEventListeners", "vaadin-button",
                 "vaadin-form-item");
         put(HasText.class, "vaadin-button", "paper-button");

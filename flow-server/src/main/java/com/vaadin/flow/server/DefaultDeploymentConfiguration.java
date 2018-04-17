@@ -16,23 +16,14 @@
 
 package com.vaadin.flow.server;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 
 /**
@@ -45,8 +36,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 public class DefaultDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
     private static final String SEPARATOR = "\n===========================================================";
-    private static final String WEB_COMPONENTS_LOADER_JS_NAME = "webcomponents-loader.js";
-    private static final String CONTEXT_ROOT_PATH = "/";
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
             + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
@@ -96,8 +85,6 @@ public class DefaultDeploymentConfiguration
     private final Class<?> systemPropertyBaseClass;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
-    private String webComponentsPolyfillBase;
-    private boolean usingNewRouting;
     private boolean requestTiming;
 
     /**
@@ -109,15 +96,9 @@ public class DefaultDeploymentConfiguration
      * @param initParameters
      *            the init parameters that should make up the foundation for
      *            this configuration
-     * @param resourceScanner
-     *            callback for traversing the available resources, not
-     *            <code>null</code>
      */
     public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters,
-            BiConsumer<String, Predicate<String>> resourceScanner) {
-        assert resourceScanner != null;
-
+            Properties initParameters) {
         this.initParameters = initParameters;
         this.systemPropertyBaseClass = systemPropertyBaseClass;
 
@@ -130,8 +111,6 @@ public class DefaultDeploymentConfiguration
         checkPushURL();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
-        checkWebComponentsPolyfillBase(resourceScanner);
-        checkUsingNewRouting();
     }
 
     @Override
@@ -310,11 +289,6 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public Optional<String> getWebComponentsPolyfillBase() {
-        return Optional.ofNullable(webComponentsPolyfillBase);
-    }
-
-    @Override
     public Properties getInitParameters() {
         return initParameters;
     }
@@ -394,132 +368,8 @@ public class DefaultDeploymentConfiguration
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
 
-    private void checkUsingNewRouting() {
-        usingNewRouting = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_USING_NEW_ROUTING, true);
-    }
-
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass().getName());
-    }
-
-    private void checkWebComponentsPolyfillBase(
-            BiConsumer<String, Predicate<String>> resourceScanner) {
-        String propertyValue = getStringProperty(
-                Constants.SERVLET_PARAMETER_POLYFILL_BASE, null);
-        if (null == propertyValue) {
-            Optional<String> locatedPolyfill = getWebComponentsPolyfill(
-                    resourceScanner);
-            if (!locatedPolyfill.isPresent()) {
-                getLogger().warn(
-                        "Unable to locate polyfill {}, proceeding without it",
-                        WEB_COMPONENTS_LOADER_JS_NAME);
-            }
-            propertyValue = locatedPolyfill.orElse(null);
-        } else if (propertyValue.trim().isEmpty()) {
-            propertyValue = null;
-        }
-        webComponentsPolyfillBase = propertyValue;
-    }
-
-    private Optional<String> getWebComponentsPolyfill(
-            BiConsumer<String, Predicate<String>> resourceScanner) {
-        Set<String> excludedDirectories = new HashSet<>(
-                Arrays.asList("node/", "node_modules/"));
-        if (!areWebJarsEnabled()) {
-            excludedDirectories.add("webjars/");
-        }
-
-        Optional<String> frontendDirectoryPath = getFrontendDirectoryPath();
-        Set<String> frontendDirectoryPolyfills = frontendDirectoryPath
-                .map(searchBase -> locatePolyfills(resourceScanner, searchBase,
-                        excludedDirectories))
-                .orElse(Collections.emptySet());
-        if (frontendDirectoryPolyfills.isEmpty()) {
-            getLogger().debug(
-                    "Unable to find {} polyfill in frontend directory, searching the whole context",
-                    WEB_COMPONENTS_LOADER_JS_NAME);
-            frontendDirectoryPath.ifPresent(excludedDirectories::add);
-            return getPolyfillBasePath(
-                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
-                    locatePolyfills(resourceScanner, CONTEXT_ROOT_PATH,
-                            excludedDirectories));
-        } else {
-            return getPolyfillBasePath(
-                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
-                    frontendDirectoryPolyfills);
-        }
-    }
-
-    private Optional<String> getFrontendDirectoryPath() {
-        VaadinUriResolver uriResolver = new VaadinUriResolver() {
-            @Override
-            protected String getContextRootUrl() {
-                // ServletContext.getResource expects a leading slash
-                return CONTEXT_ROOT_PATH;
-            }
-
-            @Override
-            protected String getFrontendRootUrl() {
-                return getEs6FrontendPrefix();
-            }
-        };
-        String scanBase = uriResolver.resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        if (!scanBase.startsWith(CONTEXT_ROOT_PATH)) {
-            String message = formatDefaultPolyfillMessage(String.format(
-                    "Cannot automatically find the %s polyfill because the property "
-                            + "'%s' value is not absolute (doesn't start with '/')",
-                    WEB_COMPONENTS_LOADER_JS_NAME, Constants.FRONTEND_URL_ES6));
-            getLogger().warn(message);
-            return Optional.empty();
-        }
-        return Optional.of(scanBase);
-    }
-
-    private Set<String> locatePolyfills(
-            BiConsumer<String, Predicate<String>> resourceScanner,
-            String scanBase, Set<String> exclusions) {
-        Set<String> visitedPaths = new HashSet<>();
-        Set<String> foundPolyfills = new HashSet<>();
-        resourceScanner.accept(scanBase, path -> {
-            boolean notExcludedPath = !visitedPaths.contains(path)
-                    && exclusions.stream().noneMatch(path::contains);
-            if (notExcludedPath) {
-                visitedPaths.add(path);
-                if (path.endsWith(WEB_COMPONENTS_LOADER_JS_NAME)) {
-                    foundPolyfills.add(path);
-                }
-            }
-            return notExcludedPath;
-        });
-        return foundPolyfills;
-    }
-
-    private Optional<String> getPolyfillBasePath(String prefix,
-            Set<String> polyfills) {
-        if (polyfills.isEmpty()) {
-            return Optional.empty();
-        }
-        if (polyfills.size() > 1) {
-            getLogger().warn(
-                    "Have located multiple {} polyfills: '{}', using the first one",
-                    WEB_COMPONENTS_LOADER_JS_NAME, polyfills);
-        }
-
-        String fileName = polyfills.iterator().next();
-        String dirName = fileName.substring(0, fileName.lastIndexOf('/'));
-
-        getLogger().info("Will use {} polyfill discovered in {}",
-                WEB_COMPONENTS_LOADER_JS_NAME, dirName);
-        return Optional.of(prefix + dirName + '/');
-    }
-
-    private static String formatDefaultPolyfillMessage(String baseMessage) {
-        return String.format("%1$s%n"
-                + "Configure %2$s with an empty value to explicitly disable web components polyfill loading.%n"
-                + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
-                baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
     }
 
 }

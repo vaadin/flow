@@ -220,6 +220,13 @@ public class ComponentUtil {
         if (component.hasListener(AttachEvent.class)) {
             component.getEventBus().fireEvent(attachEvent);
         }
+        // inform component about onEnabledState if new state differs from
+        // internal state
+        if (component instanceof HasEnabled
+                && component.getElement().isEnabled() != component.getElement()
+                        .getNode().isEnabledSelf()) {
+            component.onEnabledStateChanged(component.getElement().isEnabled());
+        }
     }
 
     /**
@@ -240,6 +247,45 @@ public class ComponentUtil {
         if (component.hasListener(DetachEvent.class)) {
             component.getEventBus().fireEvent(detachEvent);
         }
+        // inform component about onEnabledState if parent and child states
+        // differ.
+        if (component instanceof HasEnabled
+                && component.getElement().isEnabled() != component.getElement()
+                        .getNode().isEnabledSelf()) {
+            Optional<Component> parent = component.getParent();
+            if (parent.isPresent()) {
+                Component parentComponent = parent.get();
+                boolean state = isAttachedToParent(component, parentComponent)
+                        ? checkParentChainState(parentComponent)
+                        : component.getElement().getNode().isEnabledSelf();
+                component.onEnabledStateChanged(state);
+            } else {
+                component.onEnabledStateChanged(
+                        component.getElement().isEnabled());
+            }
+        }
+    }
+
+    private static boolean isAttachedToParent(Component component,
+            Component parentComponent) {
+        return parentComponent.getChildren()
+                .anyMatch(child -> child.equals(component));
+    }
+
+    private static boolean checkParentChainState(Component component) {
+        if (!component.getElement().getNode().isEnabledSelf()) {
+            return false;
+        }
+
+        Optional<Component> parent = component.getParent();
+        if (parent.isPresent()) {
+            Component parentComponent = parent.get();
+            if (isAttachedToParent(component, parentComponent)) {
+                return checkParentChainState(parentComponent);
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -292,18 +338,18 @@ public class ComponentUtil {
     }
 
     /**
-     * Gets the name of the synchronized properties defined declaratively for
-     * the given class.
+     * Gets the synchronized property infos of the properties that are defined
+     * declaratively for the given class with their RPC update mode.
      *
      * @param componentClass
      *            the component class to check
-     * @return the synchronized properties defined declaratively for the class
+     * @return the synchronized property infos of the properties defined
+     *         declaratively for the class
      */
-    public static Stream<String> getSynchronizedProperties(
+    public static Collection<SynchronizedPropertyInfo> getSynchronizedProperties(
             Class<? extends Component> componentClass) {
-        Collection<SynchronizedPropertyInfo> infos = componentMetaDataCache
-                .get(componentClass).getSynchronizedProperties();
-        return infos.stream().map(info -> info.getProperty());
+        return componentMetaDataCache.get(componentClass)
+                .getSynchronizedProperties();
     }
 
     /**

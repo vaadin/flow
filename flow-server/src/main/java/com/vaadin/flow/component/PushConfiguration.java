@@ -18,10 +18,13 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Objects;
 
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -160,6 +163,14 @@ public interface PushConfiguration extends Serializable {
      * @return the URL to use for push requests, or null to use to default
      */
     String getPushUrl();
+    
+    /**
+     * Sets the factory that will be used to create new instances of {@link PushConnection}.
+     *
+     * @since 
+     * @param factory the factory that will be used to create new instances of {@link PushConnection}
+     */
+    void setPushConnectionFactory(PushConnectionFactory factory);
 
 }
 
@@ -170,9 +181,11 @@ public interface PushConfiguration extends Serializable {
  */
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;
+    private PushConnectionFactory pushConnectionFactory;
 
     PushConfigurationImpl(UI ui) {
         this.ui = ui;
+        this.pushConnectionFactory = AtmospherePushConnection::new;
         getPushConfigurationMap().setTransport(Transport.WEBSOCKET_XHR);
         getPushConfigurationMap().setFallbackTransport(Transport.LONG_POLLING);
         getPushConfigurationMap().setPushMode(PushMode.DISABLED);
@@ -217,7 +230,7 @@ class PushConfigurationImpl implements PushConfiguration {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
                 ui.getInternals()
-                        .setPushConnection(new AtmospherePushConnection(ui));
+                    .setPushConnection(pushConnectionFactory.apply(ui));
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
@@ -270,4 +283,10 @@ class PushConfigurationImpl implements PushConfiguration {
         return getPushConfigurationMap().getParameterNames();
     }
 
+    @Override
+    public void setPushConnectionFactory(PushConnectionFactory pushConnectionFactory) {
+        this.pushConnectionFactory = Objects.requireNonNull(
+            pushConnectionFactory, "Push connection factory must not be null"
+        );
+    }
 }

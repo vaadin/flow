@@ -16,14 +16,11 @@
 
 package com.vaadin.flow.server.communication;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,13 +28,10 @@ import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
-
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +52,6 @@ import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -196,19 +189,9 @@ public class UidlWriter implements Serializable {
     }
 
     private static String getDependencyContents(String url) {
-        HttpServletRequest currentRequest = ((VaadinServletRequest) VaadinService
-                .getCurrentRequest()).getHttpServletRequest();
-        Charset requestCharset = Optional
-                .ofNullable(currentRequest.getCharacterEncoding())
-                .filter(string -> !string.isEmpty()).map(Charset::forName)
-                .orElse(StandardCharsets.UTF_8);
-
-        try (InputStream inlineResourceStream = getInlineResourceStream(url);
-                BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(inlineResourceStream,
-                                requestCharset))) {
-            return bufferedReader.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
+        try (InputStream inlineResourceStream = getInlineResourceStream(url)) {
+            return IOUtils.toString(inlineResourceStream,
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException(String
                     .format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);

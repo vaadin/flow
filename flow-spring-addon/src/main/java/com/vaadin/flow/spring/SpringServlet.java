@@ -86,9 +86,6 @@ public class SpringServlet extends VaadinServlet {
         setProperty(Constants.FRONTEND_URL_ES6, properties);
 
         setProperty(Constants.I18N_PROVIDER, properties);
-
-        properties.put(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING,
-                Boolean.TRUE.toString());
     }
 
     private void setProperty(String property, Properties properties) {

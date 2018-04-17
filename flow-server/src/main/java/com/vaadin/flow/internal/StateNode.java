@@ -691,6 +691,20 @@ public class StateNode implements Serializable {
         setInactive(getDisalowFeatures().count() != 0);
     }
 
+    /**
+     * Checks whether the node is active.
+     * <p>
+     * Inactive node should not participate in any RPC communication.
+     *
+     * @return {@code true} if the node is inactive
+     */
+    public boolean isInactive() {
+        if (isInactiveSelf || getParent() == null) {
+            return isInactiveSelf;
+        }
+        return getParent().isInactive();
+    }
+
     private Stream<NodeFeature> getDisalowFeatures() {
         return getFeatures().values().stream()
                 .filter(feature -> !feature.allowsChanges());
@@ -698,13 +712,6 @@ public class StateNode implements Serializable {
 
     private void setInactive(boolean inactive) {
         isInactiveSelf = inactive;
-    }
-
-    private boolean isInactive() {
-        if (isInactiveSelf || getParent() == null) {
-            return isInactiveSelf;
-        }
-        return getParent().isInactive();
     }
 
     /**
@@ -798,11 +805,51 @@ public class StateNode implements Serializable {
         return () -> localEntries.remove(entry);
     }
 
+    /**
+     * Enables/disables the node.
+     *
+     * @param enabled
+     *            a new enabled state
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
+    /**
+     * Returns enabled state respecting ascendants state.
+     * <p>
+     * The node may be explicitly disabled via its {@link #setEnabled(boolean)}
+     * method (with {@code false} argument value). Also it may be implicitly
+     * disabled if its ascendant is explicitly disabled. The method returns the
+     * state which may be either explicit or implicit.
+     * <p>
+     * The method {@link #isEnabledSelf()} returns only explicit enabled state
+     * of the node.
+     *
+     * @see #isEnabledSelf()
+     *
+     * @return enabled state respecting ascendants state
+     */
     public boolean isEnabled() {
+        boolean isEnabledSelf = isEnabledSelf();
+        if (getParent() != null && isEnabledSelf) {
+            return getParent().isEnabled();
+        }
+        return isEnabledSelf;
+    }
+
+    /**
+     * Returns the enabled state only for this node.
+     * <p>
+     * The node may be implicitly or explicitly disabled (see
+     * {@link #isEnabled()} method). This method doesn't respect ascendants
+     * enabled state. It returns the own state for the node only.
+     *
+     * @see #isEnabled()
+     *
+     * @return the node enabled own state
+     */
+    public boolean isEnabledSelf() {
         return enabled;
     }
 }

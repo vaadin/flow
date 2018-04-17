@@ -228,7 +228,7 @@ public abstract class VaadinService implements Serializable {
      * <code>null</code>.
      */
     protected VaadinService() {
-        this.deploymentConfiguration = null;
+        deploymentConfiguration = null;
     }
 
     /**
@@ -261,8 +261,6 @@ public abstract class VaadinService implements Serializable {
         bootstrapListeners = instantiator
                 .getBootstrapListeners(event.getAddedBootstrapListeners())
                 .collect(Collectors.toList());
-
-        DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
         router = new Router(getRouteRegistry());
         initialized = true;

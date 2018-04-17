@@ -18,6 +18,9 @@ package com.vaadin.flow.server.communication.rpc;
 import java.io.Serializable;
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -26,6 +29,7 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
+import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
@@ -46,7 +50,8 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
+    protected Optional<Runnable> handleNode(StateNode node,
+            JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_FEATURE);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
@@ -56,16 +61,49 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         Class<? extends NodeFeature> feature = NodeFeatureRegistry
                 .getFeature(featureId);
         assert NodeMap.class.isAssignableFrom(feature);
+        assert ElementPropertyMap.class.equals(feature);
+
+        boolean isEnabled = node.isEnabled();
+
+        DisabledUpdateMode updateMode = null;
 
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
+
+        if (node.hasFeature(SynchronizedPropertiesList.class)) {
+            SynchronizedPropertiesList syncedProps = node
+                    .getFeature(SynchronizedPropertiesList.class);
+            updateMode = syncedProps.getDisabledUpdateMode(property);
+        }
+
+        if (isEnabled) {
+            return enqueuePropertyUpdate(node, invocationJson, feature,
+                    property);
+        } else if (DisabledUpdateMode.ALWAYS.equals(updateMode)) {
+            LoggerFactory.getLogger(MapSyncRpcHandler.class).trace(
+                    "Property update request for disabled element is received from the client side. "
+                            + "Change will be applied since the property '{}' always allows its update.",
+                    property);
+            return enqueuePropertyUpdate(node, invocationJson, feature,
+                    property);
+        } else {
+            LoggerFactory.getLogger(MapSyncRpcHandler.class).warn(
+                    "Property update request for disabled element is received from the client side. "
+                            + "The property is '{}'. Request is ignored.",
+                    property);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Runnable> enqueuePropertyUpdate(StateNode node,
+            JsonObject invocationJson, Class<? extends NodeFeature> feature,
+            String property) {
         Serializable value = JsonCodec.decodeWithoutTypeInfo(
                 invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
 
         value = tryConvert(value, node);
 
-        ElementPropertyMap elementPropertyMap = (ElementPropertyMap) node
-                .getFeature(feature);
-        return Optional.of(elementPropertyMap.deferredUpdateFromClient(property, value));
+        return Optional.of(node.getFeature(ElementPropertyMap.class)
+                .deferredUpdateFromClient(property, value));
     }
 
     private Serializable tryConvert(Serializable value, StateNode context) {

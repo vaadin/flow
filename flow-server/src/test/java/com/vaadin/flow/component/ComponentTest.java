@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,14 +42,19 @@ import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
 
+import elemental.json.Json;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
@@ -59,8 +65,38 @@ public class ComponentTest {
         Assert.assertNull(Component.elementToMapTo.get());
     }
 
+    @com.vaadin.flow.component.DomEvent("foo")
+    public static class TestDomEvent extends ComponentEvent<Component> {
+
+        public TestDomEvent(Component source, boolean fromClient) {
+            super(source, fromClient);
+        }
+
+    }
+
+    @com.vaadin.flow.component.DomEvent(value = "foo", allowUpdates = DisabledUpdateMode.ALWAYS)
+    public static class EnabledDomEvent extends ComponentEvent<Component> {
+        public EnabledDomEvent(Component source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
     @Tag("div")
     public static class TestDiv extends Component {
+
+        @Synchronize(value = "bar", property = "baz", allowUpdates = DisabledUpdateMode.ALWAYS)
+        public String getFoo() {
+            return null;
+        }
+
+        @Synchronize(value = "foo", property = "bar")
+        public String getBaz() {
+            return null;
+        }
+    }
+
+    @Tag("div")
+    public static class EnabledDiv extends Component implements HasComponents {
     }
 
     @Tag("div")
@@ -1086,6 +1122,84 @@ public class ComponentTest {
 
     }
 
+    @Test
+    public void declarativeSyncProperties_propertiesAreRegisteredWithProperDisabledUpdateMode() {
+        TestDiv div = new TestDiv();
+        SynchronizedPropertiesList list = div.getElement().getNode()
+                .getFeature(SynchronizedPropertiesList.class);
+
+        Set<String> props = list.getSynchronizedProperties();
+
+        Assert.assertTrue(props.contains("bar"));
+        Assert.assertTrue(props.contains("baz"));
+        Assert.assertEquals(2, props.size());
+
+        Assert.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                list.getDisabledUpdateMode("bar"));
+        Assert.assertEquals(DisabledUpdateMode.ALWAYS,
+                list.getDisabledUpdateMode("baz"));
+    }
+
+    @Test
+    public void enabledComponent_fireDomEvent_listenerReceivesEvent() {
+        TestDiv div = new TestDiv();
+
+        AtomicInteger count = new AtomicInteger();
+        div.addListener(TestDomEvent.class, vent -> count.incrementAndGet());
+        div.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(createEvent("foo", div));
+
+        Assert.assertEquals(1, count.get());
+    }
+
+    @Test
+    public void disabledComponent_fireDomEvent_listenerDoesntReceivesEvent() {
+        TestDiv div = new TestDiv();
+        div.getElement().setEnabled(false);
+
+        AtomicInteger count = new AtomicInteger();
+        div.addListener(TestDomEvent.class, vent -> count.incrementAndGet());
+        div.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(createEvent("foo", div));
+
+        Assert.assertEquals(0, count.get());
+    }
+
+    @Test
+    public void implicityDisabledComponent_fireDomEvent_listenerDoesntReceivesEvent() {
+        TestDiv div = new TestDiv();
+
+        UI ui = new UI();
+        ui.add(div);
+        ui.setEnabled(false);
+
+        AtomicInteger count = new AtomicInteger();
+        div.addListener(TestDomEvent.class, event -> count.incrementAndGet());
+        div.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(createEvent("foo", div));
+
+        Assert.assertEquals(0, count.get());
+    }
+
+    @Test
+    public void disabledComponent_fireAlwaysEnabledDomEvent_listenerReceivesEvent() {
+        TestDiv div = new TestDiv();
+
+        div.getElement().setEnabled(false);
+
+        AtomicInteger count = new AtomicInteger();
+        div.addListener(EnabledDomEvent.class,
+                event -> count.incrementAndGet());
+        div.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(createEvent("foo", div));
+
+        Assert.assertEquals(1, count.get());
+    }
+
+    private DomEvent createEvent(String type, Component component) {
+        return new DomEvent(component.getElement(), type, Json.createObject());
+    }
+
     private void assertDependency(Dependency.Type type, String url,
             Map<String, Dependency> pendingDependencies) {
         Dependency dependency = pendingDependencies.get("frontend://" + url);
@@ -1100,5 +1214,307 @@ public class ComponentTest {
             Collection<Dependency> dependencies) {
         return dependencies.stream().collect(
                 Collectors.toMap(Dependency::getUrl, Function.identity()));
+    }
+
+    @Test // 3818
+    public void enabledStateChangeOnAttachCalledForParentState() {
+        UI ui = new UI();
+
+        EnabledDiv parent = new EnabledDiv();
+        parent.setEnabled(false);
+        ui.add(parent);
+
+        AtomicReference<Boolean> stateChange = new AtomicReference<>();
+        EnabledDiv child = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+                Assert.assertTrue("Expected empty state for enabled change",
+                        stateChange.compareAndSet(null, enabled));
+            }
+        };
+
+        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+
+        parent.add(child);
+
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+    }
+
+    @Test // 3818
+    public void enabledStateChangeOnDetachReturnsOldState() {
+        UI ui = new UI();
+
+        EnabledDiv parent = new EnabledDiv();
+        parent.setEnabled(false);
+        ui.add(parent);
+
+        AtomicReference<Boolean> stateChange = new AtomicReference<>();
+        EnabledDiv child = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                stateChange.set(enabled);
+            }
+        };
+
+        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+
+        parent.add(child);
+
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+
+        parent.remove(child);
+
+        Assert.assertTrue("After detach child should be enabled",
+                child.isEnabled());
+        Assert.assertTrue("Enable event should have triggered",
+                stateChange.get());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+    }
+
+    @Test // 3818
+    public void enabledStateChangeOnDetachChildKeepsDisabledState() {
+        UI ui = new UI();
+
+        EnabledDiv parent = new EnabledDiv();
+        parent.setEnabled(false);
+        ui.add(parent);
+
+        AtomicReference<Boolean> stateChange = new AtomicReference<>();
+        EnabledDiv child = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                stateChange.set(enabled);
+            }
+        };
+        child.setEnabled(false);
+        // Clear state change from setEnabled
+        stateChange.set(null);
+
+        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertFalse("Child should be enabled.", child.isEnabled());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+
+        parent.add(child);
+
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertNull("No change event should have fired",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+
+        parent.remove(child);
+
+        Assert.assertFalse("After detach child should still be disabled",
+                child.isEnabled());
+        Assert.assertNull("No change event should have fired",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+    }
+
+    @Test // 3818
+    public void enabledStateChangeOnAttachAndDetachChildAndGrandChildrenAreNotified() {
+        UI ui = new UI();
+
+        EnabledDiv parent = new EnabledDiv();
+        parent.setEnabled(false);
+        ui.add(parent);
+
+        AtomicReference<Boolean> stateChange = new AtomicReference<>();
+        EnabledDiv child = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                stateChange.set(enabled);
+            }
+        };
+        AtomicReference<Boolean> grandStateChange = new AtomicReference<>();
+        EnabledDiv grandChild = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                grandStateChange.set(enabled);
+            }
+        };
+        child.add(grandChild);
+
+        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assert.assertTrue("GrandChild should be enabled.",
+                grandChild.isEnabled());
+        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
+
+        parent.add(child);
+
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("After attach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                grandStateChange.get());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+
+        parent.remove(child);
+
+        Assert.assertTrue("After detach child should be enabled",
+                child.isEnabled());
+        Assert.assertTrue("Enable event should have triggered",
+                stateChange.get());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assert.assertTrue("After detach GrandChild should be enabled",
+                grandChild.isEnabled());
+        Assert.assertTrue("GrandChild should have gotten true event",
+                grandStateChange.get());
+        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
+    }
+
+    @Test // 3818
+    public void enabledStateChangeOnAttachAndDetachDisabledChildAndGrandChildAreDisabled() {
+        UI ui = new UI();
+
+        EnabledDiv parent = new EnabledDiv();
+        parent.setEnabled(false);
+        ui.add(parent);
+
+        AtomicReference<Boolean> stateChange = new AtomicReference<>();
+        EnabledDiv child = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                stateChange.set(enabled);
+            }
+        };
+        child.setEnabled(false);
+        // Clear state change from setEnabled
+        stateChange.set(null);
+        AtomicReference<Boolean> grandStateChange = new AtomicReference<>();
+        EnabledDiv grandChild = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                grandStateChange.set(enabled);
+            }
+        };
+        child.add(grandChild);
+
+        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertFalse("Child should be disabled.", child.isEnabled());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("GrandChild should be disabled.",
+                grandChild.isEnabled());
+        // note that add doesn't create an attach event as we are not connected
+        // to the UI.
+        Assert.assertNull(grandChild.getElement().getAttribute("disabled"));
+
+        parent.add(child);
+
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertNull("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("After attach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                grandStateChange.get());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+
+        parent.remove(child);
+
+        Assert.assertFalse("After detach child should be disabled",
+                child.isEnabled());
+        Assert.assertNull("No change event should have been sent",
+                stateChange.get());
+        Assert.assertFalse("After detach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Latest state change should have been disabled",
+                grandStateChange.get());
+    }
+
+    @Test // 3818
+    public void enabledStateChangeOnAttachAndDetachDisabledGrandChildAreDisabled() {
+        UI ui = new UI();
+
+        EnabledDiv parent = new EnabledDiv();
+        parent.setEnabled(false);
+        ui.add(parent);
+
+        AtomicReference<Boolean> stateChange = new AtomicReference<>();
+        EnabledDiv child = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                stateChange.set(enabled);
+            }
+        };
+        AtomicReference<Boolean> grandStateChange = new AtomicReference<>();
+        EnabledDiv grandChild = new EnabledDiv() {
+            @Override
+            public void onEnabledStateChanged(boolean enabled) {
+                super.onEnabledStateChanged(enabled);
+
+                grandStateChange.set(enabled);
+            }
+        };
+        grandChild.setEnabled(false);
+        child.add(grandChild);
+
+        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("GrandChild should be disabled.",
+                grandChild.isEnabled());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+
+        parent.add(child);
+
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
+        Assert.assertNotNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("After attach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Disabled event should have triggered",
+                grandStateChange.get());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
+
+        parent.remove(child);
+
+        Assert.assertTrue("After detach child should be enabled",
+                child.isEnabled());
+        Assert.assertTrue("Enable event should have triggered",
+                stateChange.get());
+        Assert.assertNull(child.getElement().getAttribute("disabled"));
+        Assert.assertFalse("After detach GrandChild should be disabled",
+                grandChild.isEnabled());
+        Assert.assertFalse("Latest state change should have been disabled",
+                grandStateChange.get());
+        Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
     }
 }

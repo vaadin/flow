@@ -23,9 +23,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,13 +37,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -61,23 +56,12 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.RequestHandler;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinUriResolverFactory;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -93,6 +77,7 @@ public class UidlWriterTest {
             .name();
     private static final String CSS_STYLE_NAME = Dependency.Type.STYLESHEET
             .name();
+    private MockServletServiceSessionSetup mocks;
 
     @JavaScript("UI-parent-JAVASCRIPT")
     private static class ParentUI extends UI {
@@ -195,11 +180,11 @@ public class UidlWriterTest {
             implements RouterLayout {
     }
 
-    private VaadinUriResolverFactory factory;
-
     @After
     public void tearDown() {
-        VaadinService.setCurrent(null);
+        if (mocks != null) {
+            mocks.cleanup();
+        }
     }
 
     @Test
@@ -226,8 +211,7 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void componentDependencies()
-            throws InvalidRouteConfigurationException {
+    public void componentDependencies() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
@@ -240,8 +224,7 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void testComponentInterfaceDependencies()
-            throws InvalidRouteConfigurationException {
+    public void testComponentInterfaceDependencies() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
 
@@ -282,8 +265,7 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void checkAllTypesOfDependencies()
-            throws InvalidRouteConfigurationException {
+    public void checkAllTypesOfDependencies() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
@@ -352,26 +334,15 @@ public class UidlWriterTest {
 
         List<JsonObject> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
-        assertInlineDependencies(inlineDependencies,
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        assertInlineDependencies(inlineDependencies, "/frontend/");
     }
 
     @Test
     public void checkAllTypesOfDependencies_uriResolverResolvesFrontendProtocol()
-            throws InvalidRouteConfigurationException {
+            throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
-
-        doAnswer(invocation -> {
-            String path = (String) invocation.getArguments()[1];
-            if (path.startsWith(
-                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
-                return path.substring(
-                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
-            }
-            return path;
-        }).when(factory).toServletContextPath(any(), anyString());
 
         ui.add(new ComponentWithFrontendProtocol());
         JsonObject response = uidlWriter.createUidl(ui, false);
@@ -379,13 +350,12 @@ public class UidlWriterTest {
                 .<JsonObject> stream(response.getArray(LoadMode.INLINE.name()))
                 .collect(Collectors.toList());
 
-        assertInlineDependencies(inlineDependencies, "");
+        assertInlineDependencies(inlineDependencies, "/frontend/");
     }
 
     @Test
     @Ignore("See https://github.com/vaadin/flow/issues/3822")
-    public void parentViewDependenciesAreAddedFirst()
-            throws InvalidRouteConfigurationException {
+    public void parentViewDependenciesAreAddedFirst() throws Exception {
         UI ui = initializeUIForDependenciesTest(new UI());
         UidlWriter uidlWriter = new UidlWriter();
         ui.add(new BaseClass());
@@ -453,72 +423,29 @@ public class UidlWriterTest {
                 containsInAnyOrder(Dependency.Type.values()));
     }
 
-    @SuppressWarnings("serial")
-    private UI initializeUIForDependenciesTest(UI ui)
-            throws InvalidRouteConfigurationException {
-        ServletContext context = Mockito.mock(ServletContext.class);
-        VaadinServletService service = new VaadinServletService(
-                new VaadinServlet() {
-                    @Override
-                    public ServletContext getServletContext() {
-                        return context;
-                    }
-                }, new MockDeploymentConfiguration()) {
+    private UI initializeUIForDependenciesTest(UI ui) throws Exception {
+        mocks = new MockServletServiceSessionSetup();
 
-            @Override
-            public Iterable<DependencyFilter> getDependencyFilters() {
-                return Collections.emptyList();
-            }
-
-            @Override
-            protected List<RequestHandler> createRequestHandlers()
-                    throws ServiceException {
-                return Collections.emptyList();
-            }
-        };
-
-        try {
-            service.init();
-        } catch (ServiceException e) {
-            throw new RuntimeException(e);
-        }
-
-        MockVaadinSession session = new MockVaadinSession(service);
+        VaadinSession session = mocks.getSession();
         session.lock();
         ui.getInternals().setSession(session);
 
         ui.getRouter().getRegistry().setNavigationTargets(
                 new HashSet<>(Arrays.asList(BaseClass.class)));
 
-        when(service.getResourceAsStream(anyString()))
-                .thenAnswer(invocation -> new ByteArrayInputStream(
-                        ((String) invocation.getArguments()[0]).getBytes()));
+        mocks.getServlet().setResourceFoundOverride(i -> true);
+        mocks.getService().setResourceAsStreamOverride(
+                resource -> new ByteArrayInputStream(resource.getBytes()));
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
 
         VaadinServletRequest vaadinRequestMock = mock(
                 VaadinServletRequest.class);
+
         when(vaadinRequestMock.getHttpServletRequest())
                 .thenReturn(servletRequestMock);
 
-        service.setCurrentInstances(vaadinRequestMock,
-                mock(VaadinResponse.class));
         ui.doInit(vaadinRequestMock, 1);
-
-        factory = mock(VaadinUriResolverFactory.class);
-        VaadinUriResolver vaadinUriResolver = Mockito
-                .mock(VaadinUriResolver.class);
-
-        Mockito.when(factory.getUriResolver(any()))
-                .thenReturn(vaadinUriResolver);
-        Mockito.when(vaadinUriResolver.resolveVaadinUri(anyString()))
-                .thenAnswer(invocation -> invocation.getArguments()[0]);
-        doAnswer(invocation -> invocation.getArguments()[1]).when(factory)
-                .toServletContextPath(any(), anyString());
-
-        session.setAttribute(VaadinUriResolverFactory.class, factory);
-
-        VaadinSession.setCurrent(session);
 
         return ui;
     }

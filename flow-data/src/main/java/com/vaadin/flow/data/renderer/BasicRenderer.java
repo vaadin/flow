@@ -173,8 +173,10 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         return String.valueOf(object);
     }
 
-    private class SimpleValueRendering
-            extends AbstractComponentDataGenerator<SOURCE>
+    /*
+     * Package level visibility to allow unit testing.
+     */
+    class SimpleValueRendering extends AbstractComponentDataGenerator<SOURCE>
             implements Rendering<SOURCE> {
 
         private final ValueProvider<SOURCE, String> keyMapper;
@@ -215,6 +217,8 @@ public abstract class BasicRenderer<SOURCE, TARGET>
                 if (value != null) {
                     jsonObject.put(propertyName, value);
                 }
+                jsonObject.put(propertyName + "_disabled",
+                        !templateElement.isEnabled());
             } else if (container != null) {
                 String itemKey = getItemKey(item);
                 Component component = createComponent(item);

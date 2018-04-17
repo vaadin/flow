@@ -22,6 +22,8 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
+
 /**
  * Annotates getters for which properties should be synchronized to the server.
  * <p>
@@ -53,4 +55,11 @@ public @interface Synchronize {
      */
     String property() default "";
 
+    /**
+     * Controls updates for the property from the client side to the server side
+     * when the element is disabled.
+     *
+     * @return the property update mode for disabled element
+     */
+    DisabledUpdateMode allowUpdates() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
 }
