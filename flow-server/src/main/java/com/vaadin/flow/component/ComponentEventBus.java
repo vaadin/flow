@@ -23,10 +23,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 
@@ -140,29 +142,35 @@ public class ComponentEventBus implements Serializable {
             return;
         }
 
-        ComponentEventBusUtil.handleDomEventType(eventType, (domEventType,
-                mode) -> addDomTrigger(eventType, domEventType, mode));
+        AnnotationReader
+                .getAnnotationFor(eventType,
+                        com.vaadin.flow.component.DomEvent.class)
+                .ifPresent(annotation -> addDomTrigger(eventType, annotation));
     }
 
     /**
-     * Adds a DOM listener of the given type for the given component event.
+     * Adds a DOM listener of the given type for the given component event and
+     * annotation.
      * <p>
      * Assumes that no listener exists.
      *
      * @param eventType
      *            the component event type
-     * @param domEventType
-     *            the DOM event type
-     * @param mode
-     *            controls RPC communication from the client side to the server
-     *            side when the element is disabled, not {@code null}
+     * @param the
+     *            annotation with event configuration
      */
     private void addDomTrigger(Class<? extends ComponentEvent<?>> eventType,
-            String domEventType, DisabledUpdateMode mode) {
+            com.vaadin.flow.component.DomEvent annotation) {
         assert eventType != null;
         assert !componentEventData.containsKey(eventType)
                 || componentEventData.get(eventType).domEventRemover == null;
-        assert mode != null;
+        assert annotation != null;
+
+        String domEventType = annotation.value();
+        DisabledUpdateMode mode = annotation.allowUpdates();
+        String filter = annotation.filter();
+        DebounceSettings debounce = annotation.debounce();
+        int debounceTimeout = debounce.timeout();
 
         if (domEventType == null || domEventType.isEmpty()) {
             throw new IllegalArgumentException(
@@ -179,6 +187,23 @@ public class ComponentEventBus implements Serializable {
         LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
                 .getEventDataExpressions(eventType);
         eventDataExpressions.keySet().forEach(registration::addEventData);
+
+        if (!"".equals(filter)) {
+            registration.setFilter(filter);
+        }
+
+        if (debounceTimeout != 0) {
+            DebouncePhase[] phases = debounce.phases();
+            if (phases.length == 0) {
+                throw new IllegalStateException(
+                        "There must be at least one debounce phase");
+            }
+
+            DebouncePhase[] rest = new DebouncePhase[phases.length - 1];
+            System.arraycopy(phases, 1, rest, 0, rest.length);
+
+            registration.debounce(debounceTimeout, phases[0], rest);
+        }
 
         componentEventData.computeIfAbsent(eventType,
                 t -> new ComponentEventData()).domEventRemover = registration;
@@ -242,8 +267,12 @@ public class ComponentEventBus implements Serializable {
         }
         if (listeners.isEmpty()) {
             // No more listeners for this event type
-            ComponentEventBusUtil.handleDomEventType(eventType, (domeEventType,
-                    mode) -> unregisterDomEvent(eventType, domeEventType));
+            AnnotationReader
+                    .getAnnotationFor(eventType,
+                            com.vaadin.flow.component.DomEvent.class)
+                    .ifPresent(annotation -> unregisterDomEvent(eventType,
+                            annotation.value()));
+
             componentEventData.remove(eventType);
         }
     }
