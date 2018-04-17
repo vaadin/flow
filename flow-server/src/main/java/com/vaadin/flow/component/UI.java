@@ -192,6 +192,11 @@ public class UI extends Component
         }
         this.uiId = uiId;
 
+        String appId = getSession().getService().getMainDivId(getSession(),
+                request);
+        appId = appId.substring(0, appId.indexOf('-'));
+        getInternals().setAppId(appId);
+
         // Add any dependencies from the UI class
         getInternals().addComponentDependencies(getClass());
 
