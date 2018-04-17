@@ -20,35 +20,7 @@
         <module>test-scalability</module>
         <module>test-memory-leaks</module>
         <module>test-servlet</module>
-        <module>test-spring-boot</module>
-        <module>test-spring-boot-undertow</module>
-        <module>test-spring-boot-scan</module>
-        <module>test-spring-war</module>
-        <module>test-spring</module>
-        <module>test-spring-common</module>
     </modules>
-
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
     <properties>
         <!-- Don't care about coding style or licenses for tests -->
@@ -60,7 +32,6 @@
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
-        <spring-boot.version>2.0.0.RELEASE</spring-boot.version>
     </properties>
 
     <dependencies>
