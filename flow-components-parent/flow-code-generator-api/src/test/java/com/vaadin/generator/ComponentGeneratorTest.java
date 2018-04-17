@@ -27,11 +27,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.HasClickListeners;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasText;
@@ -569,7 +569,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent", HasClickListeners.class);
+                generatedClass, "MyComponent", ClickNotifier.class);
     }
 
     @Test

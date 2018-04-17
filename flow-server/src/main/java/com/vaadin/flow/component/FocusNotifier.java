@@ -24,7 +24,7 @@ import com.vaadin.flow.shared.Registration;
  *            the type of the component returned at the
  *            {@link FocusEvent#getSource()}
  */
-public interface HasFocusListeners<T extends Component>
+public interface FocusNotifier<T extends Component>
         extends ComponentEventNotifier {
 
     /**
