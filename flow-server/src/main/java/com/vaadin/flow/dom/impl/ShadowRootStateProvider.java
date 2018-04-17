@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.PropertyChangeListener;
@@ -117,9 +118,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Registration addEventListener(StateNode node, String eventType,
-            DomEventListener listener, DisabledUpdateMode mode,
-            String[] eventDataExpressions) {
+    public DomListenerRegistration addEventListener(StateNode node,
+            String eventType, DomEventListener listener) {
         throw new UnsupportedOperationException();
     }
 

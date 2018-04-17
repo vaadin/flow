@@ -69,7 +69,7 @@ public class DomEvent extends EventObject {
      * Gets additional data related to the event. An empty JSON object is
      * returned if no event data is available.
      *
-     * @see Element#addEventListener(String, DomEventListener, String...)
+     * @see DomListenerRegistration#addEventData(String)
      *
      * @return a JSON object containing event data, never <code>null</code>
      */
