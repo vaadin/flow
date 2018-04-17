@@ -48,7 +48,10 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 public class ElementListenerMap extends NodeMap {
-    private static final String ALWAYS_TRUE_FILTER = "1";
+    /**
+     * Dummy filter string that always passes.
+     */
+    public static final String ALWAYS_TRUE_FILTER = "1";
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
@@ -56,12 +59,10 @@ public class ElementListenerMap extends NodeMap {
     private static class ExpressionSettings {
         private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
-        public void markAsFilter() {
-            // Add a dummy filter debounce
-            addDebouncePhases(0, EnumSet.noneOf(DebouncePhase.class));
-        }
-
         public void addDebouncePhases(int timeout, Set<DebouncePhase> phases) {
+            if (phases == null) {
+                phases = EnumSet.noneOf(DebouncePhase.class);
+            }
             debounceSettings.merge(Integer.valueOf(timeout), phases,
                     (phases1, phases2) -> {
                         EnumSet<DebouncePhase> merge = EnumSet.copyOf(phases1);
@@ -279,19 +280,19 @@ public class ElementListenerMap extends NodeMap {
             }
 
             String filter = wrapper.getFilter();
+
+            int timeout = wrapper.debounceTimeout;
+            if (timeout > 0 && filter == null) {
+                filter = ALWAYS_TRUE_FILTER;
+            }
+
             if (filter == null) {
                 hasUnfilteredListener = true;
             } else {
                 hasFilteredListener = true;
-                ensureExpression.apply(filter).markAsFilter();
-            }
 
-            int timeout = wrapper.debounceTimeout;
-            if (timeout > 0) {
-                String effectiveFilter = filter != null ? filter
-                        : ALWAYS_TRUE_FILTER;
-                ensureExpression.apply(effectiveFilter)
-                        .addDebouncePhases(timeout, wrapper.debouncePhases);
+                ensureExpression.apply(filter).addDebouncePhases(timeout,
+                        wrapper.debouncePhases);
             }
         }
 
@@ -303,7 +304,8 @@ public class ElementListenerMap extends NodeMap {
              * Include a filter that always passes to ensure that unfiltered
              * listeners are still notified.
              */
-            ensureExpression.apply(ALWAYS_TRUE_FILTER).markAsFilter();
+            ensureExpression.apply(ALWAYS_TRUE_FILTER).addDebouncePhases(0,
+                    Collections.singleton(DebouncePhase.LEADING));
         }
 
         return expressions;
