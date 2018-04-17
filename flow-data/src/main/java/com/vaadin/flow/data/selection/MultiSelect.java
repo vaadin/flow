@@ -87,7 +87,7 @@ public interface MultiSelect<C extends Component, T>
      * If all the added items were already selected and the removed items were
      * not selected, this is a NO-OP.
      * <p>
-     * Duplicate items (in both add & remove sets) are ignored.
+     * Duplicate items (in both add and remove sets) are ignored.
      *
      * @param addedItems
      *            the items to add, not {@code null}
@@ -104,7 +104,7 @@ public interface MultiSelect<C extends Component, T>
      * returned set should be well-defined and documented by the implementing
      * class.
      *
-     * @return the items in the current selection, not null
+     * @return the items in the current selection, not {@code null}
      */
     public Set<T> getSelectedItems();
 
@@ -119,7 +119,7 @@ public interface MultiSelect<C extends Component, T>
      * Returns whether the given item is currently selected.
      *
      * @param item
-     *            the item to check, not null
+     *            the item to check, not {@code null}
      * @return {@code true} if the item is selected, {@code false} otherwise
      */
     public default boolean isSelected(T item) {
