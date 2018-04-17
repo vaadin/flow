@@ -17,7 +17,6 @@
 package com.vaadin.flow.function;
 
 import java.io.Serializable;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -226,15 +225,6 @@ public interface DeploymentConfiguration extends Serializable {
      * @since 7.4
      */
     String getClassLoaderName();
-
-    /**
-     * Gets the location from which the Web Components polyfill is loaded.
-     * Should end in an <code>/</code>.
-     *
-     * @return the Web Components polyfill URI, or an empty optional if no
-     *         polyfill should be loaded
-     */
-    Optional<String> getWebComponentsPolyfillBase();
 
     /**
      * Gets the URL from which frontend resources should be loaded during
