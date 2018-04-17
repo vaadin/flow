@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Node;
@@ -211,13 +212,12 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Registration addEventListener(StateNode node, String eventType,
-            DomEventListener listener, DisabledUpdateMode mode,
-            String[] eventDataExpressions) {
+    public DomListenerRegistration addEventListener(StateNode node,
+            String eventType, DomEventListener listener) {
         ElementListenerMap listeners = node
                 .getFeature(ElementListenerMap.class);
 
-        return listeners.add(eventType, listener, mode, eventDataExpressions);
+        return listeners.add(eventType, listener);
     }
 
     /**

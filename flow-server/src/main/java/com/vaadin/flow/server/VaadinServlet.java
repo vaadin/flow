@@ -20,14 +20,10 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -70,6 +66,8 @@ public class VaadinServlet extends HttpServlet {
     private final ReflectionCache<AbstractTheme, ConcurrentHashMap<String, String>> themeTranslations = new ReflectionCache<>(
             type -> new ConcurrentHashMap<>());
 
+    private ServletContextUriResolver servletContextResolver;
+
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
      * is being placed into service.
@@ -97,7 +95,7 @@ public class VaadinServlet extends HttpServlet {
             webJarServer = new WebJarServer(
                     servletService.getDeploymentConfiguration());
         }
-
+        servletContextResolver = new ServletContextUriResolver();
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
 
@@ -231,29 +229,7 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        return new DefaultDeploymentConfiguration(getClass(), initParameters,
-                this::scanForResources);
-    }
-
-    protected void scanForResources(String basePath,
-            Predicate<String> consumer) {
-        Deque<String> queue = new ArrayDeque<>();
-        queue.add(basePath);
-
-        ServletContext context = getServletContext();
-        int prefixLength = basePath.length();
-
-        while (!queue.isEmpty()) {
-            String path = queue.removeLast();
-            boolean visit = consumer.test(path.substring(prefixLength));
-
-            if (visit && path.endsWith("/")) {
-                Set<String> resourcePaths = context.getResourcePaths(path);
-                if (resourcePaths != null) {
-                    queue.addAll(resourcePaths);
-                }
-            }
-        }
+        return new DefaultDeploymentConfiguration(getClass(), initParameters);
     }
 
     /**
@@ -619,7 +595,8 @@ public class VaadinServlet extends HttpServlet {
      * @param theme
      *            Theme to use for translating url with
      * @param urlToTranslate
-     *            HtmlImport url that may be rewritten to reflect a themed resource
+     *            HtmlImport url that may be rewritten to reflect a themed
+     *            resource
      * @return theme resource url if resource exists or original url
      */
     public String getUrlTranslation(AbstractTheme theme,
@@ -637,12 +614,25 @@ public class VaadinServlet extends HttpServlet {
      *
      * @param url
      *            the resource to resolve
-     * @return resolved resource
+     * @return resolved resource or <code>null</code> if the resource was not
+     *         found
      */
     public String resolveResource(String url) {
-        VaadinRequest request = VaadinRequest.getCurrent();
+        String resolvedUrl = resolveOnly(url);
+        if (isInServletContext(resolvedUrl)) {
+            return resolvedUrl;
+        }
+        String webjarLocation = getWebJarLocation(resolvedUrl);
+        if (webjarLocation != null) {
+            return webjarLocation;
+        }
+
+        return null;
+    }
+
+    private String resolveOnly(String url) {
         VaadinSession session = VaadinSession.getCurrent();
-        if (request == null || session == null) {
+        if (session == null) {
             /*
              * Cannot happen in runtime.
              *
@@ -651,92 +641,64 @@ public class VaadinServlet extends HttpServlet {
             return null;
         }
 
-        String resolvedUrl = session
-                .getAttribute(VaadinUriResolverFactory.class)
-                .toServletContextPath(request, url);
-
-        if (getResource(resolvedUrl) == null && webJarServer != null) {
-            Optional<String> webJarUrl = webJarServer
-                    .getWebJarResourcePath(resolveUrl(url));
-            if (webJarUrl.isPresent() && getResource(webJarUrl.get()) != null) {
-                return webJarUrl.get();
-            }
+        String frontendRootUrl;
+        DeploymentConfiguration config = getService()
+                .getDeploymentConfiguration();
+        if (session.getBrowser().isEs6Supported()) {
+            frontendRootUrl = config.getEs6FrontendPrefix();
+        } else {
+            frontendRootUrl = config.getEs5FrontendPrefix();
         }
 
-        return resolvedUrl;
+        return servletContextResolver.resolveVaadinUri(url, frontendRootUrl);
     }
 
     private final String computeUrlTranslation(AbstractTheme theme,
             String urlToTranslate) {
         String translatedUrl = theme.translateUrl(urlToTranslate);
         if (translatedUrl.equals(urlToTranslate)
-                || resourceIsFound(translatedUrl)) {
+                || isResourceFound(resolveOnly(translatedUrl))) {
             return translatedUrl;
         } else {
             return urlToTranslate;
         }
     }
 
-    private boolean resourceIsFound(String url) {
-        String resolvedUrl = resolveUrl(url);
-
-        return inServletContext(resolvedUrl) || inWebJar(resolvedUrl);
+    /**
+     * Checks if the given resource is available.
+     * <p>
+     * Checks the servlet context and webjars for the resource.
+     * <p>
+     * If this method returns <code>true</code>, is is safe to assume that the
+     * browser can load the given resource using the given URL.
+     *
+     * @param resolvedUrl
+     *            the path to check
+     * @return <code>true</code> if the resource is found, <code>false</code>
+     *         otherwise
+     */
+    public boolean isResourceFound(String resolvedUrl) {
+        return isInServletContext(resolvedUrl) || isInWebJar(resolvedUrl);
     }
 
-    private String resolveUrl(String url) {
-        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
-                .getAttribute(VaadinUriResolverFactory.class);
-
-        VaadinRequest request = VaadinRequest.getCurrent();
-
-        String resolvedUrl = uriResolverFactory.getUriResolver(request)
-                .resolveVaadinUri(url);
-
-        assert resolvedUrl != null;
-        if (resolvedUrl.contains("../")
-                && request instanceof VaadinServletRequest) {
-            VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-
-            String servletPath = servletRequest.getServletPath();
-            assert servletPath != null;
-            if (servletPath.startsWith("/")) {
-                servletPath = servletPath.substring(1);
-            }
-            if (servletPath.endsWith("/")) {
-                servletPath = servletPath.substring(0,
-                        servletPath.lastIndexOf('/'));
-            }
-
-            if (!servletPath.isEmpty()) {
-                // "Revert" the `../` from uri resolver so that we point to the
-                // context root.
-                for (int i = 0; i < servletPath.split("/").length; i++) {
-                    resolvedUrl = resolvedUrl.replaceFirst("(../)", "");
-                }
-            }
-        }
-
-        // Servlet context requires a valid URL string
-        if (!resolvedUrl.startsWith("/")) {
-            resolvedUrl = "/" + resolvedUrl;
-        }
-
-        return resolvedUrl;
-    }
-
-    private boolean inServletContext(String resolvedUrl) {
+    boolean isInServletContext(String resolvedUrl) {
         return getResource(resolvedUrl) != null;
     }
 
-    private boolean inWebJar(String resolvedUrl) {
+    boolean isInWebJar(String resolvedUrl) {
+        return getResource(getWebJarLocation(resolvedUrl)) != null;
+    }
+
+    private String getWebJarLocation(String resolvedUrl) {
         if (webJarServer != null) {
             Optional<String> webJarPath = webJarServer
                     .getWebJarResourcePath(resolvedUrl);
-            if (webJarPath.isPresent()) {
-                return getResource(webJarPath.get()) != null;
+            if (webJarPath.isPresent()
+                    && isInServletContext(webJarPath.get())) {
+                return webJarPath.get();
             }
         }
-        return false;
+        return null;
     }
 
     /**

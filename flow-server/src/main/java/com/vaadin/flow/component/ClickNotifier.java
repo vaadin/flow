@@ -21,9 +21,14 @@ import com.vaadin.flow.shared.Registration;
  * Mixin interface for components that support adding click listeners to the
  * their root elements.
  *
+ * @param <T>
+ *            the type of the component returned at the
+ *            {@link ClickEvent#getSource()}
+ *
  * @author Vaadin Ltd
  */
-public interface ClickNotifier extends ComponentEventNotifier {
+public interface ClickNotifier<T extends Component>
+        extends ComponentEventNotifier {
     /**
      * Adds a click listener to this component.
      *
@@ -32,7 +37,8 @@ public interface ClickNotifier extends ComponentEventNotifier {
      * @return a handle that can be used for removing the listener
      */
     default Registration addClickListener(
-            ComponentEventListener<ClickEvent> listener) {
-        return addListener(ClickEvent.class, listener);
+            ComponentEventListener<ClickEvent<T>> listener) {
+        return addListener(ClickEvent.class,
+                (ComponentEventListener) listener);
     }
 }

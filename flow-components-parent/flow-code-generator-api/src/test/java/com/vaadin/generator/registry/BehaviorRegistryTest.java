@@ -22,7 +22,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.HasClickListeners;
+import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.HasText;
 
 /**
@@ -53,10 +53,10 @@ public class BehaviorRegistryTest {
 
     @Test
     public void clickableBehaviors() {
-        assertClassIsPresent(HasClickListeners.class, "vaadin-button");
-        assertClassIsPresent(HasClickListeners.class,
+        assertClassIsPresent(ClickNotifier.class, "vaadin-button");
+        assertClassIsPresent(ClickNotifier.class,
                 "Polymer.PaperButtonBehavior");
-        assertClassIsPresent(HasClickListeners.class,
+        assertClassIsPresent(ClickNotifier.class,
                 "Polymer.GestureEventListeners");
     }
 

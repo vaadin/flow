@@ -32,9 +32,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.VaadinUriResolver;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -53,20 +52,8 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         DeploymentConfiguration deploymentConfiguration = event.getSource()
                 .getDeploymentConfiguration();
         if (deploymentConfiguration.isProductionMode()) {
-            VaadinUriResolver es6ContextPathResolver = new VaadinUriResolver() {
-                @Override
-                protected String getContextRootUrl() {
-                    return "/";
-                }
-
-                @Override
-                protected String getFrontendRootUrl() {
-                    return deploymentConfiguration.getEs6FrontendPrefix();
-                }
-            };
-
             Map<String, Set<String>> importsInBundles = readBundleDependencies(
-                    event, es6ContextPathResolver);
+                    event);
             if (!importsInBundles.isEmpty()) {
                 if (importsInBundles.values().stream()
                         .noneMatch(importSet -> importSet.contains(
@@ -83,22 +70,18 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
     }
 
     private Map<String, Set<String>> readBundleDependencies(
-            ServiceInitEvent event, VaadinUriResolver es6ContextPathResolver) {
-        VaadinServletService servlet = ((VaadinServletService) event
+            ServiceInitEvent event) {
+        VaadinServletService service = ((VaadinServletService) event
                 .getSource());
-
-        String es6Base = es6ContextPathResolver.resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        if(!es6Base.endsWith("/")) {
-            es6Base += '/';
-        }
-        String bundleManifestContextPath = es6Base + FLOW_BUNDLE_MANIFEST;
-        try (InputStream bundleManifestStream = servlet
-                .getResourceAsStream(bundleManifestContextPath)) {
+        VaadinServlet servlet = service.getServlet();
+        String manifestResource = servlet
+                .resolveResource("frontend://" + FLOW_BUNDLE_MANIFEST);
+        try (InputStream bundleManifestStream = service
+                .getResourceAsStream(manifestResource)) {
             if (bundleManifestStream == null) {
                 getLogger().info(
                         "Bundling disabled: Flow bundle manifest '{}' was not found in servlet context",
-                        bundleManifestContextPath);
+                        manifestResource);
                 return Collections.emptyMap();
             }
 
@@ -110,12 +93,12 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                         .getArray(bundlePath);
                 for (int i = 0; i < bundledFiles.length(); i++) {
                     String bundledFile = bundledFiles.getString(i);
-                    if (servlet.getResource(es6ContextPathResolver
-                            .resolveVaadinUri(es6Base + bundlePath)) == null) {
+                    String resolvedFile = servlet.resolveResource(bundledFile);
+                    if (resolvedFile == null) {
                         throw new IllegalArgumentException(String.format(
                                 "Failed to find bundle at context path '%s', specified in manifest '%s'. "
                                         + "Remove file reference from the manifest to disable bundle usage or add the bundle to the context path specified.",
-                                bundlePath, bundleManifestContextPath));
+                                bundlePath, manifestResource));
                     }
                     importToBundle.computeIfAbsent(bundledFile,
                             key -> new HashSet<>()).add(bundlePath);
@@ -125,7 +108,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
                     "Failed to read bundle manifest file at context path '%s'",
-                    bundleManifestContextPath), e);
+                    manifestResource), e);
         }
     }
 
