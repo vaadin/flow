@@ -60,7 +60,8 @@ public class FrontendDataProvider {
      *            whether bundling data should be prepared
      * @param shouldMinify
      *            whether the output files should be minified
-     * @param hash
+     * @param shouldHash
+     *            whether the output file names should containt a fingerprint
      * @param es6SourceDirectory
      *            the directory with original ES6 files, not {@code null}
      * @param annotationValuesExtractor
