@@ -31,9 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.ServletContextUriResolver;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -46,6 +47,8 @@ import elemental.json.JsonObject;
  */
 public class BundleFilterInitializer implements VaadinServiceInitListener {
     private static final String FLOW_BUNDLE_MANIFEST = "vaadin-flow-bundle-manifest.json";
+
+    private final ServletContextUriResolver servletContextUriResolver = new ServletContextUriResolver();
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
@@ -73,43 +76,55 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
             ServiceInitEvent event) {
         VaadinServletService service = ((VaadinServletService) event
                 .getSource());
-        VaadinServlet servlet = service.getServlet();
-        String manifestResource = servlet
-                .resolveResource("frontend://" + FLOW_BUNDLE_MANIFEST);
+        String es6FrontendPrefix = event.getSource()
+                .getDeploymentConfiguration().getEs6FrontendPrefix();
+        String manifestResourceContextPath = resolveContextPath(
+                FLOW_BUNDLE_MANIFEST, es6FrontendPrefix);
         try (InputStream bundleManifestStream = service
-                .getResourceAsStream(manifestResource)) {
+                .getResourceAsStream(manifestResourceContextPath)) {
             if (bundleManifestStream == null) {
                 getLogger().info(
                         "Bundling disabled: Flow bundle manifest '{}' was not found in servlet context",
-                        manifestResource);
+                        manifestResourceContextPath);
                 return Collections.emptyMap();
             }
 
             JsonObject bundlesToUrlsContained = Json.parse(IOUtils
                     .toString(bundleManifestStream, StandardCharsets.UTF_8));
             Map<String, Set<String>> importToBundle = new HashMap<>();
-            for (String bundlePath : bundlesToUrlsContained.keys()) {
+            for (String bundleFrontendPath : bundlesToUrlsContained.keys()) {
+                String bundleContextPath = resolveContextPath(
+                        bundleFrontendPath, es6FrontendPrefix);
+                if (service.getResource(bundleContextPath) == null) {
+                    throw new IllegalArgumentException(String.format(
+                            "Failed to find bundle at context path '%s', specified in manifest '%s'. "
+                                    + "Remove file reference from the manifest to disable bundle usage or add the bundle to the context path specified.",
+                            bundleContextPath, manifestResourceContextPath));
+                }
+
                 JsonArray bundledFiles = bundlesToUrlsContained
-                        .getArray(bundlePath);
+                        .getArray(bundleFrontendPath);
                 for (int i = 0; i < bundledFiles.length(); i++) {
                     String bundledFile = bundledFiles.getString(i);
-                    String resolvedFile = servlet.resolveResource(bundledFile);
-                    if (resolvedFile == null) {
-                        throw new IllegalArgumentException(String.format(
-                                "Failed to find bundle at context path '%s', specified in manifest '%s'. "
-                                        + "Remove file reference from the manifest to disable bundle usage or add the bundle to the context path specified.",
-                                bundlePath, manifestResource));
-                    }
-                    importToBundle.computeIfAbsent(bundledFile,
-                            key -> new HashSet<>()).add(bundlePath);
+                    importToBundle
+                            .computeIfAbsent(bundledFile,
+                                    key -> new HashSet<>())
+                            .add(bundleFrontendPath);
                 }
             }
             return importToBundle;
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
                     "Failed to read bundle manifest file at context path '%s'",
-                    manifestResource), e);
+                    manifestResourceContextPath), e);
         }
+    }
+
+    private String resolveContextPath(String pathInFrontendFolder,
+            String es6FrontendPrefix) {
+        return servletContextUriResolver
+                .resolveVaadinUri(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                        + pathInFrontendFolder, es6FrontendPrefix);
     }
 
     private static Logger getLogger() {
