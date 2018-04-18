@@ -61,7 +61,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
@@ -177,6 +176,8 @@ public class UIInternals implements Serializable {
     private byte[] lastProcessedMessageHash = null;
 
     private String contextRootRelativePath;
+
+    private String appId;
 
     /**
      * Creates a new instance for the given UI.
@@ -845,15 +846,22 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Sets the application id tied with this UI. Different applications in the
+     * same page have different unique ids.
+     *
+     * param appId the id of the application tied with this UI
+     */
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    /**
      * Gets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
      *
      * @return the id of the application tied with this UI
      */
     public String getAppId() {
-        String appId = session.getService().getMainDivId(session,
-                VaadinRequest.getCurrent());
-        appId = appId.substring(0, appId.indexOf('-'));
         return appId;
     }
 

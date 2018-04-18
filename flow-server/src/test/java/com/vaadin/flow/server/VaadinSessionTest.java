@@ -128,7 +128,7 @@ public class VaadinSessionTest {
 
         ui = new TestUI();
         vaadinRequest = new VaadinServletRequest(
-                EasyMock.createMock(HttpServletRequest.class), mockService) {
+                Mockito.mock(HttpServletRequest.class), mockService) {
             @Override
             public String getParameter(String name) {
                 if ("restartApplication".equals(name)
