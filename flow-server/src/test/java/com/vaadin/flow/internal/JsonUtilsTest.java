@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -22,8 +24,6 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.flow.internal.JsonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -199,6 +199,35 @@ public class JsonUtilsTest {
         JsonArray array = JsonUtils.createArray();
 
         Assert.assertEquals(0, array.length());
+    }
+
+    @Test
+    public void createObject() {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("integer", Integer.valueOf(3));
+        map.put("string", "foo");
+
+        JsonObject object = JsonUtils.createObject(map, item -> {
+            if (item instanceof Integer) {
+                return Json.create(((Integer) item).doubleValue());
+            } else {
+                return Json.create(String.valueOf(item));
+            }
+        });
+
+        Assert.assertEquals(2, object.keys().length);
+        Assert.assertEquals(3, object.getNumber("integer"), 0);
+        Assert.assertEquals("foo", object.getString("string"));
+    }
+
+    @Test
+    public void testCreateEmptyObject() {
+        JsonObject object = JsonUtils.createObject(Collections.emptyMap(),
+                item -> {
+                    throw new AssertionError("Callback should not be called");
+                });
+
+        Assert.assertEquals(0, object.keys().length);
     }
 
 }

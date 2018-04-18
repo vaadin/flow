@@ -19,6 +19,7 @@ package com.vaadin.flow.internal;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -250,5 +251,24 @@ public final class JsonUtils {
      */
     public static JsonArray createArray(JsonValue... values) {
         return Stream.of(values).collect(asArray());
+    }
+
+    /**
+     * Converts the given map into a JSON object by converting each map value to
+     * a JSON value.
+     *
+     * @param map
+     *            the map to convert into a JSON object
+     * @param itemToJson
+     *            callback for converting map values to JSON
+     * @return the created object
+     */
+    public static <T> JsonObject createObject(Map<String, T> map,
+            Function<T, JsonValue> itemToJson) {
+        JsonObject object = Json.createObject();
+
+        map.forEach((key, value) -> object.put(key, itemToJson.apply(value)));
+
+        return object;
     }
 }
