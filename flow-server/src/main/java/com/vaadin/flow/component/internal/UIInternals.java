@@ -70,6 +70,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -663,12 +664,14 @@ public class UIInternals implements Serializable {
     }
 
     private void updateTheme(Component target, String path) {
-        Optional<Class<? extends AbstractTheme>> themeClass = ui
+        Optional<ThemeDefinition> themeDefinition = ui
                 .getThemeFor(target.getClass(), path);
 
-        if (themeClass.isPresent()) {
-            if (theme == null || !theme.getClass().equals(themeClass.get())) {
-                theme = ReflectTools.createInstance(themeClass.get());
+        if (themeDefinition.isPresent()) {
+            Class<? extends AbstractTheme> themeClass = themeDefinition.get()
+                    .getTheme();
+            if (theme == null || !theme.getClass().equals(themeClass)) {
+                theme = ReflectTools.createInstance(themeClass);
             }
         } else {
             theme = null;

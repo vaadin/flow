@@ -16,7 +16,11 @@
 package com.vaadin.flow.theme.lumo;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -31,6 +35,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/style.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/icons.html")
 public class Lumo implements AbstractTheme {
+
+    public static final String LIGHT = "light";
+    public static final String DARK = "dark";
 
     @Override
     public String getBaseUrl() {
@@ -47,5 +54,26 @@ public class Lumo implements AbstractTheme {
         return Collections.singletonList("<custom-style>\n"
                 + "    <style include=\"lumo-color lumo-typography\"></style>\n"
                 + "</custom-style>");
+    }
+
+    @Override
+    public Map<String, String> getBodyAttributes(String variant) {
+        if (variant.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> attributes = new HashMap<>(1);
+        switch (variant) {
+        case LIGHT:
+            attributes.put("theme", "light");
+            break;
+        case DARK:
+            attributes.put("theme", "dark");
+            break;
+        default:
+            LoggerFactory.getLogger(Lumo.class.getName())
+                    .warn("Lumo theme variant not recognized: '" + variant
+                            + "'. Using no variant.");
+        }
+        return attributes;
     }
 }
