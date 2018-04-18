@@ -36,6 +36,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -254,8 +255,9 @@ public class BootstrapHandlerDependenciesTest {
 
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
-        mocks.getServlet().setResourceFoundOverride(r -> true);
-        service.setResourceAsStreamOverride(
+        TestVaadinServlet servlet = mocks.getServlet();
+        servlet.setResourceFoundOverride(r -> true);
+        servlet.setResourceAsStreamOverride(
                 resource -> new ByteArrayInputStream(resource.getBytes()));
     }
 

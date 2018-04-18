@@ -1,10 +1,6 @@
 package com.vaadin.flow.server;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -32,7 +28,6 @@ public class MockServletServiceSessionSetup {
     public class TestVaadinServletService extends VaadinServletService {
 
         private List<DependencyFilter> dependencyFilterOverride;
-        private Function<String, InputStream> resourceAsStreamOverride;
         private TestRouteRegistry routeRegistry;
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
@@ -53,19 +48,6 @@ public class MockServletServiceSessionSetup {
         public void setDependencyFilters(
                 List<DependencyFilter> dependencyFilters) {
             dependencyFilterOverride = dependencyFilters;
-        }
-
-        public void setResourceAsStreamOverride(
-                Function<String, InputStream> resourceAsStreamOverride) {
-            this.resourceAsStreamOverride = resourceAsStreamOverride;
-        }
-
-        @Override
-        public InputStream getResourceAsStream(String path) {
-            if (resourceAsStreamOverride != null) {
-                return resourceAsStreamOverride.apply(path);
-            }
-            return super.getResourceAsStream(path);
         }
 
         public void setRouteRegistry(TestRouteRegistry routeRegistry) {
@@ -109,6 +91,7 @@ public class MockServletServiceSessionSetup {
     public class TestVaadinServlet extends VaadinServlet {
         private Function<String, String> resolveOverride;
         private Function<String, Boolean> resourceFoundOverride;
+        private Function<String, InputStream> resourceAsStreamOverride;
 
         @Override
         protected VaadinServletService createServletService()
@@ -132,6 +115,20 @@ public class MockServletServiceSessionSetup {
         public void setResourceFoundOverride(
                 Function<String, Boolean> resourceFoundOverride) {
             this.resourceFoundOverride = resourceFoundOverride;
+        }
+
+        public void setResourceAsStreamOverride(
+                Function<String, InputStream> resourceAsStreamOverride) {
+            this.resourceAsStreamOverride = resourceAsStreamOverride;
+        }
+
+        @Override
+        public InputStream getResourceAsStream(String path) {
+            if (resourceAsStreamOverride != null) {
+                return resourceAsStreamOverride.apply(path);
+            }
+
+            return super.getResourceAsStream(path);
         }
 
         @Override
