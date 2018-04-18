@@ -16,12 +16,14 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 /**
  * A class representing a node in the DOM.
@@ -175,6 +177,31 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         }
 
         return getSelf();
+    }
+
+    /**
+     * Gets whether this element is a virtual child of its parent.
+     * 
+     * @return <code>true</code> if the element has a parent and the element is
+     *         a virtual child of it, <code>false</code> otherwise.
+     */
+    public boolean isVirtualChild() {
+        Node<?> parentNode = getParentNode();
+        if (parentNode == null) {
+            return false;
+        }
+        if (!parentNode.getNode().hasFeature(VirtualChildrenList.class)) {
+            return false;
+        }
+        Iterator<StateNode> iterator = parentNode.getNode()
+                .getFeature(VirtualChildrenList.class).iterator();
+        while (iterator.hasNext()) {
+            StateNode child = iterator.next();
+            if (getNode().equals(child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
