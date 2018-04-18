@@ -54,7 +54,7 @@ public interface MultiSelect<C extends Component, T>
      * @param items
      *            to add to selection, not {@code null}
      */
-    public default void select(T... items) {
+    default void select(T... items) {
         Objects.requireNonNull(items);
         Stream.of(items).forEach(Objects::requireNonNull);
 
@@ -73,7 +73,7 @@ public interface MultiSelect<C extends Component, T>
      * @param items
      *            to remove from selection, not {@code null}
      */
-    public default void deselect(T... items) {
+    default void deselect(T... items) {
         Objects.requireNonNull(items);
         Stream.of(items).forEach(Objects::requireNonNull);
 
@@ -94,7 +94,7 @@ public interface MultiSelect<C extends Component, T>
      * @param removedItems
      *            the items to remove, not {@code null}
      */
-    public void updateSelection(Set<T> addedItems, Set<T> removedItems);
+    void updateSelection(Set<T> addedItems, Set<T> removedItems);
 
     /**
      * Returns an immutable set of the currently selected items. It is safe to
@@ -106,12 +106,12 @@ public interface MultiSelect<C extends Component, T>
      *
      * @return the items in the current selection, not {@code null}
      */
-    public Set<T> getSelectedItems();
+    Set<T> getSelectedItems();
 
     /**
      * Deselects all currently selected items.
      */
-    public default void deselectAll() {
+    default void deselectAll() {
         getSelectedItems().forEach(this::deselect);
     }
 
@@ -122,7 +122,7 @@ public interface MultiSelect<C extends Component, T>
      *            the item to check, not {@code null}
      * @return {@code true} if the item is selected, {@code false} otherwise
      */
-    public default boolean isSelected(T item) {
+    default boolean isSelected(T item) {
         return getSelectedItems().contains(item);
     }
 
@@ -134,8 +134,7 @@ public interface MultiSelect<C extends Component, T>
      *            the value change listener, not {@code null}
      * @return a registration for the listener
      */
-    public Registration addSelectionListener(
-            MultiSelectionListener<C, T> listener);
+    Registration addSelectionListener(MultiSelectionListener<C, T> listener);
 
     /**
      * MultiSelect empty value should always be an empty set by default and not
@@ -144,7 +143,7 @@ public interface MultiSelect<C extends Component, T>
      * @return An empty set, not {@code null}
      */
     @Override
-    public default Set<T> getEmptyValue() {
+    default Set<T> getEmptyValue() {
         return Collections.emptySet();
     }
 
