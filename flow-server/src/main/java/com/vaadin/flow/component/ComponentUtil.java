@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -33,6 +34,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 /**
  * Utility methods for {@link Component}.
@@ -275,7 +278,20 @@ public class ComponentUtil {
     private static boolean isAttachedToParent(Component component,
             Component parentComponent) {
         return parentComponent.getChildren()
-                .anyMatch(child -> child.equals(component));
+                .anyMatch(child -> child.equals(component))
+                || isVirtualChild(component, parentComponent);
+    }
+
+    private static boolean isVirtualChild(Component component,
+            Component parentComponent) {
+        Iterator<StateNode> iterator = parentComponent.getElement().getNode()
+                .getFeature(VirtualChildrenList.class).iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().equals(component.getElement().getNode())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean checkParentChainState(Component component) {
