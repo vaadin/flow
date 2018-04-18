@@ -69,11 +69,11 @@ public class TemplateInitializer {
      */
     @SuppressWarnings("unchecked")
     public TemplateInitializer(PolymerTemplate<?> template,
-            TemplateParser parser) {
+            TemplateParser parser, VaadinService service) {
         this.template = template;
 
-        boolean productionMode = VaadinService.getCurrent()
-                .getDeploymentConfiguration().isProductionMode();
+        boolean productionMode = service.getDeploymentConfiguration()
+                .isProductionMode();
 
         templateClass = (Class<? extends PolymerTemplate<?>>) template
                 .getClass();
@@ -82,12 +82,12 @@ public class TemplateInitializer {
         if (productionMode) {
             ReflectionCache<PolymerTemplate<?>, ParserData> cache = CACHE
                     .computeIfAbsent(parser, analyzer -> new ReflectionCache<>(
-                            clazz -> new TemplateDataAnalyzer(clazz, analyzer)
-                                    .parseTemplate()));
+                            clazz -> new TemplateDataAnalyzer(clazz, analyzer,
+                                    service).parseTemplate()));
             data = cache.get(templateClass);
         }
         if (data == null) {
-            data = new TemplateDataAnalyzer(templateClass, parser)
+            data = new TemplateDataAnalyzer(templateClass, parser, service)
                     .parseTemplate();
         }
         parserData = data;

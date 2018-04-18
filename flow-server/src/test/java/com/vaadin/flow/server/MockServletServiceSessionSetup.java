@@ -32,7 +32,6 @@ public class MockServletServiceSessionSetup {
     public class TestVaadinServletService extends VaadinServletService {
 
         private List<DependencyFilter> dependencyFilterOverride;
-        private Function<String, InputStream> resourceAsStreamOverride;
         private TestRouteRegistry routeRegistry;
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
@@ -53,19 +52,6 @@ public class MockServletServiceSessionSetup {
         public void setDependencyFilters(
                 List<DependencyFilter> dependencyFilters) {
             dependencyFilterOverride = dependencyFilters;
-        }
-
-        public void setResourceAsStreamOverride(
-                Function<String, InputStream> resourceAsStreamOverride) {
-            this.resourceAsStreamOverride = resourceAsStreamOverride;
-        }
-
-        @Override
-        public InputStream getResourceAsStream(String path) {
-            if (resourceAsStreamOverride != null) {
-                return resourceAsStreamOverride.apply(path);
-            }
-            return super.getResourceAsStream(path);
         }
 
         public void setRouteRegistry(TestRouteRegistry routeRegistry) {
@@ -109,6 +95,7 @@ public class MockServletServiceSessionSetup {
     public class TestVaadinServlet extends VaadinServlet {
         private Function<String, String> resolveOverride;
         private Function<String, Boolean> resourceFoundOverride;
+        private Function<String, InputStream> resourceAsStreamOverride;
 
         @Override
         protected VaadinServletService createServletService()
@@ -134,6 +121,20 @@ public class MockServletServiceSessionSetup {
             this.resourceFoundOverride = resourceFoundOverride;
         }
 
+        public void setResourceAsStreamOverride(
+                Function<String, InputStream> resourceAsStreamOverride) {
+            this.resourceAsStreamOverride = resourceAsStreamOverride;
+        }
+
+        @Override
+        public InputStream getResourceAsStream(String path) {
+            if (resourceAsStreamOverride != null) {
+                return resourceAsStreamOverride.apply(path);
+            }
+
+            return super.getResourceAsStream(path);
+        }
+
         @Override
         public String resolveResource(String url) {
             if (resolveOverride != null) {
@@ -157,6 +158,37 @@ public class MockServletServiceSessionSetup {
             }
             return super.isInServletContext(resolvedUrl);
         }
+
+        public void addServletContextResource(String path) {
+            addServletContextResource(path, "This is " + path);
+        }
+
+        public void addServletContextResource(String path, String contents) {
+            try {
+                URL url = new URL("file://" + path);
+                Mockito.when(getServletContext().getResource(path))
+                        .thenReturn(url);
+                Mockito.when(getServletContext().getResourceAsStream(path))
+                        .thenAnswer(i -> {
+                            return new ByteArrayInputStream(
+                                    contents.getBytes(StandardCharsets.UTF_8));
+                        });
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void addWebJarResource(String webjarContent) {
+            // Webjars map /frontend/bower_components/foo/bar.html to
+            // /webjars/foo/bar.html
+            addServletContextResource("/webjars/" + webjarContent);
+        }
+
+        public void verifyServletContextResourceLoadedOnce(String resource) {
+            Mockito.verify(servlet.getServletContext())
+                    .getResourceAsStream(resource);
+
+        }
     }
 
     @Mock
@@ -178,32 +210,44 @@ public class MockServletServiceSessionSetup {
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
 
     public MockServletServiceSessionSetup() throws Exception {
+        this(true);
+    }
+
+    public MockServletServiceSessionSetup(boolean sessionAvailable)
+            throws Exception {
         MockitoAnnotations.initMocks(this);
+        servlet = new TestVaadinServlet();
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
-        Mockito.when(session.getConfiguration())
-                .thenReturn(deploymentConfiguration);
-
-        Mockito.when(session.getBrowser()).thenReturn(browser);
-        Mockito.when(session.getPushId()).thenReturn("fake push id");
-        Mockito.when(session.getLocale()).thenReturn(Locale.ENGLISH);
-
-        Mockito.when(wrappedSession.getHttpSession()).thenReturn(httpSession);
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
+        if (sessionAvailable) {
+            Mockito.when(session.getConfiguration())
+                    .thenReturn(deploymentConfiguration);
 
-        servlet = new TestVaadinServlet();
-        Mockito.when(session.getService()).thenAnswer(i -> service);
-        Mockito.when(session.hasLock()).thenReturn(true);
-        Mockito.when(session.getPendingAccessQueue())
-                .thenReturn(new LinkedBlockingDeque<>());
-        Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
+            Mockito.when(session.getBrowser()).thenReturn(browser);
+            Mockito.when(session.getPushId()).thenReturn("fake push id");
+            Mockito.when(session.getLocale()).thenReturn(Locale.ENGLISH);
 
+            Mockito.when(wrappedSession.getHttpSession())
+                    .thenReturn(httpSession);
+
+            Mockito.when(session.getService()).thenAnswer(i -> service);
+            Mockito.when(session.hasLock()).thenReturn(true);
+            Mockito.when(session.getPendingAccessQueue())
+                    .thenReturn(new LinkedBlockingDeque<>());
+            Mockito.when(request.getWrappedSession())
+                    .thenReturn(wrappedSession);
+        } else {
+            session = null;
+        }
         servlet.init(servletConfig);
 
         CurrentInstance.set(VaadinRequest.class, request);
-        CurrentInstance.set(VaadinSession.class, session);
         CurrentInstance.set(VaadinService.class, service);
+        if (sessionAvailable) {
+            CurrentInstance.set(VaadinSession.class, session);
+        }
 
         Mockito.when(request.getServletPath()).thenReturn("");
         Mockito.when(browser.isEs6Supported()).thenReturn(true);
