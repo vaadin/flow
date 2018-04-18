@@ -78,6 +78,20 @@
             <version>6.1.1</version>
         </dependency>
 
+        <!-- Byte code generation -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <!-- Small reflection library -->
+        <dependency>
+            <groupId>com.googlecode.gentyref</groupId>
+            <artifactId>gentyref</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -106,18 +120,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Byte code generation -->
         <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>1.7.5</version>
-        </dependency>
-
-        <!-- Small reflection library -->
-        <dependency>
-            <groupId>com.googlecode.gentyref</groupId>
-            <artifactId>gentyref</artifactId>
-            <version>1.2.0</version>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>3.0.1</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
