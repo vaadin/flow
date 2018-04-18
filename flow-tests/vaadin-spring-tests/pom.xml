@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-spring-parent</artifactId>
+        <version>10.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>vaadin-spring-tests</artifactId>
+    <name>Vaadin Spring tests</name>
+    <description>Test modules for Spring integration</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>test-spring-boot</module>
+        <!--
+        Disabled as the resource scanner does not work with Undertow
+        <module>test-spring-boot-undertow</module>
+        -->
+        <module>test-spring-boot-scan</module>
+        <module>test-spring-war</module>
+        <module>test-spring</module>
+        <module>test-spring-common</module>
+    </modules>
+
+    <properties>
+        <!-- Don't care about coding style or licenses for tests -->
+        <sonar.skip>true</sonar.skip>
+        <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
+
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <!-- Used in the tests, should be overridden for each module to support 
+            concurrent running of test modules. -->
+        <server.port>8888</server.port>
+        <server.stop.port>8889</server.stop.port>
+        <spring-boot.version>2.0.0.RELEASE</spring-boot.version>
+        <jetty.version>9.4.9.v20180320</jetty.version>
+        <maven.failsafe.plugin.version>2.20</maven.failsafe.plugin.version>
+        <driver.binary.downloader.maven.plugin.version>1.0.14
+        </driver.binary.downloader.maven.plugin.version>
+        <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- Project dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-util</artifactId>
+            <version>${vaadin.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- export test server port to integration tests -->
+                    <systemPropertyVariables>
+                        <serverPort>${server.port}</serverPort>
+                        <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
+                    </systemPropertyVariables>
+                    <excludedGroups>${test.excludegroup}</excludedGroups>
+                </configuration>
+            </plugin>
+            <!-- jetty plugin for those child modules that need it -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <!-- Jetty execution is mapped in those modules that actually 
+                    use Jetty -->
+                <configuration>
+                    <webAppConfig>
+                        <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+                    </webAppConfig>
+                    <scanIntervalSeconds>-1</scanIntervalSeconds>
+                    <httpConnector>
+                        <port>${server.port}</port>
+                    </httpConnector>
+                    <stopPort>${server.stop.port}</stopPort>
+                    <stopKey>foo</stopKey>
+                    <stopWait>5</stopWait>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.4.1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>de.skuzzle.enforcer</groupId>
+                            <artifactId>restrict-imports-enforcer-rule</artifactId>
+                            <version>0.8.0</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>check-logging-imports</id>
+                            <phase>process-sources</phase>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <restrictImports
+                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                        <reason>Use SLF4j for logging</reason>
+                                        <bannedImport>java.util.logging.**</bannedImport>
+                                    </restrictImports>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${maven.war.plugin.version}</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Implementation-Title>${project.name}
+                                </Implementation-Title>
+                                <Implementation-Version>${project.version}
+                                </Implementation-Version>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven.failsafe.plugin.version}</version>
+                    <configuration>
+                        <trimStackTrace>false</trimStackTrace>
+                        <enableAssertions>true</enableAssertions>
+                        <parallel>all</parallel>
+                        <threadCount>2</threadCount>
+                    </configuration>
+                </plugin>
+                <!--This plugin's configuration is used to store Eclipse 
+                    m2e settings only. It has no influence on the Maven build itself. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.commonjava.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            directory-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [0.1,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>highest-basedir</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-plugin-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [3.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>descriptor</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            com.lazerycode.selenium
+                                        </groupId>
+                                        <artifactId>
+                                            driver-binary-downloader-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [${driver.binary.downloader.maven.plugin.version},)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>selenium</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>1.13</version>
+                    <configuration>
+                        <!-- Default is system -->
+                        <excludedScopes>system,test</excludedScopes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>eclipse</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <version>${jetty.version}</version>
+                        <configuration>
+                            <webAppConfig>
+                                <!-- Configure all project META-INF/resources 
+                                    directories for Jetty as resource folders as Jetty inside Eclipse is run 
+                                    with "Resolve workspace artifacts" and this does not create any JARs. Jetty 
+                                    only scans JARs for META-INF/resources folders -->
+                                <resourceBases>
+                                    <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+                                </resourceBases>
+                            </webAppConfig>
+                            <!-- force default ports so that running IT tests 
+                                from IDE work -->
+                            <httpConnector>
+                                <port>8888</port>
+                            </httpConnector>
+                            <stopPort>8889</stopPort>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>validation</id>
+            <properties>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+            </properties>
+        </profile>
+
+    </profiles>
+
+</project>
+
