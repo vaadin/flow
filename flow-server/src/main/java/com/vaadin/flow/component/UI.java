@@ -59,9 +59,9 @@ import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -658,7 +658,7 @@ public class UI extends Component
     }
 
     /**
-     * Gets the {@link AbstractTheme} class associated with the given navigation
+     * Gets the {@link ThemeDefinition} associated with the given navigation
      * target, if any. The theme is defined by using the {@link Theme}
      * annotation on the navigation target class.
      * <p>
@@ -671,13 +671,13 @@ public class UI extends Component
      * @param path
      *            the resolved route path so we can determine what the rendered
      *            target is for
-     * @return the associated AbstractTheme, or empty if none is defined and the
-     *         Lumo class is not in the classpath, or if the NoTheme annotation
-     *         is being used.
+     * @return the associated ThemeDefinition, or empty if none is defined and
+     *         the Lumo class is not in the classpath, or if the NoTheme
+     *         annotation is being used.
      * @see RouteRegistry#getThemeFor(Class, String)
      */
-    public Optional<Class<? extends AbstractTheme>> getThemeFor(
-            Class<?> navigationTarget, String path) {
+    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
+            String path) {
         return getRouter().getRegistry().getThemeFor(navigationTarget, path);
     }
 

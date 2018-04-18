@@ -40,4 +40,11 @@ public @interface Theme {
      * @return theme handler
      */
     Class<? extends AbstractTheme> value();
+
+    /**
+     * The theme variant, if any.
+     * 
+     * @return the theme variant
+     */
+    String variant() default "";
 }
