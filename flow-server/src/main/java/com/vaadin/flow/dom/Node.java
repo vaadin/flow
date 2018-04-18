@@ -178,6 +178,24 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     }
 
     /**
+     * Gets whether this element is a virtual child of its parent.
+     * 
+     * @return <code>true</code> if the element has a parent and the element is
+     *         a virtual child of it, <code>false</code> otherwise.
+     */
+    public boolean isVirtualChild() {
+        Node<?> parentNode = getParentNode();
+        if (parentNode == null) {
+            return false;
+        }
+        /*
+         * If the element has a parent, and the parent doesn't contain the
+         * element in its list of children, then the element is a virtual child.
+         */
+        return parentNode.getChildren().noneMatch(this::equals);
+    }
+
+    /**
      * Inserts the given child element(s) at the given position.
      *
      * @param index

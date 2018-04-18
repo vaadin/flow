@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +47,6 @@ import com.vaadin.tests.util.TestUtil;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {
@@ -2321,6 +2321,23 @@ public class ElementTest extends AbstractNodeTest {
 
         Mockito.verify(element).addSynchronizedProperty("foo",
                 DisabledUpdateMode.ONLY_WHEN_ENABLED);
+    }
+
+    @Test
+    public void virtualChildren_areIdentifiedAsSuch() {
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        Element virtualChild = ElementFactory.createDiv();
+        Element grandVirtualChild = ElementFactory.createDiv();
+
+        parent.appendChild(child);
+        parent.appendVirtualChild(virtualChild);
+        virtualChild.appendChild(grandVirtualChild);
+
+        Assert.assertFalse(parent.isVirtualChild());
+        Assert.assertFalse(child.isVirtualChild());
+        Assert.assertTrue(virtualChild.isVirtualChild());
+        Assert.assertFalse(grandVirtualChild.isVirtualChild());
     }
 
     @Override

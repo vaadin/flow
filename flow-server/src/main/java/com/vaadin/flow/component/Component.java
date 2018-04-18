@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
@@ -73,6 +74,8 @@ public abstract class Component
 
     private ComponentEventBus eventBus = null;
 
+    private final boolean templateMapped;
+
     /**
      * Creates a component instance with an element created based on the
      * {@link Tag} annotation of the sub class.
@@ -99,9 +102,11 @@ public abstract class Component
 
         if (elementToMapTo.get() != null) {
             mapToElement(tagName);
+            templateMapped = element != null && element.isVirtualChild();
         } else {
             Element e = new Element(tagName);
             setElement(this, e);
+            templateMapped = false;
         }
     }
 
@@ -120,8 +125,13 @@ public abstract class Component
     protected Component(Element element) {
         if (elementToMapTo.get() != null) {
             mapToElement(element == null ? null : element.getTag());
-        } else if (element != null) {
-            setElement(this, element, true);
+            templateMapped = this.element != null
+                    && this.element.isVirtualChild();
+        } else {
+            if (element != null) {
+                setElement(this, element, true);
+            }
+            templateMapped = false;
         }
     }
 
@@ -517,5 +527,17 @@ public abstract class Component
         if (getElement().getNode().hasFeature(ElementData.class)) {
             getElement().setAttribute("disabled", !enabled);
         }
+    }
+
+    /**
+     * Gets whether this component was attached as part of a
+     * {@link PolymerTemplate} (by being mapped by an {@link Id} annotation), or
+     * if it was created directly.
+     * 
+     * @return <code>true</code> when it was mapped inside a template,
+     *         <code>false</code> otherwise
+     */
+    protected boolean isTemplateMapped() {
+        return templateMapped;
     }
 }
