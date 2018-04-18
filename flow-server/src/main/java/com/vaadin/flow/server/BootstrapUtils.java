@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +32,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -51,6 +48,7 @@ import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -59,6 +57,36 @@ import elemental.json.JsonObject;
  * Utility methods used by the BootstrapHandler.
  */
 class BootstrapUtils {
+
+    static class ThemeSettings {
+        private List<JsonObject> headContents;
+        private List<JsonObject> bodyContents;
+        private Map<String, String> bodyAttributes;
+
+        public List<JsonObject> getHeadContents() {
+            return headContents;
+        }
+
+        public void setHeadContents(List<JsonObject> headContents) {
+            this.headContents = headContents;
+        }
+
+        public List<JsonObject> getBodyContents() {
+            return bodyContents;
+        }
+
+        public void setBodyContents(List<JsonObject> bodyContents) {
+            this.bodyContents = bodyContents;
+        }
+
+        public Map<String, String> getBodyAttributes() {
+            return bodyAttributes;
+        }
+
+        public void setBodyAttributes(Map<String, String> bodyAttributes) {
+            this.bodyAttributes = bodyAttributes;
+        }
+    }
 
     private BootstrapUtils() {
     }
@@ -236,21 +264,21 @@ class BootstrapUtils {
         return stream;
     }
 
-    static Map<TargetElement, List<JsonObject>> getThemeSettings(
+    static ThemeSettings getThemeSettings(
             BootstrapHandler.BootstrapContext context) {
-        Optional<Class<? extends AbstractTheme>> themeClass = context
-                .getTheme();
-        if (themeClass.isPresent()) {
-            return getThemeSettings(context, themeClass.get());
+        Optional<ThemeDefinition> themeDefinition = context.getTheme();
+        if (themeDefinition.isPresent()) {
+            return getThemeSettings(context, themeDefinition.get());
         }
-        return Collections.emptyMap();
+        return null;
     }
 
-    private static Map<TargetElement, List<JsonObject>> getThemeSettings(
+    private static ThemeSettings getThemeSettings(
             BootstrapHandler.BootstrapContext context,
-            Class<? extends AbstractTheme> themeClass) {
-        Map<TargetElement, List<JsonObject>> themeContents = new EnumMap<>(
-                TargetElement.class);
+            ThemeDefinition themeDefinition) {
+
+        ThemeSettings settings = new ThemeSettings();
+        Class<? extends AbstractTheme> themeClass = themeDefinition.getTheme();
         AbstractTheme theme = ReflectTools.createInstance(themeClass);
 
         if (!context.isProductionMode()) {
@@ -260,15 +288,18 @@ class BootstrapUtils {
                     .map(url -> createImportLink(context.getUriResolver(), url))
                     .map(BootstrapUtils::createInlineDependencyObject)
                     .collect(Collectors.toList());
-            themeContents.put(TargetElement.HEAD, head);
+            settings.setHeadContents(head);
         }
 
         List<JsonObject> body = theme.getBodyInlineContents().stream()
                 .map(BootstrapUtils::createInlineDependencyObject)
                 .collect(Collectors.toList());
-        themeContents.put(TargetElement.BODY, body);
+        settings.setBodyContents(body);
 
-        return themeContents;
+        settings.setBodyAttributes(
+                theme.getBodyAttributes(themeDefinition.getVariant()));
+
+        return settings;
     }
 
     private static String createImportLink(

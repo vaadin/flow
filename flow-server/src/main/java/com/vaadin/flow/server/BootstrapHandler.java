@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -40,7 +38,6 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.server.communication.PushConnectionFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -56,24 +53,27 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -313,14 +313,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         /**
-         * Gets the {@link AbstractTheme} class associated with the
+         * Gets the {@link ThemeDefinition} associated with the
          * pageConfigurationHolder of this context, if any.
          *
-         * @return the theme, or empty if none is found, or
+         * @return the theme definition, or empty if none is found, or
          *         pageConfigurationHolder is <code>null</code>
          * @see UI#getThemeFor(Class, String)
          */
-        protected Optional<Class<? extends AbstractTheme>> getTheme() {
+        protected Optional<ThemeDefinition> getTheme() {
             return ui.getThemeFor(pageConfigurationHolder, null);
         }
     }
@@ -438,10 +438,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void handleThemeContents(BootstrapContext context,
             Document document) {
-        Map<TargetElement, List<JsonObject>> themeSettings = BootstrapUtils
-                .getThemeSettings(context);
+        ThemeSettings themeSettings = BootstrapUtils.getThemeSettings(context);
 
-        List<JsonObject> themeContents = themeSettings.get(TargetElement.HEAD);
+        if (themeSettings == null) {
+            // no theme configured for the application
+            return;
+        }
+
+        List<JsonObject> themeContents = themeSettings.getHeadContents();
         if (themeContents != null) {
             themeContents.stream().map(
                     dependency -> createDependencyElement(context, dependency))
@@ -449,12 +453,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             document.head()::appendChild));
         }
 
-        themeContents = themeSettings.get(TargetElement.BODY);
+        themeContents = themeSettings.getBodyContents();
         if (themeContents != null) {
             themeContents.stream().map(
                     dependency -> createDependencyElement(context, dependency))
                     .forEach(element -> insertElements(element,
                             document.body()::appendChild));
+        }
+
+        if (themeSettings.getBodyAttributes() != null) {
+            themeSettings.getBodyAttributes()
+                    .forEach((key, value) -> document.body().attr(key, value));
         }
     }
 
@@ -983,14 +992,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .getPageConfigurationAnnotation(Push.class);
 
         DeploymentConfiguration deploymentConfiguration = context.getSession()
-            .getService().getDeploymentConfiguration();
+                .getService().getDeploymentConfiguration();
         PushMode pushMode = push.map(Push::value)
-            .orElseGet(deploymentConfiguration::getPushMode);
+                .orElseGet(deploymentConfiguration::getPushMode);
         setupPushConnectionFactory(pushConfiguration, context);
         pushConfiguration.setPushMode(pushMode);
         pushConfiguration.setPushUrl(deploymentConfiguration.getPushURL());
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
-
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
@@ -1003,18 +1011,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return context;
     }
 
-    protected void setupPushConnectionFactory(PushConfiguration pushConfiguration, BootstrapContext context) {
+    protected void setupPushConnectionFactory(
+            PushConfiguration pushConfiguration, BootstrapContext context) {
         VaadinService service = context.getSession().getService();
-        Iterator<PushConnectionFactory> iter = ServiceLoader.load(PushConnectionFactory.class, service.getClassLoader()).iterator();
+        Iterator<PushConnectionFactory> iter = ServiceLoader
+                .load(PushConnectionFactory.class, service.getClassLoader())
+                .iterator();
         if (iter.hasNext()) {
             pushConfiguration.setPushConnectionFactory(iter.next());
             if (iter.hasNext()) {
-                throw new BootstrapException("Multiple " + PushConnectionFactory.class.getName() + " implementations found");
+                throw new BootstrapException(
+                        "Multiple " + PushConnectionFactory.class.getName()
+                                + " implementations found");
             }
         }
     }
-
-
 
     /**
      * Generates the initial UIDL message which is included in the initial

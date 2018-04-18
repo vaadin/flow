@@ -26,7 +26,7 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Route target holder that handles getting the correct type of has parameter
@@ -37,7 +37,7 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> parameter;
     private Class<? extends Component> optionalParameter;
     private Class<? extends Component> wildCardParameter;
-    private Map<Class<?>, Class<? extends AbstractTheme>> routeThemes;
+    private Map<Class<?>, ThemeDefinition> routeThemes;
 
     /**
      * Create a new Route target holder.
@@ -167,10 +167,9 @@ public class RouteTarget implements Serializable {
      * @param target
      *            navigation target
      * @param theme
-     *            theme class to be used when the navigation target is used
+     *            themeDefinition to be used when the navigation target is used
      */
-    public void setThemeFor(Class<?> target,
-            Class<? extends AbstractTheme> theme) {
+    public void setThemeFor(Class<?> target, ThemeDefinition theme) {
         if (routeThemes == null) {
             routeThemes = new HashMap<>();
         }
@@ -185,7 +184,7 @@ public class RouteTarget implements Serializable {
      * @return theme class to be used when the navigation target is used, or
      *         <code>null</code> if no theme was set for it
      */
-    public Class<? extends AbstractTheme> getThemeFor(Class<?> target) {
+    public ThemeDefinition getThemeFor(Class<?> target) {
         if (routeThemes == null) {
             return null;
         }

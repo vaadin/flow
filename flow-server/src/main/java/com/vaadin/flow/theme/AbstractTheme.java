@@ -18,6 +18,7 @@ package com.vaadin.flow.theme;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract theme definition class for defining theme variables when in use.
@@ -62,6 +63,21 @@ public interface AbstractTheme extends Serializable {
      */
     default List<String> getBodyInlineContents() {
         return Collections.emptyList();
+    }
+
+    /**
+     * Gets the attributes that should be set on the {@code <body>} element when
+     * the Theme variant is applied.
+     * 
+     * @param variant
+     *            the variant defined in the {@link Theme} annotation, not
+     *            <code>null</code>
+     * @return a Map with the attributes (keys and values) that should be set in
+     *         the body, or an empty Map if nothing should be set for the given
+     *         variant.
+     */
+    default Map<String, String> getBodyAttributes(String variant) {
+        return Collections.emptyMap();
     }
 
     /**
