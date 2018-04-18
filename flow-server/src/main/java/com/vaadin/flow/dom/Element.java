@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -41,6 +42,7 @@ import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
@@ -1504,17 +1506,40 @@ public class Element extends Node<Element> {
      *            the enabled state
      * @return the element
      */
-    public Element setEnabled(boolean enabled) {
+    public Element setEnabled(final boolean enabled) {
         getNode().setEnabled(enabled);
 
-        Optional<Component> component = getComponent();
-        if (component.isPresent()) {
-            component.get().onEnabledStateChanged(enabled);
-            component.get().getChildren()
-                    .forEach(child -> child.onEnabledStateChanged(
-                            enabled ? child.getElement().isEnabled() : false));
+        Optional<Component> componentOptional = getComponent();
+        if (componentOptional.isPresent()) {
+            Component component = componentOptional.get();
+            component.onEnabledStateChanged(enabled);
+            informChildrenOfStateChange(enabled, component);
         }
         return getSelf();
+    }
+
+    private void informChildrenOfStateChange(boolean enabled,
+            Component component) {
+        component.getChildren().forEach(child -> {
+            child.onEnabledStateChanged(
+                    enabled ? child.getElement().isEnabled() : false);
+            informChildrenOfStateChange(enabled, child);
+        });
+        if (component.getElement().getNode()
+                .hasFeature(VirtualChildrenList.class)) {
+            final Consumer<Component> stateChangeInformer = virtual -> {
+                virtual.onEnabledStateChanged(
+                        enabled ? virtual.getElement().isEnabled() : false);
+
+                informChildrenOfStateChange(enabled, virtual);
+            };
+            final Consumer<StateNode> childNodeConsumer = childNode -> Element
+                    .get(childNode).getComponent()
+                    .ifPresent(stateChangeInformer);
+            component.getElement().getNode()
+                    .getFeature(VirtualChildrenList.class)
+                    .forEachChild(childNodeConsumer);
+        }
     }
 
     /**
