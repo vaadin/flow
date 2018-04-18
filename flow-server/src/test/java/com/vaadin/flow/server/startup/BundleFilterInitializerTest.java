@@ -22,7 +22,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -43,17 +42,20 @@ import elemental.json.JsonException;
 
 public class BundleFilterInitializerTest {
 
+    private static final String FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON = "/frontend-es6/vaadin-flow-bundle-manifest.json";
+
     private ServiceInitEvent event;
 
     private Consumer<DependencyFilter> dependencyFilterAddHandler = dependency -> {
     };
-    private Function<String, InputStream> inputStreamProducer;
 
     private MockServletServiceSessionSetup mocks;
 
     @Before
     public void init() throws Exception {
-        mocks = new MockServletServiceSessionSetup();
+        mocks = new MockServletServiceSessionSetup(false);
+        // There is no user session when initializing the filter
+        Assert.assertNull(mocks.getSession());
         event = Mockito.mock(ServiceInitEvent.class);
         Mockito.when(event.getSource()).thenReturn(mocks.getService());
         mocks.setProductionMode(true);
@@ -66,63 +68,53 @@ public class BundleFilterInitializerTest {
                     invocation.getArgumentAt(0, DependencyFilter.class));
             return null;
         }).when(event).addDependencyFilter(Mockito.any(DependencyFilter.class));
-
-        mocks.getServlet().setResourceFoundOverride(resource -> true);
-        mocks.getServlet().setResourceAsStreamOverride(resource -> {
-            if ("/frontend-es6/vaadin-flow-bundle-manifest.json"
-                    .equals(resource)) {
-                return inputStreamProducer.apply(resource);
-            } else {
-                return null;
-            }
-        });
     }
 
     @Test(expected = UncheckedIOException.class)
     public void fail_to_load_bundle_manifest() {
-        inputStreamProducer = new Function<String, InputStream>() {
-            @Override
-            public InputStream apply(String str) {
-                return new InputStream() {
-                    @Override
-                    public int read() throws IOException {
-                        throw new IOException("Intentionally failed");
-                    }
-                };
-            }
-        };
+        mocks.getServlet().addServletContextResource(
+                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON);
+        Mockito.when(mocks.getServlet().getServletContext().getResourceAsStream(
+                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON))
+                .thenAnswer(i -> {
+                    return new InputStream() {
+                        @Override
+                        public int read() throws IOException {
+                            throw new IOException("Intentionally failed");
+                        }
+                    };
+                });
+
         new BundleFilterInitializer().serviceInit(event);
     }
 
     @Test(expected = JsonException.class)
     public void fail_when_loading_invalid_json() {
         String manifestString = "{ wait this is not json";
-        inputStreamProducer = str -> getTestBundleManifestStream(
-                manifestString);
+        mocks.getServlet().addServletContextResource(
+                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
         new BundleFilterInitializer().serviceInit(event);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void does_not_contain_main_bundle_fails() {
         String manifestString = "{'fragment-1':['dependency-1', 'dependency-2']}";
-        inputStreamProducer = str -> getTestBundleManifestStream(
-                manifestString);
+        mocks.getServlet().addServletContextResource(
+                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
         new BundleFilterInitializer().serviceInit(event);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void bundle_file_not_found_throws() {
         String manifestString = getBasicTestBundleString();
-        inputStreamProducer = str -> getTestBundleManifestStream(
-                manifestString);
-        mocks.getServlet().setResourceFoundOverride(resource -> resource
-                .equals("/frontend-es6/vaadin-flow-bundle-manifest.json"));
+
+        mocks.getServlet().addServletContextResource(
+                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
         new BundleFilterInitializer().serviceInit(event);
     }
 
     @Test
     public void null_bundle_manifest_stream_no_dependency_filter_added() {
-        inputStreamProducer = str -> null;
         new BundleFilterInitializer().serviceInit(event);
         Mockito.verify(event, Mockito.never())
                 .addDependencyFilter(Mockito.any(DependencyFilter.class));
@@ -131,8 +123,19 @@ public class BundleFilterInitializerTest {
     @Test
     public void happy_path() {
         String manifestString = getBasicTestBundleString();
-        inputStreamProducer = str -> getTestBundleManifestStream(
-                manifestString);
+        mocks.getServlet().addServletContextResource(
+                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
+        for (int i = 0; i < 5; i++) {
+            mocks.getServlet()
+                    .addServletContextResource("/frontend-es6/dependency-" + i);
+        }
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/fragment-1");
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/fragment-2");
+        mocks.getServlet().addServletContextResource(
+                "/frontend-es6/" + BundleDependencyFilter.MAIN_BUNDLE_URL);
+
         dependencyFilterAddHandler = dependencyFilter -> {
             List<Dependency> dependencies = IntStream.range(0, 5)
                     .mapToObj(number -> new Dependency(
