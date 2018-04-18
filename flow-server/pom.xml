@@ -71,10 +71,11 @@
             <artifactId>jsoup</artifactId>
             <version>1.10.3</version>
         </dependency>
+        <!-- ph-css for parsing style attribute in Element API -->
         <dependency>
             <groupId>com.helger</groupId>
             <artifactId>ph-css</artifactId>
-            <version>4.1.3</version>
+            <version>6.1.1</version>
         </dependency>
 
         <!-- TESTING DEPENDENCIES -->
