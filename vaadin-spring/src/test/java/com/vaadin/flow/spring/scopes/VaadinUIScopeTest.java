@@ -192,6 +192,9 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
         VaadinService service = session.getService();
         when(service.getRouter()).thenReturn(router);
 
+        when(service.getMainDivId(Mockito.any(), Mockito.any()))
+                .thenReturn(" - ");
+
         UI ui = new UI();
         ui.getInternals().setSession(session);
         ui.doInit(null, 1);
