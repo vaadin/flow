@@ -37,7 +37,7 @@ public class VaadinServletTest {
     private VaadinSession session;
     private ServletContext context;
     private VaadinServletService service;
-    private ServletContextUriResolver vaadinUriResolver;
+    private ServiceContextUriResolver vaadinUriResolver;
 
     private CustomVaadinServlet servlet = new CustomVaadinServlet();
 
