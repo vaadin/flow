@@ -1517,4 +1517,56 @@ public class ComponentTest {
                 grandStateChange.get());
         Assert.assertNotNull(grandChild.getElement().getAttribute("disabled"));
     }
+
+    @Test // 3818
+    public void enabledPassesThroughAllChildensChildrenAndAttributeShouldBeSet() {
+        UI ui = new UI();
+
+        EnabledDiv parent = new EnabledDiv();
+        EnabledDiv child = new EnabledDiv();
+        EnabledDiv subChild = new EnabledDiv();
+        EnabledDiv subSubChild = new EnabledDiv();
+
+        parent.add(child);
+        child.add(subChild);
+        subChild.add(subSubChild);
+
+        ui.add(parent);
+
+        Assert.assertTrue("Parent should be enabled.", parent.isEnabled());
+        Assert.assertTrue("Child should be enabled.", child.isEnabled());
+        Assert.assertTrue("SubChild should be enabled.", subChild.isEnabled());
+        Assert.assertTrue("SubsubChild should be enabled.",
+                subSubChild.isEnabled());
+
+        Assert.assertNull("No disabled attribute should not exist for parent",
+                parent.getElement().getAttribute("disabled"));
+        Assert.assertNull("No disabled attribute should not exist for child",
+                child.getElement().getAttribute("disabled"));
+        Assert.assertNull("No disabled attribute should not exist for subChild",
+                subChild.getElement().getAttribute("disabled"));
+        Assert.assertNull(
+                "No disabled attribute should not exist for subSubChild",
+                subSubChild.getElement().getAttribute("disabled"));
+
+        parent.setEnabled(false);
+
+        Assert.assertFalse("Parent should be disabled.", parent.isEnabled());
+        Assert.assertFalse("Child should be disabled.", child.isEnabled());
+        Assert.assertFalse("SubChild should be disabled.",
+                subChild.isEnabled());
+        Assert.assertFalse("SubsubChild should be disabled.",
+                subSubChild.isEnabled());
+
+        Assert.assertNotNull("Disabled attribute should exist for parent",
+                parent.getElement().getAttribute("disabled"));
+        Assert.assertNotNull("Disabled attribute should exist for child",
+                child.getElement().getAttribute("disabled"));
+        Assert.assertNotNull("Disabled attribute should exist for subChild",
+                subChild.getElement().getAttribute("disabled"));
+        Assert.assertNotNull(
+                "Disabled attribute should exist for subSubChild",
+                subSubChild.getElement().getAttribute("disabled"));
+
+    }
 }

@@ -61,7 +61,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
@@ -70,6 +69,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -177,6 +177,8 @@ public class UIInternals implements Serializable {
     private byte[] lastProcessedMessageHash = null;
 
     private String contextRootRelativePath;
+
+    private String appId;
 
     /**
      * Creates a new instance for the given UI.
@@ -663,12 +665,14 @@ public class UIInternals implements Serializable {
     }
 
     private void updateTheme(Component target, String path) {
-        Optional<Class<? extends AbstractTheme>> themeClass = ui
+        Optional<ThemeDefinition> themeDefinition = ui
                 .getThemeFor(target.getClass(), path);
 
-        if (themeClass.isPresent()) {
-            if (theme == null || !theme.getClass().equals(themeClass.get())) {
-                theme = ReflectTools.createInstance(themeClass.get());
+        if (themeDefinition.isPresent()) {
+            Class<? extends AbstractTheme> themeClass = themeDefinition.get()
+                    .getTheme();
+            if (theme == null || !theme.getClass().equals(themeClass)) {
+                theme = ReflectTools.createInstance(themeClass);
             }
         } else {
             theme = null;
@@ -845,15 +849,22 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Sets the application id tied with this UI. Different applications in the
+     * same page have different unique ids.
+     *
+     * param appId the id of the application tied with this UI
+     */
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    /**
      * Gets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
      *
      * @return the id of the application tied with this UI
      */
     public String getAppId() {
-        String appId = session.getService().getMainDivId(session,
-                VaadinRequest.getCurrent());
-        appId = appId.substring(0, appId.indexOf('-'));
         return appId;
     }
 

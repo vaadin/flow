@@ -54,6 +54,7 @@ import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -61,7 +62,7 @@ import com.vaadin.flow.theme.Theme;
  */
 public class RouteRegistry implements Serializable {
 
-    private static final Class<? extends AbstractTheme> LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
+    private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
             .of(RouteNotFoundError.class, InternalServerError.class)
             .collect(Collectors.toSet());
@@ -80,14 +81,14 @@ public class RouteRegistry implements Serializable {
     /**
      * Loads the Lumo theme class from the classpath if it is available.
      * 
-     * @return the Lumo theme class, or <code>null</code> if it is not available
-     *         in the classpath
+     * @return the Lumo ThemeDefinition, or <code>null</code> if it is not
+     *         available in the classpath
      */
-    private static final Class<? extends AbstractTheme> loadLumoClassIfAvailable() {
-        Class<? extends AbstractTheme> theme = null;
+    private static final ThemeDefinition loadLumoClassIfAvailable() {
         try {
-            theme = (Class<? extends AbstractTheme>) Class
+            Class<? extends AbstractTheme> theme = (Class<? extends AbstractTheme>) Class
                     .forName("com.vaadin.flow.theme.lumo.Lumo");
+            return new ThemeDefinition(theme, "");
         } catch (ClassNotFoundException e) {
             // ignore, the Lumo class is not available in the classpath
             Logger logger = LoggerFactory
@@ -96,7 +97,7 @@ public class RouteRegistry implements Serializable {
                     "Lumo theme is not present in the classpath. The application will not use any default theme.",
                     e);
         }
-        return theme;
+        return null;
     }
 
     /**
@@ -506,7 +507,7 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private Class<? extends AbstractTheme> findThemeForNavigationTarget(
+    private ThemeDefinition findThemeForNavigationTarget(
             Class<?> navigationTarget, String path) {
 
         if (navigationTarget == null) {
@@ -523,7 +524,7 @@ public class RouteRegistry implements Serializable {
                 .getAnnotationFor(target, Theme.class);
 
         if (themeAnnotation.isPresent()) {
-            return themeAnnotation.get().value();
+            return new ThemeDefinition(themeAnnotation.get());
         }
 
         if (!AnnotationReader.getAnnotationFor(target, NoTheme.class)
@@ -562,7 +563,7 @@ public class RouteRegistry implements Serializable {
     }
 
     /**
-     * Gets the {@link AbstractTheme} class associated with the given navigation
+     * Gets the {@link ThemeDefinition} associated with the given navigation
      * target, if any. The theme is defined by using the {@link Theme}
      * annotation on the navigation target class.
      * <p>
@@ -575,12 +576,12 @@ public class RouteRegistry implements Serializable {
      * @param path
      *            the resolved route path so we can determine what the rendered
      *            target is for
-     * @return the associated AbstractTheme, or empty if none is defined and the
-     *         Lumo class is not in the classpath, or if the NoTheme annotation
-     *         is being used.
+     * @return the associated ThemeDefinition, or empty if none is defined and
+     *         the Lumo class is not in the classpath, or if the NoTheme
+     *         annotation is being used.
      */
-    public Optional<Class<? extends AbstractTheme>> getThemeFor(
-            Class<?> navigationTarget, String path) {
+    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
+            String path) {
 
         if (navigationTarget != null && navigationTargetsInitialized()) {
             RouteTarget routeTarget = null;

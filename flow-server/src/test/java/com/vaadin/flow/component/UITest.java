@@ -43,6 +43,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletRequest;
 
 public class UITest {
 
@@ -118,7 +119,8 @@ public class UITest {
             ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         try {
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
+            VaadinServletRequest request = Mockito
+                    .mock(VaadinServletRequest.class);
             VaadinResponse response = Mockito.mock(VaadinResponse.class);
 
             String pathInfo;
