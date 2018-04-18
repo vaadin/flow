@@ -1558,14 +1558,14 @@ public class ComponentTest {
         Assert.assertFalse("SubsubChild should be disabled.",
                 subSubChild.isEnabled());
 
-        Assert.assertNotNull("No disabled attribute should exist for parent",
+        Assert.assertNotNull("Disabled attribute should exist for parent",
                 parent.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("No disabled attribute should exist for child",
+        Assert.assertNotNull("Disabled attribute should exist for child",
                 child.getElement().getAttribute("disabled"));
-        Assert.assertNotNull("No disabled attribute should exist for subChild",
+        Assert.assertNotNull("Disabled attribute should exist for subChild",
                 subChild.getElement().getAttribute("disabled"));
         Assert.assertNotNull(
-                "No disabled attribute should exist for subSubChild",
+                "Disabled attribute should exist for subSubChild",
                 subSubChild.getElement().getAttribute("disabled"));
 
     }
