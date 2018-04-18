@@ -53,6 +53,36 @@ public interface DomListenerRegistration extends Registration {
     DomListenerRegistration addEventData(String eventData);
 
     /**
+     * Sets a JavaScript expression that is used for filtering events to this
+     * listener. When an event is fired in the browser, the expression is
+     * evaluated and an event is sent to the server only if the expression value
+     * is <code>true</code>. The expression is evaluated in a context where
+     * <code>element</code> refers to this element and <code>event</code> refers
+     * to the fired event.
+     * <p>
+     * An expression might be e.g. <code>event.button === 0</code> to only
+     * forward events triggered by the primary mouse button.
+     * <p>
+     * Any previous filter for this registration is discarded.
+     *
+     * @param filter
+     *            the JavaScript filter expression, or <code>null</code> to
+     *            clear the filter
+     * @return this registration, for chaining
+     */
+    DomListenerRegistration setFilter(String filter);
+
+    /**
+     * Gets the currently set filter expression.
+     *
+     * @see #setFilter(String)
+     *
+     * @return the current filter expression, or <code>null</code> if no filter
+     *         is in use
+     */
+    String getFilter();
+
+    /**
      * Configure whether this listener will be called even in cases when the
      * element is disabled.
      *

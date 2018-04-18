@@ -18,11 +18,8 @@ package com.vaadin.client.flow.binding;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -60,6 +57,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -81,16 +79,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     /**
-     * Callback interface for an event data expression parsed using new
-     * Function() in JavaScript.
+     * Callback interface for an event expression parsed using new Function() in
+     * JavaScript.
      */
     @FunctionalInterface
     @JsFunction
     @SuppressWarnings("unusable-by-js")
-
-    private interface EventDataExpression {
+    private interface EventExpression {
         /**
-         * Callback interface for an event data expression parsed using new
+         * Callback interface for an event expression parsed using new
          * Function() in JavaScript.
          *
          * @param event
@@ -102,7 +99,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsonValue evaluate(Event event, Element element);
     }
 
-    private static final JsMap<String, EventDataExpression> expressionCache = JsCollections
+    private static final JsMap<String, EventExpression> expressionCache = JsCollections
             .map();
 
     /**
@@ -519,8 +516,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 + context.node.getId() + " is not an Element";
         Element element = (Element) context.htmlNode;
 
-        NodeMap visibilityData = context.node
-                .getMap(NodeFeatures.ELEMENT_DATA);
+        NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
         // Store the current "hidden" value to restore it when the element
         // becomes visible
 
@@ -548,8 +544,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
                 + context.node.getId() + " is not an Element";
 
-        NodeMap visibilityData = context.node
-                .getMap(NodeFeatures.ELEMENT_DATA);
+        NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
 
         Element element = (Element) context.htmlNode;
 
@@ -1145,29 +1140,45 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         assert constantPool.has(expressionConstantKey);
 
-        JsArray<String> dataExpressions = constantPool
-                .get(expressionConstantKey);
+        JsonObject expressionSettings = constantPool.get(expressionConstantKey);
+        String[] expressions = expressionSettings.keys();
+
+        /*-
+         * -1: filter encountered, but non passed
+         *  0: no filter encountered
+         *  1: at least one passing filter encountered
+         */
+        int filterStatus = 0;
 
         JsonObject eventData;
-        if (dataExpressions.isEmpty()) {
+        if (expressions.length == 0) {
             eventData = null;
         } else {
             eventData = Json.createObject();
 
-            for (int i = 0; i < dataExpressions.length(); i++) {
-                String expressionString = dataExpressions.get(i);
-
-                EventDataExpression expression = getOrCreateExpression(
+            for (String expressionString : expressions) {
+                EventExpression expression = getOrCreateExpression(
                         expressionString);
 
                 JsonValue expressionValue = expression.evaluate(event,
                         (Element) element);
 
                 eventData.put(expressionString, expressionValue);
+
+                // Update filter status if not yet positive and this expression
+                // is used as a filter
+                if (filterStatus != 1
+                        && expressionSettings.getBoolean(expressionString)) {
+                    boolean filterMatched = expressionValue.asBoolean();
+                    filterStatus = filterMatched ? 1 : -1;
+                }
             }
         }
 
-        node.getTree().sendEventToServer(node, type, eventData);
+        if (filterStatus != -1) {
+            // Send if there were not filters or at least one matched
+            node.getTree().sendEventToServer(node, type, eventData);
+        }
     }
 
     private EventRemover bindClassList(Element element, StateNode node) {
@@ -1205,9 +1216,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 (Element) context.htmlNode, context.node);
     }
 
-    private static EventDataExpression getOrCreateExpression(
+    private static EventExpression getOrCreateExpression(
             String expressionString) {
-        EventDataExpression expression = expressionCache.get(expressionString);
+        EventExpression expression = expressionCache.get(expressionString);
 
         if (expression == null) {
             expression = NativeFunction.create("event", "element",
