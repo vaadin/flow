@@ -8,11 +8,6 @@ import org.easymock.EasyMock;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import junit.framework.TestCase;
@@ -66,8 +61,7 @@ public class CustomUIClassLoaderTest extends TestCase {
         Properties properties = new Properties();
         properties.put(VaadinSession.UI_PARAMETER, MyUI.class.getName());
         return new DefaultDeploymentConfiguration(CustomUIClassLoaderTest.class,
-                properties, (base, consumer) -> {
-                });
+                properties);
     }
 
     private static VaadinRequest createRequestMock(ClassLoader classloader) {

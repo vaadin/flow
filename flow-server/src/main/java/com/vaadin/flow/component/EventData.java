@@ -21,8 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.DomListenerRegistration;
 
 /**
  * Maps data from a DOM event to a {@link ComponentEvent}.
@@ -39,7 +38,7 @@ import com.vaadin.flow.dom.Element;
  * {@link ComponentEvent} constructor parameter.
  *
  * @see DomEvent
- * @see Element#addEventListener(String, DomEventListener, String...)
+ * @see DomListenerRegistration#addEventData(String)
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -50,7 +49,7 @@ public @interface EventData {
      * A JavaScript expression that will be evaluated to collect data when an
      * event is handled.
      *
-     * @see Element#addEventListener(String, DomEventListener, String...)
+     * @see DomListenerRegistration#addEventData(String)
      *
      * @return the expression to use for fetching event data
      */

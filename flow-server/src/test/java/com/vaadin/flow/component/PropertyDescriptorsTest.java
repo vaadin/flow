@@ -21,8 +21,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.PropertyDescriptor;
-import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 
 public class PropertyDescriptorsTest {
@@ -382,5 +380,11 @@ public class PropertyDescriptorsTest {
     @Test(expected = IllegalArgumentException.class)
     public void stringAttributeOptionalDefaultFoo_setToNull() {
         stringAttributeOptionalDefaultFoo.set(component, null);
+    }
+
+    @Test
+    public void propertyName() {
+        Assert.assertEquals(TEST_PROPERTY,
+                stringAttributeDefaultEmpty.getPropertyName());
     }
 }

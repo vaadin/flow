@@ -11,12 +11,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -37,13 +34,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -52,6 +47,7 @@ public class BootstrapHandlerDependenciesTest {
     private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
 
     private static class TestUI extends UI {
+
         @Override
         public Router getRouter() {
             Router router = Mockito.mock(Router.class);
@@ -249,62 +245,23 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    private VaadinSession session;
-    private MockVaadinServletService service;
+    private TestVaadinServletService service;
+    private MockServletServiceSessionSetup mocks;
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         BootstrapHandler.clientEngineFile = "foobar";
 
-        DeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
-
-        service = Mockito
-                .spy(new MockVaadinServletService(deploymentConfiguration));
-
-        when(service.getResourceAsStream(anyString()))
-                .thenAnswer(invocation -> new ByteArrayInputStream(
-                        ((String) invocation.getArguments()[0]).getBytes()));
-
-        HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
-
-        VaadinServletRequest vaadinRequestMock = mock(
-                VaadinServletRequest.class);
-        when(vaadinRequestMock.getHttpServletRequest())
-                .thenReturn(servletRequestMock);
-
-        service.setCurrentInstances(vaadinRequestMock,
-                mock(VaadinResponse.class));
-        Mockito.when(service.getDependencyFilters())
-                .thenReturn(Collections.emptyList());
-
-        session = new MockVaadinSession(service);
-        session.lock();
-        session.setConfiguration(deploymentConfiguration);
-
-        VaadinUriResolverFactory factory = Mockito
-                .mock(VaadinUriResolverFactory.class);
-
-        VaadinUriResolver vaadinUriResolver = Mockito
-                .mock(VaadinUriResolver.class);
-
-        Mockito.when(factory.getUriResolver(Mockito.any()))
-                .thenReturn(vaadinUriResolver);
-        Mockito.when(vaadinUriResolver.resolveVaadinUri(Mockito.anyString()))
-                .thenAnswer(i -> i.getArguments()[0]);
-
-        Mockito.doAnswer(invocation -> invocation.getArguments()[1])
-                .when(factory)
-                .toServletContextPath(Mockito.any(), Mockito.anyString());
-
-        session.setAttribute(VaadinUriResolverFactory.class, factory);
-
-        VaadinSession.setCurrent(session);
+        mocks = new MockServletServiceSessionSetup();
+        service = mocks.getService();
+        mocks.getServlet().setResourceFoundOverride(r -> true);
+        service.setResourceAsStreamOverride(
+                resource -> new ByteArrayInputStream(resource.getBytes()));
     }
 
     @After
     public void tearDown() {
-        session.unlock();
-        VaadinService.setCurrent(null);
+        mocks.cleanup();
     }
 
     @Test
@@ -343,9 +300,9 @@ public class BootstrapHandlerDependenciesTest {
             assertJavaScriptElementLoadedEagerly(head, "./frontend/eager.js");
             assertHtmlElementLoadedEagerly(head, "./frontend/eager.html");
 
-            assertCssElementInlined(head, "frontend://inline.css");
-            assertJavaScriptElementInlined(head, "frontend://inline.js");
-            assertHtmlElementInlined(page.body(), "frontend://inline.html");
+            assertCssElementInlined(head, "/frontend/inline.css");
+            assertJavaScriptElementInlined(head, "/frontend/inline.js");
+            assertHtmlElementInlined(page.body(), "/frontend/inline.html");
 
             assertElementLazyLoaded(head, "./lazy.js");
             assertElementLazyLoaded(head, "./lazy.css");
@@ -386,7 +343,7 @@ public class BootstrapHandlerDependenciesTest {
             jsElements.removeIf(element -> {
                 String jsUrl = element.attr("src");
                 return jsUrl.isEmpty() || jsUrl.contains("es6-collections.js")
-                        || jsUrl.contains("webcomponents-lite.js");
+                        || jsUrl.contains("webcomponents-loader.js");
             });
 
             assertEquals(
@@ -598,13 +555,15 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private Document initUIAndGetPage(UI ui) {
-        ui.getInternals().setSession(session);
+        ui.getInternals().setSession(mocks.getSession());
         VaadinRequest request = new VaadinServletRequest(createRequest(),
                 service);
-        service.init();
         ui.doInit(request, 0);
+        ui.getInternals().setContextRoot(
+                ServletHelper.getContextRootRelativePath(request) + "/");
+        UI.setCurrent(ui);
         return BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, ui));
+                new BootstrapContext(request, null, mocks.getSession(), ui));
     }
 
     private HttpServletRequest createRequest() {
@@ -679,7 +638,7 @@ public class BootstrapHandlerDependenciesTest {
                         .contains(expectedContents))
                 .collect(Collectors.toList());
         assertThat(
-                "Expected to have only one inlined css element with contents = "
+                "Expected to have one inlined css element with contents = "
                         + expectedContents,
                 stylesWithExpectedContents.size(), is(1));
         Element inlinedElement = stylesWithExpectedContents.get(0);

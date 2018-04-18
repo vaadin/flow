@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.NodeVisitor;
@@ -109,9 +110,8 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public Registration addEventListener(StateNode node, String eventType,
-            DomEventListener listener, DisabledUpdateMode mode,
-            String[] eventDataExpressions) {
+    public DomListenerRegistration addEventListener(StateNode node,
+            String eventType, DomEventListener listener) {
         throw new UnsupportedOperationException();
     }
 

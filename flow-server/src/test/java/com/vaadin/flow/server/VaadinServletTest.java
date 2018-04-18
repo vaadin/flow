@@ -18,10 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,54 +27,38 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.theme.AbstractTheme;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class VaadinServletTest {
 
-    private VaadinRequest request;
     private VaadinSession session;
     private ServletContext context;
     private VaadinServletService service;
-    private VaadinUriResolver vaadinUriResolver;
-    private VaadinUriResolverFactory factory;
+    private ServletContextUriResolver vaadinUriResolver;
 
-    private VaadinServlet servlet = new VaadinServlet() {
-        @Override
-        public ServletContext getServletContext() {
-            return context;
-        }
-
-        @Override
-        protected VaadinServletService createServletService() {
-            return service;
-        }
-
-        @Override
-        public VaadinServletService getService() {
-            return service;
-        }
-    };
+    private CustomVaadinServlet servlet = new CustomVaadinServlet();
 
     @Before
-    public void setUp() {
+    public void setUp() throws ServletException {
         service = Mockito.mock(VaadinServletService.class);
-        request = Mockito.mock(VaadinRequest.class);
-        CurrentInstance.set(VaadinRequest.class, request);
         session = Mockito.mock(VaadinSession.class);
-        CurrentInstance.set(VaadinSession.class, session);
-
+        WebBrowser mockedEs6Browser = Mockito.mock(WebBrowser.class);
+        Mockito.when(session.getBrowser()).thenReturn(mockedEs6Browser);
+        Mockito.when(mockedEs6Browser.isEs6Supported()).thenReturn(true);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.getEs6FrontendPrefix())
+                .thenReturn(Constants.FRONTEND_URL_DEV_DEFAULT);
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
         context = Mockito.mock(ServletContext.class);
-        factory = Mockito.mock(VaadinUriResolverFactory.class);
 
-        Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
-                .thenReturn(factory);
-
-        vaadinUriResolver = Mockito.mock(VaadinUriResolver.class);
-
-        Mockito.when(factory.getUriResolver(request))
-                .thenReturn(vaadinUriResolver);
+        servlet.init(Mockito.mock(ServletConfig.class));
+        VaadinSession.setCurrent(session);
     }
 
     @After
@@ -124,108 +105,51 @@ public class VaadinServletTest {
     }
 
     @Test
-    public void resolveResource_noWebJars_resolveViaResolverFactory() {
-        String path = "foo";
-        String resolved = "bar";
-        Mockito.when(factory.toServletContextPath(request, path))
-                .thenReturn(resolved);
-
-        Assert.assertEquals(resolved, servlet.resolveResource(path));
+    public void resolveServletContextResource() {
+        assertResolvedUrl(
+                "/frontend/bower_components/vaadin-button/vaadin-button.html",
+                "frontend://bower_components/vaadin-button/vaadin-button.html");
+        assertResolvedUrl("/foo/bar", "/foo/bar");
+        assertResolvedUrl(
+                "/frontend/bower_components/vaadin-button/vaadin-button.html",
+                "context://frontend/bower_components/vaadin-button/vaadin-button.html");
     }
 
     @Test
-    public void resolveResource_webJarResource_resolvedAsWebJarsResource()
-            throws ServletException, MalformedURLException {
-        String path = "foo";
-        String frontendPrefix = "context://baz/";
-        String resolved = "/baz/bower_components/";
-        Mockito.when(vaadinUriResolver.resolveVaadinUri(path))
-                .thenReturn(resolved);
-
-        service = Mockito.mock(VaadinServletService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-
-        Mockito.when(configuration.getDevelopmentFrontendPrefix())
-                .thenReturn(frontendPrefix);
-
-        Mockito.when(configuration.areWebJarsEnabled()).thenReturn(true);
-
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-
-        ServletConfig config = Mockito.mock(ServletConfig.class);
-        servlet.init(config);
-
-        CurrentInstance.set(VaadinRequest.class, request);
-        CurrentInstance.set(VaadinSession.class, session);
-
-        URL url = new URL("http://example.com");
-        String webjars = "/webjars/";
-        Mockito.when(context.getResource(webjars)).thenReturn(url);
-
-        Assert.assertEquals(webjars, servlet.resolveResource(path));
+    public void urlTranslation() {
+        Assert.assertEquals("/theme/foo",
+                servlet.getUrlTranslation(new MyTheme(), "/src/foo"));
+        Assert.assertEquals("/other/foo",
+                servlet.getUrlTranslation(new MyTheme(), "/other/foo"));
     }
 
-    @Test
-    public void resolveTranslation_for_servlet_with_path()
-            throws MalformedURLException {
-        request = Mockito.mock(VaadinServletRequest.class);
-        CurrentInstance.set(VaadinRequest.class, request);
+    private void assertResolvedUrl(String expected, String untranslated) {
+        Assert.assertEquals(expected, servlet.resolveResource(untranslated));
 
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-
-        Mockito.when(((VaadinServletRequest) request).getServletPath())
-                .thenReturn("/app/");
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(factory.getUriResolver(request))
-                .thenReturn(vaadinUriResolver);
-
-        String path = "/src/foo";
-        String resolved = "./../src/bar";
-        Mockito.when(vaadinUriResolver.resolveVaadinUri(path))
-                .thenReturn(resolved);
-
-        Mockito.when(vaadinUriResolver.resolveVaadinUri("/theme/foo"))
-                .thenReturn("./../theme/foo");
-        Mockito.when(context.getResource("/./theme/foo"))
-                .thenReturn(new URL("http://theme/foo"));
-
-        String urlTranslation = servlet.getUrlTranslation(new MyTheme(), path);
-        Assert.assertEquals("/theme/foo", urlTranslation);
     }
 
-    @Test
-    public void resolveTranslation_for_servlet_with_muliple_path_parts()
-            throws MalformedURLException {
-        request = Mockito.mock(VaadinServletRequest.class);
-        CurrentInstance.set(VaadinRequest.class, request);
+    private final class CustomVaadinServlet extends VaadinServlet {
 
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        @Override
+        public ServletContext getServletContext() {
+            return context;
+        }
 
-        Mockito.when(((VaadinServletRequest) request).getServletPath())
-                .thenReturn("/app/sub/");
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(factory.getUriResolver(request))
-                .thenReturn(vaadinUriResolver);
+        @Override
+        protected VaadinServletService createServletService() {
+            return service;
+        }
 
-        String path = "/src/foo";
-        String resolved = "./../../src/bar";
-        Mockito.when(vaadinUriResolver.resolveVaadinUri(path))
-                .thenReturn(resolved);
-        Mockito.when(vaadinUriResolver.resolveVaadinUri("/theme/foo"))
-                .thenReturn("./../../theme/foo");
-        Mockito.when(context.getResource("/./theme/foo"))
-                .thenReturn(new URL("http://theme/foo"));
+        @Override
+        public VaadinServletService getService() {
+            return service;
+        }
 
-        String urlTranslation = servlet.getUrlTranslation(new MyTheme(), path);
-        Assert.assertEquals("/theme/foo", urlTranslation);
+        @Override
+        boolean isInServletContext(String resolvedUrl) {
+            // For testing URL translations, assume all resources can be found
+            return true;
+        }
     }
 
     private static class MyTheme implements AbstractTheme {

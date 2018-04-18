@@ -17,7 +17,6 @@ package com.vaadin.flow.component.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -47,18 +46,6 @@ import com.vaadin.flow.shared.util.SharedUtil;
  */
 public class HtmlDependencyParser {
 
-    static class HtmlDependenciesCache implements Serializable {
-        private final Set<String> dependencies = new HashSet<>();
-
-        void addDependency(String url) {
-            dependencies.add(url);
-        }
-
-        boolean hasDependency(String url) {
-            return dependencies.contains(url);
-        }
-    }
-
     private final String root;
 
     /**
@@ -68,7 +55,7 @@ public class HtmlDependencyParser {
      *            HTML import uri
      */
     public HtmlDependencyParser(String uri) {
-        this.root = uri;
+        root = uri;
     }
 
     Collection<String> parseDependencies() {
@@ -97,21 +84,7 @@ public class HtmlDependencyParser {
             return;
         }
 
-        assert session.hasLock();
-        HtmlDependenciesCache cache = session
-                .getAttribute(HtmlDependenciesCache.class);
-        if (cache == null) {
-            cache = new HtmlDependenciesCache();
-            session.setAttribute(HtmlDependenciesCache.class, cache);
-        }
-
-
         String resolvedPath = servlet.resolveResource(path);
-
-        if (cache.hasDependency(resolvedPath)) {
-            return;
-        }
-        cache.addDependency(resolvedPath);
 
         try (InputStream content = servlet.getResourceAsStream(resolvedPath)) {
             if (content == null) {

@@ -19,8 +19,6 @@
         <module>flow-html-components</module>
         <module>flow-html-components-testbench</module>
         <module>flow-theme-integrations</module>
-        <module>flow-spring-addon</module>
-        <module>flow-spring-boot-starter</module>
         <module>flow-test-util</module>
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
@@ -89,7 +87,7 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
-        <testbench.version>6.0.0.beta5</testbench.version>
+        <testbench.version>6.0.0.beta6</testbench.version>
         <jetty.version>9.4.9.v20180320</jetty.version>
 
         <!-- Frontend -->
@@ -505,8 +503,6 @@
                 <module>flow-data</module>
                 <module>flow-client</module>
                 <module>flow-html-components</module>
-                <module>flow-spring-addon</module>
-                <module>flow-spring-boot-starter</module>
                 <module>flow-test-util</module>
                 <module>flow-tests</module>
                 <module>flow-server-production-mode</module>

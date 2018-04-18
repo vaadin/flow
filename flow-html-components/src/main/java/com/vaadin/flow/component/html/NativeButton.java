@@ -54,7 +54,7 @@ public class NativeButton extends HtmlContainer implements ClickNotifier {
      *            the click listener
      */
     public NativeButton(String text,
-            ComponentEventListener<ClickEvent> clickListener) {
+            ComponentEventListener<ClickEvent<NativeButton>> clickListener) {
         this(text);
         addClickListener(clickListener);
     }

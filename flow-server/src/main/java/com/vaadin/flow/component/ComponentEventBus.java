@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
@@ -171,17 +172,16 @@ public class ComponentEventBus implements Serializable {
         Element element = component.getElement();
 
         // Register DOM event handler
+        DomListenerRegistration registration = element.addEventListener(
+                domEventType, event -> handleDomEvent(eventType, event));
+        registration.setDisabledUpdateMode(mode);
+
         LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
                 .getEventDataExpressions(eventType);
-        String[] eventData = new String[eventDataExpressions.size()];
-        eventDataExpressions.keySet().toArray(eventData);
+        eventDataExpressions.keySet().forEach(registration::addEventData);
 
-        // This needs to be an anonymous class and not a lambda because of
-        // https://github.com/vaadin/flow/issues/575
-        Registration remover = element.addEventListener(domEventType,
-                event -> handleDomEvent(eventType, event), mode, eventData);
         componentEventData.computeIfAbsent(eventType,
-                t -> new ComponentEventData()).domEventRemover = remover;
+                t -> new ComponentEventData()).domEventRemover = registration;
     }
 
     /**

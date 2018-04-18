@@ -19,9 +19,12 @@ package com.vaadin.flow.component;
  * Event fired when a component is clicked.
  *
  * @author Vaadin Ltd
+ *
+ * @param <C>
+ *            The source component type
  */
 @DomEvent("click")
-public class ClickEvent extends ComponentEvent<Component> {
+public class ClickEvent<C extends Component> extends ComponentEvent<C> {
 
     private final int screenX;
     private final int screenY;
@@ -86,7 +89,7 @@ public class ClickEvent extends ComponentEvent<Component> {
             @EventData("event.shiftKey") boolean shiftKey,
             @EventData("event.altKey") boolean altKey,
             @EventData("event.metaKey") boolean metaKey) {
-        super(source, fromClient);
+        super((C) source, fromClient);
         this.screenX = screenX;
         this.screenY = screenY;
         this.clientX = clientX;

@@ -2323,20 +2323,6 @@ public class ElementTest extends AbstractNodeTest {
                 DisabledUpdateMode.ONLY_WHEN_ENABLED);
     }
 
-    @Test
-    public void addEventListener_delegateTo3ArgsMethod() {
-        Element element = Mockito.mock(Element.class);
-
-        Mockito.doCallRealMethod().when(element)
-                .addEventListener(Mockito.anyString(), Mockito.any());
-
-        DomEventListener listener = Mockito.mock(DomEventListener.class);
-        element.addEventListener("foo", listener);
-
-        Mockito.verify(element).addEventListener("foo", listener,
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
-    }
-
     @Override
     protected Element createParentNode() {
         return ElementFactory.createDiv();
