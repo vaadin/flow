@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -121,21 +119,7 @@ public class BundleFilterInitializerTest {
     }
 
     @Test
-    public void happy_path() {
-        String manifestString = getBasicTestBundleString();
-        mocks.getServlet().addServletContextResource(
-                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
-        for (int i = 0; i < 5; i++) {
-            mocks.getServlet()
-                    .addServletContextResource("/frontend-es6/dependency-" + i);
-        }
-        mocks.getServlet()
-                .addServletContextResource("/frontend-es6/fragment-1");
-        mocks.getServlet()
-                .addServletContextResource("/frontend-es6/fragment-2");
-        mocks.getServlet().addServletContextResource(
-                "/frontend-es6/" + BundleDependencyFilter.MAIN_BUNDLE_URL);
-
+    public void happy_path_no_hash() {
         dependencyFilterAddHandler = dependencyFilter -> {
             List<Dependency> dependencies = IntStream.range(0, 5)
                     .mapToObj(number -> new Dependency(
@@ -153,6 +137,31 @@ public class BundleFilterInitializerTest {
             Assert.assertTrue(expected.containsAll(filtered));
             Assert.assertEquals(expected.size(), filtered.size());
         };
+
+        service_init(getBasicTestBundleString(), BundleDependencyFilter.MAIN_BUNDLE_URL);
+    }
+
+    @Test
+    public void happy_path_with_hash() {
+        String bundleName = BundleDependencyFilter.MAIN_BUNDLE_URL.replace(".html","-XXX.cache.html");
+        service_init(getBasicTestBundleHashedString(bundleName), bundleName);
+    }
+
+    private void service_init(String manifestString, String bundleName) {
+        mocks.getServlet().addServletContextResource(
+                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
+        for (int i = 0; i < 5; i++) {
+            mocks.getServlet()
+                    .addServletContextResource("/frontend-es6/dependency-" + i);
+        }
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/fragment-1");
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/fragment-2");
+
+        mocks.getServlet().addServletContextResource(
+                "/frontend-es6/" + bundleName);
+
         new BundleFilterInitializer().serviceInit(event);
     }
 
@@ -163,8 +172,10 @@ public class BundleFilterInitializerTest {
                 + "}";
     }
 
-    private InputStream getTestBundleManifestStream(String manifestString) {
-        return new ByteArrayInputStream(
-                manifestString.getBytes(StandardCharsets.UTF_8));
+    private String getBasicTestBundleHashedString(String bundleName) {
+        return "{'fragment-1':['dependency-1', 'dependency-2'],"
+                + "'fragment-2':['dependency-3', 'dependency-4'],"
+                + "'" + bundleName + "':['dependency-0','" + BundleDependencyFilter.MAIN_BUNDLE_URL + "']"
+                + "}";
     }
 }
