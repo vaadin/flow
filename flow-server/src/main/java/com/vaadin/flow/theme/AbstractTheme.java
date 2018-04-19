@@ -101,7 +101,12 @@ public interface AbstractTheme extends Serializable {
             } else if (!baseUrl.endsWith("/") && themeUrl.endsWith("/")) {
                 themeUrl = themeUrl.substring(0, themeUrl.length() - 1);
             }
-            return url.replace(baseUrl, themeUrl);
+            int start = url.lastIndexOf(baseUrl);
+            StringBuilder builder = new StringBuilder();
+            builder.append(url.substring(0, start));
+            builder.append(themeUrl);
+            builder.append(url.substring(start + baseUrl.length()));
+            return builder.toString();
         }
         return url;
     }

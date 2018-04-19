@@ -68,6 +68,24 @@ public class AbstractThemeTest {
 
         assertUrlTranslations(theme);
     }
+    
+    @Test
+    public void only_last_instance_of_base_url_should_be_replaced() {
+        AbstractTheme theme = new AbstractTheme() {
+            @Override
+            public String getBaseUrl() {
+                return "src/";
+            }
+
+            @Override
+            public String getThemeUrl() {
+                return "theme/custom";
+            }
+        };
+
+        assertEquals("src/button/theme/custom/Button.html", theme.translateUrl(
+                "src/button/src/Button.html"));
+    }
 
     private void assertUrlTranslations(AbstractTheme theme) {
         assertEquals("button/theme/custom/Button.html", theme.translateUrl(
