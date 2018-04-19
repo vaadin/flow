@@ -107,7 +107,17 @@ public class BundleFilterInitializerTest {
         new BundleFilterInitializer().serviceInit(event);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
+    public void when_json_file_not_found_fails() {
+        new BundleFilterInitializer().serviceInit(event);
+    }
+
+    public void when_bundle_disabled_doesnt_fail() {
+        mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
+                Constants.DISABLE_BUNDLE, "true");
+        new BundleFilterInitializer().serviceInit(event);
+    }
+
     public void fail_when_loading_invalid_json() {
         mocks.getServlet().addServletContextResource(
                 FRONTEND_ES6_BUNDLE_MANIFEST, "{ wait this is not json");
