@@ -138,8 +138,7 @@ function writeBundleInformation(buildBundler, redundantPathPrefix, outputFile) {
     function bundleMapToJson(bundleMap) {
         const result = {};
         bundleMap.forEach((bundleObject, bundleUrl) => {
-            result[bundleUrl] = [...bundleObject.files, ...bundleObject.inlinedScripts, ...bundleObject.inlinedStyles || []]
-                .filter(value => value !== bundleUrl)
+            result[bundleUrl] = [...bundleObject.inlinedHtmlImports, ...bundleObject.inlinedScripts, ...bundleObject.inlinedStyles || []]
                 .map(value => value.replace(redundantPathPrefix, ''))
                 .map(value => value.startsWith('/') ? value.substring(1) : value);
         });
