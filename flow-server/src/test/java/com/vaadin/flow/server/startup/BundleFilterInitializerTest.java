@@ -26,54 +26,68 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.json.JsonException;
+import static com.vaadin.flow.server.startup.BundleFilterInitializer.FLOW_BUNDLE_MANIFEST;
+import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
+import static org.mockito.Matchers.any;
 
 public class BundleFilterInitializerTest {
+    private static final String NON_HASHED_BUNDLE_NAME = MAIN_BUNDLE_NAME_PREFIX
+            + ".html";
+    private static final String HASHED_BUNDLE_NAME = MAIN_BUNDLE_NAME_PREFIX
+            + "-SOME_HASH.cache.html";
+    private static final String FRONTEND_ES6_BUNDLE_MANIFEST = FLOW_BUNDLE_MANIFEST
+            .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
+                    "/frontend-es6/");
 
-    private static final String FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON = "/frontend-es6/vaadin-flow-bundle-manifest.json";
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     private ServiceInitEvent event;
-
-    private Consumer<DependencyFilter> dependencyFilterAddHandler = dependency -> {
-    };
-
+    private Consumer<DependencyFilter> dependencyFilterAddHandler;
     private MockServletServiceSessionSetup mocks;
 
     @Before
     public void init() throws Exception {
         mocks = new MockServletServiceSessionSetup(false);
-        // There is no user session when initializing the filter
-        Assert.assertNull(mocks.getSession());
+        Assert.assertNull(
+                "There is no user session when initializing the filter and test should check it",
+                mocks.getSession());
         event = Mockito.mock(ServiceInitEvent.class);
         Mockito.when(event.getSource()).thenReturn(mocks.getService());
         mocks.setProductionMode(true);
         mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES6,
                 Constants.FRONTEND_URL_ES6_DEFAULT_VALUE);
+        dependencyFilterAddHandler = dependency -> {
+        };
 
         Mockito.doAnswer(invocation -> {
             dependencyFilterAddHandler.accept(
                     invocation.getArgumentAt(0, DependencyFilter.class));
             return null;
-        }).when(event).addDependencyFilter(Mockito.any(DependencyFilter.class));
+        }).when(event).addDependencyFilter(any(DependencyFilter.class));
     }
 
-    @Test(expected = UncheckedIOException.class)
+    @Test
     public void fail_to_load_bundle_manifest() {
-        mocks.getServlet().addServletContextResource(
-                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON);
-        Mockito.when(mocks.getServlet().getServletContext().getResourceAsStream(
-                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON))
+        mocks.getServlet()
+                .addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST);
+        Mockito.when(mocks.getServlet().getServletContext()
+                .getResourceAsStream(FRONTEND_ES6_BUNDLE_MANIFEST))
                 .thenAnswer(i -> {
                     return new InputStream() {
                         @Override
@@ -83,73 +97,108 @@ public class BundleFilterInitializerTest {
                     };
                 });
 
+        expectedException.expect(UncheckedIOException.class);
+        expectedException.expectMessage(FLOW_BUNDLE_MANIFEST);
+
         new BundleFilterInitializer().serviceInit(event);
     }
 
-    @Test(expected = JsonException.class)
+    @Test
     public void fail_when_loading_invalid_json() {
-        String manifestString = "{ wait this is not json";
         mocks.getServlet().addServletContextResource(
-                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
+                FRONTEND_ES6_BUNDLE_MANIFEST, "{ wait this is not json");
+
+        expectedException.expect(JsonException.class);
+
         new BundleFilterInitializer().serviceInit(event);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void does_not_contain_main_bundle_fails() {
-        String manifestString = "{'fragment-1':['dependency-1', 'dependency-2']}";
         mocks.getServlet().addServletContextResource(
-                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
+                FRONTEND_ES6_BUNDLE_MANIFEST,
+                "{'fragment-1':['dependency-1', 'dependency-2']}");
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/fragment-1");
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("contains no main bundle");
+        expectedException.expectMessage(MAIN_BUNDLE_NAME_PREFIX);
+        expectedException.expectMessage(FLOW_BUNDLE_MANIFEST);
+
         new BundleFilterInitializer().serviceInit(event);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void bundle_file_not_found_throws() {
-        String manifestString = getBasicTestBundleString();
-
+    @Test
+    public void multiple_bundles_with_main_bundle_prefix_throws() {
         mocks.getServlet().addServletContextResource(
-                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
+                FRONTEND_ES6_BUNDLE_MANIFEST,
+                String.format("{'%s':['dependency-1'], '%s': ['dependency-2']}",
+                        HASHED_BUNDLE_NAME, NON_HASHED_BUNDLE_NAME));
+        mocks.getServlet().addServletContextResource(
+                "/frontend-es6/" + HASHED_BUNDLE_NAME);
+        mocks.getServlet().addServletContextResource(
+                "/frontend-es6/" + NON_HASHED_BUNDLE_NAME);
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(
+                "contains multiple bundle files with name that starts with");
+        expectedException.expectMessage(MAIN_BUNDLE_NAME_PREFIX);
+        expectedException.expectMessage(FLOW_BUNDLE_MANIFEST);
+
+        new BundleFilterInitializer().serviceInit(event);
+    }
+
+    @Test
+    public void bundle_file_not_found_throws() {
+        String missingFragment = "fragment-1";
+        mocks.getServlet().addServletContextResource(
+                FRONTEND_ES6_BUNDLE_MANIFEST,
+                String.format("{'%s':['dependency-1']}", missingFragment));
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(FLOW_BUNDLE_MANIFEST);
+        expectedException.expectMessage(missingFragment);
+
         new BundleFilterInitializer().serviceInit(event);
     }
 
     @Test
     public void null_bundle_manifest_stream_no_dependency_filter_added() {
         new BundleFilterInitializer().serviceInit(event);
+
         Mockito.verify(event, Mockito.never())
-                .addDependencyFilter(Mockito.any(DependencyFilter.class));
+                .addDependencyFilter(any(DependencyFilter.class));
+    }
+
+    @Test
+    public void empty_bundle_manifest_stream_no_dependency_filter_added() {
+        mocks.getServlet()
+                .addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST, "{}");
+
+        new BundleFilterInitializer().serviceInit(event);
+
+        Mockito.verify(event, Mockito.never())
+                .addDependencyFilter(any(DependencyFilter.class));
     }
 
     @Test
     public void happy_path_no_hash() {
-        dependencyFilterAddHandler = dependencyFilter -> {
-            List<Dependency> dependencies = IntStream.range(0, 5)
-                    .mapToObj(number -> new Dependency(
-                            Dependency.Type.HTML_IMPORT, "dependency-" + number,
-                            LoadMode.EAGER))
-                    .collect(Collectors.toList());
-            List<Dependency> filtered = dependencyFilter.filter(dependencies,
-                    null);
-            List<Dependency> expected = Stream
-                    .of(BundleDependencyFilter.MAIN_BUNDLE_URL, "fragment-1",
-                            "fragment-2")
-                    .map(url -> new Dependency(Dependency.Type.HTML_IMPORT, url,
-                            LoadMode.EAGER))
-                    .collect(Collectors.toList());
-            Assert.assertTrue(expected.containsAll(filtered));
-            Assert.assertEquals(expected.size(), filtered.size());
-        };
-
-        service_init(getBasicTestBundleString(), BundleDependencyFilter.MAIN_BUNDLE_URL);
+        serviceInit(NON_HASHED_BUNDLE_NAME);
     }
 
     @Test
     public void happy_path_with_hash() {
-        String bundleName = BundleDependencyFilter.MAIN_BUNDLE_URL.replace(".html","-XXX.cache.html");
-        service_init(getBasicTestBundleHashedString(bundleName), bundleName);
+        serviceInit(HASHED_BUNDLE_NAME);
     }
 
-    private void service_init(String manifestString, String bundleName) {
+    private void serviceInit(String bundleName) {
+        createDependencyFilter(bundleName);
         mocks.getServlet().addServletContextResource(
-                FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
+                FRONTEND_ES6_BUNDLE_MANIFEST,
+                String.format(
+                        "{'fragment-1':['dependency-1', 'dependency-2'],'fragment-2':['dependency-3', 'dependency-4'],'%s':['dependency-0']}",
+                        bundleName));
         for (int i = 0; i < 5; i++) {
             mocks.getServlet()
                     .addServletContextResource("/frontend-es6/dependency-" + i);
@@ -159,23 +208,29 @@ public class BundleFilterInitializerTest {
         mocks.getServlet()
                 .addServletContextResource("/frontend-es6/fragment-2");
 
-        mocks.getServlet().addServletContextResource(
-                "/frontend-es6/" + bundleName);
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/" + bundleName);
 
         new BundleFilterInitializer().serviceInit(event);
     }
 
-    private String getBasicTestBundleString() {
-        return "{'fragment-1':['dependency-1', 'dependency-2'],"
-                + "'fragment-2':['dependency-3', 'dependency-4']," + "'"
-                + BundleDependencyFilter.MAIN_BUNDLE_URL + "':['dependency-0']"
-                + "}";
+    private void createDependencyFilter(String bundleName) {
+        dependencyFilterAddHandler = dependencyFilter -> {
+            List<Dependency> dependencies = IntStream.range(0, 5)
+                    .mapToObj(number -> new Dependency(
+                            Dependency.Type.HTML_IMPORT, "dependency-" + number,
+                            LoadMode.EAGER))
+                    .collect(Collectors.toList());
+            List<Dependency> filtered = dependencyFilter.filter(dependencies,
+                    null);
+            List<Dependency> expected = Stream
+                    .of(bundleName, "fragment-1", "fragment-2")
+                    .map(url -> new Dependency(Dependency.Type.HTML_IMPORT, url,
+                            LoadMode.EAGER))
+                    .collect(Collectors.toList());
+            Assert.assertTrue(expected.containsAll(filtered));
+            Assert.assertEquals(expected.size(), filtered.size());
+        };
     }
 
-    private String getBasicTestBundleHashedString(String bundleName) {
-        return "{'fragment-1':['dependency-1', 'dependency-2'],"
-                + "'fragment-2':['dependency-3', 'dependency-4'],"
-                + "'" + bundleName + "':['dependency-0','" + BundleDependencyFilter.MAIN_BUNDLE_URL + "']"
-                + "}";
-    }
 }
