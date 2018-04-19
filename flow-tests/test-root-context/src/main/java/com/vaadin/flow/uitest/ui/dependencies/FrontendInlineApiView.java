@@ -31,7 +31,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class FrontendInlineApiView extends PolymerTemplate<TemplateModel> {
 
     public FrontendInlineApiView() {
-        super((clazz, tag) -> new TemplateData(
+        super((clazz, tag, service) -> new TemplateData(
                 "components/frontend-inline-api.html", Jsoup.parse(
                         "<dom-module id='frontend-inline-api'></dom-module>")));
         setId("template");

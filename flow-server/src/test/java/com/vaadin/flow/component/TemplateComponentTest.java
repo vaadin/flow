@@ -15,100 +15,54 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.di.DefaultInstantiator;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.templatemodel.TemplateModel;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class TemplateComponentTest {
 
-    @Mock
-    private VaadinServlet servlet;
-    @Mock
-    private VaadinSession session;
-    @Mock
-    private VaadinServletService service;
-    @Mock
-    DeploymentConfiguration configuration;
-
     UI ui;
 
     private final static String template_file = "<dom-module id='registration-form'>"
-     + " <template>"
-     + "  <div id='name'>{{name}}</div>"
-     + " </template>"
-     + " <script>"
-     + "  class RegistrationForm extends Polymer.Element {"
-     + "   static get is() {return 'registration-form'}"
-     + "  }"
-     + "  customElements.define(RegistrationForm.is, RegistrationForm);"
-     + " </script>"
-     + "</dom-module>";
+            + " <template>" + "  <div id='name'>{{name}}</div>" + " </template>"
+            + " <script>" + "  class RegistrationForm extends Polymer.Element {"
+            + "   static get is() {return 'registration-form'}" + "  }"
+            + "  customElements.define(RegistrationForm.is, RegistrationForm);"
+            + " </script>" + "</dom-module>";
+
+    private MockServletServiceSessionSetup mocks;
 
     @Tag("div")
     public static class EnabledDiv extends Component implements HasComponents {
     }
 
     @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
+    public void init() throws Exception {
+        mocks = new MockServletServiceSessionSetup();
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(service.getDependencyFilters())
-                .thenReturn(Collections.emptyList());
-
-        Mockito.when(service.getServlet()).thenReturn(servlet);
-
-        Mockito.when(servlet
-                .resolveResource("/registration-form.html"))
-                .thenReturn("/registration-form.html");
-
-        Mockito.when(servlet.getResourceAsStream("/registration-form.html"))
-                .thenReturn(getTemplateStream(), getTemplateStream());
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        mocks.getServlet().addServletContextResource("/registration-form.html",
+                template_file);
 
         ui = new UI();
-        ui.getInternals().setSession(session);
-        DefaultInstantiator instantiator = new DefaultInstantiator(service);
-        Mockito.when(session.hasLock()).thenReturn(true);
-        Mockito.when(session.getService()).thenReturn(service);
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+        ui.getInternals().setSession(mocks.getSession());
 
         CurrentInstance.setCurrent(ui);
-        CurrentInstance.set(VaadinService.class, service);
-
-    }
-
-    private ByteArrayInputStream getTemplateStream() {
-        return new ByteArrayInputStream(
-                template_file.getBytes(StandardCharsets.UTF_8));
     }
 
     @After
     public void tearDown() {
-        CurrentInstance.clearAll();
+        mocks.cleanup();
     }
 
     @Test
@@ -179,7 +133,6 @@ public class TemplateComponentTest {
     public void templatIdComponentChildrenGetEnabledCorrectly() {
         EnabledDiv child = new EnabledDiv();
 
-
         Template template = new Template();
         template.getName().add(child);
 
@@ -214,7 +167,6 @@ public class TemplateComponentTest {
         template.setEnabled(true);
         template.getName().setEnabled(false);
 
-
         Assert.assertTrue("Template should be enabled", template.isEnabled());
         Assert.assertFalse("NameField should be disabled.",
                 template.getName().isEnabled());
@@ -226,8 +178,6 @@ public class TemplateComponentTest {
                 template.getName().getElement().getAttribute("disabled"));
         Assert.assertNotNull("Attribute should have been added",
                 child.getElement().getAttribute("disabled"));
-
-
 
     }
 
