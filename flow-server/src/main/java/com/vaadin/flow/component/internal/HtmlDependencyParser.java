@@ -118,13 +118,45 @@ public class HtmlDependencyParser {
         return relative;
     }
 
-    private String relativize(String relative, URI base) {
+    private String relativize(String relative, URI base)
+            throws URISyntaxException {
+        URI newUri;
         if (base.getPath().isEmpty()) {
             String uriString = base.toString();
             int index = uriString.lastIndexOf('/');
-            return uriString.substring(0, index + 1) + relative;
+            newUri = new URI(uriString.substring(0, index + 1) + relative);
+        } else {
+            newUri = base.resolve(relative);
         }
-        return base.resolve(relative).toString();
+
+        return toNormalizedURI(newUri);
+    }
+
+    /**
+     * Returns a normalized version of the URI, converted to a string.
+     *
+     * @param uri
+     *            the URI to normalize
+     * @return a nonrmalized version of the URI
+     */
+    // Package private for testing purposes
+    static String toNormalizedURI(URI uri) {
+        URI normalized = uri.normalize();
+        // This is because of https://github.com/vaadin/flow/issues/3892
+        if ("frontend".equals(normalized.getScheme())
+                || "base".equals(normalized.getScheme())
+                || "context".equals(normalized.getScheme())) {
+            if (".".equals(normalized.getAuthority())
+                    && normalized.getHost() == null) {
+                // frontend://./foo.html
+                return normalized.toString().replaceAll("//./", "//");
+            }
+            if (normalized.getPath().startsWith("/../")) {
+                return normalized.toString()
+                        .replaceAll(normalized.getHost() + "/../", "");
+            }
+        }
+        return normalized.toString();
     }
 
     private Stream<String> parseHtmlImports(InputStream content, String path) {
