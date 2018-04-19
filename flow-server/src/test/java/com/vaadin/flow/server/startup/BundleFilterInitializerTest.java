@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -29,7 +30,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.ServiceInitEvent;
@@ -84,6 +87,15 @@ public class BundleFilterInitializerTest {
                 });
 
         new BundleFilterInitializer().serviceInit(event);
+    }
+
+    @Test()
+    public void when_json_file_not_found_should_disable_bundle() {
+        DeploymentConfiguration conf = new DefaultDeploymentConfiguration(this.getClass(), new Properties());
+
+        Assert.assertTrue(conf.isBundleEnabled());
+        new BundleFilterInitializer().serviceInit(event);
+        Assert.assertFalse(conf.isBundleEnabled());
     }
 
     @Test(expected = JsonException.class)

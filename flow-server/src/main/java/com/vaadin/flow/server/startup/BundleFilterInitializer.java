@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -85,9 +86,12 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         try (InputStream bundleManifestStream = service
                 .getResourceAsStream(manifestResource, es6Browser, null)) {
             if (bundleManifestStream == null) {
-                getLogger().info(
-                        "Bundling disabled: Flow bundle manifest '{}' was not found in servlet context",
+                getLogger().error(
+                        "Bundling disabled: Flow bundle manifest '{}' was not found in servlet context.",
                         manifestResource);
+
+                System.setProperty("vaadin." + Constants.DISABLE_BUNDLE, "true");
+
                 return Collections.emptyMap();
             }
 
