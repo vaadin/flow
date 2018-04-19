@@ -38,6 +38,7 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jsoup.Jsoup;
@@ -58,6 +59,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
@@ -427,6 +429,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         /* Append any theme elements to initial page. */
         handleThemeContents(context, document);
 
+        if (!context.isProductionMode()) {
+            exportUsageStatistics(document);
+        }
+
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
                 context.getResponse(), document, context.getUI(),
@@ -434,6 +440,27 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         context.getSession().getService().modifyBootstrapPage(response);
 
         return document;
+    }
+
+    private static void exportUsageStatistics(Document document) {
+        String registerScript = UsageStatistics.getEntries().map(entry -> {
+            String name = entry.getName();
+            String version = entry.getVersion();
+
+            JsonObject json = Json.createObject();
+            json.put("is", name);
+            json.put("version", version);
+
+            String escapedName = Json.create(name).toJson();
+
+            // Registers the entry in a way that is picked up as a Vaadin
+            // WebComponent by the usage stats gatherer
+            return String.format("window.Vaadin[%s]=%s;", escapedName, json);
+        }).collect(Collectors.joining("\n"));
+
+        if (!registerScript.isEmpty()) {
+            document.body().appendElement("script").text(registerScript);
+        }
     }
 
     private static void handleThemeContents(BootstrapContext context,
@@ -663,8 +690,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         BootstrapUtils.getViewportContent(context)
                 .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", VIEWPORT)
-                        .attr(CONTENT_ATTRIBUTE, content));
+                        .attr("name", VIEWPORT).attr(CONTENT_ATTRIBUTE,
+                                content));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -732,9 +759,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapUriResolver resolver, LoadMode loadMode,
             JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
-        String url = dependency.hasKey(Dependency.KEY_URL)
-                ? resolver.resolveVaadinUri(
-                        dependency.getString(Dependency.KEY_URL))
+        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
+                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
                 : null;
 
         final Element dependencyElement;
@@ -1188,8 +1214,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                         + properties.getProperty("jsFile");
             } else {
-                getLogger().warn(
-                        "No compile.properties available on initialization, "
+                getLogger()
+                        .warn("No compile.properties available on initialization, "
                                 + "could not read client engine file name.");
             }
         } catch (IOException e) {
