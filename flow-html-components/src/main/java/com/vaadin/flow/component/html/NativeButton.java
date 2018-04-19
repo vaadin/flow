@@ -18,6 +18,7 @@ package com.vaadin.flow.component.html;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
@@ -27,7 +28,8 @@ import com.vaadin.flow.component.Tag;
  * @author Vaadin Ltd
  */
 @Tag(Tag.BUTTON)
-public class NativeButton extends HtmlContainer implements ClickNotifier {
+public class NativeButton extends HtmlContainer
+        implements ClickNotifier<NativeButton>, Focusable<NativeButton> {
     /**
      * Creates a new empty button.
      */
