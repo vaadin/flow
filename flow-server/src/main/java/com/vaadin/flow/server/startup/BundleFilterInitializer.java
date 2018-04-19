@@ -19,17 +19,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -53,7 +51,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
     public void serviceInit(ServiceInitEvent event) {
         DeploymentConfiguration deploymentConfiguration = event.getSource()
                 .getDeploymentConfiguration();
-        if (!deploymentConfiguration.isProductionMode()) {
+        if (!deploymentConfiguration.isBundleEnabled()) {
             return;
         }
 
@@ -83,10 +81,12 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         try (InputStream bundleManifestStream = service
                 .getResourceAsStream(manifestResource, es6Browser, null)) {
             if (bundleManifestStream == null) {
-                getLogger().info(
-                        "Bundling disabled: Flow bundle manifest '{}' was not found in servlet context",
-                        manifestResource);
-                return Collections.emptyMap();
+                throw new IllegalArgumentException(String.format(
+                        "Failed to find the bundle manifest file '%s' in the servlet context."
+                        + " If you are running a dev-mode servlet container in maven e.g. `jetty:run` change it to `jetty:run-exploded`."
+                        + " If you are not building bundles, include the 'flow-maven-plugin' in your build script."
+                        + " Otherwise, you can skip this error by disabling production mode, or by setting the servlet parameter '%s=true'.",
+                        manifestResource, Constants.DISABLE_BUNDLE));
             }
 
             JsonObject bundlesToUrlsContained = Json.parse(IOUtils
@@ -116,9 +116,5 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                     "Failed to read bundle manifest file at context path '%s'",
                     manifestResource), e);
         }
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(BundleFilterInitializer.class.getName());
     }
 }

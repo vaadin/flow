@@ -86,6 +86,17 @@ public class BundleFilterInitializerTest {
         new BundleFilterInitializer().serviceInit(event);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void when_json_file_not_found_fails() {
+        new BundleFilterInitializer().serviceInit(event);
+    }
+
+    public void when_bundle_disabled_doesnt_fail() {
+        mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
+                Constants.DISABLE_BUNDLE, "true");
+        new BundleFilterInitializer().serviceInit(event);
+    }
+
     @Test(expected = JsonException.class)
     public void fail_when_loading_invalid_json() {
         String manifestString = "{ wait this is not json";
@@ -109,13 +120,6 @@ public class BundleFilterInitializerTest {
         mocks.getServlet().addServletContextResource(
                 FRONTEND_ES6_VAADIN_FLOW_BUNDLE_MANIFEST_JSON, manifestString);
         new BundleFilterInitializer().serviceInit(event);
-    }
-
-    @Test
-    public void null_bundle_manifest_stream_no_dependency_filter_added() {
-        new BundleFilterInitializer().serviceInit(event);
-        Mockito.verify(event, Mockito.never())
-                .addDependencyFilter(Mockito.any(DependencyFilter.class));
     }
 
     @Test

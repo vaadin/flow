@@ -21,9 +21,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Objects;
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -181,4 +181,20 @@ public class DefaultDeploymentConfigurationTest {
         assertThat(config.getPushURL(), is("foo"));
     }
 
+    @Test
+    public void bundleIsEnabledInProduction() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
+        Assert.assertTrue(config.isBundleEnabled());
+    }
+
+    @Test
+    public void bundleCanBeDisabled() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        initParameters.setProperty(Constants.DISABLE_BUNDLE, "true");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
+        Assert.assertFalse(config.isBundleEnabled());
+    }
 }

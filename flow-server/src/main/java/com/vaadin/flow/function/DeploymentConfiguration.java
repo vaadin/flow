@@ -280,7 +280,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * User can explicitly disable bundle usage by setting the {@link Constants#DISABLE_BUNDLE}
      * property to {@code true}.
-     *
+     * 
      * @return {@code true} if Flow should use bundled fragments.
      */
     default boolean isBundleEnabled() {
