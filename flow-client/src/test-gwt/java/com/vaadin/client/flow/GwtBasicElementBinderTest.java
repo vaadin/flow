@@ -26,7 +26,6 @@ import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.client.flow.nodefeature.NodeFeature;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -582,14 +581,25 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         String numberExpression = "event.button";
         String stringExpression = "element.tagName";
 
+        String trueFilter = "true";
+        String falseFilter = "false";
+        String tagNameFilter = "element.tagName == 'DIV'";
+
         String constantPoolKey = "expressionsKey";
 
-        JsonArray expressionConstantValue = Json.createArray();
-        expressionConstantValue.set(0, booleanExpression);
-        expressionConstantValue.set(1, numberExpression);
-        expressionConstantValue.set(2, stringExpression);
+        JsonObject expressions = Json.createObject();
+        // Data expressions
+        expressions.put(booleanExpression, false);
+        expressions.put(numberExpression, false);
+        expressions.put(stringExpression, false);
 
-        addToConstantPool(constantPoolKey, expressionConstantValue);
+        // Filter expressions
+
+        expressions.put(trueFilter, true);
+        expressions.put(falseFilter, true);
+        expressions.put(tagNameFilter, true);
+
+        addToConstantPool(constantPoolKey, expressions);
 
         node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("click")
                 .setValue(constantPoolKey);
@@ -604,12 +614,58 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         JsonObject eventData = tree.collectedEventData.get(0);
 
-        assertEquals(3, eventData.keys().length);
+        // 3 data expressions and 3 filter expressions
+        assertEquals(6, eventData.keys().length);
 
         assertEquals(JsonType.NUMBER,
                 eventData.get(numberExpression).getType());
         assertEquals("DIV", eventData.getString(stringExpression));
         assertEquals(true, eventData.getBoolean(booleanExpression));
+
+        assertEquals(true, eventData.getBoolean(tagNameFilter));
+        assertEquals(true, eventData.getBoolean(trueFilter));
+        assertEquals(false, eventData.getBoolean(falseFilter));
+    }
+
+    public void testFilterPreventsEvent() {
+        Binder.bind(node, element);
+
+        String constantPoolKey = "expressionsKey";
+
+        JsonObject expressions = Json.createObject();
+        expressions.put("false", true);
+
+        addToConstantPool(constantPoolKey, expressions);
+
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("click")
+                .setValue(constantPoolKey);
+        Reactive.flush();
+        Browser.getDocument().getBody().appendChild(element);
+
+        element.click();
+
+        assertEquals(0, tree.collectedNodes.length());
+    }
+
+    public void testEventFiredWithNoFilters() {
+        Binder.bind(node, element);
+
+        String constantPoolKey = "expressionsKey";
+
+        JsonObject expressions = Json.createObject();
+        // Expression is not used as a filter
+        expressions.put("false", false);
+
+        addToConstantPool(constantPoolKey, expressions);
+
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("click")
+                .setValue(constantPoolKey);
+        Reactive.flush();
+        Browser.getDocument().getBody().appendChild(element);
+
+        element.click();
+
+        assertEquals(1, tree.collectedNodes.length());
     }
 
     private void addToConstantPool(String key, JsonValue value) {

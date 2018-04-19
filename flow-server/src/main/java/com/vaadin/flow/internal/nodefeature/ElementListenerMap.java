@@ -22,9 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -35,6 +33,7 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Map of DOM events with server-side listeners. The key set of this map
@@ -44,6 +43,8 @@ import elemental.json.Json;
  * @author Vaadin Ltd
  */
 public class ElementListenerMap extends NodeMap {
+    private static final String ALWAYS_TRUE_FILTER = "1";
+
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
@@ -55,6 +56,7 @@ public class ElementListenerMap extends NodeMap {
 
         private DisabledUpdateMode mode;
         private Set<String> eventDataExpressions;
+        private String filter;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
                 String type, DomEventListener origin) {
@@ -75,18 +77,16 @@ public class ElementListenerMap extends NodeMap {
                         "The event data expression must not be null");
             }
 
-            Set<String> previous = listenerMap.collectDataExpressions(type);
+            Map<String, Boolean> previous = listenerMap
+                    .collectEventExpressions(type);
 
             if (eventDataExpressions == null) {
                 eventDataExpressions = new HashSet<>();
             }
             eventDataExpressions.add(eventData);
 
-            if (!previous.contains(eventData)) {
-                Set<String> current = listenerMap.collectDataExpressions(type);
-                // Update the constant pool reference if the value has
-                // changed
-                listenerMap.put(type, createConstantPoolKey(current));
+            if (!previous.containsKey(eventData)) {
+                listenerMap.updateEventSettings(type);
             }
 
             return this;
@@ -102,6 +102,40 @@ public class ElementListenerMap extends NodeMap {
 
             mode = disabledUpdateMode;
             return this;
+        }
+
+        @Override
+        public DomListenerRegistration setFilter(String filter) {
+            Map<String, Boolean> previous = listenerMap
+                    .collectEventExpressions(type);
+
+            this.filter = filter;
+
+            if (!Boolean.TRUE.equals(previous.get(filter))) {
+                // Expression was not previously used as a filter
+                listenerMap.updateEventSettings(type);
+            }
+
+            return this;
+        }
+
+        @Override
+        public String getFilter() {
+            return filter;
+        }
+
+        boolean matchesFilter(JsonObject eventData) {
+            if (filter == null) {
+                // No filter: always matches
+                return true;
+            }
+
+            if (eventData == null) {
+                // No event data: cannot match the filter
+                return false;
+            }
+
+            return eventData.getBoolean(filter);
         }
     }
 
@@ -138,8 +172,6 @@ public class ElementListenerMap extends NodeMap {
             assert !listeners.containsKey(eventType);
 
             listeners.put(eventType, new ArrayList<>());
-
-            put(eventType, createConstantPoolKey(Collections.emptySet()));
         }
 
         DomEventListenerWrapper listenerWrapper = new DomEventListenerWrapper(
@@ -147,29 +179,72 @@ public class ElementListenerMap extends NodeMap {
 
         listeners.get(eventType).add(listenerWrapper);
 
+        updateEventSettings(eventType);
+
         return listenerWrapper;
     }
 
-    private Set<String> collectDataExpressions(String eventType) {
+    private Collection<DomEventListenerWrapper> getWrappers(String eventType) {
         if (listeners == null) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
-
         List<DomEventListenerWrapper> typeListeners = listeners.get(eventType);
         if (typeListeners == null) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
 
-        return typeListeners.stream()
-                .map(wrapper -> wrapper.eventDataExpressions)
-                .filter(Objects::nonNull).flatMap(Set::stream)
-                .collect(Collectors.toSet());
+        return typeListeners;
     }
 
-    private static ConstantPoolKey createConstantPoolKey(
-            Set<String> eventData) {
-        return new ConstantPoolKey(eventData.stream().map(Json::create)
-                .collect(JsonUtils.asArray()));
+    // Map<Expression, IsFilter>
+    private Map<String, Boolean> collectEventExpressions(String eventType) {
+        HashMap<String, Boolean> expressions = new HashMap<>();
+
+        Collection<DomEventListenerWrapper> wrappers = getWrappers(eventType);
+
+        // Pass 1: Collect data expressions as non-filter expressions
+        for (DomEventListenerWrapper wrapper : wrappers) {
+            if (wrapper.eventDataExpressions != null) {
+                wrapper.eventDataExpressions.forEach(expression -> expressions
+                        .put(expression, Boolean.FALSE));
+            }
+        }
+
+        // Pass 2: Collect filters
+        boolean hasUnfilteredListener = false;
+        boolean hasFilteredListener = false;
+        for (DomEventListenerWrapper wrapper : wrappers) {
+            String filter = wrapper.getFilter();
+            if (filter == null) {
+                hasUnfilteredListener = true;
+            } else {
+                hasFilteredListener = true;
+                expressions.put(filter, Boolean.TRUE);
+            }
+        }
+
+        if (hasFilteredListener && hasUnfilteredListener) {
+            /*
+             * If there are filters and none match, then client won't send
+             * anything to the server.
+             *
+             * Include a filter that always passes to ensure that unfiltered
+             * listeners are still notified.
+             */
+            expressions.put(ALWAYS_TRUE_FILTER, Boolean.TRUE);
+        }
+
+        return expressions;
+    }
+
+    private void updateEventSettings(String eventType) {
+        Map<String, Boolean> eventSettings = collectEventExpressions(eventType);
+        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
+                Json::create);
+
+        ConstantPoolKey constantPoolKey = new ConstantPoolKey(
+                eventSettingsJson);
+        put(eventType, constantPoolKey);
     }
 
     private void removeListener(String eventType,
@@ -215,8 +290,9 @@ public class ElementListenerMap extends NodeMap {
 
         List<DomEventListener> listeners = new ArrayList<>();
         for (DomEventListenerWrapper wrapper : typeListeners) {
-            if (isElementEnabled
-                    || DisabledUpdateMode.ALWAYS.equals(wrapper.mode)) {
+            if ((isElementEnabled
+                    || DisabledUpdateMode.ALWAYS.equals(wrapper.mode))
+                    && wrapper.matchesFilter(event.getEventData())) {
                 listeners.add(wrapper.origin);
             }
         }
@@ -235,7 +311,7 @@ public class ElementListenerMap extends NodeMap {
      */
     Set<String> getExpressions(String name) {
         assert name != null;
-        return collectDataExpressions(name);
+        return collectEventExpressions(name).keySet();
     }
 
 }
