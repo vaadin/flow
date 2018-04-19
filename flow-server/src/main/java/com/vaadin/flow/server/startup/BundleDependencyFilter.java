@@ -16,7 +16,7 @@
 package com.vaadin.flow.server.startup;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,45 +53,42 @@ public class BundleDependencyFilter implements DependencyFilter {
      *            a map that is used to look up the bundles that imports are
      *            contained in, not {@code null}
      */
-    public BundleDependencyFilter(
-            Map<String, Set<String>> importContainedInBundles) {
-        this.importContainedInBundles = Objects.requireNonNull(
-                importContainedInBundles,
+    public BundleDependencyFilter(Map<String, Set<String>> importContainedInBundles) {
+        this.importContainedInBundles = Objects.requireNonNull(importContainedInBundles,
                 "Import to bundle mapping cannot be null");
     }
 
     @Override
-    public List<Dependency> filter(List<Dependency> dependencies,
-            FilterContext filterContext) {
-        List<Dependency> dependenciesWithBundles = new ArrayList<>(
-                dependencies.size());
-        Set<String> bundleUrlsToInclude = new HashSet<>();
+    public List<Dependency> filter(List<Dependency> dependencies, FilterContext filterContext) {
+        String mainFragment = resolveFragment(MAIN_BUNDLE_URL);
+        mainFragment = mainFragment != null ? mainFragment : MAIN_BUNDLE_URL;
 
+        LinkedHashSet<Dependency> bundleDependencies = new LinkedHashSet<>();
         for (Dependency dependency : dependencies) {
-            Set<String> bundleUrls = importContainedInBundles
-                    .get(clearFlowProtocols(dependency.getUrl()));
-            if (bundleUrls != null) {
-                if (bundleUrls.size() > 1) {
-                    getLogger().warn(
-                            "Dependency '{}' is contained in multiple fragments: '{}', this may lead to performance degradation",
-                            dependency, bundleUrls);
+            String fragment = resolveFragment(dependency.getUrl());
+            if (fragment != null) {
+                if (bundleDependencies.isEmpty()) {
+                    bundleDependencies.add(createBundleDependency(mainFragment));
                 }
-                bundleUrlsToInclude.addAll(bundleUrls);
+                bundleDependencies.add(createBundleDependency(fragment));
             } else {
-                dependenciesWithBundles.add(dependency);
+                bundleDependencies.add(dependency);
             }
         }
+        return new ArrayList<>(bundleDependencies);
+    }
 
-        if (!bundleUrlsToInclude.isEmpty()) {
-            dependenciesWithBundles.add(0,
-                    createBundleDependency(MAIN_BUNDLE_URL));
-            bundleUrlsToInclude.stream()
-                    .filter(bundleUrl -> !MAIN_BUNDLE_URL.equals(bundleUrl))
-                    .map(BundleDependencyFilter::createBundleDependency)
-                    .forEach(dependenciesWithBundles::add);
+    private String resolveFragment(String url) {
+        Set<String> bundleUrls = importContainedInBundles.get(clearFlowProtocols(url));
+        if (bundleUrls != null) {
+            if (bundleUrls.size() > 1) {
+                getLogger().warn(
+                        "Dependency '{}' is contained in multiple fragments: '{}', this may lead to performance degradation",
+                        url, bundleUrls);
+            }
+            return bundleUrls.iterator().next();
         }
-
-        return dependenciesWithBundles;
+        return null;
     }
 
     private String clearFlowProtocols(String url) {
@@ -101,8 +98,7 @@ public class BundleDependencyFilter implements DependencyFilter {
     }
 
     private static Dependency createBundleDependency(String bundleUrl) {
-        return new Dependency(Dependency.Type.HTML_IMPORT, bundleUrl,
-                LoadMode.EAGER);
+        return new Dependency(Dependency.Type.HTML_IMPORT, bundleUrl, LoadMode.EAGER);
     }
 
     private static Logger getLogger() {

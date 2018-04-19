@@ -79,6 +79,9 @@ public class PackageForProductionMojo extends AbstractMojo {
     @Parameter(property = "minify", defaultValue = "true", required = true)
     private boolean minify;
 
+    @Parameter(property = "hash", defaultValue = "true", required = true)
+    private boolean hash;
+
     @Parameter(property = "bundleConfiguration", defaultValue = "${project.basedir}/bundle-configuration.json")
     private File bundleConfiguration;
 
@@ -103,7 +106,7 @@ public class PackageForProductionMojo extends AbstractMojo {
     @Override
     public void execute() {
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
-                bundle, minify, transpileEs6SourceDirectory,
+                bundle, minify, hash, transpileEs6SourceDirectory,
                 new AnnotationValuesExtractor(getProjectClassPathUrls()),
                 bundleConfiguration, getFragmentsData(fragments));
         FrontendToolsManager frontendToolsManager = new FrontendToolsManager(

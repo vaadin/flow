@@ -18,7 +18,9 @@
     "polymer-build": "2.1.1",
     "merge-stream": "1.0.1",
     "vinyl": "2.1.0",
-    "parse5": "4.0.0"
+    "parse5": "4.0.0",
+    "gulp-tap": "^1.0.1",
+    "hasha": "^3.0.0"
   },
   "author": "Vaadin Ltd.",
   "license": "Apache-2.0",

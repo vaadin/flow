@@ -2,6 +2,7 @@
 
 const bundle = {bundle};
 const minify = {minify};
+const hash = {hash};
 const shellFile = "{shell_file}";
 const fragmentFiles = [{fragment_files}];
 const es6SourceDirectory = "{es6_source_directory}";
@@ -20,6 +21,8 @@ const gulpReplace = require('gulp-string-replace');
 const polymerBuild = require('polymer-build');
 const mergeStream = require('merge-stream');
 const Transform = require('stream').Transform;
+const tap = require('gulp-tap');
+const hasha = require('hasha');
 
 const File = require('vinyl');
 const parse5 = require('parse5');
@@ -65,7 +68,7 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     console.log('Will transpile frontend files.');
                     initialStream = initialStream.pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {plugins: ['babel-plugin-external-helpers'], presets: [babelPresetES2015NoModules]})));
                 }
-                
+
                 let processedStream;
                 if (minify) {
                     console.log('Will minify frontend files.');
@@ -73,16 +76,30 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     .pipe(gulpIf(/\.html$/, new SafeTransform('html-minify', htmlMinifier.minify, {collapseWhitespace: true, removeComments: true, minifyCSS: true})))
                     .pipe(gulpIf(/\.css$/, new SafeTransform('css-slam', cssSlam.css)))
                     .pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {presets: [minifyPreset(null, {simplifyComparisons: false})]})))
-                    .pipe(htmlSplitter.rejoin());                    
+                    .pipe(htmlSplitter.rejoin());
                 } else {
                     processedStream = initialStream;
                 }
-                
+
                 if (bundle) {
                     console.log('Will bundle frontend files.');
                     processedStream = processedStream.pipe(buildBundler);
                 } else {
                     processedStream = processedStream.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
+                }
+
+                if (hash) {
+                    console.log('Will hash bundle file names.');
+                    processedStream = processedStream
+                    .pipe(tap(file => {
+                      const bundleSet = buildBundler.manifest.bundles;
+                      const bundle = bundleSet.get(file.relative);
+                      if (bundle) {
+                        bundleSet.delete(file.relative);
+                        file.path = file.path.replace(/(\.\w+)$/, '-' + hasha(file.contents).slice(0, 15) + '.cache$1');
+                        bundleSet.set(file.relative, bundle);
+                      }
+                    }));
                 }
 
                 const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
