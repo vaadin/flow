@@ -86,6 +86,13 @@ public class BundleFilterInitializerTest {
         new BundleFilterInitializer().serviceInit(event);
     }
 
+    @Test()
+    public void when_json_file_not_found_should_disable_bundle() {
+        Assert.assertFalse(Boolean.getBoolean("vaadin." + Constants.DISABLE_BUNDLE));
+        new BundleFilterInitializer().serviceInit(event);
+        Assert.assertTrue(Boolean.getBoolean("vaadin." + Constants.DISABLE_BUNDLE));
+    }
+
     @Test(expected = JsonException.class)
     public void fail_when_loading_invalid_json() {
         String manifestString = "{ wait this is not json";

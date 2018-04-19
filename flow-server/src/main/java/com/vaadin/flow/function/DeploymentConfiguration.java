@@ -280,10 +280,14 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * User can explicitly disable bundle usage by setting the {@link Constants#DISABLE_BUNDLE}
      * property to {@code true}.
+     * 
+     * In addition, if the bundle manifest file is not found during initialization, bundling
+     * is disabled automatically.
      *
      * @return {@code true} if Flow should use bundled fragments.
      */
     default boolean isBundleEnabled() {
+        System.err.println(">>>> " + System.getProperty("vaadin." + Constants.DISABLE_BUNDLE));
         return isProductionMode() && !getBooleanProperty(Constants.DISABLE_BUNDLE, false);
     }
 }
