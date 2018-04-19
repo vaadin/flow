@@ -1353,7 +1353,8 @@ public class BootstrapHandlerTest {
     @Test
     public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
         mocks.setBrowserEs6(false);
-        mocks.getServlet().setResourceFoundOverride(r -> true);
+        mocks.getServlet().addServletContextResource(
+                "/frontend/bower_components/webcomponentsjs/webcomponents-loader.js");
         Element head = initTestUI();
 
         checkInlinedScript(head, "es6-collections.js", true);
