@@ -19,8 +19,16 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "",
+      "description": "The template of the overlay content.\n           ",
       "notify": true
+    },
+    {
+      "name": "instanceProps",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Optional argument for `Polymer.Templatize.templatize`.\n           "
     },
     {
       "name": "content",
@@ -28,7 +36,7 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "",
+      "description": "References the content container after the template is stamped.\n           ",
       "notify": true
     },
     {
