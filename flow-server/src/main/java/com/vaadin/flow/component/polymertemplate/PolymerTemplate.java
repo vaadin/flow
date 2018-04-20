@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.BeanModelType;
@@ -67,6 +68,10 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
 
     private transient M model;
+
+    static {
+        UsageStatistics.markAsUsed("flow/PolymerTemplate", null);
+    }
 
     /**
      * Creates the component that is responsible for Polymer template

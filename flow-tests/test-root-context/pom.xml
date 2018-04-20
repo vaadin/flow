@@ -37,6 +37,12 @@
             <artifactId>paper-slider</artifactId>
             <version>2.0.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.webjars.bowergithub.vaadin</groupId>
+            <artifactId>vaadin-usage-statistics</artifactId>
+            <version>1.0.8</version>
+        </dependency>
     </dependencies>
 
     <build>

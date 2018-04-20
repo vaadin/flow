@@ -44,6 +44,7 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -343,6 +344,9 @@ public class BootstrapHandlerTest {
 
     @Before
     public void setup() throws Exception {
+        // Ensure there will be a usage statistics script at the end of the body
+        UsageStatistics.markAsUsed("foo", null);
+
         mocks = new MockServletServiceSessionSetup();
         TestRouteRegistry routeRegistry = new TestRouteRegistry();
 
@@ -438,7 +442,7 @@ public class BootstrapHandlerTest {
         Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
         Element body = page.body();
 
-        assertEquals(1, body.childNodeSize());
+        assertEquals(2, body.childNodeSize());
         assertEquals("noscript", body.child(0).tagName());
     }
 
@@ -910,7 +914,7 @@ public class BootstrapHandlerTest {
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
                         + "#inlineCssTestDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
-                allElements.get(allElements.size() - 3).toString());
+                allElements.get(allElements.size() - 4).toString());
         assertStringEquals(
                 "File html should have been appended to body element",
                 "<script type=\"text/javascript\">\n"
@@ -918,12 +922,12 @@ public class BootstrapHandlerTest {
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
-                allElements.get(allElements.size() - 2).toString());
+                allElements.get(allElements.size() - 3).toString());
         assertStringEquals(
                 "File javascript should have been appended to body element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(allElements.size() - 1).toString());
+                allElements.get(allElements.size() - 2).toString());
     }
 
     @Test // 3010

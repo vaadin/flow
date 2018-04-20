@@ -24,14 +24,15 @@ import java.io.StringReader;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.util.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.communication.PushConstants;
 
 import elemental.json.JsonObject;
@@ -146,6 +147,9 @@ public class AtmospherePushConnection implements PushConnection {
      */
     public AtmospherePushConnection(UI ui) {
         this.ui = ui;
+
+        UsageStatistics.markAsUsed("flow/AtmospherePushConnection",
+                getAtmosphereVersion());
     }
 
     /**
@@ -339,8 +343,7 @@ public class AtmospherePushConnection implements PushConnection {
         try {
             resource.close();
         } catch (IOException e) {
-            getLogger().info("Error when closing push connection",
-                    e);
+            getLogger().info("Error when closing push connection", e);
         }
         connectionLost();
     }
@@ -363,7 +366,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     /**
      * Returns the state of this connection.
-     * 
+     *
      * @return the state of this connection
      */
     protected State getState() {
@@ -389,7 +392,8 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(AtmospherePushConnection.class.getName());
+        return LoggerFactory
+                .getLogger(AtmospherePushConnection.class.getName());
     }
 
     /**
@@ -399,8 +403,9 @@ public class AtmospherePushConnection implements PushConnection {
      * @since 7.6
      */
     public static void enableAtmosphereDebugLogging() {
-        getLogger().warn( "Enable logging of 'org.atmosphere' through your slf4j implementation"
-            + " instead (i.e.: logback, log4j, etc)" );
+        getLogger()
+                .warn("Enable logging of 'org.atmosphere' through your slf4j implementation"
+                        + " instead (i.e.: logback, log4j, etc)");
     }
 
 }
