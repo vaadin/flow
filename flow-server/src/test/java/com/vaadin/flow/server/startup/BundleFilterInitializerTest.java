@@ -178,14 +178,6 @@ public class BundleFilterInitializerTest {
     }
 
     @Test
-    public void null_bundle_manifest_stream_no_dependency_filter_added() {
-        new BundleFilterInitializer().serviceInit(event);
-
-        Mockito.verify(event, Mockito.never())
-                .addDependencyFilter(any(DependencyFilter.class));
-    }
-
-    @Test
     public void empty_bundle_manifest_stream_no_dependency_filter_added() {
         mocks.getServlet()
                 .addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST, "{}");
