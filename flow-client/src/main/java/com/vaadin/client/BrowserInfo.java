@@ -56,14 +56,6 @@ public class BrowserInfo {
     private BrowserDetails browserDetails;
     private boolean touchDevice;
 
-    static {
-        // Add browser dependent v-* classnames to body to help css hacks
-        String browserClassnames = get().getCSSClass();
-        for (String className : browserClassnames.split(" ")) {
-            Browser.getDocument().getBody().getClassList().add(className);
-        }
-    }
-
     private BrowserInfo() {
         browserDetails = new BrowserDetails(getBrowserString());
 
@@ -103,117 +95,6 @@ public class BrowserInfo {
     /*-{
         return !!navigator.msMaxTouchPoints;
     }-*/;
-
-    /**
-     * Returns a string representing the browser in use, for use in CSS
-     * classnames. The classnames will be space separated abbreviations,
-     * optionally with a version appended.
-     *
-     * Abbreviations: Firefox: ff Internet Explorer: ie Safari: sa Opera: op
-     *
-     * Browsers that CSS-wise behave like each other will get the same
-     * abbreviation (this usually depends on the rendering engine).
-     *
-     * This is quite simple at the moment, more heuristics will be added when
-     * needed.
-     *
-     * Examples: Internet Explorer 6: ".v-ie .v-ie6 .v-ie60", Firefox 3.0.4:
-     * ".v-ff .v-ff3 .v-ff30", Opera 9.60: ".v-op .v-op9 .v-op960", Opera 10.10:
-     * ".v-op .v-op10 .v-op1010"
-     *
-     * @return
-     */
-    private String getCSSClass() {
-        String prefix = "v-";
-
-        if (cssClass == null) {
-            String browserIdentifier = "";
-            String majorVersionClass = "";
-            String minorVersionClass = "";
-            String browserEngineClass = "";
-
-            if (browserDetails.isFirefox()) {
-                browserIdentifier = BROWSER_FIREFOX;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
-                browserEngineClass = ENGINE_GECKO;
-            } else if (browserDetails.isChrome()) {
-                // TODO update when Chrome is more stable
-                browserIdentifier = BROWSER_SAFARI;
-                majorVersionClass = "ch";
-                browserEngineClass = ENGINE_WEBKIT;
-            } else if (browserDetails.isSafari()) {
-                browserIdentifier = BROWSER_SAFARI;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
-                browserEngineClass = ENGINE_WEBKIT;
-            } else if (browserDetails.isIE()) {
-                browserIdentifier = BROWSER_IE;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
-                browserEngineClass = ENGINE_TRIDENT;
-            } else if (browserDetails.isEdge()) {
-                browserIdentifier = BROWSER_EDGE;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
-                browserEngineClass = "";
-            } else if (browserDetails.isOpera()) {
-                browserIdentifier = BROWSER_OPERA;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
-                browserEngineClass = ENGINE_PRESTO;
-            }
-
-            cssClass = prefix + browserIdentifier;
-            if (!"".equals(majorVersionClass)) {
-                cssClass = cssClass + " " + prefix + majorVersionClass;
-            }
-            if (!"".equals(minorVersionClass)) {
-                cssClass = cssClass + " " + prefix + minorVersionClass;
-            }
-            if (!"".equals(browserEngineClass)) {
-                cssClass = cssClass + " " + prefix + browserEngineClass;
-            }
-            String osClass = getOperatingSystemClass();
-            if (osClass != null) {
-                cssClass = cssClass + " " + osClass;
-            }
-            if (isTouchDevice()) {
-                cssClass = cssClass + " " + prefix + UI_TOUCH;
-            }
-        }
-
-        return cssClass;
-    }
-
-    private String getOperatingSystemClass() {
-        String prefix = "v-";
-
-        if (browserDetails.isAndroid()) {
-            return prefix + OS_ANDROID;
-        } else if (browserDetails.isIOS()) {
-            String iosClass = prefix + OS_IOS;
-            return iosClass + " " + iosClass + getOperatingSystemMajorVersion();
-        } else if (browserDetails.isWindows()) {
-            return prefix + OS_WINDOWS;
-        } else if (browserDetails.isLinux()) {
-            return prefix + OS_LINUX;
-        } else if (browserDetails.isMacOSX()) {
-            return prefix + OS_MACOSX;
-        }
-        // Unknown OS
-        return null;
-    }
 
     /**
      * Checks if the browser is IE.
