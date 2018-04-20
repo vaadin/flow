@@ -57,7 +57,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.startup.RouteRegistry;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -117,8 +116,6 @@ public class UI extends Component
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
-        getElement().getClassList()
-                .add(ApplicationConstants.GENERATED_BODY_CLASSNAME);
     }
 
     /**
