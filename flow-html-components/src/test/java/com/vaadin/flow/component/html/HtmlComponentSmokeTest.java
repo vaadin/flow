@@ -63,6 +63,7 @@ public class HtmlComponentSmokeTest {
         testValues.put(String.class, "asdf");
         testValues.put(boolean.class, false);
         testValues.put(NumberingType.class, NumberingType.LOWERCASE_ROMAN);
+        testValues.put(int.class, 42);
     }
 
     @Test
