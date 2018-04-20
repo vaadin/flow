@@ -86,26 +86,28 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         String mainBundle = null;
 
         for (String bundlePath : bundlesToUrlsContained.keys()) {
+            String frontendBundlePath = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                    + bundlePath;
+            if (!service.isResourceAvailable(frontendBundlePath, es6Browser,
+                    null)) {
+                throw new IllegalArgumentException(String.format(
+                        "Failed to find bundle '%s', specified in manifest '%s'. Remove file reference from the manifest to disable bundle usage or add the bundle to the path specified.",
+                        frontendBundlePath, FLOW_BUNDLE_MANIFEST));
+            }
+
+            if (bundlePath.startsWith(MAIN_BUNDLE_NAME_PREFIX)) {
+                if (mainBundle == null) {
+                    mainBundle = bundlePath;
+                } else {
+                    throw new IllegalArgumentException(String.format(
+                            "Flow bundle manifest '%s' contains multiple bundle files with name that starts with '%s'. This prefix is reserved for Flow purposes and you should not use it to name your fragments.",
+                            FLOW_BUNDLE_MANIFEST, MAIN_BUNDLE_NAME_PREFIX));
+                }
+            }
+
             JsonArray bundledFiles = bundlesToUrlsContained
                     .getArray(bundlePath);
             for (int i = 0; i < bundledFiles.length(); i++) {
-                String frontendBundlePath = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-                        + bundlePath;
-                if (!service.isResourceAvailable(frontendBundlePath, es6Browser,
-                        null)) {
-                    throw new IllegalArgumentException(String.format(
-                            "Failed to find bundle '%s', specified in manifest '%s'. Remove file reference from the manifest to disable bundle usage or add the bundle to the path specified.",
-                            frontendBundlePath, FLOW_BUNDLE_MANIFEST));
-                }
-                if (bundlePath.startsWith(MAIN_BUNDLE_NAME_PREFIX)) {
-                    if (mainBundle == null) {
-                        mainBundle = bundlePath;
-                    } else {
-                        throw new IllegalArgumentException(String.format(
-                                "Flow bundle manifest '%s' contains multiple bundle files with name that starts with '%s'. This prefix is reserved for Flow purposes and you should not use it to name your fragments.",
-                                FLOW_BUNDLE_MANIFEST, MAIN_BUNDLE_NAME_PREFIX));
-                    }
-                }
                 importToBundle.computeIfAbsent(bundledFiles.getString(i),
                         key -> new HashSet<>()).add(bundlePath);
             }
