@@ -22,7 +22,7 @@ import com.vaadin.flow.dom.Element;
  *
  * @author Vaadin Ltd
  */
-public class Text extends Component {
+public class Text extends Component implements HasElement {
 
     /**
      * Creates an instance using the given text.
