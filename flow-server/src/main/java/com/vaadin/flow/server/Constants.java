@@ -87,7 +87,7 @@ public final class Constants implements Serializable {
      * Configuration name for the parameter that determines if Flow should use
      * bundled fragments or not.
      */
-    public static final String DISABLE_BUNDLE = "disable.bundle";
+    public static final String USE_ORIGINAL_FRONTEND_RESOURCES = "originalFrontendResources";
 
     /**
      * I18N provider property.

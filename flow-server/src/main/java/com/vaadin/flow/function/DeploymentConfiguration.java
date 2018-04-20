@@ -244,7 +244,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the ES6 resource URL
      */
     default String getEs6FrontendPrefix() {
-        return isBundleEnabled()
+        return useCompiledFrontendResources()
                 ? getStringProperty(Constants.FRONTEND_URL_ES6,
                         Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
@@ -257,7 +257,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the ES5 resource URL
      */
     default String getEs5FrontendPrefix() {
-        return isBundleEnabled()
+        return useCompiledFrontendResources()
                 ? getStringProperty(Constants.FRONTEND_URL_ES5,
                         Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
@@ -272,18 +272,18 @@ public interface DeploymentConfiguration extends Serializable {
      * @return {@code true} if webJars are enabled, {@code false} otherwise
      */
     default boolean areWebJarsEnabled() {
-        return !getBooleanProperty(Constants.DISABLE_WEBJARS, isBundleEnabled());
+        return !getBooleanProperty(Constants.DISABLE_WEBJARS, useCompiledFrontendResources());
     }
 
     /**
-     * Determines if Flow should use bundled fragments or the original files.
+     * Determines if Flow should use bundled fragments or the original frontend resources.
      *
-     * User can explicitly disable bundle usage by setting the {@link Constants#DISABLE_BUNDLE}
-     * property to {@code true}.
-     * 
+     * User can explicitly disable bundled resources usage by setting the
+     * {@link Constants#USE_ORIGINAL_FRONTEND_RESOURCES} property to {@code true}.
+     *
      * @return {@code true} if Flow should use bundled fragments.
      */
-    default boolean isBundleEnabled() {
-        return isProductionMode() && !getBooleanProperty(Constants.DISABLE_BUNDLE, false);
+    default boolean useCompiledFrontendResources() {
+        return isProductionMode() && !getBooleanProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
     }
 }

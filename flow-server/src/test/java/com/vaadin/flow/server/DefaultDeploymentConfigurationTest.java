@@ -186,15 +186,15 @@ public class DefaultDeploymentConfigurationTest {
         Properties initParameters = new Properties();
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
         DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
-        Assert.assertTrue(config.isBundleEnabled());
+        Assert.assertTrue(config.useCompiledFrontendResources());
     }
 
     @Test
     public void bundleCanBeDisabled() {
         Properties initParameters = new Properties();
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        initParameters.setProperty(Constants.DISABLE_BUNDLE, "true");
+        initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
         DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
-        Assert.assertFalse(config.isBundleEnabled());
+        Assert.assertFalse(config.useCompiledFrontendResources());
     }
 }
