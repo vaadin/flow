@@ -630,7 +630,9 @@ public class ComponentGenerator {
         removeMethod.setBody(
                 String.format("for (Component component : components) {%n"
                         + "if (getElement().equals(component.getElement().getParent())) {%n"
+                        + "if(component.getElement().hasAttribute(\"slot\")) {%n"
                         + "component.getElement().removeAttribute(\"slot\");%n"
+                        + "}%n"
                         + "getElement().removeChild(component.getElement());%n "
                         + "}%n" + "else {%n"
                         + "throw new IllegalArgumentException(\"The given component (\" + component + \") is not a child of this component\");%n"
@@ -653,7 +655,8 @@ public class ComponentGenerator {
         setMethodVisibility(removeAllMethod);
 
         removeAllMethod.setBody(String.format(
-                "getElement().getChildren().forEach(child -> child.removeAttribute(\"slot\"));%n"
+                "getElement().getChildren().forEach(child -> {%nif(child.hasAttribute(\"slot\")) {%n"
+                        + "child.removeAttribute(\"slot\");%n}%n});%n"
                         + "getElement().removeAllChildren();"));
         if (useOverrideAnnotation) {
             removeAllMethod.addAnnotation(Override.class);

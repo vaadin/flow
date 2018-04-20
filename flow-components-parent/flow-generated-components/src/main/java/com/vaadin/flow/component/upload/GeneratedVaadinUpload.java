@@ -1376,7 +1376,9 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
     protected void remove(Component... components) {
         for (Component component : components) {
             if (getElement().equals(component.getElement().getParent())) {
-                component.getElement().removeAttribute("slot");
+                if (component.getElement().hasAttribute("slot")) {
+                    component.getElement().removeAttribute("slot");
+                }
                 getElement().removeChild(component.getElement());
             } else {
                 throw new IllegalArgumentException("The given component ("
@@ -1391,8 +1393,11 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      * this component using the {@link Element} API.
      */
     protected void removeAll() {
-        getElement().getChildren()
-                .forEach(child -> child.removeAttribute("slot"));
+        getElement().getChildren().forEach(child -> {
+            if (child.hasAttribute("slot")) {
+                child.removeAttribute("slot");
+            }
+        });
         getElement().removeAllChildren();
     }
 }
