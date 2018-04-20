@@ -469,7 +469,6 @@ public class Element extends Node<Element> {
             if (customAttribute.isPresent()) {
                 customAttribute.get().removeAttribute(this);
             } else {
-                // Only the BasicElementStateProvider supports removeAttribute
                 getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
             }
         }
