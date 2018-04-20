@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -35,11 +36,13 @@ public class HtmlDependencyParserTest {
 
     private TestVaadinServlet servlet;
     private MockServletServiceSessionSetup mocks;
+    private TestVaadinServletService service;
 
     @Before
     public void setUp() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         servlet = mocks.getServlet();
+        service = mocks.getService();
     }
 
     @After
@@ -54,7 +57,7 @@ public class HtmlDependencyParserTest {
         servlet.addServletContextResource("/frontend/foo.html", "");
 
         HtmlDependencyParser parser = new HtmlDependencyParser(root);
-        Collection<String> dependencies = parser.parseDependencies();
+        Collection<String> dependencies = parser.parseDependencies(service);
         Assert.assertTrue(
                 "Dependencies parser doesn't return the root URI but '"
                         + dependencies + "'",
@@ -79,7 +82,7 @@ public class HtmlDependencyParserTest {
                 "");
         servlet.addServletContextResource("/absolute.html", "");
 
-        Collection<String> dependencies = parser.parseDependencies();
+        Collection<String> dependencies = parser.parseDependencies(service);
 
         Assert.assertEquals(5, dependencies.size());
         servlet.verifyServletContextResourceLoadedOnce("/frontend/" + root);
@@ -115,7 +118,7 @@ public class HtmlDependencyParserTest {
         servlet.addServletContextResource("/frontend/foo.html", importContent);
         servlet.addServletContextResource("/frontend/relative.html", "");
 
-        Collection<String> dependencies = parser.parseDependencies();
+        Collection<String> dependencies = parser.parseDependencies(service);
 
         Assert.assertEquals(2, dependencies.size());
 
@@ -136,7 +139,7 @@ public class HtmlDependencyParserTest {
                 "<link rel='import' href='relative1.html'>");
         servlet.addServletContextResource("/frontend/relative1.html", "");
 
-        Collection<String> dependencies = parser.parseDependencies();
+        Collection<String> dependencies = parser.parseDependencies(service);
 
         Assert.assertEquals(3, dependencies.size());
 
@@ -162,7 +165,7 @@ public class HtmlDependencyParserTest {
         servlet.addServletContextResource("/frontend/foo.html", importContent);
         servlet.addServletContextResource("/frontend/relative.html", "");
 
-        Collection<String> dependencies = parser.parseDependencies();
+        Collection<String> dependencies = parser.parseDependencies(service);
 
         Assert.assertEquals(2, dependencies.size());
 
