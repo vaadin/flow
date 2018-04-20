@@ -59,8 +59,8 @@ public class InternalServerErrorTest {
 
         InternalServerError testInstance = new InternalServerError();
 
-        testInstance.setErrorParameter(event,
-                new ErrorParameter<>(new NullPointerException("foo")));
+        testInstance.setErrorParameter(event, new ErrorParameter<>(
+                Exception.class, new NullPointerException("foo")));
 
         Assert.assertEquals(
                 "Only a text node with exception message should be shown", 1,
@@ -79,8 +79,8 @@ public class InternalServerErrorTest {
             }
         };
 
-        testInstance.setErrorParameter(event,
-                new ErrorParameter<>(new NullPointerException("foo")));
+        testInstance.setErrorParameter(event, new ErrorParameter<>(
+                Exception.class, new NullPointerException("foo")));
 
         Assert.assertEquals(
                 "3 elements should be shown: exception text, warning about log binding absence and exception stacktrace",
@@ -109,8 +109,8 @@ public class InternalServerErrorTest {
             }
         };
 
-        testInstance.setErrorParameter(event,
-                new ErrorParameter<>(new NullPointerException("foo")));
+        testInstance.setErrorParameter(event, new ErrorParameter<>(
+                Exception.class, new NullPointerException("foo")));
 
         Assert.assertEquals(
                 "2 elements should be shown: exception text and exception stacktrace",

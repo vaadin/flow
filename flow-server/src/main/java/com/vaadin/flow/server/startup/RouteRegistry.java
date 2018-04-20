@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +29,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +62,52 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 public class RouteRegistry implements Serializable {
 
+    /**
+     * A pair of a navigation target for handling exceptions and the exception
+     * type handled by the navigation target.
+     */
+    public static class ErrorTargetEntry {
+        private final Class<? extends Component> navigationTarget;
+        private final Class<? extends Exception> handledExceptionType;
+
+        /**
+         * Creates a new new entry with the given navigation target type and
+         * exception type.
+         *
+         * @param navigationTarget
+         *            the navigation target type, not <code>null</code>
+         * @param handledExceptionType
+         *            the exception type handled by the navigation target, not
+         *            <code>null</code>
+         */
+        public ErrorTargetEntry(Class<? extends Component> navigationTarget,
+                Class<? extends Exception> handledExceptionType) {
+            assert navigationTarget != null;
+            assert handledExceptionType != null;
+
+            this.navigationTarget = navigationTarget;
+            this.handledExceptionType = handledExceptionType;
+        }
+
+        /**
+         * Gets the navigation target type.
+         *
+         * @return the navigation target type, not <code>null</code>
+         */
+        public Class<? extends Component> getNavigationTarget() {
+            return navigationTarget;
+        }
+
+        /**
+         * Gets the exception type handled by the navigation target.
+         *
+         * @return the exception type, not <code>null</code>
+         */
+        public Class<? extends Exception> getHandledExceptionType() {
+            return handledExceptionType;
+        }
+    }
+
     private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
             .of(RouteNotFoundError.class, InternalServerError.class)
@@ -69,7 +115,7 @@ public class RouteRegistry implements Serializable {
 
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
-    private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
+    private final AtomicReference<Map<Class<? extends Exception>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
     private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
     /**
@@ -80,7 +126,7 @@ public class RouteRegistry implements Serializable {
 
     /**
      * Loads the Lumo theme class from the classpath if it is available.
-     * 
+     *
      * @return the Lumo ThemeDefinition, or <code>null</code> if it is not
      *         available in the classpath
      */
@@ -165,11 +211,12 @@ public class RouteRegistry implements Serializable {
      */
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
-        Map<Class<?>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
+        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
         errorNavigationTargets.removeAll(defaultErrorHandlers);
         for (Class<? extends Component> target : errorNavigationTargets) {
-            Class<?> exceptionType = ReflectTools
-                    .getGenericInterfaceType(target, HasErrorParameter.class);
+            Class<? extends Exception> exceptionType = ReflectTools
+                    .getGenericInterfaceType(target, HasErrorParameter.class)
+                    .asSubclass(Exception.class);
 
             if (exceptionTargetsMap.containsKey(exceptionType)) {
                 handleRegisteredExceptionType(exceptionTargetsMap, target,
@@ -249,8 +296,9 @@ public class RouteRegistry implements Serializable {
      *            type of the handled exception
      */
     private void handleRegisteredExceptionType(
-            Map<Class<?>, Class<? extends Component>> exceptionTargetsMap,
-            Class<? extends Component> target, Class<?> exceptionType) {
+            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
+            Class<? extends Component> target,
+            Class<? extends Exception> exceptionType) {
         Class<? extends Component> registered = exceptionTargetsMap
                 .get(exceptionType);
 
@@ -266,7 +314,7 @@ public class RouteRegistry implements Serializable {
     }
 
     private void initErrorTargets(
-            Map<Class<?>, Class<? extends Component>> exceptionTargetsMap) {
+            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
         if (!exceptionTargetsMap.containsKey(NotFoundException.class)) {
             exceptionTargetsMap.put(NotFoundException.class,
                     RouteNotFoundError.class);
@@ -287,39 +335,47 @@ public class RouteRegistry implements Serializable {
      *
      * @param exception
      *            exception to search error view for
-     * @return optional error target corresponding to the given exception
+     * @return optional error target entry corresponding to the given exception
      */
-    public Optional<Class<? extends Component>> getErrorNavigationTarget(
-            Throwable exception) {
+    public Optional<ErrorTargetEntry> getErrorNavigationTarget(
+            Exception exception) {
         if (!errorNavigationTargetsInitialized()) {
             initErrorTargets(new HashMap<>());
         }
-        Class<? extends Component> result = searchByCause(exception);
+        ErrorTargetEntry result = searchByCause(exception);
         if (result == null) {
             result = searchBySuperType(exception);
         }
         return Optional.ofNullable(result);
     }
 
-    private Class<? extends Component> searchByCause(Throwable exception) {
-        if (exceptionTargets.get().containsKey(exception.getClass())) {
-            return exceptionTargets.get().get(exception.getClass());
+    private ErrorTargetEntry searchByCause(Exception exception) {
+        Class<? extends Component> targetClass = exceptionTargets.get()
+                .get(exception.getClass());
+
+        if (targetClass != null) {
+            return new ErrorTargetEntry(targetClass, exception.getClass());
         }
-        if (exception.getCause() != null) {
-            return searchByCause(exception.getCause());
+
+        Throwable cause = exception.getCause();
+        if (cause instanceof Exception) {
+            return searchByCause((Exception) cause);
         }
         return null;
     }
 
-    private Class<? extends Component> searchBySuperType(Throwable exception) {
+    private ErrorTargetEntry searchBySuperType(Throwable exception) {
         Class<?> superClass = exception.getClass().getSuperclass();
-        do {
-            if (exceptionTargets.get().containsKey(superClass)) {
-                return exceptionTargets.get().get(superClass);
+        while (superClass != null
+                && Exception.class.isAssignableFrom(superClass)) {
+            Class<? extends Component> targetClass = exceptionTargets.get()
+                    .get(superClass);
+            if (targetClass != null) {
+                return new ErrorTargetEntry(targetClass,
+                        superClass.asSubclass(Exception.class));
             }
             superClass = superClass.getSuperclass();
-        } while (superClass != null
-                && Throwable.class.isAssignableFrom(superClass));
+        }
 
         return null;
     }
