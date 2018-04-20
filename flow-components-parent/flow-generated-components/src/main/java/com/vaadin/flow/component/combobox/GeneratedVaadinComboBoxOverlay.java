@@ -75,8 +75,15 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
     }
 
     /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The template of the overlay content.
+     * <p>
      * This property is synchronized automatically from client side when a
      * 'template-changed' event happens.
+     * </p>
      * 
      * @return the {@code template} property from the webcomponent
      */
@@ -86,6 +93,13 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
     }
 
     /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The template of the overlay content.
+     * </p>
+     * 
      * @param template
      *            the JsonObject value to set
      */
@@ -94,8 +108,47 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
     }
 
     /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Optional argument for {@code Polymer.Templatize.templatize}.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code instanceProps} property from the webcomponent
+     */
+    protected JsonObject getInstancePropsJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("instanceProps");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Optional argument for {@code Polymer.Templatize.templatize}.
+     * </p>
+     * 
+     * @param instanceProps
+     *            the JsonObject value to set
+     */
+    protected void setInstanceProps(JsonObject instanceProps) {
+        getElement().setPropertyJson("instanceProps", instanceProps);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * References the content container after the template is stamped.
+     * <p>
      * This property is synchronized automatically from client side when a
      * 'content-changed' event happens.
+     * </p>
      * 
      * @return the {@code content} property from the webcomponent
      */
@@ -105,6 +158,13 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
     }
 
     /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * References the content container after the template is stamped.
+     * </p>
+     * 
      * @param content
      *            the JsonObject value to set
      */
