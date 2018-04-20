@@ -27,12 +27,6 @@ import com.vaadin.flow.component.internal.UIInternals;
 public class ApplicationConstants implements Serializable {
 
     /**
-     * A class name automatically added to the &lt;body&gt; tag when written by
-     * the framework.
-     */
-    public static final String GENERATED_BODY_CLASSNAME = "v-generated-body";
-
-    /**
      * Protocol used for referencing the application context path.
      */
     public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
