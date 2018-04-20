@@ -63,6 +63,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class BootstrapHandlerTest {
 
     static final String UI_TITLE = "UI_TITLE";
@@ -338,8 +341,6 @@ public class BootstrapHandlerTest {
     private VaadinSession session;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private WebBrowser browser;
-    private VaadinServlet servlet;
     private MockServletServiceSessionSetup mocks;
 
     @Before
@@ -355,7 +356,6 @@ public class BootstrapHandlerTest {
 
         deploymentConfiguration = mocks.getDeploymentConfiguration();
 
-        servlet = mocks.getServlet();
         service = mocks.getService();
         service.setRouteRegistry(routeRegistry);
         service.setRouter(new Router(routeRegistry) {

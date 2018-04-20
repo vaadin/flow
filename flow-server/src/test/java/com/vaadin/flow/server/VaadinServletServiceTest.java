@@ -12,6 +12,9 @@ import org.junit.Test;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class VaadinServletServiceTest {
 
     private final class TestTheme implements AbstractTheme {
