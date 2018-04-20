@@ -22,7 +22,7 @@ import com.vaadin.flow.dom.Element;
  *
  * @author Vaadin Ltd
  */
-public class Text extends Component {
+public class Text extends Component implements HasText {
 
     /**
      * Creates an instance using the given text.
@@ -40,6 +40,7 @@ public class Text extends Component {
      * @param text
      *            the text of the component, not <code>null</code>
      */
+    @Override
     public void setText(String text) {
         if (text == null) {
             throw new IllegalArgumentException("The text must not be null");
@@ -52,6 +53,7 @@ public class Text extends Component {
      *
      * @return the text of the component, not <code>null</code>
      */
+    @Override
     public String getText() {
         return getElement().getText();
     }
