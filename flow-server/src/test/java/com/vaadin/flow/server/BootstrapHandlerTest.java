@@ -1,6 +1,11 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +17,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -36,7 +43,6 @@ import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
@@ -56,12 +62,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import net.jcip.annotations.NotThreadSafe;
 
+@NotThreadSafe
 public class BootstrapHandlerTest {
 
     static final String UI_TITLE = "UI_TITLE";
@@ -337,8 +340,6 @@ public class BootstrapHandlerTest {
     private VaadinSession session;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private WebBrowser browser;
-    private VaadinServlet servlet;
     private MockServletServiceSessionSetup mocks;
 
     @Before
@@ -354,7 +355,6 @@ public class BootstrapHandlerTest {
 
         deploymentConfiguration = mocks.getDeploymentConfiguration();
 
-        servlet = mocks.getServlet();
         service = mocks.getService();
         service.setRouteRegistry(routeRegistry);
         service.setRouter(new Router(routeRegistry) {

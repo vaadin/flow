@@ -36,6 +36,9 @@ import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
 public class BootstrapHandlerPushConfigurationTest {
 
     private BootstrapHandlerTest.TestUI testUI;
