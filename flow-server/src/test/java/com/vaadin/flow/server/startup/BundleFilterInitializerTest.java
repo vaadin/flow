@@ -93,7 +93,7 @@ public class BundleFilterInitializerTest {
 
     public void when_bundle_disabled_doesnt_fail() {
         mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
-                Constants.DISABLE_BUNDLE, "true");
+                Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
         new BundleFilterInitializer().serviceInit(event);
     }
 

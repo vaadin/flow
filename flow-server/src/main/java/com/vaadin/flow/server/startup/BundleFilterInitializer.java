@@ -51,7 +51,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
     public void serviceInit(ServiceInitEvent event) {
         DeploymentConfiguration deploymentConfiguration = event.getSource()
                 .getDeploymentConfiguration();
-        if (!deploymentConfiguration.isBundleEnabled()) {
+        if (!deploymentConfiguration.useCompiledFrontendResources()) {
             return;
         }
 
@@ -84,9 +84,9 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                 throw new IllegalArgumentException(String.format(
                         "Failed to find the bundle manifest file '%s' in the servlet context."
                         + " If you are running a dev-mode servlet container in maven e.g. `jetty:run` change it to `jetty:run-exploded`."
-                        + " If you are not building bundles, include the 'flow-maven-plugin' in your build script."
-                        + " Otherwise, you can skip this error by disabling production mode, or by setting the servlet parameter '%s=true'.",
-                        manifestResource, Constants.DISABLE_BUNDLE));
+                        + " If you are not compiling frontend resources, include the 'flow-maven-plugin' in your build script."
+                        + " Otherwise, you can skip this error either by disabling production mode, or by setting the servlet parameter '%s=true'.",
+                        manifestResource, Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
             }
 
             JsonObject bundlesToUrlsContained = Json.parse(IOUtils
