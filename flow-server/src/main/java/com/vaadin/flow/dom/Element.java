@@ -464,13 +464,14 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        Optional<CustomAttribute> customAttribute = CustomAttribute
-                .get(lowerCaseAttribute);
-        if (customAttribute.isPresent()) {
-            customAttribute.get().removeAttribute(this);
-        } else if (getStateProvider() instanceof BasicElementStateProvider) {
-            // Only the BasicElementStateProvider supports removeAttribute
-            getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
+        if(hasAttribute(lowerCaseAttribute)) {
+            Optional<CustomAttribute> customAttribute = CustomAttribute.get(lowerCaseAttribute);
+            if (customAttribute.isPresent()) {
+                customAttribute.get().removeAttribute(this);
+            } else {
+                // Only the BasicElementStateProvider supports removeAttribute
+                getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
+            }
         }
         return this;
     }
