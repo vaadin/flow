@@ -83,22 +83,22 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
                 By.id("multiSyncValueAsNumberLabel"));
         multiSyncValue.sendKeys("123");
         waitUntil(driver -> "Server value: 123"
-                .equals(multiSyncValueLabel.getText()), 2000);
+                .equals(multiSyncValueLabel.getText()), 2);
         Assert.assertEquals("", multiSyncValueAsNumberLabel.getText());
         blur();
         waitUntil(driver -> "Server value: 123"
-                .equals(multiSyncValueLabel.getText()), 2000);
+                .equals(multiSyncValueLabel.getText()), 2);
         Assert.assertEquals("Server valueAsNumber: 123",
                 multiSyncValueAsNumberLabel.getText());
 
         multiSyncValue.sendKeys("456");
         waitUntil(driver -> "Server value: 123456"
-                .equals(multiSyncValueLabel.getText()), 2000);
+                .equals(multiSyncValueLabel.getText()), 2);
         Assert.assertEquals("Server valueAsNumber: 123",
                 multiSyncValueAsNumberLabel.getText());
         blur();
         waitUntil(driver -> "Server value: 123456"
-                .equals(multiSyncValueLabel.getText()), 2000);
+                .equals(multiSyncValueLabel.getText()), 2);
         Assert.assertEquals("Server valueAsNumber: 123456",
                 multiSyncValueAsNumberLabel.getText());
     }
