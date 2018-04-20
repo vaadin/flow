@@ -88,13 +88,11 @@ public class BundleFilterInitializerTest {
                 .addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST);
         Mockito.when(mocks.getServlet().getServletContext()
                 .getResourceAsStream(FRONTEND_ES6_BUNDLE_MANIFEST))
-                .thenAnswer(i -> {
-                    return new InputStream() {
-                        @Override
-                        public int read() throws IOException {
-                            throw new IOException("Intentionally failed");
-                        }
-                    };
+                .thenAnswer(i -> new InputStream() {
+                    @Override
+                    public int read() throws IOException {
+                        throw new IOException("Intentionally failed");
+                    }
                 });
 
         expectedException.expect(UncheckedIOException.class);
@@ -197,9 +195,9 @@ public class BundleFilterInitializerTest {
         mocks.getServlet().addServletContextResource(
                 FRONTEND_ES6_BUNDLE_MANIFEST,
                 String.format(
-                        "{'fragment-1':['dependency-1', 'dependency-2'],'fragment-2':['dependency-3', 'dependency-4'],'%s':['dependency-0']}",
+                        "{'fragment-1':['dependency-1', 'dependency-2'],'fragment-2':['dependency-3', 'dependency-4'],'%s':['dependency-0', 'dependency-5']}",
                         bundleName));
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             mocks.getServlet()
                     .addServletContextResource("/frontend-es6/dependency-" + i);
         }
@@ -216,7 +214,7 @@ public class BundleFilterInitializerTest {
 
     private void createDependencyFilter(String bundleName) {
         dependencyFilterAddHandler = dependencyFilter -> {
-            List<Dependency> dependencies = IntStream.range(0, 5)
+            List<Dependency> dependencies = IntStream.range(0, 6)
                     .mapToObj(number -> new Dependency(
                             Dependency.Type.HTML_IMPORT, "dependency-" + number,
                             LoadMode.EAGER))
