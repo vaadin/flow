@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -32,22 +33,47 @@ import java.util.function.Function;
 public class ReflectionCache<C, T> {
     private final ConcurrentHashMap<Class<? extends C>, T> values = new ConcurrentHashMap<>();
 
-    private final Function<? extends Class<C>, T> valueProvider;
+    private final Function<Class<? extends C>, T> valueProvider;
 
     /**
      * Creates a new reflection cache with the given value provider. The value
      * provider will be used to produce a new cached value whenever there is a
-     * cache miss.
+     * cache miss. It will be run in a context where no {@link CurrentInstance}
+     * is available to prevent accidentally caching values that are computed
+     * differently depending on external circumstances.
      *
      * @param valueProvider
      *            a function that computes the cached value for a class, not
      *            <code>null</code>
      */
-    public ReflectionCache(Function<? extends Class<C>, T> valueProvider) {
+    public ReflectionCache(Function<Class<C>, T> valueProvider) {
         if (valueProvider == null) {
             throw new IllegalArgumentException("value provider cannot be null");
         }
-        this.valueProvider = valueProvider;
+        this.valueProvider = wrapValueProvider(valueProvider);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static <C, T> Function<Class<? extends C>, T> wrapValueProvider(
+            Function<Class<C>, T> valueProvider) {
+        return type -> {
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance
+                    .getInstances();
+            try {
+                CurrentInstance.clearAll();
+
+                /*
+                 * Raw cast to deal with weird generics of valueProvider which
+                 * in turn is there to deal with the fact that javac in some
+                 * cases cannot infer type parameters for Foo::new as a
+                 * Function<Class<? extends C>, T> even when Foo has a
+                 * constructor that takes Class<? extends Something>.
+                 */
+                return (T) ((Function) valueProvider).apply(type);
+            } finally {
+                CurrentInstance.restoreInstances(instances);
+            }
+        };
     }
 
     /**
@@ -59,16 +85,8 @@ public class ReflectionCache<C, T> {
      *            the type for which to get reflection results
      * @return the reflection results
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public T get(Class<? extends C> type) {
-        /*
-         * Raw cast since the mapping function is declared to accept <? super
-         * K>, which in this case becomes <? super Class<?>>, which isn't
-         * compatible with Class<C>.
-         */
-        Object value = values.computeIfAbsent(type, (Function) valueProvider);
-        // Explicit cast since javac doesn't agree with ecj
-        return (T) value;
+        return values.computeIfAbsent(type, valueProvider);
     }
 
     /**
