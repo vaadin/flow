@@ -49,6 +49,7 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
@@ -1053,7 +1054,7 @@ public class ComponentTest {
     @Test
     public void usesComponent() {
         UsesComponentWithDependencies s = new UsesComponentWithDependencies();
-        UI ui = new UI();
+        UI ui = new MockUI();
         ui.getInternals().addComponentDependencies(s.getClass());
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
@@ -1072,7 +1073,7 @@ public class ComponentTest {
 
     @Test
     public void usesChain() {
-        UIInternals internals = new UI().getInternals();
+        UIInternals internals = new MockUI().getInternals();
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
@@ -1093,7 +1094,7 @@ public class ComponentTest {
 
     @Test
     public void circularDependencies() {
-        UIInternals internals = new UI().getInternals();
+        UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
 
         internals.addComponentDependencies(CircularDependencies1.class);
@@ -1106,7 +1107,7 @@ public class ComponentTest {
         assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
                 pendingDependencies);
 
-        internals = new UI().getInternals();
+        internals = new MockUI().getInternals();
         dependencyList = internals.getDependencyList();
         internals.addComponentDependencies(CircularDependencies2.class);
         pendingDependencies = getDependenciesMap(
