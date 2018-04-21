@@ -36,6 +36,7 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Utility methods for {@link Component}.
@@ -396,13 +397,16 @@ public class ComponentUtil {
      * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
      * {@link Uses}).
      *
+     * @param service
+     *            the service to use for resolving dependencies
      * @param componentClass
      *            the component class to check
      * @return the dependencies for the given class
      */
-    public static DependencyInfo getDependencies(
+    public static DependencyInfo getDependencies(VaadinService service,
             Class<? extends Component> componentClass) {
-        return componentMetaDataCache.get(componentClass).getDependencyInfo();
+        return componentMetaDataCache.get(componentClass)
+                .getDependencyInfo(service);
     }
 
 }

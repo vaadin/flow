@@ -92,4 +92,25 @@ public class ReflectionCacheTest {
         cache1 = null;
         Assert.assertTrue(TestUtil.isGarbageCollected(ref));
     }
+
+    @Test
+    public void testCurrentInstances() {
+        String currentString = "My string";
+        ReflectionCache<Object, String> cache = new ReflectionCache<>(
+                type -> type.getSimpleName() + ": "
+                        + CurrentInstance.get(String.class));
+
+        CurrentInstance.set(String.class, currentString);
+        try {
+            String result = cache.get(Object.class);
+
+            Assert.assertEquals("Current instance should not be in the result",
+                    "Object: null", result);
+            Assert.assertEquals(
+                    "Current instance should be preserved after running",
+                    currentString, CurrentInstance.get(String.class));
+        } finally {
+            CurrentInstance.set(String.class, null);
+        }
+    }
 }
