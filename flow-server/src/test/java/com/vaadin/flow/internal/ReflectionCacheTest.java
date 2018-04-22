@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.internal;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.tests.util.TestUtil;
 
 public class ReflectionCacheTest {
 
@@ -63,5 +64,32 @@ public class ReflectionCacheTest {
 
         cache.clear();
         Assert.assertFalse(cache.contains(Object.class));
+    }
+
+    @Test
+    public void clearAll() {
+        ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(
+                type -> type);
+        ReflectionCache<Object, Object> cache2 = new ReflectionCache<>(
+                type -> type);
+
+        cache1.get(Object.class);
+        cache2.get(Object.class);
+
+        ReflectionCache.clearAll();
+
+        Assert.assertFalse(cache1.contains(Object.class));
+        Assert.assertFalse(cache2.contains(Object.class));
+    }
+
+    @Test
+    public void cacheIsGarbageCollected() throws InterruptedException {
+        ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(
+                type -> type);
+        WeakReference<ReflectionCache<Object, Object>> ref = new WeakReference<>(
+                cache1);
+
+        cache1 = null;
+        Assert.assertTrue(TestUtil.isGarbageCollected(ref));
     }
 }

@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -30,6 +33,9 @@ import java.util.function.Function;
  *            the cached value type
  */
 public class ReflectionCache<C, T> {
+    private static final Set<ReflectionCache<?, ?>> caches = Collections
+            .synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+
     private final ConcurrentHashMap<Class<? extends C>, T> values = new ConcurrentHashMap<>();
 
     private final Function<? extends Class<C>, T> valueProvider;
@@ -48,6 +54,8 @@ public class ReflectionCache<C, T> {
             throw new IllegalArgumentException("value provider cannot be null");
         }
         this.valueProvider = valueProvider;
+
+        caches.add(this);
     }
 
     /**
@@ -88,5 +96,12 @@ public class ReflectionCache<C, T> {
      */
     public void clear() {
         values.clear();
+    }
+
+    /**
+     * Clears all mappings from all reflection caches.
+     */
+    public static void clearAll() {
+        caches.forEach(ReflectionCache::clear);
     }
 }
