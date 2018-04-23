@@ -25,6 +25,9 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
  * All listeners added this way will be informed when new components have been
  * attached to the {@link com.vaadin.flow.component.UI} and all navigation tasks
  * have resolved.
+ *
+ * All AfterNavigationListeners are executed before the AfterNavigationObservers.
+ * To control the order of execution of AfterNavigationListeners, see {@link ListenerPriority}
  */
 @FunctionalInterface
 public interface AfterNavigationListener extends AfterNavigationHandler {

@@ -28,6 +28,8 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
  * During this phase there is the possibility to reroute to another navigation
  * target or to postpone the navigation (to for instance get user input).
  *
+ * All BeforeLeaveListeners are executed before the BeforeLeaveObservers.
+ * To control the order of execution of BeforeLeaveListeners, see {@link ListenerPriority}
  */
 @FunctionalInterface
 public interface BeforeLeaveListener extends BeforeLeaveHandler {
