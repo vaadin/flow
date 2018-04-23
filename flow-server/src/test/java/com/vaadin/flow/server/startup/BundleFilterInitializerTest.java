@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -80,6 +81,11 @@ public class BundleFilterInitializerTest {
                     invocation.getArgumentAt(0, DependencyFilter.class));
             return null;
         }).when(event).addDependencyFilter(any(DependencyFilter.class));
+    }
+
+    @After
+    public void tearDown() {
+        mocks.cleanup();
     }
 
     @Test

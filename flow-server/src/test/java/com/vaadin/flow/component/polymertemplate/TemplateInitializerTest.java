@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jsoup.Jsoup;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,6 +90,11 @@ public class TemplateInitializerTest {
                         + "        d='{{invalidSyntax' e='{{withEvent::eventName}}' f='[[oneWay]]'></div>"
                         + "</template></dom-module>", parentTemplateId,
                         inTemplateElementId, outsideTemplateElementId)));
+    }
+
+    @After
+    public void tearDown() {
+        mocks.cleanup();
     }
 
     @Test(expected = IllegalStateException.class)
