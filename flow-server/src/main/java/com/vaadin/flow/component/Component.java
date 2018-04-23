@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -476,15 +478,6 @@ public abstract class Component
     }
 
     /**
-     * Get the registered I18N provider.
-     *
-     * @return I18N provider
-     */
-    public I18NProvider getI18NProvider() {
-        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
-    }
-
-    /**
      * Sets the component visibility value.
      * <p>
      * When a component is set as invisible, all the updates of the component
@@ -533,11 +526,76 @@ public abstract class Component
      * Gets whether this component was attached as part of a
      * {@link PolymerTemplate} (by being mapped by an {@link Id} annotation), or
      * if it was created directly.
-     * 
+     *
      * @return <code>true</code> when it was mapped inside a template,
      *         <code>false</code> otherwise
      */
     protected boolean isTemplateMapped() {
         return templateMapped;
+    }
+
+    /**
+     * Get the translation for the component locale.
+     * <p>
+     * Note! For usability and catching missing translations implementation
+     * should never return a null, but an exception string e.g. '!{key}!'
+     *
+     * @see #getLocale()
+     *
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found (implementation should not return
+     *         null)
+     */
+    public String getTranslation(String key, Object... params) {
+        return getTranslation(key, getLocale(), params);
+    }
+
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * Note! For usability and catching missing translations implementation
+     * should never return a null, but an exception string e.g. '!{key}!'
+     *
+     * @param key
+     *            translation key
+     * @param locale
+     *            locale to use
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     */
+    public String getTranslation(String key, Locale locale, Object... params) {
+        return getI18NProvider().getTranslation(key, locale, params);
+    }
+
+    private I18NProvider getI18NProvider() {
+        return VaadinService.getCurrent().getInstantiator().getI18NProvider();
+    }
+
+    /**
+     * Gets the locale for this component.
+     * <p>
+     * It returns the {@link UI} locale if it has been set. If there is no
+     * {@link UI} locale available then it tries to use the first locale
+     * provided by the {@link I18NProvider}. If there is no any provided locale
+     * then the default locale is used.
+     *
+     * @return the component locale
+     */
+    protected Locale getLocale() {
+        UI currentUi = UI.getCurrent();
+        Locale locale = currentUi == null ? null : currentUi.getLocale();
+        if (locale == null) {
+            List<Locale> locales = getI18NProvider().getProvidedLocales();
+            if (locales != null && !locales.isEmpty()) {
+                locale = locales.get(0);
+            } else {
+                locale = Locale.getDefault();
+            }
+        }
+        return locale;
     }
 }
