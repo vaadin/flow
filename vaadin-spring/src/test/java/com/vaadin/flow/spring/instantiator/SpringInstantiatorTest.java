@@ -91,11 +91,6 @@ public class SpringInstantiatorTest {
         }
 
         @Override
-        public String getTranslation(String key, Object... params) {
-            return null;
-        }
-
-        @Override
         public String getTranslation(String key, Locale locale,
                 Object... params) {
             return null;

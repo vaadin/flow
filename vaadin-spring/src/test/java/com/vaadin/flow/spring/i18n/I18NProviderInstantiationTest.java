@@ -59,11 +59,6 @@ public class I18NProviderInstantiationTest {
         }
 
         @Override
-        public String getTranslation(String key, Object... params) {
-            return null;
-        }
-
-        @Override
         public String getTranslation(String key, Locale locale,
                 Object... params) {
             return null;
