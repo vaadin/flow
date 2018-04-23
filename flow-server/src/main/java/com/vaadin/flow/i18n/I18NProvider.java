@@ -26,25 +26,10 @@ public interface I18NProvider {
     /**
      * Get the locales that we have translations for. The first locale should be
      * the default locale.
-     * 
+     *
      * @return provided locales
      */
     List<Locale> getProvidedLocales();
-
-    /**
-     * Get the translation for current {@link com.vaadin.flow.component.UI} locale.
-     * <p>
-     * Note! For usability and catching missing translations implementation
-     * should never return a null, but an exception string e.g. '!{key}!'
-     *
-     * @param key
-     *            translation key
-     * @param params
-     *            parameters used in translation string
-     * @return translation for key if found (implementation should not return
-     *         null)
-     */
-    String getTranslation(String key, Object... params);
 
     /**
      * Get the translation for key with given locale.
