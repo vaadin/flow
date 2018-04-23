@@ -209,7 +209,7 @@ public class VaadinServletService extends VaadinService {
     public Optional<String> getThemedUrl(String url, WebBrowser browser,
             AbstractTheme theme) {
         if (theme != null
-                && !url.equals(getThemedOrRawPath(url, browser, theme))) {
+                && !resolveResource(url, browser).equals(getThemedOrRawPath(url, browser, theme))) {
             return Optional.of(theme.translateUrl(url));
         }
         return Optional.empty();
