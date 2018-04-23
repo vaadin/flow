@@ -20,14 +20,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.provider.Query;
-import com.vaadin.flow.data.provider.QuerySortOrder;
-import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.function.SerializableComparator;
 
 public class ListDataProviderTest
@@ -241,6 +237,17 @@ public class ListDataProviderTest
             Comparator<StrBean> comp) {
         SerializableComparator<StrBean> serializableComp = comp::compare;
         getDataProvider().setSortComparator(serializableComp);
+    }
+
+    @Test
+    public void serializableWithListeners() {
+        ListDataProvider<StrBean> provider = getDataProvider();
+
+        provider.addDataProviderListener(event -> {
+        });
+
+        // Should not throw
+        SerializationUtils.serialize(provider);
     }
 
 }
