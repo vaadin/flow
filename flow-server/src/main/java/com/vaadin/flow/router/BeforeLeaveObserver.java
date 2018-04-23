@@ -27,6 +27,5 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
  *
  * @author Vaadin Ltd
  */
-@FunctionalInterface
-public interface BeforeLeaveObserver extends BeforeLeaveHandler {
+public interface BeforeLeaveObserver extends BeforeLeaveHandler, Observer<BeforeLeaveEvent> {
 }

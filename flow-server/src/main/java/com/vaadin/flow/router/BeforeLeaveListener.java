@@ -30,5 +30,5 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
  *
  */
 @FunctionalInterface
-public interface BeforeLeaveListener extends BeforeLeaveHandler {
+public interface BeforeLeaveListener extends BeforeLeaveHandler, Listener<BeforeLeaveListener, BeforeLeaveEvent> {
 }

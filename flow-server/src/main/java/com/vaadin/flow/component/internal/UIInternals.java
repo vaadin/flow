@@ -16,16 +16,11 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +46,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.router.AfterNavigationListener;
-import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
-import com.vaadin.flow.router.BeforeLeaveListener;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -468,6 +457,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Get all registered listeners for given navigation handler type.
+     * The list is sorted in natural ordering.
      *
      * @param navigationHandler
      *            handler to get listeners for
@@ -475,9 +465,13 @@ public class UIInternals implements Serializable {
      *            the handler type
      * @return unmodifiable list of registered listeners for navigation handler
      */
-    public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
+    @SuppressWarnings("unchecked")
+    public <E extends Listener<E, ?>> List<E> getNavigationListeners(Class<E> navigationHandler) {
         List<E> registeredListeners = (List<E>) listeners
                 .computeIfAbsent(navigationHandler, key -> new ArrayList<>());
+
+        Collections.sort(registeredListeners);
+
         return Collections.unmodifiableList(registeredListeners);
     }
 

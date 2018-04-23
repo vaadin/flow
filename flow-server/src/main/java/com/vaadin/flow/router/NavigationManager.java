@@ -33,7 +33,7 @@ import com.vaadin.flow.server.VaadinSession;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface NavigationHandler extends Serializable {
+public interface NavigationManager extends Serializable {
     /**
      * Handles the navigation event.
      *

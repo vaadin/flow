@@ -15,19 +15,11 @@
  */
 package com.vaadin.flow.router.internal;
 
-import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.*;
 
 /**
  * The base interface for every interface that handles {@link BeforeEnterEvent}.
  */
 @FunctionalInterface
-public interface BeforeEnterHandler {
-
-    /**
-     * Method called before navigation to attaching Component chain is made.
-     *
-     * @param event
-     *            before navigation event with event details
-     */
-    void beforeEnter(BeforeEnterEvent event);
+public interface BeforeEnterHandler extends Handler<BeforeEnterEvent> {
 }

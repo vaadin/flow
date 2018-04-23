@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import com.vaadin.flow.router.internal.AfterNavigationHandler;
+import com.vaadin.flow.router.internal.*;
 
 /**
  * A listener that may be added to the {@link com.vaadin.flow.component.UI}
@@ -27,5 +27,5 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
  * have resolved.
  */
 @FunctionalInterface
-public interface AfterNavigationListener extends AfterNavigationHandler {
+public interface AfterNavigationListener extends AfterNavigationHandler, Listener<AfterNavigationListener, AfterNavigationEvent> {
 }

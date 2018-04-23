@@ -15,19 +15,12 @@
  */
 package com.vaadin.flow.router.internal;
 
-import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.*;
 
 /**
  * The base interface for every interface that handles {@link BeforeLeaveEvent}.
  */
 @FunctionalInterface
-public interface BeforeLeaveHandler {
+public interface BeforeLeaveHandler extends Handler<BeforeLeaveEvent> {
 
-    /**
-     * Method called before navigation to detaching Component chain is made.
-     *
-     * @param event
-     *            before navigation event with event details
-     */
-    void beforeLeave(BeforeLeaveEvent event);
 }

@@ -39,7 +39,7 @@ public class LocationChangeEvent extends EventObject {
     private final Location location;
 
     private int statusCode = HttpServletResponse.SC_OK;
-    private NavigationHandler rerouteTarget;
+    private NavigationManager rerouteTarget;
 
     private List<HasElement> routeTargetChain;
 
@@ -171,7 +171,7 @@ public class LocationChangeEvent extends EventObject {
      * @return and optional navigation handler, or an empty optional if no
      *         reroute target has been set
      */
-    public Optional<NavigationHandler> getRerouteTarget() {
+    public Optional<NavigationManager> getRerouteTarget() {
         return Optional.ofNullable(rerouteTarget);
     }
 
@@ -183,7 +183,7 @@ public class LocationChangeEvent extends EventObject {
      *            the navigation handler to use, or {@code null} to clear a
      *            previously set reroute target
      */
-    public void rerouteTo(NavigationHandler rerouteTarget) {
+    public void rerouteTo(NavigationManager rerouteTarget) {
         this.rerouteTarget = rerouteTarget;
     }
 

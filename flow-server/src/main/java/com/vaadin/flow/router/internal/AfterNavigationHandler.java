@@ -15,19 +15,11 @@
  */
 package com.vaadin.flow.router.internal;
 
-import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.*;
 
 /**
  * The base interface for every interface that handles {@link AfterNavigationEvent}.
  */
 @FunctionalInterface
-public interface AfterNavigationHandler {
-
-    /**
-     * Method called after navigation has been executed.
-     *
-     * @param event
-     *            after navigation event with event details
-     */
-    void afterNavigation(AfterNavigationEvent event);
+public interface AfterNavigationHandler extends Handler<AfterNavigationEvent> {
 }

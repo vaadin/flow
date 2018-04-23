@@ -28,24 +28,8 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
-import com.vaadin.flow.router.BeforeLeaveObserver;
-import com.vaadin.flow.router.ErrorNavigationEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.EventUtil;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -53,7 +37,7 @@ import com.vaadin.flow.router.RouterLayout;
  * @author Vaadin Ltd
  */
 public abstract class AbstractNavigationStateRenderer
-        implements NavigationHandler {
+        implements NavigationManager {
     private enum TransitionOutcome {
         FINISHED, REROUTED, POSTPONED
     }
@@ -142,9 +126,11 @@ public abstract class AbstractNavigationStateRenderer
                 }
             } else {
                 List<BeforeLeaveHandler> beforeLeaveHandlers = new ArrayList<>(
-                        ui.getNavigationListeners(BeforeLeaveHandler.class));
+                        ui.getNavigationListeners(BeforeLeaveListener.class));
+
                 beforeLeaveHandlers
                         .addAll(EventUtil.collectBeforeLeaveObservers(ui));
+
                 leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
             }
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
@@ -188,7 +174,7 @@ public abstract class AbstractNavigationStateRenderer
                 .subList(1, chain.size());
 
         List<BeforeEnterHandler> enterHandlers = new ArrayList<>(
-                ui.getNavigationListeners(BeforeEnterHandler.class));
+                ui.getNavigationListeners(BeforeEnterListener.class));
         enterHandlers.addAll(EventUtil.collectBeforeEnterObservers(
                 ui.getInternals().getActiveRouterTargetsChain(), chain));
         TransitionOutcome transitionOutcome = executeBeforeEnterNavigation(
@@ -209,7 +195,7 @@ public abstract class AbstractNavigationStateRenderer
         validateStatusCode(statusCode, routeTargetType);
 
         List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
-                ui.getNavigationListeners(AfterNavigationHandler.class));
+                ui.getNavigationListeners(AfterNavigationListener.class));
         afterNavigationHandlers
                 .addAll(EventUtil.collectAfterNavigationObservers(ui));
 
@@ -281,7 +267,7 @@ public abstract class AbstractNavigationStateRenderer
     private void fireAfterNavigationListeners(AfterNavigationEvent event,
             List<AfterNavigationHandler> afterNavigationHandlers) {
         afterNavigationHandlers
-                .forEach(listener -> listener.afterNavigation(event));
+                .forEach(listener -> listener.handle(event));
     }
 
     /**
@@ -298,7 +284,7 @@ public abstract class AbstractNavigationStateRenderer
             Deque<BeforeLeaveHandler> leaveHandlers) {
         while (!leaveHandlers.isEmpty()) {
             BeforeLeaveHandler listener = leaveHandlers.remove();
-            listener.beforeLeave(beforeNavigation);
+            listener.handle(beforeNavigation);
 
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
@@ -325,7 +311,7 @@ public abstract class AbstractNavigationStateRenderer
             List<BeforeEnterHandler> enterHandlers) {
 
         for (BeforeEnterHandler eventHandler : enterHandlers) {
-            eventHandler.beforeEnter(beforeNavigation);
+            eventHandler.handle(beforeNavigation);
 
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
@@ -335,7 +321,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private int reroute(NavigationEvent event, BeforeEvent beforeNavigation) {
-        NavigationHandler handler = beforeNavigation.getRerouteTarget();
+        NavigationManager handler = beforeNavigation.getRerouteTarget();
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);

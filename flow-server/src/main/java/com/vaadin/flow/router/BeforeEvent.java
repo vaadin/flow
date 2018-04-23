@@ -38,7 +38,7 @@ public abstract class BeforeEvent extends EventObject {
     private final NavigationTrigger trigger;
     private final UI ui;
 
-    private NavigationHandler rerouteTarget;
+    private NavigationManager rerouteTarget;
 
     private final Class<?> navigationTarget;
     private NavigationState rerouteTargetState;
@@ -126,7 +126,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return an navigation handler
      */
-    public NavigationHandler getRerouteTarget() {
+    public NavigationManager getRerouteTarget() {
         return rerouteTarget;
     }
 
@@ -140,7 +140,7 @@ public abstract class BeforeEvent extends EventObject {
      * @param targetState
      *            the target navigation state of the rerouting
      */
-    public void rerouteTo(NavigationHandler rerouteTarget,
+    public void rerouteTo(NavigationManager rerouteTarget,
             NavigationState targetState) {
         rerouteTargetState = targetState;
         this.rerouteTarget = rerouteTarget;

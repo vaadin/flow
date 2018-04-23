@@ -35,7 +35,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      */
     public class ContinueNavigationAction implements Serializable {
 
-        private NavigationHandler handler = null;
+        private NavigationManager handler = null;
         private NavigationEvent event = null;
 
         private ContinueNavigationAction() {
@@ -50,7 +50,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
          * @param event
          *            the navigation event
          */
-        public void setReferences(NavigationHandler handler,
+        public void setReferences(NavigationManager handler,
                 NavigationEvent event) {
             if (event != null) {
                 event.getUI().getSession().hasLock();

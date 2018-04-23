@@ -24,6 +24,5 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
  *
  * @author Vaadin Ltd
  */
-@FunctionalInterface
-public interface AfterNavigationObserver extends AfterNavigationHandler {
+public interface AfterNavigationObserver extends AfterNavigationHandler, Observer<AfterNavigationEvent> {
 }

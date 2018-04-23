@@ -328,7 +328,7 @@ public class RouterLink extends Component
     }
 
     @Override
-    public void afterNavigation(AfterNavigationEvent event) {
+    public void handle(AfterNavigationEvent event) {
         getHighlightAction().highlight(this,
                 getHighlightCondition().shouldHighlight(this, event));
     }

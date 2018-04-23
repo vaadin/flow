@@ -35,7 +35,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
-import com.vaadin.flow.router.internal.InternalRedirectHandler;
+import com.vaadin.flow.router.internal.InternalRedirectManager;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.server.VaadinRequest;
@@ -195,7 +195,7 @@ public class Router implements Serializable {
             NavigationEvent navigationEvent = new NavigationEvent(this,
                     location, ui, trigger);
 
-            NavigationHandler handler = new NavigationStateRenderer(newState);
+            NavigationManager handler = new NavigationStateRenderer(newState);
             return handler.handle(navigationEvent);
         } else if (!location.getPath().isEmpty()) {
             Location slashToggledLocation = location.toggleTrailingSlash();
@@ -205,7 +205,7 @@ public class Router implements Serializable {
                 NavigationEvent navigationEvent = new NavigationEvent(this,
                         slashToggledLocation, ui, trigger);
 
-                NavigationHandler handler = new InternalRedirectHandler(
+                NavigationManager handler = new InternalRedirectManager(
                         slashToggledLocation);
                 return handler.handle(navigationEvent);
             }

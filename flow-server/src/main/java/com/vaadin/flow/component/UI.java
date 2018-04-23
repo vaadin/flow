@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
+import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,15 +40,6 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.router.AfterNavigationListener;
-import com.vaadin.flow.router.BeforeEnterListener;
-import com.vaadin.flow.router.BeforeLeaveListener;
-import com.vaadin.flow.router.EventUtil;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandlingCommand;
@@ -856,14 +848,16 @@ public class UI extends Component
 
     /**
      * Get all registered listener of given navigation handler type.
+     * The list is ensured to be sorted in natural order as documented in
+     * {@link Comparable}.
      *
-     * @param navigationHandler
+     * @param listenerClass
      *            navigation handler type to get listeners for
      * @param <E>
      *            the handler type
-     * @return unmodifiable list of registered listeners for navigation handler
+     * @return unmodifiable, sorted list of registered listeners for navigation handler
      */
-    public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
-        return internals.getNavigationListeners(navigationHandler);
+    public <E extends Listener<E, ?>> List<E> getNavigationListeners(Class<E> listenerClass) {
+        return internals.getNavigationListeners(listenerClass);
     }
 }

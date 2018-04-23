@@ -29,5 +29,5 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
  * target.
  */
 @FunctionalInterface
-public interface BeforeEnterListener extends BeforeEnterHandler {
+public interface BeforeEnterListener extends BeforeEnterHandler, Listener<BeforeEnterListener, BeforeEnterEvent> {
 }

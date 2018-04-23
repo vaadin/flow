@@ -27,6 +27,5 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
  *
  * @author Vaadin Ltd
  */
-@FunctionalInterface
-public interface BeforeEnterObserver extends BeforeEnterHandler {
+public interface BeforeEnterObserver extends BeforeEnterHandler, Observer<BeforeEnterEvent> {
 }
