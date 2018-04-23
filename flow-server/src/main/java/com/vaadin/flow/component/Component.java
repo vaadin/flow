@@ -537,8 +537,9 @@ public abstract class Component
     /**
      * Get the translation for the component locale.
      * <p>
-     * Note! For usability and catching missing translations implementation
-     * should never return a null, but an exception string e.g. '!{key}!'
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
      *
      * @see #getLocale()
      *
@@ -556,8 +557,9 @@ public abstract class Component
     /**
      * Get the translation for key with given locale.
      * <p>
-     * Note! For usability and catching missing translations implementation
-     * should never return a null, but an exception string e.g. '!{key}!'
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
      *
      * @param key
      *            translation key
@@ -568,6 +570,9 @@ public abstract class Component
      * @return translation for key if found
      */
     public String getTranslation(String key, Locale locale, Object... params) {
+        if (getI18NProvider() == null) {
+            return "!{" + key + "}!";
+        }
         return getI18NProvider().getTranslation(key, locale, params);
     }
 
