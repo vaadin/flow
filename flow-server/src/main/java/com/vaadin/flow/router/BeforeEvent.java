@@ -27,6 +27,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
 
 /**
  * Abstract before event class that has the common functionalities for
@@ -300,15 +301,19 @@ public abstract class BeforeEvent extends EventObject {
      *            custom message to send to error target
      */
     public void rerouteToError(Exception exception, String customMessage) {
-        Optional<Class<? extends Component>> errorNavigationTarget = getSource()
-                .getRegistry().getErrorNavigationTarget(exception);
+        Optional<ErrorTargetEntry> maybeLookupResult = getSource().getRegistry()
+                .getErrorNavigationTarget(exception);
 
-        if (errorNavigationTarget.isPresent()) {
+        if (maybeLookupResult.isPresent()) {
+            ErrorTargetEntry lookupResult = maybeLookupResult.get();
+
             rerouteTargetState = new NavigationStateBuilder()
-                    .withTarget(errorNavigationTarget.get()).build();
+                    .withTarget(lookupResult.getNavigationTarget()).build();
             rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
 
-            errorParameter = new ErrorParameter<>(exception, customMessage);
+            errorParameter = new ErrorParameter<>(
+                    lookupResult.getHandledExceptionType(), exception,
+                    customMessage);
         } else {
             throw new RuntimeException(customMessage, exception);
         }

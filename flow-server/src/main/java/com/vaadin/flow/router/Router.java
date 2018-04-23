@@ -42,6 +42,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -216,16 +217,19 @@ public class Router implements Serializable {
 
     private int handleExceptionNavigation(UI ui, Location location,
             Exception exception) {
-        ErrorParameter<?> errorParameter = new ErrorParameter<>(exception,
-                exception.getMessage());
+        Optional<ErrorTargetEntry> maybeLookupResult = getRegistry()
+                .getErrorNavigationTarget(exception);
 
-        Optional<Class<? extends Component>> navigationTarget = getRegistry()
-                .getErrorNavigationTarget(errorParameter.getException());
+        if (maybeLookupResult.isPresent()) {
+            ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
-        if (navigationTarget.isPresent()) {
+            ErrorParameter<?> errorParameter = new ErrorParameter<>(
+                    lookupResult.getHandledExceptionType(), exception,
+                    exception.getMessage());
             ErrorStateRenderer handler = new ErrorStateRenderer(
                     new NavigationStateBuilder()
-                            .withTarget(navigationTarget.get()).build());
+                            .withTarget(lookupResult.getNavigationTarget())
+                            .build());
 
             ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
                     this, location, ui, NavigationTrigger.PROGRAMMATIC,
@@ -233,8 +237,7 @@ public class Router implements Serializable {
 
             return handler.handle(navigationEvent);
         } else {
-            throw new RuntimeException(errorParameter.getCustomMessage(),
-                    errorParameter.getException());
+            throw new RuntimeException(exception);
         }
     }
 

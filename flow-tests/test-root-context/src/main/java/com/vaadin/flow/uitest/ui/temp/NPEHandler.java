@@ -34,8 +34,7 @@ public class NPEHandler extends Div
             ErrorParameter<NullPointerException> parameter) {
         getElement().setText("NPE is thrown " + event.getLocation().getPath());
 
-        // Explicitly assign as Exception to avoid #3902
-        Exception exception = parameter.getException();
+        Exception exception = parameter.getCaughtException();
         LoggerFactory.getLogger(NPEHandler.class).error(exception.getMessage(),
                 exception);
 
