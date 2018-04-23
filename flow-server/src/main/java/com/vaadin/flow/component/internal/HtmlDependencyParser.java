@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.FakeEs6Browser;
+import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -73,7 +73,7 @@ public class HtmlDependencyParser {
             return;
         }
         dependencies.add(path);
-        FakeEs6Browser browser = FakeEs6Browser.get();
+        FakeBrowser browser = FakeBrowser.getEs6();
         try (InputStream content = service.getResourceAsStream(path, browser,
                 null)) {
             if (content == null) {
