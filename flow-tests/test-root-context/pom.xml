@@ -61,6 +61,14 @@
                         <goals>
                             <goal>start</goal>
                         </goals>
+                        <configuration>
+                            <systemProperties>
+                                <systemProperty>
+                                     <name>vaadin.originalFrontendResources</name>
+                                     <value>true</value>
+                                </systemProperty>
+                            </systemProperties>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>stop-jetty</id>
