@@ -124,6 +124,8 @@ public class BrowserDetails implements Serializable {
                 tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
                 browserEngineVersion = Float.parseFloat(tmp);
                 if (browserEngineVersion > 7) {
+                    // Windows 10 on launch reported Trident/8.0, now it does not
+                    // Due to Edge there shouldn't ever be an Trident 8.0 or IE12
                     browserEngineVersion = 7;
                 }
             } else if (isEdge) {

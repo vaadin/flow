@@ -32,7 +32,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String IE11_WINDOWS_7 = "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; rv:11.0) like Gecko";
     private static final String IE11_IN_IE7_MODE_WINDOWS_7 = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E)";
     private static final String IE11_IN_IE7_MODE_WINDOWS_10 = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E)";
-    private static final String IE11_IN_IE7_MODE_INITIAL_WINDOWS_10 = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 10.0; WOW64; Trident/8.0; .NET4.0C; .NET4.0E)";
+    private static final String IE11_IN_IE7_MODE_LAUNCH_DAY_WINDOWS_10 = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 10.0; WOW64; Trident/8.0; .NET4.0C; .NET4.0E)";
     private static final String IE11_WINDOWS_PHONE_8_1_UPDATE = "Mozilla/5.0 (Mobile; Windows Phone 8.1; Android 4.0; ARM; Trident/7.0; Touch; rv:11.0; IEMobile/11.0; NOKIA; Lumia 920) Like iPhone OS 7_0_3 Mac OS X AppleWebKit/537 (KHTML, like Gecko) Mobile Safari/537";
 
     // "Version/" was added in 10.00
@@ -449,9 +449,14 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(bd);
     }
 
-    public void testIE11InitialWindows10CompatibilityViewIE7() {
-        BrowserDetails bd = new BrowserDetails(IE11_IN_IE7_MODE_INITIAL_WINDOWS_10);
+    public void testIE11LaunchDayWindows10CompatibilityViewIE7() {
+        BrowserDetails bd = new BrowserDetails(IE11_IN_IE7_MODE_LAUNCH_DAY_WINDOWS_10);
         assertTrident(bd);
+
+        /*
+         * Trident/8.0 in example user agent string based on launch day even though it
+         * should be Trident/7.0 in user agent strings for up-to-date Windows 10 IE11
+         */
         assertEngineVersion(bd, 7);
         assertIE(bd);
         assertBrowserMajorVersion(bd, 11);
