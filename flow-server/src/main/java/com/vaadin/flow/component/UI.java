@@ -43,6 +43,7 @@ import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.EventUtil;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
@@ -681,6 +682,48 @@ public class UI extends Component
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
         return getRouter().getRegistry().getThemeFor(navigationTarget, path);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * 
+     * @param navigationTarget
+     *            navigation target to navigate to
+     */
+    public void navigate(Class<? extends Component> navigationTarget) {
+        String routeUrl = getRouter().getUrl(navigationTarget);
+        navigate(routeUrl);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameter. The parameter needs to be the same
+     * as defined in the route target HasUrlParameter.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * Note! A {@code null} parameter will be handled the same as
+     * navigate(navigationTarget) and will throw an exception if HasUrlParameter
+     * is not @OptionalParameter or @WildcardParameter.
+     * 
+     * @param navigationTarget
+     *            navigation target to navigate to
+     * @param parameter
+     *            parameter to pass to view
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
+     */
+    public <T, C extends Component & HasUrlParameter<T>> void navigate(
+            Class<? extends C> navigationTarget, T parameter) {
+        String routeUrl = getRouter().getUrl(navigationTarget, parameter);
+        navigate(routeUrl);
     }
 
     /**

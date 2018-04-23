@@ -1200,6 +1200,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void before_navigation_event_is_triggered()
             throws InvalidRouteConfigurationException {
+        FooBarNavigationTarget.events.clear();
         setNavigationTargets(RootNavigationTarget.class,
                 FooNavigationTarget.class, FooBarNavigationTarget.class);
 
@@ -2751,6 +2752,70 @@ public class RouterTest extends RoutingTestBase {
                 AfterNavigationTarget.events.get(0));
         Assert.assertEquals("AfterNavigation Observer",
                 AfterNavigationTarget.events.get(1));
+    }
+
+    @Test // #3616
+    public void navigating_with_class_gets_correct_component()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(RootNavigationTarget.class,
+                FooNavigationTarget.class, FooBarNavigationTarget.class);
+
+        ui.navigate(RootNavigationTarget.class);
+        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
+
+        ui.navigate(FooNavigationTarget.class);
+        Assert.assertEquals(FooNavigationTarget.class, getUIComponent());
+
+        ui.navigate(FooBarNavigationTarget.class);
+        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+    }
+
+    @Test // #3616
+    public void navigating_with_class_and_parameter_gets_correct_component()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(RouteWithParameter.class, BooleanParameter.class,
+                WildParameter.class, OptionalParameter.class);
+
+        ui.navigate(RouteWithParameter.class, "Parameter");
+        Assert.assertEquals(RouteWithParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.", "Parameter",
+                RouteWithParameter.param);
+
+        ui.navigate(OptionalParameter.class, "optional");
+        Assert.assertEquals(OptionalParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.", "optional",
+                OptionalParameter.param);
+        ui.navigate(OptionalParameter.class);
+        Assert.assertEquals(OptionalParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.", null,
+                OptionalParameter.param);
+        ui.navigate(OptionalParameter.class, null);
+        Assert.assertEquals(OptionalParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.", null,
+                OptionalParameter.param);
+
+        ui.navigate(BooleanParameter.class, false);
+        Assert.assertEquals(BooleanParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.", false,
+                BooleanParameter.param);
+
+        ui.navigate(WildParameter.class);
+        Assert.assertEquals(WildParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.", "",
+                WildParameter.param);
+        ui.navigate(WildParameter.class, null);
+        Assert.assertEquals(WildParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.", "",
+                WildParameter.param);
+        ui.navigate(WildParameter.class, "");
+        Assert.assertEquals(WildParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.", "",
+                WildParameter.param);
+        ui.navigate(WildParameter.class, "my/wild/param");
+        Assert.assertEquals(WildParameter.class, getUIComponent());
+        Assert.assertEquals("Before navigation event was wrong.",
+                "my/wild/param", WildParameter.param);
+
     }
 
     private void setNavigationTargets(
