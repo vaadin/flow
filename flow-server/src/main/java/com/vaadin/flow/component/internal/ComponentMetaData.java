@@ -218,7 +218,10 @@ public class ComponentMetaData {
         // (VaadinServletService) as the methods are only using the servlet
         // context
         VaadinService service = VaadinService.getCurrent();
-        assert service != null;
+        if (service == null) {
+            return new HtmlImportDependency(Collections.emptySet(),
+                    htmlImport.loadMode());
+        }
         return new HtmlImportDependency(parser.parseDependencies(service),
                 htmlImport.loadMode());
     }

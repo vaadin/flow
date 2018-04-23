@@ -19,15 +19,19 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.VaadinService;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -200,6 +204,25 @@ public class HtmlDependencyParserTest {
                     normalize(protocol
                             + "://src/views/login/../../../bower_components/vaadin-button/src/vaadin-button.html"));
         }
+
+    }
+
+    @Test
+    public void createComponentWithoutServiceSucceedsButPopulatesGlobalCacheWithWrongMetadata() {
+        VaadinService.setCurrent(null);
+        new ComponentWithHtmlDeps();
+        List<HtmlImportDependency> imports = ComponentUtil
+                .getDependencies(ComponentWithHtmlDeps.class).getHtmlImports();
+        Assert.assertEquals(1, imports.size());
+
+        // This should not really happen
+        Assert.assertEquals(0, imports.get(0).getUris().size());
+
+        // This is what should happen when the underlying issue is fixed
+        // (it happens when service != null)
+        // Assert.assertEquals(1, imports.get(0).getUris().size());
+        // Assert.assertEquals("frontend://foobar.html",
+        // imports.get(0).getUris().iterator().next());
 
     }
 
