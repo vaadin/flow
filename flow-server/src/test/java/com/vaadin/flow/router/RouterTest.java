@@ -1200,6 +1200,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void before_navigation_event_is_triggered()
             throws InvalidRouteConfigurationException {
+        FooBarNavigationTarget.events.clear();
         setNavigationTargets(RootNavigationTarget.class,
                 FooNavigationTarget.class, FooBarNavigationTarget.class);
 
