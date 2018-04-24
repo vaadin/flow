@@ -85,7 +85,7 @@ public final class DefaultTemplateParser implements TemplateParser {
                         htmlImport.value(), htmlImport.loadMode()))
                 .collect(Collectors.toList());
 
-        FilterContext filterContext = new FilterContext(service);
+        FilterContext filterContext = new FilterContext(service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {
             dependencies = filter.filter(new ArrayList<>(dependencies),
                     filterContext);

@@ -53,6 +53,7 @@ import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -123,7 +124,7 @@ public class UidlWriter implements Serializable {
         encodeChanges(ui, stateChanges);
 
         populateDependencies(response, service,
-                uiInternals.getDependencyList());
+                uiInternals.getDependencyList(), session.getBrowser());
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.put("constants",
@@ -148,11 +149,11 @@ public class UidlWriter implements Serializable {
     }
 
     private static void populateDependencies(JsonObject response,
-            VaadinService service, DependencyList dependencyList) {
+            VaadinService service, DependencyList dependencyList, WebBrowser browser) {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
 
-        FilterContext context = new FilterContext(service);
+        FilterContext context = new FilterContext(service, browser);
 
         for (DependencyFilter filter : service.getDependencyFilters()) {
             pendingSendToClient = filter
