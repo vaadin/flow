@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -121,8 +122,9 @@ public class ComponentMetaData {
         }
     }
 
-    private Collection<SynchronizedPropertyInfo> synchronizedProperties;
-    private DependencyInfo dependencyInfo;
+    private final Collection<SynchronizedPropertyInfo> synchronizedProperties;
+    private final ConcurrentHashMap<VaadinService, DependencyInfo> dependencyInfo = new ConcurrentHashMap<>();
+    private final Class<? extends Component> componentClass;
 
     /**
      * Scans the given component class and creates a new instance based on found
@@ -132,8 +134,8 @@ public class ComponentMetaData {
      *            the component class to scan
      */
     public ComponentMetaData(Class<? extends Component> componentClass) {
+        this.componentClass = componentClass;
         synchronizedProperties = findSynchronizedProperties(componentClass);
-        dependencyInfo = findDependencies(componentClass);
     }
 
     /**
@@ -143,14 +145,15 @@ public class ComponentMetaData {
      *
      * @return an information object containing all the dependencies
      */
-    private static DependencyInfo findDependencies(
+    private static DependencyInfo findDependencies(VaadinService service,
             Class<? extends Component> componentClass) {
         DependencyInfo dependencyInfo = new DependencyInfo();
-        findDependencies(componentClass, dependencyInfo, new HashSet<>());
+        findDependencies(service, componentClass, dependencyInfo,
+                new HashSet<>());
         return dependencyInfo;
     }
 
-    private static DependencyInfo findDependencies(
+    private static DependencyInfo findDependencies(VaadinService service,
             Class<? extends Component> componentClass,
             DependencyInfo dependencyInfo,
             Set<Class<? extends Component>> scannedClasses) {
@@ -159,7 +162,7 @@ public class ComponentMetaData {
         scannedClasses.add(componentClass);
 
         dependencyInfo.htmlImports
-                .addAll(getHtmlImportDependencies(componentClass));
+                .addAll(getHtmlImportDependencies(service, componentClass));
         dependencyInfo.javaScripts.addAll(
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
         dependencyInfo.styleSheets.addAll(
@@ -170,7 +173,8 @@ public class ComponentMetaData {
         for (Uses uses : usesList) {
             Class<? extends Component> otherClass = uses.value();
             if (!scannedClasses.contains(otherClass)) {
-                findDependencies(otherClass, dependencyInfo, scannedClasses);
+                findDependencies(service, otherClass, dependencyInfo,
+                        scannedClasses);
             }
         }
         return dependencyInfo;
@@ -195,33 +199,32 @@ public class ComponentMetaData {
      * <p>
      * Framework internal data, thus package-private.
      *
+     * @param service
+     *            the service to use for resolving dependencies
+     *
      * @return the dependencies for the given class
      */
-    public DependencyInfo getDependencyInfo() {
-        return dependencyInfo;
+    public DependencyInfo getDependencyInfo(VaadinService service) {
+        return dependencyInfo.computeIfAbsent(service, ignore -> {
+            service.addServiceDestroyListener(
+                    event -> dependencyInfo.remove(service));
+            return findDependencies(service, componentClass);
+        });
     }
 
     private static Collection<HtmlImportDependency> getHtmlImportDependencies(
-            Class<? extends Component> componentClass) {
+            VaadinService service, Class<? extends Component> componentClass) {
         return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream().map(ComponentMetaData::getHtmlImportDependencies)
+                .stream().map(htmlImport -> getHtmlImportDependencies(service,
+                        htmlImport))
                 .collect(Collectors.toList());
     }
 
     private static HtmlImportDependency getHtmlImportDependencies(
-            HtmlImport htmlImport) {
+            VaadinService service, HtmlImport htmlImport) {
         String value = htmlImport.value();
         HtmlDependencyParser parser = new HtmlDependencyParser(value);
 
-        // At least at the time of writing, it does not really matter WHICH
-        // service instance is used here as long as it's of the correct type
-        // (VaadinServletService) as the methods are only using the servlet
-        // context
-        VaadinService service = VaadinService.getCurrent();
-        if (service == null) {
-            return new HtmlImportDependency(Collections.emptySet(),
-                    htmlImport.loadMode());
-        }
         return new HtmlImportDependency(parser.parseDependencies(service),
                 htmlImport.loadMode());
     }
