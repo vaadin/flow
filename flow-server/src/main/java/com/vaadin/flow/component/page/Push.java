@@ -54,6 +54,6 @@ public @interface Push {
      *
      * @return the transport type to use
      */
-    Transport transport() default Transport.WEBSOCKET;
+    Transport transport() default Transport.WEBSOCKET_XHR;
 
 }
