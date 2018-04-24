@@ -11,7 +11,7 @@
     <name>Flow Push</name>
     <packaging>jar</packaging>
     <properties>
-        <atmosphere.runtime.version>2.4.11.vaadin4</atmosphere.runtime.version>
+        <atmosphere.runtime.version>2.4.24.vaadin1</atmosphere.runtime.version>
     </properties>
 
     <dependencies>
@@ -22,7 +22,12 @@
             <version>${atmosphere.runtime.version}</version>
         </dependency>
     </dependencies>
-
+    <repositories>
+        <repository>
+            <id>vaadin-staging</id>
+            <url>https://oss.sonatype.org/content/repositories/comvaadin-2312</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
             <plugin>
