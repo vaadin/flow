@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -76,6 +74,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -1031,6 +1030,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
+
+        // Use router if it's active
+        ui.getRouter().initializeUI(ui, request);
 
         return context;
     }
