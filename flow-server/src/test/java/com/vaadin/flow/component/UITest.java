@@ -1,5 +1,7 @@
 package com.vaadin.flow.component;
 
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.internal.*;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import javax.servlet.ServletException;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
@@ -30,12 +33,6 @@ import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -116,7 +113,7 @@ public class UITest {
     }
 
     private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor)
+                               ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         try {
             VaadinServletRequest request = Mockito
@@ -485,5 +482,123 @@ public class UITest {
 
         Assert.assertEquals("There should be 4 invocations", 4,
                 callCounter.get());
+    }
+
+    @ListenerPriority(5)
+    private static class BeforeEnterListenerFirst implements BeforeEnterListener{
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+        }
+    }
+
+    private static class BeforeEnterListenerSecond implements BeforeEnterListener{
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+        }
+    }
+
+    @ListenerPriority(-5)
+    private static class BeforeEnterListenerThird implements BeforeEnterListener{
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+        }
+    }
+    
+    @Test
+    public void before_enter_listener_priority_should_dictate_sort_order() {
+        UI ui = createTestUI();
+
+        ui.addBeforeEnterListener(new BeforeEnterListenerThird());
+        ui.addBeforeEnterListener(new BeforeEnterListenerThird());
+        ui.addBeforeEnterListener(new BeforeEnterListenerFirst());
+        ui.addBeforeEnterListener(new BeforeEnterListenerSecond());
+
+        final List<BeforeEnterHandler> beforeEnterListeners = ui.getNavigationListeners(BeforeEnterHandler.class);
+        
+        assertEquals(4, beforeEnterListeners.size());
+        
+        assertTrue(beforeEnterListeners.get(0) instanceof BeforeEnterListenerFirst);
+        assertTrue(beforeEnterListeners.get(1) instanceof BeforeEnterListenerSecond);
+        assertTrue(beforeEnterListeners.get(2) instanceof BeforeEnterListenerThird);
+        assertTrue(beforeEnterListeners.get(3) instanceof BeforeEnterListenerThird);
+    }
+    
+    @ListenerPriority(5)
+    private static class BeforeLeaveListenerFirst implements BeforeLeaveListener{
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+        }
+    }
+
+    private static class BeforeLeaveListenerSecond implements BeforeLeaveListener{
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+        }
+    }
+
+    @ListenerPriority(-5)
+    private static class BeforeLeaveListenerThird implements BeforeLeaveListener{
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+        }
+    }
+
+    @Test
+    public void before_Leave_listener_priority_should_dictate_sort_order() {
+        UI ui = createTestUI();
+
+        ui.addBeforeLeaveListener(new BeforeLeaveListenerFirst());
+        ui.addBeforeLeaveListener(new BeforeLeaveListenerThird());
+        ui.addBeforeLeaveListener(new BeforeLeaveListenerSecond());
+        ui.addBeforeLeaveListener(new BeforeLeaveListenerThird());
+
+        final List<BeforeLeaveHandler> beforeLeaveListeners = ui.getNavigationListeners(BeforeLeaveHandler.class);
+
+        assertEquals(4, beforeLeaveListeners.size());
+
+        assertTrue(beforeLeaveListeners.get(0) instanceof BeforeLeaveListenerFirst);
+        assertTrue(beforeLeaveListeners.get(1) instanceof BeforeLeaveListenerSecond);
+        assertTrue(beforeLeaveListeners.get(2) instanceof BeforeLeaveListenerThird);
+        assertTrue(beforeLeaveListeners.get(3) instanceof BeforeLeaveListenerThird);
+    }
+
+
+    @ListenerPriority(5)
+    private static class AfterNavigationListenerFirst implements AfterNavigationListener{
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+        }
+    }
+
+    private static class AfterNavigationListenerSecond implements AfterNavigationListener{
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+        }
+    }
+
+    @ListenerPriority(-5)
+    private static class AfterNavigationListenerThird implements AfterNavigationListener{
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+        }
+    }
+
+    @Test
+    public void after_navigation_listener_priority_should_dictate_sort_order() {
+        UI ui = createTestUI();
+
+        ui.addAfterNavigationListener(new AfterNavigationListenerThird());
+        ui.addAfterNavigationListener(new AfterNavigationListenerThird());
+        ui.addAfterNavigationListener(new AfterNavigationListenerFirst());
+        ui.addAfterNavigationListener(new AfterNavigationListenerSecond());
+
+        final List<AfterNavigationHandler> AfterNavigationListeners = ui.getNavigationListeners(AfterNavigationHandler.class);
+
+        assertEquals(4, AfterNavigationListeners.size());
+
+        assertTrue(AfterNavigationListeners.get(0) instanceof AfterNavigationListenerFirst);
+        assertTrue(AfterNavigationListeners.get(1) instanceof AfterNavigationListenerSecond);
+        assertTrue(AfterNavigationListeners.get(2) instanceof AfterNavigationListenerThird);
+        assertTrue(AfterNavigationListeners.get(3) instanceof AfterNavigationListenerThird);
     }
 }
