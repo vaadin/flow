@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -30,7 +30,7 @@ public class JsInjectedElement extends PolymerTemplate<TemplateModel> {
                 .executeJavaScript("$0.clientHandler()", getElement()));
     }
 
-    @ClientDelegate
+    @ClientCallable
     private void handleClientCall(String value) {
         getElement().setProperty("foo", value);
     }

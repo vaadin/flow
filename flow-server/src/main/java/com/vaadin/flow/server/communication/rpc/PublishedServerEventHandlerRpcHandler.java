@@ -28,14 +28,14 @@ import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ClientDelegateHandlers;
+import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.shared.JsonConstants;
@@ -98,8 +98,8 @@ public class PublishedServerEventHandlerRpcHandler
         boolean execute = node.isEnabled();
 
         if (!execute) {
-            ClientDelegateHandlers clientDelegate = node
-                    .getFeature(ClientDelegateHandlers.class);
+            ClientCallableHandlers clientDelegate = node
+                    .getFeature(ClientCallableHandlers.class);
             PolymerServerEventHandlers eventHandlers = node
                     .getFeature(PolymerServerEventHandlers.class);
             if (clientDelegate.hasHandler(methodName)) {
@@ -126,7 +126,7 @@ public class PublishedServerEventHandlerRpcHandler
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
                 .filter(method -> method.isAnnotationPresent(EventHandler.class)
-                        || method.isAnnotationPresent(ClientDelegate.class))
+                        || method.isAnnotationPresent(ClientCallable.class))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
             String msg = String.format("Class '%s' contains "

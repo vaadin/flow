@@ -76,8 +76,8 @@ public class NodeFeatureRegistry {
                 PolymerServerEventHandlers::new);
         registerFeature(PolymerEventListenerMap.class,
                 PolymerEventListenerMap::new);
-        registerFeature(ClientDelegateHandlers.class,
-                ClientDelegateHandlers::new);
+        registerFeature(ClientCallableHandlers.class,
+                ClientCallableHandlers::new);
         registerFeature(ShadowRootData.class, ShadowRootData::new);
         registerFeature(ShadowRootHost.class, ShadowRootHost::new);
         registerFeature(AttachExistingElementFeature.class,

@@ -74,11 +74,11 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                 FLOW_BUNDLE_MANIFEST, browser, null)) {
             if (bundleManifestStream == null) {
                 throw new IllegalArgumentException(String.format(
-                        "Failed to find the bundle manifest file '%s' in the servlet context."
+                        "Failed to find the bundle manifest file '%s' in the servlet context for '%s' browsers."
                         + " If you are running a dev-mode servlet container in maven e.g. `jetty:run` change it to `jetty:run-exploded`."
                         + " If you are not compiling frontend resources, include the 'flow-maven-plugin' in your build script."
                         + " Otherwise, you can skip this error either by disabling production mode, or by setting the servlet parameter '%s=true'.",
-                        FLOW_BUNDLE_MANIFEST, Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
+                        FLOW_BUNDLE_MANIFEST, browser.isEs6Supported() ? "ES6" : "ES5", Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
             }
             return Optional.of(Json.parse(IOUtils.toString(bundleManifestStream,
                     StandardCharsets.UTF_8)));
@@ -89,7 +89,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         }
     }
 
-    private Optional<DependencyFilter> createDependencyFilter(WebBrowser browser, 
+    private Optional<DependencyFilter> createDependencyFilter(WebBrowser browser,
             JsonObject bundlesToUrlsContained, VaadinService service) {
         Map<String, Set<String>> importToBundle = new HashMap<>();
         String mainBundle = null;
