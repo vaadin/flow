@@ -44,7 +44,6 @@ import java.lang.annotation.Target;
  *      class LowPriorityListener implements BeforeEnterListener {
  *      }
  *   </pre>
- * </p>
  *
  * @author Bernd Hopp
  */
