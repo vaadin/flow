@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
@@ -53,7 +54,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
     @Override
     public void serviceInit(ServiceInitEvent event) {
         VaadinService service = event.getSource();
-        if (!service.getDeploymentConfiguration().isProductionMode()) {
+        if (!service.getDeploymentConfiguration().useCompiledFrontendResources()) {
             return;
         }
         readBundleManifest(service).flatMap(
@@ -65,10 +66,12 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         try (InputStream bundleManifestStream = service.getResourceAsStream(
                 FLOW_BUNDLE_MANIFEST, FakeEs6Browser.get(), null)) {
             if (bundleManifestStream == null) {
-                getLogger().info(
-                        "Bundling disabled: Flow bundle manifest '{}' was not found in servlet context",
-                        FLOW_BUNDLE_MANIFEST);
-                return Optional.empty();
+                throw new IllegalArgumentException(String.format(
+                        "Failed to find the bundle manifest file '%s' in the servlet context."
+                        + " If you are running a dev-mode servlet container in maven e.g. `jetty:run` change it to `jetty:run-exploded`."
+                        + " If you are not compiling frontend resources, include the 'flow-maven-plugin' in your build script."
+                        + " Otherwise, you can skip this error either by disabling production mode, or by setting the servlet parameter '%s=true'.",
+                        FLOW_BUNDLE_MANIFEST, Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
             }
             return Optional.of(Json.parse(IOUtils.toString(bundleManifestStream,
                     StandardCharsets.UTF_8)));

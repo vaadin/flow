@@ -244,7 +244,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the ES6 resource URL
      */
     default String getEs6FrontendPrefix() {
-        return isProductionMode()
+        return useCompiledFrontendResources()
                 ? getStringProperty(Constants.FRONTEND_URL_ES6,
                         Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
@@ -257,7 +257,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the ES5 resource URL
      */
     default String getEs5FrontendPrefix() {
-        return isProductionMode()
+        return useCompiledFrontendResources()
                 ? getStringProperty(Constants.FRONTEND_URL_ES5,
                         Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
@@ -265,14 +265,25 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Determines if webJars mechanism is enabled. It is disabled if the user
-     * have explicitly set {@link Constants#DISABLE_WEBJARS} property to
-     * {@code true} or the user have not set the property at all and the
-     * production mode is enabled.
+     * have explicitly set the {@link Constants#DISABLE_WEBJARS} property to
+     * {@code true}, or the user have not set the property at all and the
+     * {@link #useCompiledFrontendResources()} returns false.
      *
      * @return {@code true} if webJars are enabled, {@code false} otherwise
      */
     default boolean areWebJarsEnabled() {
-        return !getBooleanProperty(Constants.DISABLE_WEBJARS,
-                isProductionMode());
+        return !getBooleanProperty(Constants.DISABLE_WEBJARS, useCompiledFrontendResources());
+    }
+
+    /**
+     * Determines if Flow should use compiled or original frontend resources.
+     *
+     * User can explicitly disable bundled resources usage by setting the
+     * {@link Constants#USE_ORIGINAL_FRONTEND_RESOURCES} property to {@code true}.
+     *
+     * @return {@code true} if Flow should use compiled frontend resources.
+     */
+    default boolean useCompiledFrontendResources() {
+        return isProductionMode() && !getBooleanProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
     }
 }

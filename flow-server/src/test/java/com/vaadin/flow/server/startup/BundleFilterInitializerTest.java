@@ -108,12 +108,27 @@ public class BundleFilterInitializerTest {
     }
 
     @Test
+    public void when_json_file_not_found_fails() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Failed to find");
+        expectedException.expectMessage(FLOW_BUNDLE_MANIFEST);
+
+        new BundleFilterInitializer().serviceInit(event);
+    }
+
+    @Test
+    public void when_bundle_disabled_doesnt_fail() {
+        mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
+                Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
+        new BundleFilterInitializer().serviceInit(event);
+    }
+
+    @Test
     public void fail_when_loading_invalid_json() {
         mocks.getServlet().addServletContextResource(
                 FRONTEND_ES6_BUNDLE_MANIFEST, "{ wait this is not json");
 
         expectedException.expect(JsonException.class);
-
         new BundleFilterInitializer().serviceInit(event);
     }
 
@@ -165,14 +180,6 @@ public class BundleFilterInitializerTest {
         expectedException.expectMessage(missingFragment);
 
         new BundleFilterInitializer().serviceInit(event);
-    }
-
-    @Test
-    public void null_bundle_manifest_stream_no_dependency_filter_added() {
-        new BundleFilterInitializer().serviceInit(event);
-
-        Mockito.verify(event, Mockito.never())
-                .addDependencyFilter(any(DependencyFilter.class));
     }
 
     @Test
