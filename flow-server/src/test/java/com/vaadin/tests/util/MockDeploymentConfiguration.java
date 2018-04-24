@@ -2,7 +2,6 @@ package com.vaadin.tests.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -31,6 +30,11 @@ public class MockDeploymentConfiguration
 
     public MockDeploymentConfiguration(String webComponentsPolyfillBase) {
         this.webComponentsPolyfillBase = webComponentsPolyfillBase;
+    }
+
+    @Override
+    public String getEs5FrontendPrefix() {
+        return super.getEs6FrontendPrefix();
     }
 
     @Override
