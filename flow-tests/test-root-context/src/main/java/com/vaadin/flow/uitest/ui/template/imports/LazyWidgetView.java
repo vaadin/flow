@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui.template.imports;
 
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -47,7 +47,7 @@ public class LazyWidgetView extends PolymerTemplate<LazyWidgetView.Model> {
         getModel().setGreeting("");
     }
 
-    @ClientDelegate
+    @ClientCallable
     void greet(String name) {
         getModel().setGreeting(String.format(GREETINGS_TEMPLATE, name));
         getModel().setHasGreeting(name != null && !name.isEmpty());

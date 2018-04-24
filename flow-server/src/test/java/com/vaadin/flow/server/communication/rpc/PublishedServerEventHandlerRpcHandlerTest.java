@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
@@ -83,7 +83,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
             isInvoked = true;
         }
 
-        @ClientDelegate(DisabledUpdateMode.ALWAYS)
+        @ClientCallable(DisabledUpdateMode.ALWAYS)
         private void operation() {
             isInvoked = true;
         }
@@ -98,7 +98,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         private boolean isInvoked;
 
-        @ClientDelegate
+        @ClientCallable
         private void method(Long longValue, Title title) {
             isInvoked = true;
         }

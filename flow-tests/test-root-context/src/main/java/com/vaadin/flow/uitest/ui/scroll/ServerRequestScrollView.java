@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.scroll;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -32,7 +32,7 @@ public class ServerRequestScrollView extends PolymerTemplate<TemplateModel> {
         setId("template");
     }
 
-    @ClientDelegate
+    @ClientCallable
     private void requestServer() {
     }
 }

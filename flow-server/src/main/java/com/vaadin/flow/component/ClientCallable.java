@@ -33,7 +33,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
-public @interface ClientDelegate {
+public @interface ClientCallable {
 
     /**
      * Controls RPC for the method from the client side to the server side when
