@@ -19,10 +19,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.server.VaadinServlet;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -32,6 +28,10 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
 
 import org.atmosphere.cpr.AtmosphereFramework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.VaadinServlet;
 
 /**
  * Initializer class for JSR 356 websockets.
@@ -110,6 +110,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        getLogger().debug("Executing contextInitialized");
         ServletContext servletContext = sce.getServletContext();
         if (servletContext.getMajorVersion() < 3) {
             return;
@@ -132,6 +133,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
         if (!atmosphereAvailable) {
             return;
         }
+        getLogger().debug("Atmosphere available, initializing");
 
         Map<String, ? extends ServletRegistration> regs = servletContext
                 .getServletRegistrations();
@@ -140,15 +142,16 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
             String servletName = entry.getKey();
             ServletRegistration servletRegistration = entry.getValue();
 
+            getLogger().debug("Checking if {} is a Vaadin Servlet",
+                    servletRegistration.getName());
+
             if (isVaadinServlet(servletRegistration, servletContext)) {
                 try {
                     initAtmosphereForVaadinServlet(servletRegistration,
                             servletContext);
                 } catch (Exception e) {
-                    getLogger().warn(
-                            "Failed to initialize Atmosphere for {}",
-                                    servletName,
-                            e);
+                    getLogger().warn("Failed to initialize Atmosphere for {}",
+                            servletName, e);
                 }
             }
         }
@@ -168,6 +171,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     public static void initAtmosphereForVaadinServlet(
             ServletRegistration servletRegistration,
             ServletContext servletContext) {
+        getLogger().debug("Initializing Atmosphere for Vaadin Servlet: {}",
+                servletRegistration.getName());
         String servletName = servletRegistration.getName();
         String attributeName = getAttributeName(servletName);
 
@@ -245,7 +250,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     }
 
     private static final Logger getLogger() {
-        return LoggerFactory.getLogger(JSR356WebsocketInitializer.class.getName());
+        return LoggerFactory
+                .getLogger(JSR356WebsocketInitializer.class.getName());
     }
 
     @Override

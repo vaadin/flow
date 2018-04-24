@@ -30,8 +30,8 @@ import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.FakeEs6Browser;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -58,43 +58,34 @@ public class HtmlDependencyParser {
         root = uri;
     }
 
-    Collection<String> parseDependencies() {
+    Collection<String> parseDependencies(VaadinService service) {
         Set<String> dependencies = new HashSet<>();
         String rooUri = SharedUtil.prefixIfRelative(root,
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        parseDependencies(rooUri, dependencies);
+        parseDependencies(rooUri, dependencies, service);
 
         return dependencies;
     }
 
-    private void parseDependencies(String path, Set<String> dependencies) {
+    private void parseDependencies(String path, Set<String> dependencies,
+            VaadinService service) {
         if (dependencies.contains(path)) {
             return;
         }
         dependencies.add(path);
-
-        VaadinSession session = VaadinSession.getCurrent();
-        VaadinServlet servlet = VaadinServlet.getCurrent();
-        if (servlet == null || session == null) {
-            /*
-             * Cannot happen in runtime.
-             *
-             * But not all unit tests set it. Let's just don't proceed further.
-             */
-            return;
-        }
-
-        String resolvedPath = servlet.resolveResource(path);
-
-        try (InputStream content = servlet.getResourceAsStream(resolvedPath)) {
+        FakeEs6Browser browser = FakeEs6Browser.get();
+        try (InputStream content = service.getResourceAsStream(path, browser,
+                null)) {
             if (content == null) {
                 getLogger().trace(
                         "Can't find resource '{}' to parse for imports via the servlet context",
                         path);
             } else {
+                String resolvedPath = service.resolveResource(path, browser);
                 parseHtmlImports(content, resolvedPath)
                         .map(uri -> resolveUri(uri, path))
-                        .forEach(uri -> parseDependencies(uri, dependencies));
+                        .forEach(uri -> parseDependencies(uri, dependencies,
+                                service));
             }
         } catch (IOException exception) {
             // ignore exception on close()

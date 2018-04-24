@@ -24,7 +24,9 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
@@ -32,33 +34,52 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 
-public class BundleDependencyFilterTest {
+import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
 
-    BundleDependencyFilter dependencyFilter;
-    FilterContext filterContext;
+public class BundleDependencyFilterTest {
+    private static final String NON_HASHED_BUNDLE_NAME = MAIN_BUNDLE_NAME_PREFIX
+            + ".html";
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
+    private BundleDependencyFilter dependencyFilter;
+    private FilterContext filterContext;
 
     @Before
     public void init() {
-        dependencyFilter = new BundleDependencyFilter(createTestMapping());
+        dependencyFilter = new BundleDependencyFilter(NON_HASHED_BUNDLE_NAME,
+                createTestMapping());
         filterContext = Mockito.mock(FilterContext.class);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void initialization_no_mapping_given() {
-        new BundleDependencyFilter(null);
+        expectedException.expect(NullPointerException.class);
+        expectedException.expectMessage("bundle mapping");
+
+        new BundleDependencyFilter(NON_HASHED_BUNDLE_NAME, null);
+    }
+
+    @Test
+    public void initialization_no_main_bundle_name_given() {
+        expectedException.expect(NullPointerException.class);
+        expectedException.expectMessage("Main bundle name");
+
+        new BundleDependencyFilter(null, Collections.emptyMap());
     }
 
     @Test
     public void import_in_fragment_filtered() {
         List<Dependency> dependencyWhichIsInFragment = Collections
                 .singletonList(createDependency("in fragment 1"));
+
         List<Dependency> filteredFragmentDependency = dependencyFilter
                 .filter(dependencyWhichIsInFragment, filterContext);
 
         Assert.assertEquals(
                 "Should contain the main bundle as the first dependency and fragment as second.",
-                Arrays.asList(
-                        createMainBundleDependency(),
+                Arrays.asList(createMainBundleDependency(),
                         createDependency("fragment 1")),
                 filteredFragmentDependency);
     }
@@ -68,6 +89,7 @@ public class BundleDependencyFilterTest {
         List<Dependency> twoImportsThatAreInTheMainBundle = Arrays.asList(
                 createDependency("in main bundle"),
                 createDependency("also in main bundle"));
+
         List<Dependency> filteredTwoMainBundleImports = dependencyFilter
                 .filter(twoImportsThatAreInTheMainBundle, filterContext);
 
@@ -82,6 +104,7 @@ public class BundleDependencyFilterTest {
                 createDependency("in fragment 1"),
                 createDependency("in fragment 2"),
                 createDependency("in main bundle"));
+
         List<Dependency> filtered = dependencyFilter.filter(toFilter,
                 filterContext);
 
@@ -94,6 +117,7 @@ public class BundleDependencyFilterTest {
         List<Dependency> toFilter = Arrays.asList(
                 createDependency("in main bundle"),
                 createDependency("in fragment 1"));
+
         List<Dependency> filtered = dependencyFilter.filter(toFilter,
                 filterContext);
 
@@ -103,14 +127,40 @@ public class BundleDependencyFilterTest {
 
     @Test
     public void non_bundled_dependency_passed_through() {
-        List<Dependency> dependencies = Collections
+        List<Dependency> toFilter = Collections
                 .singletonList(createDependency("not in bundle map"));
-        List<Dependency> filteredDependencies = dependencyFilter
-                .filter(dependencies, filterContext);
+
+        List<Dependency> filtered = dependencyFilter.filter(toFilter,
+                filterContext);
 
         Assert.assertEquals(
                 "Dependencies not mapped in any import to bundle mapping should be passed through as is.",
-                dependencies, filteredDependencies);
+                toFilter, filtered);
+    }
+
+    @Test
+    public void main_bundle_added_if_fragments_present_and_non_fragment_imports_go_last() {
+        Dependency dependencyNotInFragment = createDependency(
+                "not in bundle map");
+        List<Dependency> toFilter = Arrays.asList(
+                createDependency("in fragment 1"), dependencyNotInFragment,
+                createDependency("in fragment 2"));
+
+        List<Dependency> filtered = dependencyFilter.filter(toFilter,
+                filterContext);
+
+        Assert.assertEquals(
+                "When dependency from any fragment is returned after filtering, main bundle should be also returned even if not explicitly mentioned",
+                toFilter.size() + 1, filtered.size());
+        Assert.assertEquals("Main bundle should always go first",
+                createMainBundleDependency(), filtered.get(0));
+        Assert.assertEquals(
+                "Dependencies not in fragments should go after fragments",
+                dependencyNotInFragment, filtered.get(filtered.size() - 1));
+        Assert.assertTrue("Fragments should also be in filtered results",
+                filtered.containsAll(
+                        Arrays.asList(createDependency("fragment 1"),
+                                createDependency("fragment 2"))));
     }
 
     private Dependency createDependency(String url) {
@@ -118,15 +168,15 @@ public class BundleDependencyFilterTest {
     }
 
     private Dependency createMainBundleDependency() {
-        return createDependency(BundleDependencyFilter.MAIN_BUNDLE_URL);
+        return createDependency(NON_HASHED_BUNDLE_NAME);
     }
 
     private Map<String, Set<String>> createTestMapping() {
         Map<String, Set<String>> importContainedInBundles = new HashMap<>();
-        importContainedInBundles.put("in main bundle", Collections
-                .singleton(BundleDependencyFilter.MAIN_BUNDLE_URL));
-        importContainedInBundles.put("also in main bundle", Collections
-                .singleton(BundleDependencyFilter.MAIN_BUNDLE_URL));
+        importContainedInBundles.put("in main bundle",
+                Collections.singleton(NON_HASHED_BUNDLE_NAME));
+        importContainedInBundles.put("also in main bundle",
+                Collections.singleton(NON_HASHED_BUNDLE_NAME));
         importContainedInBundles.put("in fragment 1",
                 Collections.singleton("fragment 1"));
         importContainedInBundles.put("in fragment 2",

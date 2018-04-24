@@ -205,6 +205,16 @@ public class VaadinServletService extends VaadinService {
                 getThemedOrRawPath(path, browser, theme));
     }
 
+    @Override
+    public Optional<String> getThemedUrl(String url, WebBrowser browser,
+            AbstractTheme theme) {
+        if (theme != null
+                && !resolveResource(url, browser).equals(getThemedOrRawPath(url, browser, theme))) {
+            return Optional.of(theme.translateUrl(url));
+        }
+        return Optional.empty();
+    }
+
     /**
      * Resolves the given {@code url} resource and tries to find a themed or raw
      * version.
@@ -213,7 +223,7 @@ public class VaadinServletService extends VaadinService {
      * fallback.
      *
      * @param url
-     *            the resource to find
+     *            the untranslated URL to the resource to find
      * @param browser
      *            the web browser to resolve for, relevant for es5 vs es6
      *            resolving

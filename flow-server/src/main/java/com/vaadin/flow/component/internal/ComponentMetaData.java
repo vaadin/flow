@@ -36,6 +36,7 @@ import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
@@ -212,7 +213,16 @@ public class ComponentMetaData {
         String value = htmlImport.value();
         HtmlDependencyParser parser = new HtmlDependencyParser(value);
 
-        return new HtmlImportDependency(parser.parseDependencies(),
+        // At least at the time of writing, it does not really matter WHICH
+        // service instance is used here as long as it's of the correct type
+        // (VaadinServletService) as the methods are only using the servlet
+        // context
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            return new HtmlImportDependency(Collections.emptySet(),
+                    htmlImport.loadMode());
+        }
+        return new HtmlImportDependency(parser.parseDependencies(service),
                 htmlImport.loadMode());
     }
 

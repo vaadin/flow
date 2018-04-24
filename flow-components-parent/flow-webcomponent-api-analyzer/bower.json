@@ -27,17 +27,17 @@
   "dependencies": {
     "vaadin-button": "2.0.0",
     "vaadin-checkbox": "2.0.0",
-    "vaadin-combo-box": "4.0.0-beta5",
-    "vaadin-date-picker": "3.0.0-beta5",
-    "vaadin-dialog": "2.0.0-beta3",
+    "vaadin-combo-box": "4.0.0-beta6",
+    "vaadin-date-picker": "3.0.0-beta6",
+    "vaadin-dialog": "2.0.0-beta4",
     "vaadin-form-layout": "2.0.0-beta1",
     "vaadin-list-box": "1.0.0",
-    "vaadin-notification": "1.0.0-beta3",
+    "vaadin-notification": "1.0.0-beta4",
     "vaadin-progress-bar": "1.0.0",
     "vaadin-radio-button": "1.0.0",
     "vaadin-split-layout": "4.0.0",
     "vaadin-tabs": "2.0.0-beta3",
-    "vaadin-text-field": "2.0.0",
+    "vaadin-text-field": "2.0.1",
     "vaadin-upload": "4.0.0-beta2"
   }
 }

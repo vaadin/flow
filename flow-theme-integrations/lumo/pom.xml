@@ -18,6 +18,7 @@
         <dependency>
             <groupId>org.webjars.bowergithub.vaadin</groupId>
             <artifactId>vaadin-lumo-styles</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 </project>

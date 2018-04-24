@@ -32,11 +32,6 @@ public class TestProvider implements I18NProvider {
     }
 
     @Override
-    public String getTranslation(String key, Object... params) {
-        return "!" + key + "!";
-    }
-
-    @Override
     public String getTranslation(String key, Locale locale, Object... params) {
         return "!" + key + "!";
     }
