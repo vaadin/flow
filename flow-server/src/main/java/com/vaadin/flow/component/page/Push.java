@@ -50,10 +50,10 @@ public @interface Push {
     /**
      * Returns the transport type used for the push for the annotated UI. The
      * default transport type when this annotation is present is
-     * {@link Transport#WEBSOCKET}.
+     * {@link Transport#WEBSOCKET_XHR}.
      *
      * @return the transport type to use
      */
-    Transport transport() default Transport.WEBSOCKET;
+    Transport transport() default Transport.WEBSOCKET_XHR;
 
 }
