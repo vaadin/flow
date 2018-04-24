@@ -28,11 +28,10 @@ import java.lang.annotation.Target;
  * zero being the default-priority, so that any listener with a priority-value of
  * more than 0 will be executed before listeners that are not annotated with
  * {@literal @}ListenerPriority
- *
  * <p>
- *     <code>
+ *    <pre>
  *      //will be executed first
- *      @ListenerPriority(5)
+ *      &#064;ListenerPriority(5)
  *      class HighPriorityListener implements BeforeEnterListener {
  *      }
  *
@@ -41,10 +40,10 @@ import java.lang.annotation.Target;
  *      }
  *
  *      //will be executed third
- *      @ListenerPriority(-5)
+ *      &#064;ListenerPriority(-5)
  *      class LowPriorityListener implements BeforeEnterListener {
  *      }
- *     </code>
+ *   </pre>
  * </p>
  *
  * @author Bernd Hopp
