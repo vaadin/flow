@@ -48,7 +48,8 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.tests.util.TestUtil;
 
 public class StateTreeTest {
-    private StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+    private StateTree tree = new StateTree(new UI().getInternals(),
+            ElementChildrenList.class);
 
     public static class AttachableNode extends StateNode {
 
@@ -118,7 +119,7 @@ public class StateTreeTest {
 
         StateNodeTest.setParent(node, null);
 
-        StateTree anotherTree = new StateTree(new UI(),
+        StateTree anotherTree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
 
         StateNodeTest.setParent(node, anotherTree.getRootNode());
@@ -265,7 +266,7 @@ public class StateTreeTest {
         Class<? extends NodeFeature>[] features = new Class[] {
                 ElementChildrenList.class, ElementData.class,
                 ElementAttributeMap.class, ElementPropertyMap.class };
-        StateTree tree = new StateTree(new UI(), features);
+        StateTree tree = new StateTree(new UI().getInternals(), features);
 
         StateNode root = tree.getRootNode();
         root.getFeature(ElementData.class).setTag("body");

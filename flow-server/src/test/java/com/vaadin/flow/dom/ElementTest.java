@@ -42,6 +42,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
@@ -2141,7 +2142,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void callFunctionBeforeAttach() {
-        UI ui = new UI();
+        UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callFunction("noArgsMethod");
         ui.getElement().appendChild(element);
@@ -2152,7 +2153,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void callFunctionAfterAttach() {
-        UI ui = new UI();
+        UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
         element.callFunction("noArgsMethod");
@@ -2163,7 +2164,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void callFunctionBeforeDetach() {
-        UI ui = new UI();
+        UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
         element.callFunction("noArgsMethod");
@@ -2177,7 +2178,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void callFunctionBeforeReAttach() {
-        UI ui = new UI();
+        UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
         element.callFunction("noArgsMethod");
@@ -2193,7 +2194,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void callFunctionOneParam() {
-        UI ui = new UI();
+        UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callFunction("method", "foo");
         ui.getElement().appendChild(element);
@@ -2205,7 +2206,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void callFunctionTwoParams() {
-        UI ui = new UI();
+        UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callFunction("method", "foo", 123);
         ui.getElement().appendChild(element);
@@ -2216,7 +2217,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void callFunctionOnProperty() {
-        UI ui = new UI();
+        UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callFunction("property.method");
         ui.getElement().appendChild(element);
@@ -2227,7 +2228,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void callFunctionOnSubProperty() {
-        UI ui = new UI();
+        UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         element.callFunction("property.other.method");
         ui.getElement().appendChild(element);

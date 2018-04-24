@@ -163,6 +163,7 @@ public class Router implements Serializable {
         assert ui != null;
         assert location != null;
         assert trigger != null;
+        ui.getSession().checkHasLock();
 
         if (handleNavigationForLocation(ui, location)) {
             ui.getInternals().setLastHandledNavigation(location);

@@ -32,8 +32,8 @@ import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 public class LocationObserverTest {
@@ -71,7 +71,7 @@ public class LocationObserverTest {
         private static VaadinSession createMockSession() {
             MockVaadinServletService service = new MockVaadinServletService();
             service.init();
-            return new MockVaadinSession(service);
+            return new AlwaysLockedVaadinSession(service);
         }
 
         @Override

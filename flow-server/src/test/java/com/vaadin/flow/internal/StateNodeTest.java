@@ -84,7 +84,7 @@ public class StateNodeTest {
         private Set<StateNode> dirtyNodes;
 
         public TestStateTree() {
-            super(new UI(), ElementChildrenList.class);
+            super(new UI().getInternals(), ElementChildrenList.class);
         }
 
         @Override
@@ -481,7 +481,7 @@ public class StateNodeTest {
     }
 
     private StateTree createStateTree() {
-        StateTree stateTree = new StateTree(new UI(),
+        StateTree stateTree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
         return stateTree;
     }
@@ -841,8 +841,7 @@ public class StateNodeTest {
                     .equals(change.getFeature()) ? change
                             : (MapPutChange) changes.get(1);
             propertyChange = change.equals(visibilityChange)
-                    ? (MapPutChange) changes.get(1)
-                    : change;
+                    ? (MapPutChange) changes.get(1) : change;
         } else {
             propertyChange = change;
         }

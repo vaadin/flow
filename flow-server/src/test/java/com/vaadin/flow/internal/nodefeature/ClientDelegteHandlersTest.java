@@ -46,7 +46,8 @@ public class ClientDelegteHandlersTest {
 
     @Test
     public void attach_noFeature() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ClientDelegateHandlers.class);
 
@@ -57,7 +58,8 @@ public class ClientDelegteHandlersTest {
 
     @Test
     public void attach_noComponent() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ComponentMapping.class,
                 ClientDelegateHandlers.class);

@@ -269,7 +269,8 @@ public class NodeListAddRemoveTest
 
         nodeList.clear();
 
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
         // attach the feature node to the tree
         tree.getRootNode().getFeature(ElementChildrenList.class)
                 .add(nodeList.getNode());

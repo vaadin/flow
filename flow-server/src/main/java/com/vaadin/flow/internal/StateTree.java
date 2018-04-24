@@ -28,9 +28,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -128,7 +130,7 @@ public class StateTree implements NodeOwner {
 
     private final StateNode rootNode;
 
-    private final UI ui;
+    private final UIInternals uiInternals;
 
     /**
      * Creates a new state tree with a set of features defined for the root
@@ -136,13 +138,14 @@ public class StateTree implements NodeOwner {
      *
      * @param features
      *            the features of the root node
-     * @param ui
-     *            the UI that this tree belongs to
+     * @param uiInternals
+     *            the internals for the UI that this tree belongs to
      */
     @SafeVarargs
-    public StateTree(UI ui, Class<? extends NodeFeature>... features) {
+    public StateTree(UIInternals uiInternals,
+            Class<? extends NodeFeature>... features) {
+        this.uiInternals = uiInternals;
         rootNode = new RootNode(features);
-        this.ui = ui;
     }
 
     /**
@@ -242,6 +245,7 @@ public class StateTree implements NodeOwner {
     @Override
     public void markAsDirty(StateNode node) {
         assert node.getOwner() == this;
+        checkHasLock();
 
         dirtyNodes.add(node);
     }
@@ -274,7 +278,7 @@ public class StateTree implements NodeOwner {
      * @return the UI that this tree belongs to
      */
     public UI getUI() {
-        return ui;
+        return uiInternals.getUI();
     }
 
     /**
@@ -304,6 +308,7 @@ public class StateTree implements NodeOwner {
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
             SerializableConsumer<ExecutionContext> execution) {
+        checkHasLock();
         assert context != null : "The 'context' parameter can not be null";
         assert execution != null : "The 'execution' parameter can not be null";
 
@@ -361,11 +366,18 @@ public class StateTree implements NodeOwner {
 
     /**
      * Checks if there are changes waiting to be sent to the client side.
-     * 
+     *
      * @return <code>true</code> if there are pending changes,
      *         <code>false</code> otherwise
      */
     public boolean isDirty() {
         return hasDirtyNodes() || hasCallbacks();
+    }
+
+    private void checkHasLock() {
+        VaadinSession session = uiInternals.getSession();
+        if (session != null) {
+            session.checkHasLock();
+        }
     }
 }

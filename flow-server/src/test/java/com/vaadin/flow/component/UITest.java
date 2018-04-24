@@ -44,6 +44,8 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockUI;
 
 public class UITest {
 
@@ -138,7 +140,7 @@ public class UITest {
             VaadinService service = servlet.getService();
             service.setCurrentInstances(request, response);
 
-            MockVaadinSession session = new MockVaadinSession(service);
+            MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
             DeploymentConfiguration config = Mockito
                     .mock(DeploymentConfiguration.class);
@@ -204,7 +206,7 @@ public class UITest {
     public void navigateWithParameters_delegateToRouter() {
         final String route = "params";
         Router router = Mockito.mock(Router.class);
-        UI ui = new UI() {
+        UI ui = new MockUI() {
             @Override
             public com.vaadin.flow.router.Router getRouter() {
                 return router;
@@ -321,6 +323,10 @@ public class UITest {
         initUI(ui, "", null);
 
         ui.getSession().access(() -> ui.getInternals().setSession(null));
+
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
+
         assertEquals(1, events.size());
         assertEquals(ui, events.get(0).getSource());
     }
