@@ -86,7 +86,7 @@ public class NodeFeatureTest {
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
         expectedIds.put(PolymerEventListenerMap.class,
                 NodeFeatures.POLYMER_EVENT_LISTENERS);
-        expectedIds.put(ClientDelegateHandlers.class,
+        expectedIds.put(ClientCallableHandlers.class,
                 NodeFeatures.CLIENT_DELEGATE_HANDLERS);
         expectedIds.put(ShadowRootData.class, NodeFeatures.SHADOW_ROOT_DATA);
         expectedIds.put(ShadowRootHost.class, NodeFeatures.SHADOW_ROOT_HOST);

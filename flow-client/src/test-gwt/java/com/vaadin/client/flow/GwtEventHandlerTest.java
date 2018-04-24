@@ -90,7 +90,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         assertNull(WidgetUtil.getJsProperty(element, "$server"));
     }
 
-    public void testClientDelegateMethodInDom() {
+    public void testClientCallableMethodInDom() {
         assertServerEventHandlerMethodInDom(
                 NodeFeatures.CLIENT_DELEGATE_HANDLERS,
                 element -> assertPublishedMethods(element,
@@ -106,7 +106,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 "eventHandler");
     }
 
-    public void testAddClientDelegateHandlerMethod() {
+    public void testAddClientCallableHandlerMethod() {
         assertAddServerEventHandlerMethod(NodeFeatures.CLIENT_DELEGATE_HANDLERS,
                 this::assertPublishedMethods);
     }

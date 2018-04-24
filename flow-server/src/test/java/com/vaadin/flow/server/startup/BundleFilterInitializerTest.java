@@ -22,6 +22,8 @@ import static org.mockito.Matchers.any;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -55,6 +57,10 @@ public class BundleFilterInitializerTest {
     private static final String FRONTEND_ES6_BUNDLE_MANIFEST = FLOW_BUNDLE_MANIFEST
             .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
                     "/frontend-es6/");
+
+    private static final String FRONTEND_ES5_BUNDLE_MANIFEST = FLOW_BUNDLE_MANIFEST
+            .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
+                    "/frontend-es5/");
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -186,8 +192,8 @@ public class BundleFilterInitializerTest {
 
     @Test
     public void empty_bundle_manifest_stream_no_dependency_filter_added() {
-        mocks.getServlet()
-                .addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST, "{}");
+        mocks.getServlet().addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST, "{}");
+        mocks.getServlet().addServletContextResource(FRONTEND_ES5_BUNDLE_MANIFEST, "{}");
 
         new BundleFilterInitializer().serviceInit(event);
 
@@ -206,44 +212,61 @@ public class BundleFilterInitializerTest {
     }
 
     private void serviceInit(String bundleName) {
-        createDependencyFilter(bundleName);
-        mocks.getServlet().addServletContextResource(
-                FRONTEND_ES6_BUNDLE_MANIFEST,
-                String.format(
-                        "{'fragment-1':['dependency-1', 'dependency-2'],'fragment-2':['dependency-3', 'dependency-4'],'%s':['dependency-0', 'dependency-5']}",
-                        bundleName));
-        for (int i = 0; i < 6; i++) {
-            mocks.getServlet()
-                    .addServletContextResource("/frontend-es6/dependency-" + i);
-        }
-        mocks.getServlet()
-                .addServletContextResource("/frontend-es6/fragment-1");
-        mocks.getServlet()
-                .addServletContextResource("/frontend-es6/fragment-2");
+        List<BundleDependencyFilter> filters = new ArrayList<>();
+        dependencyFilterAddHandler = dependencyFilter -> filters.add((BundleDependencyFilter)dependencyFilter);
 
-        mocks.getServlet()
-                .addServletContextResource("/frontend-es6/" + bundleName);
+        String json = String.format(
+                "{'fragment-1':['dependency-1', 'dependency-2'],"
+               + "'fragment-2':['dependency-3', 'dependency-4'],"
+               + "'%s':['dependency-0', 'dependency-5']}", bundleName);
+
+        mocks.getServlet().addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST, json);
+        mocks.getServlet().addServletContextResource(FRONTEND_ES5_BUNDLE_MANIFEST, json);
+
+        for (String frontend : Arrays.asList("/frontend-es6/", "/frontend-es5/")) {
+            for (int i = 0; i < 6; i++) {
+                mocks.getServlet().addServletContextResource("dependency-" + i);
+            }
+            mocks.getServlet().addServletContextResource(frontend + "fragment-1");
+            mocks.getServlet().addServletContextResource(frontend + "fragment-2");
+            mocks.getServlet().addServletContextResource(frontend + bundleName);
+        }
 
         new BundleFilterInitializer().serviceInit(event);
-    }
 
-    private void createDependencyFilter(String bundleName) {
-        dependencyFilterAddHandler = dependencyFilter -> {
-            List<Dependency> dependencies = IntStream.range(0, 6)
-                    .mapToObj(number -> new Dependency(
-                            Dependency.Type.HTML_IMPORT, "dependency-" + number,
-                            LoadMode.EAGER))
-                    .collect(Collectors.toList());
-            List<Dependency> filtered = dependencyFilter.filter(dependencies,
-                    new FilterContext(null, FakeBrowser.getEs6()));
-            List<Dependency> expected = Stream
-                    .of(bundleName, "fragment-1", "fragment-2")
-                    .map(url -> new Dependency(Dependency.Type.HTML_IMPORT, url,
-                            LoadMode.EAGER))
-                    .collect(Collectors.toList());
-            Assert.assertTrue(expected.containsAll(filtered));
-            Assert.assertEquals(expected.size(), filtered.size());
-        };
-    }
+        // BundleDependencyFilter for ES6 and ES5 should be added
+        Assert.assertEquals(filters.size(), 2);
 
+        List<Dependency> dependencies = IntStream.range(0, 6)
+                .mapToObj(number -> new Dependency(
+                        Dependency.Type.HTML_IMPORT, "dependency-" + number,
+                        LoadMode.EAGER))
+                .collect(Collectors.toList());
+
+        List<Dependency> filtered = Stream
+                .of(bundleName, "fragment-1", "fragment-2")
+                .map(url -> new Dependency(Dependency.Type.HTML_IMPORT, url,
+                        LoadMode.EAGER))
+                .collect(Collectors.toList());
+
+        // First filter in list is ES6, it should filter dependencies only when browser is ES6
+        List<Dependency> filteredResult = filters.get(0)
+                .filter(dependencies, new FilterContext(null, FakeBrowser.getEs6()));
+        List<Dependency> unfilteredResult = filters.get(0)
+                .filter(dependencies, new FilterContext(null, FakeBrowser.getEs5()));
+
+        Assert.assertTrue(filteredResult.containsAll(filtered));
+        Assert.assertEquals(filteredResult.size(), filtered.size());
+        Assert.assertEquals(unfilteredResult, dependencies);
+
+        // Second filter in list is ES5, it should filter dependencies only when browser is ES5
+        filteredResult = filters.get(1)
+                .filter(dependencies, new FilterContext(null, FakeBrowser.getEs5()));
+        unfilteredResult = filters.get(1)
+                .filter(dependencies, new FilterContext(null, FakeBrowser.getEs6()));
+
+        Assert.assertTrue(filteredResult.containsAll(filtered));
+        Assert.assertEquals(filteredResult.size(), filtered.size());
+        Assert.assertEquals(unfilteredResult, dependencies);
+    }
 }
