@@ -20,25 +20,38 @@ import com.vaadin.flow.server.WebBrowser;
 /**
  * Browser instance targeted for server side resolving of resources.
  */
-public class FakeEs6Browser extends WebBrowser {
+public abstract class FakeBrowser extends WebBrowser {
 
-    private static FakeEs6Browser instance = new FakeEs6Browser();
+    private static FakeBrowser es6instance = new FakeBrowser() {
+        @Override
+        public boolean isEs6Supported() {
+            return true;
+        }
+    };
 
-    private FakeEs6Browser() {
-        // Singleton, use get()
-    }
+    private static FakeBrowser es5instance = new FakeBrowser() {
+        @Override
+        public boolean isEs6Supported() {
+            return false;
+        }
+    };
 
-    @Override
-    public boolean isEs6Supported() {
-        return true;
+
+    /**
+     * Gets the es6 singleton instance.
+     *
+     * @return the one and only instance of a ES6 browser
+     */
+    public static FakeBrowser getEs6() {
+        return es6instance;
     }
 
     /**
-     * Gets the singleton instance.
+     * Gets the es6 singleton instance.
      *
-     * @return the one and only instance
+     * @return the one and only instance of a ES5 browser
      */
-    public static FakeEs6Browser get() {
-        return instance;
+    public static FakeBrowser getEs5() {
+        return es5instance;
     }
 }

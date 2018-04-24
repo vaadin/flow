@@ -53,18 +53,25 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
+
         VaadinService service = event.getSource();
         if (!service.getDeploymentConfiguration().useCompiledFrontendResources()) {
             return;
         }
-        readBundleManifest(service).flatMap(
-                bundleData -> createDependencyFilter(bundleData, service))
+        addBundleFilterForBrowser(FakeBrowser.getEs6(), event);
+        addBundleFilterForBrowser(FakeBrowser.getEs5(), event);
+    }
+
+    private void addBundleFilterForBrowser(WebBrowser browser, ServiceInitEvent event) {
+        VaadinService service = event.getSource();
+        readBundleManifest(browser, service).flatMap(
+                bundleData -> createDependencyFilter(browser, bundleData, service))
                 .ifPresent(event::addDependencyFilter);
     }
 
-    private Optional<JsonObject> readBundleManifest(VaadinService service) {
+    private Optional<JsonObject> readBundleManifest(WebBrowser browser, VaadinService service) {
         try (InputStream bundleManifestStream = service.getResourceAsStream(
-                FLOW_BUNDLE_MANIFEST, FakeEs6Browser.get(), null)) {
+                FLOW_BUNDLE_MANIFEST, browser, null)) {
             if (bundleManifestStream == null) {
                 throw new IllegalArgumentException(String.format(
                         "Failed to find the bundle manifest file '%s' in the servlet context."
@@ -82,16 +89,15 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         }
     }
 
-    private Optional<DependencyFilter> createDependencyFilter(
+    private Optional<DependencyFilter> createDependencyFilter(WebBrowser browser, 
             JsonObject bundlesToUrlsContained, VaadinService service) {
-        WebBrowser es6Browser = FakeEs6Browser.get();
         Map<String, Set<String>> importToBundle = new HashMap<>();
         String mainBundle = null;
 
         for (String bundlePath : bundlesToUrlsContained.keys()) {
             String frontendBundlePath = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                     + bundlePath;
-            if (!service.isResourceAvailable(frontendBundlePath, es6Browser,
+            if (!service.isResourceAvailable(frontendBundlePath, browser,
                     null)) {
                 throw new IllegalArgumentException(String.format(
                         "Failed to find bundle '%s', specified in manifest '%s'. Remove file reference from the manifest to disable bundle usage or add the bundle to the path specified.",
@@ -128,7 +134,7 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                         FLOW_BUNDLE_MANIFEST, MAIN_BUNDLE_NAME_PREFIX));
             }
             return Optional
-                    .of(new BundleDependencyFilter(mainBundle, importToBundle));
+                    .of(new BundleDependencyFilter(browser, mainBundle, importToBundle));
         }
     }
 

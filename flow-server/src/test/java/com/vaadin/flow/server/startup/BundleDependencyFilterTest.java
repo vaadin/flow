@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,14 +29,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-
-import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
 
 public class BundleDependencyFilterTest {
     private static final String NON_HASHED_BUNDLE_NAME = MAIN_BUNDLE_NAME_PREFIX
@@ -48,9 +47,9 @@ public class BundleDependencyFilterTest {
 
     @Before
     public void init() {
-        dependencyFilter = new BundleDependencyFilter(NON_HASHED_BUNDLE_NAME,
-                createTestMapping());
-        filterContext = Mockito.mock(FilterContext.class);
+        dependencyFilter = new BundleDependencyFilter(
+                FakeBrowser.getEs6(), NON_HASHED_BUNDLE_NAME, createTestMapping());
+        filterContext = new FilterContext(null, FakeBrowser.getEs6());
     }
 
     @Test
@@ -58,7 +57,7 @@ public class BundleDependencyFilterTest {
         expectedException.expect(NullPointerException.class);
         expectedException.expectMessage("bundle mapping");
 
-        new BundleDependencyFilter(NON_HASHED_BUNDLE_NAME, null);
+        new BundleDependencyFilter(FakeBrowser.getEs6(), NON_HASHED_BUNDLE_NAME, null);
     }
 
     @Test
@@ -66,7 +65,7 @@ public class BundleDependencyFilterTest {
         expectedException.expect(NullPointerException.class);
         expectedException.expectMessage("Main bundle name");
 
-        new BundleDependencyFilter(null, Collections.emptyMap());
+        new BundleDependencyFilter(FakeBrowser.getEs6(), null, Collections.emptyMap());
     }
 
     @Test

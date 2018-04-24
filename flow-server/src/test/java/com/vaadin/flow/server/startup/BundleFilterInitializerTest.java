@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
+import static com.vaadin.flow.server.startup.BundleFilterInitializer.FLOW_BUNDLE_MANIFEST;
+import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
+import static org.mockito.Matchers.any;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -34,6 +38,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -41,9 +46,6 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.json.JsonException;
-import static com.vaadin.flow.server.startup.BundleFilterInitializer.FLOW_BUNDLE_MANIFEST;
-import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
-import static org.mockito.Matchers.any;
 
 public class BundleFilterInitializerTest {
     private static final String NON_HASHED_BUNDLE_NAME = MAIN_BUNDLE_NAME_PREFIX
@@ -233,7 +235,7 @@ public class BundleFilterInitializerTest {
                             LoadMode.EAGER))
                     .collect(Collectors.toList());
             List<Dependency> filtered = dependencyFilter.filter(dependencies,
-                    null);
+                    new FilterContext(null, FakeBrowser.getEs6()));
             List<Dependency> expected = Stream
                     .of(bundleName, "fragment-1", "fragment-2")
                     .map(url -> new Dependency(Dependency.Type.HTML_IMPORT, url,
