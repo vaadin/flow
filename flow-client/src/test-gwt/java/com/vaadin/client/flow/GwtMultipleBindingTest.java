@@ -174,7 +174,7 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         assertListPropertiesDoubleBind(NodeFeatures.CLASS_LIST);
     }
 
-    public void testClientDelegateMethodDoubleBind() {
+    public void testClientCallableMethodDoubleBind() {
         assertListPropertiesDoubleBind(NodeFeatures.CLIENT_DELEGATE_HANDLERS);
     }
 

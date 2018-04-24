@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.template;
 
 import java.util.UUID;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -74,7 +74,7 @@ public class UpdatableModelPropertiesView extends
         getElement().synchronizeProperty("age", "age-changed");
     }
 
-    @ClientDelegate
+    @ClientCallable
     private void updateStatus() {
         getElement().setProperty("updateStatus",
                 "Update Done " + UUID.randomUUID().toString());

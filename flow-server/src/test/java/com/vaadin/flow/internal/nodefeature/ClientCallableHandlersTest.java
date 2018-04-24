@@ -22,14 +22,14 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 
-public class ClientDelegteHandlersTest {
+public class ClientCallableHandlersTest {
 
     @Tag("div")
     static class NonTemplateComponentWithoutEventHandler extends Component {
@@ -38,7 +38,7 @@ public class ClientDelegteHandlersTest {
     @Tag("div")
     static class NonTemplateComponentWithEventHandler extends Component {
 
-        @ClientDelegate
+        @ClientCallable
         public void publishedMethod1() {
 
         }
@@ -49,11 +49,11 @@ public class ClientDelegteHandlersTest {
         StateTree tree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
 
-        StateNode stateNode = new StateNode(ClientDelegateHandlers.class);
+        StateNode stateNode = new StateNode(ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
         Assert.assertEquals(0,
-                stateNode.getFeature(ClientDelegateHandlers.class).size());
+                stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
     @Test
@@ -62,11 +62,11 @@ public class ClientDelegteHandlersTest {
                 ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                ClientDelegateHandlers.class);
+                ClientCallableHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
         Assert.assertEquals(0,
-                stateNode.getFeature(ClientDelegateHandlers.class).size());
+                stateNode.getFeature(ClientCallableHandlers.class).size());
     }
 
     @Test
@@ -75,8 +75,8 @@ public class ClientDelegteHandlersTest {
         NonTemplateComponentWithEventHandler component = new NonTemplateComponentWithEventHandler();
         ui.add(component);
 
-        ClientDelegateHandlers feature = component.getElement().getNode()
-                .getFeature(ClientDelegateHandlers.class);
+        ClientCallableHandlers feature = component.getElement().getNode()
+                .getFeature(ClientCallableHandlers.class);
         assertListFeature(feature, "publishedMethod1");
     }
 
@@ -86,8 +86,8 @@ public class ClientDelegteHandlersTest {
         NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
         ui.add(component);
 
-        ClientDelegateHandlers feature = component.getElement().getNode()
-                .getFeature(ClientDelegateHandlers.class);
+        ClientCallableHandlers feature = component.getElement().getNode()
+                .getFeature(ClientCallableHandlers.class);
         assertListFeature(feature);
     }
 

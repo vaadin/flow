@@ -17,7 +17,7 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.lang.reflect.Method;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.StateNode;
@@ -29,7 +29,7 @@ import com.vaadin.flow.internal.StateNode;
  * @author Vaadin Ltd
  *
  */
-public class ClientDelegateHandlers extends AbstractServerHandlers<Component> {
+public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
 
     /**
      * Creates a new meta information list for the given state node.
@@ -37,13 +37,13 @@ public class ClientDelegateHandlers extends AbstractServerHandlers<Component> {
      * @param node
      *            the state node this list belongs to
      */
-    public ClientDelegateHandlers(StateNode node) {
+    public ClientCallableHandlers(StateNode node) {
         super(node);
     }
 
     @Override
-    protected Class<? extends ClientDelegate> getHandlerAnnotation() {
-        return ClientDelegate.class;
+    protected Class<? extends ClientCallable> getHandlerAnnotation() {
+        return ClientCallable.class;
     }
 
     @Override
