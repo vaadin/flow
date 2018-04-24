@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,14 +29,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-
-import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
 
 public class BundleDependencyFilterTest {
     private static final String NON_HASHED_BUNDLE_NAME = MAIN_BUNDLE_NAME_PREFIX
@@ -50,7 +49,7 @@ public class BundleDependencyFilterTest {
     public void init() {
         dependencyFilter = new BundleDependencyFilter(
                 FakeBrowser.getEs6(), NON_HASHED_BUNDLE_NAME, createTestMapping());
-        filterContext = Mockito.mock(FilterContext.class);
+        filterContext = new FilterContext(null, FakeBrowser.getEs6());
     }
 
     @Test

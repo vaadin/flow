@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -69,9 +68,7 @@ public class BundleDependencyFilter implements DependencyFilter {
     @Override
     public List<Dependency> filter(List<Dependency> dependencies,
             FilterContext filterContext) {
-
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session != null && session.getBrowser().isEs6Supported() != this.isES6) {
+        if (filterContext.getBrowser().isEs6Supported() != this.isES6) {
             return dependencies;
         }
 

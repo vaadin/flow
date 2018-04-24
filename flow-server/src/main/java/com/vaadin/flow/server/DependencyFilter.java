@@ -54,16 +54,20 @@ public interface DependencyFilter extends Serializable {
      */
     public static class FilterContext implements Serializable {
 
-        private VaadinService service;
+        private final VaadinService service;
+        private final WebBrowser browser;
 
         /**
          * Creates a new context for the given session.
          *
          * @param service
          *            the service which is loading dependencies
+         * @param browser
+         *            the browser
          */
-        public FilterContext(VaadinService service) {
+        public FilterContext(VaadinService service, WebBrowser browser) {
             this.service = service;
+            this.browser = browser;
         }
 
         /**
@@ -73,6 +77,15 @@ public interface DependencyFilter extends Serializable {
          */
         public VaadinService getService() {
             return service;
+        }
+
+        /**
+         * Gets the browser info needed for filtering.
+         *
+         * @return the WebBrowser used
+         */
+        public WebBrowser getBrowser() {
+            return browser;
         }
     }
 
