@@ -2,7 +2,6 @@ package com.vaadin.tests.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
