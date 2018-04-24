@@ -476,7 +476,7 @@ public class UIInternals implements Serializable {
             final int priority2 = listenerPriority2 != null ? listenerPriority2.value() : 0;
 
             //we want to have a descending order
-            return -Integer.compare(priority1, priority2);
+            return Integer.compare(priority2, priority1);
         });
 
         return () -> list.remove(listener);
