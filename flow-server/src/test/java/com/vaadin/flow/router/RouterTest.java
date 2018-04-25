@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -67,7 +62,10 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -789,6 +787,19 @@ public class RouterTest extends RoutingTestBase {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(EXCEPTION_TEXT);
+            return HttpServletResponse.SC_NOT_FOUND;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class FileNotFound extends Component
+            implements HasErrorParameter<NotFoundException> {
+        private static NavigationTrigger trigger;
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            trigger = event.getTrigger();
             return HttpServletResponse.SC_NOT_FOUND;
         }
     }
@@ -2816,6 +2827,33 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Before navigation event was wrong.",
                 "my/wild/param", WildParameter.param);
 
+    }
+
+    @Test // #3988
+    public void exception_event_should_keep_original_trigger() {
+        setErrorNavigationTargets(FileNotFound.class);
+
+        int result = router.navigate(ui, new Location("programmatic"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Non existent route should have returned.",
+                HttpServletResponse.SC_NOT_FOUND, result);
+
+        Assert.assertEquals(NavigationTrigger.PROGRAMMATIC, FileNotFound.trigger);
+
+        router.navigate(ui, new Location("router_link"),
+                NavigationTrigger.ROUTER_LINK);
+
+        Assert.assertEquals(NavigationTrigger.ROUTER_LINK, FileNotFound.trigger);
+
+        router.navigate(ui, new Location("history"),
+                NavigationTrigger.HISTORY);
+
+        Assert.assertEquals(NavigationTrigger.HISTORY, FileNotFound.trigger);
+
+        router.navigate(ui, new Location("page_load"),
+                NavigationTrigger.PAGE_LOAD);
+
+        Assert.assertEquals(NavigationTrigger.PAGE_LOAD, FileNotFound.trigger);
     }
 
     private void setNavigationTargets(

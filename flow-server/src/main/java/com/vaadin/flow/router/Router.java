@@ -171,7 +171,8 @@ public class Router implements Serializable {
             try {
                 return handleNavigation(ui, location, trigger);
             } catch (Exception exception) {
-                return handleExceptionNavigation(ui, location, exception);
+                return handleExceptionNavigation(ui, location, exception,
+                        trigger);
             } finally {
                 ui.getInternals().clearLastHandledNavigation();
             }
@@ -217,7 +218,7 @@ public class Router implements Serializable {
     }
 
     private int handleExceptionNavigation(UI ui, Location location,
-            Exception exception) {
+            Exception exception, NavigationTrigger trigger) {
         Optional<ErrorTargetEntry> maybeLookupResult = getRegistry()
                 .getErrorNavigationTarget(exception);
 
@@ -233,8 +234,7 @@ public class Router implements Serializable {
                             .build());
 
             ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
-                    this, location, ui, NavigationTrigger.PROGRAMMATIC,
-                    errorParameter);
+                    this, location, ui, trigger, errorParameter);
 
             return handler.handle(navigationEvent);
         } else {
