@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.internal;
 
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import static org.junit.Assert.assertSame;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 
 public class ReflectToolsTest {
     public class NonStaticInnerClass {
@@ -165,17 +168,45 @@ public class ReflectToolsTest {
 
     @Test
     public void getGenericInterfaceClass() {
-        Class<?> genericInterfaceType = ReflectTools
-                .getGenericInterfaceType(HasInterface.class,
-                        TestInterface.class);
+        Class<?> genericInterfaceType = ReflectTools.getGenericInterfaceType(
+                HasInterface.class, TestInterface.class);
 
         Assert.assertEquals(String.class, genericInterfaceType);
 
-        genericInterfaceType = ReflectTools
-                .getGenericInterfaceType(ChildInterface.class,
-                        TestInterface.class);
+        genericInterfaceType = ReflectTools.getGenericInterfaceType(
+                ChildInterface.class, TestInterface.class);
 
         Assert.assertEquals(Boolean.class, genericInterfaceType);
+    }
+
+    @Test
+    public void findCommonBaseType_sameType() {
+        assertSame(Number.class,
+                ReflectTools.findCommonBaseType(Number.class, Number.class));
+    }
+
+    @Test
+    public void findCommonBaseType_aExtendsB() {
+        assertSame(Number.class,
+                ReflectTools.findCommonBaseType(Integer.class, Number.class));
+    }
+
+    @Test
+    public void findCommonBaseType_bExtendsA() {
+        assertSame(Number.class,
+                ReflectTools.findCommonBaseType(Number.class, Integer.class));
+    }
+
+    @Test
+    public void findCommonBaseType_commonBase() {
+        assertSame(Number.class,
+                ReflectTools.findCommonBaseType(Double.class, Integer.class));
+    }
+
+    @Test
+    public void findCommonBaseType_noCommonBase() {
+        assertSame(Object.class,
+                ReflectTools.findCommonBaseType(String.class, Number.class));
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {

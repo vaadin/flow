@@ -33,9 +33,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -565,7 +565,7 @@ public class ReflectTools implements Serializable {
     /**
      * Finds the Class type for the generic interface class extended by given
      * class if exists.
-     * 
+     *
      * @param clazz
      *            class that should extend interface
      * @param interfaceType
@@ -574,8 +574,8 @@ public class ReflectTools implements Serializable {
      */
     public static Class<?> getGenericInterfaceType(Class<?> clazz,
             Class<?> interfaceType) {
-        Type type = GenericTypeReflector
-                .getTypeParameter(clazz, interfaceType.getTypeParameters()[0]);
+        Type type = GenericTypeReflector.getTypeParameter(clazz,
+                interfaceType.getTypeParameters()[0]);
 
         if (type instanceof Class || type instanceof ParameterizedType) {
             return GenericTypeReflector.erase(type);
@@ -624,7 +624,7 @@ public class ReflectTools implements Serializable {
      *
      * @param functionalClass
      *            interface class to get the functional method for
-     * 
+     *
      * @return functional interface method
      */
     public static Method getFunctionalMethod(Class<?> functionalClass) {
@@ -644,7 +644,7 @@ public class ReflectTools implements Serializable {
     /**
      * Collect all the integer values for public static final constants found
      * for the given class.
-     * 
+     *
      * @param clazz
      *            class to collect constants from
      * @return list of all integer constants in class
@@ -670,6 +670,38 @@ public class ReflectTools implements Serializable {
         }
 
         return integerConstants;
+    }
+
+    /**
+     * Finds the most specific class that both provided classes extend from.
+     *
+     * @param a
+     *            one class to get the base type for, not <code>null</code>
+     * @param b
+     *            another class to get the base type for, not <code>null</code>
+     * @return the most specific base class, not <code>null</code>
+     *
+     */
+    public static Class<?> findCommonBaseType(Class<?> a, Class<?> b) {
+        if (a.isInterface()) {
+            throw new IllegalArgumentException("a cannot be an interface");
+        }
+        if (b.isInterface()) {
+            throw new IllegalArgumentException("b cannot be an interface");
+        }
+
+        if (a.isAssignableFrom(b)) {
+            return a;
+        } else if (b.isAssignableFrom(a)) {
+            return b;
+        }
+
+        Class<?> currentClass = a;
+        while (!currentClass.isAssignableFrom(b)) {
+            currentClass = currentClass.getSuperclass();
+        }
+
+        return currentClass;
     }
 
     private static List<Field> getConstants(Class<?> staticFields) {
