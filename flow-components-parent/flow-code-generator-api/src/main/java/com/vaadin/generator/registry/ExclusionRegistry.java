@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.vaadin.flow.component.HasStyle;
+
 /**
  * Registry for all exclusions in the generated files. Excluded properties,
  * events or methods are not generated.
@@ -55,6 +57,8 @@ public class ExclusionRegistry {
         excludeEvent("vaadin-combo-box", "change");
         excludeBehaviorOrMixin("vaadin-date-picker",
                 "Polymer.GestureEventListeners");
+        excludeBehaviorOrMixin("vaadin-dialog", HasStyle.class.getName());
+        excludeBehaviorOrMixin("vaadin-notification", HasStyle.class.getName());
 
         // Polymer lifecycle callbacks
         excludeMethod(null, "connectedCallback");

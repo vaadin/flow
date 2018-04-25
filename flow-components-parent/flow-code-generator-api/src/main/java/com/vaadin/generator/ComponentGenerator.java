@@ -33,9 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,6 +43,9 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -512,8 +512,10 @@ public class ComponentGenerator {
     private void addInterfaces(ComponentMetadata metadata,
             JavaClassSource javaClass) {
 
-        // all components have styles
-        javaClass.addInterface(HasStyle.class);
+        if (!ExclusionRegistry.isBehaviorOrMixinExcluded(metadata.getTag(),
+                HasStyle.class.getName())) {
+            javaClass.addInterface(HasStyle.class);
+        }
 
         List<String> classBehaviorsAndMixins = new ArrayList<>();
         classBehaviorsAndMixins.add(metadata.getTag());

@@ -538,6 +538,17 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void generateClass_withoutHasStyle() {
+        componentMetadata.setTag("vaadin-dialog");
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertFalse(
+                "Generated dialog should not have HasStyle interface",
+                generatedClass.contains("implements HasStyle"));
+    }
+
+    @Test
     public void componentContainsNotifiedProperty_generatedListenerUsesComponentAsEventSource() {
         generator.withProtectedMethods(true);
 
