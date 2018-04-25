@@ -26,6 +26,13 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.router.AfterNavigationListener;
+import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.BeforeLeaveListener;
+import com.vaadin.flow.router.ListenerPriority;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +58,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.router.AfterNavigationListener;
-import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
-import com.vaadin.flow.router.BeforeLeaveListener;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -464,6 +465,21 @@ public class UIInternals implements Serializable {
         List<E> list = (List<E>) listeners.computeIfAbsent(navigationHandler,
                 key -> new ArrayList<>());
         list.add(listener);
+
+        list.sort((o1, o2) -> {
+            Class<?> o1Class = o1.getClass();
+            Class<?> o2Class = o2.getClass();
+
+            final ListenerPriority listenerPriority1 = o1Class.getAnnotation(ListenerPriority.class);
+            final ListenerPriority listenerPriority2 = o2Class.getAnnotation(ListenerPriority.class);
+
+            final int priority1 = listenerPriority1 != null ? listenerPriority1.value() : 0;
+            final int priority2 = listenerPriority2 != null ? listenerPriority2.value() : 0;
+
+            //we want to have a descending order
+            return Integer.compare(priority2, priority1);
+        });
+
         return () -> list.remove(listener);
     }
 
@@ -479,6 +495,7 @@ public class UIInternals implements Serializable {
     public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
         List<E> registeredListeners = (List<E>) listeners
                 .computeIfAbsent(navigationHandler, key -> new ArrayList<>());
+
         return Collections.unmodifiableList(registeredListeners);
     }
 

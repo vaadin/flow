@@ -27,6 +27,9 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
  * <p>
  * During this phase there is the possibility to reroute to another navigation
  * target.
+ *
+ * All BeforeEnterListeners will be executed before the BeforeEnterObservers.
+ * To control the order of execution of BeforeEnterListeners, see {@link ListenerPriority}
  */
 @FunctionalInterface
 public interface BeforeEnterListener extends BeforeEnterHandler {
