@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+import java.util.EventListener;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -25,47 +28,30 @@ import com.vaadin.flow.shared.Registration;
  * that have a user-editable value. Emits change events whenever the value is
  * changed, either by the user or programmatically.
  *
- * @param <C>
- *            the component type
+ * @param <E>
+ *            the type of the value change event fired by this instance
  * @param <V>
  *            the value type
  * @author Vaadin Ltd.
  */
-public interface HasValue<C extends Component, V> extends HasEnabled {
+public interface HasValue<E extends ValueChangeEvent<V>, V> {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
      *
-     * @param <C>
-     *            the component type
      * @param <V>
      *            the value type
      */
-    class ValueChangeEvent<C extends Component, V> extends ComponentEvent<C> {
-
-        private final V oldValue;
-        private final V value;
+    interface ValueChangeEvent<V> {
+        HasValue<?, V> getHasValue();
 
         /**
-         * Creates a new {@code ValueChange} event containing the given value,
-         * originating from the given source component.
+         * Checks if this event originated from the client side.
          *
-         * @param component
-         *            the component, not null
-         * @param hasValue
-         *            the HasValue instance bearing the value, not null
-         * @param oldValue
-         *            the previous value held by the source of this event
-         * @param fromClient
-         *            {@code true} if this event originates from the client,
-         *            {@code false} otherwise.
+         * @return <code>true</code> if the event originated from the client
+         *         side, <code>false</code> otherwise
          */
-        public ValueChangeEvent(C component, HasValue<C, V> hasValue,
-                V oldValue, boolean fromClient) {
-            super(component, fromClient);
-            this.oldValue = oldValue;
-            value = hasValue.getValue();
-        }
+        boolean isFromClient();
 
         /**
          * Returns the value of the source before this value change event
@@ -73,33 +59,27 @@ public interface HasValue<C extends Component, V> extends HasEnabled {
          *
          * @return the value previously held by the source of this event
          */
-        public V getOldValue() {
-            return oldValue;
-        }
+        V getOldValue();
 
         /**
          * Returns the new value that triggered this value change event.
          *
          * @return the new value
          */
-        public V getValue() {
-            return value;
-        }
+        V getValue();
     }
 
     /**
      * A listener for value change events.
      *
-     * @param <C>
-     *            the component type
-     * @param <V>
-     *            the value type
+     * @param <E>
+     *            the value change event type
      * @see ValueChangeEvent
      * @see Registration
      */
     @FunctionalInterface
-    interface ValueChangeListener<C extends Component, V>
-            extends ComponentEventListener<ValueChangeEvent<C, V>> {
+    interface ValueChangeListener<E extends ValueChangeEvent<?>>
+            extends EventListener, Serializable {
 
         /**
          * Invoked when this listener receives a value change event from an
@@ -108,8 +88,7 @@ public interface HasValue<C extends Component, V> extends HasEnabled {
          * @param event
          *            the received event, not null
          */
-        @Override
-        void onComponentEvent(ValueChangeEvent<C, V> event);
+        void valueChanged(E event);
     }
 
     /**
@@ -140,26 +119,6 @@ public interface HasValue<C extends Component, V> extends HasEnabled {
     V getValue();
 
     /**
-     * Returns the component instance this {@code HasValue} is bound to.
-     * <p>
-     * The default implementation expects the {@code HasValue} to also extend
-     * {@link Component}. If that is not the case, this method should be
-     * overridden to return the correct {@link Component} instance.
-     *
-     * @return the component instance, never {@code null}
-     */
-    default C getComponent() {
-        try {
-            return (C) this;
-        } catch (ClassCastException cce) {
-            throw new ClassCastException(String.format(
-                    "The class %1$s implementing %2$s does not extend %3$s. It should override the getComponent() method to return the component instance the %1$s is bound to. Original message: %4$s",
-                    getClass().getName(), HasValue.class.getName(),
-                    Component.class.getName(), cce.getMessage()));
-        }
-    }
-
-    /**
      * Adds a value change listener. The listener is called when the value of
      * this {@code HasValue} is changed either by the user or programmatically.
      * <p>
@@ -171,35 +130,8 @@ public interface HasValue<C extends Component, V> extends HasEnabled {
      *            the value change listener, not null
      * @return a registration for the listener
      */
-    default Registration addValueChangeListener(
-            ValueChangeListener<C, V> listener) {
-        return getComponent().getElement().addPropertyChangeListener(
-                getClientValuePropertyName(), event -> {
-                    /*
-                     * For the state tree, the default empty value of any
-                     * property is {@code null}, but for any component it might
-                     * be something else as defined by {@link #getEmptyValue()}.
-                     * (#3496)
-                     */
-                    final V oldValue;
-                    final V emptyValue = getEmptyValue();
-                    final V propertyChangeEventValue = (V) event.getOldValue();
-                    if (propertyChangeEventValue == null) {
-                        oldValue = emptyValue;
-                        if (Objects.equals(oldValue, getValue())) {
-                            // there is no value change in component API
-                            // perspective
-                            return;
-                        }
-                    } else {
-                        oldValue = propertyChangeEventValue;
-                    }
-                    listener.onComponentEvent(
-                            new ValueChangeEvent<>(getComponent(), this,
-                                    oldValue, event.isUserOriginated()));
-
-                });
-    }
+    Registration addValueChangeListener(
+            ValueChangeListener<? super E> listener);
 
     /**
      * Returns the value that represents an empty value.
@@ -283,9 +215,7 @@ public interface HasValue<C extends Component, V> extends HasEnabled {
      *            a boolean value specifying whether the component is put
      *            read-only mode or not
      */
-    default void setReadOnly(boolean readOnly) {
-        getComponent().getElement().setProperty("readonly", readOnly);
-    }
+    void setReadOnly(boolean readOnly);
 
     /**
      * Returns whether this {@code HasValue} is in read-only mode or not.
@@ -293,9 +223,7 @@ public interface HasValue<C extends Component, V> extends HasEnabled {
      * @return {@code false} if the user can modify the value, {@code true} if
      *         not.
      */
-    default boolean isReadOnly() {
-        return getComponent().getElement().getProperty("readonly", false);
-    }
+    boolean isReadOnly();
 
     /**
      * Sets the required indicator visible or not.
@@ -306,17 +234,12 @@ public interface HasValue<C extends Component, V> extends HasEnabled {
      *            <code>true</code> to make the required indicator visible,
      *            <code>false</code> if not
      */
-    default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        getComponent().getElement().setProperty("required",
-                requiredIndicatorVisible);
-    }
+    void setRequiredIndicatorVisible(boolean requiredIndicatorVisible);
 
     /**
      * Checks whether the required indicator is visible.
      *
      * @return <code>true</code> if visible, <code>false</code> if not
      */
-    default boolean isRequiredIndicatorVisible() {
-        return getComponent().getElement().getProperty("required", false);
-    }
+    boolean isRequiredIndicatorVisible();
 }

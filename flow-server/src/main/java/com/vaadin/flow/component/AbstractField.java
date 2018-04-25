@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
@@ -53,7 +54,73 @@ import com.vaadin.flow.shared.Registration;
  *            the value type
  */
 public abstract class AbstractField<C extends AbstractField<C, T>, T>
-        extends Component implements HasValue<C, T>, HasEnabled {
+        extends Component
+        implements HasValue<ComponentValueChangeEvent<C, T>, T>, HasEnabled {
+
+    /**
+     * Value change event fired by components.
+     *
+     * @author Vaadin Ltd
+     * @param <C>
+     *            the source component type
+     * @param <V>
+     *            the value type
+     */
+    public static class ComponentValueChangeEvent<C extends Component, V>
+            extends ComponentEvent<C> implements HasValue.ValueChangeEvent<V> {
+
+        private final V oldValue;
+        private final V value;
+        private final HasValue<?, V> hasValue;
+
+        /**
+         * Creates a new component value change event.
+         *
+         * @param source
+         *            the source component
+         * @param hasValue
+         *            the HasValue from which the value originates
+         * @param oldValue
+         *            the old value
+         * @param fromClient
+         *            whether the value change originated from the client
+         */
+        public ComponentValueChangeEvent(C source, HasValue<?, V> hasValue,
+                V oldValue, boolean fromClient) {
+            super(source, fromClient);
+            this.hasValue = hasValue;
+            this.oldValue = oldValue;
+            this.value = hasValue.getValue();
+        }
+
+        @Override
+        public V getOldValue() {
+            return oldValue;
+        }
+
+        @Override
+        public V getValue() {
+            return value;
+        }
+
+        /**
+         * {@inheritDoc}
+         * <p>
+         * This is typically the same instance as {@link #getSource()}, but in
+         * some cases the {@link HasValue} implementation is separated from the
+         * component implementation.
+         */
+        @Override
+        public HasValue<?, V> getHasValue() {
+            return hasValue;
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "[source=" + source
+                    + ", value = " + value + ", oldValue = " + oldValue + "]";
+        }
+    }
 
     private final T initialValue;
 
@@ -99,13 +166,13 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
     @Override
     @SuppressWarnings("unchecked")
     public Registration addValueChangeListener(
-            HasValue.ValueChangeListener<C, T> listener) {
+            HasValue.ValueChangeListener<? super ComponentValueChangeEvent<C, T>> listener) {
         @SuppressWarnings("rawtypes")
         ComponentEventListener componentListener = event -> {
-            ValueChangeEvent<C, T> valueChangeEvent = (ValueChangeEvent<C, T>) event;
-            listener.onComponentEvent(valueChangeEvent);
+            ComponentValueChangeEvent<C, T> valueChangeEvent = (ComponentValueChangeEvent<C, T>) event;
+            listener.valueChanged(valueChangeEvent);
         };
-        return addListener(ValueChangeEvent.class, componentListener);
+        return addListener(ComponentValueChangeEvent.class, componentListener);
     }
 
     @Override
@@ -162,12 +229,13 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
         return valueSetFromPresentationUpdate;
     }
 
-    private ValueChangeEvent<C, T> createValueChange(T oldValue,
+    private ComponentValueChangeEvent<C, T> createValueChange(T oldValue,
             boolean fromClient) {
         @SuppressWarnings("unchecked")
         C thisC = (C) this;
 
-        return new ValueChangeEvent<>(thisC, this, oldValue, fromClient);
+        return new ComponentValueChangeEvent<>(thisC, this, oldValue,
+                fromClient);
     }
 
     /**

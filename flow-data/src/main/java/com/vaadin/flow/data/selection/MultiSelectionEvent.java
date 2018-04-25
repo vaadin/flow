@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 
@@ -35,7 +36,7 @@ import com.vaadin.flow.component.HasValue;
  *            the type of the selected item
  */
 public class MultiSelectionEvent<C extends Component, T> extends
-        HasValue.ValueChangeEvent<C, Set<T>> implements SelectionEvent<C, T> {
+        ComponentValueChangeEvent<C, Set<T>> implements SelectionEvent<C, T> {
 
     /**
      * Creates a new multi selection change event in a component.
@@ -50,7 +51,8 @@ public class MultiSelectionEvent<C extends Component, T> extends
      *            {@code true} if this event originates from the client,
      *            {@code false} otherwise.
      */
-    public MultiSelectionEvent(C listing, HasValue<C, Set<T>> source,
+    public MultiSelectionEvent(C listing,
+            HasValue<ComponentValueChangeEvent<C, Set<T>>, Set<T>> source,
             Set<T> oldSelection, boolean userOriginated) {
         super(listing, source, oldSelection, userOriginated);
     }

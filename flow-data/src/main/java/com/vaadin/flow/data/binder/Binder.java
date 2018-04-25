@@ -969,8 +969,8 @@ public class Binder<BEAN> implements Serializable {
             statusHandler = builder.statusHandler;
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
-            onValueChange = getField()
-                    .addValueChangeListener(this::handleFieldValueChange);
+            onValueChange = getField().addValueChangeListener(
+                    event -> handleFieldValueChange(event));
 
             this.getter = getter;
             this.setter = setter;
@@ -1104,7 +1104,7 @@ public class Binder<BEAN> implements Serializable {
          * @param event
          */
         private void handleFieldValueChange(
-                ValueChangeEvent<?, FIELDVALUE> event) {
+                ValueChangeEvent<FIELDVALUE> event) {
             // Inform binder of changes; if setBean: writeIfValid
             getBinder().handleFieldValueChange(this);
             getBinder().fireEvent(event);
@@ -2151,8 +2151,8 @@ public class Binder<BEAN> implements Serializable {
      * @return a registration for the listener
      */
     public Registration addValueChangeListener(
-            ValueChangeListener<?, ?> listener) {
-        return addListener(ValueChangeEvent.class, listener::onComponentEvent);
+            ValueChangeListener<? super ValueChangeEvent<?>> listener) {
+        return addListener(ValueChangeEvent.class, listener::valueChanged);
     }
 
     /**
