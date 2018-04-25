@@ -128,7 +128,8 @@ public class ExclusionRegistryTest {
                 HasEnabled.class));
         Assert.assertTrue(ExclusionRegistry
                 .isInterfaceExcluded("some-other-tag", HasEnabled.class));
-
+        Assert.assertFalse(ExclusionRegistry
+                .isInterfaceExcluded("some-other-tag", HasStyle.class));
     }
 
 }
