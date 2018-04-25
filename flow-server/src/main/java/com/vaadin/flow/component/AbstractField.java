@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.internal.AbstractFieldSupport;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
@@ -45,6 +46,12 @@ import com.vaadin.flow.shared.Registration;
  * user.
  * </ol>
  * See the detailed documentation for the two methods for further details.
+ * <p>
+ * This class extends {@link Component}, which means that it cannot be used for
+ * adding field functionality to an existing component without changing the
+ * superclass of that component. As an alternative, you can use
+ * {@link AbstractCompositeField} to instead wrap an instance of the existing
+ * component.
  *
  * @author Vaadin Ltd
  * @param <C>
@@ -55,15 +62,7 @@ import com.vaadin.flow.shared.Registration;
 public abstract class AbstractField<C extends AbstractField<C, T>, T>
         extends Component implements HasValue<C, T>, HasEnabled {
 
-    private final T initialValue;
-
-    private T bufferedValue;
-
-    private boolean presentationUpdateInProgress;
-
-    private boolean valueSetFromPresentationUpdate;
-
-    private T pendingValueFromPresentation;
+    private final AbstractFieldSupport<C, T> fieldSupport;
 
     /**
      * Creates a new field with an element created based on the {@link Tag}
@@ -76,8 +75,7 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
     public AbstractField(T defaultValue) {
         super();
 
-        this.initialValue = defaultValue;
-        bufferedValue = defaultValue;
+        fieldSupport = createFieldSupport(defaultValue);
     }
 
     /**
@@ -93,82 +91,25 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
     public AbstractField(Element element, T defaultValue) {
         super(element);
 
-        this.initialValue = defaultValue;
-        bufferedValue = defaultValue;
+        fieldSupport = createFieldSupport(defaultValue);
+    }
+
+    private AbstractFieldSupport<C, T> createFieldSupport(T defaultValue) {
+        @SuppressWarnings("unchecked")
+        C thisC = (C) this;
+        return new AbstractFieldSupport<>(thisC, defaultValue,
+                this::valueEquals, this::setPresentationValue, this::fireEvent);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Registration addValueChangeListener(
             HasValue.ValueChangeListener<C, T> listener) {
-        @SuppressWarnings("rawtypes")
-        ComponentEventListener componentListener = event -> {
-            ValueChangeEvent<C, T> valueChangeEvent = (ValueChangeEvent<C, T>) event;
-            listener.onComponentEvent(valueChangeEvent);
-        };
-        return addListener(ValueChangeEvent.class, componentListener);
+        return fieldSupport.addValueChangeListener(listener);
     }
 
     @Override
     public void setValue(T value) {
-        setValue(value, false, false);
-    }
-
-    private void setValue(T newValue, boolean fromInternal,
-            boolean fromClient) {
-        if (fromClient && isReadOnly()) {
-            applyValue(bufferedValue);
-            return;
-        }
-
-        T oldValue = this.getValue();
-
-        if (valueEquals(newValue, oldValue)) {
-            return;
-        }
-
-        this.bufferedValue = newValue;
-
-        if (!fromInternal) {
-            boolean pendingInternalUpdated;
-            try {
-                pendingInternalUpdated = applyValue(newValue);
-            } catch (RuntimeException e) {
-                this.bufferedValue = oldValue;
-                throw e;
-            }
-
-            if (pendingInternalUpdated) {
-                if (valueEquals(pendingValueFromPresentation, oldValue)) {
-                    bufferedValue = oldValue;
-                    return;
-                }
-                this.bufferedValue = pendingValueFromPresentation;
-            }
-        }
-
-        fireEvent(createValueChange(oldValue, fromClient));
-    }
-
-    private boolean applyValue(T value) {
-        presentationUpdateInProgress = true;
-        valueSetFromPresentationUpdate = false;
-
-        try {
-            setPresentationValue(value);
-        } finally {
-            presentationUpdateInProgress = false;
-        }
-
-        return valueSetFromPresentationUpdate;
-    }
-
-    private ValueChangeEvent<C, T> createValueChange(T oldValue,
-            boolean fromClient) {
-        @SuppressWarnings("unchecked")
-        C thisC = (C) this;
-
-        return new ValueChangeEvent<>(thisC, this, oldValue, fromClient);
+        fieldSupport.setValue(value);
     }
 
     /**
@@ -206,12 +147,7 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
      *            otherwise <code>false</code>
      */
     protected void setModelValue(T newModelValue, boolean fromClient) {
-        if (presentationUpdateInProgress) {
-            valueSetFromPresentationUpdate = true;
-            pendingValueFromPresentation = newModelValue;
-            return;
-        }
-        setValue(newModelValue, true, fromClient);
+        fieldSupport.setModelValue(newModelValue, fromClient);
     }
 
     /**
@@ -230,12 +166,12 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
      *         <code>false</code>
      */
     protected boolean valueEquals(T value1, T value2) {
-        return Objects.equals(value1, value2);
+        return fieldSupport.valueEquals(value1, value2);
     }
 
     @Override
     public T getValue() {
-        return bufferedValue;
+        return fieldSupport.getValue();
     }
 
     @Override
@@ -260,6 +196,6 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
 
     @Override
     public T getEmptyValue() {
-        return initialValue;
+        return fieldSupport.getEmptyValue();
     }
 }
