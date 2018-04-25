@@ -18,98 +18,62 @@ package com.vaadin.flow.component;
 import java.util.Objects;
 
 import com.vaadin.flow.component.internal.AbstractFieldSupport;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * An abstract implementation of a field, or a {@code Component} allowing user
- * input. Implements {@link HasValue} to represent the input value. Examples of
- * typical field components include text fields, date pickers, and check boxes.
+ * An abstract field class that is backed by a composite component.
  * <p>
- * The field value is represented in two separate ways:
- * <ol>
- * <li>A presentation value that is shown to the user. This is typically
- * represented in the component's server-side DOM element or through child
- * components.
- * <li>A model value that is available for programmatic use through the
- * {@link HasValue} interface. This representation is handled by this class and
- * should not be directly accessed by subclasses.
- * </ol>
- * <p>
- * In order to keep the two value representations in sync with each other,
- * subclasses must take care of the two following things:
- * <ol>
- * <li>Listen to changes from the user, and call
- * {@link #setModelValue(Object, boolean)} with an updated value.
- * <li>Implement {@link #setPresentationValue(Object)} to update the
- * presentation value of the component so that the new value is shown to the
- * user.
- * </ol>
- * See the detailed documentation for the two methods for further details.
- * <p>
- * This class extends {@link Component}, which means that it cannot be used for
- * adding field functionality to an existing component without changing the
- * superclass of that component. As an alternative, you can use
- * {@link AbstractCompositeField} to instead wrap an instance of the existing
- * component.
+ * See the detailed documentation for {@link AbstractField} and
+ * {@link Composite} for detailed information.
  *
  * @author Vaadin Ltd
  * @param <C>
+ *            the type of the content component
+ * @param <S>
  *            the source type for value change events
  * @param <T>
  *            the value type
  */
-public abstract class AbstractField<C extends AbstractField<C, T>, T>
-        extends Component implements HasValue<C, T>, HasEnabled {
+public abstract class AbstractCompositeField<C extends Component, S extends AbstractCompositeField<C, S, T>, T>
+        extends Composite<C> implements HasValue<S, T>, HasEnabled {
 
-    private final AbstractFieldSupport<C, T> fieldSupport;
-
-    /**
-     * Creates a new field with an element created based on the {@link Tag}
-     * annotation of the sub class. The provided default value is used by
-     * {@link #getEmptyValue()} and as the initial model value of this instance.
-     *
-     * @param defaultValue
-     *            the default value for fields of this type
-     */
-    public AbstractField(T defaultValue) {
-        super();
-
-        fieldSupport = createFieldSupport(defaultValue);
-    }
+    private final AbstractFieldSupport<S, T> fieldSupport;
 
     /**
-     * Creates a new field with the given element instance. he provided default
-     * value is used by {@link #getEmptyValue()} and as the initial model value
-     * of this instance.
+     * Creates a new field. The provided default value is used by
+     * {@link #getEmptyValue()} and is also used as the initial value of this
+     * instance.
      *
-     * @param element
-     *            the root element for the component
      * @param defaultValue
-     *            the default value for fields of this type
+     *            the default value
      */
-    public AbstractField(Element element, T defaultValue) {
-        super(element);
-
-        fieldSupport = createFieldSupport(defaultValue);
-    }
-
-    private AbstractFieldSupport<C, T> createFieldSupport(T defaultValue) {
+    public AbstractCompositeField(T defaultValue) {
         @SuppressWarnings("unchecked")
-        C thisC = (C) this;
-        return new AbstractFieldSupport<>(thisC, defaultValue,
-                this::valueEquals, this::setPresentationValue, this::fireEvent);
-    }
+        S thisAsS = (S) this;
 
-    @Override
-    public Registration addValueChangeListener(
-            HasValue.ValueChangeListener<C, T> listener) {
-        return fieldSupport.addValueChangeListener(listener);
+        fieldSupport = new AbstractFieldSupport<>(thisAsS, defaultValue,
+                this::valueEquals, this::setPresentationValue, this::fireEvent);
     }
 
     @Override
     public void setValue(T value) {
         fieldSupport.setValue(value);
+    }
+
+    @Override
+    public T getValue() {
+        return fieldSupport.getValue();
+    }
+
+    @Override
+    public T getEmptyValue() {
+        return fieldSupport.getEmptyValue();
+    }
+
+    @Override
+    public Registration addValueChangeListener(
+            HasValue.ValueChangeListener<S, T> listener) {
+        return fieldSupport.addValueChangeListener(listener);
     }
 
     /**
@@ -175,33 +139,4 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
         return fieldSupport.valueEquals(value1, value2);
     }
 
-    @Override
-    public T getValue() {
-        return fieldSupport.getValue();
-    }
-
-    @Override
-    public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        getElement().setProperty("required", requiredIndicatorVisible);
-    }
-
-    @Override
-    public boolean isRequiredIndicatorVisible() {
-        return getElement().getProperty("required", false);
-    }
-
-    @Override
-    public void setReadOnly(boolean readOnly) {
-        getElement().setProperty("readonly", readOnly);
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return getElement().getProperty("readonly", false);
-    }
-
-    @Override
-    public T getEmptyValue() {
-        return fieldSupport.getEmptyValue();
-    }
 }
