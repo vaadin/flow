@@ -3,6 +3,9 @@ package com.vaadin.generator.registry;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.HasEnabled;
+import com.vaadin.flow.component.HasStyle;
+
 /**
  * Unit tests for the {@link ExclusionRegistry}.
  *
@@ -112,6 +115,21 @@ public class ExclusionRegistryTest {
         Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
                 "someOtherBehavior"));
 
+    }
+
+    @Test
+    public void excludeInterface() {
+        ExclusionRegistry.excludeInterface("some-tag", HasStyle.class);
+        ExclusionRegistry.excludeInterface(null, HasEnabled.class);
+
+        Assert.assertTrue(ExclusionRegistry.isInterfaceExcluded("some-tag",
+                HasStyle.class));
+        Assert.assertTrue(ExclusionRegistry.isInterfaceExcluded("some-tag",
+                HasEnabled.class));
+        Assert.assertTrue(ExclusionRegistry
+                .isInterfaceExcluded("some-other-tag", HasEnabled.class));
+        Assert.assertFalse(ExclusionRegistry
+                .isInterfaceExcluded("some-other-tag", HasStyle.class));
     }
 
 }

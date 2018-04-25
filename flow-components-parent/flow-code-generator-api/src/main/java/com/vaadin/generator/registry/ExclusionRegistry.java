@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.vaadin.flow.component.HasStyle;
+
 /**
  * Registry for all exclusions in the generated files. Excluded properties,
  * events or methods are not generated.
@@ -35,6 +37,7 @@ public class ExclusionRegistry {
     private static final Map<String, Set<String>> EVENT_EXCLUSION_REGISTRY = new HashMap<>();
     private static final Map<String, Set<String>> METHOD_EXCLUSION_REGISTRY = new HashMap<>();
     private static final Map<String, Set<String>> BEHAVIOR_EXCLUSION_REGISTRY = new HashMap<>();
+    private static final Map<String, Set<String>> INTERFACE_EXCLUSION_REGISTRY = new HashMap<>();
 
     static {
         excludeProperty("vaadin-combo-box", "value");
@@ -55,6 +58,8 @@ public class ExclusionRegistry {
         excludeEvent("vaadin-combo-box", "change");
         excludeBehaviorOrMixin("vaadin-date-picker",
                 "Polymer.GestureEventListeners");
+        excludeInterface("vaadin-dialog", HasStyle.class);
+        excludeInterface("vaadin-notification", HasStyle.class);
 
         // Polymer lifecycle callbacks
         excludeMethod(null, "connectedCallback");
@@ -135,6 +140,22 @@ public class ExclusionRegistry {
         put(elementTag, behaviorName, BEHAVIOR_EXCLUSION_REGISTRY);
     }
 
+    /**
+     * Excludes an interface from being evaluated for a specific element denoted
+     * by its tag.
+     * 
+     * @param elementTag
+     *            the tag of the element which the interface should be excluded
+     *            from generation. Setting <code>null</code> makes the exclusion
+     *            apply to all elements
+     * @param interfaceClass
+     *            the class of the Interface to be excluded
+     */
+    public static void excludeInterface(String elementTag,
+            Class<?> interfaceClass) {
+        put(elementTag, interfaceClass.getName(), INTERFACE_EXCLUSION_REGISTRY);
+    }
+
     private static boolean isExcluded(String elementTag, String name,
             Map<String, Set<String>> map) {
         if (map.getOrDefault(null, Collections.emptySet()).contains(name)) {
@@ -204,5 +225,21 @@ public class ExclusionRegistry {
             String behaviorName) {
         return isExcluded(elementTag, behaviorName,
                 BEHAVIOR_EXCLUSION_REGISTRY);
+    }
+
+    /**
+     * Gets whether an interface should be excluded or not from the generation.
+     * 
+     * @param elementTag
+     *            the tag of the element
+     * @param interfaceClass
+     *            the class of the interface
+     * @return <code>true</code> if the interface should be excluded,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isInterfaceExcluded(String elementTag,
+            Class<?> interfaceClass) {
+        return isExcluded(elementTag, interfaceClass.getName(),
+                INTERFACE_EXCLUSION_REGISTRY);
     }
 }

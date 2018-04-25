@@ -33,9 +33,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -680,6 +680,8 @@ public class ReflectTools implements Serializable {
      * @param b
      *            another class to get the base type for, not <code>null</code>
      * @return the most specific base class, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if a or b are interfaces or primitive types
      *
      */
     public static Class<?> findCommonBaseType(Class<?> a, Class<?> b) {
@@ -688,6 +690,12 @@ public class ReflectTools implements Serializable {
         }
         if (b.isInterface()) {
             throw new IllegalArgumentException("b cannot be an interface");
+        }
+        if (a.isPrimitive()) {
+            throw new IllegalArgumentException("a cannot be a primitive type");
+        }
+        if (b.isPrimitive()) {
+            throw new IllegalArgumentException("b cannot be a primitive type");
         }
 
         if (a.isAssignableFrom(b)) {
