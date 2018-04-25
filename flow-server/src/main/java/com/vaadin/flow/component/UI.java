@@ -600,6 +600,7 @@ public class UI extends Component
      *
      * @return the locale in use
      */
+    @Override
     public Locale getLocale() {
         return locale;
     }
