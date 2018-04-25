@@ -2,7 +2,7 @@
   "name": "Vaadin.UploadElement",
   "tag": "vaadin-upload",
   "baseUrl": "vaadin-upload/src/vaadin-upload.html",
-  "version": "4.0.0-beta2",
+  "version": "4.0.0",
   "properties": [
     {
       "name": "nodrop",
@@ -110,6 +110,14 @@
       ],
       "objectType": [],
       "description": "Set the withCredentials flag on the request.\n             "
+    },
+    {
+      "name": "capture",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Pass-through to input's capture attribute. Allows user to trigger device inputs\nsuch as camera or microphone immediately.\n             "
     },
     {
       "name": "i18n",

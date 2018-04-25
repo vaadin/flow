@@ -113,7 +113,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.UploadElement#4.0.0-beta2", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.UploadElement#4.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-upload")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload.html")
 public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
@@ -613,6 +613,40 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      */
     protected void setWithCredentials(boolean withCredentials) {
         getElement().setProperty("withCredentials", withCredentials);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Pass-through to input's capture attribute. Allows user to trigger device
+     * inputs such as camera or microphone immediately.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code capture} property from the webcomponent
+     */
+    protected String getCaptureString() {
+        return getElement().getProperty("capture");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Pass-through to input's capture attribute. Allows user to trigger device
+     * inputs such as camera or microphone immediately.
+     * </p>
+     * 
+     * @param capture
+     *            the String value to set
+     */
+    protected void setCapture(String capture) {
+        getElement().setProperty("capture", capture == null ? "" : capture);
     }
 
     /**

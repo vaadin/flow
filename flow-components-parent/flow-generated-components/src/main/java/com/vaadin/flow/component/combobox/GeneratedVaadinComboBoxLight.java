@@ -79,7 +79,7 @@ import com.vaadin.flow.component.EventData;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxLightElement#4.0.0-beta6",
+        "WebComponent: Vaadin.ComboBoxLightElement#4.0.0",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-light.html")
