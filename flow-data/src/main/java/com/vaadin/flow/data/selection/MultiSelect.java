@@ -23,8 +23,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.HasValueAndElement;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -37,8 +38,8 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            the type of the items to select
  */
-public interface MultiSelect<C extends Component, T>
-        extends HasValue<C, Set<T>> {
+public interface MultiSelect<C extends Component, T> extends
+        HasValueAndElement<ComponentValueChangeEvent<C, Set<T>>, Set<T>> {
 
     /**
      * Adds the given items to the set of currently selected items.
@@ -159,5 +160,4 @@ public interface MultiSelect<C extends Component, T>
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         updateSelection(copy, new LinkedHashSet<>(getSelectedItems()));
     }
-
 }

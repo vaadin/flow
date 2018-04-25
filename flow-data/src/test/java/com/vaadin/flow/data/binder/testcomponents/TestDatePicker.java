@@ -11,10 +11,11 @@ public class TestDatePicker
     private String label = null;
 
     public TestDatePicker() {
-
+        super(null, LocalDate::parse, LocalDate::toString);
     }
 
     public TestDatePicker(String label) {
+        this();
         setLabel(label);
     }
 
@@ -24,16 +25,6 @@ public class TestDatePicker
 
     public void setLabel(String label) {
         this.label = label;
-    }
-
-    @Override
-    protected LocalDate fromString(String string) {
-        return LocalDate.parse(string);
-    }
-
-    @Override
-    protected String toString(LocalDate t) {
-        return t.toString();
     }
 
 }

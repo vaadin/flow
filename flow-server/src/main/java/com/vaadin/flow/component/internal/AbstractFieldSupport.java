@@ -20,11 +20,11 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.AbstractField;
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
@@ -40,7 +40,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            the value type
  */
-public class AbstractFieldSupport<C extends Component & HasValue<C, T>, T>
+public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueChangeEvent<C, T>, T>, T>
         implements Serializable {
     private final T defaultValue;
     private final C component;
@@ -92,19 +92,20 @@ public class AbstractFieldSupport<C extends Component & HasValue<C, T>, T>
      */
     @SuppressWarnings("unchecked")
     public Registration addValueChangeListener(
-            HasValue.ValueChangeListener<C, T> listener) {
+            HasValue.ValueChangeListener<? super ComponentValueChangeEvent<C, T>> listener) {
 
         @SuppressWarnings("rawtypes")
         ComponentEventListener componentListener = event -> {
-            ValueChangeEvent<C, T> valueChangeEvent = (ValueChangeEvent<C, T>) event;
-            listener.onComponentEvent(valueChangeEvent);
+            ComponentValueChangeEvent<C, T> valueChangeEvent = (ComponentValueChangeEvent<C, T>) event;
+            listener.valueChanged(valueChangeEvent);
         };
-        return component.addListener(ValueChangeEvent.class, componentListener);
+        return component.addListener(ComponentValueChangeEvent.class,
+                componentListener);
     }
 
-    private ValueChangeEvent<C, T> createValueChange(T oldValue,
+    private ComponentValueChangeEvent<C, T> createValueChange(T oldValue,
             boolean fromClient) {
-        return new ValueChangeEvent<>(component, component, oldValue,
+        return new ComponentValueChangeEvent<>(component, component, oldValue,
                 fromClient);
     }
 
