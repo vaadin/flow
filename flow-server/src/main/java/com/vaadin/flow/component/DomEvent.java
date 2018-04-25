@@ -22,7 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -64,7 +66,32 @@ public @interface DomEvent {
     /**
      * Controls RPC for the listener when the element is disabled.
      *
+     * @see DomListenerRegistration#setDisabledUpdateMode(DisabledUpdateMode)
+     *
      * @return the property update mode for disabled element
      */
     DisabledUpdateMode allowUpdates() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
+
+    /**
+     * The filter expression to run in the browser to determine whether fired
+     * events should be passed to the server.
+     *
+     * @see DomListenerRegistration#setFilter(String)
+     *
+     * @return the filter expression to use, or empty string to not use any
+     *         filtering
+     */
+    String filter() default "";
+
+    /**
+     * The debounce settings to use with this event. By default, debounce is not
+     * used.
+     *
+     * @see DomListenerRegistration#debounce(int,
+     *      com.vaadin.flow.dom.DebouncePhase,
+     *      com.vaadin.flow.dom.DebouncePhase...)
+     *
+     * @return the debounce settings
+     */
+    DebounceSettings debounce() default @DebounceSettings(timeout = 0, phases = DebouncePhase.LEADING);
 }
