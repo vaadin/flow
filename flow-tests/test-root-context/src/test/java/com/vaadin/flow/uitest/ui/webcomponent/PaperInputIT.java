@@ -29,15 +29,14 @@ public class PaperInputIT extends ChromeBrowserTest {
     public void paperInputIsFunctional() {
         open();
 
-        WebElement webComponent = findElement(By.tagName("paper-input"));
-        WebElement input = getInShadowRoot(webComponent, By.id("nativeInput"));
-        input.clear();
+        WebElement input = findElement(By.tagName("paper-input"));
+        String originalValue = input.getAttribute("value");
         input.sendKeys("bar");
 
         List<WebElement> updateValueElements = findElements(
                 By.className("update-value"));
         WebElement lastUpdateValue = updateValueElements
                 .get(updateValueElements.size() - 1);
-        org.junit.Assert.assertEquals("bar", lastUpdateValue.getText());
+        org.junit.Assert.assertEquals(originalValue + "bar", lastUpdateValue.getText());
     }
 }
