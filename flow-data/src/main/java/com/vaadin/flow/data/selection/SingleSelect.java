@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.data.selection;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasValue;
 
 /**
@@ -30,6 +32,25 @@ import com.vaadin.flow.component.HasValue;
  *
  */
 public interface SingleSelect<C extends Component, T>
-        extends HasValue<C, T> {
+        extends HasValue<ComponentValueChangeEvent<C, T>, T>, HasElement {
+    @Override
+    default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
+        getElement().setProperty("required", requiredIndicatorVisible);
+    }
+
+    @Override
+    default boolean isRequiredIndicatorVisible() {
+        return getElement().getProperty("required", false);
+    }
+
+    @Override
+    default void setReadOnly(boolean readOnly) {
+        getElement().setProperty("readonly", readOnly);
+    }
+
+    @Override
+    default boolean isReadOnly() {
+        return getElement().getProperty("readonly", false);
+    }
 
 }

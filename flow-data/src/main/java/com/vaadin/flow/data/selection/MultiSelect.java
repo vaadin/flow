@@ -23,7 +23,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.shared.Registration;
 
@@ -37,8 +39,8 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            the type of the items to select
  */
-public interface MultiSelect<C extends Component, T>
-        extends HasValue<C, Set<T>> {
+public interface MultiSelect<C extends Component, T> extends
+        HasValue<ComponentValueChangeEvent<C, Set<T>>, Set<T>>, HasElement {
 
     /**
      * Adds the given items to the set of currently selected items.
@@ -158,6 +160,26 @@ public interface MultiSelect<C extends Component, T>
         Set<T> copy = value.stream().map(Objects::requireNonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         updateSelection(copy, new LinkedHashSet<>(getSelectedItems()));
+    }
+
+    @Override
+    default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
+        getElement().setProperty("required", requiredIndicatorVisible);
+    }
+
+    @Override
+    default boolean isRequiredIndicatorVisible() {
+        return getElement().getProperty("required", false);
+    }
+
+    @Override
+    default void setReadOnly(boolean readOnly) {
+        getElement().setProperty("readonly", readOnly);
+    }
+
+    @Override
+    default boolean isReadOnly() {
+        return getElement().getProperty("readonly", false);
     }
 
 }

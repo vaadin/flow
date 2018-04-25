@@ -1,15 +1,19 @@
 package com.vaadin.flow.data.binder.testcomponents;
 
-import java.util.Objects;
-
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.HasValidation;
-import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.function.SerializableFunction;
 
-public abstract class AbstractTestHasValueAndValidation<C extends Component, T>
-        extends Component implements HasValue<C, T>, HasValidation {
+public abstract class AbstractTestHasValueAndValidation<C extends AbstractSinglePropertyField<C, T>, T>
+        extends AbstractSinglePropertyField<C, T> implements HasValidation {
 
-    private T value;
+    public AbstractTestHasValueAndValidation(T defaultValue,
+            SerializableFunction<String, T> propertyToValue,
+            SerializableFunction<T, String> valueToProperty) {
+        super("value", defaultValue, String.class, propertyToValue,
+                valueToProperty);
+    }
+
     private String errorMessage = "";
     private boolean invalid;
 
@@ -35,23 +39,4 @@ public abstract class AbstractTestHasValueAndValidation<C extends Component, T>
     public boolean isInvalid() {
         return invalid;
     }
-
-    @Override
-    public void setValue(T value) {
-        if (Objects.equals(getValue(), value))
-            return;
-        getElement().setProperty(getClientValuePropertyName(),
-                value == null ? null : toString(value));
-
-    }
-
-    @Override
-    public T getValue() {
-        String v = getElement().getProperty(getClientValuePropertyName(), null);
-        return v == null ? null : fromString(v);
-    }
-
-    protected abstract T fromString(String string);
-
-    protected abstract String toString(T t);
 }
