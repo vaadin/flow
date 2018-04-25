@@ -145,7 +145,7 @@ public class ExclusionRegistry {
      * by its tag.
      * 
      * @param elementTag
-     *            the tag of the element which the behavior should be excluded
+     *            the tag of the element which the interface should be excluded
      *            from generation. Setting <code>null</code> makes the exclusion
      *            apply to all elements
      * @param interfaceClass
