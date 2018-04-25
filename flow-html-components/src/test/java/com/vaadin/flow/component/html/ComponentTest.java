@@ -39,7 +39,7 @@ import com.vaadin.flow.dom.Element;
 
 public abstract class ComponentTest {
 
-    private HtmlComponent component;
+    private Component component;
     private List<ComponentProperty> properties = new ArrayList<>();
 
     private Set<String> WHITE_LIST = new HashSet<>();
@@ -103,15 +103,15 @@ public abstract class ComponentTest {
                 isOptional, removeDefault));
     }
 
-    protected HtmlComponent createComponent() throws InstantiationException,
+    protected Component createComponent() throws InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         String componentClass = getClass().getName().replace("Test", "");
-        return (HtmlComponent) Class.forName(componentClass).newInstance();
+        return (Component) Class.forName(componentClass).newInstance();
     }
 
-    protected HtmlComponent getComponent() {
+    protected Component getComponent() {
         return component;
-    };
+    }
 
     @Test
     public void testSetterGetterTypes() throws Exception {
@@ -188,6 +188,11 @@ public abstract class ComponentTest {
 
     @Test
     public void setTitle() {
+        if (!(component instanceof HtmlComponent)) {
+            return;
+        }
+
+        HtmlComponent component = (HtmlComponent) this.component;
         Assert.assertFalse(component.getTitle().isPresent());
 
         component.setTitle("myTitle");
@@ -203,7 +208,11 @@ public abstract class ComponentTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void setTitle_nullDisallowed() {
-        component.setTitle(null);
+        if (!(component instanceof HtmlComponent)) {
+            throw new IllegalArgumentException();
+        }
+
+        ((HtmlComponent) component).setTitle(null);
     }
 
     private Stream<ComponentProperty> getOptionalStringProperties() {
@@ -230,8 +239,9 @@ public abstract class ComponentTest {
     private void testEmptyStringForOptionalStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, "");
-            Assert.assertEquals("The getter for '" + p.name
-                    + "' should return an empty optional after setting \"\"",
+            Assert.assertEquals(
+                    "The getter for '" + p.name
+                            + "' should return an empty optional after setting \"\"",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(e);
@@ -241,8 +251,9 @@ public abstract class ComponentTest {
     private void testNullForOptionalNonStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, null);
-            Assert.assertEquals("Setting the property " + p.name
-                    + " to null should cause an empty optional to be returned by the getter",
+            Assert.assertEquals(
+                    "Setting the property " + p.name
+                            + " to null should cause an empty optional to be returned by the getter",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(

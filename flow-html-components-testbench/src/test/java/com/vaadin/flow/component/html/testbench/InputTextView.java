@@ -13,7 +13,7 @@ public class InputTextView extends Div {
 
         Input input = new Input();
         input.setId("input");
-        input.addChangeListener(e -> {
+        input.addValueChangeListener(e -> {
             log.setText("Value is '" + input.getValue() + "'");
         });
         add(log, input);

@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasValue;
 
 /**
  * Fired when the selection changes in a listing component.
@@ -33,7 +33,7 @@ import com.vaadin.flow.component.HasValue;
  *            the type of the selected item
  */
 public class SingleSelectionEvent<C extends Component, T> extends
-        HasValue.ValueChangeEvent<C, T> implements SelectionEvent<C, T> {
+        ComponentValueChangeEvent<C, T> implements SelectionEvent<C, T> {
 
     /**
      * Creates a new selection change event in a component.

@@ -16,30 +16,21 @@
 
 package com.vaadin.flow.data.value;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.dom.Element;
 
 /**
  * An interface, denoting that the component is able to change the way its value
  * on the client side is synchronized with the server side.
  * <p>
- * The value which mode is changed is defined by
- * {@link HasValue#getClientValuePropertyName()}.
- * <p>
- * Any component implementing this interface should take care of setting the
- * default value for its value change mode.
+ * A class implementing this interface should typically also implement
+ * {@link HasValue} even though this is not required on the API level.
  *
- * @param <C>
- *            the component type
- * @param <V>
- *            the value type
+ * @see AbstractSinglePropertyField#setSynchronizedEvent(String)
  *
  * @author Vaadin Ltd.
  */
-public interface HasValueChangeMode<C extends Component, V>
-        extends HasValue<C, V>, HasElement {
+public interface HasValueChangeMode {
 
     /**
      * Gets current value change mode of the component.
@@ -56,21 +47,5 @@ public interface HasValueChangeMode<C extends Component, V>
      *            new value change mode, or {@code null} to disable the value
      *            synchronization
      */
-    default void setValueChangeMode(ValueChangeMode valueChangeMode) {
-        Element element = getElement();
-
-        element.removeSynchronizedPropertyEvent(
-                getClientPropertyChangeEventName());
-        element.removeSynchronizedPropertyEvent("blur");
-        element.removeSynchronizedPropertyEvent("change");
-
-        if (valueChangeMode == null) {
-            element.removeSynchronizedProperty(getClientValuePropertyName());
-            return;
-        }
-
-        String eventName = ValueChangeMode.eventForMode(valueChangeMode,
-                getClientPropertyChangeEventName());
-        element.synchronizeProperty(getClientValuePropertyName(), eventName);
-    }
+    void setValueChangeMode(ValueChangeMode valueChangeMode);
 }

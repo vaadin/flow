@@ -15,9 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.ChangeEvent;
-import com.vaadin.flow.component.ChangeNotifier;
-import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.HasValue.ValueChangeEvent;
+import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Input;
@@ -38,13 +37,13 @@ public class RerouteView extends AbstractDivView {
         NativeButton button = new NativeButton("Navigate to here");
         button.setId("navigate");
         button.addClickListener(e -> {
-            button.getUI().ifPresent(ui -> ui
-                    .navigate("com.vaadin.flow.uitest.ui.RerouteView"));
+            button.getUI().ifPresent(
+                    ui -> ui.navigate("com.vaadin.flow.uitest.ui.RerouteView"));
         });
 
         CheckBox checkbox = new CheckBox("RerouteToError");
         checkbox.setId("check");
-        checkbox.addChangeListener(event -> {
+        checkbox.addValuehangeListener(event -> {
             reroute = checkbox.isChecked();
         });
         add(button);
@@ -66,7 +65,7 @@ public class RerouteView extends AbstractDivView {
     }
 
     @Tag(Tag.DIV)
-    public class CheckBox extends HtmlContainer implements ChangeNotifier {
+    public class CheckBox extends HtmlContainer {
 
         Input input;
         Label captionLabel;
@@ -84,10 +83,9 @@ public class RerouteView extends AbstractDivView {
             add(captionLabel);
         }
 
-        @Override
-        public Registration addChangeListener(
-                ComponentEventListener<ChangeEvent> listener) {
-            return input.addChangeListener(listener);
+        public Registration addValuehangeListener(
+                ValueChangeListener<ValueChangeEvent<String>> listener) {
+            return input.addValueChangeListener(listener);
         }
 
         public boolean isChecked() {

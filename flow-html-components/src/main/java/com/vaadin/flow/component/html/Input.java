@@ -15,17 +15,14 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.flow.component.ChangeEvent;
-import com.vaadin.flow.component.ChangeNotifier;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
-import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 
 /**
@@ -34,14 +31,11 @@ import com.vaadin.flow.component.Tag;
  * @author Vaadin Ltd
  */
 @Tag(Tag.INPUT)
-public class Input extends HtmlComponent
-        implements ChangeNotifier, Focusable<Input>, HasValue<Input, String> {
+public class Input extends AbstractSinglePropertyField<Input, String>
+        implements Focusable<Input>, HasSize, HasStyle {
 
     private static final PropertyDescriptor<String, Optional<String>> placeholderDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("placeholder", "");
-
-    private static final PropertyDescriptor<String, String> valueDescriptor = PropertyDescriptors
-            .propertyWithDefault("value", "");
 
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
             .attributeWithDefault("type", "text");
@@ -50,7 +44,9 @@ public class Input extends HtmlComponent
      * Creates a new input without any specific type.
      */
     public Input() {
-        // Nothing to do here
+        super("value", "", false);
+
+        setSynchronizedEvent("change");
     }
 
     /**
@@ -74,47 +70,6 @@ public class Input extends HtmlComponent
      */
     public Optional<String> getPlaceholder() {
         return get(placeholderDescriptor);
-    }
-
-    /**
-     * Gets the value of this component. For textual input components, the value
-     * is the text displayed in the component.
-     *
-     * @return the value, by default <code>""</code>
-     */
-    @Override
-    @Synchronize("change")
-    public String getValue() {
-        return get(valueDescriptor);
-    }
-
-    /**
-     * Sets the value of this component. For textual input components, the value
-     * is the text displayed in the component.
-     * <p>
-     * This methods fires a {@link ChangeEvent} if the value is changed.
-     *
-     * @param value
-     *            the value to set, not <code>null</code>
-     */
-    @Override
-    public void setValue(String value) {
-        String oldValue = getValue();
-        set(valueDescriptor, value);
-
-        if (!Objects.equals(value, oldValue)) {
-            fireEvent(new ChangeEvent(this, false));
-        }
-    }
-
-    /**
-     * Clears the input field.
-     * <p>
-     * This is the same as setting the value to <code>""</code>.
-     */
-    @Override
-    public void clear() {
-        setValue("");
     }
 
     /**
