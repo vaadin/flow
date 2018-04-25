@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.data.value;
 
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.HasValue;
 
 /**
@@ -51,5 +52,38 @@ public enum ValueChangeMode {
      *      "https://developer.mozilla.org/en-US/docs/Web/Events/change"> Change
      *      event description</a>
      */
-    ON_CHANGE,
+    ON_CHANGE,;
+
+    /**
+     * Gets the name of the event associated with the given mode. If the mode is
+     * {@link #EAGER}, then the provided eager event name is returned. If the
+     * mode is <code>null</code>, then null is returned.
+     *
+     * @see HasValueChangeMode#setValueChangeMode(ValueChangeMode)
+     * @see AbstractSinglePropertyField#setSynchronizedEvent(String)
+     *
+     * @param mode
+     *            the value change mode
+     * @param eagerEventName
+     *            the event name to use for the eager mode
+     * @return the event name
+     */
+    public static String eventForMode(ValueChangeMode mode,
+            String eagerEventName) {
+        if (mode == null) {
+            return null;
+        }
+
+        switch (mode) {
+        case EAGER:
+            return eagerEventName;
+        case ON_BLUR:
+            return "blur";
+        case ON_CHANGE:
+            return "change";
+        default:
+            throw new IllegalArgumentException(
+                    "Value change mode " + mode.name() + " not supported");
+        }
+    }
 }

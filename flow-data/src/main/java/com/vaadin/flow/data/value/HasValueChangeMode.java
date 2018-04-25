@@ -35,7 +35,7 @@ import com.vaadin.flow.dom.Element;
  *            the component type
  * @param <V>
  *            the value type
- * 
+ *
  * @author Vaadin Ltd.
  */
 public interface HasValueChangeMode<C extends Component, V>
@@ -69,20 +69,8 @@ public interface HasValueChangeMode<C extends Component, V>
             return;
         }
 
-        switch (valueChangeMode) {
-        case EAGER:
-            element.synchronizeProperty(getClientValuePropertyName(),
-                    getClientPropertyChangeEventName());
-            break;
-        case ON_BLUR:
-            element.synchronizeProperty(getClientValuePropertyName(), "blur");
-            break;
-        case ON_CHANGE:
-            element.synchronizeProperty(getClientValuePropertyName(), "change");
-            break;
-        default:
-            throw new IllegalArgumentException(
-                    "Unexpected value change mode: " + valueChangeMode);
-        }
+        String eventName = ValueChangeMode.eventForMode(valueChangeMode,
+                getClientPropertyChangeEventName());
+        element.synchronizeProperty(getClientValuePropertyName(), eventName);
     }
 }
