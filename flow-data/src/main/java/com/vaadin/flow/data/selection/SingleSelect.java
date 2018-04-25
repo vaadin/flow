@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.data.selection;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.HasValueAndElement;
 
 /**
  * Single selection component whose selection is treated as a value.
@@ -30,6 +31,6 @@ import com.vaadin.flow.component.HasValue;
  *
  */
 public interface SingleSelect<C extends Component, T>
-        extends HasValue<C, T> {
+        extends HasValueAndElement<ComponentValueChangeEvent<C, T>, T> {
 
 }

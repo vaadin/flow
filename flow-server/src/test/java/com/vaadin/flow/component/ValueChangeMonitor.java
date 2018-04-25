@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import org.junit.Assert;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 
 public class ValueChangeMonitor<T> {
@@ -27,13 +28,18 @@ public class ValueChangeMonitor<T> {
                         + capturedEvent + ", new event: " + event);
             }
 
-            Assert.assertSame(obserable, event.getSource());
+            Assert.assertSame(obserable, event.getHasValue());
+
+            if (event instanceof ComponentValueChangeEvent<?, ?>) {
+                Assert.assertSame(obserable,
+                        ((ComponentValueChangeEvent<?, ?>) event).getSource());
+            }
 
             capturedEvent = event;
         });
     }
 
-    ValueChangeEvent<?, T> capturedEvent;
+    ValueChangeEvent<T> capturedEvent;
 
     public void discard() {
         Assert.assertNotNull("There should be an event", capturedEvent);
@@ -53,7 +59,7 @@ public class ValueChangeMonitor<T> {
         Assert.assertNull("There should be no event", capturedEvent);
     }
 
-    public static <T> void assertEventValues(ValueChangeEvent<?, T> event,
+    public static <T> void assertEventValues(ValueChangeEvent<T> event,
             T oldValue, T newValue) {
         Assert.assertEquals(oldValue, event.getOldValue());
         Assert.assertEquals(newValue, event.getValue());

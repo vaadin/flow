@@ -3,14 +3,17 @@ package com.vaadin.flow.data.binder.testcomponents;
 import com.vaadin.flow.component.Tag;
 
 @Tag("test-checkbox")
-public class TestCheckbox extends AbstractTestHasValueAndValidation<TestCheckbox, Boolean> {
+public class TestCheckbox
+        extends AbstractTestHasValueAndValidation<TestCheckbox, Boolean> {
 
     private String label = null;
 
     public TestCheckbox() {
+        super(null, Boolean::parseBoolean, String::valueOf);
     }
 
     public TestCheckbox(String label) {
+        this();
         setLabel(label);
     }
 
@@ -21,15 +24,4 @@ public class TestCheckbox extends AbstractTestHasValueAndValidation<TestCheckbox
     public void setLabel(String label) {
         this.label = label;
     }
-
-    @Override
-    protected Boolean fromString(String string) {
-        return Boolean.parseBoolean(string);
-    }
-
-    @Override
-    protected String toString(Boolean t) {
-        return String.valueOf(t);
-    }
-
 }

@@ -17,13 +17,14 @@ package com.vaadin.flow.data.binder;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.data.binder.testcomponents.TestDatePicker;
 import com.vaadin.flow.data.binder.testcomponents.TestFormLayout;
@@ -53,7 +54,8 @@ public class BinderInstanceFieldTest {
         private TestTextField streetAddressField;
     }
 
-    public static class BindDeepNestedFieldsUsingAnnotation extends TestFormLayout {
+    public static class BindDeepNestedFieldsUsingAnnotation
+            extends TestFormLayout {
         @PropertyId("first.address.streetAddress")
         private TestTextField firstStreetField;
 
@@ -96,7 +98,8 @@ public class BinderInstanceFieldTest {
         private CustomField<String> firstName;
     }
 
-    public static class BindGenericWrongTypeParameterField extends TestFormLayout {
+    public static class BindGenericWrongTypeParameterField
+            extends TestFormLayout {
         private CustomField<Boolean> firstName;
     }
 
@@ -118,7 +121,7 @@ public class BinderInstanceFieldTest {
     }
 
     public static abstract class AbstractTextField extends Component
-            implements HasValue<AbstractTextField, String> {
+            implements HasValue<ValueChangeEvent<String>, String> {
 
     }
 
@@ -130,7 +133,8 @@ public class BinderInstanceFieldTest {
         private NoDefaultCtor firstName;
     }
 
-    public static class BindComplextHierarchyGenericType extends TestFormLayout {
+    public static class BindComplextHierarchyGenericType
+            extends TestFormLayout {
         private ComplexHierarchy firstName;
     }
 
@@ -156,21 +160,16 @@ public class BinderInstanceFieldTest {
     }
 
     @Tag("input")
-    public static class CustomField<T> extends Component
-            implements HasValue<CustomField<T>, T> {
+    public static class CustomField<T>
+            extends AbstractField<CustomField<T>, T> {
 
-        private T value;
-
-        @Override
-        public T getValue() {
-            return value;
+        public CustomField() {
+            super(null);
         }
 
         @Override
-        public void setValue(T value) {
-            this.value = value;
-            getElement().setProperty("value", Optional.ofNullable(value)
-                    .map(Object::toString).orElse(null));
+        protected void setPresentationValue(T newPresentationValue) {
+
         }
 
     }
