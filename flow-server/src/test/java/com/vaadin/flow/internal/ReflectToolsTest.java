@@ -15,15 +15,20 @@
  */
 package com.vaadin.flow.internal;
 
-import static org.junit.Assert.assertSame;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import static org.junit.Assert.assertSame;
 
 public class ReflectToolsTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     public class NonStaticInnerClass {
         public NonStaticInnerClass() {
 
@@ -207,6 +212,20 @@ public class ReflectToolsTest {
     public void findCommonBaseType_noCommonBase() {
         assertSame(Object.class,
                 ReflectTools.findCommonBaseType(String.class, Number.class));
+    }
+
+    @Test
+    public void findCommonBaseType_interfaceNotSupported() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("a cannot be an interface");
+        ReflectTools.findCommonBaseType(Comparable.class, Object.class);
+    }
+
+    @Test
+    public void findCommonBaseType_primitiveNotSupported() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("a cannot be a primitive type");
+        ReflectTools.findCommonBaseType(int.class, Object.class);
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {
