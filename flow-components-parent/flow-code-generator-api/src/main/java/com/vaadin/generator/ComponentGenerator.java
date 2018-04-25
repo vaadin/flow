@@ -512,8 +512,8 @@ public class ComponentGenerator {
     private void addInterfaces(ComponentMetadata metadata,
             JavaClassSource javaClass) {
 
-        if (!ExclusionRegistry.isBehaviorOrMixinExcluded(metadata.getTag(),
-                HasStyle.class.getName())) {
+        if (!ExclusionRegistry.isInterfaceExcluded(metadata.getTag(),
+                HasStyle.class)) {
             javaClass.addInterface(HasStyle.class);
         }
 
