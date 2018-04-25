@@ -21,13 +21,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
  /**
- * This annotation sets the priority of execution on {@link BeforeEnterListener},
- * {@link BeforeLeaveListener} and {@link AfterNavigationListener}. The higher the
- * value of priority, the higher the likelihood of the listener to be the
- * first listener to be executed. Priority-values must be non-negative, with
- * zero being the default-priority, so that any listener with a priority-value of
- * more than 0 will be executed before listeners that are not annotated with
- * {@literal @}ListenerPriority
+ * This annotation sets the priority of execution on {@link BeforeEnterListener}s,
+ * {@link BeforeLeaveListener}s and {@link AfterNavigationListener}s. Listeners
+ * will be sorted by their respective priority value in a descending order
+ * before they are executed. Listeners that are not annotated with
+ * {@literal @}ListenerPriority have a default priority of zero.
+ *
  * <p>
  *    <pre>
  *      //will be executed first
