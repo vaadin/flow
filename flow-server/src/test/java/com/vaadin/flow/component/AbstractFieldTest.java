@@ -17,19 +17,21 @@ package com.vaadin.flow.component;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.tests.PublicApiAnalyzer;
 
 public class AbstractFieldTest {
     // This isn't a test in itself, but it shows that no more than one method
@@ -103,52 +105,6 @@ public class AbstractFieldTest {
         }
     }
 
-    private static class EventMonitor<T> {
-
-        private TestAbstractField<T> observable;
-
-        public EventMonitor(TestAbstractField<T> obserable) {
-            this.observable = obserable;
-
-            obserable.addValueChangeListener(event -> {
-                if (capturedEvent != null) {
-                    Assert.fail("There is already an event. Old event: "
-                            + capturedEvent + ", new event: " + event);
-                }
-
-                Assert.assertSame(obserable, event.getSource());
-
-                capturedEvent = event;
-            });
-        }
-
-        ValueChangeEvent<TestAbstractField<T>, T> capturedEvent;
-
-        public void discard() {
-            Assert.assertNotNull("There should be an event", capturedEvent);
-            capturedEvent = null;
-        }
-
-        public void assertEvent(boolean fromClient, T oldValue, T newValue) {
-            Assert.assertNotNull("There should be an event", capturedEvent);
-            Assert.assertTrue(fromClient == capturedEvent.isFromClient());
-
-            assertEventValues(capturedEvent, oldValue, newValue);
-
-            discard();
-        }
-
-        public void assertNoEvent() {
-            Assert.assertNull("There should be no event", capturedEvent);
-        }
-    }
-
-    private static <T> void assertEventValues(ValueChangeEvent<?, T> event,
-            T oldValue, T newValue) {
-        Assert.assertEquals(oldValue, event.getOldValue());
-        Assert.assertEquals(newValue, event.getValue());
-    }
-
     private static void assertNoEvents(HasValue<?, ?> observable) {
         observable.addValueChangeListener(
                 event -> Assert.fail("Got unexpected event: " + event));
@@ -185,7 +141,8 @@ public class AbstractFieldTest {
     @Test
     public void setValue_differentValue_firesOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.setValue("Foo");
 
@@ -196,7 +153,8 @@ public class AbstractFieldTest {
     @Test
     public void setValue_sameValue_firesNoEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.setValue(field.getValue());
 
@@ -206,7 +164,8 @@ public class AbstractFieldTest {
     @Test
     public void clear_firesIfNotEmpty() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.clear();
         eventMonitor.assertNoEvent();
@@ -238,7 +197,8 @@ public class AbstractFieldTest {
     @Test
     public void updateFromClient_differentValue_updatesAndFires() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.updatePresentationValue("foo", true);
         eventMonitor.assertEvent(true, null, "foo");
@@ -257,7 +217,8 @@ public class AbstractFieldTest {
 
         field.setValue(value1);
 
-        EventMonitor<Integer> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<Integer> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.setValue(value1);
         eventMonitor.assertNoEvent();
@@ -316,7 +277,8 @@ public class AbstractFieldTest {
     @Test
     public void setPresentation_throws_sameException_valuePreserved() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.setPresentationValue = value -> {
             throw new IllegalStateException(value);
@@ -336,7 +298,8 @@ public class AbstractFieldTest {
     @Test
     public void setPresentation_partialUpdates_onlyOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.setPresentationValue = value -> {
             /*
@@ -355,7 +318,8 @@ public class AbstractFieldTest {
     @Test
     public void setPresentation_changesValue_onlyOneEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.setPresentationValue = value -> {
             field.setPresentationValue = value2 -> Assert
@@ -373,7 +337,8 @@ public class AbstractFieldTest {
     @Test
     public void setPresentation_revertsValue_noEvent() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
 
         field.setPresentationValue = value -> {
             field.setPresentationValue = value2 -> Assert
@@ -403,14 +368,14 @@ public class AbstractFieldTest {
         field.setValue("foo");
 
         Assert.assertEquals(2, beforeEvents.size());
-        assertEventValues(beforeEvents.get(0), null, "foo");
-        assertEventValues(beforeEvents.get(1), "foo", "bar");
+        ValueChangeMonitor.assertEventValues(beforeEvents.get(0), null, "foo");
+        ValueChangeMonitor.assertEventValues(beforeEvents.get(1), "foo", "bar");
 
         // Does not make sense, but still testing so we know how it works
         // Also, this is how Vaadin 8 works, and nobody has been too upset
         Assert.assertEquals(2, afterEvents.size());
-        assertEventValues(afterEvents.get(0), "foo", "bar");
-        assertEventValues(afterEvents.get(1), null, "foo");
+        ValueChangeMonitor.assertEventValues(afterEvents.get(0), "foo", "bar");
+        ValueChangeMonitor.assertEventValues(afterEvents.get(1), null, "foo");
     }
 
     @Test
@@ -472,7 +437,8 @@ public class AbstractFieldTest {
     @Test
     public void readonly_setValue_accepted() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
         field.setReadOnly(true);
 
         field.setValue("foo");
@@ -485,7 +451,8 @@ public class AbstractFieldTest {
     @Test
     public void readonly_presentationFromClient_reverted() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
         field.setReadOnly(true);
 
         field.updatePresentationValue("foo", true);
@@ -498,7 +465,8 @@ public class AbstractFieldTest {
     @Test
     public void readonly_presentationFromServer_accepted() {
         TestAbstractField<String> field = new TestAbstractField<>();
-        EventMonitor<String> eventMonitor = new EventMonitor<>(field);
+        ValueChangeMonitor<String> eventMonitor = new ValueChangeMonitor<>(
+                field);
         field.setReadOnly(true);
 
         field.updatePresentationValue("foo", false);
@@ -510,25 +478,10 @@ public class AbstractFieldTest {
 
     @Test
     public void noOwnPublicApi() {
-        for (Method method : AbstractField.class.getMethods()) {
-            if (method.getDeclaringClass() == AbstractField.class) {
-                boolean matchInSupertype = Stream
-                        .concat(Stream.of(AbstractField.class.getSuperclass()),
-                                Stream.of(AbstractField.class.getInterfaces()))
-                        .anyMatch(superType -> {
-                            try {
-                                superType.getMethod(method.getName(),
-                                        method.getParameterTypes());
-                                return true;
-                            } catch (NoSuchMethodException ignore) {
-                                return false;
-                            }
-                        });
-                if (!matchInSupertype) {
-                    Assert.fail("Own public method: " + method);
-                }
-            }
-        }
+        List<Method> newPublicMethods = PublicApiAnalyzer
+                .findNewPublicMethods(AbstractField.class)
+                .collect(Collectors.toList());
+        Assert.assertEquals(Collections.emptyList(), newPublicMethods);
     }
 
 }

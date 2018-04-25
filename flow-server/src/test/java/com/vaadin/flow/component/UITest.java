@@ -511,8 +511,10 @@ public class UITest {
     }
     
     @Test
-    public void before_enter_listener_priority_should_dictate_sort_order() {
+    public void before_enter_listener_priority_should_dictate_sort_order()
+            throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
+        initUI(ui, "", null);
 
         ui.addBeforeEnterListener(new BeforeEnterListenerThird());
         ui.addBeforeEnterListener(new BeforeEnterListenerThird());
@@ -550,8 +552,10 @@ public class UITest {
     }
 
     @Test
-    public void before_Leave_listener_priority_should_dictate_sort_order() {
+    public void before_Leave_listener_priority_should_dictate_sort_order()
+            throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
+        initUI(ui, "", null);
 
         ui.addBeforeLeaveListener(new BeforeLeaveListenerFirst());
         ui.addBeforeLeaveListener(new BeforeLeaveListenerThird());
@@ -590,8 +594,10 @@ public class UITest {
     }
 
     @Test
-    public void after_navigation_listener_priority_should_dictate_sort_order() {
+    public void after_navigation_listener_priority_should_dictate_sort_order()
+            throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
+        initUI(ui, "", null);
 
         ui.addAfterNavigationListener(new AfterNavigationListenerThird());
         ui.addAfterNavigationListener(new AfterNavigationListenerThird());
