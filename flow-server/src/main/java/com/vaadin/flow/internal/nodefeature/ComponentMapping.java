@@ -57,8 +57,8 @@ public class ComponentMapping extends ServerSideFeature {
                 || component instanceof Composite : "Only a Composite is allowed to remap a component";
         this.component = component;
 
-        if (getNode().hasFeature(ClientDelegateHandlers.class)) {
-            getNode().getFeature(ClientDelegateHandlers.class)
+        if (getNode().hasFeature(ClientCallableHandlers.class)) {
+            getNode().getFeature(ClientCallableHandlers.class)
                     .componentSet(component);
         }
         if (component instanceof PolymerTemplate<?>

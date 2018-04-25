@@ -227,7 +227,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             listeners.push(bindClassList(htmlNode, stateNode));
 
-            listeners.push(bindClientDelegateMethods(context));
+            listeners.push(bindClientCallableMethods(context));
 
             listeners.push(bindPolymerEventHandlerNames(context));
 
@@ -1282,7 +1282,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
     }
 
-    private EventRemover bindClientDelegateMethods(BindingContext context) {
+    private EventRemover bindClientCallableMethods(BindingContext context) {
         assert context.htmlNode instanceof Element : "Cannot bind client delegate methods to a Node";
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 (Element) context.htmlNode, context.node);

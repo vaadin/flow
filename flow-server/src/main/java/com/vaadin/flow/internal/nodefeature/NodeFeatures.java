@@ -112,7 +112,7 @@ public final class NodeFeatures {
     public static final int POLYMER_EVENT_LISTENERS = 19;
 
     /**
-     * Id for {@link ClientDelegateHandlers}.
+     * Id for {@link ClientCallableHandlers}.
      */
     public static final int CLIENT_DELEGATE_HANDLERS = 20;
 

@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.template;
 
 import java.util.Locale;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -67,7 +67,7 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
         getParent().get().getElement().appendChild(label);
     }
 
-    @ClientDelegate
+    @ClientCallable
     private void handleClientCall(String msg, boolean enabled) {
         Element div = ElementFactory.createDiv(
                 "Call from client, message: " + msg + ", " + enabled);

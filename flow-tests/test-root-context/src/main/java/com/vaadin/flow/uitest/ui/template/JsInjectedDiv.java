@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.component.ClientDelegate;
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 
@@ -28,7 +28,7 @@ public class JsInjectedDiv extends Div {
                         "window.divConnector.jsFunction($0)", getElement()));
     }
 
-    @ClientDelegate
+    @ClientCallable
     private void handleClientCall(String value) {
         setText(value);
     }
