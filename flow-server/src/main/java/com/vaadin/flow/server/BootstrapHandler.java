@@ -1031,7 +1031,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
 
-        // Use router if it's active
         ui.getRouter().initializeUI(ui, request);
 
         return context;
