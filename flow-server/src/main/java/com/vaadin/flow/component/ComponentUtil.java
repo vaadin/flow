@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -31,11 +32,13 @@ import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableTriConsumer;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -407,6 +410,106 @@ public class ComponentUtil {
             Class<? extends Component> componentClass) {
         return componentMetaDataCache.get(componentClass)
                 .getDependencyInfo(service);
+    }
+
+    private static <T, U> void writeAttribute(Component component,
+            SerializableTriConsumer<Attributes, T, U> setter, T key, U value) {
+        Attributes attributes = component.attributes;
+        if (attributes == null) {
+            if (value == null) {
+                return;
+            }
+            attributes = new Attributes();
+            component.attributes = attributes;
+        }
+
+        setter.accept(attributes, key, value);
+
+        if (attributes.isEmpty()) {
+            component.attributes = null;
+        }
+    }
+
+    /**
+     * Stores an attribute value for the given component.
+     *
+     * @see #setAttribute(Component, Class, Object)
+     * @see #getAttribute(Component, String)
+     *
+     * @param component
+     *            the component for which to set an attribute
+     * @param name
+     *            the name of the attribute to set
+     * @param value
+     *            the attribute value to set, or <code>null</code> to remove the
+     *            attribute
+     */
+    public static void setAttribute(Component component, String name,
+            Object value) {
+        writeAttribute(component, Attributes::setAttribute, name, value);
+    }
+
+    /**
+     * Stores a typed instance as an attribute for the given component.
+     *
+     * @see #setAttribute(Component, String, Object)
+     * @see #getAttribute(Component, Class)
+     *
+     * @param component
+     *            the component for which to set an attribute
+     * @param type
+     *            the type of the attribute to set
+     * @param value
+     *            the attribute value to set, or <code>null</code> to remove the
+     *            attribute
+     */
+    public static <T> void setAttribute(Component component, Class<T> type,
+            T value) {
+        writeAttribute(component, Attributes::setAttribute, type, value);
+    }
+
+    private static <T, U> U getAttribute(Component component,
+            BiFunction<Attributes, T, U> getter, T key) {
+        Attributes attributes = component.attributes;
+        if (attributes == null) {
+            return null;
+        }
+        return getter.apply(attributes, key);
+    }
+
+    /**
+     * Gets an attribute with the given name, or <code>null</code> if there is
+     * no such attribute.
+     *
+     * @see #setAttribute(Component, String, Object)
+     *
+     * @param component
+     *            the component from which to get the attribute
+     * @param name
+     *            the attribute name
+     * @return the attribute value, or <code>null</code> if there is no
+     *         attribute
+     */
+    public static Object getAttribute(Component component, String name) {
+        return getAttribute(component, Attributes::getAttribute, name);
+    }
+
+    /**
+     * Gets an attribute with the given type, or <code>null</code> if there is
+     * no such attribute.
+     *
+     * @see #setAttribute(Component, Class, Object)
+     *
+     * @param component
+     *            the component from which to get the attribute
+     * @param type
+     *            the attribute type
+     * @return the attribute value, or <code>null</code> if there is no
+     *         attribute
+     */
+    public static <T> T getAttribute(Component component, Class<T> type) {
+        return getAttribute(component,
+                (attributes, ignore) -> attributes.getAttribute(type), type);
     }
 
 }
