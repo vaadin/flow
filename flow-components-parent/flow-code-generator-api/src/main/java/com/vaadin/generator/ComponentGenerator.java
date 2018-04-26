@@ -531,8 +531,9 @@ public class ComponentGenerator {
             ctor.addTypeVariable("P");
             ctor.addParameter("Class<P>", "elementPropertyType");
             ctor.addParameter("SerializableFunction<P, T>", "presentationToModel");
-            ctor.addParameter("SerializableFunction<P, T>", "modelToPresentation");
+            ctor.addParameter("SerializableFunction<T, P>", "modelToPresentation");
             ctor.setBody("if (initialValue != null) {"
+                    + "super(\"value\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
             ctor.getJavaDoc().setText("Constructor"
@@ -1018,8 +1019,7 @@ public class ComponentGenerator {
      * The "value" also cannot be multi-typed.
      */
     private boolean shouldImplementHasValue(ComponentMetadata metadata) {
-        if (protectedMethods || metadata.getProperties() == null
-                || metadata.getEvents() == null) {
+        if (metadata.getProperties() == null || metadata.getEvents() == null) {
             return false;
         }
 
@@ -1407,7 +1407,7 @@ public class ComponentGenerator {
 
         String eventClassName = StringUtils.capitalize(javaEventName);
         String eventClassString = String.format(
-                "public static class %sEvent<%s extends %s<%s>> extends ComponentEvent<%s> {}",
+                "public static class %sEvent<%s extends %s<%s, ?>> extends ComponentEvent<%s> {}",
                 eventClassName, GENERIC_TYPE, javaClass.getName(), GENERIC_TYPE,
                 GENERIC_TYPE);
 

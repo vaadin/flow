@@ -34,11 +34,9 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasText;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
@@ -324,7 +322,7 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("Custom event class was not found.",
                 generatedClass.contains(
-                        "public static class ChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {"));
+                        "public static class ChangeEvent<R extends MyComponent<R, ?>> extends ComponentEvent<R> {"));
 
         Assert.assertTrue("No DomEvent annotation found",
                 generatedClass.contains("@DomEvent(\"change\")"));
@@ -363,7 +361,7 @@ public class ComponentGeneratorTest {
 
         Assert.assertThat("Custom event class was not found.", generatedClass,
                 containsString(
-                        "public static class SomePropertyChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {"));
+                        "public static class SomePropertyChangeEvent<R extends MyComponent<R, ?>> extends ComponentEvent<R> {"));
 
         Assert.assertFalse("DomEvent should not be used for property changes",
                 generatedClass.contains("@DomEvent"));
@@ -661,7 +659,7 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("public void remove("));
         Assert.assertFalse(
                 "The generated class shouldn't contain the \"removeAll\" method",
-                generatedClass.contains("public void removeAll("));
+                generatedClass.contains("public void removeAll"));
     }
 
     @Test
@@ -690,7 +688,7 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("public void remove("));
         Assert.assertTrue(
                 "The generated class should contain the \"removeAll\" method",
-                generatedClass.contains("public void removeAll("));
+                generatedClass.contains("public void removeAll"));
     }
 
     @Test
@@ -718,7 +716,7 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("public void remove("));
         Assert.assertTrue(
                 "The generated class should contain the \"removeAll\" method",
-                generatedClass.contains("public void removeAll("));
+                generatedClass.contains("public void removeAll"));
     }
 
     @Test
@@ -839,7 +837,7 @@ public class ComponentGeneratorTest {
                         "public Registration addSomethingHappenedListener( ComponentEventListener<SomethingHappenedEvent<R>> listener)"));
 
         int indexOfEventDeclaration = generatedClass.indexOf(
-                "public static class SomethingHappenedEvent<R extends MyComponent<R>> extends ComponentEvent<R> {");
+                "public static class SomethingHappenedEvent<R extends MyComponent<R, ?>> extends ComponentEvent<R> {");
         int endIndexOfEventDeclaration = generatedClass.indexOf("} }",
                 indexOfEventDeclaration);
         String eventDeclaration = generatedClass.substring(
@@ -962,11 +960,16 @@ public class ComponentGeneratorTest {
         componentMetadata
                 .setDescription("Test java doc creation for class file");
 
-        ComponentPropertyData property = new ComponentPropertyData();
-        property.setName("value");
-        property.setType(Collections.singleton(ComponentBasicType.STRING));
-        property.setNotify(true);
-        componentMetadata.setProperties(Collections.singletonList(property));
+        ComponentPropertyData prop1 = new ComponentPropertyData();
+        prop1.setName("value");
+        prop1.setType(Collections.singleton(ComponentBasicType.STRING));
+        prop1.setNotify(true);
+
+        ComponentPropertyData prop2 = new ComponentPropertyData();
+        prop2.setName("invalid");
+        prop2.setType(Collections.singleton(ComponentBasicType.BOOLEAN));
+        prop2.setNotify(true);
+        componentMetadata.setProperties(Arrays.asList(prop1, prop2));
 
         componentMetadata.setBehaviors(Arrays.asList("Vaadin.ControlStateMixin"));
 
@@ -975,6 +978,9 @@ public class ComponentGeneratorTest {
 
         Assert.assertThat(generated, CoreMatchers.containsString(
                 "GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R, T>, T>"));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "super(\"value\","));
 
         Assert.assertThat(generated, CoreMatchers.containsString(
                 "AbstractSinglePropertyField<R, T>"));
@@ -987,6 +993,9 @@ public class ComponentGeneratorTest {
 
         Assert.assertThat(generated, CoreMatchers.containsString(
                 "Focusable<R>"));
+        
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "InvalidChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>"));
     }
 
 
@@ -1203,13 +1212,6 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected Registration addSomethingChangeListener("));
 
-        Assert.assertThat(generatedClass, CoreMatchers
-                .containsString("protected double getValueDouble()"));
-        Assert.assertThat(generatedClass, CoreMatchers
-                .containsString("protected void setValue(double value)"));
-        Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "protected Registration addValueChangeListener("));
-
         Assert.assertThat(generatedClass,
                 CoreMatchers.containsString("protected void function()"));
 
@@ -1218,7 +1220,7 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected void remove(Component... components)"));
         Assert.assertThat(generatedClass,
-                CoreMatchers.containsString("protected void removeAll()"));
+                CoreMatchers.containsString("protected void removeAll"));
     }
 
 }
