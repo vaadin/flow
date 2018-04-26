@@ -67,33 +67,34 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
 
     /**
      * Creates a new field with an element created based on the {@link Tag}
-     * annotation of the sub class. The provided initial value is by default
-     * also used as {@link #getEmptyValue()}.
+     * annotation of the sub class. The provided default value is used by
+     * {@link #getEmptyValue()} and as the initial model value of this instance.
      *
-     * @param initialValue
-     *            the initial value
+     * @param defaultValue
+     *            the default value for fields of this type
      */
-    public AbstractField(T initialValue) {
+    public AbstractField(T defaultValue) {
         super();
 
-        this.initialValue = initialValue;
-        bufferedValue = initialValue;
+        this.initialValue = defaultValue;
+        bufferedValue = defaultValue;
     }
 
     /**
-     * Creates a new field with the given element instance. The provided initial
-     * value is by default also used as {@link #getEmptyValue()}.
+     * Creates a new field with the given element instance. he provided default
+     * value is used by {@link #getEmptyValue()} and as the initial model value
+     * of this instance.
      *
      * @param element
      *            the root element for the component
-     * @param initialValue
-     *            the initial value
+     * @param defaultValue
+     *            the default value for fields of this type
      */
-    public AbstractField(Element element, T initialValue) {
+    public AbstractField(Element element, T defaultValue) {
         super(element);
 
-        this.initialValue = initialValue;
-        bufferedValue = initialValue;
+        this.initialValue = defaultValue;
+        bufferedValue = defaultValue;
     }
 
     @Override
