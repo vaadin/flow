@@ -437,7 +437,6 @@ public class ComponentGenerator {
                     .setBounds(javaClass.getName() + GENERIC_VAL_DECLARATION);
             javaClass.addTypeVariable().setName(GENERIC_VAL);
             if (hasParent) {
-                System.err.println("--- " + getGeneratedClassName(metadata.getParentTagName()) + GENERIC_TYPE_DECLARATION);
                 javaClass.setSuperType(
                         getGeneratedClassName(metadata.getParentTagName())
                                 + GENERIC_VAL_DECLARATION);

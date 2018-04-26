@@ -936,7 +936,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata, "com.my.test", null);
         generatedClass = ComponentGeneratorTestUtils.removeIndentation(generatedClass);
 
-        Assert.assertThat(generatedClass, CoreMatchers.not("getValue()"));
+        Assert.assertThat(generatedClass, CoreMatchers.not(CoreMatchers
+                .containsString("getValue()")));
         Assert.assertThat(generatedClass, CoreMatchers
                 .containsString("AbstractSinglePropertyField<R, T>"));
     }
@@ -946,8 +947,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata, "com.my.test", null);
         generatedClass = ComponentGeneratorTestUtils.removeIndentation(generatedClass);
 
-        Assert.assertThat(generatedClass, CoreMatchers
-                .not("AbstractSinglePropertyField<R, T>"));
+        Assert.assertThat(generatedClass, CoreMatchers.not(CoreMatchers
+                .containsString("AbstractSinglePropertyField<R, T>")));
     }
 
     @Test
