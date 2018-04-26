@@ -977,6 +977,9 @@ public class ComponentGeneratorTest {
         String generated = generator.withClassNamePrefix("Generated")
                 .generateClass(componentMetadata, "com.vaadin.flow.component.datepicker", null);
 
+        generated = ComponentGeneratorTestUtils
+                .removeIndentation(generated);
+
         Assert.assertThat(generated, CoreMatchers.containsString(
                 "GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R, T>, T>"));
 
@@ -987,10 +990,17 @@ public class ComponentGeneratorTest {
                 "AbstractSinglePropertyField<R, T>"));
 
         Assert.assertThat(generated, CoreMatchers.containsString(
+                "public GeneratedVaadinDatePicker()"));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
                 "public <P> GeneratedVaadinDatePicker("));
 
         Assert.assertThat(generated, CoreMatchers.containsString(
-                "public GeneratedVaadinDatePicker("));
+                "public GeneratedVaadinDatePicker(T initialValue, T defaultValue, boolean acceptNullValues)"));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "public <P> GeneratedVaadinDatePicker(T initialValue, T defaultValue, Class<P> elementPropertyType,"
+                + " SerializableFunction<P, T> presentationToModel, SerializableFunction<T, P> modelToPresentation)"));
 
         Assert.assertThat(generated, CoreMatchers.containsString(
                 "Focusable<R>"));
