@@ -27,6 +27,7 @@ import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Abstract field that is based on a single element property.
@@ -213,7 +214,8 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
         element.addPropertyChangeListener(propertyName,
                 this::handlePropertyChange);
 
-        doSetSynchronizedEvent(propertyName + "-changed");
+        doSetSynchronizedEvent(
+                SharedUtil.camelCaseToDashSeparated(propertyName) + "-changed");
     }
 
     @SuppressWarnings("unchecked")
