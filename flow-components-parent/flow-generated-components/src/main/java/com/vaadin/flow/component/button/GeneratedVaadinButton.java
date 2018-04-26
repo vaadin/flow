@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.component.button;
 
-import com.vaadin.flow.component.Component;
+import javax.annotation.Generated;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Focusable;
-import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 
 /**

@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.component.datepicker;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasStyle;
 import elemental.json.JsonObject;
 import com.vaadin.flow.component.NotSupported;
 import elemental.json.JsonArray;
+import com.vaadin.flow.component.Component;
 
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
         "WebComponent: Vaadin.InfiniteScrollerElement#UNKNOWN",

@@ -15,19 +15,21 @@
  */
 package com.vaadin.flow.component.textfield;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
  * <p>
@@ -128,8 +130,9 @@ import com.vaadin.flow.dom.Element;
         "WebComponent: Vaadin.TextAreaElement#2.0.1", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-text-area")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")
-public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R>>
-        extends Component implements HasStyle, Focusable<R> {
+public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R, T>, T>
+        extends AbstractSinglePropertyField<R, T>
+        implements HasStyle, Focusable<R> {
 
     /**
      * <p>
@@ -583,41 +586,6 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * The initial value of the control. It can be used for two-way data
-     * binding.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'value-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code value} property from the webcomponent
-     */
-    @Synchronize(property = "value", value = "value-changed")
-    protected String getValueString() {
-        return getElement().getProperty("value");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The initial value of the control. It can be used for two-way data
-     * binding.
-     * </p>
-     * 
-     * @param value
-     *            the String value to set
-     */
-    protected void setValue(String value) {
-        getElement().setProperty("value", value == null ? "" : value);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * This property is set to true when the control value is invalid.
      * <p>
      * This property is synchronized automatically from client side when a
@@ -715,7 +683,7 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
     }
 
     @DomEvent("change")
-    public static class ChangeEvent<R extends GeneratedVaadinTextArea<R>>
+    public static class ChangeEvent<R extends GeneratedVaadinTextArea<R, ?>>
             extends ComponentEvent<R> {
         public ChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
@@ -736,38 +704,7 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
                 (ComponentEventListener) listener);
     }
 
-    public static class ValueChangeEvent<R extends GeneratedVaadinTextArea<R>>
-            extends ComponentEvent<R> {
-        private final String value;
-
-        public ValueChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-            this.value = source.getValueString();
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code value-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    protected Registration addValueChangeListener(
-            ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return getElement()
-                .addPropertyChangeListener("value",
-                        event -> listener.onComponentEvent(
-                                new ValueChangeEvent<R>((R) this,
-                                        event.isUserOriginated())));
-    }
-
-    public static class InvalidChangeEvent<R extends GeneratedVaadinTextArea<R>>
+    public static class InvalidChangeEvent<R extends GeneratedVaadinTextArea<R, ?>>
             extends ComponentEvent<R> {
         private final boolean invalid;
 
@@ -867,5 +804,40 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that converts a string value to a model value
+     * @param modelToPresentation
+     *            a function that converts a model value to a string value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinTextArea(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableFunction<P, T> presentationToModel,
+            SerializableFunction<T, P> modelToPresentation) {
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
+     * Default constructor.
+     */
+    public GeneratedVaadinTextArea() {
+        this(null, null, null, null, null);
     }
 }
