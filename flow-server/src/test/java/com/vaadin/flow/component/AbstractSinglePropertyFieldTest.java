@@ -34,7 +34,7 @@ public class AbstractSinglePropertyFieldTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Tag("tag")
-    static class StringField
+    public static class StringField
             extends AbstractSinglePropertyField<StringField, String> {
         public StringField() {
             super("property", "", false);
