@@ -24,6 +24,10 @@ import java.util.HashMap;
  * @author Vaadin Ltd
  *
  */
+/**
+ *
+ * @author Vaadin Ltd
+ */
 public class Attributes implements Serializable {
 
     private final HashMap<String, Object> attributes = new HashMap<>();
@@ -62,7 +66,7 @@ public class Attributes implements Serializable {
      *
      * @see #getAttribute(Class)
      * @see #setAttribute(String, Object)
-     * 
+     *
      * @param <T>
      *            the attribute type
      * @param type
@@ -112,7 +116,7 @@ public class Attributes implements Serializable {
      *
      * @see #setAttribute(Class, Object)
      * @see #getAttribute(String)
-     * 
+     *
      * @param <T>
      *            the attribute type
      * @param type
@@ -130,6 +134,15 @@ public class Attributes implements Serializable {
         } else {
             return type.cast(value);
         }
+    }
+
+    /**
+     * Returns <code>true</code> if there are no attributes.
+     * 
+     * @return <code>true</code> if there are no attributes
+     */
+    public boolean isEmpty() {
+        return attributes.isEmpty();
     }
 
 }
