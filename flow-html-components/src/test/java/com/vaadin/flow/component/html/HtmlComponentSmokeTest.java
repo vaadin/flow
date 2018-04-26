@@ -139,6 +139,9 @@ public class HtmlComponentSmokeTest {
     }
 
     private static boolean isSetter(Method method) {
+        if (method.isSynthetic()) {
+            return false;
+        }
         if (!method.getName().startsWith("set")) {
             return false;
         }
