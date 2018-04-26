@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.AbstractCompositeField;
@@ -39,7 +40,8 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            the value type
  */
-public class AbstractFieldSupport<C extends Component & HasValue<C, T>, T> {
+public class AbstractFieldSupport<C extends Component & HasValue<C, T>, T>
+        implements Serializable {
     private final T defaultValue;
     private final C component;
 

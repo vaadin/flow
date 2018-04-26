@@ -21,16 +21,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableBiPredicate;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.tests.PublicApiAnalyzer;
 
 public class AbstractFieldTest {
@@ -62,10 +63,10 @@ public class AbstractFieldTest {
 
         T presentationValue;
 
-        Consumer<T> setPresentationValue = value -> presentationValue = value;
+        SerializableConsumer<T> setPresentationValue = value -> presentationValue = value;
 
-        BiPredicate<T, T> valueEquals;
-        Supplier<T> emptyValue;
+        SerializableBiPredicate<T, T> valueEquals;
+        SerializableSupplier<T> emptyValue;
 
         @Override
         protected void setPresentationValue(T value) {
@@ -482,6 +483,18 @@ public class AbstractFieldTest {
                 .findNewPublicMethods(AbstractField.class)
                 .collect(Collectors.toList());
         Assert.assertEquals(Collections.emptyList(), newPublicMethods);
+    }
+
+    @Test
+    public void serializable() {
+        TestAbstractField<String> field = new TestAbstractField<>();
+        field.addValueChangeListener(ignore -> {
+        });
+        field.setValue("foo");
+
+        TestAbstractField<String> anotherField = SerializationUtils
+                .roundtrip(field);
+        Assert.assertEquals("foo", anotherField.getValue());
     }
 
 }
