@@ -835,6 +835,25 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
     }
 
     /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param acceptNullValues
+     *            whether <code>null</code> is accepted as a model value
+     */
+    public GeneratedVaadinTextArea(T initialValue, T defaultValue,
+            boolean acceptNullValues) {
+        super("value", defaultValue, acceptNullValues);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
      * Default constructor.
      */
     public GeneratedVaadinTextArea() {
