@@ -531,8 +531,10 @@ public class ComponentGenerator {
             ctor.addTypeVariable("P");
             ctor.addParameter("Class<P>", "elementPropertyType");
             ctor.addParameter("SerializableFunction<P, T>", "presentationToModel");
-            ctor.addParameter("SerializableFunction<P, T>", "modelToPresentation");
-            ctor.setBody("if (initialValue != null) {"
+            ctor.addParameter("SerializableFunction<T, P>", "modelToPresentation");
+            ctor.setBody(
+                    "super(\"value\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
+                    + "if (initialValue != null) {"
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
             ctor.getJavaDoc().setText("Constructor"
@@ -1018,8 +1020,7 @@ public class ComponentGenerator {
      * The "value" also cannot be multi-typed.
      */
     private boolean shouldImplementHasValue(ComponentMetadata metadata) {
-        if (protectedMethods || metadata.getProperties() == null
-                || metadata.getEvents() == null) {
+        if (metadata.getProperties() == null || metadata.getEvents() == null) {
             return false;
         }
 
@@ -1351,6 +1352,7 @@ public class ComponentGenerator {
         }
 
         JavaClassSource eventClass = createEventListenerEventClass(javaClass,
+                shouldImplementHasValue(metadata),
                 event, eventJavaApiName, propertyNameCamelCase,
                 propertyToGetterMap);
 
@@ -1400,7 +1402,7 @@ public class ComponentGenerator {
     }
 
     private JavaClassSource createEventListenerEventClass(
-            JavaClassSource javaClass, ComponentEventData event,
+            JavaClassSource javaClass, boolean isValue, ComponentEventData event,
             String javaEventName, String propertyNameCamelCase,
             Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
         boolean isPropertyChange = propertyNameCamelCase != null;
@@ -1408,7 +1410,7 @@ public class ComponentGenerator {
         String eventClassName = StringUtils.capitalize(javaEventName);
         String eventClassString = String.format(
                 "public static class %sEvent<%s extends %s<%s>> extends ComponentEvent<%s> {}",
-                eventClassName, GENERIC_TYPE, javaClass.getName(), GENERIC_TYPE,
+                eventClassName, GENERIC_TYPE, javaClass.getName(), GENERIC_TYPE + (isValue ? ", ?" : ""),
                 GENERIC_TYPE);
 
         JavaClassSource eventClass = Roaster.parse(JavaClassSource.class,
