@@ -36,7 +36,6 @@ import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
@@ -388,6 +387,7 @@ public class BootstrapHandlerTest {
         this.request = request;
 
         ui.doInit(request, 0);
+        ui.getRouter().initializeUI(ui, request);
         context = new BootstrapContext(request, null, session, ui);
         ui.getInternals().setContextRoot(
                 ServletHelper.getContextRootRelativePath(request) + "/");
@@ -402,6 +402,7 @@ public class BootstrapHandlerTest {
         this.request = request;
 
         ui.doInit(request, 0);
+        ui.getRouter().initializeUI(ui, request);
         context = new BootstrapContext(request, null, session, ui);
         ui.getInternals().setContextRoot(
                 ServletHelper.getContextRootRelativePath(request) + "/");
@@ -433,6 +434,7 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
+        anotherUI.getRouter().initializeUI(anotherUI, request);
         anotherUI.getInternals().setContextRoot(
                 ServletHelper.getContextRootRelativePath(request) + "/");
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
@@ -1343,6 +1345,7 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
+        anotherUI.getRouter().initializeUI(anotherUI, request);
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI);
         anotherUI.getInternals().setContextRoot(
@@ -1451,6 +1454,7 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
+        anotherUI.getRouter().initializeUI(anotherUI, request);
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI);
         anotherUI.getInternals().setContextRoot(

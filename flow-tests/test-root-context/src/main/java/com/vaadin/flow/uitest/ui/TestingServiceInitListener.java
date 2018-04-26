@@ -25,12 +25,20 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 public class TestingServiceInitListener implements VaadinServiceInitListener {
-
     private static AtomicInteger initCount = new AtomicInteger();
     private static AtomicInteger requestCount = new AtomicInteger();
 
+    private boolean redirected;
+
     @Override
     public void serviceInit(ServiceInitEvent event) {
+        event.getSource().addUIInitListener(initEvent ->
+                initEvent.getUI().addBeforeEnterListener(e -> {
+                    if (!redirected && ServiceInitListenersView.class.equals(e.getNavigationTarget())) {
+                        e.rerouteTo(e.getLocation().getPath(), 22);
+                        redirected = true;
+                    }
+                }));
         initCount.incrementAndGet();
 
         event.addRequestHandler((session, request, response) -> {

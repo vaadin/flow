@@ -1,9 +1,7 @@
 package com.vaadin.flow.component;
 
-import com.vaadin.flow.router.*;
-import com.vaadin.flow.router.internal.*;
-import static org.junit.Assert.assertEquals;
-
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,13 +10,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
@@ -33,6 +27,22 @@ import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationListener;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveListener;
+import com.vaadin.flow.router.ListenerPriority;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.internal.AfterNavigationHandler;
+import com.vaadin.flow.router.internal.BeforeEnterHandler;
+import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -43,6 +53,9 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -153,6 +166,7 @@ public class UITest {
                             FooBarNavigationTarget.class)));
 
             ui.doInit(request, 0);
+            ui.getRouter().initializeUI(ui, request);
 
             session.unlock();
 

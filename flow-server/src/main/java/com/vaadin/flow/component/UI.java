@@ -200,9 +200,6 @@ public class UI extends Component
 
         // Call the init overridden by the application developer
         init(request);
-
-        // Use router if it's active
-        getRouter().initializeUI(this, request);
     }
 
     /**
@@ -603,6 +600,7 @@ public class UI extends Component
      *
      * @return the locale in use
      */
+    @Override
     public Locale getLocale() {
         return locale;
     }
@@ -855,6 +853,9 @@ public class UI extends Component
     /**
      * Add a listener that will be informed when a new set of components are
      * going to be attached.
+     * <p>
+     * By the time the components are going to be attached, their state is
+     * already calculated, consider this when using the listener.
      * <p>
      * Listeners will be executed before any found observers.
      *
