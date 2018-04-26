@@ -137,7 +137,10 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
      * @param defaultValue
      *            the default value to use if the property isn't defined
      * @param acceptNullValues
-     *            whether <code>null</code> is accepted as a model value
+     *            if <code>true</code>, an exception will be thrown if the model
+     *            value is set to <code>null</code>; if <code>false</code> the
+     *            property will be removed when the model value is set to
+     *            <code>null</code>
      */
     @SuppressWarnings("unchecked")
     public AbstractSinglePropertyField(String propertyName, T defaultValue,
