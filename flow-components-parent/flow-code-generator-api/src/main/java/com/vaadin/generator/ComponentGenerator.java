@@ -100,7 +100,7 @@ public class ComponentGenerator {
             '<' + GENERIC_TYPE + '>';
     private static final String GENERIC_VAL = "T";
     private static final String GENERIC_VAL_DECLARATION =
-            '<' + GENERIC_TYPE + ", " + GENERIC_VAL + '>';
+            '<' + GENERIC_TYPE + ", " + GENERIC_VAL + ">";
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
 
     private ObjectMapper mapper;
@@ -393,6 +393,7 @@ public class ComponentGenerator {
                 .setName(getGeneratedClassName(metadata.getTag()));
 
         addClassAnnotations(metadata, javaClass);
+        addInterfaces(metadata, javaClass);
 
         Map<String, MethodSource<JavaClassSource>> propertyToGetterMap = new HashMap<String, MethodSource<JavaClassSource>>();
 
@@ -426,23 +427,28 @@ public class ComponentGenerator {
                     javaClass.getJavaDoc());
         }
 
-
         boolean hasParent = metadata.getParentTagName() != null;
-        boolean hasValue =  !hasParent && shouldImplementHasValue(metadata);
+        boolean hasValue =  shouldImplementHasValue(metadata, javaClass);
 
-        if (!hasParent) {
-            addInterfaces(metadata, javaClass);
-        }
-
-        generateConstructors(javaClass, hasValue);
+        generateConstructors(javaClass, hasValue, hasParent);
 
         if (hasValue) {
-            javaClass.setSuperType(
-                    AbstractSinglePropertyField.class.getName() + GENERIC_VAL_DECLARATION);
             javaClass.addTypeVariable().setName(GENERIC_TYPE)
                     .setBounds(javaClass.getName() + GENERIC_VAL_DECLARATION);
             javaClass.addTypeVariable().setName(GENERIC_VAL);
+            if (hasParent) {
+                System.err.println("--- " + getGeneratedClassName(metadata.getParentTagName()) + GENERIC_TYPE_DECLARATION);
+                javaClass.setSuperType(
+                        getGeneratedClassName(metadata.getParentTagName())
+                                + GENERIC_VAL_DECLARATION);
+            } else {
+                javaClass.setSuperType(
+                        AbstractSinglePropertyField.class.getName() + GENERIC_VAL_DECLARATION);
+            }
+
         } else {
+            javaClass.addTypeVariable().setName(GENERIC_TYPE)
+                    .setBounds(javaClass.getName() + GENERIC_TYPE_DECLARATION);
             if (hasParent) {
                 javaClass.setSuperType(
                         getGeneratedClassName(metadata.getParentTagName())
@@ -450,8 +456,12 @@ public class ComponentGenerator {
             } else {
                 javaClass.setSuperType(Component.class);
             }
-            javaClass.addTypeVariable().setName(GENERIC_TYPE)
-                .setBounds(javaClass.getName() + GENERIC_TYPE_DECLARATION);
+        }
+
+        for (String s : javaClass.getInterfaces()) {
+            if (s.contains(HasValue.class.getName())) {
+                javaClass.removeInterface(s);
+            }
         }
 
         return javaClass;
@@ -495,7 +505,7 @@ public class ComponentGenerator {
                         + tagName);
     }
 
-    private void generateConstructors(JavaClassSource javaClass, boolean hasValue) {
+    private void generateConstructors(JavaClassSource javaClass, boolean hasValue, boolean hasParent) {
         boolean generateDefaultConstructor = false;
         if (javaClass.hasInterface(HasText.class)) {
             generateDefaultConstructor = true;
@@ -532,11 +542,16 @@ public class ComponentGenerator {
             ctor.addParameter("Class<P>", "elementPropertyType");
             ctor.addParameter("SerializableFunction<P, T>", "presentationToModel");
             ctor.addParameter("SerializableFunction<T, P>", "modelToPresentation");
-            ctor.setBody(
+            if (hasParent) {
+                ctor.setBody(
+                    "super(initialValue, defaultValue, elementPropertyType, presentationToModel,modelToPresentation);");
+            } else {
+                ctor.setBody(
                     "super(\"value\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
                     + "if (initialValue != null) {"
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
+            }
             ctor.getJavaDoc().setText("Constructor"
                     + "\n@param initialValue the initial value to set to the value"
                     + "\n@param defaultValue the default value to use if the value isn't defined"
@@ -595,7 +610,7 @@ public class ComponentGenerator {
             JavaClassSource javaClass,
             Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
 
-        boolean hasValue = shouldImplementHasValue(metadata);
+        boolean hasValue = shouldImplementHasValue(metadata, javaClass);
 
         metadata.getProperties().stream()
                 .filter(property -> !ExclusionRegistry.isPropertyExcluded(
@@ -1018,8 +1033,14 @@ public class ComponentGenerator {
      * events.
      * <p>
      * The "value" also cannot be multi-typed.
+     * @param javaClass
      */
-    private boolean shouldImplementHasValue(ComponentMetadata metadata) {
+    private boolean shouldImplementHasValue(ComponentMetadata metadata, JavaClassSource javaClass) {
+
+        if (javaClass.getInterfaces().contains("com.vaadin.flow.component.HasValue<R>")) {
+            return true;
+        }
+
         if (metadata.getProperties() == null || metadata.getEvents() == null) {
             return false;
         }
@@ -1051,7 +1072,7 @@ public class ComponentGenerator {
         String propertyJavaName = getJavaNameForProperty(metadata,
                 property.getName());
 
-        boolean isValue = "value".equals(propertyJavaName);
+        boolean isValue = "value".equals(propertyJavaName) && shouldImplementHasValue(metadata, javaClass);
         if (containsObjectType(property)) {
             // the getter already created the nested pojo, so here we just need
             // to get the name
@@ -1083,7 +1104,7 @@ public class ComponentGenerator {
                 addFluentReturnToMethod(method);
             }
 
-            if (isValue && shouldImplementHasValue(metadata)) {
+            if (isValue) {
                 method.addAnnotation(Override.class);
                 preventSettingTheSameValue(javaClass, "property", method);
             }
@@ -1106,9 +1127,7 @@ public class ComponentGenerator {
                 ComponentGeneratorUtils.addMethodParameter(javaClass, method,
                         setterType, parameterName);
 
-                boolean nullable = !isValue
-                        || !shouldImplementHasValue(metadata)
-                        || String.class != setterType;
+                boolean nullable = !isValue || String.class != setterType;
 
                 method.setBody(ComponentGeneratorUtils
                         .generateElementApiSetterForType(basicType,
@@ -1127,7 +1146,7 @@ public class ComponentGenerator {
                     addFluentReturnToMethod(method);
                 }
 
-                if (isValue && shouldImplementHasValue(metadata)) {
+                if (isValue) {
                     method.addAnnotation(Override.class);
                     preventSettingTheSameValue(javaClass, parameterName,
                             method);
@@ -1326,9 +1345,10 @@ public class ComponentGenerator {
         String eventJavaApiName = getJavaNameForPropertyChangeEvent(metadata,
                 event.getName());
 
+        boolean hasValue = shouldImplementHasValue(metadata, javaClass);
+
         // verify whether the HasValue interface is implemented.
-        if ("value-changed".equals(eventJavaApiName)
-                && shouldImplementHasValue(metadata)) {
+        if ("value-changed".equals(eventJavaApiName) && hasValue) {
             if (!eventJavaApiName.equals(event.getName())) {
                 overrideHasValueGetClientValuePropertyName(javaClass, event
                         .getName().replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""));
@@ -1352,7 +1372,7 @@ public class ComponentGenerator {
         }
 
         JavaClassSource eventClass = createEventListenerEventClass(javaClass,
-                shouldImplementHasValue(metadata),
+                hasValue,
                 event, eventJavaApiName, propertyNameCamelCase,
                 propertyToGetterMap);
 
