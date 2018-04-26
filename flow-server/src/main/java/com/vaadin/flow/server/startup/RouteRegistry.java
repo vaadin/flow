@@ -237,13 +237,17 @@ public class RouteRegistry implements Serializable {
         // Build and collect only on first request
         if (routeData.get() == null) {
             List<RouteData> registeredRoutes = new ArrayList<>();
-            targetRoutes.get().forEach((target, url) -> {
-                List<Class<?>> parameters = getRouteParameters(target);
+            Map<Class<? extends Component>, String> targetRouteMap = targetRoutes
+                    .get();
+            if (targetRouteMap != null) {
+                targetRouteMap.forEach((target, url) -> {
+                    List<Class<?>> parameters = getRouteParameters(target);
 
-                RouteData route = new RouteData(getParentLayout(target), url,
-                        parameters, target);
-                registeredRoutes.add(route);
-            });
+                    RouteData route = new RouteData(getParentLayout(target),
+                            url, parameters, target);
+                    registeredRoutes.add(route);
+                });
+            }
 
             Collections.sort(registeredRoutes);
 
@@ -626,7 +630,7 @@ public class RouteRegistry implements Serializable {
      * If no {@link Theme} and {@link NoTheme} annotation are used, by default
      * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
      * the classpath).
-     * 
+     *
      * @param navigationTarget
      *            the navigation target class
      * @param path
