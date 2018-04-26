@@ -36,8 +36,13 @@ public class AbstractSinglePropertyFieldTest {
     @Tag("tag")
     public static class StringField
             extends AbstractSinglePropertyField<StringField, String> {
+
+        public StringField(String synchronizedPropertyName) {
+            super(synchronizedPropertyName, "", false);
+        }
+
         public StringField() {
-            super("property", "", false);
+            this("property");
         }
 
         // Exposed as public for testing purposes
@@ -127,6 +132,16 @@ public class AbstractSinglePropertyFieldTest {
         List<String> synchronizedProperties = stringField
                 .getSynchronizedEvents();
         Assert.assertEquals(Arrays.asList(), synchronizedProperties);
+    }
+
+    @Test
+    public void synchronizedEvent_camelCaseProperty_dashCaseEvent() {
+        StringField stringField = new StringField("immediateValue");
+
+        List<String> synchronizedProperties = stringField
+                .getSynchronizedEvents();
+        Assert.assertEquals(Arrays.asList("immediate-value-changed"),
+                synchronizedProperties);
     }
 
     @Tag("tag")
