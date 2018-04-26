@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -364,6 +365,17 @@ public class AbstractSinglePropertyFieldTest {
                 .findNewPublicMethods(AbstractSinglePropertyField.class)
                 .collect(Collectors.toList());
         Assert.assertEquals(Collections.emptyList(), newPublicMethods);
+    }
+
+    @Test
+    public void serializable() {
+        StringField field = new StringField();
+        field.addValueChangeListener(ignore -> {
+        });
+        field.setValue("foo");
+
+        StringField anotherField = SerializationUtils.roundtrip(field);
+        Assert.assertEquals("foo", anotherField.getValue());
     }
 
 }

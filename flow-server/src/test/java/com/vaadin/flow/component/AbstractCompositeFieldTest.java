@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -121,4 +122,16 @@ public class AbstractCompositeFieldTest {
         field.rest.setValue("Vaadin");
         Assert.assertEquals("Hello Vaadin", field.getValue());
     }
+
+    @Test
+    public void serializable() {
+        ReverseCaseField field = new ReverseCaseField();
+        field.addValueChangeListener(ignore -> {
+        });
+        field.setValue("foo");
+
+        ReverseCaseField anotherField = SerializationUtils.roundtrip(field);
+        Assert.assertEquals("foo", anotherField.getValue());
+    }
+
 }
