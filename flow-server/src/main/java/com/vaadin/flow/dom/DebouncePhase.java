@@ -38,7 +38,7 @@ public enum DebouncePhase {
      * triggered. Another leading event will not be sent to the server until the
      * debounce timeout period has passed without any new events being fired.
      * This is useful for cases such as button click where double submitting
-     * should be avoided
+     * should be avoided.
      */
     LEADING(JsonConstants.EVENT_PHASE_LEADING),
 
