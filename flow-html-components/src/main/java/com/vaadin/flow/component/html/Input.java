@@ -20,6 +20,8 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.ChangeEvent;
 import com.vaadin.flow.component.ChangeNotifier;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
@@ -32,7 +34,8 @@ import com.vaadin.flow.component.Tag;
  * @author Vaadin Ltd
  */
 @Tag(Tag.INPUT)
-public class Input extends HtmlComponent implements ChangeNotifier {
+public class Input extends HtmlComponent
+        implements ChangeNotifier, Focusable<Input>, HasValue<Input, String> {
 
     private static final PropertyDescriptor<String, Optional<String>> placeholderDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("placeholder", "");
@@ -79,6 +82,7 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      *
      * @return the value, by default <code>""</code>
      */
+    @Override
     @Synchronize("change")
     public String getValue() {
         return get(valueDescriptor);
@@ -93,6 +97,7 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      * @param value
      *            the value to set, not <code>null</code>
      */
+    @Override
     public void setValue(String value) {
         String oldValue = getValue();
         set(valueDescriptor, value);
@@ -107,6 +112,7 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      * <p>
      * This is the same as setting the value to <code>""</code>.
      */
+    @Override
     public void clear() {
         setValue("");
     }
