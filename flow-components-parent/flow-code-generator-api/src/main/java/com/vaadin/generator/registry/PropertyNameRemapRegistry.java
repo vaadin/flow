@@ -23,7 +23,7 @@ import java.util.Optional;
 /**
  * Registry that facilitates remapping of element property names to different
  * names for the generated components' java API.
- * 
+ *
  * @author Vaadin ltd
  */
 public final class PropertyNameRemapRegistry {
@@ -31,7 +31,6 @@ public final class PropertyNameRemapRegistry {
     private static final Map<String, Map<String, String>> REGISTRY = new HashMap<>();
     static {
         put("vaadin-checkbox", "value", "postValue");
-        put("vaadin-date-picker", "value", "valueAsString");
         put("vaadin-date-picker", "min", "minAsString");
         put("vaadin-date-picker", "max", "maxAsString");
     }
@@ -55,7 +54,7 @@ public final class PropertyNameRemapRegistry {
     /**
      * Look for a property name remapping for the given element in this
      * registry. Returns an empty optional if no mapping exists.
-     * 
+     *
      * @param elementIdentifier
      *            the tag name for the element to look up mappings for
      * @param propertyName

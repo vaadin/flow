@@ -15,7 +15,7 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +33,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Generated;
+
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -61,6 +64,7 @@ import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
@@ -77,8 +81,6 @@ import com.vaadin.generator.registry.PropertyNameRemapRegistry;
 
 import elemental.json.JsonObject;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * Base class of the component generation process. It takes a
  * {@link ComponentMetadata} as input and generates the corresponding Java class
@@ -94,8 +96,11 @@ public class ComponentGenerator {
     private static final String JAVADOC_PARAM = "@param";
     private static final String JAVADOC_RETURN = "@return";
     private static final String GENERIC_TYPE = "R";
-    private static final String GENERIC_TYPE_DECLARATION = '<' + GENERIC_TYPE
-            + '>';
+    private static final String GENERIC_TYPE_DECLARATION =
+            '<' + GENERIC_TYPE + '>';
+    private static final String GENERIC_VAL = "T";
+    private static final String GENERIC_VAL_DECLARATION =
+            '<' + GENERIC_TYPE + ", " + GENERIC_VAL + '>';
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
 
     private ObjectMapper mapper;
@@ -230,7 +235,7 @@ public class ComponentGenerator {
      * When set to <code>true</code>, all generated methods will be protected.
      * Use this flag to create classes that will be extended afterwards. The
      * default is <code>false</code>.
-     * 
+     *
      * @param protectedMethods
      *            <code>true</code> to make all methods protected,
      *            <code>false</code> to allow public methods in the generated
@@ -245,7 +250,7 @@ public class ComponentGenerator {
     /**
      * When set to <code>true</code>, the generated class will be marked as
      * abstract.
-     * 
+     *
      * @param abstractClass
      *            <code>true</code> to make the generated class abstract,
      *            <code>false</code> to make it concrete.
@@ -387,18 +392,6 @@ public class ComponentGenerator {
                 .setAbstract(abstractClass)
                 .setName(getGeneratedClassName(metadata.getTag()));
 
-        if (metadata.getParentTagName() != null) {
-            javaClass.setSuperType(
-                    getGeneratedClassName(metadata.getParentTagName())
-                            + GENERIC_TYPE_DECLARATION);
-        } else {
-            javaClass.setSuperType(Component.class);
-            addInterfaces(metadata, javaClass);
-        }
-
-        javaClass.addTypeVariable().setName(GENERIC_TYPE)
-                .setBounds(javaClass.getName() + GENERIC_TYPE_DECLARATION);
-
         addClassAnnotations(metadata, javaClass);
 
         Map<String, MethodSource<JavaClassSource>> propertyToGetterMap = new HashMap<String, MethodSource<JavaClassSource>>();
@@ -433,7 +426,33 @@ public class ComponentGenerator {
                     javaClass.getJavaDoc());
         }
 
-        generateConstructors(javaClass);
+
+        boolean hasParent = metadata.getParentTagName() != null;
+        boolean hasValue =  !hasParent && shouldImplementHasValue(metadata);
+
+        if (!hasParent) {
+            addInterfaces(metadata, javaClass);
+        }
+
+        generateConstructors(javaClass, hasValue);
+
+        if (hasValue) {
+            javaClass.setSuperType(
+                    AbstractSinglePropertyField.class.getName() + GENERIC_VAL_DECLARATION);
+            javaClass.addTypeVariable().setName(GENERIC_TYPE)
+                    .setBounds(javaClass.getName() + GENERIC_VAL_DECLARATION);
+            javaClass.addTypeVariable().setName(GENERIC_VAL);
+        } else {
+            if (hasParent) {
+                javaClass.setSuperType(
+                        getGeneratedClassName(metadata.getParentTagName())
+                                + GENERIC_TYPE_DECLARATION);
+            } else {
+                javaClass.setSuperType(Component.class);
+            }
+            javaClass.addTypeVariable().setName(GENERIC_TYPE)
+                .setBounds(javaClass.getName() + GENERIC_TYPE_DECLARATION);
+        }
 
         return javaClass;
     }
@@ -476,7 +495,7 @@ public class ComponentGenerator {
                         + tagName);
     }
 
-    private void generateConstructors(JavaClassSource javaClass) {
+    private void generateConstructors(JavaClassSource javaClass, boolean hasValue) {
         boolean generateDefaultConstructor = false;
         if (javaClass.hasInterface(HasText.class)) {
             generateDefaultConstructor = true;
@@ -503,9 +522,32 @@ public class ComponentGenerator {
                             "HasComponents#add(Component...)");
         }
 
+        if (hasValue) {
+            generateDefaultConstructor = true;
+            javaClass.addImport(SerializableFunction.class);
+            MethodSource<JavaClassSource> ctor = javaClass.addMethod().setConstructor(true).setPublic();
+            ctor.addParameter(GENERIC_VAL, "initialValue");
+            ctor.addParameter(GENERIC_VAL, "defaultValue");
+            ctor.addTypeVariable("P");
+            ctor.addParameter("Class<P>", "elementPropertyType");
+            ctor.addParameter("SerializableFunction<P, T>", "presentationToModel");
+            ctor.addParameter("SerializableFunction<P, T>", "modelToPresentation");
+            ctor.setBody("if (initialValue != null) {"
+                    + "setModelValue(initialValue, false);"
+                    + "setPresentationValue(initialValue);}");
+            ctor.getJavaDoc().setText("Constructor"
+                    + "\n@param initialValue the initial value to set to the value"
+                    + "\n@param defaultValue the default value to use if the value isn't defined"
+                    + "\n@param elementPropertyType the type of the element property"
+                    + "\n@param presentationToModel a function that converts a string value to a model value"
+                    + "\n@param modelToPresentation a function that converts a model value to a string value"
+                    + "\n@param <P> the property type");
+        }
+
         if (generateDefaultConstructor) {
-            javaClass.addMethod().setConstructor(true).setPublic().setBody("")
-                    .getJavaDoc().setText("Default constructor.");
+            javaClass.addMethod().setConstructor(true).setPublic()
+                .setBody(hasValue ? "this(null, null, null, null, null);" : "")
+                .getJavaDoc().setText("Default constructor.");
         }
     }
 
@@ -551,15 +593,21 @@ public class ComponentGenerator {
             JavaClassSource javaClass,
             Map<String, MethodSource<JavaClassSource>> propertyToGetterMap) {
 
+        boolean hasValue = shouldImplementHasValue(metadata);
+
         metadata.getProperties().stream()
                 .filter(property -> !ExclusionRegistry.isPropertyExcluded(
                         metadata.getTag(), property.getName()))
                 .forEachOrdered(property -> {
-                    generateGetterFor(javaClass, metadata, property,
-                            metadata.getEvents(), propertyToGetterMap);
 
-                    if (!property.isReadOnly()) {
-                        generateSetterFor(javaClass, metadata, property);
+                    // Skip value property
+                    if (!hasValue || !"value".equals(property.getName())) {
+                        generateGetterFor(javaClass, metadata, property,
+                                metadata.getEvents(), propertyToGetterMap);
+
+                        if (!property.isReadOnly()) {
+                            generateSetterFor(javaClass, metadata, property);
+                        }
                     }
                 });
     }
@@ -768,6 +816,7 @@ public class ComponentGenerator {
         String propertyJavaName = getJavaNameForProperty(metadata,
                 property.getName());
         MethodSource<JavaClassSource> method = javaClass.addMethod();
+
         propertyToGetterMap.put(propertyJavaName, method);
 
         if (containsObjectType(property)) {
@@ -795,23 +844,6 @@ public class ComponentGenerator {
 
             addSynchronizeAnnotationAndJavadocToGetter(method, property,
                     events);
-
-            if ("value".equals(propertyJavaName)
-                    && shouldImplementHasValue(metadata)) {
-                javaClass.addInterface(HasValue.class.getName() + "<"
-                        + GENERIC_TYPE + ", " + nestedClass.getName() + ">");
-                method.addAnnotation(Override.class);
-
-                method.setBody(String.format(
-                        "JsonObject _obj = (JsonObject) getElement().getPropertyRaw(\"%s\");"
-                                + "return _obj == null ? getEmptyValue() : new %s().readJson(_obj);",
-                        property.getName(), nestedClass.getName()));
-            } else {
-                method.setBody(String.format(
-                        "return new %s().readJson((JsonObject) getElement().getPropertyRaw(\"%s\"));",
-                        nestedClass.getName(), property.getName()));
-            }
-
         } else {
             boolean postfixWithVariableType = property.getType().size() > 1;
             if (postfixWithVariableType) {
@@ -852,42 +884,13 @@ public class ComponentGenerator {
                             + StringUtils.capitalize(javaType.getSimpleName()));
                 }
 
+
                 addSynchronizeAnnotationAndJavadocToGetter(method, property,
                         events);
-
-                if ("value".equals(propertyJavaName)
-                        && shouldImplementHasValue(metadata)) {
-                    method.setName("getValue");
-                    if (javaType.isPrimitive()) {
-                        javaType = ClassUtils.primitiveToWrapper(javaType);
-                        method.setReturnType(javaType);
-                    }
-                    javaClass.addInterface(HasValue.class.getName() + "<"
-                            + GENERIC_TYPE + ", " + javaType.getName() + ">");
-                    method.addAnnotation(Override.class);
-
-                    method.setBody(ComponentGeneratorUtils
-                            .generateElementApiValueGetterForType(basicType,
-                                    property.getName()));
-
-                    addGetEmptyValueIfString(javaClass, javaType);
-                } else {
-                    method.setBody(ComponentGeneratorUtils
-                            .generateElementApiGetterForType(basicType,
-                                    property.getName()));
-                }
+                method.setBody(ComponentGeneratorUtils
+                        .generateElementApiGetterForType(basicType,
+                                property.getName()));
             }
-        }
-    }
-
-    private void addGetEmptyValueIfString(JavaClassSource javaClass,
-            Class<?> javaType) {
-        if (javaType == String.class) {
-            MethodSource<JavaClassSource> method = javaClass.addMethod()
-                    .setPublic().setReturnType(String.class.getSimpleName());
-            method.setName("getEmptyValue");
-            method.setBody("return \"\";");
-            method.addAnnotation(Override.class);
         }
     }
 
@@ -929,7 +932,7 @@ public class ComponentGenerator {
     /**
      * Sets the method visibility according to the {@link #protectedMethods}
      * flag.
-     * 
+     *
      * @param method
      *            the method which visibility should be set.
      */
