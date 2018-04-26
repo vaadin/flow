@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.component.combobox;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasStyle;
 import elemental.json.JsonObject;
+import com.vaadin.flow.component.Component;
 
 /**
  * <p>

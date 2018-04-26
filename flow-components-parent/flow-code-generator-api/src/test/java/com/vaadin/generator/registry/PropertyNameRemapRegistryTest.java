@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -171,8 +172,9 @@ public class PropertyNameRemapRegistryTest {
         String generated = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        ComponentGeneratorTestUtils.assertClassImplementsInterface(generated,
-                "TestTag", HasValue.class);
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "AbstractSinglePropertyField<R, T>"));
+
         Assert.assertFalse(
                 "Remapped value change event should not be generated",
                 generated.contains("ValueChangeEvent"));

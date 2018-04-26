@@ -30,7 +30,7 @@ public class ComponentGeneratorTestUtils {
 
     /**
      * Assert that a given generated class implements the given interface.
-     * 
+     *
      * @param generatedClass
      *            the full generated class string
      * @param className
@@ -41,7 +41,7 @@ public class ComponentGeneratorTestUtils {
     public static void assertClassImplementsInterface(String generatedClass,
             String className, Class<?> interfaceToBeImplemented) {
         Pattern pattern = Pattern.compile("\\s*public\\s+class\\s+" + className
-                + ".*\\s+extends\\s+Component\\s+implements\\s+([^\\{]+)\\{");
+                + ".*\\s+extends\\s+.+\\s+implements\\s+([^\\{]+)\\{");
         Matcher matcher = pattern.matcher(generatedClass);
         Assert.assertTrue("Wrong class declaration", matcher.find());
 
@@ -53,7 +53,7 @@ public class ComponentGeneratorTestUtils {
 
     /**
      * Removes indentations from a given source code string.
-     * 
+     *
      * @param sourceCode
      *            the source string to remove indentation from
      * @return a new source string with indentations removed

@@ -18,6 +18,9 @@ package com.vaadin.flow.component.textfield;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * <p>
@@ -82,8 +85,8 @@ import com.vaadin.flow.component.dependency.HtmlImport;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
-public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>
-        extends GeneratedVaadinTextField<R> {
+public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R, T>, T>
+        extends GeneratedVaadinTextField<R, T> implements HasStyle {
 
     /**
      * <p>
@@ -132,5 +135,36 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      */
     protected boolean isPasswordVisibleBoolean() {
         return getElement().getProperty("passwordVisible", false);
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that converts a string value to a model value
+     * @param modelToPresentation
+     *            a function that converts a model value to a string value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinPasswordField(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableFunction<P, T> presentationToModel,
+            SerializableFunction<T, P> modelToPresentation) {
+        super(initialValue, defaultValue, elementPropertyType,
+                presentationToModel, modelToPresentation);
+    }
+
+    /**
+     * Default constructor.
+     */
+    public GeneratedVaadinPasswordField() {
+        this(null, null, null, null, null);
     }
 }

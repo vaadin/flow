@@ -15,14 +15,12 @@
  */
 package com.vaadin.flow.component.radiobutton;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
  * <p>
@@ -70,8 +68,8 @@ import com.vaadin.flow.shared.Registration;
         "WebComponent: Vaadin.RadioGroupElement#1.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-radio-group")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-group.html")
-public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R>>
-        extends Component implements HasStyle {
+public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R, T>, T>
+        extends AbstractSinglePropertyField<R, T> implements HasStyle {
 
     /**
      * <p>
@@ -107,27 +105,38 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
         getElement().setProperty("disabled", disabled);
     }
 
-    public static class ValueChangeEvent<R extends GeneratedVaadinRadioGroup<R>>
-            extends ComponentEvent<R> {
-        public ValueChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
+    /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that converts a string value to a model value
+     * @param modelToPresentation
+     *            a function that converts a model value to a string value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinRadioGroup(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableFunction<P, T> presentationToModel,
+            SerializableFunction<T, P> modelToPresentation) {
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
         }
     }
 
     /**
-     * Adds a listener for {@code value-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
+     * Default constructor.
      */
-    protected Registration addValueChangeListener(
-            ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return getElement()
-                .addPropertyChangeListener("value",
-                        event -> listener.onComponentEvent(
-                                new ValueChangeEvent<R>((R) this,
-                                        event.isUserOriginated())));
+    public GeneratedVaadinRadioGroup() {
+        this(null, null, null, null, null);
     }
 }

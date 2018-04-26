@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.component.combobox;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -29,6 +28,8 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
  * <p>
@@ -83,8 +84,8 @@ import com.vaadin.flow.component.EventData;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-light.html")
-public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
-        extends Component implements HasStyle {
+public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R, T>, T>
+        extends AbstractSinglePropertyField<R, T> implements HasStyle {
 
     /**
      * <p>
@@ -289,55 +290,6 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
      */
     protected void setFilteredItems(JsonArray filteredItems) {
         getElement().setPropertyJson("filteredItems", filteredItems);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The {@code String} value for the selected item of the combo box. Provides
-     * the value for {@code iron-form}.
-     * </p>
-     * <p>
-     * When there’s no item selected, the value is an empty string.
-     * </p>
-     * <p>
-     * Use {@code selectedItem} property to get the raw selected item from the
-     * {@code items} array.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'value-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code value} property from the webcomponent
-     */
-    @Synchronize(property = "value", value = "value-changed")
-    protected String getValueString() {
-        return getElement().getProperty("value");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The {@code String} value for the selected item of the combo box. Provides
-     * the value for {@code iron-form}.
-     * </p>
-     * <p>
-     * When there’s no item selected, the value is an empty string.
-     * </p>
-     * <p>
-     * Use {@code selectedItem} property to get the raw selected item from the
-     * {@code items} array.
-     * </p>
-     * 
-     * @param value
-     *            the String value to set
-     */
-    protected void setValue(String value) {
-        getElement().setProperty("value", value == null ? "" : value);
     }
 
     /**
@@ -720,7 +672,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
     }
 
     @DomEvent("change")
-    public static class ChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
+    public static class ChangeEvent<R extends GeneratedVaadinComboBoxLight<R, ?>>
             extends ComponentEvent<R> {
         public ChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
@@ -742,7 +694,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
     }
 
     @DomEvent("custom-value-set")
-    public static class CustomValueSetEvent<R extends GeneratedVaadinComboBoxLight<R>>
+    public static class CustomValueSetEvent<R extends GeneratedVaadinComboBoxLight<R, ?>>
             extends ComponentEvent<R> {
         private final String detail;
 
@@ -772,7 +724,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
                 (ComponentEventListener) listener);
     }
 
-    public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
+    public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R, ?>>
             extends ComponentEvent<R> {
         private final JsonObject selectedItem;
 
@@ -802,38 +754,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
                                 event.isUserOriginated())));
     }
 
-    public static class ValueChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
-            extends ComponentEvent<R> {
-        private final String value;
-
-        public ValueChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-            this.value = source.getValueString();
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code value-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    protected Registration addValueChangeListener(
-            ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return getElement()
-                .addPropertyChangeListener("value",
-                        event -> listener.onComponentEvent(
-                                new ValueChangeEvent<R>((R) this,
-                                        event.isUserOriginated())));
-    }
-
-    public static class OpenedChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
+    public static class OpenedChangeEvent<R extends GeneratedVaadinComboBoxLight<R, ?>>
             extends ComponentEvent<R> {
         private final boolean opened;
 
@@ -864,7 +785,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
                                         event.isUserOriginated())));
     }
 
-    public static class FilterChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
+    public static class FilterChangeEvent<R extends GeneratedVaadinComboBoxLight<R, ?>>
             extends ComponentEvent<R> {
         private final String filter;
 
@@ -895,7 +816,7 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
                                         event.isUserOriginated())));
     }
 
-    public static class InvalidChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
+    public static class InvalidChangeEvent<R extends GeneratedVaadinComboBoxLight<R, ?>>
             extends ComponentEvent<R> {
         private final boolean invalid;
 
@@ -924,5 +845,40 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
                         event -> listener.onComponentEvent(
                                 new InvalidChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that converts a string value to a model value
+     * @param modelToPresentation
+     *            a function that converts a model value to a string value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinComboBoxLight(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableFunction<P, T> presentationToModel,
+            SerializableFunction<T, P> modelToPresentation) {
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
+     * Default constructor.
+     */
+    public GeneratedVaadinComboBoxLight() {
+        this(null, null, null, null, null);
     }
 }

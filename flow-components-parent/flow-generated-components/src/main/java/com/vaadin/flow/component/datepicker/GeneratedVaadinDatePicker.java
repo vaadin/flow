@@ -15,19 +15,21 @@
  */
 package com.vaadin.flow.component.datepicker;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
  * <p>
@@ -237,8 +239,9 @@ import com.vaadin.flow.dom.Element;
         "WebComponent: Vaadin.DatePickerElement#3.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
-public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
-        extends Component implements HasStyle, Focusable<R> {
+public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R, T>, T>
+        extends AbstractSinglePropertyField<R, T>
+        implements HasStyle, Focusable<R> {
 
     /**
      * <p>
@@ -302,56 +305,6 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
      */
     protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value for this element.
-     * </p>
-     * <p>
-     * Supported date formats:
-     * </p>
-     * <ul>
-     * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
-     * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
-     * {@code &quot;-YYYYYY-MM-DD&quot;}
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'value-changed' event happens.</li>
-     * </ul>
-     * 
-     * @return the {@code value} property from the webcomponent
-     */
-    @Synchronize(property = "value", value = "value-changed")
-    protected String getValueAsStringString() {
-        return getElement().getProperty("value");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value for this element.
-     * </p>
-     * <p>
-     * Supported date formats:
-     * </p>
-     * <ul>
-     * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
-     * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
-     * {@code &quot;-YYYYYY-MM-DD&quot;}</li>
-     * </ul>
-     * 
-     * @param valueAsString
-     *            the String value to set
-     */
-    protected void setValueAsString(String valueAsString) {
-        getElement().setProperty("value",
-                valueAsString == null ? "" : valueAsString);
     }
 
     /**
@@ -1033,7 +986,7 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
     protected void checkValidity(String value) {
     }
 
-    public static class InvalidChangeEvent<R extends GeneratedVaadinDatePicker<R>>
+    public static class InvalidChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>
             extends ComponentEvent<R> {
         private final boolean invalid;
 
@@ -1064,37 +1017,7 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
                                         event.isUserOriginated())));
     }
 
-    public static class ValueAsStringChangeEvent<R extends GeneratedVaadinDatePicker<R>>
-            extends ComponentEvent<R> {
-        private final String valueAsString;
-
-        public ValueAsStringChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-            this.valueAsString = source.getValueAsStringString();
-        }
-
-        public String getValueAsString() {
-            return valueAsString;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code value-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    protected Registration addValueAsStringChangeListener(
-            ComponentEventListener<ValueAsStringChangeEvent<R>> listener) {
-        return getElement().addPropertyChangeListener("value",
-                event -> listener.onComponentEvent(
-                        new ValueAsStringChangeEvent<R>((R) this,
-                                event.isUserOriginated())));
-    }
-
-    public static class OpenedChangeEvent<R extends GeneratedVaadinDatePicker<R>>
+    public static class OpenedChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>
             extends ComponentEvent<R> {
         private final boolean opened;
 
@@ -1174,5 +1097,40 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
         getElement().getChildren()
                 .forEach(child -> child.removeAttribute("slot"));
         getElement().removeAllChildren();
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that converts a string value to a model value
+     * @param modelToPresentation
+     *            a function that converts a model value to a string value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinDatePicker(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableFunction<P, T> presentationToModel,
+            SerializableFunction<T, P> modelToPresentation) {
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
+     * Default constructor.
+     */
+    public GeneratedVaadinDatePicker() {
+        this(null, null, null, null, null);
     }
 }

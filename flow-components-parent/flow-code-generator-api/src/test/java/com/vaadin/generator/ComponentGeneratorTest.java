@@ -15,6 +15,8 @@
  */
 package com.vaadin.generator;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,7 +37,6 @@ import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasText;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
@@ -45,8 +46,6 @@ import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
-
-import static org.hamcrest.CoreMatchers.containsString;
 
 /**
  * Unit tests for the component generator
@@ -660,7 +659,7 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("public void remove("));
         Assert.assertFalse(
                 "The generated class shouldn't contain the \"removeAll\" method",
-                generatedClass.contains("public void removeAll("));
+                generatedClass.contains("public void removeAll"));
     }
 
     @Test
@@ -689,7 +688,7 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("public void remove("));
         Assert.assertTrue(
                 "The generated class should contain the \"removeAll\" method",
-                generatedClass.contains("public void removeAll("));
+                generatedClass.contains("public void removeAll"));
     }
 
     @Test
@@ -717,7 +716,7 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("public void remove("));
         Assert.assertTrue(
                 "The generated class should contain the \"removeAll\" method",
-                generatedClass.contains("public void removeAll("));
+                generatedClass.contains("public void removeAll"));
     }
 
     @Test
@@ -758,36 +757,6 @@ public class ComponentGeneratorTest {
                 "Generated class should contain the setSomething method",
                 generatedClass.contains(
                         "public void setSomething(SomethingProperty property)"));
-    }
-
-    @Test
-    public void classContainsObjectProperty_componentContainsValueProperty_generatedClassImplementsHasValue() {
-
-        ComponentObjectType objectType = new ComponentObjectType();
-        ComponentPropertyData property = new ComponentPropertyData();
-        property.setName("value");
-        property.setObjectType(Collections.singletonList(objectType));
-        componentMetadata.setProperties(Collections.singletonList(property));
-
-        ComponentEventData event = new ComponentEventData();
-        event.setName("value-changed");
-        componentMetadata.setEvents(Collections.singletonList(event));
-
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        generatedClass = ComponentGeneratorTestUtils
-                .removeIndentation(generatedClass);
-
-        ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent", HasValue.class);
-
-        Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public ValueProperty getValue() { JsonObject _obj = (JsonObject) getElement().getPropertyRaw("));
-
-        Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(ValueProperty property) { if (!Objects.equals(property, getValue()))"));
-
     }
 
     @Test
@@ -957,147 +926,79 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void componentContainsValueProperty_generatedClassImplementsHasValue() {
-        ComponentPropertyData property = new ComponentPropertyData();
-        property.setName("value");
-        property.setType(Collections.singleton(ComponentBasicType.STRING));
-        componentMetadata.setProperties(Collections.singletonList(property));
-
-        ComponentEventData event = new ComponentEventData();
-        event.setName("value-changed");
-        componentMetadata.setEvents(Collections.singletonList(event));
-
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        generatedClass = ComponentGeneratorTestUtils
-                .removeIndentation(generatedClass);
-
-        ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent", HasValue.class);
-        Assert.assertThat(generatedClass, CoreMatchers
-                .containsString("@Override public String getValue()"));
-        Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(String value)"));
-    }
-
-    @Test
-    public void componentContainsValuePropertyWithNotify_generatedClassImplementsHasValue() {
+    public void componentContainsValuePropertyWithNotify_generatedClassExtendsAbstractSinglePropertyField() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("value");
         property.setType(Collections.singleton(ComponentBasicType.STRING));
         property.setNotify(true);
         componentMetadata.setProperties(Collections.singletonList(property));
 
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
+        String generatedClass = generator.generateClass(componentMetadata, "com.my.test", null);
+        generatedClass = ComponentGeneratorTestUtils.removeIndentation(generatedClass);
 
-        generatedClass = ComponentGeneratorTestUtils
-                .removeIndentation(generatedClass);
-
-        ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent", HasValue.class);
+        Assert.assertThat(generatedClass, CoreMatchers.not(CoreMatchers
+                .containsString("getValue()")));
         Assert.assertThat(generatedClass, CoreMatchers
-                .containsString("@Override public String getValue()"));
-        Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "@Override public void setValue(String value)"));
+                .containsString("AbstractSinglePropertyField<R, T>"));
     }
 
     @Test
-    public void componentContainsValueProperty_generatedSetValuePreventsSettingTheSameValue() {
-        ComponentPropertyData property = new ComponentPropertyData();
-        property.setName("value");
-        property.setType(Collections.singleton(ComponentBasicType.STRING));
-        componentMetadata.setProperties(Collections.singletonList(property));
+    public void componentDoesntContainsValueProperty_generatedClassDoesntExtendsAbstractSinglePropertyField() {
+        String generatedClass = generator.generateClass(componentMetadata, "com.my.test", null);
+        generatedClass = ComponentGeneratorTestUtils.removeIndentation(generatedClass);
 
-        ComponentEventData event = new ComponentEventData();
-        event.setName("value-changed");
-        componentMetadata.setEvents(Collections.singletonList(event));
-
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        generatedClass = ComponentGeneratorTestUtils
-                .removeIndentation(generatedClass);
-
-        Assert.assertTrue(generatedClass
-                .contains("@Override public void setValue(String value) {"
-                        + " Objects.requireNonNull(value, \"value cannot be null\");"
-                        + " if (!Objects.equals(value, getValue())) {"));
-        Assert.assertTrue(generatedClass.contains(
-                "@Override public String getEmptyValue() { return \"\"; }"));
+        Assert.assertThat(generatedClass, CoreMatchers.not(CoreMatchers
+                .containsString("AbstractSinglePropertyField<R, T>")));
     }
 
     @Test
-    public void ComponentContainsStringValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTyeps() {
-        ComponentPropertyData property = new ComponentPropertyData();
-        property.setName("value");
-        property.setType(Collections.singleton(ComponentBasicType.STRING));
-        property.setNotify(true);
-        componentMetadata.setProperties(Collections.singletonList(property));
+    public void valuedComponents_HaveAppropriateConstructors() {
+        componentMetadata = new ComponentMetadata();
+        componentMetadata.setTag("vaadin-date-picker");
+        componentMetadata.setName("VaadinDatePicker");
+        componentMetadata.setBaseUrl("vaadin-date-picker/vaadin-date-picker.html");
+        componentMetadata.setVersion("0.0.1");
+        componentMetadata
+                .setDescription("Test java doc creation for class file");
 
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
+        ComponentPropertyData prop1 = new ComponentPropertyData();
+        prop1.setName("value");
+        prop1.setType(Collections.singleton(ComponentBasicType.STRING));
+        prop1.setNotify(true);
 
-        generatedClass = ComponentGeneratorTestUtils
-                .removeIndentation(generatedClass);
+        ComponentPropertyData prop2 = new ComponentPropertyData();
+        prop2.setName("invalid");
+        prop2.setType(Collections.singleton(ComponentBasicType.BOOLEAN));
+        prop2.setNotify(true);
+        componentMetadata.setProperties(Arrays.asList(prop1, prop2));
 
-        ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent", HasValue.class);
+        componentMetadata.setBehaviors(Arrays.asList("Vaadin.ControlStateMixin"));
 
-        Assert.assertTrue(generatedClass.contains(
-                "@Override public String getValue() { String value = getElement().getProperty(\"value\"); return value == null ? getEmptyValue() : value; }"));
+        String generated = generator.withClassNamePrefix("Generated")
+                .generateClass(componentMetadata, "com.vaadin.flow.component.datepicker", null);
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R, T>, T>"));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "super(\"value\","));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "AbstractSinglePropertyField<R, T>"));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "public <P> GeneratedVaadinDatePicker("));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "public GeneratedVaadinDatePicker("));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "Focusable<R>"));
+        
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "InvalidChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>"));
     }
 
-    @Test
-    public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {
-        ComponentPropertyData property = new ComponentPropertyData();
-        property.setName("value");
-        property.setType(Collections.singleton(ComponentBasicType.NUMBER));
-        componentMetadata.setProperties(Collections.singletonList(property));
-
-        ComponentEventData event = new ComponentEventData();
-        event.setName("value-changed");
-        componentMetadata.setEvents(Collections.singletonList(event));
-
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        generatedClass = ComponentGeneratorTestUtils
-                .removeIndentation(generatedClass);
-
-        ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent", HasValue.class);
-        Assert.assertTrue(
-                generatedClass.contains("@Override public Double getValue()"));
-        Assert.assertTrue(generatedClass
-                .contains("@Override public void setValue(Double value)"));
-        Assert.assertTrue(
-                generatedClass.contains("public void setValue(Number value)"));
-    }
-
-    @Test
-    public void componentContainsNumberValueProperty_generatedSetValuesPreventSettingTheSameValue() {
-        ComponentPropertyData property = new ComponentPropertyData();
-        property.setName("value");
-        property.setType(Collections.singleton(ComponentBasicType.NUMBER));
-        componentMetadata.setProperties(Collections.singletonList(property));
-
-        ComponentEventData event = new ComponentEventData();
-        event.setName("value-changed");
-        componentMetadata.setEvents(Collections.singletonList(event));
-
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        generatedClass = ComponentGeneratorTestUtils
-                .removeIndentation(generatedClass);
-
-        Assert.assertTrue(generatedClass.contains(
-                "@Override public void setValue(Double value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
-        Assert.assertTrue(generatedClass.contains(
-                "public void setValue(Number value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
-    }
 
     @Test
     public void componentContainsUnrecognizedPropertyTypes_methodsAreGeneratedAsProtected() {
@@ -1312,13 +1213,6 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected Registration addSomethingChangeListener("));
 
-        Assert.assertThat(generatedClass, CoreMatchers
-                .containsString("protected double getValueDouble()"));
-        Assert.assertThat(generatedClass, CoreMatchers
-                .containsString("protected void setValue(double value)"));
-        Assert.assertThat(generatedClass, CoreMatchers.containsString(
-                "protected Registration addValueChangeListener("));
-
         Assert.assertThat(generatedClass,
                 CoreMatchers.containsString("protected void function()"));
 
@@ -1327,7 +1221,7 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generatedClass, CoreMatchers.containsString(
                 "protected void remove(Component... components)"));
         Assert.assertThat(generatedClass,
-                CoreMatchers.containsString("protected void removeAll()"));
+                CoreMatchers.containsString("protected void removeAll"));
     }
 
 }

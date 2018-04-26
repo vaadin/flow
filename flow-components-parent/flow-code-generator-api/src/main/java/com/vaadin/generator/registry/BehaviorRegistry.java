@@ -26,6 +26,7 @@ import java.util.Set;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.HasValue;
 
 /**
  * Registry that maps behaviors and mixins from the client side to interfaces at
@@ -42,6 +43,7 @@ public final class BehaviorRegistry {
                 "Polymer.GestureEventListeners", "vaadin-button",
                 "vaadin-form-item");
         put(HasText.class, "vaadin-button", "paper-button");
+        put(HasValue.class, "vaadin-password-field");
         put(Focusable.class, "paper-button", "Vaadin.FormElementMixin",
                 "Vaadin.ControlStateMixin");
     }
@@ -63,7 +65,7 @@ public final class BehaviorRegistry {
     /**
      * Gets the interfaces to be inherited by the generated Java class, based on
      * the list of behaviors and mixins that the original webcomponent contains.
-     * 
+     *
      * @param behaviors
      *            Collection of behaviors and mixins extracted from the
      *            webcomponent.

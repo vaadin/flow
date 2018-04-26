@@ -15,17 +15,18 @@
  */
 package com.vaadin.flow.component.datepicker;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
  * <p>
@@ -87,57 +88,8 @@ import com.vaadin.flow.shared.Registration;
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-light.html")
-public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R>>
-        extends Component implements HasStyle {
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value for this element.
-     * </p>
-     * <p>
-     * Supported date formats:
-     * </p>
-     * <ul>
-     * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
-     * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
-     * {@code &quot;-YYYYYY-MM-DD&quot;}
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'value-changed' event happens.</li>
-     * </ul>
-     * 
-     * @return the {@code value} property from the webcomponent
-     */
-    @Synchronize(property = "value", value = "value-changed")
-    protected String getValueString() {
-        return getElement().getProperty("value");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value for this element.
-     * </p>
-     * <p>
-     * Supported date formats:
-     * </p>
-     * <ul>
-     * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
-     * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
-     * {@code &quot;-YYYYYY-MM-DD&quot;}</li>
-     * </ul>
-     * 
-     * @param value
-     *            the String value to set
-     */
-    protected void setValue(String value) {
-        getElement().setProperty("value", value == null ? "" : value);
-    }
+public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R, T>, T>
+        extends AbstractSinglePropertyField<R, T> implements HasStyle {
 
     /**
      * <p>
@@ -720,38 +672,7 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
     protected void checkValidity(String value) {
     }
 
-    public static class ValueChangeEvent<R extends GeneratedVaadinDatePickerLight<R>>
-            extends ComponentEvent<R> {
-        private final String value;
-
-        public ValueChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-            this.value = source.getValueString();
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code value-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    protected Registration addValueChangeListener(
-            ComponentEventListener<ValueChangeEvent<R>> listener) {
-        return getElement()
-                .addPropertyChangeListener("value",
-                        event -> listener.onComponentEvent(
-                                new ValueChangeEvent<R>((R) this,
-                                        event.isUserOriginated())));
-    }
-
-    public static class OpenedChangeEvent<R extends GeneratedVaadinDatePickerLight<R>>
+    public static class OpenedChangeEvent<R extends GeneratedVaadinDatePickerLight<R, ?>>
             extends ComponentEvent<R> {
         private final boolean opened;
 
@@ -780,5 +701,40 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
                         event -> listener.onComponentEvent(
                                 new OpenedChangeEvent<R>((R) this,
                                         event.isUserOriginated())));
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that converts a string value to a model value
+     * @param modelToPresentation
+     *            a function that converts a model value to a string value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinDatePickerLight(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableFunction<P, T> presentationToModel,
+            SerializableFunction<T, P> modelToPresentation) {
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
+     * Default constructor.
+     */
+    public GeneratedVaadinDatePickerLight() {
+        this(null, null, null, null, null);
     }
 }
