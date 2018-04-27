@@ -1008,6 +1008,46 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generated, CoreMatchers.containsString(
                 "InvalidChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>"));
     }
+    @Test
+    public void checkedRemapedValueComponents_HaveAppropriateConstructors() {
+        componentMetadata = new ComponentMetadata();
+        componentMetadata.setTag("vaadin-checkbox");
+        componentMetadata.setName("VaadinCheckBox");
+        componentMetadata.setBaseUrl("vaadin-checkbox/vaadin-checkbox.html");
+        componentMetadata.setVersion("0.0.1");
+        componentMetadata
+                .setDescription("Test java doc creation for class file");
+
+        ComponentPropertyData prop1 = new ComponentPropertyData();
+        prop1.setName("checked");
+        prop1.setType(Collections.singleton(ComponentBasicType.BOOLEAN));
+        prop1.setNotify(true);
+        
+        ComponentPropertyData prop2 = new ComponentPropertyData();
+        prop2.setName("value");
+        prop2.setType(Collections.singleton(ComponentBasicType.STRING));
+        prop2.setNotify(false);
+
+        componentMetadata.setProperties(Arrays.asList(prop2, prop1));
+
+        String generated = generator.withClassNamePrefix("Generated")
+                .generateClass(componentMetadata, "com.vaadin.flow.component.checkbox", null);
+
+        generated = ComponentGeneratorTestUtils.removeIndentation(generated);
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R, T>, T>"));
+        Assert.assertThat(generated,
+                CoreMatchers.containsString("super(\"checked\","));
+        Assert.assertThat(generated,
+                CoreMatchers.not(CoreMatchers.containsString("getValue")));
+        Assert.assertThat(generated,
+                CoreMatchers.not(CoreMatchers.containsString("setValue")));
+        Assert.assertThat(generated,
+                CoreMatchers.not(CoreMatchers.containsString("getChecked")));
+        Assert.assertThat(generated,
+                CoreMatchers.not(CoreMatchers.containsString("getChecked")));
+    }
 
 
     @Test
