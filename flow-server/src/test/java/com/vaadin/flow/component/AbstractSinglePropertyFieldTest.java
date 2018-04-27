@@ -80,6 +80,8 @@ public class AbstractSinglePropertyFieldTest {
         field.getElement().setProperty("property", null);
         Assert.assertEquals("", field.getValue());
         monitor.assertEvent(false, "bar", "");
+
+        Assert.assertEquals("property", field.getClientValuePropertyName());
     }
 
     @Test
