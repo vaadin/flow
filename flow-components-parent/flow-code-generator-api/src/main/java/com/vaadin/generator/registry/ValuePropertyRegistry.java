@@ -17,7 +17,6 @@ package com.vaadin.generator.registry;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Registry that facilitates mapping which property name will be used when
@@ -35,10 +34,16 @@ public final class ValuePropertyRegistry {
     private ValuePropertyRegistry() {
     }
 
-    public static Optional<String> getOptionalFor(
-            String elementIdentifier) {
-        return REGISTRY.containsKey(elementIdentifier)
-                ? Optional.of(REGISTRY.get(elementIdentifier))
-                : Optional.empty();
+    /**
+     * Returns the 'value' property name for a given tag.
+     * 
+     * @param tagName
+     *          tag-name of the element
+     * @return
+     *          property name used for value changes
+     */
+    public static String valueName(String tagName) {
+        return REGISTRY.containsKey(tagName)
+                ? REGISTRY.get(tagName) : "value";
     }
 }
