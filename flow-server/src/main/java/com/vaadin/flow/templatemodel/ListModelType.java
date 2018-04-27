@@ -160,11 +160,6 @@ public class ListModelType<T> implements ComplexModelType<T> {
     }
 
     @Override
-    public Object modelToNashorn(Serializable modelValue) {
-        throw new UnsupportedOperationException("Not yet supported");
-    }
-
-    @Override
     public void createInitialValue(StateNode node, String property) {
         node.getFeature(ElementPropertyMap.class).resolveModelList(property);
     }

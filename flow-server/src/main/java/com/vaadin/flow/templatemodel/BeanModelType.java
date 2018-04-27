@@ -212,8 +212,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
         if (isBean(converter.getEncodedType())) {
             return new ConvertedModelType<>(new BeanModelType<>(
-                    converter.getEncodedType(), propertyFilter,
-                    converterLookup, clientUpdateLookup), converter);
+                    converter.getEncodedType(), propertyFilter, converterLookup,
+                    clientUpdateLookup), converter);
         } else {
             Optional<ModelType> maybeBasicModelType = BasicModelType
                     .get(converter.getEncodedType());
@@ -359,11 +359,6 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                             + "cannot be used as a type for a model property",
                     modelValue, modelValue.getClass().getName()));
         }
-    }
-
-    @Override
-    public Object modelToNashorn(Serializable modelValue) {
-        throw new UnsupportedOperationException("Obsolete functionality");
     }
 
     /**

@@ -49,17 +49,6 @@ public interface ModelType extends Serializable {
             throws IllegalArgumentException;
 
     /**
-     * Creates a representation of the provided model value that is intended for
-     * use by Nashorn when evaluating bindings.
-     *
-     * @param modelValue
-     *            the model value to represent
-     * @return a representation of the provided model value that is suitable for
-     *         Nashorn
-     */
-    Object modelToNashorn(Serializable modelValue);
-
-    /**
      * Creates a model value representation of the provided application value.
      * <p>
      * For application values that contain properties (i.e. beans), the provided

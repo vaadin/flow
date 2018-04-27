@@ -41,7 +41,7 @@ import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
  * @author Vaadin Ltd
  */
 public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
-implements ComplexModelType<T> {
+        implements ComplexModelType<T> {
     @SuppressWarnings("unchecked")
     private static final Map<Class<?>, BasicComplexModelType<?>> TYPES = loadBasicTypes(
             BasicComplexModelType::new);
@@ -90,22 +90,16 @@ implements ComplexModelType<T> {
             return null;
         }
         Class<?> boxedType = ReflectTools.convertPrimitiveType(getJavaType());
-        if (boxedType.equals(
-                ReflectTools.convertPrimitiveType(value.getClass()))) {
+        if (boxedType
+                .equals(ReflectTools.convertPrimitiveType(value.getClass()))) {
             return (T) boxedType.cast(value);
         } else {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "The stored model value '%s' type '%s' "
-                                    + "cannot be used as a type for a model property with type '%s'",
-                                    value, value.getClass().getName(),
-                                    getJavaType().getName()));
+            throw new IllegalArgumentException(String.format(
+                    "The stored model value '%s' type '%s' "
+                            + "cannot be used as a type for a model property with type '%s'",
+                    value, value.getClass().getName(),
+                    getJavaType().getName()));
         }
-    }
-
-    @Override
-    public Object modelToNashorn(Serializable modelValue) {
-        return modelToApplication(modelValue);
     }
 
     @Override
@@ -119,7 +113,7 @@ implements ComplexModelType<T> {
         StateNode stateNode = new StateNode(
                 Collections.singletonList(BasicTypeValue.class));
         stateNode.getFeature(BasicTypeValue.class)
-        .setValue((Serializable) applicationValue);
+                .setValue((Serializable) applicationValue);
         return stateNode;
     }
 
