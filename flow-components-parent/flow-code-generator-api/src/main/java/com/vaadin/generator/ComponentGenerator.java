@@ -81,6 +81,7 @@ import com.vaadin.generator.registry.PropertyNameRemapRegistry;
 import com.vaadin.generator.registry.ValuePropertyRegistry;
 
 import elemental.json.JsonObject;
+import static com.vaadin.generator.registry.ValuePropertyRegistry.valueName;
 
 /**
  * Base class of the component generation process. It takes a
@@ -538,7 +539,7 @@ public class ComponentGenerator {
 
         if (hasValue) {
             generateDefaultConstructor = true;
-            String propName = valueName(metadata);
+            String propName = valueName(metadata.getTag());
 
             javaClass.addImport(SerializableFunction.class);
             MethodSource<JavaClassSource> ctor = javaClass.addMethod()
@@ -647,7 +648,7 @@ public class ComponentGenerator {
                 .forEachOrdered(property -> {
 
                     boolean isValue = hasValue && ("value".equals(property.getName())
-                            || valueName(metadata).equals(property.getName()));
+                            || valueName(metadata.getTag()).equals(property.getName()));
                     // Skip value property
                     if (!isValue) {
                         generateGetterFor(javaClass, metadata, property,
@@ -1056,11 +1057,6 @@ public class ComponentGenerator {
                 .anyMatch(name -> name.equals(eventName));
     }
 
-    private String valueName(ComponentMetadata metadata) {
-        return ValuePropertyRegistry.getOptionalFor(metadata.getTag())
-                .orElse("value");
-    }
-
     /**
      * Verifies whether a component should implement the {@link HasValue}
      * interface.
@@ -1085,7 +1081,7 @@ public class ComponentGenerator {
             return false;
         }
 
-        String propertyName = valueName(metadata);
+        String propertyName = valueName(metadata.getTag());
         String propertyEvent = propertyName + "-changed";
 
         if (metadata.getProperties().stream()
@@ -1115,7 +1111,7 @@ public class ComponentGenerator {
         String propertyJavaName = getJavaNameForProperty(metadata,
                 property.getName());
 
-        boolean isValue = valueName(metadata).equals(propertyJavaName)
+        boolean isValue = valueName(metadata.getTag()).equals(propertyJavaName)
                 && shouldImplementHasValue(metadata, javaClass);
         if (containsObjectType(property)) {
             // the getter already created the nested pojo, so here we just need
