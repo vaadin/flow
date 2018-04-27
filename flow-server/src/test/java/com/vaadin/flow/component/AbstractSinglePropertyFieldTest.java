@@ -374,6 +374,52 @@ public class AbstractSinglePropertyFieldTest {
                 "10", field.getElement().getProperty("property"));
     }
 
+    @Tag("tag")
+    private static class RadixField
+            extends AbstractSinglePropertyField<RadixField, Integer> {
+
+        private int radix = 10;
+
+        public RadixField() {
+            super("property", Integer.valueOf(0), String.class,
+                    (instance, value) -> instance.presentationToModel(value),
+                    (instance, value) -> instance.modelToPresentation(value));
+        }
+
+        private Integer presentationToModel(String presentationValue) {
+            return Integer.valueOf(Integer.parseInt(presentationValue, radix));
+        }
+
+        private String modelToPresentation(Integer integer) {
+            return Integer.toString(integer.intValue(), radix);
+        }
+
+        public void setRadix(int radix) {
+            this.radix = radix;
+
+            setPresentationValue(getValue());
+        }
+    }
+
+    @Test
+    public void radixField() {
+        RadixField field = new RadixField();
+        ValueChangeMonitor<Integer> changeMonitor = new ValueChangeMonitor<>(
+                field);
+
+        field.setValue(20);
+        changeMonitor.discard();
+        Assert.assertEquals("20", field.getElement().getProperty("property"));
+
+        field.setRadix(16);
+        changeMonitor.assertNoEvent();
+        Assert.assertEquals("14", field.getElement().getProperty("property"));
+
+        field.getElement().setProperty("property", "f");
+        changeMonitor.discard();
+        Assert.assertEquals(15, field.getValue().intValue());
+    }
+
     @Test
     public void noOwnPublicApi() {
         List<Method> newPublicMethods = PublicApiAnalyzer
