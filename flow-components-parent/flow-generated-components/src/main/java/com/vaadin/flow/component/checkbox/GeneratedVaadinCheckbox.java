@@ -22,7 +22,6 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Synchronize;
-import java.util.Objects;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -198,44 +197,6 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * True if the checkbox is checked.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'checked-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code checked} property from the webcomponent
-     */
-    @Synchronize(property = "checked", value = "checked-changed")
-    protected boolean isValueBoolean() {
-        return getElement().getProperty("checked", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * True if the checkbox is checked.
-     * </p>
-     * 
-     * @param value
-     *            the boolean value to set
-     */
-    @Override
-    protected void setValue(Boolean value) {
-        Objects.requireNonNull(value,
-                "GeneratedVaadinCheckbox value must not be null");
-        if (!Objects.equals(value, getValue())) {
-            getElement().setProperty("checked", value);
-        }
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Indeterminate state of the checkbox when it's neither checked nor
      * unchecked, but undetermined.
      * https://developer.mozilla.org/en-US/docs/Web/
@@ -270,9 +231,28 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
         getElement().setProperty("indeterminate", indeterminate);
     }
 
-    @Override
-    public String getClientValuePropertyName() {
-        return "checked";
+    public static class CheckedChangeEvent<R extends GeneratedVaadinCheckbox<R, ?>>
+            extends ComponentEvent<R> {
+        public CheckedChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code checked-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    protected Registration addCheckedChangeListener(
+            ComponentEventListener<CheckedChangeEvent<R>> listener) {
+        return getElement()
+                .addPropertyChangeListener("checked",
+                        event -> listener.onComponentEvent(
+                                new CheckedChangeEvent<R>((R) this,
+                                        event.isUserOriginated())));
     }
 
     public static class IndeterminateChangeEvent<R extends GeneratedVaadinCheckbox<R, ?>>
