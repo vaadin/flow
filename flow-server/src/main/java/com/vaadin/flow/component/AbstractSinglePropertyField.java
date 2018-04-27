@@ -27,7 +27,10 @@ import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.util.SharedUtil;
+
+import elemental.json.JsonValue;
 
 /**
  * Abstract field that is based on a single element property.
@@ -122,6 +125,13 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
                 Boolean.FALSE);
         addHandler(Element::setProperty, Element::getProperty, Integer.class,
                 Integer.valueOf(0));
+        addHandler(Element::setPropertyJson,
+                (element, property, defaultValue) -> {
+                    Serializable value = element.getPropertyRaw(property);
+                    // JsonValue is passed straight through, other primitive
+                    // values are jsonified
+                    return JsonCodec.encodeWithoutTypeInfo(value);
+                }, JsonValue.class, null);
     }
 
     private final SerializableBiConsumer<C, T> propertyWriter;
