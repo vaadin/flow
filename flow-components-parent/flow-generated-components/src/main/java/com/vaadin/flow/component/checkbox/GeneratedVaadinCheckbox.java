@@ -26,6 +26,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
@@ -286,7 +287,7 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
     }
 
     /**
-     * Constructor
+     * Constructor.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -314,7 +315,7 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
     }
 
     /**
-     * Constructor
+     * Constructor.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -333,9 +334,40 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
     }
 
     /**
+     * Constructor.
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that accepts this component and a property value
+     *            and returns a model value
+     * @param modelToPresentation
+     *            a function that accepts this component and a model value and
+     *            returns a property value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinCheckbox(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableBiFunction<R, P, T> presentationToModel,
+            SerializableBiFunction<R, T, P> modelToPresentation) {
+        super("checked", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
      * Default constructor.
      */
     public GeneratedVaadinCheckbox() {
-        this(null, null, null, null, null);
+        this(null, null, null, (SerializableFunction) null,
+                (SerializableFunction) null);
     }
 }

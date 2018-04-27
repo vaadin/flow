@@ -15,8 +15,7 @@
  */
 package com.vaadin.generator;
 
-import static com.vaadin.generator.registry.ValuePropertyRegistry.valueName;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.annotation.Generated;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,8 +33,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -46,9 +46,6 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -65,6 +62,7 @@ import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -81,6 +79,9 @@ import com.vaadin.generator.registry.ExclusionRegistry;
 import com.vaadin.generator.registry.PropertyNameRemapRegistry;
 
 import elemental.json.JsonObject;
+
+import static com.vaadin.generator.registry.ValuePropertyRegistry.valueName;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base class of the component generation process. It takes a
@@ -514,9 +515,8 @@ public class ComponentGenerator {
             MethodSource<JavaClassSource> constructor = javaClass.addMethod()
                     .setConstructor(true).setPublic().setBody("setText(text);");
             constructor.addParameter(String.class.getSimpleName(), "text");
-            constructor.getJavaDoc()
-                    .setText(
-                            "Sets the given string as the content of this component.")
+            constructor.getJavaDoc().setText(
+                    "Sets the given string as the content of this component.")
                     .addTagValue(JAVADOC_PARAM, "text the text content to set")
                     .addTagValue(JAVADOC_SEE, "HasText#setText(String)");
 
@@ -527,9 +527,8 @@ public class ComponentGenerator {
                     .setBody("add(components);");
             ComponentGeneratorUtils.addMethodParameter(javaClass, constructor,
                     Component.class, "components").setVarArgs(true);
-            constructor.getJavaDoc()
-                    .setText(
-                            "Adds the given components as children of this component.")
+            constructor.getJavaDoc().setText(
+                    "Adds the given components as children of this component.")
                     .addTagValue(JAVADOC_PARAM,
                             "components the components to add")
                     .addTagValue(JAVADOC_SEE,
@@ -538,63 +537,98 @@ public class ComponentGenerator {
 
         if (hasValue) {
             generateDefaultConstructor = true;
-            String propName = valueName(metadata.getTag());
-
-            javaClass.addImport(SerializableFunction.class);
-            MethodSource<JavaClassSource> ctor = javaClass.addMethod()
-                    .setConstructor(true).setPublic();
-            ctor.addParameter(GENERIC_VAL, "initialValue");
-            ctor.addParameter(GENERIC_VAL, "defaultValue");
-            ctor.addTypeVariable("P");
-            ctor.addParameter("Class<P>", "elementPropertyType");
-            ctor.addParameter("SerializableFunction<P, T>",
-                    "presentationToModel");
-            ctor.addParameter("SerializableFunction<T, P>",
-                    "modelToPresentation");
-            if (hasParent) {
-                ctor.setBody(
-                        "super(initialValue, defaultValue, elementPropertyType, presentationToModel,modelToPresentation);");
-            } else {
-                ctor.setBody("super(\"" + propName
-                        + "\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
-                        + "if (initialValue != null) {"
-                        + "setModelValue(initialValue, false);"
-                        + "setPresentationValue(initialValue);}");
-            }
-            ctor.getJavaDoc()
-                    .setText("Constructor"
-                            + "\n@param initialValue the initial value to set to the value"
-                            + "\n@param defaultValue the default value to use if the value isn't defined"
-                            + "\n@param elementPropertyType the type of the element property"
-                            + "\n@param presentationToModel a function that converts a string value to a model value"
-                            + "\n@param modelToPresentation a function that converts a model value to a string value"
-                            + "\n@param <P> the property type");
-
-            ctor = javaClass.addMethod().setConstructor(true).setPublic();
-            ctor.addParameter(GENERIC_VAL, "initialValue");
-            ctor.addParameter(GENERIC_VAL, "defaultValue");
-            ctor.addParameter("boolean", "acceptNullValues");
-            if (hasParent) {
-                ctor.setBody(
-                        "super(initialValue, defaultValue, acceptNullValues);");
-            } else {
-                ctor.setBody("super(\"" + propName + "\", defaultValue, acceptNullValues);"
-                        + "if (initialValue != null) {"
-                        + "setModelValue(initialValue, false);"
-                        + "setPresentationValue(initialValue);}");
-            }
-            ctor.getJavaDoc().setText("Constructor"
-                    + "\n@param initialValue the initial value to set to the value"
-                    + "\n@param defaultValue the default value to use if the value isn't defined"
-                    + "\n@param acceptNullValues whether <code>null</code> is accepted as a model value");
+            generateConstructorsForHasValue(metadata, javaClass, hasParent);
         }
 
         if (generateDefaultConstructor) {
-            javaClass.addMethod().setConstructor(true)
-                    .setPublic().setBody(hasValue
-                            ? "this(null, null, null, null, null);" : "")
+            javaClass.addMethod().setConstructor(true).setPublic()
+                    .setBody(hasValue
+                            ? "this(null, null, null, (SerializableFunction) null, (SerializableFunction) null);"
+                            : "")
                     .getJavaDoc().setText("Default constructor.");
         }
+    }
+
+    private void generateConstructorsForHasValue(ComponentMetadata metadata,
+            JavaClassSource javaClass, boolean hasParent) {
+
+        String propName = valueName(metadata.getTag());
+
+        javaClass.addImport(SerializableFunction.class);
+        javaClass.addImport(SerializableBiFunction.class);
+
+        MethodSource<JavaClassSource> ctor = javaClass.addMethod()
+                .setConstructor(true).setPublic();
+        ctor.addParameter(GENERIC_VAL, "initialValue");
+        ctor.addParameter(GENERIC_VAL, "defaultValue");
+        ctor.addTypeVariable("P");
+        ctor.addParameter("Class<P>", "elementPropertyType");
+        ctor.addParameter("SerializableFunction<P, T>", "presentationToModel");
+        ctor.addParameter("SerializableFunction<T, P>", "modelToPresentation");
+        if (hasParent) {
+            ctor.setBody(
+                    "super(initialValue, defaultValue, elementPropertyType, presentationToModel, modelToPresentation);");
+        } else {
+            ctor.setBody("super(\"" + propName
+                    + "\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
+                    + "if (initialValue != null) {"
+                    + "setModelValue(initialValue, false);"
+                    + "setPresentationValue(initialValue);}");
+        }
+        ctor.getJavaDoc().setText("Constructor."
+                + "\n@param initialValue the initial value to set to the value"
+                + "\n@param defaultValue the default value to use if the value isn't defined"
+                + "\n@param elementPropertyType the type of the element property"
+                + "\n@param presentationToModel a function that converts a string value to a model value"
+                + "\n@param modelToPresentation a function that converts a model value to a string value"
+                + "\n@param <P> the property type");
+
+        ctor = javaClass.addMethod().setConstructor(true).setPublic();
+        ctor.addParameter(GENERIC_VAL, "initialValue");
+        ctor.addParameter(GENERIC_VAL, "defaultValue");
+        ctor.addParameter("boolean", "acceptNullValues");
+        if (hasParent) {
+            ctor.setBody(
+                    "super(initialValue, defaultValue, acceptNullValues);");
+        } else {
+            ctor.setBody("super(\"" + propName
+                    + "\", defaultValue, acceptNullValues);"
+                    + "if (initialValue != null) {"
+                    + "setModelValue(initialValue, false);"
+                    + "setPresentationValue(initialValue);}");
+        }
+        ctor.getJavaDoc().setText("Constructor."
+                + "\n@param initialValue the initial value to set to the value"
+                + "\n@param defaultValue the default value to use if the value isn't defined"
+                + "\n@param acceptNullValues whether <code>null</code> is accepted as a model value");
+
+        ctor = javaClass.addMethod().setConstructor(true).setPublic();
+        ctor.addParameter(GENERIC_VAL, "initialValue");
+        ctor.addParameter(GENERIC_VAL, "defaultValue");
+        ctor.addTypeVariable("P");
+        ctor.addParameter("Class<P>", "elementPropertyType");
+        ctor.addParameter("SerializableBiFunction<" + GENERIC_TYPE + ", P, T>",
+                "presentationToModel");
+        ctor.addParameter("SerializableBiFunction<" + GENERIC_TYPE + ", T, P>",
+                "modelToPresentation");
+        if (hasParent) {
+            ctor.setBody(
+                    "super(initialValue, defaultValue, elementPropertyType, presentationToModel, modelToPresentation);");
+        } else {
+            ctor.setBody("super(\"" + propName
+                    + "\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
+                    + "if (initialValue != null) {"
+                    + "setModelValue(initialValue, false);"
+                    + "setPresentationValue(initialValue);}");
+        }
+        ctor.getJavaDoc().setText("Constructor."
+                + "\n@param initialValue the initial value to set to the value"
+                + "\n@param defaultValue the default value to use if the value isn't defined"
+                + "\n@param elementPropertyType the type of the element property"
+                + "\n@param presentationToModel a function that accepts this component and a property value and returns a model value"
+                + "\n@param modelToPresentation a function that accepts this component and a model value and returns a property value"
+                + "\n@param <P> the property type");
+
     }
 
     private void addInterfaces(ComponentMetadata metadata,
@@ -646,8 +680,10 @@ public class ComponentGenerator {
                         metadata.getTag(), property.getName()))
                 .forEachOrdered(property -> {
 
-                    boolean isValue = hasValue && ("value".equals(property.getName())
-                            || valueName(metadata.getTag()).equals(property.getName()));
+                    boolean isValue = hasValue
+                            && ("value".equals(property.getName())
+                                    || valueName(metadata.getTag())
+                                            .equals(property.getName()));
                     // Skip value property
                     if (!isValue) {
                         generateGetterFor(javaClass, metadata, property,
@@ -701,10 +737,9 @@ public class ComponentGenerator {
                 "for (Component component : components) {%n component.getElement().setAttribute(\"slot\", \"%s\");%n getElement().appendChild(component.getElement());%n }",
                 slot));
 
-        method.getJavaDoc()
-                .setText(String.format(
-                        "Adds the given components as children of this component at the slot '%s'.",
-                        slot))
+        method.getJavaDoc().setText(String.format(
+                "Adds the given components as children of this component at the slot '%s'.",
+                slot))
                 .addTagValue(JAVADOC_PARAM, "components The components to add.")
                 .addTagValue(JAVADOC_SEE,
                         "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
@@ -738,9 +773,8 @@ public class ComponentGenerator {
         if (useOverrideAnnotation) {
             removeMethod.addAnnotation(Override.class);
         } else {
-            removeMethod.getJavaDoc()
-                    .setText(String
-                            .format("Removes the given child components from this component."))
+            removeMethod.getJavaDoc().setText(String.format(
+                    "Removes the given child components from this component."))
                     .addTagValue(JAVADOC_PARAM,
                             "components The components to remove.")
                     .addTagValue(JAVADOC_THROWS,
@@ -752,15 +786,15 @@ public class ComponentGenerator {
 
         setMethodVisibility(removeAllMethod);
 
-        removeAllMethod.setBody(String
-                .format("getElement().getChildren().forEach(child -> child.removeAttribute(\"slot\"));%n"
+        removeAllMethod.setBody(String.format(
+                "getElement().getChildren().forEach(child -> child.removeAttribute(\"slot\"));%n"
                         + "getElement().removeAllChildren();"));
         if (useOverrideAnnotation) {
             removeAllMethod.addAnnotation(Override.class);
         } else {
             javaClass.addImport(Element.class);
-            removeAllMethod.getJavaDoc().setText(String
-                    .format("Removes all contents from this component, this includes child components, "
+            removeAllMethod.getJavaDoc().setText(String.format(
+                    "Removes all contents from this component, this includes child components, "
                             + "text content as well as child elements that have been added directly to "
                             + "this component using the {@link Element} API."));
         }
@@ -1425,10 +1459,9 @@ public class ComponentGenerator {
         method.addParameter("ComponentEventListener<" + eventClass.getName()
                 + GENERIC_TYPE_DECLARATION + ">", "listener");
 
-        method.getJavaDoc()
-                .setText(String.format(
-                        "Adds a listener for {@code %s} events fired by the webcomponent.",
-                        event.getName()))
+        method.getJavaDoc().setText(String.format(
+                "Adds a listener for {@code %s} events fired by the webcomponent.",
+                event.getName()))
                 .addTagValue(JAVADOC_PARAM, "listener the listener")
                 .addTagValue(JAVADOC_RETURN,
                         "a {@link Registration} for removing the event listener");

@@ -21,6 +21,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableBiFunction;
 
 /**
  * <p>
@@ -138,7 +139,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     }
 
     /**
-     * Constructor
+     * Constructor.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -162,7 +163,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     }
 
     /**
-     * Constructor
+     * Constructor.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -177,9 +178,36 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     }
 
     /**
+     * Constructor.
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that accepts this component and a property value
+     *            and returns a model value
+     * @param modelToPresentation
+     *            a function that accepts this component and a model value and
+     *            returns a property value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinPasswordField(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableBiFunction<R, P, T> presentationToModel,
+            SerializableBiFunction<R, T, P> modelToPresentation) {
+        super(initialValue, defaultValue, elementPropertyType,
+                presentationToModel, modelToPresentation);
+    }
+
+    /**
      * Default constructor.
      */
     public GeneratedVaadinPasswordField() {
-        this(null, null, null, null, null);
+        this(null, null, null, (SerializableFunction) null,
+                (SerializableFunction) null);
     }
 }
