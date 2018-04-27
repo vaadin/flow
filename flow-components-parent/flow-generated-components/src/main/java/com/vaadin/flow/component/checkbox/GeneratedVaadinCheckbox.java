@@ -305,7 +305,7 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
             Class<P> elementPropertyType,
             SerializableFunction<P, T> presentationToModel,
             SerializableFunction<T, P> modelToPresentation) {
-        super("value", defaultValue, elementPropertyType, presentationToModel,
+        super("checked", defaultValue, elementPropertyType, presentationToModel,
                 modelToPresentation);
         if (initialValue != null) {
             setModelValue(initialValue, false);
@@ -325,7 +325,7 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      */
     public GeneratedVaadinCheckbox(T initialValue, T defaultValue,
             boolean acceptNullValues) {
-        super("value", defaultValue, acceptNullValues);
+        super("checked", defaultValue, acceptNullValues);
         if (initialValue != null) {
             setModelValue(initialValue, false);
             setPresentationValue(initialValue);
