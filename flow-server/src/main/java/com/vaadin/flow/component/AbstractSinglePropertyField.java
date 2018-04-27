@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.PropertyChangeEvent;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableBiFunction;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -41,11 +41,13 @@ import com.vaadin.flow.shared.util.SharedUtil;
 public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
         extends AbstractField<C, T> {
     @SuppressWarnings("rawtypes")
-    private static final SerializableFunction RAW_IDENTITY = value -> value;
+    private static final SerializableBiFunction RAW_IDENTITY = (ignore,
+            value) -> value;
 
     @SuppressWarnings("rawtypes")
-    private static final SerializableFunction RAW_NON_NULL_IDENTITY = value -> Objects
-            .requireNonNull(value, "Null value is not supported");
+    private static final SerializableBiFunction RAW_NON_NULL_IDENTITY = (ignore,
+            value) -> Objects.requireNonNull(value,
+                    "Null value is not supported");
 
     @FunctionalInterface
     // Helper since Java has no TriConsumer
@@ -77,26 +79,27 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
                     propertyName, typeDefault);
         }
 
-        private <V> SerializableFunction<V, V> createReader(Element element,
-                String propertyName,
-                SerializableFunction<P, V> presentationToModel) {
-
-            return defaultModelValue -> {
+        private <C extends AbstractField<C, V>, V> SerializableBiFunction<C, V, V> createReader(
+                Element element, String propertyName,
+                SerializableBiFunction<C, P, V> presentationToModel) {
+            return (component, defaultModelValue) -> {
                 if (element.getPropertyRaw(propertyName) != null) {
                     P presentationValue = getter.apply(element, propertyName);
 
-                    return presentationToModel.apply(presentationValue);
+                    return presentationToModel.apply(component,
+                            presentationValue);
                 } else {
                     return defaultModelValue;
                 }
             };
         }
 
-        private <V> SerializableConsumer<V> createWriter(Element element,
-                String propertyName,
-                SerializableFunction<V, P> modelToPresentation) {
-            return modelValue -> {
-                P presentationValue = modelToPresentation.apply(modelValue);
+        private <C extends AbstractField<C, V>, V> SerializableBiConsumer<C, V> createWriter(
+                Element element, String propertyName,
+                SerializableBiFunction<C, V, P> modelToPresentation) {
+            return (component, modelValue) -> {
+                P presentationValue = modelToPresentation.apply(component,
+                        modelValue);
 
                 if (presentationValue == null) {
                     element.removeProperty(propertyName);
@@ -121,8 +124,8 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
                 Integer.valueOf(0));
     }
 
-    private final SerializableConsumer<T> propertyWriter;
-    private final SerializableFunction<T, T> propertyReader;
+    private final SerializableBiConsumer<C, T> propertyWriter;
+    private final SerializableBiFunction<C, T, T> propertyReader;
     private final String propertyName;
 
     private String synchronizedEvent;
@@ -151,8 +154,8 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
     }
 
     /**
-     * Creates a new field that uses a property value with the given converters
-     * for producing a model value.
+     * Creates a new field that uses a property value with the given stateless
+     * converters for producing a model value.
      * <p>
      * The property type must be one of the types that can be written as an
      * element property value: String, Integer, Double or Boolean.
@@ -174,6 +177,37 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
             Class<P> elementPropertyType,
             SerializableFunction<P, T> presentationToModel,
             SerializableFunction<T, P> modelToPresentation) {
+        this(propertyName, defaultValue, elementPropertyType,
+                (ignore, value) -> presentationToModel.apply(value),
+                (ignore, value) -> modelToPresentation.apply(value));
+    }
+
+    /**
+     * Creates a new field that uses a property value with the given contextual
+     * converters for producing a model value.
+     * <p>
+     * The property type must be one of the types that can be written as an
+     * element property value: String, Integer, Double or Boolean.
+     *
+     * @param propertyName
+     *            the name of the element property to use
+     * @param defaultValue
+     *            the default value to use if the property isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that accepts this component and a property value
+     *            and returns a model value
+     * @param modelToPresentation
+     *            a function that accepts this component and a model value and
+     *            returns a property value
+     * @param <P>
+     *            the property type
+     */
+    public <P> AbstractSinglePropertyField(String propertyName, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableBiFunction<C, P, T> presentationToModel,
+            SerializableBiFunction<C, T, P> modelToPresentation) {
         super(defaultValue);
         this.propertyName = propertyName;
 
@@ -274,15 +308,18 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
 
     private void handlePropertyChange(PropertyChangeEvent event) {
         if (hasValidValue()) {
-            T presentationValue = propertyReader.apply(getEmptyValue());
+            @SuppressWarnings("unchecked")
+            T presentationValue = propertyReader.apply((C) this,
+                    getEmptyValue());
 
             setModelValue(presentationValue, event.isUserOriginated());
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void setPresentationValue(T newPresentationValue) {
-        propertyWriter.accept(newPresentationValue);
+        propertyWriter.accept((C) this, newPresentationValue);
     }
 
     private static <T> void addHandler(ElementSetter<T> setter,
