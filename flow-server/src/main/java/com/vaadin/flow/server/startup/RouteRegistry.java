@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -113,6 +114,8 @@ public class RouteRegistry implements Serializable {
             .of(RouteNotFoundError.class, InternalServerError.class)
             .collect(Collectors.toSet());
 
+    private final List<NavigationTargetFilter> routeFilters = new ArrayList<>();
+
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Exception>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
@@ -122,6 +125,7 @@ public class RouteRegistry implements Serializable {
      * Creates a new uninitialized route registry.
      */
     protected RouteRegistry() {
+        ServiceLoader.load(NavigationTargetFilter.class).forEach(routeFilters::add);
     }
 
     /**
@@ -214,6 +218,11 @@ public class RouteRegistry implements Serializable {
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
         errorNavigationTargets.removeAll(defaultErrorHandlers);
         for (Class<? extends Component> target : errorNavigationTargets) {
+            if (!routeFilters.stream().allMatch(
+                    filter -> filter.testErrorNavigationTarget(target))) {
+                continue;
+            }
+
             Class<? extends Exception> exceptionType = ReflectTools
                     .getGenericInterfaceType(target, HasErrorParameter.class)
                     .asSubclass(Exception.class);
@@ -523,6 +532,11 @@ public class RouteRegistry implements Serializable {
                         "No Route annotation is present for the given "
                                 + "navigation target component '%s'.",
                         navigationTarget.getName()));
+            }
+
+            if (!routeFilters.stream().allMatch(
+                    filter -> filter.testNavigationTarget(navigationTarget))) {
+                continue;
             }
 
             Set<String> paths = new HashSet<>();
