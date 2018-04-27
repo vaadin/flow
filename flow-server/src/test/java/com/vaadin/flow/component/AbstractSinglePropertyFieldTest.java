@@ -28,7 +28,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.tests.PublicApiAnalyzer;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonType;
+import elemental.json.JsonValue;
 
 public class AbstractSinglePropertyFieldTest {
     @Rule
@@ -418,6 +424,38 @@ public class AbstractSinglePropertyFieldTest {
         field.getElement().setProperty("property", "f");
         changeMonitor.discard();
         Assert.assertEquals(15, field.getValue().intValue());
+    }
+
+    @Tag("tag")
+    private static class JsonField
+            extends AbstractSinglePropertyField<JsonField, JsonValue> {
+        public JsonField() {
+            super("property", Json.createNull(), false);
+        }
+    }
+
+    @Test
+    public void jsonField() {
+        JsonField field = new JsonField();
+        ValueChangeMonitor<JsonValue> monitor = new ValueChangeMonitor<>(field);
+
+        Assert.assertEquals(JsonType.NULL, field.getValue().getType());
+        monitor.assertNoEvent();
+
+        field.setValue(
+                JsonUtils.createArray(Json.create("foo"), Json.create(42)));
+        monitor.discard();
+        Assert.assertEquals("[\"foo\",42]",
+                ((JsonArray) field.getElement().getPropertyRaw("property"))
+                        .toJson());
+
+        field.getElement().setPropertyJson("property", Json.createObject());
+        monitor.discard();
+        Assert.assertEquals("{}", field.getValue().toJson());
+
+        field.getElement().setProperty("property", "text");
+        monitor.discard();
+        Assert.assertEquals("\"text\"", field.getValue().toJson());
     }
 
     @Test
