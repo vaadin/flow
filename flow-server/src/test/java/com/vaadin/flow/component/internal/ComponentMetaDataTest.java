@@ -13,18 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.internal;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.internal.ComponentMetaData;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
 public class ComponentMetaDataTest {
 
@@ -183,4 +193,73 @@ public class ComponentMetaDataTest {
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("bar", events.get(0));
     }
+
+    @HtmlImport("my-template.html")
+    public static class MyTemplate extends PolymerTemplate<TemplateModel> {
+
+    }
+
+    @Test
+    public void getDependencyInfo_cacheInProduction() throws Exception {
+        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
+        mocks.setProductionMode(true);
+        mocks.getServlet().addServletContextResource(
+                "/frontend-es6/my-template.html",
+                "<link rel='import' href='included.html'>");
+        ComponentMetaData metaData = new ComponentMetaData(MyTemplate.class);
+        DependencyInfo deps = metaData.getDependencyInfo(mocks.getService());
+        assertDeps(deps, "frontend://included.html",
+                "frontend://my-template.html");
+
+        // Returned dependencies should not change even if the file contents
+        // changes as a cache is used
+        mocks.getServlet().addServletContextResource(
+                "/frontend-es6/my-template.html",
+                "<link rel='import' href='included2.html'>");
+
+        deps = metaData.getDependencyInfo(mocks.getService());
+        assertDeps(deps, "frontend://included.html",
+                "frontend://my-template.html");
+
+    }
+
+    @Test
+    public void getDependencyInfo_noCacheInDevelopment() throws Exception {
+        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
+        mocks.getServlet().addServletContextResource(
+                "/frontend/my-template.html",
+                "<link rel='import' href='included.html'>");
+        DependencyInfo deps = ComponentUtil.getDependencies(mocks.getService(),
+                MyTemplate.class);
+        assertDeps(deps, "frontend://included.html",
+                "frontend://my-template.html");
+
+        // Returned dependencies should change as there is no cache in
+        // development
+        mocks.getServlet().addServletContextResource(
+                "/frontend/my-template.html",
+                "<link rel='import' href='included2.html'>");
+
+        deps = ComponentUtil.getDependencies(mocks.getService(),
+                MyTemplate.class);
+        assertDeps(deps, "frontend://included2.html",
+                "frontend://my-template.html");
+
+    }
+
+    private void assertDeps(DependencyInfo dependencyInfo,
+            String... expectedImports) {
+        Set<String> deps = new HashSet<>();
+        dependencyInfo.getHtmlImports().forEach(imports -> {
+            imports.getUris().forEach(deps::add);
+        });
+
+        Set<String> expected = new HashSet<>();
+        for (String e : expectedImports) {
+            expected.add(e);
+        }
+
+        Assert.assertEquals(expected, deps);
+    }
+
 }

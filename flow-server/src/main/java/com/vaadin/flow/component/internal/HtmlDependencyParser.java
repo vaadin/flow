@@ -74,6 +74,7 @@ public class HtmlDependencyParser {
             return;
         }
         dependencies.add(path);
+        getLogger().debug("Parsing dependencies for {}", path);
         WebBrowser browser = FakeBrowser.getEs6();
         try (InputStream content = service.getResourceAsStream(path, browser,
                 null)) {
