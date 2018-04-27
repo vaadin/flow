@@ -558,6 +558,25 @@ public class ComponentGenerator {
                     + "\n@param presentationToModel a function that converts a string value to a model value"
                     + "\n@param modelToPresentation a function that converts a model value to a string value"
                     + "\n@param <P> the property type");
+
+            ctor = javaClass.addMethod().setConstructor(true).setPublic();
+            ctor.addParameter(GENERIC_VAL, "initialValue");
+            ctor.addParameter(GENERIC_VAL, "defaultValue");
+            ctor.addParameter("boolean", "acceptNullValues");
+            if (hasParent) {
+                ctor.setBody(
+                    "super(initialValue, defaultValue, acceptNullValues);");
+            } else {
+                ctor.setBody(
+                    "super(\"value\", defaultValue, acceptNullValues);"
+                    + "if (initialValue != null) {"
+                    + "setModelValue(initialValue, false);"
+                    + "setPresentationValue(initialValue);}");
+            }
+            ctor.getJavaDoc().setText("Constructor"
+                    + "\n@param initialValue the initial value to set to the value"
+                    + "\n@param defaultValue the default value to use if the value isn't defined"
+                    + "\n@param acceptNullValues whether <code>null</code> is accepted as a model value");
         }
 
         if (generateDefaultConstructor) {
