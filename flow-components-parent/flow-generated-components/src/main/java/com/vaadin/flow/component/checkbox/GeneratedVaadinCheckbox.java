@@ -22,10 +22,12 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Synchronize;
+import java.util.Objects;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
  * <p>
@@ -105,8 +107,9 @@ import com.vaadin.flow.component.Component;
         "WebComponent: Vaadin.CheckboxElement#2.0.0", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/src/vaadin-checkbox.html")
-public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
-        extends Component implements HasStyle, Focusable<R>, ClickNotifier<R> {
+public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R, T>, T>
+        extends AbstractSinglePropertyField<R, T>
+        implements HasStyle, Focusable<R>, ClickNotifier<R> {
 
     /**
      * <p>
@@ -204,7 +207,7 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      * @return the {@code checked} property from the webcomponent
      */
     @Synchronize(property = "checked", value = "checked-changed")
-    protected boolean isCheckedBoolean() {
+    protected boolean isValueBoolean() {
         return getElement().getProperty("checked", false);
     }
 
@@ -216,11 +219,16 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      * True if the checkbox is checked.
      * </p>
      * 
-     * @param checked
+     * @param value
      *            the boolean value to set
      */
-    protected void setChecked(boolean checked) {
-        getElement().setProperty("checked", checked);
+    @Override
+    protected void setValue(Boolean value) {
+        Objects.requireNonNull(value,
+                "GeneratedVaadinCheckbox value must not be null");
+        if (!Objects.equals(value, getValue())) {
+            getElement().setProperty("checked", value);
+        }
     }
 
     /**
@@ -262,72 +270,12 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
         getElement().setProperty("indeterminate", indeterminate);
     }
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value given to the data submitted with the checkbox's name to the
-     * server when the control is inside a form.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code value} property from the webcomponent
-     */
-    protected String getPostValueString() {
-        return getElement().getProperty("value");
+    @Override
+    public String getClientValuePropertyName() {
+        return "checked";
     }
 
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The value given to the data submitted with the checkbox's name to the
-     * server when the control is inside a form.
-     * </p>
-     * 
-     * @param postValue
-     *            the String value to set
-     */
-    protected void setPostValue(String postValue) {
-        getElement().setProperty("value", postValue == null ? "" : postValue);
-    }
-
-    public static class CheckedChangeEvent<R extends GeneratedVaadinCheckbox<R>>
-            extends ComponentEvent<R> {
-        private final boolean checked;
-
-        public CheckedChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-            this.checked = source.isCheckedBoolean();
-        }
-
-        public boolean isChecked() {
-            return checked;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code checked-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    protected Registration addCheckedChangeListener(
-            ComponentEventListener<CheckedChangeEvent<R>> listener) {
-        return getElement()
-                .addPropertyChangeListener("checked",
-                        event -> listener.onComponentEvent(
-                                new CheckedChangeEvent<R>((R) this,
-                                        event.isUserOriginated())));
-    }
-
-    public static class IndeterminateChangeEvent<R extends GeneratedVaadinCheckbox<R>>
+    public static class IndeterminateChangeEvent<R extends GeneratedVaadinCheckbox<R, ?>>
             extends ComponentEvent<R> {
         private final boolean indeterminate;
 
@@ -355,5 +303,59 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
                 event -> listener.onComponentEvent(
                         new IndeterminateChangeEvent<R>((R) this,
                                 event.isUserOriginated())));
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that converts a string value to a model value
+     * @param modelToPresentation
+     *            a function that converts a model value to a string value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinCheckbox(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableFunction<P, T> presentationToModel,
+            SerializableFunction<T, P> modelToPresentation) {
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param acceptNullValues
+     *            whether <code>null</code> is accepted as a model value
+     */
+    public GeneratedVaadinCheckbox(T initialValue, T defaultValue,
+            boolean acceptNullValues) {
+        super("value", defaultValue, acceptNullValues);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
+     * Default constructor.
+     */
+    public GeneratedVaadinCheckbox() {
+        this(null, null, null, null, null);
     }
 }
