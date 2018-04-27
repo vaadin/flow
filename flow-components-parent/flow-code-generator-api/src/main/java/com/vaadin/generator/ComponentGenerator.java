@@ -431,7 +431,7 @@ public class ComponentGenerator {
         boolean hasParent = metadata.getParentTagName() != null;
         boolean hasValue = shouldImplementHasValue(metadata, javaClass);
 
-        generateConstructors(javaClass, hasValue, hasParent);
+        generateConstructors(metadata, javaClass, hasValue, hasParent);
 
         if (hasValue) {
             javaClass.addTypeVariable().setName(GENERIC_TYPE)
@@ -506,8 +506,8 @@ public class ComponentGenerator {
                         + tagName);
     }
 
-    private void generateConstructors(JavaClassSource javaClass,
-            boolean hasValue, boolean hasParent) {
+    private void generateConstructors(ComponentMetadata metadata,
+            JavaClassSource javaClass, boolean hasValue, boolean hasParent) {
         boolean generateDefaultConstructor = false;
         if (javaClass.hasInterface(HasText.class)) {
             generateDefaultConstructor = true;
@@ -538,6 +538,8 @@ public class ComponentGenerator {
 
         if (hasValue) {
             generateDefaultConstructor = true;
+            String propName = valueName(metadata);
+
             javaClass.addImport(SerializableFunction.class);
             MethodSource<JavaClassSource> ctor = javaClass.addMethod()
                     .setConstructor(true).setPublic();
@@ -553,11 +555,11 @@ public class ComponentGenerator {
                 ctor.setBody(
                         "super(initialValue, defaultValue, elementPropertyType, presentationToModel,modelToPresentation);");
             } else {
-                ctor.setBody(
-                        "super(\"value\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
-                                + "if (initialValue != null) {"
-                                + "setModelValue(initialValue, false);"
-                                + "setPresentationValue(initialValue);}");
+                ctor.setBody("super(\"" + propName
+                        + "\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
+                        + "if (initialValue != null) {"
+                        + "setModelValue(initialValue, false);"
+                        + "setPresentationValue(initialValue);}");
             }
             ctor.getJavaDoc()
                     .setText("Constructor"
@@ -576,7 +578,7 @@ public class ComponentGenerator {
                 ctor.setBody(
                         "super(initialValue, defaultValue, acceptNullValues);");
             } else {
-                ctor.setBody("super(\"value\", defaultValue, acceptNullValues);"
+                ctor.setBody("super(\"" + propName + "\", defaultValue, acceptNullValues);"
                         + "if (initialValue != null) {"
                         + "setModelValue(initialValue, false);"
                         + "setPresentationValue(initialValue);}");

@@ -1009,7 +1009,7 @@ public class ComponentGeneratorTest {
                 "InvalidChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>"));
     }
     @Test
-    public void checkedRemapedToValueComponents_HaveAppropriateConstructors() {
+    public void checkedRemapedValueComponents_HaveAppropriateConstructors() {
         componentMetadata = new ComponentMetadata();
         componentMetadata.setTag("vaadin-checkbox");
         componentMetadata.setName("VaadinCheckBox");
@@ -1037,10 +1037,16 @@ public class ComponentGeneratorTest {
 
         Assert.assertThat(generated, CoreMatchers.containsString(
                 "GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R, T>, T>"));
-        Assert.assertThat(generated, CoreMatchers.not(CoreMatchers.containsString("getValue")));
-        Assert.assertThat(generated, CoreMatchers.not(CoreMatchers.containsString("setValue")));
-        Assert.assertThat(generated, CoreMatchers.not(CoreMatchers.containsString("getChecked")));
-        Assert.assertThat(generated, CoreMatchers.not(CoreMatchers.containsString("getChecked")));
+        Assert.assertThat(generated,
+                CoreMatchers.containsString("super(\"checked\","));
+        Assert.assertThat(generated,
+                CoreMatchers.not(CoreMatchers.containsString("getValue")));
+        Assert.assertThat(generated,
+                CoreMatchers.not(CoreMatchers.containsString("setValue")));
+        Assert.assertThat(generated,
+                CoreMatchers.not(CoreMatchers.containsString("getChecked")));
+        Assert.assertThat(generated,
+                CoreMatchers.not(CoreMatchers.containsString("getChecked")));
     }
 
 
