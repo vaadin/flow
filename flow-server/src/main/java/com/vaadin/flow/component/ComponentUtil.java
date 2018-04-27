@@ -221,9 +221,8 @@ public class ComponentUtil {
 
         AttachEvent attachEvent = new AttachEvent(component, initialAttach);
         component.onAttach(attachEvent);
-        if (component.hasListener(AttachEvent.class)) {
-            component.getEventBus().fireEvent(attachEvent);
-        }
+        fireEvent(component, attachEvent);
+
         // inform component about onEnabledState if new state differs from
         // internal state
         if (component instanceof HasEnabled
@@ -254,9 +253,8 @@ public class ComponentUtil {
 
         DetachEvent detachEvent = new DetachEvent(component);
         component.onDetach(detachEvent);
-        if (component.hasListener(DetachEvent.class)) {
-            component.getEventBus().fireEvent(detachEvent);
-        }
+        fireEvent(component, detachEvent);
+
         // inform component about onEnabledState if parent and child states
         // differ.
         if (component instanceof HasEnabled
@@ -309,6 +307,21 @@ public class ComponentUtil {
         }
 
         return true;
+    }
+
+    /**
+     * Dispatches the event to all listeners registered for the event type.
+     *
+     * @see Component#fireEvent(ComponentEvent)
+     * 
+     * @param component
+     *            the component for which to fire events
+     * @param componentEvent
+     *            the event to fire
+     */
+    public static <T extends Component> void fireEvent(T component,
+            ComponentEvent<? extends T> componentEvent) {
+        component.fireEvent(componentEvent);
     }
 
     /**

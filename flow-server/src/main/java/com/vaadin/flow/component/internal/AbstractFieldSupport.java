@@ -21,8 +21,8 @@ import java.util.Objects;
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.function.SerializableBiPredicate;
@@ -47,7 +47,6 @@ public class AbstractFieldSupport<C extends Component & HasValue<C, T>, T>
 
     private final SerializableBiPredicate<T, T> valueEquals;
     private final SerializableConsumer<T> setPresentationValue;
-    private final SerializableConsumer<ComponentEvent<?>> fireEvent;
 
     private T bufferedValue;
 
@@ -66,20 +65,16 @@ public class AbstractFieldSupport<C extends Component & HasValue<C, T>, T>
      *            a callback for comparing values
      * @param setPresentationValue
      *            a callback for setting presentation values
-     * @param fireEvent
-     *            a callback for firing events
      */
     public AbstractFieldSupport(C component, T defaultValue,
             SerializableBiPredicate<T, T> valueEquals,
-            SerializableConsumer<T> setPresentationValue,
-            SerializableConsumer<ComponentEvent<?>> fireEvent) {
+            SerializableConsumer<T> setPresentationValue) {
         this.component = component;
 
         this.defaultValue = defaultValue;
         bufferedValue = defaultValue;
         this.valueEquals = valueEquals;
         this.setPresentationValue = setPresentationValue;
-        this.fireEvent = fireEvent;
     }
 
     /**
@@ -207,7 +202,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<C, T>, T>
             }
         }
 
-        fireEvent.accept(createValueChange(oldValue, fromClient));
+        ComponentUtil.fireEvent(component,
+                createValueChange(oldValue, fromClient));
     }
 
     private boolean applyValue(T value) {

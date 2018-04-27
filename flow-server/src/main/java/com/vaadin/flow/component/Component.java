@@ -331,6 +331,8 @@ public abstract class Component
     /**
      * Dispatches the event to all listeners registered for the event type.
      *
+     * @see ComponentUtil#fireEvent(Component, ComponentEvent)
+     *
      * @param componentEvent
      *            the event to fire
      */

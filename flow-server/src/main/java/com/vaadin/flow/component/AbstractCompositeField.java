@@ -52,7 +52,7 @@ public abstract class AbstractCompositeField<C extends Component, S extends Abst
         S thisAsS = (S) this;
 
         fieldSupport = new AbstractFieldSupport<>(thisAsS, defaultValue,
-                this::valueEquals, this::setPresentationValue, this::fireEvent);
+                this::valueEquals, this::setPresentationValue);
     }
 
     @Override
