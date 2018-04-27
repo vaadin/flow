@@ -98,7 +98,7 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
         @SuppressWarnings("unchecked")
         C thisC = (C) this;
         return new AbstractFieldSupport<>(thisC, defaultValue,
-                this::valueEquals, this::setPresentationValue, this::fireEvent);
+                this::valueEquals, this::setPresentationValue);
     }
 
     @Override
