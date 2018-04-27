@@ -205,11 +205,19 @@ public class ComponentMetaData {
      * @return the dependencies for the given class
      */
     public DependencyInfo getDependencyInfo(VaadinService service) {
-        return dependencyInfo.computeIfAbsent(service, ignore -> {
-            service.addServiceDestroyListener(
-                    event -> dependencyInfo.remove(service));
+        if (service.getDeploymentConfiguration().isProductionMode()) {
+            return dependencyInfo.computeIfAbsent(service, ignore -> {
+                service.addServiceDestroyListener(
+                        event -> dependencyInfo.remove(service));
+                return findDependencies(service, componentClass);
+            });
+        } else {
+            // Not using cache in development mode so that html imports added to
+            // templates do not require a server restart (when there is a themed
+            // version available)
+            // https://github.com/vaadin/flow/issues/4005
             return findDependencies(service, componentClass);
-        });
+        }
     }
 
     private static Collection<HtmlImportDependency> getHtmlImportDependencies(
