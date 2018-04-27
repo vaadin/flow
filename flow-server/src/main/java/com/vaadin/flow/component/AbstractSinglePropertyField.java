@@ -291,4 +291,8 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
                 new TypeHandler<>(setter, getter, typeDefaultValue));
     }
 
+    @Override
+    public String getClientValuePropertyName() {
+        return propertyName;
+    }
 }
