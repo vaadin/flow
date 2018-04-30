@@ -82,6 +82,10 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     private static final ReflectionCache<Object, Map<String, Method>> beanPropertyCache = new ReflectionCache<>(
             BeanModelType::findBeanGetters);
 
+    private static final Set<Class<?>> UNSUPPORTED_BOXED_TYPES = Collections
+            .unmodifiableSet(Stream.of(Long.class, Float.class, Byte.class,
+                    Character.class, Short.class).collect(Collectors.toSet()));
+
     /**
      * Creates a new bean model type from the given class and properties.
      *
@@ -674,8 +678,6 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      * @return {@coe true} if {@code clazz} is unsupported boxed primitive type
      */
     private static boolean isBoxedUnsupportedType(Class<?> clazz) {
-        return Long.class.equals(clazz) || Float.class.equals(clazz)
-                || Byte.class.equals(clazz) || Character.class.equals(clazz)
-                || Short.class.equals(clazz);
+        return UNSUPPORTED_BOXED_TYPES.contains(clazz);
     }
 }
