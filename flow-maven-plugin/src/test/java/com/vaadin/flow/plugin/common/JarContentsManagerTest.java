@@ -30,6 +30,7 @@ import nl.jqno.equalsverifier.internal.exceptions.AssertionException;
 import nl.jqno.equalsverifier.internal.util.Formatter;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.TestUtils;
@@ -50,23 +51,38 @@ public class JarContentsManagerTest {
     @Rule
     public TemporaryFolder testDirectory = new TemporaryFolder();
 
+    @Rule
+    public final ExpectedException expectedException = ExpectedException.none();
+
     private final JarContentsManager jarContentsManager = new JarContentsManager();
     private final File testJar = TestUtils.getTestJar();
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getFileContents_directoryInsteadOfJar() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing file", testDirectory.getRoot()));
+
         jarContentsManager.getFileContents(testDirectory.getRoot(), "test");
     }
 
-    @Test(expected = UncheckedIOException.class)
+    @Test
     public void getFileContents_notAJarFile() throws IOException {
         File testFile = testDirectory.newFile("test");
+
+        expectedException.expect(UncheckedIOException.class);
+        expectedException.expectMessage(String.format("Failed to retrieve file '%s' from jar '%s'", "test", testFile));
+
         jarContentsManager.getFileContents(testFile, "test");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getFileContents_nonExistingJarFile() {
-        jarContentsManager.getFileContents(new File("test"), "test");
+        File test = new File("test");
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing file", test));
+
+        jarContentsManager.getFileContents(test, "test");
     }
 
     @Test
@@ -84,20 +100,32 @@ public class JarContentsManagerTest {
         assertTrue("Expect to have non-empty file from jar", fileContents.length > 0);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void containsPath_directoryInsteadOfJar() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing file", testDirectory.getRoot()));
+
         jarContentsManager.containsPath(testDirectory.getRoot(), "test");
     }
 
-    @Test(expected = UncheckedIOException.class)
+    @Test
     public void containsPath_notAJarFile() throws IOException {
         File testFile = testDirectory.newFile("test");
+
+        expectedException.expect(UncheckedIOException.class);
+        expectedException.expectMessage(String.format("Failed to retrieve file '%s' from jar '%s'", "test", testFile));
+
         jarContentsManager.containsPath(testFile, "test");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void containsPath_nonExistingJarFile() {
-        jarContentsManager.containsPath(new File("test"), "test");
+        File test = new File("test");
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing file", test));
+
+        jarContentsManager.containsPath(test, "test");
     }
 
     @Test
@@ -114,20 +142,32 @@ public class JarContentsManagerTest {
         assertTrue(String.format("Test jar '%s' should contain path '%s'", testJar, existingPath), jarContentsManager.containsPath(testJar, existingPath));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void findFiles_directoryInsteadOfJar() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing file", testDirectory.getRoot()));
+
         jarContentsManager.findFiles(testDirectory.getRoot(), "test", "test");
     }
 
-    @Test(expected = UncheckedIOException.class)
+    @Test
     public void findFiles_notAJarFile() throws IOException {
         File testFile = testDirectory.newFile("test");
+
+        expectedException.expect(UncheckedIOException.class);
+        expectedException.expectMessage("java.util.zip.ZipException: zip file is empty");
+
         jarContentsManager.findFiles(testFile, "test", "test");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void findFiles_nonExistingJarFile() {
-        jarContentsManager.findFiles(new File("test"), "test", "test");
+        File test = new File("test");
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing file", test));
+
+        jarContentsManager.findFiles(test, "test", "test");
     }
 
     @Test
@@ -163,34 +203,53 @@ public class JarContentsManagerTest {
                 1, bowerJson.size());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void copyFilesFromJar_nullJarFile() {
+        expectedException.expect(NullPointerException.class);
+
         jarContentsManager.copyFilesFromJarTrimmingBasePath(null, null, testDirectory.getRoot());
     }
 
-    @Test(expected = UncheckedIOException.class)
+    @Test
     public void copyFilesFromJar_notAJarFile() throws IOException {
         File testFile = testDirectory.newFile("test");
+
+        expectedException.expect(UncheckedIOException.class);
+        expectedException.expectMessage(String.format("Failed to extract files from jarFile '%s' to directory '%s'", testFile, testDirectory.getRoot()));
+
         jarContentsManager.copyFilesFromJarTrimmingBasePath(testFile, null, testDirectory.getRoot());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void copyFilesFromJar_nonExistingJarFile() {
-        jarContentsManager.copyFilesFromJarTrimmingBasePath(new File("test"), null, testDirectory.getRoot());
+        File test = new File("test");
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing file", test));
+
+        jarContentsManager.copyFilesFromJarTrimmingBasePath(test, null, testDirectory.getRoot());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void copyFilesFromJar_directoryInsteadOfJar() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing file", testDirectory.getRoot()));
+
         jarContentsManager.copyFilesFromJarTrimmingBasePath(testDirectory.getRoot(), null, testDirectory.getRoot());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void copyFilesFromJar_nullOutputDirectory() {
+        expectedException.expect(NullPointerException.class);
+
         jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar, null, null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void copyFilesFromJar_fileInsteadOfDirectory() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(String.format("Expect '%s' to be an existing directory", testJar));
+
         jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar, null, testJar);
     }
 
