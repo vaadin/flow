@@ -22,7 +22,8 @@ public class InputTest extends ComponentTest {
     @Override
     protected void addProperties() {
         addStringProperty("type", "text");
-        addStringProperty("value", "");
+        // Object.class because of generics
+        addProperty("value", Object.class, "", "foo", false, false);
         addOptionalStringProperty("placeholder");
     }
 

@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.internal.AbstractFieldSupport;
 import com.vaadin.flow.shared.Registration;
 
@@ -35,7 +36,8 @@ import com.vaadin.flow.shared.Registration;
  *            the value type
  */
 public abstract class AbstractCompositeField<C extends Component, S extends AbstractCompositeField<C, S, T>, T>
-        extends Composite<C> implements HasValue<S, T>, HasEnabled {
+        extends Composite<C> implements
+        HasValueAndElement<ComponentValueChangeEvent<S, T>, T>, HasEnabled {
 
     private final AbstractFieldSupport<S, T> fieldSupport;
 
@@ -72,7 +74,7 @@ public abstract class AbstractCompositeField<C extends Component, S extends Abst
 
     @Override
     public Registration addValueChangeListener(
-            HasValue.ValueChangeListener<S, T> listener) {
+            HasValue.ValueChangeListener<? super ComponentValueChangeEvent<S, T>> listener) {
         return fieldSupport.addValueChangeListener(listener);
     }
 

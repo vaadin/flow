@@ -40,7 +40,7 @@ public class BinderValueChangeTest
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
-    private AtomicReference<ValueChangeEvent<?, ?>> event;
+    private AtomicReference<ValueChangeEvent<?>> event;
 
     @Before
     public void setUp() {
@@ -165,13 +165,13 @@ public class BinderValueChangeTest
     }
 
     private void verifyEvent(HasValue<?, ?> field, boolean isUserOriginated) {
-        ValueChangeEvent<?, ?> changeEvent = event.get();
+        ValueChangeEvent<?> changeEvent = event.get();
         Assert.assertNotNull(changeEvent);
-        Assert.assertEquals(field, changeEvent.getSource());
+        Assert.assertEquals(field, changeEvent.getHasValue());
         Assert.assertEquals(isUserOriginated, changeEvent.isFromClient());
     }
 
-    private void statusChanged(ValueChangeEvent<?, ?> evt) {
+    private void statusChanged(ValueChangeEvent<?> evt) {
         Assert.assertNull(event.get());
         event.set(evt);
     }

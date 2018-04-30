@@ -357,8 +357,8 @@ public class AbstractFieldTest {
     public void setValueInEventHandler() {
         TestAbstractField<String> field = new TestAbstractField<>();
 
-        List<ValueChangeEvent<TestAbstractField<String>, String>> beforeEvents = new ArrayList<>();
-        List<ValueChangeEvent<TestAbstractField<String>, String>> afterEvents = new ArrayList<>();
+        List<ValueChangeEvent<String>> beforeEvents = new ArrayList<>();
+        List<ValueChangeEvent<String>> afterEvents = new ArrayList<>();
 
         field.addValueChangeListener(beforeEvents::add);
         field.addValueChangeListener(event -> {
