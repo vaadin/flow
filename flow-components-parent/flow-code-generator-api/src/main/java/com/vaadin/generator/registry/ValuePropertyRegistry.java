@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Registry that facilitates mapping which property name will be used when
- * the element should extend AbstractField API.
- *   
+ * Registry that facilitates mapping which property name will be used when the
+ * element should extend AbstractField API.
+ * 
  * @author Vaadin ltd
  */
 public final class ValuePropertyRegistry {
@@ -29,6 +29,7 @@ public final class ValuePropertyRegistry {
     private static final Map<String, String> REGISTRY = new HashMap<>();
     static {
         REGISTRY.put("vaadin-checkbox", "checked");
+        REGISTRY.put("vaadin-combo-box", "selectedItem");
     }
 
     private ValuePropertyRegistry() {
@@ -38,12 +39,10 @@ public final class ValuePropertyRegistry {
      * Returns the 'value' property name for a given tag.
      * 
      * @param tagName
-     *          tag-name of the element
-     * @return
-     *          property name used for value changes
+     *            tag-name of the element
+     * @return property name used for value changes
      */
     public static String valueName(String tagName) {
-        return REGISTRY.containsKey(tagName)
-                ? REGISTRY.get(tagName) : "value";
+        return REGISTRY.containsKey(tagName) ? REGISTRY.get(tagName) : "value";
     }
 }

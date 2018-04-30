@@ -44,6 +44,7 @@ public final class BehaviorRegistry {
                 "vaadin-form-item");
         put(HasText.class, "vaadin-button", "paper-button");
         put(HasValue.class, "vaadin-password-field");
+        put(HasValue.class, "vaadin-combo-box");
         put(Focusable.class, "paper-button", "Vaadin.FormElementMixin",
                 "Vaadin.ControlStateMixin");
     }

@@ -42,7 +42,6 @@ public class ExclusionRegistry {
     static {
         excludeProperty("vaadin-combo-box", "value");
         excludeProperty("vaadin-radio-group", "value");
-        excludeProperty("vaadin-combo-box", "selectedItem");
         excludeProperty("vaadin-combo-box", "itemLabelPath");
         excludeProperty("vaadin-combo-box", "itemValuePath");
         excludeProperty("vaadin-tabs", "selected");
@@ -54,8 +53,8 @@ public class ExclusionRegistry {
         excludeProperty("vaadin-dialog", "noCloseOnOutsideClick");
         excludeProperty("vaadin-list-box", "selected");
         excludeProperty("vaadin-list-box", "items");
-        excludeEvent("vaadin-combo-box", "selected-item-changed");
         excludeEvent("vaadin-combo-box", "change");
+        excludeEvent("vaadin-combo-box", "valued-changed");
         excludeBehaviorOrMixin("vaadin-date-picker",
                 "Polymer.GestureEventListeners");
         excludeInterface("vaadin-dialog", HasStyle.class);

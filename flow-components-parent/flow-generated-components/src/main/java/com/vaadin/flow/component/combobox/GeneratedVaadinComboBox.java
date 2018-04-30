@@ -19,6 +19,7 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonArray;
@@ -31,6 +32,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
@@ -864,6 +866,29 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
                 (ComponentEventListener) listener);
     }
 
+    public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBox<R, ?>>
+            extends ComponentEvent<R> {
+        public SelectedItemChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code selected-item-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    protected Registration addSelectedItemChangeListener(
+            ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
+        return getElement().addPropertyChangeListener("selectedItem",
+                event -> listener.onComponentEvent(
+                        new SelectedItemChangeEvent<R>((R) this,
+                                event.isUserOriginated())));
+    }
+
     public static class OpenedChangeEvent<R extends GeneratedVaadinComboBox<R, ?>>
             extends ComponentEvent<R> {
         private final boolean opened;
@@ -1009,7 +1034,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
     }
 
     /**
-     * Constructor
+     * Constructs a new GeneratedVaadinComboBox component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -1028,8 +1054,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
             Class<P> elementPropertyType,
             SerializableFunction<P, T> presentationToModel,
             SerializableFunction<T, P> modelToPresentation) {
-        super("value", defaultValue, elementPropertyType, presentationToModel,
-                modelToPresentation);
+        super("selectedItem", defaultValue, elementPropertyType,
+                presentationToModel, modelToPresentation);
         if (initialValue != null) {
             setModelValue(initialValue, false);
             setPresentationValue(initialValue);
@@ -1037,7 +1063,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
     }
 
     /**
-     * Constructor
+     * Constructs a new GeneratedVaadinComboBox component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -1048,7 +1075,38 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     public GeneratedVaadinComboBox(T initialValue, T defaultValue,
             boolean acceptNullValues) {
-        super("value", defaultValue, acceptNullValues);
+        super("selectedItem", defaultValue, acceptNullValues);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
+     * Constructs a new GeneratedVaadinComboBox component with the given
+     * arguments.
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that accepts this component and a property value
+     *            and returns a model value
+     * @param modelToPresentation
+     *            a function that accepts this component and a model value and
+     *            returns a property value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinComboBox(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableBiFunction<R, P, T> presentationToModel,
+            SerializableBiFunction<R, T, P> modelToPresentation) {
+        super("selectedItem", defaultValue, elementPropertyType,
+                presentationToModel, modelToPresentation);
         if (initialValue != null) {
             setModelValue(initialValue, false);
             setPresentationValue(initialValue);
@@ -1059,6 +1117,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      * Default constructor.
      */
     public GeneratedVaadinComboBox() {
-        this(null, null, null, null, null);
+        this(null, null, null, (SerializableFunction) null,
+                (SerializableFunction) null);
     }
 }

@@ -29,6 +29,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 
 /**
@@ -1100,7 +1101,8 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
     }
 
     /**
-     * Constructor
+     * Constructs a new GeneratedVaadinDatePicker component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -1128,7 +1130,8 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
     }
 
     /**
-     * Constructor
+     * Constructs a new GeneratedVaadinDatePicker component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -1147,9 +1150,41 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
     }
 
     /**
+     * Constructs a new GeneratedVaadinDatePicker component with the given
+     * arguments.
+     * 
+     * @param initialValue
+     *            the initial value to set to the value
+     * @param defaultValue
+     *            the default value to use if the value isn't defined
+     * @param elementPropertyType
+     *            the type of the element property
+     * @param presentationToModel
+     *            a function that accepts this component and a property value
+     *            and returns a model value
+     * @param modelToPresentation
+     *            a function that accepts this component and a model value and
+     *            returns a property value
+     * @param <P>
+     *            the property type
+     */
+    public <P> GeneratedVaadinDatePicker(T initialValue, T defaultValue,
+            Class<P> elementPropertyType,
+            SerializableBiFunction<R, P, T> presentationToModel,
+            SerializableBiFunction<R, T, P> modelToPresentation) {
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }
+    }
+
+    /**
      * Default constructor.
      */
     public GeneratedVaadinDatePicker() {
-        this(null, null, null, null, null);
+        this(null, null, null, (SerializableFunction) null,
+                (SerializableFunction) null);
     }
 }
