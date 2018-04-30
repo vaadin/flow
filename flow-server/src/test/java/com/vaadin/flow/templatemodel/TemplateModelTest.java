@@ -30,9 +30,6 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.server.VaadinService;
 
-import net.jcip.annotations.NotThreadSafe;
-
-@NotThreadSafe
 public class TemplateModelTest extends HasCurrentService {
 
     @Rule
