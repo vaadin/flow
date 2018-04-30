@@ -82,6 +82,10 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     private static final ReflectionCache<Object, Map<String, Method>> beanPropertyCache = new ReflectionCache<>(
             BeanModelType::findBeanGetters);
 
+    private static final Set<Class<?>> UNSUPPORTED_BOXED_TYPES = Collections
+            .unmodifiableSet(Stream.of(Long.class, Float.class, Byte.class,
+                    Character.class, Short.class).collect(Collectors.toSet()));
+
     /**
      * Creates a new bean model type from the given class and properties.
      *
@@ -175,9 +179,11 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
         throw new InvalidTemplateModelException(String.format(
                 "Type '%s' is not supported."
-                        + " Used in class '%s' with property named '%s'. %s",
+                        + " Used in class '%s' with property named '%s'. %s. "
+                        + "Use @%s annotation to convert the type to a supported type.",
                 propertyType.toString(), declaringClass.getSimpleName(),
-                propertyName, ModelType.getSupportedTypesString()));
+                propertyName, ModelType.getSupportedTypesString(),
+                Encode.class.getSimpleName()));
     }
 
     static ModelType getConvertedModelType(Type propertyType,
@@ -273,7 +279,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return false;
         }
         Class<?> cls = (Class<?>) type;
-        if (BasicModelType.get(cls).isPresent()) {
+        if (BasicModelType.get(cls).isPresent()
+                || isBoxedUnsupportedType(cls)) {
             return false;
         } else if (cls.isPrimitive()) {
             // Primitives can't be beans even if they're not basic types
@@ -660,5 +667,17 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         } else {
             return type;
         }
+    }
+
+    /**
+     * Checks whether the {@code clazz} represents a boxed promitive type which
+     * is unsupported by {@link BasicModelType}.
+     *
+     * @param clazz
+     *            java type to check
+     * @return {@coe true} if {@code clazz} is unsupported boxed primitive type
+     */
+    private static boolean isBoxedUnsupportedType(Class<?> clazz) {
+        return UNSUPPORTED_BOXED_TYPES.contains(clazz);
     }
 }
