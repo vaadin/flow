@@ -27,7 +27,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.plugins.annotations.Mojo;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -38,6 +40,9 @@ import com.vaadin.flow.plugin.TestUtils;
  * @author Vaadin Ltd.
  */
 public class AnnotationValuesExtractorTest {
+    @Rule
+    public final ExpectedException expectedException = ExpectedException.none();
+
     private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
             TestUtils.getTestResource(
                     "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
@@ -46,14 +51,20 @@ public class AnnotationValuesExtractorTest {
             TestUtils.getTestResource(
                     "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void extractAnnotationValues_incorrectMethod() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("");
+
         extractor.extractAnnotationValues(
                 Collections.singletonMap(HtmlImport.class, "doomed to fail"));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void extractAnnotationValues_annotationNotInClassLoader() {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("");
+
         extractor.extractAnnotationValues(
                 Collections.singletonMap(Mojo.class, "whatever"));
     }

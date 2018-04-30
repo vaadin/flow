@@ -21,6 +21,7 @@ import java.io.IOException;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /**
@@ -30,18 +31,24 @@ public class ArtifactDataTest {
     @Rule
     public TemporaryFolder testDirectory = new TemporaryFolder();
 
-    @Test(expected = NullPointerException.class)
+    @Rule
+    public final ExpectedException expectedException = ExpectedException.none();
+
+    @Test
     public void constructor_nullFile() {
+        expectedException.expect(NullPointerException.class);
         new ArtifactData(null, "one", "two");
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void constructor_nullArtifactId() throws IOException {
+        expectedException.expect(NullPointerException.class);
         new ArtifactData(testDirectory.newFile("test"), null, "two");
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void constructor_nullVersion() throws IOException {
+        expectedException.expect(NullPointerException.class);
         new ArtifactData(testDirectory.newFile("test"), "one", null);
     }
 
