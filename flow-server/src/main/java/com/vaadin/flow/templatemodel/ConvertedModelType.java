@@ -61,11 +61,6 @@ public class ConvertedModelType<A, M extends Serializable>
     }
 
     @Override
-    public Object modelToNashorn(Serializable modelValue) {
-        throw new UnsupportedOperationException("Obsolete functionality");
-    }
-
-    @Override
     public Serializable applicationToModel(Object applicationValue,
             PropertyFilter filter) {
         @SuppressWarnings("unchecked")
@@ -96,7 +91,7 @@ public class ConvertedModelType<A, M extends Serializable>
 
     /**
      * Gets the model type describing the data actually stored in the model.
-     * 
+     *
      * @return the wrapped model type
      */
     public ModelType getWrappedModelType() {

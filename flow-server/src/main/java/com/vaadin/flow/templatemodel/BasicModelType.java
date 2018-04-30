@@ -60,18 +60,12 @@ public class BasicModelType extends AbstractBasicModelType {
                 ReflectTools.convertPrimitiveType(modelValue.getClass()))) {
             return modelValue;
         } else {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "The stored model value '%s' type '%s' "
-                                    + "cannot be used as a type for a model property with type '%s'",
-                                    modelValue, modelValue.getClass().getName(),
-                                    getJavaType().getName()));
+            throw new IllegalArgumentException(String.format(
+                    "The stored model value '%s' type '%s' "
+                            + "cannot be used as a type for a model property with type '%s'",
+                    modelValue, modelValue.getClass().getName(),
+                    getJavaType().getName()));
         }
-    }
-
-    @Override
-    public Object modelToNashorn(Serializable modelValue) {
-        return modelToApplication(modelValue);
     }
 
     @Override
