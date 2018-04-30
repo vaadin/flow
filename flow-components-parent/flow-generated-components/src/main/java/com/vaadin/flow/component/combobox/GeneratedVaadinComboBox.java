@@ -1034,7 +1034,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinComboBox component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -1062,7 +1063,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinComboBox component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -1081,7 +1083,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinComboBox component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value

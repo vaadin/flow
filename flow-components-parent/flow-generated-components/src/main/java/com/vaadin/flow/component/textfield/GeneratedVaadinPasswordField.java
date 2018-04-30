@@ -139,7 +139,8 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -163,7 +164,8 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -178,7 +180,8 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value

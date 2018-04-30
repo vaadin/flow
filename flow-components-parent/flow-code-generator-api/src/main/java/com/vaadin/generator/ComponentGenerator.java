@@ -559,8 +559,16 @@ public class ComponentGenerator {
 
         MethodSource<JavaClassSource> ctor = javaClass.addMethod()
                 .setConstructor(true).setPublic();
-        ctor.addParameter(GENERIC_VAL, "initialValue");
-        ctor.addParameter(GENERIC_VAL, "defaultValue");
+
+        String INITIAL_VALUE = "initialValue";
+        String DEFAULT_VALUE = "defaultValue";
+
+        String CONSTRUCTOR_JAVADOC =
+                "Constructs a new " + getGeneratedClassName(metadata.getTag())
+                        + " component with the given arguments.";
+
+        ctor.addParameter(GENERIC_VAL, INITIAL_VALUE);
+        ctor.addParameter(GENERIC_VAL, DEFAULT_VALUE);
         ctor.addTypeVariable("P");
         ctor.addParameter("Class<P>", "elementPropertyType");
         ctor.addParameter("SerializableFunction<P, T>", "presentationToModel");
@@ -575,7 +583,7 @@ public class ComponentGenerator {
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
         }
-        ctor.getJavaDoc().setText("Constructs a new " + getGeneratedClassName(metadata.getTag()) + " component with the given arguments."
+        ctor.getJavaDoc().setText(CONSTRUCTOR_JAVADOC
                 + "\n@param initialValue the initial value to set to the value"
                 + "\n@param defaultValue the default value to use if the value isn't defined"
                 + "\n@param elementPropertyType the type of the element property"
@@ -584,8 +592,8 @@ public class ComponentGenerator {
                 + "\n@param <P> the property type");
 
         ctor = javaClass.addMethod().setConstructor(true).setPublic();
-        ctor.addParameter(GENERIC_VAL, "initialValue");
-        ctor.addParameter(GENERIC_VAL, "defaultValue");
+        ctor.addParameter(GENERIC_VAL, INITIAL_VALUE);
+        ctor.addParameter(GENERIC_VAL, DEFAULT_VALUE);
         ctor.addParameter("boolean", "acceptNullValues");
         if (hasParent) {
             ctor.setBody(
@@ -597,14 +605,14 @@ public class ComponentGenerator {
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
         }
-        ctor.getJavaDoc().setText("Constructs a new " + getGeneratedClassName(metadata.getTag()) + " component with the given arguments."
+        ctor.getJavaDoc().setText(CONSTRUCTOR_JAVADOC
                 + "\n@param initialValue the initial value to set to the value"
                 + "\n@param defaultValue the default value to use if the value isn't defined"
                 + "\n@param acceptNullValues whether <code>null</code> is accepted as a model value");
 
         ctor = javaClass.addMethod().setConstructor(true).setPublic();
-        ctor.addParameter(GENERIC_VAL, "initialValue");
-        ctor.addParameter(GENERIC_VAL, "defaultValue");
+        ctor.addParameter(GENERIC_VAL, INITIAL_VALUE);
+        ctor.addParameter(GENERIC_VAL, DEFAULT_VALUE);
         ctor.addTypeVariable("P");
         ctor.addParameter("Class<P>", "elementPropertyType");
         ctor.addParameter("SerializableBiFunction<" + GENERIC_TYPE + ", P, T>",
@@ -621,7 +629,7 @@ public class ComponentGenerator {
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
         }
-        ctor.getJavaDoc().setText("Constructs a new " + getGeneratedClassName(metadata.getTag()) + " component with the given arguments."
+        ctor.getJavaDoc().setText(CONSTRUCTOR_JAVADOC
                 + "\n@param initialValue the initial value to set to the value"
                 + "\n@param defaultValue the default value to use if the value isn't defined"
                 + "\n@param elementPropertyType the type of the element property"

@@ -705,7 +705,8 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinDatePickerLight component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -733,7 +734,8 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinDatePickerLight component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -752,7 +754,8 @@ public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDa
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinDatePickerLight component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value

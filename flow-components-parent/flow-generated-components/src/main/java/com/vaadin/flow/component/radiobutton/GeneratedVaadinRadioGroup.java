@@ -107,7 +107,8 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinRadioGroup component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -135,7 +136,8 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinRadioGroup component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -154,7 +156,8 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinRadioGroup component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value

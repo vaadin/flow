@@ -287,7 +287,8 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinCheckbox component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -315,7 +316,8 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinCheckbox component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -334,7 +336,8 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinCheckbox component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value

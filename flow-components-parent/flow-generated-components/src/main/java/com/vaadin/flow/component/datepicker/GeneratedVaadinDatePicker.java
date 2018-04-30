@@ -1101,7 +1101,8 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinDatePicker component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -1129,7 +1130,8 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinDatePicker component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -1148,7 +1150,8 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinDatePicker component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value

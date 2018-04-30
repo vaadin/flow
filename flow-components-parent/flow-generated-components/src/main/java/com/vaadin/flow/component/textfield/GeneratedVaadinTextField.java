@@ -926,7 +926,8 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinTextField component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -954,7 +955,8 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinTextField component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -973,7 +975,8 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinTextField component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value

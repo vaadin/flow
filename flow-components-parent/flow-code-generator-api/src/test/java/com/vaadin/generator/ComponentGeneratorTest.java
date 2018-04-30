@@ -1008,6 +1008,7 @@ public class ComponentGeneratorTest {
         Assert.assertThat(generated, CoreMatchers.containsString(
                 "InvalidChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>"));
     }
+
     @Test
     public void checkedRemapedValueComponents_HaveAppropriateConstructors() {
         componentMetadata = new ComponentMetadata();
@@ -1047,6 +1048,25 @@ public class ComponentGeneratorTest {
                 CoreMatchers.not(CoreMatchers.containsString("getChecked")));
         Assert.assertThat(generated,
                 CoreMatchers.not(CoreMatchers.containsString("getChecked")));
+
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "public <P> GeneratedVaadinCheckbox(T initialValue, T defaultValue,"));
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "Class<P> elementPropertyType,"));
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "SerializableBiFunction<R, P, T> presentationToModel,"));
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "SerializableBiFunction<R, T, P> modelToPresentation) {"));
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "super(\"checked\", defaultValue, elementPropertyType, presentationToModel,"));
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "modelToPresentation);"));
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "if (initialValue != null) {"));
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "setModelValue(initialValue, false);"));
+        Assert.assertThat(generated, CoreMatchers.containsString(
+                "setPresentationValue(initialValue);"));
     }
 
 

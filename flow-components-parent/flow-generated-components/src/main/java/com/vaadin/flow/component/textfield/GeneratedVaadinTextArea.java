@@ -808,7 +808,8 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinTextArea component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -836,7 +837,8 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinTextArea component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
@@ -855,7 +857,8 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
     }
 
     /**
-     * Constructor.
+     * Constructs a new GeneratedVaadinTextArea component with the given
+     * arguments.
      * 
      * @param initialValue
      *            the initial value to set to the value
