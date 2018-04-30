@@ -233,12 +233,12 @@ public abstract class NodeMap extends NodeFeature {
      *            the key for which to remove the value
      * @return the removed value, <code>null</code> if no value was removed
      */
-    protected Object remove(String key) {
+    protected Serializable remove(String key) {
         setChanged(key);
         if (values == null) {
             return null;
         }
-        Object oldValue = values.remove(key);
+        Serializable oldValue = values.remove(key);
         detatchPotentialChild(oldValue);
         if (values.isEmpty()) {
             values = null;
