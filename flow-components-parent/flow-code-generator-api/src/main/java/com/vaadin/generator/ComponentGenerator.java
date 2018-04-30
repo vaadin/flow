@@ -575,7 +575,7 @@ public class ComponentGenerator {
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
         }
-        ctor.getJavaDoc().setText("Constructor."
+        ctor.getJavaDoc().setText("Constructs a new " + getGeneratedClassName(metadata.getTag()) + " component with the given arguments."
                 + "\n@param initialValue the initial value to set to the value"
                 + "\n@param defaultValue the default value to use if the value isn't defined"
                 + "\n@param elementPropertyType the type of the element property"
@@ -597,7 +597,7 @@ public class ComponentGenerator {
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
         }
-        ctor.getJavaDoc().setText("Constructor."
+        ctor.getJavaDoc().setText("Constructs a new " + getGeneratedClassName(metadata.getTag()) + " component with the given arguments."
                 + "\n@param initialValue the initial value to set to the value"
                 + "\n@param defaultValue the default value to use if the value isn't defined"
                 + "\n@param acceptNullValues whether <code>null</code> is accepted as a model value");
@@ -621,7 +621,7 @@ public class ComponentGenerator {
                     + "setModelValue(initialValue, false);"
                     + "setPresentationValue(initialValue);}");
         }
-        ctor.getJavaDoc().setText("Constructor."
+        ctor.getJavaDoc().setText("Constructs a new " + getGeneratedClassName(metadata.getTag()) + " component with the given arguments."
                 + "\n@param initialValue the initial value to set to the value"
                 + "\n@param defaultValue the default value to use if the value isn't defined"
                 + "\n@param elementPropertyType the type of the element property"
