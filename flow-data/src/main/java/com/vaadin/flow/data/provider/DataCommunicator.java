@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -320,8 +321,35 @@ public class DataCommunicator<T> implements Serializable {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
-        return getDataProvider().fetch(new Query(offset, limit, backEndSorting,
-                inMemorySorting, filter));
+        AtomicInteger size = new AtomicInteger();
+        QueryTrace query = new QueryTrace(offset, limit, backEndSorting,
+                inMemorySorting, filter);
+        Stream stream = getDataProvider().fetch(query);
+        stream = stream.peek(item -> {
+            if (size.incrementAndGet() > limit) {
+                throw new IllegalStateException(String.format(
+                        "The number of items returned by "
+                                + "the data provider exceeds the limit specified by the query (%d).",
+                        limit));
+            }
+        });
+
+        if (!query.isLimitCalled()) {
+            throw new IllegalStateException(
+                    getInvalidContractMessage("getLimit"));
+        }
+        if (!query.isOffsetCalled()) {
+            throw new IllegalStateException(
+                    getInvalidContractMessage("getOffset"));
+        }
+        return stream;
+    }
+
+    private String getInvalidContractMessage(String method) {
+        return String.format("The data provider hasn't ever called %s() "
+                + "method on the provided query. "
+                + "It means that the the data provider breaks the contract "
+                + "and the returned stream contains unxpected data.", method);
     }
 
     private void handleAttach() {
