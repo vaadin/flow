@@ -81,7 +81,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxLightElement#4.0.0",
+        "WebComponent: Vaadin.ComboBoxLightElement#4.0.1",
         "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-light.html")
