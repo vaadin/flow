@@ -1430,10 +1430,6 @@ public class ComponentGenerator {
 
         // verify whether the HasValue interface is implemented.
         if ("value-changed".equals(eventJavaApiName) && hasValue) {
-            if (!eventJavaApiName.equals(event.getName())) {
-                overrideHasValueGetClientValuePropertyName(javaClass, event
-                        .getName().replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""));
-            }
             return;
         }
 
@@ -1490,15 +1486,6 @@ public class ComponentGenerator {
             method.addAnnotation(SuppressWarnings.class).setStringArrayValue(
                     new String[] { "rawtypes", "unchecked" });
         }
-    }
-
-    private void overrideHasValueGetClientValuePropertyName(
-            JavaClassSource javaClass, String propertyName) {
-        MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("getClientValuePropertyName").setPublic()
-                .setReturnType(String.class);
-        method.addAnnotation(Override.class);
-        method.setBody(String.format("return \"%s\";", propertyName));
     }
 
     private JavaClassSource createEventListenerEventClass(

@@ -17,7 +17,6 @@
 package com.vaadin.flow.data.value;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
-import com.vaadin.flow.component.HasValue;
 
 /**
  * All possible value change modes that can be set for any component extending
@@ -29,8 +28,7 @@ import com.vaadin.flow.component.HasValue;
 public enum ValueChangeMode {
     /**
      * Syncs the value to the server each time it's changed on the client. The
-     * event that triggers the synchronization is defined by
-     * {@link HasValue#getClientPropertyChangeEventName()}.
+     * event that triggers the synchronization is defined by the component.
      */
     EAGER,
 
