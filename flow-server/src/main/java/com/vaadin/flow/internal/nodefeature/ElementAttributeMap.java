@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.internal.nodefeature;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -84,7 +85,7 @@ public class ElementAttributeMap extends NodeMap {
      *            the name of the attribute to remove
      */
     @Override
-    public Object remove(String attribute) {
+    public Serializable remove(String attribute) {
         unregisterResource(attribute);
         return super.remove(attribute);
     }
