@@ -193,8 +193,11 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    protected Object remove(String key) {
-        Object oldValue = super.remove(key);
+    protected Serializable remove(String key) {
+        Serializable oldValue = super.remove(key);
+
+        fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue,
+                true));
 
         setFilterIfMapNode(oldValue, () -> null);
 

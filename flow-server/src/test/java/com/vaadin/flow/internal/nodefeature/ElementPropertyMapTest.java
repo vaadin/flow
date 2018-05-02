@@ -44,6 +44,28 @@ public class ElementPropertyMapTest {
     }
 
     @Test
+    public void removeProperty_fireEvent_listenerIsNotNotified() {
+        ElementPropertyMap map = createSimplePropertyMap();
+
+        map.setProperty("foo", "bar");
+
+        AtomicReference<PropertyChangeEvent> event = new AtomicReference<>();
+        PropertyChangeListener listener = ev -> {
+            Assert.assertNull(event.get());
+            event.set(ev);
+        };
+        map.addPropertyChangeListener("foo", listener);
+
+        map.remove("foo");
+        Assert.assertNull(event.get().getValue());
+        Assert.assertEquals("bar", event.get().getOldValue());
+        Assert.assertEquals("foo", event.get().getPropertyName());
+        Assert.assertEquals(Element.get(map.getNode()),
+                event.get().getSource());
+        Assert.assertTrue(event.get().isUserOriginated());
+    }
+
+    @Test
     public void removePropertyChangeListener_fireEvent_listenerIsNotNotified() {
         ElementPropertyMap map = createSimplePropertyMap();
         PropertyChangeListener listener = ev -> {

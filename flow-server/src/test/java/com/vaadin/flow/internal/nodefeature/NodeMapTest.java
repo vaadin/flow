@@ -37,10 +37,11 @@ import com.vaadin.flow.server.Command;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
-// Using ElementProperties since it closely maps to the underlying map
-public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
+// Using ElementStylePropertyMap since it closely maps to the underlying map
+public class NodeMapTest
+        extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     private static final String KEY = "key";
-    private ElementPropertyMap nodeMap = createFeature();
+    private ElementStylePropertyMap nodeMap = createFeature();
 
     @Test
     public void testBasicFunctionality() {
