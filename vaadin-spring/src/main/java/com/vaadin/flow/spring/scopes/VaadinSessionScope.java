@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring.scopes;
 
-import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import com.vaadin.flow.server.VaadinSession;
@@ -25,8 +25,8 @@ import com.vaadin.flow.spring.SpringVaadinSession;
 /**
  * Implementation of Spring's
  * {@link org.springframework.beans.factory.config.Scope} that binds the beans
- * to the current {@link com.vaadin.flow.server.VaadinSession} (as opposed to the
- * current Servlet session). Registered by default as the scope "
+ * to the current {@link com.vaadin.flow.server.VaadinSession} (as opposed to
+ * the current Servlet session). Registered by default as the scope "
  * {@value #VAADIN_SESSION_SCOPE_NAME}".
  *
  * @see com.vaadin.flow.spring.annotation.VaadinSessionScope
@@ -70,8 +70,10 @@ public class VaadinSessionScope extends AbstractScope {
 
     @Override
     public void postProcessBeanFactory(
-            ConfigurableListableBeanFactory beanFactory) throws BeansException {
+            ConfigurableListableBeanFactory beanFactory) {
         beanFactory.registerScope(VAADIN_SESSION_SCOPE_NAME, this);
+        ObjectFactory<VaadinSession> factory = this::getVaadinSession;
+        beanFactory.registerResolvableDependency(VaadinSession.class, factory);
     }
 
     @Override

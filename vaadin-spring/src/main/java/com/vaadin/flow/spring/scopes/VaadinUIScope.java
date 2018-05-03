@@ -18,7 +18,7 @@ package com.vaadin.flow.spring.scopes;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import com.vaadin.flow.component.ComponentEventListener;
@@ -104,8 +104,10 @@ public class VaadinUIScope extends AbstractScope {
 
     @Override
     public void postProcessBeanFactory(
-            ConfigurableListableBeanFactory beanFactory) throws BeansException {
+            ConfigurableListableBeanFactory beanFactory) {
         beanFactory.registerScope(VAADIN_UI_SCOPE_NAME, this);
+        ObjectFactory<UI> factory = this::getUI;
+        beanFactory.registerResolvableDependency(UI.class, factory);
     }
 
     @Override
