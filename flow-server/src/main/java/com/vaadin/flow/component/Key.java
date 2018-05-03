@@ -15,417 +15,1771 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 /**
- * Keyboard keys.
+ * An interface to represent keyboard keys.
+ * <p>
+ * See
+ * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
  */
-public class Key {
+@FunctionalInterface
+public interface Key extends Serializable {
 
     /**
-     * String for "<code>Cancel</code>" key.
+     * The user agent wasn't able to map the event's virtual keycode to a
+     * specific key value. This can happen due to hardware or software
+     * constraints, or because of constraints around the platform on which the
+     * user agent is running.
      */
-    public static final String CANCEL = "Cancel";
+    static Key UNIDENTIFIED = Key.of("Unidentified");
 
     /**
-     * String for "<code>Help</code>" key.
+     * The <kbd>Alt</kbd> (Alternative) key.
      */
-    public static final String HELP = "Help";
+    static Key ALT = Key.of("Alt");
 
     /**
-     * String for "<code>Backspace</code>" key.
+     * The <kbd>AltGr</kbd> or <kbd>AltGraph</kbd> (Alternate Graphics) key.
+     * Enables the ISO Level 3 shift modifier (where <kbd>Shift</kbd> is the
+     * level 2 modifier).
      */
-    public static final String BACKSPACE = "Backspace";
+    static Key ALT_GRAPH = Key.of("AltGraph");
 
     /**
-     * String for "<code>Tab</code>" key.
+     * The <kbd>Caps Lock</kbd> key. Toggles the capital character lock on and
+     * off for subsequent input.
      */
-    public static final String TAB = "Tab";
+    static Key CAPS_LOCK = Key.of("CapsLock");
 
     /**
-     * String for "<code>Clear</code>" key.
+     * The <kbd>Control</kbd>, <kbd>Ctrl</kbd>, or <kbd>Ctl</kbd> key. Allows
+     * typing control characters.
      */
-    public static final String CLEAR = "Clear";
+    static Key CONTROL = Key.of("Control");
 
     /**
-     * String for "<code>Enter</code>" key.
+     * The <kbd>Fn</kbd> (Function modifier) key. Used to allow generating
+     * function key (<kbd>F1</kbd>-<kbd>F15</kbd>, for instance) characters on
+     * keyboards without a dedicated function key area. Often handled in
+     * hardware so that events aren't generated for this key.
      */
-    public static final String ENTER = "Enter";
+    static Key FN = Key.of("Fn");
 
     /**
-     * String for "<code>Shift</code>" key.
+     * The <kbd>FnLock</kbd> or <kbd>F-Lock</kbd> (Function Lock) key.Toggles
+     * the function key mode described by "Fn" on and off. Often handled in
+     * hardware so that events aren't generated for this key.
      */
-    public static final String SHIFT = "Shift";
+    static Key FN_LOCK = Key.of("FnLock");
 
     /**
-     * String for "<code>Control</code>" key.
+     * The <kbd>Hyper</kbd> key.
      */
-    public static final String CONTROL = "Control";
+    static Key HYPER = Key.of("Hyper");
 
     /**
-     * String for "<code>Alt</code>" key.
+     * The <kbd>Meta</kbd> key. Allows issuing special command inputs. This is
+     * the <kbd>Windows</kbd> logo key, or the <kbd>Command</kbd> or
+     * <kbd>⌘</kbd> key on Mac keyboards.
      */
-    public static final String ALT = "Alt";
+    static Key META = Key.of("Meta");
 
     /**
-     * String for "<code>Pause</code>" key.
+     * The <kbd>NumLock</kbd> (Number Lock) key. Toggles the numeric keypad
+     * between number entry some other mode (often directional arrows).
      */
-    public static final String PAUSE = "Pause";
+    static Key NUM_LOCK = Key.of("NumLock");
 
     /**
-     * String for "<code>CapsLock</code>" key.
+     * The <kbd>Scroll Lock</kbd> key. Toggles beteen scrolling and cursor
+     * movement modes.
      */
-    public static final String CAPS_LOCK = "CapsLock";
+    static Key SCROLL_LOCK = Key.of("ScrollLock");
 
     /**
-     * String for "<code>Escape</code>" key.
+     * The <kbd>Shift</kbd> key. Modifies keystrokes to allow typing upper (or
+     * other) case letters, and to support typing punctuation and other special
+     * characters.
      */
-    public static final String ESCAPE = "Escape";
+    static Key SHIFT = Key.of("Shift");
 
     /**
-     * String for "<code>Convert</code>" key.
+     * The <kbd>Super</kbd> key.
      */
-    public static final String CONVERT = "Convert";
+    static Key SUPER = Key.of("Super");
 
     /**
-     * String for "<code>NonConvert</code>" key.
+     * The <kbd>Symbol</kbd> modifier key (found on certain virtual keyboards).
      */
-    public static final String NON_CONVERT = "NonConvert";
+    static Key SYMBOL = Key.of("Symbol");
 
     /**
-     * String for "<code>Accept</code>" key.
+     * The <kbd>Symbol Lock</kbd> key.
      */
-    public static final String ACCEPT = "Accept";
+    static Key SYMBOL_LOCK = Key.of("SymbolLock");
 
     /**
-     * String for "<code>ModeChange</code>" key.
+     * The <kbd>Enter</kbd> or <kbd>↵</kbd> key (sometimes labeled
+     * <kbd>Return</kbd>).
      */
-    public static final String MODE_CHANGE = "ModeChange";
+    static Key ENTER = Key.of("Enter");
 
     /**
-     * String for " " (space) key.
+     * The Horizontal Tab key, <kbd>Tab</kbd>.
      */
-    public static final String SPACE = " ";
+    static Key TAB = Key.of("Tab");
 
     /**
-     * String for "<code>PageUp</code>" key.
+     * The space key, <kbd>Space Bar</kbd>.
      */
-    public static final String PAGE_UP = "PageUp";
+    static Key SPACE = Key.of(" ");
 
     /**
-     * String for "<code>PageDown</code>" key.
+     * The down arrow key.
      */
-    public static final String PAGE_DOWN = "PageDown";
+    static Key ARROW_DOWN = Key.of("ArrowDown");
 
     /**
-     * String for "<code>End</code>" key.
+     * The left arrow key.
      */
-    public static final String END = "End";
+    static Key ARROW_LEFT = Key.of("ArrowLeft");
 
     /**
-     * String for "<code>Home</code>" key.
+     * The right arrow key.
      */
-    public static final String HOME = "Home";
+    static Key ARROW_RIGHT = Key.of("ArrowRight");
 
     /**
-     * String for "<code>ArrowLeft</code>" key.
+     * The up arrow key.
      */
-    public static final String ARROW_LEFT = "ArrowLeft";
+    static Key ARROW_UP = Key.of("ArrowUp");
 
     /**
-     * String for "<code>ArrowUp</code>" key.
+     * The <kbd>End</kbd> key. Moves to the end of content.
      */
-    public static final String ARROW_UP = "ArrowUp";
+    static Key END = Key.of("End");
 
     /**
-     * String for "<code>ArrowRight</code>" key.
+     * The <kbd>Home</kbd> key. Moves to the start of content.
      */
-    public static final String ARROW_RIGHT = "ArrowRight";
+    static Key HOME = Key.of("Home");
 
     /**
-     * String for "<code>ArrowDown</code>" key.
+     * The <kbd>Page Down</kbd> (or <kbd>PgDn</kbd>) key. Scrolls down or
+     * displays the next page of content.
      */
-    public static final String ARROW_DOWN = "ArrowDown";
+    static Key PAGE_DOWN = Key.of("PageDown");
 
     /**
-     * String for "<code>Select</code>" key.
+     * The <kbd>Page Up</kbd> (or <kbd>PgUp</kbd>) key. Scrolls up or displays
+     * the previous page of content.
      */
-    public static final String SELECT = "Select";
+    static Key PAGE_UP = Key.of("PageUp");
 
     /**
-     * String for "<code>Print</code>" key.
+     * The <kbd>Backspace</kbd> key. This key is labeled <kbd>Delete</kbd> on
+     * Mac keyboards.
      */
-    public static final String PRINT = "Print";
+    static Key BACKSPACE = Key.of("Backspace");
 
     /**
-     * String for "<code>Execute</code>" key.
+     * The <kbd>Clear</kbd> key. Removes the currently selected input.
      */
-    public static final String EXECUTE = "Execute";
+    static Key CLEAR = Key.of("Clear");
 
     /**
-     * String for "<code>PrintScreen</code>" key.
+     * The <kbd>Copy</kbd> key (on certain extended keyboards).
      */
-    public static final String PRINT_SCREEN = "PrintScreen";
+    static Key COPY = Key.of("Copy");
 
     /**
-     * String for "<code>Insert</code>" key.
+     * The Cursor Select key, <kbd>CrSel</kbd>.
      */
-    public static final String INSERT = "Insert";
+    static Key CR_SEL = Key.of("CrSel");
 
     /**
-     * String for "<code>Delete</code>" key.
+     * The <kbd>Cut</kbd> key (on certain extended keyboards).
      */
-    public static final String DELETE = "Delete";
+    static Key CUT = Key.of("Cut");
 
     /**
-     * String for "<code>0</code>" key.
+     * The Delete key, <kbd>Del</kbd>.
      */
-    public static final String ZERO = "0";
+    static Key DELETE = Key.of("Delete");
 
     /**
-     * String for "<code>1</code>" key.
+     * Erase to End of Field. Deletes all characters from the current cursor
+     * position to the end of the current field.
      */
-    public static final String ONE = "1";
+    static Key ERASE_EOF = Key.of("EraseEof");
 
     /**
-     * String for "<code>2</code>" key.
+     * The <kbd>ExSel</kbd> (Extend Selection) key.
      */
-    public static final String TWO = "2";
+    static Key EX_SEL = Key.of("ExSel");
 
     /**
-     * String for "<code>3</code>" key.
+     * The Insert key, <kbd>Ins</kbd>. Toggles&nbsp; between inserting and
+     * overwriting text.
      */
-    public static final String THREE = "3";
+    static Key INSERT = Key.of("Insert");
 
     /**
-     * String for "<code>4</code>" key.
+     * Paste from the clipboard.
      */
-    public static final String FOUR = "4";
+    static Key PASTE = Key.of("Paste");
 
     /**
-     * String for "<code>5</code>" key.
+     * Redo the last action.
      */
-    public static final String FIVE = "5";
+    static Key REDO = Key.of("Redo");
 
     /**
-     * String for "<code>6</code>" key.
+     * Undo the last action.
      */
-    public static final String SIX = "6";
+    static Key UNDO = Key.of("Undo");
 
     /**
-     * String for "<code>7</code>" key.
+     * The <kbd>Accept</kbd>, <kbd>Commit</kbd>, or <kbd>OK</kbd> key or button.
+     * Accepts the currently selected option or input method sequence
+     * conversion.
      */
-    public static final String SEVEN = "7";
+    static Key ACCEPT = Key.of("Accept");
 
     /**
-     * String for "<code>8</code>" key.
+     * The <kbd>Again</kbd> key. Redoes or repeats a previous action.
      */
-    public static final String EIGHT = "8";
+    static Key AGAIN = Key.of("Again");
 
     /**
-     * String for "<code>9</code>" key.
+     * The <kbd>Attn</kbd> (Attention) key.
      */
-    public static final String NINE = "9";
+    static Key ATTN = Key.of("Attn");
 
     /**
-     * String for "<code>)</code>" key.
+     * The <kbd>Cancel</kbd> key.
      */
-    public static final String PARENTHESIS_RIGHT = ")";
+    static Key CANCEL = Key.of("Cancel");
 
     /**
-     * String for "<code>!</code>" key.
+     * Shows the context menu. Typically found between the <kbd>Windows</kbd>
+     * (or <kbd>OS</kbd>) key and the <kbd>Control</kbd> key on the right side
+     * of the keyboard.
      */
-    public static final String EXCLAMATION_MARK = "!";
+    static Key CONTEXT_MENU = Key.of("ContextMenu");
 
     /**
-     * String for "<code>@</code>" key.
+     * The <kbd>Esc</kbd> (Escape) key. Typically used as an exit, cancel, or
+     * "escape this operation" button. Historically, the Escape character was
+     * used to signal the start of a special control sequence of characters
+     * called an "escape sequence."
      */
-    public static final String AT = "@";
+    static Key ESCAPE = Key.of("Escape");
 
     /**
-     * String for "<code>#</code>" key.
+     * The <kbd>Execute</kbd> key.
      */
-    public static final String HASH = "#";
+    static Key EXECUTE = Key.of("Execute");
 
     /**
-     * String for "<code>$</code>" key.
+     * The <kbd>Find</kbd> key. Opens an interface (typically a dialog box) for
+     * performing a find/search operation.
      */
-    public static final String DOLLAR = "$";
+    static Key FIND = Key.of("Find");
 
     /**
-     * String for "<code>%</code>" key.
+     * The <kbd>Finish</kbd> key.
      */
-    public static final String PERCENTAGE = "%";
+    static Key FINISH = Key.of("Finish");
 
     /**
-     * String for "<code>^</code>" key.
+     * The <kbd>Help</kbd> key. Opens or toggles the display of help
+     * information.
      */
-    public static final String CARET = "^";
+    static Key HELP = Key.of("Help");
 
     /**
-     * String for "<code>&amp;</code>" key.
+     * The <kbd>Pause</kbd> key. Pauses the current application or state, if
+     * applicable. Note: This shouldn't be confused with the
+     * <code>"MediaPause"</code> key value, which is used for media controllers,
+     * rather than to control applications and processes.
+     *
      */
-    public static final String AMPERSAND = "&";
+    static Key PAUSE = Key.of("Pause");
 
     /**
-     * String for "<code>(</code>" key.
+     * The <kbd>Play</kbd> key. Resumes a previously paused application, if
+     * applicable. Note: This shouldn't be confused with the
+     * <code>"MediaPlay"</code> key value, which is used for media controllers,
+     * rather than to control applications and processes.
+     *
      */
-    public static final String PARENTHESIS_LEFT = "(";
+    static Key PLAY = Key.of("Play");
 
     /**
-     * String for "<code>OS</code>" key.
+     * The <kbd>Props</kbd> (Properties) key.
      */
-    public static final String OS = "OS";
+    static Key PROPS = Key.of("Props");
 
     /**
-     * String for "<code>ContextMenu</code>" key.
+     * The <kbd>Select</kbd> key.
      */
-    public static final String CONTEXT_MENU = "ContextMenu";
+    static Key SELECT = Key.of("Select");
 
     /**
-     * String for "<code>*</code>" key.
+     * The <kbd>ZoomIn</kbd> key.
      */
-    public static final String ASTERISK = "*";
+    static Key ZOOM_IN = Key.of("ZoomIn");
 
     /**
-     * String for "<code>+</code>" key.
+     * The <kbd>ZoomOut</kbd> key.
      */
-    public static final String PLUS = "+";
+    static Key ZOOM_OUT = Key.of("ZoomOut");
 
     /**
-     * String for "<code>-</code>" key.
+     * The Brightness Down key. Typically used to reduce the brightness of the
+     * display.
      */
-    public static final String MINUS = "-";
+    static Key BRIGHTNESS_DOWN = Key.of("BrightnessDown");
 
     /**
-     * String for "<code>.</code>" key.
+     * The Brightness Up key. Typically increases the brightness of the display.
      */
-    public static final String DOT = ".";
+    static Key BRIGHTNESS_UP = Key.of("BrightnessUp");
 
     /**
-     * String for "<code>/</code>" key.
+     * The <kbd>Eject</kbd> key. Ejects removable media (or toggles an optical
+     * storage device tray open and closed).
      */
-    public static final String SLASH = "/";
+    static Key EJECT = Key.of("Eject");
 
     /**
-     * String for "<code>NumLock</code>" key.
+     * The <kbd>LogOff</kbd> key.
      */
-    public static final String NUM_LOCK = "NumLock";
+    static Key LOG_OFF = Key.of("LogOff");
 
     /**
-     * String for "<code>ScrollLock</code>" key.
+     * The <kbd>Power</kbd> button or key, to toggle power on and off. Note: Not
+     * all systems pass this key through to to the user agent.
+     *
      */
-    public static final String SCROLL_LOCK = "ScrollLock";
+    static Key POWER = Key.of("Power");
 
     /**
-     * String for "<code>VolumeMute</code>" key.
+     * The <kbd>PowerOff</kbd> or <kbd>PowerDown</kbd> key. Shuts off the
+     * system.
      */
-    public static final String VOLUME_MUTE = "VolumeMute";
+    static Key POWER_OFF = Key.of("PowerOff");
 
     /**
-     * String for "<code>VolumeDown</code>" key.
+     * The <kbd>PrintScreen</kbd> or <kbd>PrtScr</kbd> key. Sometimes
+     * <kbd>SnapShot</kbd>. Captures the screen and prints it or saves it to
+     * disk.
      */
-    public static final String VOLUME_DOWN = "VolumeDown";
+    static Key PRINT_SCREEN = Key.of("PrintScreen");
 
     /**
-     * String for "<code>VolumeUp</code>" key.
+     * The <kbd>Hibernate</kbd> key. This saves the state of the computer to
+     * disk and then shuts down; the computer can be returned to its previous
+     * state by restoring the saved state information.
      */
-    public static final String VOLUME_UP = "VolumeUp";
+    static Key HIBERNATE = Key.of("Hibernate");
 
     /**
-     * String for "<code>;</code>" key.
+     * The <kbd>Standby</kbd> key; also known as <kbd>Suspend</kbd> or
+     * <kbd>Sleep</kbd>. This turns off the display and puts the computer in a
+     * low power consumption mode, without completely powering off.
      */
-    public static final String SEMICOLON = ";";
+    static Key STANDBY = Key.of("Standby");
 
     /**
-     * String for "<code>=</code>" key.
+     * The <kbd>WakeUp</kbd> key; used to wake the computer from the hibernation
+     * or standby modes.
      */
-    public static final String EQUAL = "=";
+    static Key WAKE_UP = Key.of("WakeUp");
 
     /**
-     * String for "<code>,</code>" key.
+     * The <kbd>All Candidates</kbd> key, which starts multi-candidate mode, in
+     * which multiple candidates are displayed for the ongoing input.
      */
-    public static final String COMMA = ",";
+    static Key ALL_CANDIDATES = Key.of("AllCandidates");
 
     /**
-     * String for "<code>`</code>" key.
+     * The <kbd>Alphanumeric</kbd> key.
      */
-    public static final String BACK_TICK = "`";
+    static Key ALPHANUMERIC = Key.of("Alphanumeric");
 
     /**
-     * String for "<code>[</code>" key.
+     * The <kbd>Code Input</kbd> key, which enables code input mode, which lets
+     * the user enter characters by typing their code points (their Unicode
+     * character numbers, typically).
      */
-    public static final String SQUARE_BRACKET_LEFT = "[";
+    static Key CODE_INPUT = Key.of("CodeInput");
 
     /**
-     * String for "<code>\</code>" key.
+     * The <kbd>Compose</kbd> key.
      */
-    public static final String BACKSLASH = "\\";
+    static Key COMPOSE = Key.of("Compose");
 
     /**
-     * String for "<code>]</code>" key.
+     * The <kbd>Convert</kbd> key, which instructs the IME to convert the
+     * current input method sequence into the resulting character.
      */
-    public static final String SQUARE_BRACKET_RIGHT = "]";
+    static Key CONVERT = Key.of("Convert");
 
     /**
-     * String for "<code>"</code>" key.
+     * A dead "combining" key; that is, a key which is used in tandem with other
+     * keys to generate accented and other modified characters.
      */
-    public static final String QUOTE = "\"";
+    static Key DEAD = Key.of("Dead");
 
     /**
-     * String for "<code>:</code>" key.
+     * The <kbd>Final</kbd> (Final Mode) key is used on some Asian keyboards to
+     * enter final mode when using IMEs.
      */
-    public static final String COLON = ":";
+    static Key FINAL_MODE = Key.of("FinalMode");
 
     /**
-     * String for "<code>&lt;</code>" key.
+     * Switches to the first character group on an
+     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995" class="external
+     * external-icon" rel="noopener">ISO/IEC 9995 keyboard</a>. Each key may
+     * have multiple groups of characters, each in its own column. Pressing this
+     * key instructs the device to interpret keypresses as coming from the first
+     * column on subsequent keystrokes.
      */
-    public static final String ANGLE_BRACKET_LEFT = "<";
+    static Key GROUP_FIRST = Key.of("GroupFirst");
 
     /**
-     * String for "<code>_</code>" key.
+     * Switches to the last character group on an
+     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995" class="external
+     * external-icon" rel="noopener">ISO/IEC 9995 keyboard</a>.
      */
-    public static final String UNDERSCORE = "_";
+    static Key GROUP_LAST = Key.of("GroupLast");
 
     /**
-     * String for "<code>&gt;</code>" key.
+     * Switches to the next character group on an
+     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995" class="external
+     * external-icon" rel="noopener">ISO/IEC 9995 keyboard</a>.
      */
-    public static final String ANGLE_BRACKET_RIGHT = ">";
+    static Key GROUP_NEXT = Key.of("GroupNext");
 
     /**
-     * String for "<code>?</code>" key.
+     * Switches to the previous character group on an
+     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995" class="external
+     * external-icon" rel="noopener">ISO/IEC 9995 keyboard</a>.
      */
-    public static final String QUESTION_MARK = "?";
+    static Key GROUP_PREVIOUS = Key.of("GroupPrevious");
 
     /**
-     * String for "<code>~</code>" key.
+     * The Mode Change key. Toggles or cycles among input modes of IMEs.
      */
-    public static final String TILDE = "~";
+    static Key MODE_CHANGE = Key.of("ModeChange");
 
     /**
-     * String for "<code>{</code>" key.
+     * The Next Candidate function key. Selects the next possible match for the
+     * ongoing input.
      */
-    public static final String CURLY_BRACKET_LEFT = "{";
+    static Key NEXT_CANDIDATE = Key.of("NextCandidate");
 
     /**
-     * String for "<code>|</code>" key.
+     * The <kbd>NonConvert</kbd> ("Don't convert") key. This accepts the current
+     * input method sequence without running conversion when using an IME.
      */
-    public static final String PIPE = "|";
+    static Key NON_CONVERT = Key.of("NonConvert");
 
     /**
-     * String for "<code>}</code>" key.
+     * The Previous Candidate key. Selects the previous possible match for the
+     * ongoing input.
      */
-    public static final String CURLY_BRACKET_RIGHT = "}";
+    static Key PREVIOUS_CANDIDATE = Key.of("PreviousCandidate");
 
     /**
-     * String for "<code>Meta</code>" key.
+     * The <kbd>Process</kbd> key. Instructs the IME to process the conversion.
      */
-    public static final String META = "Meta";
+    static Key PROCESS = Key.of("Process");
 
     /**
-     * String for "<code>AltGraph</code>" key.
+     * The Single Candidate key. Enables single candidate mode (as opposed to
+     * multi-candidate mode); in this mode, only one candidate is displayed at a
+     * time.
      */
-    public static final String ALT_GRAPH = "AltGraph";
+    static Key SINGLE_CANDIDATE = Key.of("SingleCandidate");
 
-    private Key() {
+    /**
+     * The <kbd>Hangul</kbd> (Korean character set) mode key, which toggles
+     * between Hangul and English entry modes.
+     */
+    static Key HANGUL_MODE = Key.of("HangulMode");
+
+    /**
+     * Selects the Hanja mode, for converting Hangul characters to the more
+     * specific Hanja characters.
+     */
+    static Key HANJA_MODE = Key.of("HanjaMode");
+
+    /**
+     * Selects the Junja mode, in which Korean is represented using single-byte
+     * Latin characters.
+     */
+    static Key JUNJA_MODE = Key.of("JunjaMode");
+
+    /**
+     * The <kbd>Eisu</kbd> key. This key's purpose is defined by the IME, but
+     * may be used to close the IME.
+     */
+    static Key EISU = Key.of("Eisu");
+
+    /**
+     * The <kbd>Hankaku</kbd> (half-width characters) key.
+     */
+    static Key HANKAKU = Key.of("Hankaku");
+
+    /**
+     * The <kbd>Hiragana</kbd> key; selects Kana characters mode.
+     */
+    static Key HIRAGANA = Key.of("Hiragana");
+
+    /**
+     * Toggles between the Hiragana and Katakana writing systems.
+     */
+    static Key HIRAGANA_KATAKANA = Key.of("HiraganaKatakana");
+
+    /**
+     * The <kbd>Kana Mode</kbd> (Kana Lock) key.
+     */
+    static Key KANA_MODE = Key.of("KanaMode");
+
+    /**
+     * The <kbd>Kanji Mode</kbd> key. Enables entering Japanese text using the
+     * ideographic characters of Chinese origin.
+     */
+    static Key KANJI_MODE = Key.of("KanjiMode");
+
+    /**
+     * The <kbd>Katakana</kbd> key.
+     */
+    static Key KATAKANA = Key.of("Katakana");
+
+    /**
+     * The <kbd>Romaji</kbd> key; selects the Roman character set.
+     */
+    static Key ROMAJI = Key.of("Romaji");
+
+    /**
+     * The <kbd>Zenkaku</kbd> (full width) characters key.
+     */
+    static Key ZENKAKU = Key.of("Zenkaku");
+
+    /**
+     * The <kbd>Zenkaku/Hankaku</kbd> (full width/half width) toggle key.
+     */
+    static Key ZENKAKU_HANAKU = Key.of("ZenkakuHanaku");
+
+    /**
+     * The first general-purpose function key, <kbd>F1</kbd>.
+     */
+    static Key F1 = Key.of("F1");
+
+    /**
+     * The <kbd>F2</kbd> key.
+     */
+    static Key F2 = Key.of("F2");
+
+    /**
+     * The <kbd>F3</kbd> key.
+     */
+    static Key F3 = Key.of("F3");
+
+    /**
+     * The <kbd>F4</kbd> key.
+     */
+    static Key F4 = Key.of("F4");
+
+    /**
+     * The <kbd>F5</kbd> key.
+     */
+    static Key F5 = Key.of("F5");
+
+    /**
+     * The <kbd>F6</kbd> key.
+     */
+    static Key F6 = Key.of("F6");
+
+    /**
+     * The <kbd>F7</kbd> key.
+     */
+    static Key F7 = Key.of("F7");
+
+    /**
+     * The <kbd>F8</kbd> key.
+     */
+    static Key F8 = Key.of("F8");
+
+    /**
+     * The <kbd>F9</kbd> key.
+     */
+    static Key F9 = Key.of("F9");
+
+    /**
+     * The <kbd>F10</kbd> key.
+     */
+    static Key F10 = Key.of("F10");
+
+    /**
+     * The <kbd>F11</kbd> key.
+     */
+    static Key F11 = Key.of("F11");
+
+    /**
+     * The <kbd>F12</kbd> key.
+     */
+    static Key F12 = Key.of("F12");
+
+    /**
+     * The <kbd>F13</kbd> key.
+     */
+    static Key F13 = Key.of("F13");
+
+    /**
+     * The <kbd>F14</kbd> key.
+     */
+    static Key F14 = Key.of("F14");
+
+    /**
+     * The <kbd>F15</kbd> key.
+     */
+    static Key F15 = Key.of("F15");
+
+    /**
+     * The <kbd>F16</kbd> key.
+     */
+    static Key F16 = Key.of("F16");
+
+    /**
+     * The <kbd>F17</kbd> key.
+     */
+    static Key F17 = Key.of("F17");
+
+    /**
+     * The <kbd>F18</kbd> key.
+     */
+    static Key F18 = Key.of("F18");
+
+    /**
+     * The <kbd>F19</kbd> key.
+     */
+    static Key F19 = Key.of("F19");
+
+    /**
+     * The <kbd>F20</kbd> key.
+     */
+    static Key F20 = Key.of("F20");
+
+    /**
+     * The first general-purpose virtual function key.
+     */
+    static Key SOFT1 = Key.of("Soft1");
+
+    /**
+     * The second general-purpose virtual function key.
+     */
+    static Key SOFT2 = Key.of("Soft2");
+
+    /**
+     * The third general-purpose virtual function key.
+     */
+    static Key SOFT3 = Key.of("Soft3");
+
+    /**
+     * The fourth general-purpose virtual function key.
+     */
+    static Key SOFT4 = Key.of("Soft4");
+
+    /**
+     * Presents a list of recently-used applications which lets the user change
+     * apps quickly.
+     */
+    static Key APP_SWITCH = Key.of("AppSwitch");
+
+    /**
+     * The <kbd>Call</kbd> key; dials the number which has been entered.
+     */
+    static Key CALL = Key.of("Call");
+
+    /**
+     * The <kbd>Camera</kbd> key; activates the camera.
+     */
+    static Key CAMERA = Key.of("Camera");
+
+    /**
+     * The <kbd>Focus</kbd> key; focuses the camera.
+     */
+    static Key CAMERA_FOCUS = Key.of("CameraFocus");
+
+    /**
+     * The <kbd>End Call</kbd> or <kbd>Hang Up</kbd> button.
+     */
+    static Key END_CALL = Key.of("EndCall");
+
+    /**
+     * The <kbd>Back</kbd> button.
+     */
+    static Key GO_BACK = Key.of("GoBack");
+
+    /**
+     * The <kbd>Home</kbd> button, which takes the user to the phone's main
+     * screen (usually an application launcher).
+     */
+    static Key GO_HOME = Key.of("GoHome");
+
+    /**
+     * The <kbd>Headset Hook</kbd> key. This is typically actually a button on
+     * the headset which is used to hang up calls and play or pause media.
+     */
+    static Key HEADSET_HOOK = Key.of("HeadsetHook");
+
+    /**
+     * The <kbd>Redial</kbd> button, which redials the last-called number.
+     */
+    static Key LAST_NUMBER_REDIAL = Key.of("LastNumberRedial");
+
+    /**
+     * The <kbd>Notification</kbd> key.
+     */
+    static Key NOTIFICATION = Key.of("Notification");
+
+    /**
+     * A button which cycles among the notification modes: silent, vibrate,
+     * ring, and so forth.
+     */
+    static Key MANNER_MODE = Key.of("MannerMode");
+
+    /**
+     * The <kbd>Voice Dial</kbd> key. Initiates voice dialing.
+     */
+    static Key VOICE_DIAL = Key.of("VoiceDial");
+
+    /**
+     * Switches to the previous channel.
+     */
+    static Key CHANNEL_DOWN = Key.of("ChannelDown");
+
+    /**
+     * Switches to the next channel.
+     */
+    static Key CHANNEL_UP = Key.of("ChannelUp");
+
+    /**
+     * Starts, continues, or increases the speed of fast forwarding the media.
+     */
+    static Key MEDIA_FAST_FORWARD = Key.of("MediaFastForward");
+
+    /**
+     * Pauses the currently playing media. Some older applications use simply
+     * "Pause" but this is not correct.
+     */
+    static Key MEDIA_PAUSE = Key.of("MediaPause");
+
+    /**
+     * Starts or continues playing media at normal speed, if not already doing
+     * so. Has no effect otherwise.
+     */
+    static Key MEDIA_PLAY = Key.of("MediaPlay");
+
+    /**
+     * Toggles between playing and pausing the current media.
+     */
+    static Key MEDIA_PLAY_PAUSE = Key.of("MediaPlayPause");
+
+    /**
+     * Starts or resumes recording media.
+     */
+    static Key MEDIA_RECORD = Key.of("MediaRecord");
+
+    /**
+     * Starts, continues, or increases the speed of rewinding the media.
+     */
+    static Key MEDIA_REWIND = Key.of("MediaRewind");
+
+    /**
+     * Stops the current media activity (such as playing, recording, pausing,
+     * forwarding, or rewinding). Has no effect if the media is currently
+     * stopped already.
+     */
+    static Key MEDIA_STOP = Key.of("MediaStop");
+
+    /**
+     * Seeks to the next media or program track.
+     */
+    static Key MEDIA_TRACK_NEXT = Key.of("MediaTrackNext");
+
+    /**
+     * Seeks to the previous media or program track.
+     */
+    static Key MEDIA_TRACK_PREVIOUS = Key.of("MediaTrackPrevious");
+
+    /**
+     * Adjusts audio balance toward the left.
+     */
+    static Key AUDIO_BALANCE_LEFT = Key.of("AudioBalanceLeft");
+
+    /**
+     * Adjusts audio balance twoard the right.
+     */
+    static Key AUDIO_BALANCE_RIGHT = Key.of("AudioBalanceRight");
+
+    /**
+     * Decreases the amount of bass.
+     */
+    static Key AUDIO_BASS_DOWN = Key.of("AudioBassDown");
+
+    /**
+     * Reduces bass boosting or cycles downward through bass boost modes or
+     * states.
+     */
+    static Key AUDIO_BASS_BOOST_DOWN = Key.of("AudioBassBoostDown");
+
+    /**
+     * Toggles bass boosting on and off.
+     */
+    static Key AUDIO_BASS_BOOST_TOGGLE = Key.of("AudioBassBoostToggle");
+
+    /**
+     * Increases the amount of bass boosting, or cycles upward through a set of
+     * bass boost modes or states.
+     */
+    static Key AUDIO_BASS_BOOST_UP = Key.of("AudioBassBoostUp");
+
+    /**
+     * Increases the amount of bass.
+     */
+    static Key AUDIO_BASS_UP = Key.of("AudioBassUp");
+
+    /**
+     * Adjusts the audio fader toward the front.
+     */
+    static Key AUDIO_FADER_FRONT = Key.of("AudioFaderFront");
+
+    /**
+     * Adjusts the audio fader toward the rear.
+     */
+    static Key AUDIO_FADER_REAR = Key.of("AudioFaderRear");
+
+    /**
+     * Selects the next available surround sound mode.
+     */
+    static Key AUDIO_SURROUND_MODE_NEXT = Key.of("AudioSurroundModeNext");
+
+    /**
+     * Decreases the amount of treble.
+     */
+    static Key AUDIO_TREBLE_DOWN = Key.of("AudioTrebleDown");
+
+    /**
+     * Increases the amount of treble.
+     */
+    static Key AUDIO_TREBLE_UP = Key.of("AudioTrebleUp");
+
+    /**
+     * Decreases the audio volume.
+     */
+    static Key AUDIO_VOLUME_DOWN = Key.of("AudioVolumeDown");
+
+    /**
+     * Mutes the audio.
+     */
+    static Key AUDIO_VOLUME_MUTE = Key.of("AudioVolumeMute");
+
+    /**
+     * Increases the audio volume.
+     */
+    static Key AUDIO_VOLUME_UP = Key.of("AudioVolumeUp");
+
+    /**
+     * Toggles the microphone on and off.
+     */
+    static Key MICROPHONE_TOGGLE = Key.of("MicrophoneToggle");
+
+    /**
+     * Decreases the microphone's input volume.
+     */
+    static Key MICROPHONE_VOLUME_DOWN = Key.of("MicrophoneVolumeDown");
+
+    /**
+     * Mutes the microphone input.
+     */
+    static Key MICROPHONE_VOLUME_MUTE = Key.of("MicrophoneVolumeMute");
+
+    /**
+     * Increases the microphone's input volume.
+     */
+    static Key MICROPHONE_VOLUME_UP = Key.of("MicrophoneVolumeUp");
+
+    /**
+     * Switches into TV viewing mode.
+     */
+    static Key TV = Key.of("TV");
+
+    /**
+     * Toggles 3D TV mode on and off.
+     */
+    static Key TV_3D_MODE = Key.of("TV3DMode");
+
+    /**
+     * Toggles between antenna and cable inputs.
+     */
+    static Key TV_ANTENNA_CABLE = Key.of("TVAntennaCable");
+
+    /**
+     * Toggles audio description mode on and off.
+     */
+    static Key TV_AUDIO_DESCRIPTION = Key.of("TVAudioDescription");
+
+    /**
+     * Decreases the audio description's mixing volume; reduces the volume of
+     * the audio descriptions relative to the program sound.
+     */
+    static Key TV_AUDIO_DESCRIPTION_MIX_DOWN = Key
+            .of("TVAudioDescriptionMixDown");
+
+    /**
+     * Increases the audio description's mixing volume; increases the volume of
+     * the audio descriptions relative to the program sound.
+     */
+    static Key TV_AUDIO_DESCRIPTION_MIX_UP = Key.of("TVAudioDescriptionMixUp");
+
+    /**
+     * Displays or hides the media contents available for playback (this may be
+     * a channel guide showing the currently airing programs, or a list of media
+     * files to play).
+     */
+    static Key TV_CONTENTS_MENU = Key.of("TVContentsMenu");
+
+    /**
+     * Displays or hides the TV's data service menu.
+     */
+    static Key TV_DATA_SERVICE = Key.of("TVDataService");
+
+    /**
+     * Cycles the input mode on an external TV.
+     */
+    static Key TV_INPUT = Key.of("TVInput");
+
+    /**
+     * Switches to the input "Component 1."
+     */
+    static Key TV_INPUT_COMPONENT1 = Key.of("TVInputComponent1");
+
+    /**
+     * Switches to the input "Component 2."
+     */
+    static Key TV_INPUT_COMPONENT2 = Key.of("TVInputComponent2");
+
+    /**
+     * Switches to the input "Composite 1."
+     */
+    static Key TV_INPUT_COMPOSITE1 = Key.of("TVInputComposite1");
+
+    /**
+     * Switches to the input "Composite 2."
+     */
+    static Key TV_INPUT_COMPOSITE2 = Key.of("TVInputComposite2");
+
+    /**
+     * Switches to the input "HDMI 1."
+     */
+    static Key TV_INPUT_HDMI1 = Key.of("TVInputHDMI1");
+
+    /**
+     * Switches to the input "HDMI 2."
+     */
+    static Key TV_INPUT_HDMI2 = Key.of("TVInputHDMI2");
+
+    /**
+     * Switches to the input "HDMI 3."
+     */
+    static Key TV_INPUT_HDMI3 = Key.of("TVInputHDMI3");
+
+    /**
+     * Switches to the input "HDMI 4."
+     */
+    static Key TV_INPUT_HDMI4 = Key.of("TVInputHDMI4");
+
+    /**
+     * Switches to the input "VGA 1."
+     */
+    static Key TV_INPUT_VGA1 = Key.of("TVInputVGA1");
+
+    /**
+     * The Media Context menu key.
+     */
+    static Key TV_MEDIA_CONTEXT = Key.of("TVMediaContext");
+
+    /**
+     * Toggle the TV's network connection on and off.
+     */
+    static Key TV_NETWORK = Key.of("TVNetwork");
+
+    /**
+     * Put the TV into number entry mode.
+     */
+    static Key TV_NUMBER_ENTRY = Key.of("TVNumberEntry");
+
+    /**
+     * The device's power button.
+     */
+    static Key TV_POWER = Key.of("TVPower");
+
+    /**
+     * Radio button.
+     */
+    static Key TV_RADIO_SERVICE = Key.of("TVRadioService");
+
+    /**
+     * Satellite button.
+     */
+    static Key TV_SATELLITE = Key.of("TVSatellite");
+
+    /**
+     * Broadcast Satellite button.
+     */
+    static Key TV_SATELLITE_BS = Key.of("TVSatelliteBS");
+
+    /**
+     * Communication Satellite button.
+     */
+    static Key TV_SATELLITE_CS = Key.of("TVSatelliteCS");
+
+    /**
+     * Toggles among available satellites.
+     */
+    static Key TV_SATELLITE_TOGGLE = Key.of("TVSatelliteToggle");
+
+    /**
+     * Selects analog terrestrial television service (analog cable or antenna
+     * reception).
+     */
+    static Key TV_TERRESTRIAL_ANALOG = Key.of("TVTerrestrialAnalog");
+
+    /**
+     * Selects digital terrestrial television service (digital cable or antenna
+     * reception).
+     */
+    static Key TV_TERRESTRIAL_DIGITAL = Key.of("TVTerrestrialDigital");
+
+    /**
+     * Timer programming button.
+     */
+    static Key TV_TIMER = Key.of("TVTimer");
+
+    /**
+     * Changes the input mode on an external audio/video receiver (AVR) unit.
+     */
+    static Key AVR_INPUT = Key.of("AVRInput");
+
+    /**
+     * Toggles the power on an external AVR unit.
+     */
+    static Key AVR_POWER = Key.of("AVRPower");
+
+    /**
+     * General-purpose media function key, color-coded red; this has index 0
+     * among the colored keys.
+     */
+    static Key COLOR_F0_RED = Key.of("ColorF0Red");
+
+    /**
+     * General-purpose media funciton key, color-coded green; this has index 1
+     * among the colored keys.
+     */
+    static Key COLOR_F1_GREEN = Key.of("ColorF1Green");
+
+    /**
+     * General-purpose media funciton key, color-coded yellow; this has index 2
+     * among the colored keys.
+     */
+    static Key COLOR_F2_YELLOW = Key.of("ColorF2Yellow");
+
+    /**
+     * General-purpose media funciton key, color-coded blue; this has index 3
+     * among the colored keys.
+     */
+    static Key COLOR_F3_BLUE = Key.of("ColorF3Blue");
+
+    /**
+     * General-purpose media funciton key, color-coded grey; this has index 4
+     * among the colored keys.
+     */
+    static Key COLOR_F4_GREY = Key.of("ColorF4Grey");
+
+    /**
+     * General-purpose media funciton key, color-coded brown; this has index 5
+     * among the colored keys.
+     */
+    static Key COLOR_F5_BROWN = Key.of("ColorF5Brown");
+
+    /**
+     * Toggles closed captioning on and off.
+     */
+    static Key CLOSED_CAPTION_TOGGLE = Key.of("ClosedCaptionToggle");
+
+    /**
+     * Adjusts the brightness of the device by toggling between two brightness
+     * levels <em>or</em> by cycling among multiple brightness levels.
+     */
+    static Key DIMMER = Key.of("Dimmer");
+
+    /**
+     * Cycles among video sources.
+     */
+    static Key DISPLAY_SWAP = Key.of("DisplaySwap");
+
+    /**
+     * Switches the input source to the Digital Video Recorder (DVR).
+     */
+    static Key DVR = Key.of("DVR");
+
+    /**
+     * The Exit button, which exits the curreent application or menu.
+     */
+    static Key EXIT = Key.of("Exit");
+
+    /**
+     * Clears the program or content stored in the first favorites list slot.
+     */
+    static Key FAVORITE_CLEAR0 = Key.of("FavoriteClear0");
+
+    /**
+     * Clears the program or content stored in the second favorites list slot.
+     */
+    static Key FAVORITE_CLEAR1 = Key.of("FavoriteClear1");
+
+    /**
+     * Clears the program or content stored in the third favorites list slot.
+     */
+    static Key FAVORITE_CLEAR2 = Key.of("FavoriteClear2");
+
+    /**
+     * Clears the program or content stored in the fourth favorites list slot.
+     */
+    static Key FAVORITE_CLEAR3 = Key.of("FavoriteClear3");
+
+    /**
+     * Selects (recalls) the program or content stored in the first favorites
+     * list slot.
+     */
+    static Key FAVORITE_RECALL0 = Key.of("FavoriteRecall0");
+
+    /**
+     * Selects (recalls) the program or content stored in the second favorites
+     * list slot.
+     */
+    static Key FAVORITE_RECALL1 = Key.of("FavoriteRecall1");
+
+    /**
+     * Selects (recalls) the program or content stored in the third favorites
+     * list slot.
+     */
+    static Key FAVORITE_RECALL2 = Key.of("FavoriteRecall2");
+
+    /**
+     * Selects (recalls) the program or content stored in the fourth favorites
+     * list slot.
+     */
+    static Key FAVORITE_RECALL3 = Key.of("FavoriteRecall3");
+
+    /**
+     * Stores the current program or content into the first favorites list slot.
+     */
+    static Key FAVORITE_STORE0 = Key.of("FavoriteStore0");
+
+    /**
+     * Stores the current program or content into the second favorites list
+     * slot.
+     */
+    static Key FAVORITE_STORE1 = Key.of("FavoriteStore1");
+
+    /**
+     * Stores the current program or content into the third favorites list slot.
+     */
+    static Key FAVORITE_STORE2 = Key.of("FavoriteStore2");
+
+    /**
+     * Stores the current program or content into the fourth favorites list
+     * slot.
+     */
+    static Key FAVORITE_STORE3 = Key.of("FavoriteStore3");
+
+    /**
+     * Toggles the display of the program or content guide.
+     */
+    static Key GUIDE = Key.of("Guide");
+
+    /**
+     * If the guide is currently displayed, this button tells the guide to
+     * display the next day's content.
+     */
+    static Key GUIDE_NEXT_DAY = Key.of("GuideNextDay");
+
+    /**
+     * If the guide is currently displayed, this button tells the guide to
+     * display the previous day's content.
+     */
+    static Key GUIDE_PREVIOUS_DAY = Key.of("GuidePreviousDay");
+
+    /**
+     * Toggles the display of information about the currently selected content,
+     * program, or media.
+     */
+    static Key INFO = Key.of("Info");
+
+    /**
+     * Tells the device to perform an instant replay (typically some form of
+     * jumping back a short amount of time then playing it again, possibly but
+     * not usually in slow motion).
+     */
+    static Key INSTANT_REPLAY = Key.of("InstantReplay");
+
+    /**
+     * Opens content linked to the current program, if available and possible.
+     */
+    static Key LINK = Key.of("Link");
+
+    /**
+     * Lists the current program.
+     */
+    static Key LIST_PROGRAM = Key.of("ListProgram");
+
+    /**
+     * Toggles a display listing currently available live content or programs.
+     */
+    static Key LIVE_CONTENT = Key.of("LiveContent");
+
+    /**
+     * Locks or unlocks the currently selected content or pgoram.
+     */
+    static Key LOCK = Key.of("Lock");
+
+    /**
+     * Presents a list of media applications, such as photo viewers, audio and
+     * video players, and games. [1]
+     */
+    static Key MEDIA_APPS = Key.of("MediaApps");
+
+    /**
+     * The Audio Track key.
+     */
+    static Key MEDIA_AUDIO_TRACK = Key.of("MediaAudioTrack");
+
+    /**
+     * Jumps back to the last-viewed content, program, or other media.
+     */
+    static Key MEDIA_LAST = Key.of("MediaLast");
+
+    /**
+     * Skips backward to the previous content or program.
+     */
+    static Key MEDIA_SKIP_BACKWARD = Key.of("MediaSkipBackward");
+
+    /**
+     * Skips forward to the next content or program.
+     */
+    static Key MEDIA_SKIP_FORWARD = Key.of("MediaSkipForward");
+
+    /**
+     * Steps backward to the previous content or program.
+     */
+    static Key MEDIA_STEP_BACKWARD = Key.of("MediaStepBackward");
+
+    /**
+     * Steps forward to the next content or program.
+     */
+    static Key MEDIA_STEP_FORWARD = Key.of("MediaStepForward");
+
+    /**
+     * Top Menu button; opens the media's main menu, such as on a DVD or Blu-Ray
+     * disc.
+     */
+    static Key MEDIA_TOP_MENU = Key.of("MediaTopMenu");
+
+    /**
+     * Navigates into a submenu or option.
+     */
+    static Key NAVIGATE_IN = Key.of("NavigateIn");
+
+    /**
+     * Navigates to the next item.
+     */
+    static Key NAVIGATE_NEXT = Key.of("NavigateNext");
+
+    /**
+     * Navigates out of the current screen or menu.
+     */
+    static Key NAVIGATE_OUT = Key.of("NavigateOut");
+
+    /**
+     * Navigates to the previous item.
+     */
+    static Key NAVIGATE_PREVIOUS = Key.of("NavigatePrevious");
+
+    /**
+     * Cycles to the next channel in the favorites list.
+     */
+    static Key NEXT_FAVORITE_CHANNEL = Key.of("NextFavoriteChannel");
+
+    /**
+     * Cycles to the next saved user profile, if this feature is supported and
+     * multiple profiles exist.
+     */
+    static Key NEXT_USER_PROFILE = Key.of("NextUserProfile");
+
+    /**
+     * Opens the user interface for selecting on demand content or programs to
+     * watch.
+     */
+    static Key ON_DEMAND = Key.of("OnDemand");
+
+    /**
+     * Starts the process of pairing the remote with a device to be controlled.
+     */
+    static Key PAIRING = Key.of("Pairing");
+
+    /**
+     * A button to move the picture-in-picture view downward.
+     */
+    static Key PIP_DOWN = Key.of("PinPDown");
+
+    /**
+     * A button to control moving the picture-in-picture view.
+     */
+    static Key PIP_MOVE = Key.of("PinPMove");
+
+    /**
+     * Toggles display of th epicture-in-picture view on and off.
+     */
+    static Key PIP_TOGGLE = Key.of("PinPToggle");
+
+    /**
+     * A button to move the picture-in-picture view upward.
+     */
+    static Key PIP_UP = Key.of("PinPUp");
+
+    /**
+     * Decreases the media playback rate.
+     */
+    static Key PLAY_SPEED_DOWN = Key.of("PlaySpeedDown");
+
+    /**
+     * Returns the media playback rate to normal.
+     */
+    static Key PLAY_SPEED_RESET = Key.of("PlaySpeedReset");
+
+    /**
+     * Increases the media playback rate.
+     */
+    static Key PLAY_SPEED_UP = Key.of("PlaySpeedUp");
+
+    /**
+     * Toggles random media (also known as "shuffle mode") on and off.
+     */
+    static Key RANDOM_TOGGLE = Key.of("RandomToggle");
+
+    /**
+     * A code sent when the remote control's battery is low. This doesn't
+     * actually correspond to a physical key at all.
+     */
+    static Key RC_LOW_BATTERY = Key.of("RcLowBattery");
+
+    /**
+     * Cycles among the available media recording speeds.
+     */
+    static Key RECORD_SPEED_NEXT = Key.of("RecordSpeedNext");
+
+    /**
+     * Toggles radio frequency (RF) input bypass mode on and off. RF bypass mode
+     * passes RF input directly to the RF output without any processing or
+     * filtering.
+     */
+    static Key RF_BYPASS = Key.of("RfBypass");
+
+    /**
+     * Toggles the channel scan mode on and off; this is a mode which flips
+     * through channels automatically until the user stops the scan.
+     */
+    static Key SCAN_CHANNELS_TOGGLE = Key.of("ScanChannelsToggle");
+
+    /**
+     * Cycles through the available screen display modes.
+     */
+    static Key SCREEN_MODE_NEXT = Key.of("ScreenModeNext");
+
+    /**
+     * Toggles display of the device's settings screen on and off.
+     */
+    static Key SETTINGS = Key.of("Settings");
+
+    /**
+     * Toggles split screen display mode on and off.
+     */
+    static Key SPLIT_SCREEN_TOGGLE = Key.of("SplitScreenToggle");
+
+    /**
+     * Cycles among input modes on an external set-top box (STB).
+     */
+    static Key STB_INPUT = Key.of("STBInput");
+
+    /**
+     * Toggles on and off an external STB.
+     */
+    static Key STB_POWER = Key.of("STBPower");
+
+    /**
+     * Toggles the display of subtitles on and off if they're available.
+     */
+    static Key SUBTITLE = Key.of("Subtitle");
+
+    /**
+     * Toggles display of
+     * <a href="https://en.wikipedia.org/wiki/teletext" title="teletext" class=
+     * "external external-icon" rel="noopener">teletext</a>, if available.
+     */
+    static Key TELETEXT = Key.of("Teletext");
+
+    /**
+     * Cycles through the available video modes.
+     */
+    static Key VIDEO_MODE_NEXT = Key.of("VideoModeNext");
+
+    /**
+     * Causes the device to identify itself in some fashion, such as by flashing
+     * a light, briefly changing the brightness of indicator lights, or emitting
+     * a tone.
+     */
+    static Key WINK = Key.of("Wink");
+
+    /**
+     * Toggles between full-screen and scaled content display, or otherwise
+     * change the magnification level.
+     */
+    static Key ZOOM_TOGGLE = Key.of("ZoomToggle");
+
+    /**
+     * Presents a list of possible corrections for a word which was incorrectly
+     * identified.
+     */
+    static Key SPEECH_CORRECTION_LIST = Key.of("SpeechCorrectionList");
+
+    /**
+     * Toggles between dictation mode and command/control mode. This lets the
+     * speech engine know whether to interpret spoken words as input text or as
+     * commands.
+     */
+    static Key SPEECH_INPUT_TOGGLE = Key.of("SpeechInputToggle");
+
+    /**
+     * Closes the current document or message. Must not exit the application.
+     */
+    static Key CLOSE = Key.of("Close");
+
+    /**
+     * Creates a new document or message.
+     */
+    static Key NEW = Key.of("New");
+
+    /**
+     * Opens an existing document or message.
+     */
+    static Key OPEN = Key.of("Open");
+
+    /**
+     * Prints the current document or message.
+     */
+    static Key PRINT = Key.of("Print");
+
+    /**
+     * Saves the current document or message.
+     */
+    static Key SAVE = Key.of("Save");
+
+    /**
+     * Starts spell checking the current document.
+     */
+    static Key SPELL_CHECK = Key.of("SpellCheck");
+
+    /**
+     * Opens the user interface to forward a message.
+     */
+    static Key MAIL_FORWARD = Key.of("MailForward");
+
+    /**
+     * Opens the user interface to reply to a message.
+     */
+    static Key MAIL_REPLY = Key.of("MailReply");
+
+    /**
+     * Sends the current message.
+     */
+    static Key MAIL_SEND = Key.of("MailSend");
+
+    /**
+     * The <kbd>Calculator</kbd> key, often labeled with an icon such as
+     * <kbd><i class="icon-calculator"></i></kbd>. This is often used as a
+     * generic application launcher key (<code>APPCOMMAND_LAUNCH_APP2</code>).
+     */
+    static Key LAUNCH_CALCULATOR = Key.of("LaunchCalculator");
+
+    /**
+     * The <kbd>Calendar</kbd> key, often labeled with an icon like
+     * <kbd><i class="icon-calendar"></i></kbd>.
+     */
+    static Key LAUNCH_CALENDAR = Key.of("LaunchCalendar");
+
+    /**
+     * The <kbd>Contacts</kbd> key.
+     */
+    static Key LAUNCH_CONTACTS = Key.of("LaunchContacts");
+
+    /**
+     * The <kbd>Mail</kbd> key. This is often displayed as
+     * <kbd><i class="icon-envelope-o"></i></kbd>.
+     */
+    static Key LAUNCH_MAIL = Key.of("LaunchMail");
+
+    /**
+     * The <kbd>Media Player</kbd> key.
+     */
+    static Key LAUNCH_MEDIA_PLAYER = Key.of("LaunchMediaPlayer");
+
+    /**
+     * The <kbd>Music Player</kbd> key, often labeled with an icon such as
+     * <kbd><i class="icon-music"></i></kbd>.
+     */
+    static Key LAUNCH_MUSIC_PLAYER = Key.of("LaunchMusicPlayer");
+
+    /**
+     * The <kbd>My Computer</kbd> key on Windows keyboards. This is often used
+     * as a generic application launcher key
+     * (<code>APPCOMMAND_LAUNCH_APP1</code>).
+     */
+    static Key LAUNCH_MY_COMPUTER = Key.of("LaunchMyComputer");
+
+    /**
+     * The <kbd>Phone</kbd> key, to open the phone dialer application if one is
+     * present.
+     */
+    static Key LAUNCH_PHONE = Key.of("LaunchPhone");
+
+    /**
+     * The <kbd>Screen Saver</kbd> key.
+     */
+    static Key LAUNCH_SCREEN_SAVER = Key.of("LaunchScreenSaver");
+
+    /**
+     * The <kbd>Spreadsheet</kbd> key. This key may be labeled with an icon such
+     * as <kbd><i class="icon-table"></i></kbd> or that of a specific
+     * spreadsheet application.
+     */
+    static Key LAUNCH_SPREADSHEET = Key.of("LaunchSpreadsheet");
+
+    /**
+     * The <kbd>Web Browser</kbd> key. This key is frequently labeled with an
+     * icon such as <kbd><i class="icon-globe"></i></kbd> or the icon of a
+     * specific browser, depending on the device manufacturer.
+     */
+    static Key LAUNCH_WEB_BROWSER = Key.of("LaunchWebBrowser");
+
+    /**
+     * The <kbd>WebCam</kbd> key. Opens the webcam application.
+     */
+    static Key LAUNCH_WEB_CAM = Key.of("LaunchWebCam");
+
+    /**
+     * The <kbd>Word Processor</kbd> key. This may be an icon of a specific word
+     * processor application, or a generic document icon.
+     */
+    static Key LAUNCH_WORD_PROCESSOR = Key.of("LaunchWordProcessor");
+
+    /**
+     * The first generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION1 = Key.of("LaunchApplication1");
+
+    /**
+     * The second generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION2 = Key.of("LaunchApplication2");
+
+    /**
+     * The third generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION3 = Key.of("LaunchApplication3");
+
+    /**
+     * The fourth generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION4 = Key.of("LaunchApplication4");
+
+    /**
+     * The fifth generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION5 = Key.of("LaunchApplication5");
+
+    /**
+     * The sixth generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION6 = Key.of("LaunchApplication6");
+
+    /**
+     * The seventh generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION7 = Key.of("LaunchApplication7");
+
+    /**
+     * The eighth generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION8 = Key.of("LaunchApplication8");
+
+    /**
+     * The ninth generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION9 = Key.of("LaunchApplication9");
+
+    /**
+     * The 10th generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION10 = Key.of("LaunchApplication10");
+
+    /**
+     * The 11th generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION11 = Key.of("LaunchApplication11");
+
+    /**
+     * The 12th generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION12 = Key.of("LaunchApplication12");
+
+    /**
+     * The 13th generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION13 = Key.of("LaunchApplication13");
+
+    /**
+     * The 14th generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION14 = Key.of("LaunchApplication14");
+
+    /**
+     * The 15th generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION15 = Key.of("LaunchApplication15");
+
+    /**
+     * The 16th generic application launcher button.
+     */
+    static Key LAUNCH_APPLICATION16 = Key.of("LaunchApplication16");
+
+    /**
+     * Navigates to the previous content or page in the current Web view's
+     * history.
+     */
+    static Key BROWSER_BACK = Key.of("BrowserBack");
+
+    /**
+     * Opens the user's list of bookmarks/favorites.
+     */
+    static Key BROWSER_FAVORITES = Key.of("BrowserFavorites");
+
+    /**
+     * Navigates to the next content or page in the current Web view's history.
+     */
+    static Key BROWSER_FORWARD = Key.of("BrowserForward");
+
+    /**
+     * Navigates to the user's preferred home page.
+     */
+    static Key BROWSER_HOME = Key.of("BrowserHome");
+
+    /**
+     * Refreshes the current page or contentl.
+     */
+    static Key BROWSER_REFRESH = Key.of("BrowserRefresh");
+
+    /**
+     * Activates the user's preferred search engine or the search interface
+     * within their browser.
+     */
+    static Key BROWSER_SEARCH = Key.of("BrowserSearch");
+
+    /**
+     * Stops loading the currently displayed Web view or content.
+     */
+    static Key BROWSER_STOP = Key.of("BrowserStop");
+
+    /**
+     * The decimal point key (typically <kbd>.</kbd> or <kbd>,</kbd> depending
+     * on the region. In newer browsers, this value to simply be the character
+     * generated by the decimal key (one of those two characters). [1]
+     */
+    static Key DECIMAL = Key.of("Decimal");
+
+    /**
+     * The <kbd>11</kbd> key found on certain media numeric keypads.
+     */
+    static Key KEY11 = Key.of("Key11");
+
+    /**
+     * The <kbd>12</kbd> key found on certain media numeric keypads.
+     */
+    static Key KEY12 = Key.of("Key12");
+
+    /**
+     * The numeric keypad's multiplication key, <kbd>*</kbd>.
+     */
+    static Key MULTIPLY = Key.of("Multiply");
+
+    /**
+     * The numeric keypad's addition key, <kbd>+</kbd>.
+     */
+    static Key ADD = Key.of("Add");
+
+    /**
+     * The numeric keypad's division key, /.
+     */
+    static Key DIVIDE = Key.of("Divide");
+
+    /**
+     * The numeric keypad's subtraction key, -.
+     */
+    static Key SUBTRACT = Key.of("Subtract");
+
+    /**
+     * The numeric keypad's places separator character (in the United States,
+     * this is a comma, but elsewhere it is frequently a period).
+     */
+    static Key SEPARATOR = Key.of("Separator");
+
+    /**
+     * Returns a {@link Key} instance representing the {@code key}.
+     *
+     * @param key
+     *            the string representation of the key
+     * @return the {@link Key} instance
+     */
+    static Key of(String key) {
+        return () -> key;
     }
+
+    /**
+     * Returns the string representation of the key, which should be the same as
+     * the <code>key</code> property in the JavaScript
+     * <code>KeyboardEvent</code>.
+     * <p>
+     * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
+     *
+     * @return the string representation of the key
+     */
+    String getKey();
 
 }
