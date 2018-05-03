@@ -32,8 +32,10 @@ public class RootNavigationTarget extends Div {
         label.setId("message");
         add(label);
 
-        section.setId("singleton");
-        section.setText("singleton");
+        section.addAttachListener(event -> {
+            section.setId("singleton");
+            section.setText("singleton");
+        });
     }
 
     @Override
