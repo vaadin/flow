@@ -121,10 +121,6 @@ public interface HasValue<E extends ValueChangeEvent<V>, V> {
     /**
      * Adds a value change listener. The listener is called when the value of
      * this {@code HasValue} is changed either by the user or programmatically.
-     * <p>
-     * <i>Implementation note:</i> the added listener is triggered if the value
-     * property, named by {@link #getClientValuePropertyName()}, is changed so
-     * that the new value does not match the previous value.
      *
      * @param listener
      *            the value change listener, not null
@@ -180,27 +176,6 @@ public interface HasValue<E extends ValueChangeEvent<V>, V> {
      */
     default void clear() {
         setValue(getEmptyValue());
-    }
-
-    /**
-     * Get the client-side component's property name for the value this
-     * interface is bound to.
-     *
-     * @return the name of the client-side property this interface is bound to
-     */
-    default String getClientValuePropertyName() {
-        return "value";
-    }
-
-    /**
-     * Get the name of the client-side change event that is fired when the value
-     * property is changed.
-     *
-     * @return the name of the client-side change event that is fired when the
-     *         value changes
-     */
-    default String getClientPropertyChangeEventName() {
-        return getClientValuePropertyName() + "-changed";
     }
 
     /**

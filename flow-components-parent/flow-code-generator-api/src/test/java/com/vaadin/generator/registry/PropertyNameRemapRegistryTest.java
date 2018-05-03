@@ -28,9 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.generator.ComponentGenerator;
-import com.vaadin.generator.ComponentGeneratorTestUtils;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentMetadata;
@@ -172,15 +170,11 @@ public class PropertyNameRemapRegistryTest {
         String generated = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertThat(generated, CoreMatchers.containsString(
-                "AbstractSinglePropertyField<R, T>"));
+        Assert.assertThat(generated, CoreMatchers
+                .containsString("AbstractSinglePropertyField<R, T>"));
 
         Assert.assertFalse(
                 "Remapped value change event should not be generated",
                 generated.contains("ValueChangeEvent"));
-        Assert.assertTrue("HasValue getClientValuePropertyName overridden",
-                generated.contains("String getClientValuePropertyName()"));
-        Assert.assertTrue("HasValue getClientValuePropertyName overridden",
-                generated.contains("return \"map-to-value\";"));
     }
 }
