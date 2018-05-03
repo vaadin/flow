@@ -15,8 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +23,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,9 +40,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -48,12 +54,14 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterTest.FileNotFound;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -137,14 +145,13 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_registers_correctly_route_with_parentLayout()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
-                Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
-                        MiddleParentWithRoute.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.onStartup(Stream
+                .of(NavigationTarget.class, NavigationTargetFoo.class,
+                        MiddleParentWithRoute.class)
+                .collect(Collectors.toSet()), servletContext);
 
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget("middle_parent");
-
 
         Assert.assertTrue("Couldn't find navigation target for `middle_parent`",
                 navigationTarget.isPresent());
@@ -1200,8 +1207,9 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Sort order was not the one expected",
                 MiddleParent.class, routeAliases.get(4).getParentLayout());
     }
+
     /* Theme tests */
-    public static class MyTheme implements AbstractTheme{
+    public static class MyTheme implements AbstractTheme {
 
         @Override
         public String getBaseUrl() {
@@ -1281,9 +1289,8 @@ public class RouteRegistryInitializerTest {
                 ThemeParent.class.getName(),
                 ThemeMiddleParentLayout.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream
-                        .of(ThemeRootWithParents.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.onStartup(Stream.of(ThemeRootWithParents.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
@@ -1295,8 +1302,9 @@ public class RouteRegistryInitializerTest {
                         + ThemeMultiMiddleParentLayout.class.getName() + ", "
                         + ThemeMiddleParentLayout.class.getName());
 
-        routeRegistryInitializer.onStartup(Stream.of(ThemeMultiViewport.class)
-                .collect(Collectors.toSet()), servletContext);
+        routeRegistryInitializer.onStartup(
+                Stream.of(ThemeMultiViewport.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
@@ -1332,7 +1340,7 @@ public class RouteRegistryInitializerTest {
                 ThemeFailingAliasView.class.getName()));
 
         routeRegistryInitializer.onStartup(Stream
-                        .of(ThemeFailingAliasView.class).collect(Collectors.toSet()),
+                .of(ThemeFailingAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
@@ -1344,5 +1352,78 @@ public class RouteRegistryInitializerTest {
                 servletContext);
     }
 
+    @Route("ignored")
+    public static class IgnoredView extends Component {
+    }
+
+    public static class TestRouteFilter implements NavigationTargetFilter {
+        @Override
+        public boolean testNavigationTarget(
+                Class<? extends Component> navigationTarget) {
+            return !navigationTarget.getSimpleName().startsWith("Ignored");
+        }
+
+        @Override
+        public boolean testErrorNavigationTarget(
+                Class<?> errorNavigationTarget) {
+            return !errorNavigationTarget.getSimpleName().startsWith("Ignored");
+        }
+    }
+
+    // An additional filter to test that it's not enough to have only one
+    // passing filter
+    public static class AlwaysTrueRouterFilter implements NavigationTargetFilter {
+        @Override
+        public boolean testNavigationTarget(
+                Class<? extends Component> navigationTarget) {
+            return true;
+        }
+
+        @Override
+        public boolean testErrorNavigationTarget(
+                Class<?> errorNavigationTarget) {
+            return true;
+        }
+    }
+
+    @Test
+    public void routeFilter_ignoresRoutes()
+            throws InvalidRouteConfigurationException {
+        registry.setNavigationTargets(
+                Stream.of(IgnoredView.class, NavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        List<?> registeredTargets = registry.getRegisteredRoutes().stream()
+                .map(RouteData::getNavigationTarget)
+                .collect(Collectors.toList());
+        Assert.assertEquals(Arrays.asList(NavigationTarget.class),
+                registeredTargets);
+    }
+
+    public static class IgnoredErrorView extends Component
+            implements HasErrorParameter<Exception> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<Exception> parameter) {
+            return 0;
+        }
+    }
+
+    @Test
+    public void routeFilter_ignoresErrorTargets()
+            throws InvalidRouteConfigurationException {
+        registry.setErrorNavigationTargets(
+                Stream.of(IgnoredErrorView.class, FileNotFound.class)
+                        .collect(Collectors.toSet()));
+
+        Assert.assertTrue(registry
+                .getErrorNavigationTarget(new NotFoundException()).isPresent());
+
+        ErrorTargetEntry errorTargetEntry = registry
+                .getErrorNavigationTarget(new Exception()).get();
+
+        Assert.assertNotEquals(IgnoredErrorView.class,
+                errorTargetEntry.getNavigationTarget());
+    }
 
 }
