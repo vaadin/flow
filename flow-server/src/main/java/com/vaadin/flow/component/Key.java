@@ -35,103 +35,103 @@ public interface Key extends Serializable {
     static Key UNIDENTIFIED = Key.of("Unidentified");
 
     /**
-     * The <kbd>Alt</kbd> (Alternative) key.
+     * The <code>Alt</code> (Alternative) key.
      */
     static Key ALT = Key.of("Alt");
 
     /**
-     * The <kbd>AltGr</kbd> or <kbd>AltGraph</kbd> (Alternate Graphics) key.
-     * Enables the ISO Level 3 shift modifier (where <kbd>Shift</kbd> is the
+     * The <code>AltGr</code> or <code>AltGraph</code> (Alternate Graphics) key.
+     * Enables the ISO Level 3 shift modifier (where <code>Shift</code> is the
      * level 2 modifier).
      */
     static Key ALT_GRAPH = Key.of("AltGraph");
 
     /**
-     * The <kbd>Caps Lock</kbd> key. Toggles the capital character lock on and
+     * The <code>Caps Lock</code> key. Toggles the capital character lock on and
      * off for subsequent input.
      */
     static Key CAPS_LOCK = Key.of("CapsLock");
 
     /**
-     * The <kbd>Control</kbd>, <kbd>Ctrl</kbd>, or <kbd>Ctl</kbd> key. Allows
+     * The <code>Control</code>, <code>Ctrl</code>, or <code>Ctl</code> key. Allows
      * typing control characters.
      */
     static Key CONTROL = Key.of("Control");
 
     /**
-     * The <kbd>Fn</kbd> (Function modifier) key. Used to allow generating
-     * function key (<kbd>F1</kbd>-<kbd>F15</kbd>, for instance) characters on
+     * The <code>Fn</code> (Function modifier) key. Used to allow generating
+     * function key (<code>F1</code>-<code>F15</code>, for instance) characters on
      * keyboards without a dedicated function key area. Often handled in
      * hardware so that events aren't generated for this key.
      */
     static Key FN = Key.of("Fn");
 
     /**
-     * The <kbd>FnLock</kbd> or <kbd>F-Lock</kbd> (Function Lock) key.Toggles
+     * The <code>FnLock</code> or <code>F-Lock</code> (Function Lock) key.Toggles
      * the function key mode described by "Fn" on and off. Often handled in
      * hardware so that events aren't generated for this key.
      */
     static Key FN_LOCK = Key.of("FnLock");
 
     /**
-     * The <kbd>Hyper</kbd> key.
+     * The <code>Hyper</code> key.
      */
     static Key HYPER = Key.of("Hyper");
 
     /**
-     * The <kbd>Meta</kbd> key. Allows issuing special command inputs. This is
-     * the <kbd>Windows</kbd> logo key, or the <kbd>Command</kbd> or
-     * <kbd>⌘</kbd> key on Mac keyboards.
+     * The <code>Meta</code> key. Allows issuing special command inputs. This is
+     * the <code>Windows</code> logo key, or the <code>Command</code> or
+     * <code>⌘</code> key on Mac keyboards.
      */
     static Key META = Key.of("Meta");
 
     /**
-     * The <kbd>NumLock</kbd> (Number Lock) key. Toggles the numeric keypad
+     * The <code>NumLock</code> (Number Lock) key. Toggles the numeric keypad
      * between number entry some other mode (often directional arrows).
      */
     static Key NUM_LOCK = Key.of("NumLock");
 
     /**
-     * The <kbd>Scroll Lock</kbd> key. Toggles beteen scrolling and cursor
+     * The <code>Scroll Lock</code> key. Toggles beteen scrolling and cursor
      * movement modes.
      */
     static Key SCROLL_LOCK = Key.of("ScrollLock");
 
     /**
-     * The <kbd>Shift</kbd> key. Modifies keystrokes to allow typing upper (or
+     * The <code>Shift</code> key. Modifies keystrokes to allow typing upper (or
      * other) case letters, and to support typing punctuation and other special
      * characters.
      */
     static Key SHIFT = Key.of("Shift");
 
     /**
-     * The <kbd>Super</kbd> key.
+     * The <code>Super</code> key.
      */
     static Key SUPER = Key.of("Super");
 
     /**
-     * The <kbd>Symbol</kbd> modifier key (found on certain virtual keyboards).
+     * The <code>Symbol</code> modifier key (found on certain virtual keyboards).
      */
     static Key SYMBOL = Key.of("Symbol");
 
     /**
-     * The <kbd>Symbol Lock</kbd> key.
+     * The <code>Symbol Lock</code> key.
      */
     static Key SYMBOL_LOCK = Key.of("SymbolLock");
 
     /**
-     * The <kbd>Enter</kbd> or <kbd>↵</kbd> key (sometimes labeled
-     * <kbd>Return</kbd>).
+     * The <code>Enter</code> or <code>↵</code> key (sometimes labeled
+     * <code>Return</code>).
      */
     static Key ENTER = Key.of("Enter");
 
     /**
-     * The Horizontal Tab key, <kbd>Tab</kbd>.
+     * The Horizontal Tab key, <code>Tab</code>.
      */
     static Key TAB = Key.of("Tab");
 
     /**
-     * The space key, <kbd>Space Bar</kbd>.
+     * The space key, <code>Space Bar</code>.
      */
     static Key SPACE = Key.of(" ");
 
@@ -156,55 +156,55 @@ public interface Key extends Serializable {
     static Key ARROW_UP = Key.of("ArrowUp");
 
     /**
-     * The <kbd>End</kbd> key. Moves to the end of content.
+     * The <code>End</code> key. Moves to the end of content.
      */
     static Key END = Key.of("End");
 
     /**
-     * The <kbd>Home</kbd> key. Moves to the start of content.
+     * The <code>Home</code> key. Moves to the start of content.
      */
     static Key HOME = Key.of("Home");
 
     /**
-     * The <kbd>Page Down</kbd> (or <kbd>PgDn</kbd>) key. Scrolls down or
+     * The <code>Page Down</code> (or <code>PgDn</code>) key. Scrolls down or
      * displays the next page of content.
      */
     static Key PAGE_DOWN = Key.of("PageDown");
 
     /**
-     * The <kbd>Page Up</kbd> (or <kbd>PgUp</kbd>) key. Scrolls up or displays
+     * The <code>Page Up</code> (or <code>PgUp</code>) key. Scrolls up or displays
      * the previous page of content.
      */
     static Key PAGE_UP = Key.of("PageUp");
 
     /**
-     * The <kbd>Backspace</kbd> key. This key is labeled <kbd>Delete</kbd> on
+     * The <code>Backspace</code> key. This key is labeled <code>Delete</code> on
      * Mac keyboards.
      */
     static Key BACKSPACE = Key.of("Backspace");
 
     /**
-     * The <kbd>Clear</kbd> key. Removes the currently selected input.
+     * The <code>Clear</code> key. Removes the currently selected input.
      */
     static Key CLEAR = Key.of("Clear");
 
     /**
-     * The <kbd>Copy</kbd> key (on certain extended keyboards).
+     * The <code>Copy</code> key (on certain extended keyboards).
      */
     static Key COPY = Key.of("Copy");
 
     /**
-     * The Cursor Select key, <kbd>CrSel</kbd>.
+     * The Cursor Select key, <code>CrSel</code>.
      */
     static Key CR_SEL = Key.of("CrSel");
 
     /**
-     * The <kbd>Cut</kbd> key (on certain extended keyboards).
+     * The <code>Cut</code> key (on certain extended keyboards).
      */
     static Key CUT = Key.of("Cut");
 
     /**
-     * The Delete key, <kbd>Del</kbd>.
+     * The Delete key, <code>Del</code>.
      */
     static Key DELETE = Key.of("Delete");
 
@@ -215,12 +215,12 @@ public interface Key extends Serializable {
     static Key ERASE_EOF = Key.of("EraseEof");
 
     /**
-     * The <kbd>ExSel</kbd> (Extend Selection) key.
+     * The <code>ExSel</code> (Extend Selection) key.
      */
     static Key EX_SEL = Key.of("ExSel");
 
     /**
-     * The Insert key, <kbd>Ins</kbd>. Toggles&nbsp; between inserting and
+     * The Insert key, <code>Ins</code>. Toggles&nbsp; between inserting and
      * overwriting text.
      */
     static Key INSERT = Key.of("Insert");
@@ -241,36 +241,36 @@ public interface Key extends Serializable {
     static Key UNDO = Key.of("Undo");
 
     /**
-     * The <kbd>Accept</kbd>, <kbd>Commit</kbd>, or <kbd>OK</kbd> key or button.
+     * The <code>Accept</code>, <code>Commit</code>, or <code>OK</code> key or button.
      * Accepts the currently selected option or input method sequence
      * conversion.
      */
     static Key ACCEPT = Key.of("Accept");
 
     /**
-     * The <kbd>Again</kbd> key. Redoes or repeats a previous action.
+     * The <code>Again</code> key. Redoes or repeats a previous action.
      */
     static Key AGAIN = Key.of("Again");
 
     /**
-     * The <kbd>Attn</kbd> (Attention) key.
+     * The <code>Attn</code> (Attention) key.
      */
     static Key ATTN = Key.of("Attn");
 
     /**
-     * The <kbd>Cancel</kbd> key.
+     * The <code>Cancel</code> key.
      */
     static Key CANCEL = Key.of("Cancel");
 
     /**
-     * Shows the context menu. Typically found between the <kbd>Windows</kbd>
-     * (or <kbd>OS</kbd>) key and the <kbd>Control</kbd> key on the right side
+     * Shows the context menu. Typically found between the <code>Windows</code>
+     * (or <code>OS</code>) key and the <code>Control</code> key on the right side
      * of the keyboard.
      */
     static Key CONTEXT_MENU = Key.of("ContextMenu");
 
     /**
-     * The <kbd>Esc</kbd> (Escape) key. Typically used as an exit, cancel, or
+     * The <code>Esc</code> (Escape) key. Typically used as an exit, cancel, or
      * "escape this operation" button. Historically, the Escape character was
      * used to signal the start of a special control sequence of characters
      * called an "escape sequence."
@@ -278,29 +278,29 @@ public interface Key extends Serializable {
     static Key ESCAPE = Key.of("Escape");
 
     /**
-     * The <kbd>Execute</kbd> key.
+     * The <code>Execute</code> key.
      */
     static Key EXECUTE = Key.of("Execute");
 
     /**
-     * The <kbd>Find</kbd> key. Opens an interface (typically a dialog box) for
+     * The <code>Find</code> key. Opens an interface (typically a dialog box) for
      * performing a find/search operation.
      */
     static Key FIND = Key.of("Find");
 
     /**
-     * The <kbd>Finish</kbd> key.
+     * The <code>Finish</code> key.
      */
     static Key FINISH = Key.of("Finish");
 
     /**
-     * The <kbd>Help</kbd> key. Opens or toggles the display of help
+     * The <code>Help</code> key. Opens or toggles the display of help
      * information.
      */
     static Key HELP = Key.of("Help");
 
     /**
-     * The <kbd>Pause</kbd> key. Pauses the current application or state, if
+     * The <code>Pause</code> key. Pauses the current application or state, if
      * applicable. Note: This shouldn't be confused with the
      * <code>"MediaPause"</code> key value, which is used for media controllers,
      * rather than to control applications and processes.
@@ -309,7 +309,7 @@ public interface Key extends Serializable {
     static Key PAUSE = Key.of("Pause");
 
     /**
-     * The <kbd>Play</kbd> key. Resumes a previously paused application, if
+     * The <code>Play</code> key. Resumes a previously paused application, if
      * applicable. Note: This shouldn't be confused with the
      * <code>"MediaPlay"</code> key value, which is used for media controllers,
      * rather than to control applications and processes.
@@ -318,22 +318,22 @@ public interface Key extends Serializable {
     static Key PLAY = Key.of("Play");
 
     /**
-     * The <kbd>Props</kbd> (Properties) key.
+     * The <code>Props</code> (Properties) key.
      */
     static Key PROPS = Key.of("Props");
 
     /**
-     * The <kbd>Select</kbd> key.
+     * The <code>Select</code> key.
      */
     static Key SELECT = Key.of("Select");
 
     /**
-     * The <kbd>ZoomIn</kbd> key.
+     * The <code>ZoomIn</code> key.
      */
     static Key ZOOM_IN = Key.of("ZoomIn");
 
     /**
-     * The <kbd>ZoomOut</kbd> key.
+     * The <code>ZoomOut</code> key.
      */
     static Key ZOOM_OUT = Key.of("ZoomOut");
 
@@ -349,81 +349,81 @@ public interface Key extends Serializable {
     static Key BRIGHTNESS_UP = Key.of("BrightnessUp");
 
     /**
-     * The <kbd>Eject</kbd> key. Ejects removable media (or toggles an optical
+     * The <code>Eject</code> key. Ejects removable media (or toggles an optical
      * storage device tray open and closed).
      */
     static Key EJECT = Key.of("Eject");
 
     /**
-     * The <kbd>LogOff</kbd> key.
+     * The <code>LogOff</code> key.
      */
     static Key LOG_OFF = Key.of("LogOff");
 
     /**
-     * The <kbd>Power</kbd> button or key, to toggle power on and off. Note: Not
+     * The <code>Power</code> button or key, to toggle power on and off. Note: Not
      * all systems pass this key through to to the user agent.
      *
      */
     static Key POWER = Key.of("Power");
 
     /**
-     * The <kbd>PowerOff</kbd> or <kbd>PowerDown</kbd> key. Shuts off the
+     * The <code>PowerOff</code> or <code>PowerDown</code> key. Shuts off the
      * system.
      */
     static Key POWER_OFF = Key.of("PowerOff");
 
     /**
-     * The <kbd>PrintScreen</kbd> or <kbd>PrtScr</kbd> key. Sometimes
-     * <kbd>SnapShot</kbd>. Captures the screen and prints it or saves it to
+     * The <code>PrintScreen</code> or <code>PrtScr</code> key. Sometimes
+     * <code>SnapShot</code>. Captures the screen and prints it or saves it to
      * disk.
      */
     static Key PRINT_SCREEN = Key.of("PrintScreen");
 
     /**
-     * The <kbd>Hibernate</kbd> key. This saves the state of the computer to
+     * The <code>Hibernate</code> key. This saves the state of the computer to
      * disk and then shuts down; the computer can be returned to its previous
      * state by restoring the saved state information.
      */
     static Key HIBERNATE = Key.of("Hibernate");
 
     /**
-     * The <kbd>Standby</kbd> key; also known as <kbd>Suspend</kbd> or
-     * <kbd>Sleep</kbd>. This turns off the display and puts the computer in a
+     * The <code>Standby</code> key; also known as <code>Suspend</code> or
+     * <code>Sleep</code>. This turns off the display and puts the computer in a
      * low power consumption mode, without completely powering off.
      */
     static Key STANDBY = Key.of("Standby");
 
     /**
-     * The <kbd>WakeUp</kbd> key; used to wake the computer from the hibernation
+     * The <code>WakeUp</code> key; used to wake the computer from the hibernation
      * or standby modes.
      */
     static Key WAKE_UP = Key.of("WakeUp");
 
     /**
-     * The <kbd>All Candidates</kbd> key, which starts multi-candidate mode, in
+     * The <code>All Candidates</code> key, which starts multi-candidate mode, in
      * which multiple candidates are displayed for the ongoing input.
      */
     static Key ALL_CANDIDATES = Key.of("AllCandidates");
 
     /**
-     * The <kbd>Alphanumeric</kbd> key.
+     * The <code>Alphanumeric</code> key.
      */
     static Key ALPHANUMERIC = Key.of("Alphanumeric");
 
     /**
-     * The <kbd>Code Input</kbd> key, which enables code input mode, which lets
+     * The <code>Code Input</code> key, which enables code input mode, which lets
      * the user enter characters by typing their code points (their Unicode
      * character numbers, typically).
      */
     static Key CODE_INPUT = Key.of("CodeInput");
 
     /**
-     * The <kbd>Compose</kbd> key.
+     * The <code>Compose</code> key.
      */
     static Key COMPOSE = Key.of("Compose");
 
     /**
-     * The <kbd>Convert</kbd> key, which instructs the IME to convert the
+     * The <code>Convert</code> key, which instructs the IME to convert the
      * current input method sequence into the resulting character.
      */
     static Key CONVERT = Key.of("Convert");
@@ -435,7 +435,7 @@ public interface Key extends Serializable {
     static Key DEAD = Key.of("Dead");
 
     /**
-     * The <kbd>Final</kbd> (Final Mode) key is used on some Asian keyboards to
+     * The <code>Final</code> (Final Mode) key is used on some Asian keyboards to
      * enter final mode when using IMEs.
      */
     static Key FINAL_MODE = Key.of("FinalMode");
@@ -483,7 +483,7 @@ public interface Key extends Serializable {
     static Key NEXT_CANDIDATE = Key.of("NextCandidate");
 
     /**
-     * The <kbd>NonConvert</kbd> ("Don't convert") key. This accepts the current
+     * The <code>NonConvert</code> ("Don't convert") key. This accepts the current
      * input method sequence without running conversion when using an IME.
      */
     static Key NON_CONVERT = Key.of("NonConvert");
@@ -495,7 +495,7 @@ public interface Key extends Serializable {
     static Key PREVIOUS_CANDIDATE = Key.of("PreviousCandidate");
 
     /**
-     * The <kbd>Process</kbd> key. Instructs the IME to process the conversion.
+     * The <code>Process</code> key. Instructs the IME to process the conversion.
      */
     static Key PROCESS = Key.of("Process");
 
@@ -507,7 +507,7 @@ public interface Key extends Serializable {
     static Key SINGLE_CANDIDATE = Key.of("SingleCandidate");
 
     /**
-     * The <kbd>Hangul</kbd> (Korean character set) mode key, which toggles
+     * The <code>Hangul</code> (Korean character set) mode key, which toggles
      * between Hangul and English entry modes.
      */
     static Key HANGUL_MODE = Key.of("HangulMode");
@@ -525,18 +525,18 @@ public interface Key extends Serializable {
     static Key JUNJA_MODE = Key.of("JunjaMode");
 
     /**
-     * The <kbd>Eisu</kbd> key. This key's purpose is defined by the IME, but
+     * The <code>Eisu</code> key. This key's purpose is defined by the IME, but
      * may be used to close the IME.
      */
     static Key EISU = Key.of("Eisu");
 
     /**
-     * The <kbd>Hankaku</kbd> (half-width characters) key.
+     * The <code>Hankaku</code> (half-width characters) key.
      */
     static Key HANKAKU = Key.of("Hankaku");
 
     /**
-     * The <kbd>Hiragana</kbd> key; selects Kana characters mode.
+     * The <code>Hiragana</code> key; selects Kana characters mode.
      */
     static Key HIRAGANA = Key.of("Hiragana");
 
@@ -546,133 +546,133 @@ public interface Key extends Serializable {
     static Key HIRAGANA_KATAKANA = Key.of("HiraganaKatakana");
 
     /**
-     * The <kbd>Kana Mode</kbd> (Kana Lock) key.
+     * The <code>Kana Mode</code> (Kana Lock) key.
      */
     static Key KANA_MODE = Key.of("KanaMode");
 
     /**
-     * The <kbd>Kanji Mode</kbd> key. Enables entering Japanese text using the
+     * The <code>Kanji Mode</code> key. Enables entering Japanese text using the
      * ideographic characters of Chinese origin.
      */
     static Key KANJI_MODE = Key.of("KanjiMode");
 
     /**
-     * The <kbd>Katakana</kbd> key.
+     * The <code>Katakana</code> key.
      */
     static Key KATAKANA = Key.of("Katakana");
 
     /**
-     * The <kbd>Romaji</kbd> key; selects the Roman character set.
+     * The <code>Romaji</code> key; selects the Roman character set.
      */
     static Key ROMAJI = Key.of("Romaji");
 
     /**
-     * The <kbd>Zenkaku</kbd> (full width) characters key.
+     * The <code>Zenkaku</code> (full width) characters key.
      */
     static Key ZENKAKU = Key.of("Zenkaku");
 
     /**
-     * The <kbd>Zenkaku/Hankaku</kbd> (full width/half width) toggle key.
+     * The <code>Zenkaku/Hankaku</code> (full width/half width) toggle key.
      */
     static Key ZENKAKU_HANAKU = Key.of("ZenkakuHanaku");
 
     /**
-     * The first general-purpose function key, <kbd>F1</kbd>.
+     * The first general-purpose function key, <code>F1</code>.
      */
     static Key F1 = Key.of("F1");
 
     /**
-     * The <kbd>F2</kbd> key.
+     * The <code>F2</code> key.
      */
     static Key F2 = Key.of("F2");
 
     /**
-     * The <kbd>F3</kbd> key.
+     * The <code>F3</code> key.
      */
     static Key F3 = Key.of("F3");
 
     /**
-     * The <kbd>F4</kbd> key.
+     * The <code>F4</code> key.
      */
     static Key F4 = Key.of("F4");
 
     /**
-     * The <kbd>F5</kbd> key.
+     * The <code>F5</code> key.
      */
     static Key F5 = Key.of("F5");
 
     /**
-     * The <kbd>F6</kbd> key.
+     * The <code>F6</code> key.
      */
     static Key F6 = Key.of("F6");
 
     /**
-     * The <kbd>F7</kbd> key.
+     * The <code>F7</code> key.
      */
     static Key F7 = Key.of("F7");
 
     /**
-     * The <kbd>F8</kbd> key.
+     * The <code>F8</code> key.
      */
     static Key F8 = Key.of("F8");
 
     /**
-     * The <kbd>F9</kbd> key.
+     * The <code>F9</code> key.
      */
     static Key F9 = Key.of("F9");
 
     /**
-     * The <kbd>F10</kbd> key.
+     * The <code>F10</code> key.
      */
     static Key F10 = Key.of("F10");
 
     /**
-     * The <kbd>F11</kbd> key.
+     * The <code>F11</code> key.
      */
     static Key F11 = Key.of("F11");
 
     /**
-     * The <kbd>F12</kbd> key.
+     * The <code>F12</code> key.
      */
     static Key F12 = Key.of("F12");
 
     /**
-     * The <kbd>F13</kbd> key.
+     * The <code>F13</code> key.
      */
     static Key F13 = Key.of("F13");
 
     /**
-     * The <kbd>F14</kbd> key.
+     * The <code>F14</code> key.
      */
     static Key F14 = Key.of("F14");
 
     /**
-     * The <kbd>F15</kbd> key.
+     * The <code>F15</code> key.
      */
     static Key F15 = Key.of("F15");
 
     /**
-     * The <kbd>F16</kbd> key.
+     * The <code>F16</code> key.
      */
     static Key F16 = Key.of("F16");
 
     /**
-     * The <kbd>F17</kbd> key.
+     * The <code>F17</code> key.
      */
     static Key F17 = Key.of("F17");
 
     /**
-     * The <kbd>F18</kbd> key.
+     * The <code>F18</code> key.
      */
     static Key F18 = Key.of("F18");
 
     /**
-     * The <kbd>F19</kbd> key.
+     * The <code>F19</code> key.
      */
     static Key F19 = Key.of("F19");
 
     /**
-     * The <kbd>F20</kbd> key.
+     * The <code>F20</code> key.
      */
     static Key F20 = Key.of("F20");
 
@@ -703,49 +703,49 @@ public interface Key extends Serializable {
     static Key APP_SWITCH = Key.of("AppSwitch");
 
     /**
-     * The <kbd>Call</kbd> key; dials the number which has been entered.
+     * The <code>Call</code> key; dials the number which has been entered.
      */
     static Key CALL = Key.of("Call");
 
     /**
-     * The <kbd>Camera</kbd> key; activates the camera.
+     * The <code>Camera</code> key; activates the camera.
      */
     static Key CAMERA = Key.of("Camera");
 
     /**
-     * The <kbd>Focus</kbd> key; focuses the camera.
+     * The <code>Focus</code> key; focuses the camera.
      */
     static Key CAMERA_FOCUS = Key.of("CameraFocus");
 
     /**
-     * The <kbd>End Call</kbd> or <kbd>Hang Up</kbd> button.
+     * The <code>End Call</code> or <code>Hang Up</code> button.
      */
     static Key END_CALL = Key.of("EndCall");
 
     /**
-     * The <kbd>Back</kbd> button.
+     * The <code>Back</code> button.
      */
     static Key GO_BACK = Key.of("GoBack");
 
     /**
-     * The <kbd>Home</kbd> button, which takes the user to the phone's main
+     * The <code>Home</code> button, which takes the user to the phone's main
      * screen (usually an application launcher).
      */
     static Key GO_HOME = Key.of("GoHome");
 
     /**
-     * The <kbd>Headset Hook</kbd> key. This is typically actually a button on
+     * The <code>Headset Hook</code> key. This is typically actually a button on
      * the headset which is used to hang up calls and play or pause media.
      */
     static Key HEADSET_HOOK = Key.of("HeadsetHook");
 
     /**
-     * The <kbd>Redial</kbd> button, which redials the last-called number.
+     * The <code>Redial</code> button, which redials the last-called number.
      */
     static Key LAST_NUMBER_REDIAL = Key.of("LastNumberRedial");
 
     /**
-     * The <kbd>Notification</kbd> key.
+     * The <code>Notification</code> key.
      */
     static Key NOTIFICATION = Key.of("Notification");
 
@@ -756,7 +756,7 @@ public interface Key extends Serializable {
     static Key MANNER_MODE = Key.of("MannerMode");
 
     /**
-     * The <kbd>Voice Dial</kbd> key. Initiates voice dialing.
+     * The <code>Voice Dial</code> key. Initiates voice dialing.
      */
     static Key VOICE_DIAL = Key.of("VoiceDial");
 
@@ -1523,79 +1523,79 @@ public interface Key extends Serializable {
     static Key MAIL_SEND = Key.of("MailSend");
 
     /**
-     * The <kbd>Calculator</kbd> key, often labeled with an icon such as
-     * <kbd><i class="icon-calculator"></i></kbd>. This is often used as a
+     * The <code>Calculator</code> key, often labeled with an icon such as
+     * <code><i class="icon-calculator"></i></code>. This is often used as a
      * generic application launcher key (<code>APPCOMMAND_LAUNCH_APP2</code>).
      */
     static Key LAUNCH_CALCULATOR = Key.of("LaunchCalculator");
 
     /**
-     * The <kbd>Calendar</kbd> key, often labeled with an icon like
-     * <kbd><i class="icon-calendar"></i></kbd>.
+     * The <code>Calendar</code> key, often labeled with an icon like
+     * <code><i class="icon-calendar"></i></code>.
      */
     static Key LAUNCH_CALENDAR = Key.of("LaunchCalendar");
 
     /**
-     * The <kbd>Contacts</kbd> key.
+     * The <code>Contacts</code> key.
      */
     static Key LAUNCH_CONTACTS = Key.of("LaunchContacts");
 
     /**
-     * The <kbd>Mail</kbd> key. This is often displayed as
-     * <kbd><i class="icon-envelope-o"></i></kbd>.
+     * The <code>Mail</code> key. This is often displayed as
+     * <code><i class="icon-envelope-o"></i></code>.
      */
     static Key LAUNCH_MAIL = Key.of("LaunchMail");
 
     /**
-     * The <kbd>Media Player</kbd> key.
+     * The <code>Media Player</code> key.
      */
     static Key LAUNCH_MEDIA_PLAYER = Key.of("LaunchMediaPlayer");
 
     /**
-     * The <kbd>Music Player</kbd> key, often labeled with an icon such as
-     * <kbd><i class="icon-music"></i></kbd>.
+     * The <code>Music Player</code> key, often labeled with an icon such as
+     * <code><i class="icon-music"></i></code>.
      */
     static Key LAUNCH_MUSIC_PLAYER = Key.of("LaunchMusicPlayer");
 
     /**
-     * The <kbd>My Computer</kbd> key on Windows keyboards. This is often used
+     * The <code>My Computer</code> key on Windows keyboards. This is often used
      * as a generic application launcher key
      * (<code>APPCOMMAND_LAUNCH_APP1</code>).
      */
     static Key LAUNCH_MY_COMPUTER = Key.of("LaunchMyComputer");
 
     /**
-     * The <kbd>Phone</kbd> key, to open the phone dialer application if one is
+     * The <code>Phone</code> key, to open the phone dialer application if one is
      * present.
      */
     static Key LAUNCH_PHONE = Key.of("LaunchPhone");
 
     /**
-     * The <kbd>Screen Saver</kbd> key.
+     * The <code>Screen Saver</code> key.
      */
     static Key LAUNCH_SCREEN_SAVER = Key.of("LaunchScreenSaver");
 
     /**
-     * The <kbd>Spreadsheet</kbd> key. This key may be labeled with an icon such
-     * as <kbd><i class="icon-table"></i></kbd> or that of a specific
+     * The <code>Spreadsheet</code> key. This key may be labeled with an icon such
+     * as <code><i class="icon-table"></i></code> or that of a specific
      * spreadsheet application.
      */
     static Key LAUNCH_SPREADSHEET = Key.of("LaunchSpreadsheet");
 
     /**
-     * The <kbd>Web Browser</kbd> key. This key is frequently labeled with an
-     * icon such as <kbd><i class="icon-globe"></i></kbd> or the icon of a
+     * The <code>Web Browser</code> key. This key is frequently labeled with an
+     * icon such as <code><i class="icon-globe"></i></code> or the icon of a
      * specific browser, depending on the device manufacturer.
      */
     static Key LAUNCH_WEB_BROWSER = Key.of("LaunchWebBrowser");
 
     /**
-     * The <kbd>WebCam</kbd> key. Opens the webcam application.
+     * The <code>WebCam</code> key. Opens the webcam application.
      */
     static Key LAUNCH_WEB_CAM = Key.of("LaunchWebCam");
 
     /**
-     * The <kbd>Word Processor</kbd> key. This may be an icon of a specific word
+     * The <code>Word Processor</code> key. This may be an icon of a specific word
      * processor application, or a generic document icon.
      */
     static Key LAUNCH_WORD_PROCESSOR = Key.of("LaunchWordProcessor");
@@ -1718,29 +1718,29 @@ public interface Key extends Serializable {
     static Key BROWSER_STOP = Key.of("BrowserStop");
 
     /**
-     * The decimal point key (typically <kbd>.</kbd> or <kbd>,</kbd> depending
+     * The decimal point key (typically <code>.</code> or <code>,</code> depending
      * on the region. In newer browsers, this value to simply be the character
      * generated by the decimal key (one of those two characters). [1]
      */
     static Key DECIMAL = Key.of("Decimal");
 
     /**
-     * The <kbd>11</kbd> key found on certain media numeric keypads.
+     * The <code>11</code> key found on certain media numeric keypads.
      */
     static Key KEY11 = Key.of("Key11");
 
     /**
-     * The <kbd>12</kbd> key found on certain media numeric keypads.
+     * The <code>12</code> key found on certain media numeric keypads.
      */
     static Key KEY12 = Key.of("Key12");
 
     /**
-     * The numeric keypad's multiplication key, <kbd>*</kbd>.
+     * The numeric keypad's multiplication key, <code>*</code>.
      */
     static Key MULTIPLY = Key.of("Multiply");
 
     /**
-     * The numeric keypad's addition key, <kbd>+</kbd>.
+     * The numeric keypad's addition key, <code>+</code>.
      */
     static Key ADD = Key.of("Add");
 
