@@ -29,6 +29,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableComparator;
@@ -98,6 +100,29 @@ public class DataCommunicator<T> implements Serializable {
 
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
+
+    private static class SizeVerifier<T> implements Consumer<T> {
+
+        private int size;
+
+        private final int limit;
+
+        private SizeVerifier(int limit) {
+            this.limit = limit;
+        }
+
+        @Override
+        public void accept(T t) {
+            size++;
+            if (size > limit) {
+                throw new IllegalStateException(String.format(
+                        "The number of items returned by "
+                                + "the data provider exceeds the limit specified by the query (%d).",
+                        limit));
+            }
+        }
+
+    }
 
     /**
      * Creates a new instance.
@@ -320,8 +345,36 @@ public class DataCommunicator<T> implements Serializable {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
-        return getDataProvider().fetch(new Query(offset, limit, backEndSorting,
-                inMemorySorting, filter));
+        QueryTrace query = new QueryTrace(offset, limit, backEndSorting,
+                inMemorySorting, filter);
+        Stream<T> stream = getDataProvider().fetch(query);
+        if (stream.isParallel()) {
+            LoggerFactory.getLogger(DataCommunicator.class)
+                    .debug("Data provider {} has returned "
+                            + "parallel stream on 'fetch' call",
+                            getDataProvider().getClass());
+            stream = stream.collect(Collectors.toList()).stream();
+            assert !stream.isParallel();
+        }
+        SizeVerifier verifier = new SizeVerifier<>(limit);
+        stream = stream.peek(verifier);
+
+        if (!query.isLimitCalled()) {
+            throw new IllegalStateException(
+                    getInvalidContractMessage("getLimit"));
+        }
+        if (!query.isOffsetCalled()) {
+            throw new IllegalStateException(
+                    getInvalidContractMessage("getOffset"));
+        }
+        return stream;
+    }
+
+    private String getInvalidContractMessage(String method) {
+        return String.format("The data provider hasn't ever called %s() "
+                + "method on the provided query. "
+                + "It means that the the data provider breaks the contract "
+                + "and the returned stream contains unxpected data.", method);
     }
 
     private void handleAttach() {

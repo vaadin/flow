@@ -15,15 +15,19 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -38,6 +42,9 @@ import com.vaadin.flow.server.VaadinSession;
 import elemental.json.JsonValue;
 
 public class DataCommunicatorTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     private DataCommunicator<String> dataCommunicator;
 
@@ -183,6 +190,73 @@ public class DataCommunicatorTest {
         Assert.assertNull(
                 "The KeyMapper should be reset when a new DataProvider is set",
                 dataCommunicator.getKeyMapper().get("1"));
+    }
+
+    @Test
+    public void dataProviderBreaksContract_limitIsNotCalled_throw() {
+        List<String> items = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            items.add(String.valueOf(i));
+        }
+        DataProvider<String, Void> dataProvider = DataProvider
+                .fromCallbacks(query -> {
+                    return items.stream();
+                }, query -> {
+                    return items.size();
+                });
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage(CoreMatchers.containsString(
+                "The data provider hasn't ever called getLimit"));
+        dataCommunicator.fetchFromProvider(0, 1);
+    }
+
+    @Test
+    public void dataProviderBreaksContract_offsetIsNotCalled_throw() {
+        List<String> items = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            items.add(String.valueOf(i));
+        }
+        DataProvider<String, Void> dataProvider = DataProvider
+                .fromCallbacks(query -> {
+                    query.getLimit();
+                    return items.stream();
+                }, query -> {
+                    return items.size();
+                });
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage(CoreMatchers.containsString(
+                "The data provider hasn't ever called getOffset"));
+        dataCommunicator.fetchFromProvider(1, 1);
+    }
+
+    @Test
+    public void dataProviderBreaksContract_tooManyItems_throw() {
+        List<String> items = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            items.add(String.valueOf(i));
+        }
+        DataProvider<String, Void> dataProvider = DataProvider
+                .fromCallbacks(query -> {
+                    query.getOffset();
+                    query.getLimit();
+                    return items.stream();
+                }, query -> {
+                    return items.size();
+                });
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        Stream<String> stream = dataCommunicator.fetchFromProvider(0, 1);
+
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage(CoreMatchers.containsString(
+                "exceeds the limit specified by the query (1)."));
+
+        stream.forEach(item -> {
+        });
     }
 
     private void fakeClientCommunication() {
