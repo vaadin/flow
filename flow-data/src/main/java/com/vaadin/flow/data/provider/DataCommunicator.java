@@ -351,7 +351,7 @@ public class DataCommunicator<T> implements Serializable {
         if (stream.isParallel()) {
             LoggerFactory.getLogger(DataCommunicator.class)
                     .debug("Data provider {} has returned "
-                            + "parallell stream on 'fetch' call",
+                            + "parallel stream on 'fetch' call",
                             getDataProvider().getClass());
             stream = stream.collect(Collectors.toList()).stream();
             assert !stream.isParallel();
