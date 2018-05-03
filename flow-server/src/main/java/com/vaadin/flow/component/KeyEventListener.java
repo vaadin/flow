@@ -31,7 +31,7 @@ public class KeyEventListener<E extends KeyboardEvent>
 
     private final ComponentEventListener<E> listener;
 
-    private final String key;
+    private final Key key;
 
     private final EnumSet<KeyModifier> modifiers;
 
@@ -47,7 +47,7 @@ public class KeyEventListener<E extends KeyboardEvent>
      * @param modifiers
      *            the optional modifier keys
      */
-    public KeyEventListener(ComponentEventListener<E> listener, String key,
+    public KeyEventListener(ComponentEventListener<E> listener, Key key,
             KeyModifier... modifiers) {
         this.listener = listener;
         this.key = key;
