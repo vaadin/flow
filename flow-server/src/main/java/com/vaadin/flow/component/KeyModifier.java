@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 /**
  * Enumeration of modifier keys.
  */
-public enum KeyModifier {
+public enum KeyModifier implements Key {
 
     /**
      * KeyModifier for "{@code Shift}" key.
@@ -42,9 +42,9 @@ public enum KeyModifier {
      */
     META(Key.META);
 
-    private final String key;
+    private final Key key;
 
-    KeyModifier(String key) {
+    KeyModifier(Key key) {
         this.key = key;
     }
 
@@ -53,8 +53,9 @@ public enum KeyModifier {
      *
      * @return the key value
      */
+    @Override
     public String getKey() {
-        return key;
+        return key.getKey();
     }
 
     /**
@@ -65,8 +66,8 @@ public enum KeyModifier {
      * @return the {@code KeyModifier}
      */
     public static KeyModifier of(String key) {
-        return Stream.of(values()).filter(k -> k.key.equals(key)).findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+        return Stream.of(values()).filter(k -> k.getKey().equals(key))
+                .findFirst().orElseThrow(IllegalArgumentException::new);
     }
 
 }

@@ -20,6 +20,7 @@ import java.util.Set;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyLocation;
 import com.vaadin.flow.component.KeyModifier;
 
@@ -30,7 +31,7 @@ import com.vaadin.flow.component.KeyModifier;
  */
 public abstract class KeyboardEvent extends ComponentEvent<Component> {
 
-    private final String key;
+    private final Key key;
     private final KeyLocation location;
 
     private final boolean repeat;
@@ -74,22 +75,22 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
             int location, boolean ctrlKey, boolean shiftKey, boolean altKey,
             boolean metaKey, boolean repeat, boolean composing) {
         super(source, fromClient);
-        this.key = key;
+        this.key = Key.of(key);
         this.location = KeyLocation.of(location);
         this.repeat = repeat;
         this.composing = composing;
-        this.modifiers = EnumSet.noneOf(KeyModifier.class);
+        modifiers = EnumSet.noneOf(KeyModifier.class);
         if (ctrlKey) {
-            this.modifiers.add(KeyModifier.CONTROL);
+            modifiers.add(KeyModifier.CONTROL);
         }
         if (shiftKey) {
-            this.modifiers.add(KeyModifier.SHIFT);
+            modifiers.add(KeyModifier.SHIFT);
         }
         if (altKey) {
-            this.modifiers.add(KeyModifier.ALT);
+            modifiers.add(KeyModifier.ALT);
         }
         if (metaKey) {
-            this.modifiers.add(KeyModifier.META);
+            modifiers.add(KeyModifier.META);
         }
     }
 
@@ -110,7 +111,7 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *
      * @return the key of the event
      */
-    public String getKey() {
+    public Key getKey() {
         return key;
     }
 
