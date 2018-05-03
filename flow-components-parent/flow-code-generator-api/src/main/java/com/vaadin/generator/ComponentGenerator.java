@@ -16,7 +16,6 @@
 package com.vaadin.generator;
 
 import javax.annotation.Generated;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,7 +78,6 @@ import com.vaadin.generator.registry.ExclusionRegistry;
 import com.vaadin.generator.registry.PropertyNameRemapRegistry;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.generator.registry.ValuePropertyRegistry.valueName;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -560,15 +558,19 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> ctor = javaClass.addMethod()
                 .setConstructor(true).setPublic();
 
-        String INITIAL_VALUE = "initialValue";
-        String DEFAULT_VALUE = "defaultValue";
+        final String initialValue = "initialValue";
+        final String defaultValue = "defaultValue";
 
-        String CONSTRUCTOR_JAVADOC =
-                "Constructs a new " + getGeneratedClassName(metadata.getTag())
-                        + " component with the given arguments.";
+        final String constructorJavadocHeader = "Constructs a new "
+                + getGeneratedClassName(metadata.getTag())
+                + " component with the given arguments."
+                + "\n@param initialValue the initial value to set to the value"
+                + "\n@param defaultValue the default value to use if the value isn't defined";
 
-        ctor.addParameter(GENERIC_VAL, INITIAL_VALUE);
-        ctor.addParameter(GENERIC_VAL, DEFAULT_VALUE);
+        final String bodyTemplate = "super(\"%s\",%s);if (initialValue != null) {setModelValue(initialValue, false);setPresentationValue(initialValue);}";
+
+        ctor.addParameter(GENERIC_VAL, initialValue);
+        ctor.addParameter(GENERIC_VAL, defaultValue);
         ctor.addTypeVariable("P");
         ctor.addParameter("Class<P>", "elementPropertyType");
         ctor.addParameter("SerializableFunction<P, T>", "presentationToModel");
@@ -577,42 +579,32 @@ public class ComponentGenerator {
             ctor.setBody(
                     "super(initialValue, defaultValue, elementPropertyType, presentationToModel, modelToPresentation);");
         } else {
-            ctor.setBody("super(\"" + propName
-                    + "\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
-                    + "if (initialValue != null) {"
-                    + "setModelValue(initialValue, false);"
-                    + "setPresentationValue(initialValue);}");
+            ctor.setBody(String.format(bodyTemplate, propName,
+                    "defaultValue, elementPropertyType, presentationToModel, modelToPresentation"));
         }
-        ctor.getJavaDoc().setText(CONSTRUCTOR_JAVADOC
-                + "\n@param initialValue the initial value to set to the value"
-                + "\n@param defaultValue the default value to use if the value isn't defined"
+        ctor.getJavaDoc().setText(constructorJavadocHeader
                 + "\n@param elementPropertyType the type of the element property"
                 + "\n@param presentationToModel a function that converts a string value to a model value"
                 + "\n@param modelToPresentation a function that converts a model value to a string value"
                 + "\n@param <P> the property type");
 
         ctor = javaClass.addMethod().setConstructor(true).setPublic();
-        ctor.addParameter(GENERIC_VAL, INITIAL_VALUE);
-        ctor.addParameter(GENERIC_VAL, DEFAULT_VALUE);
+        ctor.addParameter(GENERIC_VAL, initialValue);
+        ctor.addParameter(GENERIC_VAL, defaultValue);
         ctor.addParameter("boolean", "acceptNullValues");
         if (hasParent) {
             ctor.setBody(
                     "super(initialValue, defaultValue, acceptNullValues);");
         } else {
-            ctor.setBody("super(\"" + propName
-                    + "\", defaultValue, acceptNullValues);"
-                    + "if (initialValue != null) {"
-                    + "setModelValue(initialValue, false);"
-                    + "setPresentationValue(initialValue);}");
+            ctor.setBody(String.format(bodyTemplate, propName,
+                    "defaultValue, acceptNullValues"));
         }
-        ctor.getJavaDoc().setText(CONSTRUCTOR_JAVADOC
-                + "\n@param initialValue the initial value to set to the value"
-                + "\n@param defaultValue the default value to use if the value isn't defined"
+        ctor.getJavaDoc().setText(constructorJavadocHeader
                 + "\n@param acceptNullValues whether <code>null</code> is accepted as a model value");
 
         ctor = javaClass.addMethod().setConstructor(true).setPublic();
-        ctor.addParameter(GENERIC_VAL, INITIAL_VALUE);
-        ctor.addParameter(GENERIC_VAL, DEFAULT_VALUE);
+        ctor.addParameter(GENERIC_VAL, initialValue);
+        ctor.addParameter(GENERIC_VAL, defaultValue);
         ctor.addTypeVariable("P");
         ctor.addParameter("Class<P>", "elementPropertyType");
         ctor.addParameter("SerializableBiFunction<" + GENERIC_TYPE + ", P, T>",
@@ -623,15 +615,10 @@ public class ComponentGenerator {
             ctor.setBody(
                     "super(initialValue, defaultValue, elementPropertyType, presentationToModel, modelToPresentation);");
         } else {
-            ctor.setBody("super(\"" + propName
-                    + "\", defaultValue, elementPropertyType, presentationToModel, modelToPresentation);"
-                    + "if (initialValue != null) {"
-                    + "setModelValue(initialValue, false);"
-                    + "setPresentationValue(initialValue);}");
+            ctor.setBody(String.format(bodyTemplate, propName,
+                    "defaultValue, elementPropertyType, presentationToModel, modelToPresentation"));
         }
-        ctor.getJavaDoc().setText(CONSTRUCTOR_JAVADOC
-                + "\n@param initialValue the initial value to set to the value"
-                + "\n@param defaultValue the default value to use if the value isn't defined"
+        ctor.getJavaDoc().setText(constructorJavadocHeader
                 + "\n@param elementPropertyType the type of the element property"
                 + "\n@param presentationToModel a function that accepts this component and a property value and returns a model value"
                 + "\n@param modelToPresentation a function that accepts this component and a model value and returns a property value"
