@@ -73,6 +73,11 @@ public abstract class AbstractCompositeField<C extends Component, S extends Abst
     }
 
     @Override
+    public boolean isEmpty() {
+        return valueEquals(getValue(), getEmptyValue());
+    }
+
+    @Override
     public Registration addValueChangeListener(
             HasValue.ValueChangeListener<? super ComponentValueChangeEvent<S, T>> listener) {
         return fieldSupport.addValueChangeListener(listener);
