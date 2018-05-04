@@ -243,6 +243,11 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
     }
 
     @Override
+    public boolean isEmpty() {
+        return valueEquals(getValue(), getEmptyValue());
+    }
+
+    @Override
     public T getValue() {
         return fieldSupport.getValue();
     }

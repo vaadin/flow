@@ -40,6 +40,15 @@ public class AbstractCompositeFieldTest {
             getContent().setValue(reverseCase(newPresentationValue));
         }
 
+        @Override
+        protected boolean valueEquals(String value1, String value2) {
+            if (value1 != null && value2 != null) {
+                return value1.trim().equals(value2.trim());
+            } else {
+                return value1 == value2;
+            }
+        }
+
         private static String reverseCase(String input) {
             int[] reversedCodePoints = input.codePoints().map(c -> {
                 if (Character.isUpperCase(c)) {
@@ -65,6 +74,19 @@ public class AbstractCompositeFieldTest {
 
         innerField.setValue("wORLD");
         Assert.assertEquals("World", outerField.getValue());
+    }
+
+    @Test
+    public void emptyValueEquals() {
+        ReverseCaseField field = new ReverseCaseField();
+
+        Assert.assertTrue(field.isEmpty());
+
+        field.setValue("a");
+        Assert.assertFalse(field.isEmpty());
+
+        field.setValue(" ");
+        Assert.assertTrue(field.isEmpty());
     }
 
     private static class MultipleFieldsField extends
