@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.util.EventObject;
 
+import com.vaadin.flow.server.Command;
+
 /**
  * An event whose source is a {@link Component}.
  * <p>
@@ -30,6 +32,7 @@ import java.util.EventObject;
 public class ComponentEvent<T extends Component> extends EventObject {
 
     private boolean fromClient = false;
+    private Command unregisterListenerCommand = null;
 
     /**
      * Creates a new event using the given source and indicator whether the
@@ -61,4 +64,33 @@ public class ComponentEvent<T extends Component> extends EventObject {
     public boolean isFromClient() {
         return fromClient;
     }
+
+    /**
+     * Sets the command which is executed to unregister the listener.
+     * <p>
+     * For internal use.
+     *
+     * @param unregisterListenerCommand
+     *            the unregister command
+     */
+    public void setUnregisterListenerCommand(
+            Command unregisterListenerCommand) {
+        this.unregisterListenerCommand = unregisterListenerCommand;
+    }
+
+    /**
+     * Unregisters the event listener currently being invoked.
+     * <p>
+     * This method can only be called from within an event listener. Calling it
+     * will remove the current event listener so no further events are passed to
+     * it.
+     */
+    public void unregisterListener() {
+        if (unregisterListenerCommand == null) {
+            throw new IllegalStateException(
+                    "unregisterListener can only be called inside the event listener");
+        }
+        unregisterListenerCommand.execute();
+    }
+
 }
