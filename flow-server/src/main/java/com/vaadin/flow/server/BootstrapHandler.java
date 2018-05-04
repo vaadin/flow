@@ -54,6 +54,7 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
@@ -89,9 +90,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "window.__gwtStatsEvent = function(event) {"
             + "window.Vaadin.Flow.gwtStatsEvents.push(event); "
             + "return true;};};";
-    private static final String CONTENT_ATTRIBUTE = "content";
+    static final String CONTENT_ATTRIBUTE = "content";
     private static final String DEFER_ATTRIBUTE = "defer";
-    private static final String VIEWPORT = "viewport";
+    static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
 
     /**
@@ -687,10 +688,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendElement("base").attr("href", getServiceUrl(context));
 
-        BootstrapUtils.getViewportContent(context)
-                .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", VIEWPORT).attr(CONTENT_ATTRIBUTE,
-                                content));
+        head.appendElement(META_TAG).attr("name", VIEWPORT)
+                .attr(CONTENT_ATTRIBUTE, BootstrapUtils
+                        .getViewportContent(context).orElse(Viewport.DEFAULT));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {

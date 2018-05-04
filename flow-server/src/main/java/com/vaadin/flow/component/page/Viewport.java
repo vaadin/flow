@@ -24,7 +24,8 @@ import java.lang.annotation.Target;
 
 /**
  * Defines a viewport tag that will be added to the HTML of the host page of a
- * UI class.
+ * UI class. If no viewport tag has been defined, a default of
+ * <code>width=device-width, initial-scale=1.0</code> is used.
  *
  * @author Vaadin Ltd
  */
@@ -33,6 +34,8 @@ import java.lang.annotation.Target;
 @Inherited
 @Documented
 public @interface Viewport {
+    String DEFAULT = "width=device-width, initial-scale=1.0";
+
     /**
      * Gets the viewport tag content.
      *

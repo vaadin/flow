@@ -1090,7 +1090,7 @@ public class BootstrapHandlerTest {
         Element head = page.head();
         Elements metas = head.getElementsByTag("meta");
 
-        Assert.assertEquals(2, metas.size());
+        Assert.assertEquals(3, metas.size());
         Element meta = metas.get(0);
         assertEquals("Content-Type", meta.attr("http-equiv"));
         assertEquals("text/html; charset=utf-8", meta.attr("content"));
@@ -1098,6 +1098,11 @@ public class BootstrapHandlerTest {
         meta = metas.get(1);
         assertEquals("X-UA-Compatible", meta.attr("http-equiv"));
         assertEquals("IE=edge", meta.attr("content"));
+
+        meta = metas.get(2);
+        assertEquals(BootstrapHandler.VIEWPORT, meta.attr("name"));
+        assertEquals(Viewport.DEFAULT,
+                meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
     }
 
     @Test
@@ -1494,5 +1499,41 @@ public class BootstrapHandlerTest {
                     "Expect document head NOT to contain script '%s'",
                     scriptName), inlined);
         }
+    }
+
+    @Test
+    public void defaultViewport() {
+        initUI(testUI);
+        Document page = BootstrapHandler.getBootstrapPage(context);
+        Element head = page.head();
+        Elements viewports = head.getElementsByAttributeValue("name",
+                BootstrapHandler.VIEWPORT);
+        Assert.assertEquals(1, viewports.size());
+        Element viewport = viewports.get(0);
+        Assert.assertEquals(Viewport.DEFAULT,
+                viewport.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+
+    }
+
+    @Viewport("viewport-annotation-value")
+    @Tag("div")
+    @Route("")
+    public static class RouteWithViewport extends Component {
+
+    }
+
+    @Test
+    public void viewportAnnotationOverridesDefault() throws Exception {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(RouteWithViewport.class));
+        Document page = BootstrapHandler.getBootstrapPage(context);
+        Element head = page.head();
+        Elements viewports = head.getElementsByAttributeValue("name",
+                BootstrapHandler.VIEWPORT);
+        Assert.assertEquals(1, viewports.size());
+        Element viewport = viewports.get(0);
+        Assert.assertEquals("viewport-annotation-value",
+                viewport.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+
     }
 }
