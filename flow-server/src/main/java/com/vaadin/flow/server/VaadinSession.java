@@ -343,6 +343,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public void setLocale(Locale locale) {
         checkHasLock();
         this.locale = locale;
+
+        getUIs().forEach(ui -> ui.setLocale(locale));
     }
 
     /**
@@ -543,7 +545,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the service to check
      * @param session
      *            the session to use for checking
-     * 
+     *
      * @return true if this thread has exclusive access, false otherwise
      * @since 7.6
      */
@@ -998,7 +1000,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Override default deserialization logic to account for transient
      * {@link #pendingAccessQueue}.
-     * 
+     *
      * @param stream
      *            the object to read
      * @throws IOException

@@ -76,11 +76,6 @@ public class ApplicationConstants implements Serializable {
             + "push/vaadinPush.js";
 
     /**
-     * Name of the parameter used to transmit the CSRF token.
-     */
-    public static final String CSRF_TOKEN_PARAMETER = "v-csrfToken";
-
-    /**
      * Name of the parameter used to transmit the push connection identifier.
      */
     public static final String PUSH_ID_PARAMETER = "v-pushId";
@@ -126,14 +121,6 @@ public class ApplicationConstants implements Serializable {
      * The name of the parameter used for re-synchronizing.
      */
     public static final String RESYNCHRONIZE_ID = "resynchronize";
-
-    /**
-     * The name of the parameter used for sending the widget set version to the
-     * server
-     *
-     * @since 7.6
-     */
-    public static final String WIDGETSET_VERSION_ID = "wsver";
 
     /**
      * Content type to use for text/html responses (should always be UTF-8).

@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -31,11 +32,13 @@ import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableTriConsumer;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -313,7 +316,7 @@ public class ComponentUtil {
      * Dispatches the event to all listeners registered for the event type.
      *
      * @see Component#fireEvent(ComponentEvent)
-     * 
+     *
      * @param component
      *            the component for which to fire events
      * @param componentEvent
@@ -420,6 +423,106 @@ public class ComponentUtil {
             Class<? extends Component> componentClass) {
         return componentMetaDataCache.get(componentClass)
                 .getDependencyInfo(service);
+    }
+
+    private static <T, U> void setData(Component component,
+            SerializableTriConsumer<Attributes, T, U> setter, T key, U value) {
+        Attributes attributes = component.attributes;
+        if (attributes == null) {
+            if (value == null) {
+                return;
+            }
+            attributes = new Attributes();
+            component.attributes = attributes;
+        }
+
+        setter.accept(attributes, key, value);
+
+        if (attributes.isEmpty()) {
+            component.attributes = null;
+        }
+    }
+
+    /**
+     * Stores a arbitrary value for the given component.
+     *
+     * @see #setData(Component, Class, Object)
+     * @see #getData(Component, String)
+     *
+     * @param component
+     *            the component for which to set the data
+     * @param key
+     *            the key with which the instance can be retrieved, not
+     *            <code>null</code>
+     * @param value
+     *            the data to set, or <code>null</code> to remove data
+     *            previously set with the same key
+     */
+    public static void setData(Component component, String key, Object value) {
+        setData(component, Attributes::setAttribute, key, value);
+    }
+
+    /**
+     * Stores a an instance of a specific type for the given component.
+     *
+     * @see #setData(Component, String, Object)
+     * @see #getData(Component, Class)
+     *
+     * @param component
+     *            the component for which to set the data
+     * @param type
+     *            the type of the data to set, not <code>null</code>
+     * @param value
+     *            the data instance to set, or <code>null</code> to remove data
+     *            previously set with the same type
+     */
+    public static <T> void setData(Component component, Class<T> type,
+            T value) {
+        setData(component, Attributes::setAttribute, type, value);
+    }
+
+    private static <T, U> U getData(Component component,
+            BiFunction<Attributes, T, U> getter, T key) {
+        Attributes attributes = component.attributes;
+        if (attributes == null) {
+            return null;
+        }
+        return getter.apply(attributes, key);
+    }
+
+    /**
+     * Gets a data instance with the given key, or <code>null</code> if no data
+     * has been set for that key.
+     *
+     * @see #setData(Component, String, Object)
+     *
+     * @param component
+     *            the component from which to get the data
+     * @param key
+     *            the data key
+     * @return the data instance, or <code>null</code> if no instance has been
+     *         set using the given key
+     */
+    public static Object getData(Component component, String key) {
+        return getData(component, Attributes::getAttribute, key);
+    }
+
+    /**
+     * Gets a data instance with the given type, or <code>null</code> if there
+     * is no such instance.
+     *
+     * @see #setData(Component, Class, Object)
+     *
+     * @param component
+     *            the component from which to get the data
+     * @param type
+     *            the data type
+     * @return the data instance, or <code>null</code> if no instance has been
+     *         set using the given type
+     */
+    public static <T> T getData(Component component, Class<T> type) {
+        return getData(component,
+                (attributes, ignore) -> attributes.getAttribute(type), type);
     }
 
 }

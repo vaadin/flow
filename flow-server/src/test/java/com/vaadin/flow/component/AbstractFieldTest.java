@@ -57,8 +57,8 @@ public class AbstractFieldTest {
             this(null);
         }
 
-        public TestAbstractField(T initialValue) {
-            super(initialValue);
+        public TestAbstractField(T defaultValue) {
+            super(defaultValue);
         }
 
         T presentationValue;
@@ -232,6 +232,26 @@ public class AbstractFieldTest {
 
         field.updatePresentationValue(value1, true);
         eventMonitor.assertEvent(true, value2, value1);
+    }
+
+    @Test
+    public void customEquals_isEmpty() {
+        Integer value1 = new Integer(0);
+        Integer value2 = new Integer(0);
+
+        TestAbstractField<Integer> field = new TestAbstractField<>(value1);
+        field.valueEquals = (v1, v2) -> v1 == v2;
+
+        Assert.assertTrue(field.isEmpty());
+        Assert.assertFalse(field.getOptionalValue().isPresent());
+
+        field.setValue(value2);
+        Assert.assertFalse(field.isEmpty());
+        Assert.assertTrue(field.getOptionalValue().isPresent());
+
+        field.clear();
+        Assert.assertTrue(field.isEmpty());
+        Assert.assertFalse(field.getOptionalValue().isPresent());
     }
 
     @Test

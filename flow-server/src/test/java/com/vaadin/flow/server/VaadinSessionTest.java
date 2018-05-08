@@ -22,11 +22,17 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -329,5 +335,34 @@ public class VaadinSessionTest {
                 "Current session should be available in SerializationTestLabel.readObject",
                 deserializedSession, deserializedPc.session);
         deserializedSession.unlock();
+    }
+
+    @Test
+    public void setLocale_setLocaleForAllUIs() {
+        UI anotherUI = new UI();
+
+        anotherUI.getInternals().setSession(session);
+
+        anotherUI.doInit(vaadinRequest, session.getNextUIid());
+
+        session.addUI(anotherUI);
+
+        Assert.assertEquals(2, session.getUIs().size());
+
+        Set<Locale> locales = session.getUIs().stream().map(UI::getLocale)
+                .collect(Collectors.toSet());
+
+        Optional<Locale> newLocale = Stream.of(Locale.getAvailableLocales())
+                .filter(locale -> !locales.contains(locale)
+                        && !locale.toString().trim().isEmpty())
+                .findFirst();
+
+        session.setLocale(newLocale.get());
+
+        Locale expectedlocale = newLocale.get();
+
+        Iterator<UI> uis = session.getUIs().iterator();
+        Assert.assertEquals(expectedlocale, uis.next().getLocale());
+        Assert.assertEquals(expectedlocale, uis.next().getLocale());
     }
 }

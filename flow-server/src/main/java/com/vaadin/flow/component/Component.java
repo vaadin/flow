@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 
@@ -73,6 +74,10 @@ public abstract class Component
     static ThreadLocal<MapToExistingElement> elementToMapTo = new ThreadLocal<>();
 
     private Element element;
+
+    // Manipulated through ComponentUtil to avoid polluting the regular
+    // Component API
+    Attributes attributes;
 
     private ComponentEventBus eventBus = null;
 
