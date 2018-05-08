@@ -53,23 +53,23 @@ public interface Key extends Serializable {
     static Key CAPS_LOCK = Key.of("CapsLock");
 
     /**
-     * The <code>Control</code>, <code>Ctrl</code>, or <code>Ctl</code> key. Allows
-     * typing control characters.
+     * The <code>Control</code>, <code>Ctrl</code>, or <code>Ctl</code> key.
+     * Allows typing control characters.
      */
     static Key CONTROL = Key.of("Control");
 
     /**
      * The <code>Fn</code> (Function modifier) key. Used to allow generating
-     * function key (<code>F1</code>-<code>F15</code>, for instance) characters on
-     * keyboards without a dedicated function key area. Often handled in
+     * function key (<code>F1</code>-<code>F15</code>, for instance) characters
+     * on keyboards without a dedicated function key area. Often handled in
      * hardware so that events aren't generated for this key.
      */
     static Key FN = Key.of("Fn");
 
     /**
-     * The <code>FnLock</code> or <code>F-Lock</code> (Function Lock) key.Toggles
-     * the function key mode described by "Fn" on and off. Often handled in
-     * hardware so that events aren't generated for this key.
+     * The <code>FnLock</code> or <code>F-Lock</code> (Function Lock) key.
+     * Toggles the function key mode described by "Fn" on and off. Often handled
+     * in hardware so that events aren't generated for this key.
      */
     static Key FN_LOCK = Key.of("FnLock");
 
@@ -110,7 +110,8 @@ public interface Key extends Serializable {
     static Key SUPER = Key.of("Super");
 
     /**
-     * The <code>Symbol</code> modifier key (found on certain virtual keyboards).
+     * The <code>Symbol</code> modifier key (found on certain virtual
+     * keyboards).
      */
     static Key SYMBOL = Key.of("Symbol");
 
@@ -172,14 +173,14 @@ public interface Key extends Serializable {
     static Key PAGE_DOWN = Key.of("PageDown");
 
     /**
-     * The <code>Page Up</code> (or <code>PgUp</code>) key. Scrolls up or displays
-     * the previous page of content.
+     * The <code>Page Up</code> (or <code>PgUp</code>) key. Scrolls up or
+     * displays the previous page of content.
      */
     static Key PAGE_UP = Key.of("PageUp");
 
     /**
-     * The <code>Backspace</code> key. This key is labeled <code>Delete</code> on
-     * Mac keyboards.
+     * The <code>Backspace</code> key. This key is labeled <code>Delete</code>
+     * on Mac keyboards.
      */
     static Key BACKSPACE = Key.of("Backspace");
 
@@ -241,8 +242,8 @@ public interface Key extends Serializable {
     static Key UNDO = Key.of("Undo");
 
     /**
-     * The <code>Accept</code>, <code>Commit</code>, or <code>OK</code> key or button.
-     * Accepts the currently selected option or input method sequence
+     * The <code>Accept</code>, <code>Commit</code>, or <code>OK</code> key or
+     * button. Accepts the currently selected option or input method sequence
      * conversion.
      */
     static Key ACCEPT = Key.of("Accept");
@@ -264,8 +265,8 @@ public interface Key extends Serializable {
 
     /**
      * Shows the context menu. Typically found between the <code>Windows</code>
-     * (or <code>OS</code>) key and the <code>Control</code> key on the right side
-     * of the keyboard.
+     * (or <code>OS</code>) key and the <code>Control</code> key on the right
+     * side of the keyboard.
      */
     static Key CONTEXT_MENU = Key.of("ContextMenu");
 
@@ -283,8 +284,8 @@ public interface Key extends Serializable {
     static Key EXECUTE = Key.of("Execute");
 
     /**
-     * The <code>Find</code> key. Opens an interface (typically a dialog box) for
-     * performing a find/search operation.
+     * The <code>Find</code> key. Opens an interface (typically a dialog box)
+     * for performing a find/search operation.
      */
     static Key FIND = Key.of("Find");
 
@@ -360,9 +361,9 @@ public interface Key extends Serializable {
     static Key LOG_OFF = Key.of("LogOff");
 
     /**
-     * The <code>Power</code> button or key, to toggle power on and off. Note: Not
-     * all systems pass this key through to to the user agent.
-     *
+     * The <code>Power</code> button or key, to toggle power on and off.
+     * <p>
+     * Note: Not all systems pass this key through to to the user agent.
      */
     static Key POWER = Key.of("Power");
 
@@ -394,14 +395,14 @@ public interface Key extends Serializable {
     static Key STANDBY = Key.of("Standby");
 
     /**
-     * The <code>WakeUp</code> key; used to wake the computer from the hibernation
-     * or standby modes.
+     * The <code>WakeUp</code> key; used to wake the computer from the
+     * hibernation or standby modes.
      */
     static Key WAKE_UP = Key.of("WakeUp");
 
     /**
-     * The <code>All Candidates</code> key, which starts multi-candidate mode, in
-     * which multiple candidates are displayed for the ongoing input.
+     * The <code>All Candidates</code> key, which starts multi-candidate mode,
+     * in which multiple candidates are displayed for the ongoing input.
      */
     static Key ALL_CANDIDATES = Key.of("AllCandidates");
 
@@ -411,8 +412,8 @@ public interface Key extends Serializable {
     static Key ALPHANUMERIC = Key.of("Alphanumeric");
 
     /**
-     * The <code>Code Input</code> key, which enables code input mode, which lets
-     * the user enter characters by typing their code points (their Unicode
+     * The <code>Code Input</code> key, which enables code input mode, which
+     * lets the user enter characters by typing their code points (their Unicode
      * character numbers, typically).
      */
     static Key CODE_INPUT = Key.of("CodeInput");
@@ -435,39 +436,38 @@ public interface Key extends Serializable {
     static Key DEAD = Key.of("Dead");
 
     /**
-     * The <code>Final</code> (Final Mode) key is used on some Asian keyboards to
-     * enter final mode when using IMEs.
+     * The <code>Final</code> (Final Mode) key is used on some Asian keyboards
+     * to enter final mode when using IMEs.
      */
     static Key FINAL_MODE = Key.of("FinalMode");
 
     /**
      * Switches to the first character group on an
-     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995" class="external
-     * external-icon" rel="noopener">ISO/IEC 9995 keyboard</a>. Each key may
-     * have multiple groups of characters, each in its own column. Pressing this
-     * key instructs the device to interpret keypresses as coming from the first
-     * column on subsequent keystrokes.
+     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
+     * keyboard</a>. Each key may have multiple groups of characters, each in
+     * its own column. Pressing this key instructs the device to interpret
+     * keypresses as coming from the first column on subsequent keystrokes.
      */
     static Key GROUP_FIRST = Key.of("GroupFirst");
 
     /**
      * Switches to the last character group on an
-     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995" class="external
-     * external-icon" rel="noopener">ISO/IEC 9995 keyboard</a>.
+     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
+     * keyboard</a>.
      */
     static Key GROUP_LAST = Key.of("GroupLast");
 
     /**
      * Switches to the next character group on an
-     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995" class="external
-     * external-icon" rel="noopener">ISO/IEC 9995 keyboard</a>.
+     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
+     * keyboard</a>.
      */
     static Key GROUP_NEXT = Key.of("GroupNext");
 
     /**
      * Switches to the previous character group on an
-     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995" class="external
-     * external-icon" rel="noopener">ISO/IEC 9995 keyboard</a>.
+     * <a href="https://en.wikipedia.org/wiki/ISO/IEC_9995">ISO/IEC 9995
+     * keyboard</a>.
      */
     static Key GROUP_PREVIOUS = Key.of("GroupPrevious");
 
@@ -483,8 +483,9 @@ public interface Key extends Serializable {
     static Key NEXT_CANDIDATE = Key.of("NextCandidate");
 
     /**
-     * The <code>NonConvert</code> ("Don't convert") key. This accepts the current
-     * input method sequence without running conversion when using an IME.
+     * The <code>NonConvert</code> ("Don't convert") key. This accepts the
+     * current input method sequence without running conversion when using an
+     * IME.
      */
     static Key NON_CONVERT = Key.of("NonConvert");
 
@@ -495,7 +496,8 @@ public interface Key extends Serializable {
     static Key PREVIOUS_CANDIDATE = Key.of("PreviousCandidate");
 
     /**
-     * The <code>Process</code> key. Instructs the IME to process the conversion.
+     * The <code>Process</code> key. Instructs the IME to process the
+     * conversion.
      */
     static Key PROCESS = Key.of("Process");
 
@@ -1263,7 +1265,7 @@ public interface Key extends Serializable {
 
     /**
      * Presents a list of media applications, such as photo viewers, audio and
-     * video players, and games. [1]
+     * video players, and games.
      */
     static Key MEDIA_APPS = Key.of("MediaApps");
 
@@ -1441,8 +1443,8 @@ public interface Key extends Serializable {
 
     /**
      * Toggles display of
-     * <a href="https://en.wikipedia.org/wiki/teletext" title="teletext" class=
-     * "external external-icon" rel="noopener">teletext</a>, if available.
+     * <a href="https://en.wikipedia.org/wiki/teletext">teletext</a>, if
+     * available.
      */
     static Key TELETEXT = Key.of("Teletext");
 
@@ -1523,15 +1525,13 @@ public interface Key extends Serializable {
     static Key MAIL_SEND = Key.of("MailSend");
 
     /**
-     * The <code>Calculator</code> key, often labeled with an icon such as
-     * <code><i class="icon-calculator"></i></code>. This is often used as a
-     * generic application launcher key (<code>APPCOMMAND_LAUNCH_APP2</code>).
+     * The <code>Calculator</code> key. This is often used as a generic
+     * application launcher key (<code>APPCOMMAND_LAUNCH_APP2</code>).
      */
     static Key LAUNCH_CALCULATOR = Key.of("LaunchCalculator");
 
     /**
-     * The <code>Calendar</code> key, often labeled with an icon like
-     * <code><i class="icon-calendar"></i></code>.
+     * The <code>Calendar</code> key.
      */
     static Key LAUNCH_CALENDAR = Key.of("LaunchCalendar");
 
@@ -1541,8 +1541,7 @@ public interface Key extends Serializable {
     static Key LAUNCH_CONTACTS = Key.of("LaunchContacts");
 
     /**
-     * The <code>Mail</code> key. This is often displayed as
-     * <code><i class="icon-envelope-o"></i></code>.
+     * The <code>Mail</code> key.
      */
     static Key LAUNCH_MAIL = Key.of("LaunchMail");
 
@@ -1552,8 +1551,7 @@ public interface Key extends Serializable {
     static Key LAUNCH_MEDIA_PLAYER = Key.of("LaunchMediaPlayer");
 
     /**
-     * The <code>Music Player</code> key, often labeled with an icon such as
-     * <code><i class="icon-music"></i></code>.
+     * The <code>Music Player</code> key.
      */
     static Key LAUNCH_MUSIC_PLAYER = Key.of("LaunchMusicPlayer");
 
@@ -1565,8 +1563,8 @@ public interface Key extends Serializable {
     static Key LAUNCH_MY_COMPUTER = Key.of("LaunchMyComputer");
 
     /**
-     * The <code>Phone</code> key, to open the phone dialer application if one is
-     * present.
+     * The <code>Phone</code> key, to open the phone dialer application if one
+     * is present.
      */
     static Key LAUNCH_PHONE = Key.of("LaunchPhone");
 
@@ -1576,16 +1574,12 @@ public interface Key extends Serializable {
     static Key LAUNCH_SCREEN_SAVER = Key.of("LaunchScreenSaver");
 
     /**
-     * The <code>Spreadsheet</code> key. This key may be labeled with an icon such
-     * as <code><i class="icon-table"></i></code> or that of a specific
-     * spreadsheet application.
+     * The <code>Spreadsheet</code> key.
      */
     static Key LAUNCH_SPREADSHEET = Key.of("LaunchSpreadsheet");
 
     /**
-     * The <code>Web Browser</code> key. This key is frequently labeled with an
-     * icon such as <code><i class="icon-globe"></i></code> or the icon of a
-     * specific browser, depending on the device manufacturer.
+     * The <code>Web Browser</code> key.
      */
     static Key LAUNCH_WEB_BROWSER = Key.of("LaunchWebBrowser");
 
@@ -1595,8 +1589,8 @@ public interface Key extends Serializable {
     static Key LAUNCH_WEB_CAM = Key.of("LaunchWebCam");
 
     /**
-     * The <code>Word Processor</code> key. This may be an icon of a specific word
-     * processor application, or a generic document icon.
+     * The <code>Word Processor</code> key. This may be an icon of a specific
+     * word processor application, or a generic document icon.
      */
     static Key LAUNCH_WORD_PROCESSOR = Key.of("LaunchWordProcessor");
 
@@ -1718,9 +1712,9 @@ public interface Key extends Serializable {
     static Key BROWSER_STOP = Key.of("BrowserStop");
 
     /**
-     * The decimal point key (typically <code>.</code> or <code>,</code> depending
-     * on the region. In newer browsers, this value to simply be the character
-     * generated by the decimal key (one of those two characters). [1]
+     * The decimal point key (typically <code>.</code> or <code>,</code>
+     * depending on the region. In newer browsers, this value to simply be the
+     * character generated by the decimal key (one of those two characters).
      */
     static Key DECIMAL = Key.of("Decimal");
 
