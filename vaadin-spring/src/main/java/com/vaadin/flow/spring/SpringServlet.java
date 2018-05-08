@@ -72,7 +72,6 @@ public class SpringServlet extends VaadinServlet {
         setProperty(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
                 properties);
         setProperty(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL, properties);
-        setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE, properties);
         setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 properties);
         setProperty(Constants.SERVLET_PARAMETER_PUSH_MODE, properties);
