@@ -644,7 +644,7 @@ public class BrowserDetails implements Serializable {
      */
     public boolean isEs6Supported() {
         // Safari 10+
-        if (isSafari() && getBrowserMajorVersion() >= 10) {
+        if (isSafari() && getBrowserMajorVersion() > 10) {
             return true;
         }
         // Firefox 51+
