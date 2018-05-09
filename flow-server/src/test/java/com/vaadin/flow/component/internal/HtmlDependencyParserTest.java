@@ -199,6 +199,9 @@ public class HtmlDependencyParserTest {
                     + "://bower_components/vaadin-button/src/vaadin-button.html",
                     normalize(protocol
                             + "://src/views/login/../../../bower_components/vaadin-button/src/vaadin-button.html"));
+            assertEquals(protocol + "://components/js/hash-actions.html",
+                    normalize(protocol
+                            + "://components/../components/js/hash-actions.html"));
         }
 
     }

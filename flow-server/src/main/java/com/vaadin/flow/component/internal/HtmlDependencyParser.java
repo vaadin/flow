@@ -141,11 +141,11 @@ public class HtmlDependencyParser {
             if (".".equals(normalized.getAuthority())
                     && normalized.getHost() == null) {
                 // frontend://./foo.html
-                return normalized.toString().replaceAll("//./", "//");
+                return normalized.toString().replace("//./", "//");
             }
             if (normalized.getPath().startsWith("/../")) {
                 return normalized.toString()
-                        .replaceAll(normalized.getHost() + "/../", "");
+                        .replace(normalized.getHost() + "/../", "");
             }
         }
         return normalized.toString();
