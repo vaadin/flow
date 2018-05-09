@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -23,7 +25,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @author Vaadin Ltd
  */
-public interface KeyNotifier extends ComponentEventNotifier {
+public interface KeyNotifier extends Serializable {
 
     /**
      * Adds a {@code keydown} listener to this component.
@@ -34,7 +36,8 @@ public interface KeyNotifier extends ComponentEventNotifier {
      */
     default Registration addKeyDownListener(
             ComponentEventListener<KeyDownEvent> listener) {
-        return addListener(KeyDownEvent.class, listener);
+        return ComponentUtil.addListener((Component) this, KeyDownEvent.class,
+                listener);
     }
 
     /**
@@ -46,7 +49,8 @@ public interface KeyNotifier extends ComponentEventNotifier {
      */
     default Registration addKeyPressListener(
             ComponentEventListener<KeyPressEvent> listener) {
-        return addListener(KeyPressEvent.class, listener);
+        return ComponentUtil.addListener((Component) this, KeyPressEvent.class,
+                listener);
     }
 
     /**
@@ -58,7 +62,8 @@ public interface KeyNotifier extends ComponentEventNotifier {
      */
     default Registration addKeyUpListener(
             ComponentEventListener<KeyUpEvent> listener) {
-        return addListener(KeyUpEvent.class, listener);
+        return ComponentUtil.addListener((Component) this, KeyUpEvent.class,
+                listener);
     }
 
     /**

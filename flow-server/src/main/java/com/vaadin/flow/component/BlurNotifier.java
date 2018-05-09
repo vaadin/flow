@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -24,12 +26,11 @@ import com.vaadin.flow.shared.Registration;
  *            the type of the component returned at the
  *            {@link BlurEvent#getSource()}
  */
-public interface BlurNotifier<T extends Component>
-        extends ComponentEventNotifier {
+public interface BlurNotifier<T extends Component> extends Serializable {
 
     /**
      * Add a listener to blur DOM events.
-     * 
+     *
      * @param listener
      *            the blur listener
      * @return a registration that can be used to unregister the listener
@@ -39,12 +40,13 @@ public interface BlurNotifier<T extends Component>
      */
     default Registration addBlurListener(
             ComponentEventListener<BlurEvent<T>> listener) {
-        return addListener(BlurEvent.class, (ComponentEventListener) listener);
+        return ComponentUtil.addListener((Component) this, BlurEvent.class,
+                (ComponentEventListener) listener);
     }
 
     /**
      * Class that represents the DOM event "blur".
-     * 
+     *
      * @param <C>
      *            The source component type.
      */
@@ -53,7 +55,7 @@ public interface BlurNotifier<T extends Component>
 
         /**
          * BlurEvent base constructor.
-         * 
+         *
          * @param source
          *            the source component
          * @param fromClient

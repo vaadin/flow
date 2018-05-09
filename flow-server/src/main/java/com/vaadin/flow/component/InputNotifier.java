@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -23,7 +25,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @author Vaadin Ltd
  */
-public interface InputNotifier extends ComponentEventNotifier {
+public interface InputNotifier extends Serializable {
     /**
      * Adds an input listener to this component.
      *
@@ -33,6 +35,7 @@ public interface InputNotifier extends ComponentEventNotifier {
      */
     default Registration addInputListener(
             ComponentEventListener<InputEvent> listener) {
-        return addListener(InputEvent.class, listener);
+        return ComponentUtil.addListener((Component) this, InputEvent.class,
+                listener);
     }
 }

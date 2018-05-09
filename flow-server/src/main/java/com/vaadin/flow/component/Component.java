@@ -313,8 +313,18 @@ public abstract class Component
         return eventBus;
     }
 
-    @Override
-    public <T extends ComponentEvent<?>> Registration addListener(
+    /**
+     * Adds a listener for an event of the given type.
+     *
+     * @param <T>
+     *            the component event type
+     * @param eventType
+     *            the component event type, not <code>null</code>
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    protected <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener) {
         return getEventBus().addListener(eventType, listener);
     }
