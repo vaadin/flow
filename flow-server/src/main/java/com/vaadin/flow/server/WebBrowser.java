@@ -571,4 +571,19 @@ public class WebBrowser implements Serializable {
         return browserDetails.isEs6Supported();
     }
 
+    /**
+     * Checks if the browser needs `custom-elements-es5-adapter.js` to be
+     * loaded.
+     * 
+     * @return <code>true</code> if the browser needs the adapter,
+     *         <code>false</code> otherwise.
+     */
+    public boolean isEs5AdapterNeeded() {
+        if (browserDetails == null) {
+            // Don't know, so assume it is not supported
+            return false;
+        }
+        return browserDetails.isEs5AdapterNeeded();
+    }
+
 }

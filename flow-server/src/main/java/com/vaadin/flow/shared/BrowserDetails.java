@@ -643,7 +643,7 @@ public class BrowserDetails implements Serializable {
      *         otherwise.
      */
     public boolean isEs6Supported() {
-        // Safari 10+
+        // Safari 10+. Safari 10 is treated differently
         if (isSafari() && getBrowserMajorVersion() > 10) {
             return true;
         }
@@ -666,6 +666,23 @@ public class BrowserDetails implements Serializable {
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * Checks if the browser needs `custom-elements-es5-adapter.js` to be
+     * loaded.
+     * 
+     * @return <code>true</code> if the browser needs the adapter,
+     *         <code>false</code> otherwise.
+     */
+    public boolean isEs5AdapterNeeded() {
+        // Safari 10 is a Es6 supported browser, but
+        // https://caniuse.com/#feat=let might cause the problem on production
+        // mode.
+        if (isSafari() && getBrowserMajorVersion() == 10) {
+            return true;
+        }
         return false;
     }
 
