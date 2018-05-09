@@ -45,7 +45,16 @@ public @interface Route {
     /**
      * Gets the route path value of the annotated class.
      *
-     * @return the path value of this route
+     * <p>If no value is provided, the path will be derived from the class
+     * name of the component. The derived name will be lower case and possibly
+     * trailing "View" will be removed. Also, MainView or Main names will be
+     * mapped to root (value will be "").</p>
+     *
+     * <p>Note, framework should not use the value directly, but use the
+     * helper method {@link Router#resolve(Class, Route)}, so that
+     * naming convention based values are dealt correctly.</p>
+     *
+     * @return the explicit path value of this route
      */
     String value() default NAMING_CONVENTION;
 

@@ -446,6 +446,14 @@ public class Router implements Serializable {
         return grouped;
     }
 
+    /**
+     * Gets the effective route path value of the annotated class.
+     *
+     * @param component the component where the route points to
+     * @param route the annotation
+     * @return The value of the annotation or naming convention based value
+     * if no explicit value is given.
+     */
     public static String resolve(Class<?> component, Route route) {
         if(route.value().equals(Route.NAMING_CONVENTION)) {
             String simpleName = component.getSimpleName();
