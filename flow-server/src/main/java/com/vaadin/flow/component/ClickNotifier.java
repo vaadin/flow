@@ -17,8 +17,6 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.shared.Registration;
 
 /**
