@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
@@ -37,9 +36,8 @@ import com.vaadin.flow.shared.Registration;
  *            the value type
  */
 public abstract class AbstractCompositeField<C extends Component, S extends AbstractCompositeField<C, S, T>, T>
-        extends Composite<C>
-        implements HasValueAndElement<ComponentValueChangeEvent<S, T>, T>,
-        HasEnabled, Serializable {
+        extends Composite<C> implements
+        HasValueAndElement<ComponentValueChangeEvent<S, T>, T>, HasEnabled {
 
     private final AbstractFieldSupport<S, T> fieldSupport;
 
