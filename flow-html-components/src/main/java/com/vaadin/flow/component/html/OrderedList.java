@@ -17,11 +17,14 @@ package com.vaadin.flow.component.html;
 
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Component representing a <code>&lt;ol&gt;</code> element.
@@ -86,7 +89,7 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
     /**
      * Creates a new empty ordered list with the specified
      * {@link NumberingType}.
-     * 
+     *
      * @param type
      *            the numbering type of the list items
      */
@@ -117,5 +120,10 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
 
     public void setType(NumberingType type) {
         set(typeDescriptor, type.value);
+    }
+
+    @Override
+    public Registration addClickListener(ComponentEventListener listener) {
+        return addListener(ClickEvent.class, listener);
     }
 }

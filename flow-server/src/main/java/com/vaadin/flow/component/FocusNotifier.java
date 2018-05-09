@@ -18,18 +18,17 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Mixin interface to handle focus events on components.
+ * Interface to handle focus events on components.
  *
  * @param <T>
  *            the type of the component returned at the
  *            {@link FocusEvent#getSource()}
  */
-public interface FocusNotifier<T extends Component>
-        extends ComponentEventNotifier {
+public interface FocusNotifier<T extends Component> {
 
     /**
      * Add a listener to focus DOM events.
-     * 
+     *
      * @param listener
      *            the focus listener
      * @return a registration that can be used to unregister the listener
@@ -37,14 +36,12 @@ public interface FocusNotifier<T extends Component>
      *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">focus
      *      event at MDN</a>
      */
-    default Registration addFocusListener(
-            ComponentEventListener<FocusEvent<T>> listener) {
-        return addListener(FocusEvent.class, (ComponentEventListener) listener);
-    }
+    Registration addFocusListener(
+            ComponentEventListener<FocusEvent<T>> listener);
 
     /**
      * Class that represents the DOM event "focus".
-     * 
+     *
      * @param <C>
      *            The source component type.
      */
@@ -53,7 +50,7 @@ public interface FocusNotifier<T extends Component>
 
         /**
          * FocusEvent base constructor.
-         * 
+         *
          * @param source
          *            the source component
          * @param fromClient

@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;

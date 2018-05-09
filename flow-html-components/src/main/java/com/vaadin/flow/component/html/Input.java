@@ -18,12 +18,14 @@ package com.vaadin.flow.component.html;
 import java.util.Optional;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
@@ -93,6 +95,18 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      */
     public String getType() {
         return get(typeDescriptor);
+    }
+
+    @Override
+    public Registration addBlurListener(
+            ComponentEventListener<BlurEvent<Input>> listener) {
+        return addListener(BlurEvent.class, (ComponentEventListener) listener);
+    }
+
+    @Override
+    public Registration addFocusListener(
+            ComponentEventListener<FocusEvent<Input>> listener) {
+        return addListener(FocusEvent.class, (ComponentEventListener) listener);
     }
 
 }

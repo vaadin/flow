@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Component representing a <code>&lt;aside&gt;</code> element.
@@ -43,5 +46,10 @@ public class Aside extends HtmlContainer implements ClickNotifier {
      */
     public Aside(Component... components) {
         super(components);
+    }
+
+    @Override
+    public Registration addClickListener(ComponentEventListener listener) {
+        return addListener(ClickEvent.class, listener);
     }
 }

@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.data.renderer;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * A renderer that renders each item as a text following by an icon using
@@ -44,6 +48,19 @@ public class IconRenderer<ITEM> extends ComponentRenderer<Component, ITEM> {
         IconComponent(String text) {
             super(Element.createText(text));
         }
+
+        @Override
+        public Registration addAttachListener(
+                ComponentEventListener<AttachEvent> listener) {
+            return addListener(AttachEvent.class, listener);
+        }
+
+        @Override
+        public Registration addDetachListener(
+                ComponentEventListener<DetachEvent> listener) {
+            return addListener(DetachEvent.class, listener);
+        }
+
     }
 
     private final SerializableFunction<ITEM, ? extends Component> iconGenerator;

@@ -18,18 +18,17 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Mixin interface to handle blur events on components.
+ * Interface to handle blur events on components.
  *
  * @param <T>
  *            the type of the component returned at the
  *            {@link BlurEvent#getSource()}
  */
-public interface BlurNotifier<T extends Component>
-        extends ComponentEventNotifier {
+public interface BlurNotifier<T extends Component> {
 
     /**
      * Add a listener to blur DOM events.
-     * 
+     *
      * @param listener
      *            the blur listener
      * @return a registration that can be used to unregister the listener
@@ -37,14 +36,11 @@ public interface BlurNotifier<T extends Component>
      *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">blur
      *      event at MDN</a>
      */
-    default Registration addBlurListener(
-            ComponentEventListener<BlurEvent<T>> listener) {
-        return addListener(BlurEvent.class, (ComponentEventListener) listener);
-    }
+    Registration addBlurListener(ComponentEventListener<BlurEvent<T>> listener);
 
     /**
      * Class that represents the DOM event "blur".
-     * 
+     *
      * @param <C>
      *            The source component type.
      */
@@ -53,7 +49,7 @@ public interface BlurNotifier<T extends Component>
 
         /**
          * BlurEvent base constructor.
-         * 
+         *
          * @param source
          *            the source component
          * @param fromClient

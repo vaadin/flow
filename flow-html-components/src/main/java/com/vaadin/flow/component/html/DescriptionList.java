@@ -18,10 +18,13 @@ package com.vaadin.flow.component.html;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Component representing a <code>&lt;dl&gt;</code> element.
@@ -66,6 +69,11 @@ public class DescriptionList extends HtmlContainer implements ClickNotifier {
             super();
             setText(text);
         }
+
+        @Override
+        public Registration addClickListener(ComponentEventListener listener) {
+            return addListener(ClickEvent.class, listener);
+        }
     }
 
     /**
@@ -104,6 +112,11 @@ public class DescriptionList extends HtmlContainer implements ClickNotifier {
             super();
             setText(text);
         }
+
+        @Override
+        public Registration addClickListener(ComponentEventListener listener) {
+            return addListener(ClickEvent.class, listener);
+        }
     }
 
     /**
@@ -124,5 +137,10 @@ public class DescriptionList extends HtmlContainer implements ClickNotifier {
         super(terms.entrySet().stream()
                 .flatMap(entry -> Stream.of(entry.getKey(), entry.getValue()))
                 .toArray(Component[]::new));
+    }
+
+    @Override
+    public Registration addClickListener(ComponentEventListener listener) {
+        return addListener(ClickEvent.class, listener);
     }
 }

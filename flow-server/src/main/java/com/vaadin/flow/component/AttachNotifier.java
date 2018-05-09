@@ -18,11 +18,11 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Mixin interface for components that support adding attach listeners.
+ * Interface for components that support adding attach listeners.
  *
  * @author Vaadin Ltd
  */
-public interface AttachNotifier extends ComponentEventNotifier {
+public interface AttachNotifier {
 
     /**
      * Adds a attach listener to this component.
@@ -31,8 +31,6 @@ public interface AttachNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addAttachListener(
-            ComponentEventListener<AttachEvent> listener) {
-        return addListener(AttachEvent.class, listener);
-    }
+    Registration addAttachListener(
+            ComponentEventListener<AttachEvent> listener);
 }

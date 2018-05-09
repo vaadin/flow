@@ -26,6 +26,7 @@ import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * A component which encapsulates a given HTML fragment with a single root
@@ -99,6 +100,18 @@ public class Html extends Component {
         }
 
         setOuterHtml(Jsoup.parse(outerHtml));
+    }
+
+    @Override
+    public Registration addAttachListener(
+            ComponentEventListener<AttachEvent> listener) {
+        return addListener(AttachEvent.class, listener);
+    }
+
+    @Override
+    public Registration addDetachListener(
+            ComponentEventListener<DetachEvent> listener) {
+        return addListener(DetachEvent.class, listener);
     }
 
     private void setOuterHtml(Document doc) {

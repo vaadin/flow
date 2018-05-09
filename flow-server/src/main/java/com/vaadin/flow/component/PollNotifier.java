@@ -27,7 +27,7 @@ import com.vaadin.flow.shared.Registration;
  * @since 7.2
  * @see UI#setPollInterval(int)
  */
-public interface PollNotifier extends ComponentEventNotifier {
+public interface PollNotifier {
     /**
      * Add a poll listener.
      * <p>
@@ -39,9 +39,6 @@ public interface PollNotifier extends ComponentEventNotifier {
      *            the listener to add
      * @return a handle that can be used for removing the listener
      */
-    default Registration addPollListener(
-            ComponentEventListener<PollEvent> listener) {
-        return addListener(PollEvent.class, listener);
-    }
+    Registration addPollListener(ComponentEventListener<PollEvent> listener);
 
 }

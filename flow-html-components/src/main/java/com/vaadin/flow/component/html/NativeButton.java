@@ -21,6 +21,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Component representing a <code>&lt;button&gt;</code> element.
@@ -59,6 +60,23 @@ public class NativeButton extends HtmlContainer
             ComponentEventListener<ClickEvent<NativeButton>> clickListener) {
         this(text);
         addClickListener(clickListener);
+    }
+
+    @Override
+    public Registration addBlurListener(
+            ComponentEventListener<BlurEvent<NativeButton>> listener) {
+        return addListener(BlurEvent.class, (ComponentEventListener) listener);
+    }
+
+    @Override
+    public Registration addFocusListener(
+            ComponentEventListener<FocusEvent<NativeButton>> listener) {
+        return addListener(FocusEvent.class, (ComponentEventListener) listener);
+    }
+
+    @Override
+    public Registration addClickListener(ComponentEventListener listener) {
+        return addListener(ClickEvent.class, listener);
     }
 
 }

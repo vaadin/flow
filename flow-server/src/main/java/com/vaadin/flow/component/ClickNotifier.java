@@ -27,8 +27,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @author Vaadin Ltd
  */
-public interface ClickNotifier<T extends Component>
-        extends ComponentEventNotifier {
+public interface ClickNotifier<T extends Component> {
     /**
      * Adds a click listener to this component.
      *
@@ -36,9 +35,6 @@ public interface ClickNotifier<T extends Component>
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addClickListener(
-            ComponentEventListener<ClickEvent<T>> listener) {
-        return addListener(ClickEvent.class,
-                (ComponentEventListener) listener);
-    }
+    Registration addClickListener(
+            ComponentEventListener<ClickEvent<T>> listener);
 }

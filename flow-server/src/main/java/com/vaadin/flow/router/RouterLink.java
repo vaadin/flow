@@ -332,4 +332,5 @@ public class RouterLink extends Component
         getHighlightAction().highlight(this,
                 getHighlightCondition().shouldHighlight(this, event));
     }
+
 }

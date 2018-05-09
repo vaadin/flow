@@ -18,15 +18,15 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Mixin interface for components that support adding composition listeners to
- * the their root elements.
+ * Interface for components that support adding composition listeners to the
+ * their root elements.
  *
  * See <a href=
  * "https://developer.mozilla.org/docs/Web/API/CompositionEvent">CompositionEvent</a>
  *
  * @author Vaadin Ltd
  */
-public interface CompositionNotifier extends ComponentEventNotifier {
+public interface CompositionNotifier {
 
     /**
      * Adds a {@code compositionstart} listener to this component.
@@ -35,10 +35,8 @@ public interface CompositionNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addCompositionStartListener(
-            ComponentEventListener<CompositionStartEvent> listener) {
-        return addListener(CompositionStartEvent.class, listener);
-    }
+    Registration addCompositionStartListener(
+            ComponentEventListener<CompositionStartEvent> listener);
 
     /**
      * Adds a {@code compositionupdate} listener to this component.
@@ -47,10 +45,8 @@ public interface CompositionNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addCompositionUpdateListener(
-            ComponentEventListener<CompositionUpdateEvent> listener) {
-        return addListener(CompositionUpdateEvent.class, listener);
-    }
+    Registration addCompositionUpdateListener(
+            ComponentEventListener<CompositionUpdateEvent> listener);
 
     /**
      * Adds a {@code compositionend} listener to this component.
@@ -59,9 +55,7 @@ public interface CompositionNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addCompositionEndListener(
-            ComponentEventListener<CompositionEndEvent> listener) {
-        return addListener(CompositionEndEvent.class, listener);
-    }
+    Registration addCompositionEndListener(
+            ComponentEventListener<CompositionEndEvent> listener);
 
 }

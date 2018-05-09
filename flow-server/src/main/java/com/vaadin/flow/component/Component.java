@@ -313,8 +313,18 @@ public abstract class Component
         return eventBus;
     }
 
-    @Override
-    public <T extends ComponentEvent<?>> Registration addListener(
+    /**
+     * Adds a listener for an event of the given type.
+     *
+     * @param <T>
+     *            the component event type
+     * @param eventType
+     *            the component event type, not <code>null</code>
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    protected <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener) {
         return getEventBus().addListener(eventType, listener);
     }
@@ -581,6 +591,18 @@ public abstract class Component
             return "!{" + key + "}!";
         }
         return getI18NProvider().getTranslation(key, locale, params);
+    }
+
+    @Override
+    public Registration addAttachListener(
+            ComponentEventListener<AttachEvent> listener) {
+        return addListener(AttachEvent.class, listener);
+    }
+
+    @Override
+    public Registration addDetachListener(
+            ComponentEventListener<DetachEvent> listener) {
+        return addListener(DetachEvent.class, listener);
     }
 
     private I18NProvider getI18NProvider() {

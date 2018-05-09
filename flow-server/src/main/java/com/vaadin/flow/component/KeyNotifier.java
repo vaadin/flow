@@ -18,12 +18,12 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Mixin interface for components that support adding key event listeners to the
- * their root elements.
+ * Interface for components that support adding key event listeners to the their
+ * root elements.
  *
  * @author Vaadin Ltd
  */
-public interface KeyNotifier extends ComponentEventNotifier {
+public interface KeyNotifier {
 
     /**
      * Adds a {@code keydown} listener to this component.
@@ -32,10 +32,8 @@ public interface KeyNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyDownListener(
-            ComponentEventListener<KeyDownEvent> listener) {
-        return addListener(KeyDownEvent.class, listener);
-    }
+    Registration addKeyDownListener(
+            ComponentEventListener<KeyDownEvent> listener);
 
     /**
      * Adds a {@code keypress} listener to this component.
@@ -44,10 +42,8 @@ public interface KeyNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyPressListener(
-            ComponentEventListener<KeyPressEvent> listener) {
-        return addListener(KeyPressEvent.class, listener);
-    }
+    Registration addKeyPressListener(
+            ComponentEventListener<KeyPressEvent> listener);
 
     /**
      * Adds a {@code keyup} listener to this component.
@@ -56,10 +52,7 @@ public interface KeyNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyUpListener(
-            ComponentEventListener<KeyUpEvent> listener) {
-        return addListener(KeyUpEvent.class, listener);
-    }
+    Registration addKeyUpListener(ComponentEventListener<KeyUpEvent> listener);
 
     /**
      * Adds a {@code keydown} listener to this component, conditional on key and

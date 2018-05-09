@@ -18,11 +18,11 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Mixin interface for components that support adding detach listeners.
+ * Interface for components that support adding detach listeners.
  *
  * @author Vaadin Ltd
  */
-public interface DetachNotifier extends ComponentEventNotifier {
+public interface DetachNotifier {
 
     /**
      * Adds a detach listener to this component.
@@ -31,8 +31,6 @@ public interface DetachNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addDetachListener(
-            ComponentEventListener<DetachEvent> listener) {
-        return addListener(DetachEvent.class, listener);
-    }
+    Registration addDetachListener(
+            ComponentEventListener<DetachEvent> listener);
 }

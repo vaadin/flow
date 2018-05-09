@@ -18,12 +18,12 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Mixin interface for components that support adding input listeners to the
- * their root elements.
+ * Interface for components that support adding input listeners to the their
+ * root elements.
  *
  * @author Vaadin Ltd
  */
-public interface InputNotifier extends ComponentEventNotifier {
+public interface InputNotifier {
     /**
      * Adds an input listener to this component.
      *
@@ -31,8 +31,5 @@ public interface InputNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addInputListener(
-            ComponentEventListener<InputEvent> listener) {
-        return addListener(InputEvent.class, listener);
-    }
+    Registration addInputListener(ComponentEventListener<InputEvent> listener);
 }

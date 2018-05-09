@@ -94,8 +94,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             ComponentValueChangeEvent<C, T> valueChangeEvent = (ComponentValueChangeEvent<C, T>) event;
             listener.valueChanged(valueChangeEvent);
         };
-        return component.addListener(ComponentValueChangeEvent.class,
-                componentListener);
+        return ComponentUtil.addListener(component,
+                ComponentValueChangeEvent.class, componentListener);
     }
 
     private ComponentValueChangeEvent<C, T> createValueChange(T oldValue,

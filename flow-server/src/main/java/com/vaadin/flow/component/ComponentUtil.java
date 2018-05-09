@@ -40,6 +40,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Utility methods for {@link Component}.
@@ -310,6 +311,23 @@ public class ComponentUtil {
         }
 
         return true;
+    }
+
+    /**
+     * Adds a listener for an event of the given type to the {@code component}.
+     *
+     * @param <T>
+     *            the component event type
+     * @param eventType
+     *            the component event type, not <code>null</code>
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    public static <T extends ComponentEvent<?>> Registration addListener(
+            Component component, Class<T> eventType,
+            ComponentEventListener<T> listener) {
+        return component.addListener(eventType, listener);
     }
 
     /**
