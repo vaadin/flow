@@ -318,6 +318,8 @@ public class ComponentUtil {
      *
      * @param <T>
      *            the component event type
+     * @param component
+     *            the component to add the {@code listener}
      * @param eventType
      *            the component event type, not <code>null</code>
      * @param listener
