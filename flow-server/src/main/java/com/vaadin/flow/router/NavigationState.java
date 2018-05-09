@@ -75,7 +75,7 @@ public class NavigationState implements Serializable {
         if (resolvedPath == null) {
             resolvedPath = AnnotationReader
                     .getAnnotationFor(navigationTarget, Route.class)
-                    .map(Route::value).orElse(null);
+                    .map( r -> Router.resolve(navigationTarget, r)).orElse(null);
         }
         return resolvedPath;
     }

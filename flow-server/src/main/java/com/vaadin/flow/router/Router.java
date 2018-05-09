@@ -445,4 +445,18 @@ public class Router implements Serializable {
 
         return grouped;
     }
+
+    public static String resolve(Class<?> component, Route route) {
+        if(route.value().equals(Route.NAMING_CONVENTION)) {
+            String simpleName = component.getSimpleName();
+            if(simpleName.equals("MainView") || simpleName.equals("Main")) {
+                return "";
+            }
+            if(simpleName.endsWith("View")) {
+                return simpleName.substring(0, simpleName.length() - "View".length()).toLowerCase();
+            }
+            return simpleName.toLowerCase();
+        }
+        return route.value();
+    }
 }

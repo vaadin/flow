@@ -22,6 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 
 /**
@@ -39,12 +40,14 @@ import com.vaadin.flow.component.UI;
 @Documented
 public @interface Route {
 
+    static final String NAMING_CONVENTION = "___NAMING_CONVENTION___";
+
     /**
      * Gets the route path value of the annotated class.
      *
      * @return the path value of this route
      */
-    String value();
+    String value() default NAMING_CONVENTION;
 
     /**
      * Sets the parent component for the route target component.
@@ -64,4 +67,5 @@ public @interface Route {
      * @return route up to here should be absolute
      */
     boolean absolute() default false;
+
 }

@@ -26,11 +26,7 @@ import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.HasDynamicTitle;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
@@ -117,14 +113,14 @@ public abstract class AbstractRouteRegistryInitializer {
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
                                 RouterUtil.getTopParentLayout(route,
-                                        annotation.value()).getName(),
+                                        Router.resolve(route,annotation)).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
-                    .getParentLayouts(route, annotation.value());
+                    .getParentLayouts(route, Router.resolve(route,annotation));
             Class<? extends RouterLayout> topParentLayout = RouterUtil
-                    .getTopParentLayout(route, annotation.value());
+                    .getTopParentLayout(route, Router.resolve(route,annotation));
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);
@@ -186,15 +182,15 @@ public abstract class AbstractRouteRegistryInitializer {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
                                 annotation.getSimpleName(),
-                                RouterUtil.getTopParentLayout(route,
-                                        routeAnnotation.value()).getName(),
+                                RouterUtil.getTopParentLayout(route, Router.resolve(route,
+                                        routeAnnotation)).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
-                    .getParentLayouts(route, routeAnnotation.value());
+                    .getParentLayouts(route, Router.resolve(route, routeAnnotation));
             Class<? extends RouterLayout> topParentLayout = RouterUtil
-                    .getTopParentLayout(route, routeAnnotation.value());
+                    .getTopParentLayout(route, Router.resolve(route, routeAnnotation));
 
             validateParentAnnotation(parentLayouts, topParentLayout,
                     annotation);

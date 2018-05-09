@@ -29,15 +29,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.HasDynamicTitle;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.ParentLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RoutePrefix;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.*;
 
 /**
  * Utility class with methods for router layout handling.
@@ -112,10 +104,10 @@ public final class RouterUtil {
      */
     public static String getRoutePath(Class<?> component, Route route) {
         if (route.absolute()) {
-            return route.value();
+            return Router.resolve(component, route);
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), route.value());
+                route.layout(), Router.resolve(component, route));
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 

@@ -28,24 +28,8 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
-import com.vaadin.flow.router.BeforeLeaveObserver;
-import com.vaadin.flow.router.ErrorNavigationEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.EventUtil;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -354,8 +338,9 @@ public abstract class AbstractNavigationStateRenderer
                     NavigationTrigger.PROGRAMMATIC, errorParameter);
         }
 
-        Location location = new Location(beforeNavigation.getRouteTargetType()
-                .getAnnotation(Route.class).value());
+        final Class<?> routeTargetType = beforeNavigation.getRouteTargetType();
+        Location location = new Location(Router.resolve(routeTargetType, routeTargetType
+                .getAnnotation(Route.class)));
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC);
