@@ -647,29 +647,30 @@ public class BrowserDetails implements Serializable {
     public boolean isEs6Supported() {
         // IOS 10 has a problem on `let` bindings, which affects all the browser
         // running on it. Check https://caniuse.com/#feat=let for more
-        if (!(isIOS() && getOperatingSystemMajorVersion() == 10)) {
-            // Safari 10+.
-            if (isSafari() && getBrowserMajorVersion() >= 10) {
-                return true;
-            }
-            // Firefox 51+
-            if (isFirefox() && getBrowserMajorVersion() >= 51) {
-                return true;
-            }
-            // Opera 36+
-            if (isOpera() && getBrowserMajorVersion() >= 36) {
+        if (isIOS() && getOperatingSystemMajorVersion() == 10) {
+            return false;
+        }
+        // Safari 10+.
+        if (isSafari() && getBrowserMajorVersion() >= 10) {
             return true;
-            }
-            // Chrome 49+
-            if (isChrome() && getBrowserMajorVersion() >= 49) {
-                return true;
-            }
-            // Edge 15.15063+
-            if (isEdge() && (getBrowserMajorVersion() > 15
-                    || (getBrowserMajorVersion() == 15
-                            && getBrowserMinorVersion() >= 15063))) {
-                return true;
-            }
+        }
+        // Firefox 51+
+        if (isFirefox() && getBrowserMajorVersion() >= 51) {
+            return true;
+        }
+        // Opera 36+
+        if (isOpera() && getBrowserMajorVersion() >= 36) {
+            return true;
+        }
+        // Chrome 49+
+        if (isChrome() && getBrowserMajorVersion() >= 49) {
+            return true;
+        }
+        // Edge 15.15063+
+        if (isEdge() && (getBrowserMajorVersion() > 15
+                || (getBrowserMajorVersion() == 15
+                        && getBrowserMinorVersion() >= 15063))) {
+            return true;
         }
 
         return false;

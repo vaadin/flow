@@ -580,7 +580,7 @@ public class WebBrowser implements Serializable {
      */
     public boolean isEs5AdapterNeeded() {
         if (browserDetails == null) {
-            // Don't know, so assume it is not supported
+            // Don't know, so assume we don't need to provide an adapter
             return false;
         }
         return browserDetails.isEs5AdapterNeeded();
