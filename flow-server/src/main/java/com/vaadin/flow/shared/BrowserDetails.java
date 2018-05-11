@@ -82,8 +82,7 @@ public class BrowserDetails implements Serializable {
         isWebKit = !isTrident && userAgent.contains("applewebkit");
 
         // browser name
-        isChrome = userAgent.contains(CHROME)
-                || userAgent.contains(" crios/")
+        isChrome = userAgent.contains(CHROME) || userAgent.contains(" crios/")
                 || userAgent.contains(HEADLESSCHROME);
         isOpera = userAgent.contains("opera");
         isIE = userAgent.contains("msie") && !isOpera
@@ -124,8 +123,10 @@ public class BrowserDetails implements Serializable {
                 tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
                 browserEngineVersion = Float.parseFloat(tmp);
                 if (browserEngineVersion > 7) {
-                    // Windows 10 on launch reported Trident/8.0, now it does not
-                    // Due to Edge there shouldn't ever be an Trident 8.0 or IE12
+                    // Windows 10 on launch reported Trident/8.0, now it does
+                    // not
+                    // Due to Edge there shouldn't ever be an Trident 8.0 or
+                    // IE12
                     browserEngineVersion = 7;
                 }
             } else if (isEdge) {
@@ -149,7 +150,8 @@ public class BrowserDetails implements Serializable {
                     }
                 } else if (isTrident) {
                     // potentially IE 11 in compatibility mode
-                    // See https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/ms537503(v=vs.85)#trident-token
+                    // See
+                    // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/ms537503(v=vs.85)#trident-token
                     browserMajorVersion = 4 + (int) browserEngineVersion;
                     browserMinorVersion = 0;
                 } else {
@@ -262,7 +264,7 @@ public class BrowserDetails implements Serializable {
         if (i == -1) {
             i = userAgent.indexOf(CHROME);
             if (i == -1) {
-                i = userAgent.indexOf(HEADLESSCHROME)  + HEADLESSCHROME.length();
+                i = userAgent.indexOf(HEADLESSCHROME) + HEADLESSCHROME.length();
             } else {
                 i += CHROME.length();
             }
@@ -643,27 +645,31 @@ public class BrowserDetails implements Serializable {
      *         otherwise.
      */
     public boolean isEs6Supported() {
-        // Safari 10+. Safari 10 is treated differently
-        if (isSafari() && getBrowserMajorVersion() > 10) {
+        // IOS 10 has a problem on `let` bindings, which affects all the browser
+        // running on it. Check https://caniuse.com/#feat=let for more
+        if (!(isIOS() && getOperatingSystemMajorVersion() == 10)) {
+            // Safari 10+.
+            if (isSafari() && getBrowserMajorVersion() >= 10) {
+                return true;
+            }
+            // Firefox 51+
+            if (isFirefox() && getBrowserMajorVersion() >= 51) {
+                return true;
+            }
+            // Opera 36+
+            if (isOpera() && getBrowserMajorVersion() >= 36) {
             return true;
-        }
-        // Firefox 51+
-        if (isFirefox() && getBrowserMajorVersion() >= 51) {
-            return true;
-        }
-        // Opera 36+
-        if (isOpera() && getBrowserMajorVersion() >= 36) {
-            return true;
-        }
-        // Chrome 49+
-        if (isChrome() && getBrowserMajorVersion() >= 49) {
-            return true;
-        }
-        // Edge 15.15063+
-        if (isEdge() && (getBrowserMajorVersion() > 15
-                || (getBrowserMajorVersion() == 15
-                        && getBrowserMinorVersion() >= 15063))) {
-            return true;
+            }
+            // Chrome 49+
+            if (isChrome() && getBrowserMajorVersion() >= 49) {
+                return true;
+            }
+            // Edge 15.15063+
+            if (isEdge() && (getBrowserMajorVersion() > 15
+                    || (getBrowserMajorVersion() == 15
+                            && getBrowserMinorVersion() >= 15063))) {
+                return true;
+            }
         }
 
         return false;
@@ -677,10 +683,9 @@ public class BrowserDetails implements Serializable {
      *         <code>false</code> otherwise.
      */
     public boolean isEs5AdapterNeeded() {
-        // Safari 10 is a Es6 supported browser, but
-        // https://caniuse.com/#feat=let might cause the problem on production
-        // mode.
-        if (isSafari() && getBrowserMajorVersion() == 10) {
+        // IOS 10 has a known issue on https://caniuse.com/#feat=let, which
+        // needs a separate Es5 adapter for production mode
+        if (isIOS() && getOperatingSystemMajorVersion() == 10) {
             return true;
         }
         return false;
