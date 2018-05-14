@@ -18,7 +18,6 @@ package com.vaadin.client;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
-
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
@@ -85,6 +84,11 @@ public class SystemErrorHandler {
      */
     public void handleUnrecoverableError(String caption, String message,
             String details, String url) {
+        if (caption == null && message == null && details == null) {
+            WidgetUtil.redirect(url);
+            return;
+        }
+
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
         systemErrorContainer.setClassName("v-system-error");

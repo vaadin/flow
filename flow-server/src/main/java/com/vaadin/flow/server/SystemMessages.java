@@ -29,7 +29,7 @@ import java.io.Serializable;
  * The defaults defined in this class are:
  * <ul>
  * <li><b>sessionExpiredURL</b> = null</li>
- * <li><b>sessionExpiredNotificationEnabled</b> = true</li>
+ * <li><b>sessionExpiredNotificationEnabled</b> = false</li>
  * <li><b>sessionExpiredCaption</b> = ""</li>
  * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and
  * <u>click here</u> to continue."</li>
