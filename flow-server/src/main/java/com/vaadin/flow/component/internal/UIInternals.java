@@ -699,7 +699,7 @@ public class UIInternals implements Serializable {
                     .getAnnotationFor(target.getClass(), NoTheme.class)
                     .isPresent()) {
                 getLogger().warn(
-                        "No @Theme defined for {}. See 'trace' level logs for exactcomponents missing theming.",
+                        "No @Theme defined for {}. See 'trace' level logs for the exact components missing theming.",
                         target.getClass().getName());
             }
         }
