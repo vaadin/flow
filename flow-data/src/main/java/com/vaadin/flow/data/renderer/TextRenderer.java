@@ -75,15 +75,14 @@ public class TextRenderer<ITEM> extends ComponentRenderer<Component, ITEM> {
     /**
      * Creates a new {@link Element} that represent the rendered {@code item}.
      * <p>
-     * By default the text element is created which represents the item as a
-     * text node in the DOM. Subclasses may override this method to return some
-     * other {@link Element}.
+     * By default the text is wrapped inside a {@code <span>} element.
+     * Subclasses may override this method to return some other {@link Element}.
      *
      * @param item
      *            the item to render
      * @return the element representing rendered item
      */
     protected Element createElement(String item) {
-        return Element.createText(item);
+        return new Element("span").setText(item);
     }
 }
