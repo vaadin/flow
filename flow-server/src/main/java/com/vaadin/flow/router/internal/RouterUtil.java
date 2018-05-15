@@ -29,7 +29,16 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Utility class with methods for router layout handling.
