@@ -1090,7 +1090,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public List<String> getBodyInlineContents() {
+        public List<String> getHeaderInlineContents() {
             return Arrays.asList(
                     "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
         }

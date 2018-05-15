@@ -46,9 +46,9 @@ public interface AbstractTheme extends Serializable {
     String getThemeUrl();
 
     /**
-     * Return a list of contents to inline to the bootstrap body. The contents
-     * will be handled as no-wrap as is and will be appended to the initial page
-     * body.
+     * Return a list of contents to inline to the bootstrap header. The contents
+     * will be handled as no-wrap as is and will be inserted to the initial page
+     * head tag.
      * <p>
      * This will usually be the any {@code <custom-style>} declarations, see
      * <a href=
@@ -61,14 +61,14 @@ public interface AbstractTheme extends Serializable {
      * @return list of string content to inline or empty list if nothing to
      *         inline
      */
-    default List<String> getBodyInlineContents() {
+    default List<String> getHeaderInlineContents() {
         return Collections.emptyList();
     }
 
     /**
      * Gets the attributes that should be set on the {@code <body>} element when
      * the Theme variant is applied.
-     * 
+     *
      * @param variant
      *            the variant defined in the {@link Theme} annotation, not
      *            <code>null</code>

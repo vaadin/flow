@@ -13,24 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin;
+package com.vaadin.flow.uitest.ui.theme;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-/**
- * Test that tests are run with assertions activated
- */
-public class AssertionTest {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class CustomStylesIT extends ChromeBrowserTest {
 
     @Test
-    public void testAssertionsAreEnabled() {
-        boolean assertOn = false;
-        // *assigns* true if assertions are on.
-        assert assertOn = true;
+    public void importedStyleOverridesTheme() {
+        open();
 
-        Assert.assertTrue("Assertions are turned off for the server package",
-                assertOn);
+        WebElement text = findElement(By.id("custom-style"));
+        String fontSize = text.getCssValue("font-size");
+        Assert.assertEquals("12px", fontSize);
     }
-
 }

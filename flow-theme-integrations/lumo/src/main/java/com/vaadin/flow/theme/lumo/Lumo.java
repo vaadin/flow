@@ -50,16 +50,10 @@ public class Lumo implements AbstractTheme {
     }
 
     @Override
-    public List<String> getBodyInlineContents() {
-        return Collections.singletonList("<script> "
-                + "var customStyle = document.createElement('custom-style');\n"
-                + "customStyle.innerHTML= '<style include=\"lumo-color lumo-typography\"></style>';"
-                + "var firstScript=null; if ( document.head ){"
-                + "firstScript = document.head.querySelector('script');\n"
-                + "} else { "
-                + "var firstScript = document.body.querySelector('script');\n"
-                + "} document.head.insertBefore(customStyle,firstScript);" + "}"
-                + "</script>");
+    public List<String> getHeaderInlineContents() {
+        return Collections.singletonList("<custom-style>\n"
+                + "    <style include=\"lumo-color lumo-typography\"></style>\n"
+                + "</custom-style>");
     }
 
     @Override

@@ -27,6 +27,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 public class CustomStylesView extends Div {
 
     public CustomStylesView() {
-        setText("xxxxxxxxxxxx");
+        setText("Custom font size");
+        setId("custom-style");
     }
 }

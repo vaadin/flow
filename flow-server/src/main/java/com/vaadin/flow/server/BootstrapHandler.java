@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -75,7 +77,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -480,12 +481,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             document.head()::appendChild));
         }
 
-        themeContents = themeSettings.getBodyContents();
-        if (themeContents != null) {
-            themeContents.stream().map(
-                    dependency -> createDependencyElement(context, dependency))
-                    .forEach(element -> insertElements(element,
-                            document.body()::appendChild));
+        JsonObject themeContent = themeSettings.getHeadInjectedContent();
+        if (themeContent != null) {
+            Element dependency = createDependencyElement(context, themeContent);
+            insertElements(dependency, document.body()::appendChild);
         }
 
         if (themeSettings.getBodyAttributes() != null) {
@@ -758,8 +757,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapUriResolver resolver, LoadMode loadMode,
             JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
-        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
-                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
+        String url = dependency.hasKey(Dependency.KEY_URL)
+                ? resolver.resolveVaadinUri(
+                        dependency.getString(Dependency.KEY_URL))
                 : null;
 
         final Element dependencyElement;
@@ -1215,8 +1215,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                         + properties.getProperty("jsFile");
             } else {
-                getLogger()
-                        .warn("No compile.properties available on initialization, "
+                getLogger().warn(
+                        "No compile.properties available on initialization, "
                                 + "could not read client engine file name.");
             }
         } catch (IOException e) {

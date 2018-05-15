@@ -24,8 +24,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -60,7 +66,7 @@ class BootstrapUtils {
 
     static class ThemeSettings {
         private List<JsonObject> headContents;
-        private List<JsonObject> bodyContents;
+        private JsonObject headInjectedContent;
         private Map<String, String> bodyAttributes;
 
         public List<JsonObject> getHeadContents() {
@@ -71,12 +77,12 @@ class BootstrapUtils {
             this.headContents = headContents;
         }
 
-        public List<JsonObject> getBodyContents() {
-            return bodyContents;
+        public JsonObject getHeadInjectedContent() {
+            return headInjectedContent;
         }
 
-        public void setBodyContents(List<JsonObject> bodyContents) {
-            this.bodyContents = bodyContents;
+        public void setHeadInjectedContent(JsonObject headInjectedContent) {
+            this.headInjectedContent = headInjectedContent;
         }
 
         public Map<String, String> getBodyAttributes() {
@@ -291,15 +297,81 @@ class BootstrapUtils {
             settings.setHeadContents(head);
         }
 
-        List<JsonObject> body = theme.getBodyInlineContents().stream()
-                .map(BootstrapUtils::createInlineDependencyObject)
-                .collect(Collectors.toList());
-        settings.setBodyContents(body);
+        settings.setHeadInjectedContent(createHeaderInlineScript(theme));
 
         settings.setBodyAttributes(
                 theme.getBodyAttributes(themeDefinition.getVariant()));
 
         return settings;
+    }
+
+    private static JsonObject createHeaderInlineScript(AbstractTheme theme) {
+        StringBuilder builder = new StringBuilder();
+
+        for (String content : theme.getHeaderInlineContents()) {
+            StringBuilder inlineContent = createHeaderInjectionCall(content);
+            builder.insert(0, inlineContent.toString());
+        }
+
+        builder.insert(0, "function _inlineHeader(tag, content){\n"
+                + "var customStyle = document.createElement(tag);\n"
+                + "customStyle.innerHTML= content;\n"
+                + "var firstScript=null;\n if ( document.head ){"
+                + "firstScript = document.head.querySelector('script');\n"
+                + "} else { \n"
+                + "var firstScript = document.body.querySelector('script');\n"
+                + "} document.head.insertBefore(customStyle,firstScript);\n"
+                + "}\n");
+        builder.insert(0, "<script>");
+        builder.append("</script>");
+        return createInlineDependencyObject(builder.toString());
+    }
+
+    private static StringBuilder createHeaderInjectionCall(String content) {
+        StringBuilder inlineContent = new StringBuilder();
+        Document document = Jsoup.parse(content, "", Parser.xmlParser());
+        for (Element element : document.children()) {
+            String tagName = element.tagName();
+            inlineContent.append("_inlineHeader('");
+            inlineContent.append(tagName).append("',");
+            inlineContent.append(makeJsString(element.html()));
+            inlineContent.append(");\n");
+        }
+        return inlineContent;
+    }
+
+    /**
+     * Makes a JS string from the {@code value}.
+     *
+     * @param value
+     *            a string
+     * @return a JS literal representing the {@code value}
+     */
+    private static String makeJsString(String value) {
+        // We are using single quote for the string
+        StringBuilder builder = new StringBuilder("'");
+        if (value.indexOf('\'') == -1) {
+            // if there are not quotes in the string just wrap it
+            builder.append(value);
+        } else if (!value.contains("\\'")) {
+            // if ther are no escaped single quotes then just replace quotes
+            // inside string to \x27
+            builder.append(value.replace("'", "\\x27"));
+        } else {
+            // Now there are escaped quotes, they should be preserved as is,
+            // don't want to parse it. Let's just replace escaped quotes to some
+            // unique token, replace un-escaped quotes and return escaped quotes
+            // back via replacing the token.
+            String unique;
+            do {
+                unique = UUID.randomUUID().toString();
+            } while (value.contains(unique));
+            String modified = value.replace("\\'", unique);
+            modified = modified.replace("'", "\\x27");
+            builder.append(modified.replace(unique, "\\'"));
+        }
+        builder.append("'");
+        return builder.toString();
     }
 
     private static String createImportLink(
