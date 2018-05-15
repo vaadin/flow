@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -26,7 +28,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @author Vaadin Ltd
  */
-public interface CompositionNotifier extends ComponentEventNotifier {
+public interface CompositionNotifier extends Serializable {
 
     /**
      * Adds a {@code compositionstart} listener to this component.
@@ -37,7 +39,8 @@ public interface CompositionNotifier extends ComponentEventNotifier {
      */
     default Registration addCompositionStartListener(
             ComponentEventListener<CompositionStartEvent> listener) {
-        return addListener(CompositionStartEvent.class, listener);
+        return ComponentUtil.addListener((Component) this,
+                CompositionStartEvent.class, listener);
     }
 
     /**
@@ -49,7 +52,8 @@ public interface CompositionNotifier extends ComponentEventNotifier {
      */
     default Registration addCompositionUpdateListener(
             ComponentEventListener<CompositionUpdateEvent> listener) {
-        return addListener(CompositionUpdateEvent.class, listener);
+        return ComponentUtil.addListener((Component) this,
+                CompositionUpdateEvent.class, listener);
     }
 
     /**
@@ -61,7 +65,8 @@ public interface CompositionNotifier extends ComponentEventNotifier {
      */
     default Registration addCompositionEndListener(
             ComponentEventListener<CompositionEndEvent> listener) {
-        return addListener(CompositionEndEvent.class, listener);
+        return ComponentUtil.addListener((Component) this,
+                CompositionEndEvent.class, listener);
     }
 
 }

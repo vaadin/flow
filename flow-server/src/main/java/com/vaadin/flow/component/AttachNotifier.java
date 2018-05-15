@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -22,7 +24,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @author Vaadin Ltd
  */
-public interface AttachNotifier extends ComponentEventNotifier {
+public interface AttachNotifier extends Serializable {
 
     /**
      * Adds a attach listener to this component.
@@ -33,6 +35,15 @@ public interface AttachNotifier extends ComponentEventNotifier {
      */
     default Registration addAttachListener(
             ComponentEventListener<AttachEvent> listener) {
-        return addListener(AttachEvent.class, listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this,
+                    AttachEvent.class, listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addAttachListener"));
+        }
     }
 }
