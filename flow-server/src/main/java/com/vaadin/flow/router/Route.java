@@ -39,18 +39,18 @@ import com.vaadin.flow.component.UI;
 @Documented
 public @interface Route {
 
-    static final String NAMING_CONVENTION = "___NAMING_CONVENTION___";
+    String NAMING_CONVENTION = "___NAMING_CONVENTION___";
 
     /**
      * Gets the route path value of the annotated class.
      *
      * <p>If no value is provided, the path will be derived from the class
-     * name of the component. The derived name will be lower case and possibly
+     * name of the component. The derived name will be in lower case and
      * trailing "View" will be removed. Also, MainView or Main names will be
      * mapped to root (value will be "").</p>
      *
-     * <p>Note, framework should not use the value directly, but use the
-     * helper method {@link Router#resolve(Class, Route)}, so that
+     * <p>Note for framework developers: do not use the value directly, but
+     * use the helper method {@link Router#resolve(Class, Route)}, so that
      * naming convention based values are dealt correctly.</p>
      *
      * @return the explicit path value of this route

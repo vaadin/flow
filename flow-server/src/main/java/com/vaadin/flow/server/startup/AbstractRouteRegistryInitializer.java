@@ -26,7 +26,12 @@ import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
