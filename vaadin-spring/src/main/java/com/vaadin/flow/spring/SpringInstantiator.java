@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationContext;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
@@ -50,6 +51,8 @@ public class SpringInstantiator extends DefaultInstantiator {
             ApplicationContext context) {
         super(service);
         this.context = context;
+
+        UsageStatistics.markAsUsed("flow/SpringInstantiator", null);
     }
 
     @Override
@@ -68,9 +71,8 @@ public class SpringInstantiator extends DefaultInstantiator {
         } else {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
-                        .info(
-                    "The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
-                            + "falling back to the default behavior",
+                        .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
+                                + "falling back to the default behavior",
                                 I18NProvider.class.getSimpleName(), beansCount);
             }
             return super.getI18NProvider();
