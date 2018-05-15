@@ -36,8 +36,16 @@ public interface KeyNotifier extends Serializable {
      */
     default Registration addKeyDownListener(
             ComponentEventListener<KeyDownEvent> listener) {
-        return ComponentUtil.addListener((Component) this, KeyDownEvent.class,
-                listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this,
+                    KeyDownEvent.class, listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addKeyDownListener"));
+        }
     }
 
     /**
@@ -49,8 +57,16 @@ public interface KeyNotifier extends Serializable {
      */
     default Registration addKeyPressListener(
             ComponentEventListener<KeyPressEvent> listener) {
-        return ComponentUtil.addListener((Component) this, KeyPressEvent.class,
-                listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this,
+                    KeyPressEvent.class, listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addKeyPressListener"));
+        }
     }
 
     /**
@@ -62,8 +78,16 @@ public interface KeyNotifier extends Serializable {
      */
     default Registration addKeyUpListener(
             ComponentEventListener<KeyUpEvent> listener) {
-        return ComponentUtil.addListener((Component) this, KeyUpEvent.class,
-                listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this, KeyUpEvent.class,
+                    listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addKeyUpListener"));
+        }
     }
 
     /**

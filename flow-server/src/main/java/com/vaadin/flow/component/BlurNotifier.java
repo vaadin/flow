@@ -40,32 +40,40 @@ public interface BlurNotifier<T extends Component> extends Serializable {
      */
     default Registration addBlurListener(
             ComponentEventListener<BlurEvent<T>> listener) {
-        return ComponentUtil.addListener((Component) this, BlurEvent.class,
-                (ComponentEventListener) listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this, BlurEvent.class,
+                    (ComponentEventListener) listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addBlurListener"));
+        }
     }
+}
+
+/**
+ * Class that represents the DOM event "blur".
+ *
+ * @param <C>
+ *            The source component type.
+ */
+@DomEvent("blur")
+class BlurEvent<C extends Component> extends ComponentEvent<C> {
 
     /**
-     * Class that represents the DOM event "blur".
+     * BlurEvent base constructor.
      *
-     * @param <C>
-     *            The source component type.
+     * @param source
+     *            the source component
+     * @param fromClient
+     *            <code>true</code> if the event originated from the client
+     *            side, <code>false</code> otherwise
+     * @see ComponentEvent
      */
-    @DomEvent("blur")
-    class BlurEvent<C extends Component> extends ComponentEvent<C> {
-
-        /**
-         * BlurEvent base constructor.
-         *
-         * @param source
-         *            the source component
-         * @param fromClient
-         *            <code>true</code> if the event originated from the client
-         *            side, <code>false</code> otherwise
-         * @see ComponentEvent
-         */
-        public BlurEvent(C source, boolean fromClient) {
-            super(source, fromClient);
-        }
-
+    public BlurEvent(C source, boolean fromClient) {
+        super(source, fromClient);
     }
+
 }

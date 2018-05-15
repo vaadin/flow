@@ -39,7 +39,15 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      */
     default Registration addClickListener(
             ComponentEventListener<ClickEvent<T>> listener) {
-        return ComponentUtil.addListener((Component) this, ClickEvent.class,
-                (ComponentEventListener) listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this, ClickEvent.class,
+                    (ComponentEventListener) listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addClickListener"));
+        }
     }
 }
