@@ -2881,6 +2881,20 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(NavigationTrigger.PAGE_LOAD, FileNotFound.trigger);
     }
 
+    private String resolve(Class<?> clazz) {
+        Route annotation = clazz.getAnnotation(Route.class);
+        return Router.resolve(clazz, annotation);
+    }
+
+    @Test
+    public void test_router_resolve() {
+        Assert.assertEquals("", resolve(Main.class));
+        Assert.assertEquals("", resolve(MainView.class));
+        Assert.assertEquals("", resolve(View.class));
+        Assert.assertEquals("namingconvention", resolve(NamingConvention.class));
+        Assert.assertEquals("namingconvention", resolve(NamingConventionView.class));
+    }
+
     @Test
     public void basic_naming_based_routes() throws InvalidRouteConfigurationException {
         setNavigationTargets(NamingConvention.class, Main.class);
