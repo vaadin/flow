@@ -394,4 +394,35 @@ public class ComponentEventBusTest {
         Assert.assertEquals(0, eventBusCreated.get());
     }
 
+    @Test
+    public void eventUnregisterListener_insideListener() {
+        TestComponent c = new TestComponent();
+        c.addListener(ServerEvent.class, e -> {
+            e.unregisterListener();
+        });
+        Assert.assertTrue(c.hasListener(ServerEvent.class));
+        c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
+        Assert.assertFalse(c.hasListener(ServerEvent.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void eventUnregisterListener_insideListenerTwiceThrows() {
+        TestComponent c = new TestComponent();
+        c.addListener(ServerEvent.class, e -> {
+            e.unregisterListener();
+            e.unregisterListener();
+        });
+        c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void eventUnregisterListener_outsideListenerTwiceThrows() {
+        TestComponent c = new TestComponent();
+        AtomicReference<ServerEvent> storedEvent = new AtomicReference<>();
+        c.addListener(ServerEvent.class, e -> {
+            storedEvent.set(e);
+        });
+        c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
+        storedEvent.get().unregisterListener();
+    }
 }
