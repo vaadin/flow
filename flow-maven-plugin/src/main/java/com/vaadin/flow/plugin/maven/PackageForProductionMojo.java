@@ -85,10 +85,10 @@ public class PackageForProductionMojo extends AbstractMojo {
     @Parameter(property = "bundleConfiguration", defaultValue = "${project.basedir}/bundle-configuration.json")
     private File bundleConfiguration;
 
-    @Parameter(name = "nodeVersion", defaultValue = "v8.9.0", required = true)
+    @Parameter(name = "nodeVersion", defaultValue = "v8.11.1", required = true)
     private String nodeVersion;
 
-    @Parameter(name = "yarnVersion", defaultValue = "v1.3.2", required = true)
+    @Parameter(name = "yarnVersion", defaultValue = "v1.6.0", required = true)
     private String yarnVersion;
 
     @Parameter(property = "ignoreMavenProxies", defaultValue = "true", required = true)
