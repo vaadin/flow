@@ -1106,6 +1106,31 @@ public class RouterTest extends RoutingTestBase {
     public static class ExtendingView extends AbstractMain {
     }
 
+    @Route
+    @Tag(Tag.DIV)
+    public static class Main extends Component {
+    }
+
+    @Route
+    @Tag(Tag.DIV)
+    public static class MainView extends Component {
+    }
+
+    @Route
+    @Tag(Tag.DIV)
+    public static class NamingConvention extends Component {
+    }
+
+    @Route
+    @Tag(Tag.DIV)
+    public static class NamingConventionView extends Component {
+    }
+
+    @Route
+    @Tag(Tag.DIV)
+    public static class View extends Component {
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -2854,6 +2879,52 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PAGE_LOAD);
 
         Assert.assertEquals(NavigationTrigger.PAGE_LOAD, FileNotFound.trigger);
+    }
+
+    @Test
+    public void basic_naming_based_routes() throws InvalidRouteConfigurationException {
+        setNavigationTargets(NamingConvention.class, Main.class);
+
+        Assert.assertEquals(Main.class,
+                router.resolveNavigationTarget("/", Collections.emptyMap()).get()
+                        .getNavigationTarget());
+
+        Assert.assertEquals(NamingConvention.class,
+                router.resolveNavigationTarget("/namingconvention",
+                        Collections.emptyMap()).get().getNavigationTarget());
+    }
+
+    @Test
+    public void basic_naming_based_routes_with_trailing_view() throws InvalidRouteConfigurationException {
+        setNavigationTargets(NamingConventionView.class, MainView.class);
+
+        Assert.assertEquals(MainView.class,
+                router.resolveNavigationTarget("/", Collections.emptyMap()).get()
+                        .getNavigationTarget());
+
+        Assert.assertEquals(NamingConventionView.class,
+                router.resolveNavigationTarget("/namingconvention",
+                        Collections.emptyMap()).get().getNavigationTarget());
+    }
+
+    @Test
+    public void test_naming_based_routes_with_name_view() throws InvalidRouteConfigurationException {
+        setNavigationTargets(View.class);
+
+        Assert.assertEquals(View.class,
+                router.resolveNavigationTarget("/", Collections.emptyMap()).get()
+                        .getNavigationTarget());
+    }
+
+    @Test
+    public void verify_collisions_not_allowed_with_naming_convention() {
+        InvalidRouteConfigurationException exception = null;
+        try {
+            setNavigationTargets(NamingConvention.class, NamingConventionView.class);
+        } catch (InvalidRouteConfigurationException e) {
+            exception = e;
+        }
+        Assert.assertNotNull("Routes with same navigation target should not be allowed", exception);
     }
 
     private void setNavigationTargets(
