@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -169,6 +171,18 @@ public class ElementListenersTest
         event.getSource().setEnabled(false);
         ns.fireEvent(event);
         Assert.assertEquals(1, eventCount.get());
+    }
+
+    @Test
+    public void serializable() {
+        ns.add("click", event -> {
+            // Ignore
+        }).addEventData("eventdata");
+
+        ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
+
+        Set<String> expressions = roundtrip.getExpressions("click");
+        Assert.assertEquals(Collections.singleton("eventdata"), expressions);
     }
 
     private Set<String> getExpressions(String name) {
