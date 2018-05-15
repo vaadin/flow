@@ -15,19 +15,21 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-@Route(value = "com.vaadin.flow.uitest.ui.theme.CustomStylesView")
-@Theme(Lumo.class)
-@HtmlImport("styles/shared-styles.html")
-public class CustomStylesView extends Div {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-    public CustomStylesView() {
-        setText("Custom font size");
-        setId("custom-style");
+public class CustomStylesIT extends ChromeBrowserTest {
+
+    @Test
+    public void importedStyleOverridesTheme() {
+        open();
+
+        WebElement text = findElement(By.id("custom-style"));
+        String fontSize = text.getCssValue("font-size");
+        Assert.assertEquals("12px", fontSize);
     }
 }
