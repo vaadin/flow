@@ -21,6 +21,9 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+/**
+ * @author Vaadin Ltd.
+ */
 public class ExpireSessionIT extends ChromeBrowserTest {
 
     private static final String UPDATE = "update";
