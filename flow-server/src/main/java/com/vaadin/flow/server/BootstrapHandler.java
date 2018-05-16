@@ -484,7 +484,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         JsonObject themeContent = themeSettings.getHeadInjectedContent();
         if (themeContent != null) {
             Element dependency = createDependencyElement(context, themeContent);
-            insertElements(dependency, document.body()::appendChild);
+            insertElements(dependency, document.head()::appendChild);
         }
 
         if (themeSettings.getBodyAttributes() != null) {

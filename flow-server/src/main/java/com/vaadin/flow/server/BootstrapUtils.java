@@ -316,13 +316,12 @@ class BootstrapUtils {
         builder.insert(0, "function _inlineHeader(tag, content){\n"
                 + "var customStyle = document.createElement(tag);\n"
                 + "customStyle.innerHTML= content;\n"
-                + "var firstScript=null;\n if ( document.head ){"
-                + "firstScript = document.head.querySelector('script');\n"
-                + "} else { \n"
-                + "var firstScript = document.body.querySelector('script');\n"
-                + "} document.head.insertBefore(customStyle,firstScript);\n"
+                + "var firstScript=document.head.querySelector('script');\n"
+                + "document.head.insertBefore(customStyle,firstScript);\n"
                 + "}\n");
-        builder.insert(0, "<script>");
+        builder.insert(0, "<script id='_theme-header-injection'>\n");
+        builder.append(
+                "head.removeChild(document.getElementById('_theme-header-injection'));\n");
         builder.append("</script>");
         return createInlineDependencyObject(builder.toString());
     }
