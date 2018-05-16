@@ -1,6 +1,11 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +17,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -54,12 +61,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -998,15 +999,21 @@ public class BootstrapHandlerTest {
                         .anyMatch(element -> element.equals(
                                 "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
 
-        allElements = page.body().getAllElements();
+        allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
         assertStringEquals("Custom style should have been added to head.",
-                "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
-                allElements.get(2).toString());
-
-        Assert.assertTrue("Style should have been wrapped in custom style",
-                page.body().toString().contains(
-                        "<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
+                "<script>function _inlineHeader(tag, content){\n"
+                        + "var customStyle = document.createElement(tag);\n"
+                        + "customStyle.innerHTML= content;\n"
+                        + "var firstScript=null;\n"
+                        + " if ( document.head ){firstScript = document.head.querySelector('script');\n"
+                        + "} else { \n"
+                        + "var firstScript = document.body.querySelector('script');\n"
+                        + "} document.head.insertBefore(customStyle,firstScript);\n"
+                        + "}\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "</script>",
+                allElements.get(14).toString());
     }
 
     @Test // 3333
@@ -1028,15 +1035,21 @@ public class BootstrapHandlerTest {
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
                                 "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
-        allElements = page.body().getAllElements();
+        allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
         assertStringEquals("Custom style should have been added to head.",
-                "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
-                allElements.get(2).toString());
-
-        Assert.assertTrue("Style should have been wrapped in custom style",
-                page.body().toString().contains(
-                        "<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
+                "<script>function _inlineHeader(tag, content){\n"
+                        + "var customStyle = document.createElement(tag);\n"
+                        + "customStyle.innerHTML= content;\n"
+                        + "var firstScript=null;\n"
+                        + " if ( document.head ){firstScript = document.head.querySelector('script');\n"
+                        + "} else { \n"
+                        + "var firstScript = document.body.querySelector('script');\n"
+                        + "} document.head.insertBefore(customStyle,firstScript);\n"
+                        + "}\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "</script>",
+                allElements.get(14).toString());
     }
 
     @Test // 3333
@@ -1069,15 +1082,22 @@ public class BootstrapHandlerTest {
                         .anyMatch(element -> element.equals(
                                 "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
 
-        allElements = page.body().getAllElements();
+        allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
         assertStringEquals("Custom style should have been added to head.",
-                "<custom-style><style include=\"lumo-typography\"></style></custom-style>",
-                allElements.get(2).toString());
+                "<script>function _inlineHeader(tag, content){\n"
+                        + "var customStyle = document.createElement(tag);\n"
+                        + "customStyle.innerHTML= content;\n"
+                        + "var firstScript=null;\n"
+                        + " if ( document.head ){firstScript = document.head.querySelector('script');\n"
+                        + "} else { \n"
+                        + "var firstScript = document.body.querySelector('script');\n"
+                        + "} document.head.insertBefore(customStyle,firstScript);\n"
+                        + "}\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "</script>",
+                allElements.get(14).toString());
 
-        Assert.assertTrue("Style should have been wrapped in custom style",
-                page.body().toString().contains(
-                        "<custom-style><style include=\"lumo-typography\"></style></custom-style>"));
     }
 
     @Test
