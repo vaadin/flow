@@ -13,24 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin;
+package com.vaadin.flow.uitest.ui.theme;
 
-import org.junit.Assert;
-import org.junit.Test;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
-/**
- * Test that tests are run with assertions activated
- */
-public class AssertionTest {
+@Route(value = "com.vaadin.flow.uitest.ui.theme.CustomStylesView")
+@Theme(Lumo.class)
+@HtmlImport("styles/shared-styles.html")
+public class CustomStylesView extends Div {
 
-    @Test
-    public void testAssertionsAreEnabled() {
-        boolean assertOn = false;
-        // *assigns* true if assertions are on.
-        assert assertOn = true;
-
-        Assert.assertTrue("Assertions are turned off for the server package",
-                assertOn);
+    public CustomStylesView() {
+        setText("Custom font size");
+        setId("custom-style");
     }
-
 }

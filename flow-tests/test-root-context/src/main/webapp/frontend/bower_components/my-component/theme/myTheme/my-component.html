@@ -7,7 +7,16 @@
             let element = document.createElement("div");
             element.setAttribute("id", "theme-component");
             element.innerHTML = "My themed component";
-            document.body.appendChild(element);
+            
+            function _append(){
+                if ( document.body ){
+                    document.body.appendChild(element);
+                }   
+                else {
+                    setTimeout(_append);
+                }
+            }
+            _append();
         });
     </script>
 </dom-module>

@@ -20,8 +20,10 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
+@VaadinServletConfiguration(ui = ExcludeDefaultLumoUI.class, productionMode = false)
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;
