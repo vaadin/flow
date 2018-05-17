@@ -29,22 +29,23 @@ import java.io.Serializable;
  * The defaults defined in this class are:
  * <ul>
  * <li><b>sessionExpiredURL</b> = null</li>
- * <li><b>sessionExpiredNotificationEnabled</b> = true</li>
- * <li><b>sessionExpiredCaption</b> = ""</li>
+ * <li><b>sessionExpiredNotificationEnabled</b> = false</li>
+ * <li><b>sessionExpiredCaption</b> = "Session Expired"</li>
  * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and
- * <u>click here</u> to continue."</li>
+ * <u>click here</u> or press ESC key to continue."</li>
  * <li><b>internalErrorURL</b> = null</li>
  * <li><b>internalErrorNotificationEnabled</b> = true</li>
  * <li><b>internalErrorCaption</b> = "Internal error"</li>
  * <li><b>internalErrorMessage</b> = "Please notify the administrator.<br>
- * Take note of any unsaved data, and <u>click here</u> to continue."</li>
+ * Take note of any unsaved data, and <u>click here</u> or press ESC to
+ * continue."</li>
  * <li><b>cookiesDisabledURL</b> = null</li>
  * <li><b>cookiesDisabledNotificationEnabled</b> = true</li>
  * <li><b>cookiesDisabledCaption</b> = "Cookies disabled"</li>
  * <li><b>cookiesDisabledMessage</b> = "This application requires cookies to
  * function.<br>
- * Please enable cookies in your browser and <u>click here</u> to try again.
- * </li>
+ * Please enable cookies in your browser and <u>click here</u> or press ESC to
+ * try again.</li>
  * </ul>
  */
 public class SystemMessages implements Serializable {
