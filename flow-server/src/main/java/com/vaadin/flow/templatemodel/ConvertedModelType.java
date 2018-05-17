@@ -18,6 +18,7 @@ package com.vaadin.flow.templatemodel;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 
 import elemental.json.JsonValue;
@@ -70,8 +71,9 @@ public class ConvertedModelType<A, M extends Serializable>
 
     @Override
     public boolean accepts(Type applicationType) {
-        return converter.getDecodedType()
-                .isAssignableFrom((Class<?>) applicationType);
+        return ReflectTools.convertPrimitiveType(converter.getDecodedType())
+                .isAssignableFrom(ReflectTools
+                        .convertPrimitiveType((Class<?>) applicationType));
     }
 
     @Override

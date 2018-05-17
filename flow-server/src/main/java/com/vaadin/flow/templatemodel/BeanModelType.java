@@ -209,7 +209,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         }
 
         ModelEncoder<?, ?> converter = converterOptional.get();
-        if (!converter.getDecodedType().equals(propertyType)) {
+        if (!isCompatible(converter.getDecodedType(), propertyType)) {
             throw new InvalidTemplateModelException(String.format(
                     "Converter '%s' is incompatible with the type '%s'.",
                     converter.getClass().getName(),
@@ -234,6 +234,16 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                         + "Used in class '%s' with property named '%s'. '%s'",
                 converter.getClass().getName(), declaringClass.getSimpleName(),
                 propertyName, ModelType.getSupportedTypesString()));
+    }
+
+    private static boolean isCompatible(Class<?> clazz, Type type) {
+        if (clazz.equals(type)) {
+            return true;
+        } else if (type instanceof Class<?>) {
+            return ReflectTools.convertPrimitiveType(clazz)
+                    .equals(ReflectTools.convertPrimitiveType((Class<?>) type));
+        }
+        return false;
     }
 
     private static ModelType getListModelType(Type propertyType,
