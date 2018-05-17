@@ -645,9 +645,8 @@ public class BrowserDetails implements Serializable {
      *         otherwise.
      */
     public boolean isEs6Supported() {
-        // IOS 10 has a problem on `let` bindings, which affects all the browser
-        // running on it. Check https://caniuse.com/#feat=let for more
-        if (isIOS() && getOperatingSystemMajorVersion() == 10) {
+
+        if (isEs5AdapterNeeded()) {
             return false;
         }
         // Safari 10+.
@@ -679,6 +678,11 @@ public class BrowserDetails implements Serializable {
     /**
      * Checks if the browser needs `custom-elements-es5-adapter.js` to be
      * loaded.
+     * <p>
+     * This adapter file is needed when the browser has some ES6 capabilities,
+     * but a ES5 files are served instead. This happens when the browser doesn't
+     * support all ES6 features needed for Flow to work properly, or when some
+     * ES6 features have bugs under conditions used by the application.
      * 
      * @return <code>true</code> if the browser needs the adapter,
      *         <code>false</code> otherwise.
