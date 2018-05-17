@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -27,8 +29,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @author Vaadin Ltd
  */
-public interface ClickNotifier<T extends Component>
-        extends ComponentEventNotifier {
+public interface ClickNotifier<T extends Component> extends Serializable {
     /**
      * Adds a click listener to this component.
      *
@@ -38,7 +39,15 @@ public interface ClickNotifier<T extends Component>
      */
     default Registration addClickListener(
             ComponentEventListener<ClickEvent<T>> listener) {
-        return addListener(ClickEvent.class,
-                (ComponentEventListener) listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this, ClickEvent.class,
+                    (ComponentEventListener) listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addClickListener"));
+        }
     }
 }

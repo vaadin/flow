@@ -45,6 +45,7 @@ import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 
 /**
@@ -354,8 +355,9 @@ public abstract class AbstractNavigationStateRenderer
                     NavigationTrigger.PROGRAMMATIC, errorParameter);
         }
 
-        Location location = new Location(beforeNavigation.getRouteTargetType()
-                .getAnnotation(Route.class).value());
+        final Class<?> routeTargetType = beforeNavigation.getRouteTargetType();
+        Location location = new Location(Router.resolve(routeTargetType, routeTargetType
+                .getAnnotation(Route.class)));
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC);

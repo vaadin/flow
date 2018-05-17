@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -24,12 +26,11 @@ import com.vaadin.flow.shared.Registration;
  *            the type of the component returned at the
  *            {@link FocusEvent#getSource()}
  */
-public interface FocusNotifier<T extends Component>
-        extends ComponentEventNotifier {
+public interface FocusNotifier<T extends Component> extends Serializable {
 
     /**
      * Add a listener to focus DOM events.
-     * 
+     *
      * @param listener
      *            the focus listener
      * @return a registration that can be used to unregister the listener
@@ -39,12 +40,21 @@ public interface FocusNotifier<T extends Component>
      */
     default Registration addFocusListener(
             ComponentEventListener<FocusEvent<T>> listener) {
-        return addListener(FocusEvent.class, (ComponentEventListener) listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this, FocusEvent.class,
+                    (ComponentEventListener) listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addFocusListener"));
+        }
     }
 
     /**
      * Class that represents the DOM event "focus".
-     * 
+     *
      * @param <C>
      *            The source component type.
      */
@@ -53,7 +63,7 @@ public interface FocusNotifier<T extends Component>
 
         /**
          * FocusEvent base constructor.
-         * 
+         *
          * @param source
          *            the source component
          * @param fromClient

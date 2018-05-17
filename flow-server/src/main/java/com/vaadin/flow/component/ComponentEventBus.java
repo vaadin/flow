@@ -125,7 +125,13 @@ public class ComponentEventBus implements Serializable {
         }
         List<ComponentEventListener> listeners = (List) componentEventData
                 .get(event.getClass()).listeners;
-        new ArrayList<>(listeners).forEach(l -> l.onComponentEvent(event));
+        for (ComponentEventListener l : new ArrayList<>(listeners)) {
+            event.setUnregisterListenerCommand(() -> {
+                removeListener(eventType, l);
+            });
+            l.onComponentEvent(event);
+            event.setUnregisterListenerCommand(null);
+        }
     }
 
     /**
@@ -252,14 +258,14 @@ public class ComponentEventBus implements Serializable {
             Class<T> eventType, ComponentEventListener<T> listener) {
         assert eventType != null;
         assert listener != null;
-        assert hasListener(eventType);
 
-        List<ComponentEventListener<? extends ComponentEvent<?>>> listeners = componentEventData
-                .get(eventType).listeners;
-        if (listeners == null) {
+        ComponentEventData eventData = componentEventData.get(eventType);
+        if (eventData == null) {
             throw new IllegalArgumentException(
                     "No listener of the given type is registered");
         }
+        List<ComponentEventListener<? extends ComponentEvent<?>>> listeners = eventData.listeners;
+        assert listeners != null;
 
         if (!listeners.remove(listener)) {
             throw new IllegalArgumentException(

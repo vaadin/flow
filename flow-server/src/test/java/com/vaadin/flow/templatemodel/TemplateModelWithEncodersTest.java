@@ -207,11 +207,6 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
             implements ModelEncoder<Long, String> {
 
         @Override
-        public Class<Long> getDecodedType() {
-            return long.class;
-        }
-
-        @Override
         public String encode(Long applicationValue) {
             return applicationValue.toString();
         }

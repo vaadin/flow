@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -23,7 +25,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @author Vaadin Ltd
  */
-public interface KeyNotifier extends ComponentEventNotifier {
+public interface KeyNotifier extends Serializable {
 
     /**
      * Adds a {@code keydown} listener to this component.
@@ -34,7 +36,16 @@ public interface KeyNotifier extends ComponentEventNotifier {
      */
     default Registration addKeyDownListener(
             ComponentEventListener<KeyDownEvent> listener) {
-        return addListener(KeyDownEvent.class, listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this,
+                    KeyDownEvent.class, listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addKeyDownListener"));
+        }
     }
 
     /**
@@ -46,7 +57,16 @@ public interface KeyNotifier extends ComponentEventNotifier {
      */
     default Registration addKeyPressListener(
             ComponentEventListener<KeyPressEvent> listener) {
-        return addListener(KeyPressEvent.class, listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this,
+                    KeyPressEvent.class, listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addKeyPressListener"));
+        }
     }
 
     /**
@@ -58,7 +78,16 @@ public interface KeyNotifier extends ComponentEventNotifier {
      */
     default Registration addKeyUpListener(
             ComponentEventListener<KeyUpEvent> listener) {
-        return addListener(KeyUpEvent.class, listener);
+        if (this instanceof Component) {
+            return ComponentUtil.addListener((Component) this, KeyUpEvent.class,
+                    listener);
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addKeyUpListener"));
+        }
     }
 
     /**

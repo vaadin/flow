@@ -78,6 +78,8 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
  * initial GET request.
@@ -704,6 +706,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         DeploymentConfiguration config = session.getConfiguration();
 
         String webcomponentsLoaderUrl = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
+        String es5AdapterUrl = "frontend://bower_components/webcomponentsjs/custom-elements-es5-adapter.js";
         VaadinService service = session.getService();
         if (!service.isResourceAvailable(webcomponentsLoaderUrl,
                 session.getBrowser(), null)) {
@@ -721,6 +724,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // and
             // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
             head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
+
+            if (session.getBrowser().isEs5AdapterNeeded()) {
+                head.appendChild(
+                        createJavaScriptElement(context.getUriResolver()
+                                .resolveVaadinUri(es5AdapterUrl), false));
+            }
         }
 
         String resolvedUrl = context.getUriResolver()
