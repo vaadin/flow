@@ -31,9 +31,8 @@ const cssSlam = require('css-slam');
 const htmlMinifier = require('html-minifier');
 const babelCore = require('babel-core');
 const minifyPreset = require('babel-preset-minify');
-const babelPresetES2015 = require('babel-preset-es2015');
-const babelPresetES2015NoModules =
-    babelPresetES2015.buildPreset({}, {modules: false});
+const babelPresetEnv = require('babel-preset-env');
+const babelPresetEnvNoModules = babelPresetEnv;
 const babelTransform = function (contents, options) {
     return babelCore.transform(contents, options).code;
 };
@@ -66,7 +65,7 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                 let initialStream = mergeStream(polymerProject.sources(), polymerProject.dependencies()).pipe(htmlSplitter.split());
                 if (transpileJs) {
                     console.log('Will transpile frontend files.');
-                    initialStream = initialStream.pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {plugins: ['babel-plugin-external-helpers'], presets: [babelPresetES2015NoModules]})));
+                    initialStream = initialStream.pipe(gulpIf(/\.js$/, new SafeTransform('babel', babelTransform, {plugins: ['babel-plugin-external-helpers'], presets: [babelPresetEnvNoModules]})));
                 }
 
                 let processedStream;
