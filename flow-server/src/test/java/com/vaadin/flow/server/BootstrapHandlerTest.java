@@ -1082,7 +1082,6 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        System.out.println(allElements.get(14).toString());
         assertStringEquals("Custom style should have been added to head.",
                 "<script id=\"_theme-header-injection\">\n"
                         + "function _inlineHeader(tag, content){\n"
