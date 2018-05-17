@@ -321,7 +321,7 @@ class BootstrapUtils {
                 + "}\n");
         builder.insert(0, "<script id='_theme-header-injection'>\n");
         builder.append(
-                "head.removeChild(document.getElementById('_theme-header-injection'));\n");
+                "document.head.removeChild(document.getElementById('_theme-header-injection'));\n");
         builder.append("</script>");
         return createInlineDependencyObject(builder.toString());
     }

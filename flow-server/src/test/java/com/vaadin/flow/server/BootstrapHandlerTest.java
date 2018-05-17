@@ -1010,7 +1010,7 @@ public class BootstrapHandlerTest {
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
                         + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
     }
@@ -1045,7 +1045,7 @@ public class BootstrapHandlerTest {
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
                         + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
     }
@@ -1092,7 +1092,7 @@ public class BootstrapHandlerTest {
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
                         + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
 
