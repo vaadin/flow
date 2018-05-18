@@ -649,6 +649,12 @@ public class BrowserDetails implements Serializable {
         if (isEs5AdapterNeeded()) {
             return false;
         }
+
+        if (isWebKit() && getBrowserEngineVersion() >= 604) {
+            // Covers Safari 11+ and all kind of webkit views on iOS 11+
+            return true;
+        }
+
         // Safari 10+.
         if (isSafari() && getBrowserMajorVersion() >= 10) {
             return true;
