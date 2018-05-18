@@ -167,6 +167,8 @@ public class ComponentEventBusTest {
         eventListener.assertEventCalled(c, true);
         Assert.assertEquals(2, eventListener.getEvent().getSomeData());
         Assert.assertNull(eventListener.getEvent().getMoreData());
+        Assert.assertFalse(eventListener.getEvent().getPrimitiveBoolean());
+        Assert.assertNull(eventListener.getEvent().getObjectBoolean());
     }
 
     private JsonObject createData(String key, Object value) {

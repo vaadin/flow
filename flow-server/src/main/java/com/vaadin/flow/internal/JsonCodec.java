@@ -207,8 +207,32 @@ public class JsonCodec {
      *             if the type was unsupported
      */
     public static <T> T decodeAs(JsonValue json, Class<T> type) {
+        return decodeAs(json, type, true);
+    }
+
+    /**
+     * Decodes the given JSON value as the given type.
+     * <p>
+     * Supported types are {@link String}, {@link Boolean}, {@link Integer},
+     * {@link Double}.
+     *
+     * @param <T>
+     *            the decoded type
+     * @param json
+     *            the JSON value
+     * @param type
+     *            the type to decode as
+     * @param allowNull
+     *            if return type of null is allowed - check to false in case
+     *            you would like to have default values in case of nulls
+     *            (for example, when having primitives)
+     * @return the value decoded as the given type
+     * @throws IllegalArgumentException
+     *             if the type was unsupported
+     */
+    public static <T> T decodeAs(JsonValue json, Class<T> type, boolean allowNull) {
         assert json != null;
-        if (json.getType() == JsonType.NULL) {
+        if (json.getType() == JsonType.NULL && allowNull) {
             return null;
         }
 

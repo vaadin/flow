@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import javafx.util.Pair;
+
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -190,8 +192,8 @@ public class ComponentEventBus implements Serializable {
                 domEventType, event -> handleDomEvent(eventType, event));
         registration.setDisabledUpdateMode(mode);
 
-        LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
-                .getEventDataExpressions(eventType);
+        LinkedHashMap<String, Pair<Class<?>, Boolean>> eventDataExpressions =
+                ComponentEventBusUtil.getEventDataExpressions(eventType);
         eventDataExpressions.keySet().forEach(registration::addEventData);
 
         if (!"".equals(filter)) {
@@ -230,14 +232,17 @@ public class ComponentEventBus implements Serializable {
             Class<? extends ComponentEvent<?>> eventType) {
         List<Object> eventDataObjects = new ArrayList<>();
 
-        LinkedHashMap<String, Class<?>> expressions = ComponentEventBusUtil
-                .getEventDataExpressions(eventType);
+        LinkedHashMap<String, Pair<Class<?>, Boolean>> expressions =
+                ComponentEventBusUtil.getEventDataExpressions(eventType);
         expressions.forEach((expression, type) -> {
             JsonValue jsonValue = domEvent.getEventData().get(expression);
             if (jsonValue == null) {
                 jsonValue = Json.createNull();
             }
-            Object value = JsonCodec.decodeAs(jsonValue, type);
+            // type.getValue has info of value being primitive
+            // primitive value may not fall back to null
+            Object value = JsonCodec.decodeAs(jsonValue, type.getKey(),
+                    !type.getValue());
             eventDataObjects.add(value);
         });
         return eventDataObjects;
