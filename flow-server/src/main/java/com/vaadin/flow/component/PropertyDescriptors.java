@@ -164,6 +164,26 @@ public final class PropertyDescriptors {
      *
      * @return a property descriptor, not <code>null</code>
      */
+    public static PropertyDescriptor<Double, Double> propertyWithDefault(
+            String name, Double defaultValue) {
+        return new PropertyDescriptorImpl<>(name, defaultValue,
+                (element, value) -> element.setProperty(name, value),
+                element -> element.removeProperty(name),
+                element -> element.getProperty(name, defaultValue),
+                nullToDefault());
+    }
+
+    /**
+     * Creates a descriptor for a property of the component's root element with
+     * a non-null default value.
+     *
+     * @param name
+     *            the name of the element property, not <code>null</code>
+     * @param defaultValue
+     *            the default value of the property, not <code>null</code>
+     *
+     * @return a property descriptor, not <code>null</code>
+     */
     public static PropertyDescriptor<Boolean, Boolean> propertyWithDefault(
             String name, Boolean defaultValue) {
         return new PropertyDescriptorImpl<>(name, defaultValue,

@@ -27,11 +27,14 @@ public class PropertyDescriptorsTest {
 
     private static final Integer ZERO = Integer.valueOf(0);
     private static final Integer ONE = Integer.valueOf(1);
+    private static final Double ZERO_DOUBLE = 0.0;
+    private static final Double ONE_DOUBLE = 1.0;
     private static final String EMPTY_STRING = "";
     private static final String FOO = "foo";
     private static final String SOME_STRING_VALUE = "foobar123456";
     private static final Integer SOME_INTEGER_VALUE = Integer
             .valueOf(129837419);
+    private static final Double SOME_DOUBLE_VALUE = 3.14;
     private static final String TEST_PROPERTY = "someproperty";
     private TestComponent component;
 
@@ -52,6 +55,10 @@ public class PropertyDescriptorsTest {
             .propertyWithDefault(TEST_PROPERTY, 0);
     private static PropertyDescriptor<Integer, Integer> integerPropertyDefaultOne = PropertyDescriptors
             .propertyWithDefault(TEST_PROPERTY, 1);
+    private static PropertyDescriptor<Double, Double> doublePropertyDefaultZero = PropertyDescriptors
+            .propertyWithDefault(TEST_PROPERTY, 0.0);
+    private static PropertyDescriptor<Double, Double> doublePropertyDefaultOne = PropertyDescriptors
+            .propertyWithDefault(TEST_PROPERTY, 1.0);
     private static PropertyDescriptor<Boolean, Boolean> booleanPropertyDefaultFalse = PropertyDescriptors
             .propertyWithDefault(TEST_PROPERTY, false);
     private static PropertyDescriptor<Boolean, Boolean> booleanPropertyDefaultTrue = PropertyDescriptors
@@ -186,6 +193,69 @@ public class PropertyDescriptorsTest {
     @Test(expected = IllegalArgumentException.class)
     public void integerPropertyDefaultOne_setToNull() {
         integerPropertyDefaultOne.set(component, null);
+    }
+
+
+    @Test
+    public void doublePropertyDefaultZero_initial() {
+        Assert.assertEquals(ZERO_DOUBLE, doublePropertyDefaultZero.get(component));
+        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+    }
+
+    @Test
+    public void doublePropertyDefaultZero_setNonDefault() {
+        doublePropertyDefaultZero.set(component, SOME_DOUBLE_VALUE);
+        Assert.assertEquals(SOME_DOUBLE_VALUE,
+            doublePropertyDefaultZero.get(component));
+        Assert.assertEquals(SOME_DOUBLE_VALUE, Double.valueOf(
+            component.getElement().getProperty(TEST_PROPERTY, -1.0)));
+        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+    }
+
+    @Test
+    public void doublePropertyDefaultZero_resetToDefault() {
+        doublePropertyDefaultZero.set(component, SOME_DOUBLE_VALUE);
+        doublePropertyDefaultZero.set(component, ZERO_DOUBLE);
+        Assert.assertEquals(ZERO_DOUBLE, doublePropertyDefaultZero.get(component));
+        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void doublePropertyDefaultZero_setToNull() {
+        doublePropertyDefaultZero.set(component, null);
+    }
+
+    @Test
+    public void doublePropertyDefaultOne_initial() {
+        Assert.assertEquals(ONE_DOUBLE, doublePropertyDefaultOne.get(component));
+        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+    }
+
+    @Test
+    public void doublePropertyDefaultOne_setNonDefault() {
+        doublePropertyDefaultOne.set(component, SOME_DOUBLE_VALUE);
+        Assert.assertEquals(SOME_DOUBLE_VALUE,
+            doublePropertyDefaultOne.get(component));
+        Assert.assertEquals(SOME_DOUBLE_VALUE, Double.valueOf(
+            component.getElement().getProperty(TEST_PROPERTY, -1.0)));
+        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+    }
+
+    @Test
+    public void doublePropertyDefaultOne_resetToDefault() {
+        doublePropertyDefaultOne.set(component, SOME_DOUBLE_VALUE);
+        doublePropertyDefaultOne.set(component, ONE_DOUBLE);
+        Assert.assertEquals(ONE_DOUBLE, doublePropertyDefaultOne.get(component));
+        Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
+        Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void doublePropertyDefaultOne_setToNull() {
+        doublePropertyDefaultOne.set(component, null);
     }
 
     @Test
