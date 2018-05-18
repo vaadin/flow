@@ -56,8 +56,17 @@ public class BasicModelType extends AbstractBasicModelType {
         if (modelValue == null) {
             return null;
         }
-        if (ReflectTools.convertPrimitiveType(getJavaType()).equals(
-                ReflectTools.convertPrimitiveType(modelValue.getClass()))) {
+
+        Class<?> convertedJavaType = ReflectTools
+                .convertPrimitiveType(getJavaType());
+
+        // Number from the client is always double
+        if (modelValue instanceof Double
+                && convertedJavaType == Integer.class) {
+            modelValue = Integer.valueOf(((Number) modelValue).intValue());
+        }
+
+        if (convertedJavaType == modelValue.getClass()) {
             return modelValue;
         } else {
             throw new IllegalArgumentException(String.format(

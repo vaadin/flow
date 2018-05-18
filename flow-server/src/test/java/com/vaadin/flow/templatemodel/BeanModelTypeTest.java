@@ -24,8 +24,11 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+
+import elemental.json.Json;
 
 public class BeanModelTypeTest {
     // Partial overlap with Bean
@@ -279,6 +282,38 @@ public class BeanModelTypeTest {
         Assert.assertEquals("3", bean.getString());
         Assert.assertEquals(3, bean.getIntValue());
         Assert.assertNull(bean.getIntObject());
+    }
+
+    @Test
+    public void clientValueToApplication() {
+        BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
+                PropertyFilter.ACCEPT_ALL, false);
+
+        ElementPropertyMap model = createEmptyModel();
+        model.setProperty("doubleValue",
+                JsonCodec.decodeWithoutTypeInfo(Json.create(3)));
+        model.setProperty("doubleObject",
+                JsonCodec.decodeWithoutTypeInfo(Json.create(3)));
+        model.setProperty("intValue",
+                JsonCodec.decodeWithoutTypeInfo(Json.create(3)));
+        model.setProperty("intObject",
+                JsonCodec.decodeWithoutTypeInfo(Json.create(3)));
+        model.setProperty("booleanValue",
+                JsonCodec.decodeWithoutTypeInfo(Json.create(true)));
+        model.setProperty("booleanObject",
+                JsonCodec.decodeWithoutTypeInfo(Json.create(true)));
+        model.setProperty("string",
+                JsonCodec.decodeWithoutTypeInfo(Json.create("3")));
+
+        Bean bean = beanType.modelToApplication(model.getNode());
+
+        Assert.assertEquals(3.0, bean.getDoubleValue(), 0);
+        Assert.assertEquals(3.0, bean.getDoubleObject(), 0);
+        Assert.assertEquals(3, bean.getIntValue());
+        Assert.assertEquals(3, bean.getIntObject().intValue());
+        Assert.assertEquals(Boolean.TRUE, bean.getBooleanObject());
+        Assert.assertTrue(bean.isBooleanValue());
+        Assert.assertEquals("3", bean.getString());
     }
 
     @Test
