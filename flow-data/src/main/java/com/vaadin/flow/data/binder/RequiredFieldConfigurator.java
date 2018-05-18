@@ -16,12 +16,15 @@
 package com.vaadin.flow.data.binder;
 
 import java.lang.annotation.Annotation;
+import java.util.Objects;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.function.SerializableBiPredicate;
 
 /**
  * This interface represents a predicate which returns {@code true} if bound
@@ -36,47 +39,58 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  */
 public interface RequiredFieldConfigurator
-extends SerializablePredicate<Annotation> {
+        extends SerializableBiPredicate<Annotation, BindingBuilder<?, ?>> {
 
     /**
      * Configurator which is aware of {@literal @NotNull} annotation presence
-     * for a property.
+     * for a property where the default value is <code>null</code>.
      */
-    RequiredFieldConfigurator NOT_NULL = annotation -> annotation
-            .annotationType().equals(NotNull.class);
+    RequiredFieldConfigurator NOT_NULL = (annotation,
+            binding) -> annotation.annotationType().equals(NotNull.class)
+                    && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
+                            binding, Objects::isNull);
 
     /**
      * Configurator which is aware of {@literal @NotEmpty} annotation presence
-     * for a property.
+     * for a property where the default value is empty.
      */
-    RequiredFieldConfigurator NOT_EMPTY = annotation -> annotation
-            .annotationType().getName()
-            .equals("org.hibernate.validator.constraints.NotEmpty");
+    RequiredFieldConfigurator NOT_EMPTY = (annotation,
+            binding) -> (annotation.annotationType().equals(NotEmpty.class)
+                    || annotation.annotationType().getName()
+                            .equals("org.hibernate.validator.constraints.NotEmpty"))
+                    && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
+                            binding,
+                            RequiredFieldConfiguratorUtil::hasZeroSize);
 
     /**
      * Configurator which is aware of {@literal Size} annotation with
-     * {@code min()> 0} presence for a property.
+     * {@code min()> 0} presence for a property where the size of the default
+     * value is 0
      */
-    RequiredFieldConfigurator SIZE = annotation -> annotation
-            .annotationType().equals(Size.class)
-            && ((Size) annotation).min() > 0;
+    RequiredFieldConfigurator SIZE = (annotation,
+            binding) -> annotation.annotationType().equals(Size.class)
+                    && ((Size) annotation).min() > 0
+                    && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
+                            binding,
+                            RequiredFieldConfiguratorUtil::hasZeroSize);
 
-            /**
-             * Default configurator which is combination of {@link #NOT_NULL},
-             * {@link #NOT_EMPTY} and {@link #SIZE} configurators.
-             */
-            RequiredFieldConfigurator DEFAULT = NOT_NULL.chain(NOT_EMPTY)
-                    .chain(SIZE);
+    /**
+     * Default configurator which is combination of {@link #NOT_NULL},
+     * {@link #NOT_EMPTY} and {@link #SIZE} configurators.
+     */
+    RequiredFieldConfigurator DEFAULT = NOT_NULL.chain(NOT_EMPTY).chain(SIZE);
 
-            /**
-             * Returns a configurator that chains together this configurator with the
-             * given configurator.
-             *
-             * @param configurator the configurator to chain, , not null
-             * @return a chained configurator
-             */
-            default RequiredFieldConfigurator chain(
-                    RequiredFieldConfigurator configurator) {
-                return descriptor -> test(descriptor) || configurator.test(descriptor);
-            }
+    /**
+     * Returns a configurator that chains together this configurator with the
+     * given configurator.
+     *
+     * @param configurator
+     *            the configurator to chain, , not null
+     * @return a chained configurator
+     */
+    default RequiredFieldConfigurator chain(
+            RequiredFieldConfigurator configurator) {
+        return (annotation, binding) -> test(annotation, binding)
+                || configurator.test(annotation, binding);
+    }
 }

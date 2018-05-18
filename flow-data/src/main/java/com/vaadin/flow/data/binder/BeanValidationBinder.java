@@ -29,7 +29,7 @@ import com.vaadin.flow.internal.BeanUtil;
  * properties. The Binder automatically adds BeanValidator which validates beans
  * using JSR-303 specification. It assumes that JSR-303 bean validation
  * implementation is present on the classpath.
- * 
+ *
  * @author Vaadin Ltd
  * @see Binder
  * @see BeanValidator
@@ -61,9 +61,9 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
         if (!BeanUtil.checkBeanValidationAvailable()) {
             throw new IllegalStateException(
                     BeanValidationBinder.class.getSimpleName()
-                    + " cannot be used because a JSR-303 Bean Validation "
-                    + "implementation not found on the classpath or could not be initialized. Use "
-                    + Binder.class.getSimpleName() + " instead");
+                            + " cannot be used because a JSR-303 Bean Validation "
+                            + "implementation not found on the classpath or could not be initialized. Use "
+                            + Binder.class.getSimpleName() + " instead");
         }
         this.beanType = beanType;
     }
@@ -146,7 +146,8 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
         }
         if (propertyDescriptor.getConstraintDescriptors().stream()
                 .map(ConstraintDescriptor::getAnnotation)
-                .anyMatch(requiredConfigurator)) {
+                .anyMatch(constraint -> requiredConfigurator.test(constraint,
+                        binding))) {
             binding.getField().setRequiredIndicatorVisible(true);
         }
     }
