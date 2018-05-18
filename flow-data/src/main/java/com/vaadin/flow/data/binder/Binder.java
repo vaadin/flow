@@ -748,6 +748,10 @@ public class Binder<BEAN> implements Serializable {
             this.statusHandler = statusHandler;
         }
 
+        Converter<FIELDVALUE, ?> getConverterValidatorChain() {
+            return converterValidatorChain;
+        }
+
         @Override
         public Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -987,7 +991,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return the found locale, not null
          */
-        protected Locale findLocale() {
+        protected static Locale findLocale() {
             Locale locale = null;
             if (UI.getCurrent() != null) {
                 locale = UI.getCurrent().getLocale();
@@ -1064,6 +1068,10 @@ public class Binder<BEAN> implements Serializable {
          * @return the value context
          */
         protected ValueContext createValueContext() {
+            return createValueContext(field);
+        }
+
+        static ValueContext createValueContext(HasValue<?, ?> field) {
             if (field instanceof Component) {
                 return new ValueContext((Component) field, field);
             }
