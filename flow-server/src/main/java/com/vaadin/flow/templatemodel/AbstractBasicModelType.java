@@ -74,6 +74,45 @@ public abstract class AbstractBasicModelType<T> implements ModelType {
         }
     }
 
+    /**
+     * Converts the given model value to the application type of this model
+     * type. The conversion automatically handles default values for primitive
+     * types and conversion of client-originiated numbers to the expected Java
+     * number type.
+     *
+     * @param modelValue
+     *            the model value to convert
+     * @return the converted value, not <code>null</code> if the application
+     *         type is a primitive
+     */
+    protected Object convertToApplication(Serializable modelValue) {
+        if (modelValue == null && getJavaType().isPrimitive()) {
+            return ReflectTools.getPrimitiveDefaultValue(getJavaType());
+        }
+        if (modelValue == null) {
+            return null;
+        }
+
+        Class<?> convertedJavaType = ReflectTools
+                .convertPrimitiveType(getJavaType());
+
+        // Numeric value from the client is always Double
+        if (modelValue instanceof Double
+                && convertedJavaType == Integer.class) {
+            modelValue = Integer.valueOf(((Double) modelValue).intValue());
+        }
+
+        if (convertedJavaType == modelValue.getClass()) {
+            return modelValue;
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "The stored model value '%s' type '%s' "
+                            + "cannot be used as a type for a model property with type '%s'",
+                    modelValue, modelValue.getClass().getName(),
+                    getJavaType().getName()));
+        }
+    }
+
     protected static <M> Map<Class<?>, M> loadBasicTypes(
             Function<Class<?>, M> factory) {
         Map<Class<?>, M> map = Stream
