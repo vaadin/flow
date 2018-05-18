@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -39,6 +38,7 @@ import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
+import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
@@ -91,6 +91,9 @@ public class PackageForProductionMojo extends AbstractMojo {
     @Parameter(name = "yarnVersion", defaultValue = "v1.6.0", required = true)
     private String yarnVersion;
 
+    @Parameter(name = "yarnNetworkConcurrency", defaultValue = "-1")
+    private int yarnNetworkConcurrency;
+
     @Parameter(property = "ignoreMavenProxies", defaultValue = "true", required = true)
     private boolean ignoreMavenProxies;
 
@@ -113,9 +116,9 @@ public class PackageForProductionMojo extends AbstractMojo {
                 transpileWorkingDirectory, es5OutputDirectoryName,
                 es6OutputDirectoryName, frontendDataProvider);
         new TranspilationStep(frontendToolsManager, getProxyConfig(),
-                nodeVersion, yarnVersion).transpileFiles(
-                        transpileEs6SourceDirectory, transpileOutputDirectory,
-                        skipEs5);
+                nodeVersion, yarnVersion, yarnNetworkConcurrency)
+                        .transpileFiles(transpileEs6SourceDirectory,
+                                transpileOutputDirectory, skipEs5);
     }
 
     private Map<String, Set<String>> getFragmentsData(
