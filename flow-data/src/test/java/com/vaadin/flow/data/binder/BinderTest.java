@@ -16,6 +16,17 @@
 
 package com.vaadin.flow.data.binder;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,18 +47,6 @@ import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -365,7 +364,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(namelessPerson);
 
         assertTrue(nullTextField.isEmpty());
-        Assert.assertEquals(null, namelessPerson.getFirstName());
+        Assert.assertEquals("null", namelessPerson.getFirstName());
 
         // Change value, see that textfield is not empty and bean is updated.
         nullTextField.setValue("");
@@ -429,9 +428,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         String customNullPointerRepresentation = "foo";
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forField(nameField)
-                .withConverter(value -> value,
-                        value -> value == null ? customNullPointerRepresentation
-                                : value)
+                .withConverter(value -> value, value -> value == null
+                        ? customNullPointerRepresentation : value)
                 .bind("firstName");
 
         Person person = new Person();
@@ -1106,5 +1104,46 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binding.setReadOnly(true);
         assertTrue("Binding should be readonly", binding.isReadOnly());
         assertTrue("Name field should be readonly", nameField.isReadOnly());
+    }
+
+    @Test
+    public void nonSymetricValue_setBean_writtenToBean() {
+        binder.bind(nameField, Person::getLastName, Person::setLastName);
+
+        Assert.assertNull(item.getLastName());
+
+        binder.setBean(item);
+
+        Assert.assertEquals("", item.getLastName());
+    }
+
+    @Test
+    public void nonSymmetricValue_readBean_beanNotTouched() {
+        binder.bind(nameField, Person::getLastName, Person::setLastName);
+        binder.addValueChangeListener(
+                event -> Assert.fail("No value change event should be fired"));
+
+        Assert.assertNull(item.getLastName());
+
+        binder.readBean(item);
+
+        Assert.assertNull(item.getLastName());
+    }
+
+    @Test
+    public void symetricValue_setBean_beanNotUpdated() {
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        binder.setBean(new Person() {
+            @Override
+            public String getFirstName() {
+                return "First";
+            }
+
+            @Override
+            public void setFirstName(String firstName) {
+                Assert.fail("Setter should not be called");
+            }
+        });
     }
 }
