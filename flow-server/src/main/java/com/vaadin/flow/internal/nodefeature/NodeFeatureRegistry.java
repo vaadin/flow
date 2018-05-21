@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 
@@ -42,7 +43,7 @@ public class NodeFeatureRegistry {
         private final int id;
 
         private <T extends NodeFeature> NodeFeatureData(
-                Function<StateNode, T> factory) {
+                SerializableFunction<StateNode, T> factory) {
             this.factory = factory;
             id = nextNodeFeatureId++;
         }
@@ -92,7 +93,7 @@ public class NodeFeatureRegistry {
     }
 
     private static <T extends NodeFeature> void registerFeature(Class<T> type,
-            Function<StateNode, T> factory) {
+            SerializableFunction<StateNode, T> factory) {
         NodeFeatureData featureData = new NodeFeatureData(factory);
         nodeFeatures.put(type, featureData);
         idToFeature.put(featureData.id, type);

@@ -27,7 +27,7 @@ import com.vaadin.flow.function.SerializablePredicate;
 public class PropertyFilter implements SerializablePredicate<String> {
     private final String prefix;
 
-    private final Predicate<String> predicate;
+    private final SerializablePredicate<String> predicate;
 
     /**
      * An unwrapped filter that accepts all property names.
@@ -41,7 +41,7 @@ public class PropertyFilter implements SerializablePredicate<String> {
      * @param predicate
      *            the predicate to use for this filter, not <code>null</code>
      */
-    public PropertyFilter(Predicate<String> predicate) {
+    public PropertyFilter(SerializablePredicate<String> predicate) {
         this("", predicate);
     }
 
@@ -58,7 +58,7 @@ public class PropertyFilter implements SerializablePredicate<String> {
      *            a predicate matching property names in the inner scope
      */
     public PropertyFilter(PropertyFilter outerFilter, String scopeName,
-            Predicate<String> predicate) {
+                          SerializablePredicate<String> predicate) {
         this(composePrefix(outerFilter, scopeName),
                 predicate.and(composeFilter(outerFilter, scopeName)));
     }
@@ -76,7 +76,7 @@ public class PropertyFilter implements SerializablePredicate<String> {
         this(outerFilter, scopeName, name -> true);
     }
 
-    private PropertyFilter(String prefix, Predicate<String> predicate) {
+    private PropertyFilter(String prefix, SerializablePredicate<String> predicate) {
         assert predicate != null;
         assert prefix != null;
         assert prefix.isEmpty() || prefix.endsWith(".");
@@ -95,7 +95,7 @@ public class PropertyFilter implements SerializablePredicate<String> {
         return outerFilter.prefix + scopeName + ".";
     }
 
-    private static Predicate<? super String> composeFilter(
+    private static SerializablePredicate<? super String> composeFilter(
             PropertyFilter outerFilter, String scopeName) {
         return name -> outerFilter.test(scopeName + "." + name);
     }

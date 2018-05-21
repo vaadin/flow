@@ -39,7 +39,7 @@ public class ThemeListImpl implements ThemeList {
     public static final String THEME_ATTRIBUTE_NAME = "theme";
     private static final String THEME_NAMES_DELIMITER = " ";
 
-    private final class ThemeListIterator implements Iterator<String>, Serializable {
+    private final class ThemeListIterator implements Iterator<String> {
         private final Iterator<String> wrappedIterator = themes.iterator();
 
         @Override

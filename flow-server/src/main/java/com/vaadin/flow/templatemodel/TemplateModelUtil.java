@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
@@ -127,7 +128,7 @@ public final class TemplateModelUtil {
      *            the method to check
      * @return a filter based on the given annotations
      */
-    public static Predicate<String> getFilterFromIncludeExclude(Method method) {
+    public static SerializablePredicate<String> getFilterFromIncludeExclude(Method method) {
         Exclude exclude = method.getAnnotation(Exclude.class);
         Include include = method.getAnnotation(Include.class);
         Set<String> toExclude = new HashSet<>();

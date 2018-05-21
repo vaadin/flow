@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -24,10 +23,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.templatemodel.BeanModelType.BeanModelTypeProperty;
 
@@ -37,10 +36,10 @@ import com.vaadin.flow.templatemodel.BeanModelType.BeanModelTypeProperty;
  *
  * @author Vaadin Ltd.
  */
-class PropertyMapBuilder implements Serializable {
+class PropertyMapBuilder {
     private final Map<String, BeanModelTypeProperty> properties;
 
-    private static class PropertyData implements Serializable {
+    private static class PropertyData {
         private final String propertyName;
         private final Type propertyType;
         private final Class<?> declaringClass;
@@ -129,10 +128,10 @@ class PropertyMapBuilder implements Serializable {
                             }));
         }
 
-        private Predicate<String> getExcludeFieldsFilter() {
+        private SerializablePredicate<String> getExcludeFieldsFilter() {
             return accessors.stream()
                     .map(TemplateModelUtil::getFilterFromIncludeExclude)
-                    .reduce(Predicate::and).orElse(fieldName -> true);
+                    .reduce(SerializablePredicate::and).orElse(fieldName -> true);
         }
 
         private String getPropertyName() {
