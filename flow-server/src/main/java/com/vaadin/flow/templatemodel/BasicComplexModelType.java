@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
 
@@ -82,24 +81,8 @@ public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
         assert stateNode.hasFeature(BasicTypeValue.class);
         Serializable value = stateNode.getFeature(BasicTypeValue.class)
                 .getValue();
-        if (value == null && getJavaType().isPrimitive()) {
-            return getJavaType()
-                    .cast(ReflectTools.getPrimitiveDefaultValue(getJavaType()));
-        }
-        if (value == null) {
-            return null;
-        }
-        Class<?> boxedType = ReflectTools.convertPrimitiveType(getJavaType());
-        if (boxedType
-                .equals(ReflectTools.convertPrimitiveType(value.getClass()))) {
-            return (T) boxedType.cast(value);
-        } else {
-            throw new IllegalArgumentException(String.format(
-                    "The stored model value '%s' type '%s' "
-                            + "cannot be used as a type for a model property with type '%s'",
-                    value, value.getClass().getName(),
-                    getJavaType().getName()));
-        }
+
+        return (T) convertToApplication(value);
     }
 
     @Override

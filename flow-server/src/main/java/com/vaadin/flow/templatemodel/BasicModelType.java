@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
-import com.vaadin.flow.internal.ReflectTools;
-
 /**
  * A model type representing an immutable leaf value, e.g. strings, numbers or
  * booleans.
@@ -50,22 +48,7 @@ public class BasicModelType extends AbstractBasicModelType {
 
     @Override
     public Object modelToApplication(Serializable modelValue) {
-        if (modelValue == null && getJavaType().isPrimitive()) {
-            return ReflectTools.getPrimitiveDefaultValue(getJavaType());
-        }
-        if (modelValue == null) {
-            return null;
-        }
-        if (ReflectTools.convertPrimitiveType(getJavaType()).equals(
-                ReflectTools.convertPrimitiveType(modelValue.getClass()))) {
-            return modelValue;
-        } else {
-            throw new IllegalArgumentException(String.format(
-                    "The stored model value '%s' type '%s' "
-                            + "cannot be used as a type for a model property with type '%s'",
-                    modelValue, modelValue.getClass().getName(),
-                    getJavaType().getName()));
-        }
+        return convertToApplication(modelValue);
     }
 
     @Override
