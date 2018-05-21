@@ -19,11 +19,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -31,6 +28,7 @@ import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -63,6 +61,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -283,8 +282,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private native void hookUpPolymerElement(StateNode node, Element element)
     /*-{
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
+
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
@@ -294,13 +294,126 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             };
         }
     
+         var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
     
-        var originalReady = element.ready;
-            element.ready = function (){
-                originalReady.apply(this, arguments);
-                @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
+         var originalReady = element.ready;
+    
+         element.ready = function (){
+            originalReady.apply(this, arguments);
+            @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
+    
+            var replaceDomRepeatPropertyChange = function(){
+                var domRepeat = element.root.querySelector('dom-repeat');
+
+                if ( domRepeat ){
+                 element.removeEventListener('dom-change', replaceDomRepeatPropertyChange);
+                }
+                else {
+                    return;
+                }
+                if ( !domRepeat.constructor.prototype.$propChangedModified){
+                    domRepeat.constructor.prototype.$propChangedModified = true;
+    
+                    var changed = domRepeat.constructor.prototype._propertiesChanged;
+    
+                    domRepeat.constructor.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){
+                        changed.apply(this, arguments);
+
+                        var props = Object.getOwnPropertyNames(changedProps);
+                        var items = "items.";
+                        for(i=0; i<props.length; i++){
+                            var index = props[i].indexOf(items);
+                            if ( index == 0 ){
+                                var prop = props[i].substr(items.length);
+                                index = prop.indexOf('.');
+                                if ( index >0){
+                                    var arrayIndex = prop.substr(0,index);
+                                    var propertyName = prop.substr(index+1);
+    
+                                    var nodeId = currentProps.items[arrayIndex].nodeId;
+                                    var value = currentProps.items[arrayIndex][propertyName];
+    
+                                    // this is an attempt to find the template element
+                                    // which is not available as a context in the protype method
+                                    var host = this.__dataHost;
+                                    while( !host.localName || host.__dataHost ){
+                                        host = host.__dataHost;
+                                    }
+
+                                    $entry(function () {
+                                        @SimpleElementBindingStrategy::handleProeprtyChange(*)(nodeId, host, propertyName, value, tree);
+                                    })();
+                                }
+                            }
+                        }
+                    };
+                }
+            };
+    
+            if ( element.root.querySelector('dom-repeat') ){
+                replaceDomRepeatPropertyChange();
+            }
+            else {
+                element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
+            }
         }
+    
     }-*/;
+
+    private static void handleProeprtyChange(double nodeId, Element host,
+            String property, Object value, StateTree tree) {
+        // Warning : it's important that <code>tree</code> is passed as an
+        // argument instead of StateNode or Element ! We have replaced a method
+        // in the prototype which means that it may not use the context from the
+        // hookUpPolymerElement method. Only a tree may be use as a context
+        // since StateTree is a singleton.
+
+        StateNode node = tree.getNode((int) nodeId);
+
+        assert checkParent(node,
+                host) : "Host element is not a parent of the node whose property has changed. "
+                        + "This is an implementation error. "
+                        + "Most likely it means that there are several StateTrees on the same page "
+                        + "(might be possible with portlets) and the target StateTree should not be passed "
+                        + "into the method as an argument but somehow detected from the host element. "
+                        + "Another option is that host element is calculated incorrectly.";
+
+        // TODO: this code doesn't care about "security feature" which prevents
+        // sending
+        // data from the client side to the server side if property is not
+        // "updatable". See <code>handlePropertyChange</code> and
+        // UpdatableModelProperties.
+        // It should be aware of that. The current issue is that we don't know
+        // the full property path (dot separated) to the property which is a
+        // property for the <code>host</code> StateNode and not
+        // for the <code>node</code> below. It's tricky to calculate FQN
+        // property name at this point though the <code>host</code> element
+        // which is
+        // the template element could be used for that: a StateNode of
+        // <code>host</code> is an ancestor of the <code>node</code> and it
+        // should be possible to calculate FQN using this info. Also at the
+        // moment
+        // AllowClientUpdates ignores bean properties in
+        // lists ( if "list" is a property name of list type property and
+        // "name" is a property of a bean then
+        // whether "list.name" is not in the UpdatableModelProperties ).
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty mapProperty = map.getProperty(property);
+        mapProperty.syncToServer(value);
+    }
+
+    private static boolean checkParent(StateNode node, Element supposedParent) {
+        StateNode parent = node;
+        while (true) {
+            parent = parent.getParent();
+            if (parent == null) {
+                return false;
+            }
+            if (supposedParent.equals(parent.getDomNode())) {
+                return true;
+            }
+        }
+    }
 
     private void handlePropertiesChanged(
             JavaScriptObject changedPropertyPathsToValues, StateNode node) {
