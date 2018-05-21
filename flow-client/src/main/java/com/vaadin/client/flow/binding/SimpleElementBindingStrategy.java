@@ -263,7 +263,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
           var self = this;
           try {
               $wnd.customElements.whenDefined(element.localName).then( function () {
-                  self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
+                  if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
+                      self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
+                  }
               });
           }
           catch (e) {
@@ -401,6 +403,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
             String path) {
+        assert PolymerUtils.isPolymerElement(htmlNode);
+
         Command command = () -> stateNode
                 .getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .forEachProperty((property, key) -> bindSubProperty(stateNode,
