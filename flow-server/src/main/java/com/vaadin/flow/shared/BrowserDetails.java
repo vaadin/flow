@@ -689,14 +689,18 @@ public class BrowserDetails implements Serializable {
      * but a ES5 files are served instead. This happens when the browser doesn't
      * support all ES6 features needed for Flow to work properly, or when some
      * ES6 features have bugs under conditions used by the application.
-     * 
+     *
      * @return <code>true</code> if the browser needs the adapter,
      *         <code>false</code> otherwise.
      */
     public boolean isEs5AdapterNeeded() {
-        // IOS 10 has a known issue on https://caniuse.com/#feat=let, which
+        // Safari 10 / IOS 10 has a known issue on
+        // https://caniuse.com/#feat=let, which
         // needs a separate Es5 adapter for production mode
         if (isIOS() && getOperatingSystemMajorVersion() == 10) {
+            return true;
+        }
+        if (isSafari() && getBrowserMajorVersion() == 10) {
             return true;
         }
         return false;
