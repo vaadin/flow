@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -23,7 +25,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  *
  * @author Vaadin Ltd
  */
-public interface ElementFactory {
+public interface ElementFactory extends Serializable {
 
     /**
      * Creates an {@code &lt;a>} element.

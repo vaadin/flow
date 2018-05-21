@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,7 +39,7 @@ public class ThemeListImpl implements ThemeList {
     public static final String THEME_ATTRIBUTE_NAME = "theme";
     private static final String THEME_NAMES_DELIMITER = " ";
 
-    private final class ThemeListIterator implements Iterator<String> {
+    private final class ThemeListIterator implements Iterator<String>, Serializable {
         private final Iterator<String> wrappedIterator = themes.iterator();
 
         @Override

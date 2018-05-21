@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.router.BeforeEnterEvent;
 
 /**
  * The base interface for every interface that handles {@link BeforeEnterEvent}.
  */
 @FunctionalInterface
-public interface BeforeEnterHandler {
+public interface BeforeEnterHandler extends Serializable {
 
     /**
      * Method called before navigation to attaching Component chain is made.

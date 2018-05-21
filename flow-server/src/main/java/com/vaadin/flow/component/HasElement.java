@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -23,7 +25,7 @@ import com.vaadin.flow.dom.Element;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface HasElement {
+public interface HasElement extends Serializable {
     /**
      * Gets the element associated with this instance.
      *

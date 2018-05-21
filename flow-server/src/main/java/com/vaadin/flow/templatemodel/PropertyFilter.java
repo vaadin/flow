@@ -17,12 +17,14 @@ package com.vaadin.flow.templatemodel;
 
 import java.util.function.Predicate;
 
+import com.vaadin.flow.function.SerializablePredicate;
+
 /**
  * Property name filter that supports composition for resolving sub properties.
  *
  * @author Vaadin Ltd
  */
-public class PropertyFilter implements Predicate<String> {
+public class PropertyFilter implements SerializablePredicate<String> {
     private final String prefix;
 
     private final Predicate<String> predicate;

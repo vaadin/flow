@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
@@ -42,7 +43,7 @@ import com.vaadin.flow.server.PageConfigurator;
  * @author Vaadin Ltd
  *
  */
-public abstract class AbstractRouteRegistryInitializer {
+public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
     /**
      * Validate the potential route classes stream and return them as a set.

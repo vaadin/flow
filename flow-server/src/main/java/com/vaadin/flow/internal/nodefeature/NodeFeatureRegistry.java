@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class NodeFeatureRegistry {
     static final Map<Class<? extends NodeFeature>, NodeFeatureData> nodeFeatures = new HashMap<>();
     private static final Map<Integer, Class<? extends NodeFeature>> idToFeature = new HashMap<>();
 
-    private static class NodeFeatureData {
+    private static class NodeFeatureData implements Serializable {
         private final Function<StateNode, ? extends NodeFeature> factory;
         private final int id;
 

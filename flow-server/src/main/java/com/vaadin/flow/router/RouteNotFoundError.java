@@ -111,6 +111,8 @@ public class RouteNotFoundError extends Component
     }
 
     private static class LazyInit {
+        private LazyInit() {
+        }
 
         private static final String PRODUCTION_MODE_TEMPLATE = readHtmlFile(
                 "RouteNotFoundError_prod.html");

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -34,7 +36,7 @@ import com.vaadin.flow.dom.Element;
  *            the type used when getting the property value, this is typically
  *            either <code>S</code> or <code>Optional&lt;S&gt;</code>
  */
-public interface PropertyDescriptor<S, G> {
+public interface PropertyDescriptor<S, G> extends Serializable {
 
     /**
      * Sets the property value for the given component.

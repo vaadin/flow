@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
+
 /**
  * Interface for defining url parameters for navigation targets for use in
  * routing.
@@ -25,7 +27,7 @@ package com.vaadin.flow.router;
  *            type parameter type
  */
 @FunctionalInterface
-public interface HasUrlParameter<T> {
+public interface HasUrlParameter<T> extends Serializable {
 
     /**
      * Method that is called automatically when navigating to the target that

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import com.vaadin.flow.server.InvalidApplicationConfigurationException;
  * Validation class that contains common logic to checks that specific
  * annotations are not configured wrong.
  */
-public abstract class AbstractAnnotationValidator {
+public abstract class AbstractAnnotationValidator implements Serializable {
 
     public static final String ERROR_MESSAGE_BEGINNING = "Found configuration annotations that will not be used in the application. \n"
             + "Move the following annotations to a single route or the top RouterLayout of the application: \n";

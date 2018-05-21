@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.data.value;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.HasValue;
 
@@ -30,7 +32,7 @@ import com.vaadin.flow.component.HasValue;
  *
  * @author Vaadin Ltd.
  */
-public interface HasValueChangeMode {
+public interface HasValueChangeMode extends Serializable {
 
     /**
      * Gets current value change mode of the component.

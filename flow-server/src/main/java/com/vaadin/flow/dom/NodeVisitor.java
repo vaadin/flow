@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
+
 /**
  * Element API node visitor interface.
  *
@@ -23,7 +25,7 @@ package com.vaadin.flow.dom;
  * @author Vaadin Ltd
  *
  */
-public interface NodeVisitor {
+public interface NodeVisitor extends Serializable {
 
     /**
      * The type of the element.
