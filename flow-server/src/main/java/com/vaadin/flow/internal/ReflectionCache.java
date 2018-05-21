@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +34,7 @@ import java.util.function.Function;
  * @param <T>
  *            the cached value type
  */
-public class ReflectionCache<C, T> {
+public class ReflectionCache<C, T> implements Serializable {
     private static final Set<ReflectionCache<?, ?>> caches = Collections
             .synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 

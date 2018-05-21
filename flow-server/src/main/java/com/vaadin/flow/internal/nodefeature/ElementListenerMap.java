@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +57,7 @@ public class ElementListenerMap extends NodeMap {
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
-    private static class ExpressionSettings {
+    private static class ExpressionSettings implements Serializable {
         private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
         public void addDebouncePhases(int timeout, Set<DebouncePhase> phases) {

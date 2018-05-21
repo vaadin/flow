@@ -101,7 +101,7 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
 
-    private static class SizeVerifier<T> implements Consumer<T> {
+    private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
         private int size;
 

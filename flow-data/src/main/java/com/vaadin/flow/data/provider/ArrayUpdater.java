@@ -32,7 +32,7 @@ public interface ArrayUpdater extends Serializable {
      * Array updater strategy.
      *
      */
-    public interface Update {
+    public interface Update extends Serializable {
         /**
          * Clears {@code length} elements in array from the {@code start}
          * position.

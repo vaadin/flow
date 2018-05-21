@@ -67,7 +67,7 @@ public class RouteRegistry implements Serializable {
      * A pair of a navigation target for handling exceptions and the exception
      * type handled by the navigation target.
      */
-    public static class ErrorTargetEntry {
+    public static class ErrorTargetEntry implements Serializable {
         private final Class<? extends Component> navigationTarget;
         private final Class<? extends Exception> handledExceptionType;
 

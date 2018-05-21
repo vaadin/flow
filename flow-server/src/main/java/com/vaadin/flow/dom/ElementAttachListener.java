@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
+
 /**
  * Listener for element attach events. It is invoked when the element is
  * attached to the UI.
  */
 @FunctionalInterface
-public interface ElementAttachListener {
+public interface ElementAttachListener extends Serializable {
     /**
      * Invoked when an element is attached to the UI.
      *

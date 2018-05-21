@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +46,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * @author Vaadin Ltd
  *
  */
-public class HtmlDependencyParser {
+public class HtmlDependencyParser implements Serializable {
 
     private final String root;
 

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import java.io.Serializable;
+
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -32,7 +34,7 @@ import com.vaadin.flow.server.VaadinService;
  *
  */
 @FunctionalInterface
-public interface TemplateParser {
+public interface TemplateParser extends Serializable {
 
     /**
      * Wrapper for the parsing result.
@@ -43,7 +45,7 @@ public interface TemplateParser {
      * @author Vaadin Ltd
      *
      */
-    class TemplateData {
+    class TemplateData implements Serializable {
 
         private final String htmlImportUri;
         private final Element templateElement;

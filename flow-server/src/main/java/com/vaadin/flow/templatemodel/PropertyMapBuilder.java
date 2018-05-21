@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.templatemodel;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -36,10 +37,10 @@ import com.vaadin.flow.templatemodel.BeanModelType.BeanModelTypeProperty;
  *
  * @author Vaadin Ltd.
  */
-class PropertyMapBuilder {
+class PropertyMapBuilder implements Serializable {
     private final Map<String, BeanModelTypeProperty> properties;
 
-    private static class PropertyData {
+    private static class PropertyData implements Serializable {
         private final String propertyName;
         private final Type propertyType;
         private final Class<?> declaringClass;

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -52,7 +53,7 @@ public abstract class Component
      * Encapsulates data required for mapping a new component instance to an
      * existing element.
      */
-    static class MapToExistingElement {
+    static class MapToExistingElement implements Serializable {
         Element element = null;
         private boolean mapElementToComponent = false;
 

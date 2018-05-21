@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -28,7 +29,7 @@ import com.vaadin.flow.component.ComponentEvent;
  *
  * @author Vaadin Ltd
  */
-public class EventDataCache {
+public class EventDataCache implements Serializable {
 
     private ConcurrentHashMap<Class<? extends ComponentEvent<?>>, LinkedHashMap<String, Class<?>>> dataExpressions = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Class<? extends ComponentEvent<?>>, Constructor<?>> eventConstructors = new ConcurrentHashMap<>();

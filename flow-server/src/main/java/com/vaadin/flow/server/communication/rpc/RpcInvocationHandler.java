@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 import com.vaadin.flow.component.UI;
@@ -31,7 +32,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  *
  */
-public interface RpcInvocationHandler {
+public interface RpcInvocationHandler extends Serializable {
 
     /**
      * Gets unique RPC type which this handler is applicable for.

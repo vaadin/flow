@@ -28,7 +28,7 @@ import java.io.Serializable;
  * @since 7.4
  * @author Vaadin Ltd
  */
-public abstract class VaadinUriResolver {
+public abstract class VaadinUriResolver implements Serializable{
 
     /**
      * Translates a Vaadin URI to a URL that can be loaded by the browser. The

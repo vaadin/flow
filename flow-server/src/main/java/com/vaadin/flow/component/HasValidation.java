@@ -16,12 +16,14 @@
 
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 /**
  * A component that supports input validation.
  *
  * @author Vaadin Ltd.
  */
-public interface HasValidation {
+public interface HasValidation extends Serializable {
 
     /**
      * Sets an error message to the component.

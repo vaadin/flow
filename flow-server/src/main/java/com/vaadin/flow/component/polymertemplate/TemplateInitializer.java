@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Locale;
@@ -47,7 +48,7 @@ import elemental.json.JsonArray;
  * @author Vaadin Ltd
  *
  */
-public class TemplateInitializer {
+public class TemplateInitializer implements Serializable {
     private static final ConcurrentHashMap<TemplateParser, ReflectionCache<PolymerTemplate<?>, ParserData>> CACHE = new ConcurrentHashMap<>();
     private static final ReflectionCache<PolymerTemplate<?>, Map<String, Class<? extends Component>>> USES_CACHE = new ReflectionCache<>(
             TemplateInitializer::extractUsesMap);

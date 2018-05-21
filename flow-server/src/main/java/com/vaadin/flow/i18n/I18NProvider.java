@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.i18n;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * I18N provider interface for internationalization usage.
  */
-public interface I18NProvider {
+public interface I18NProvider extends Serializable {
 
     /**
      * Get the locales that we have translations for. The first locale should be

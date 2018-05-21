@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,7 +51,7 @@ import elemental.json.JsonArray;
  * @author Vaadin Ltd
  *
  */
-class TemplateDataAnalyzer {
+class TemplateDataAnalyzer implements Serializable {
 
     // {{propertyName}} or {{propertyName::event}}
     private static final Pattern TWO_WAY_BINDING_PATTERN = Pattern
@@ -78,7 +79,7 @@ class TemplateDataAnalyzer {
      *
      */
     @FunctionalInterface
-    interface InjectableFieldCunsumer {
+    interface InjectableFieldCunsumer extends Serializable {
 
         /**
          * Performs this operation on the given arguments.
@@ -100,7 +101,7 @@ class TemplateDataAnalyzer {
     /**
      * Immutable parser data which may be stored in cache.
      */
-    static class ParserData {
+    static class ParserData implements Serializable {
 
         private final Map<String, String> tagById;
         private final Map<Field, String> idByField;
@@ -133,7 +134,7 @@ class TemplateDataAnalyzer {
         }
     }
 
-    static class SubTemplateData {
+    static class SubTemplateData implements Serializable {
         private final String id;
         private final String tag;
         private final JsonArray path;

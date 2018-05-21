@@ -50,7 +50,7 @@ public class TemplateModelProxyHandler implements Serializable {
     /**
      * Gives access to the state node of a proxy instance.
      */
-    protected interface ModelProxy {
+    protected interface ModelProxy extends Serializable {
         /**
          * Gets the state node that this instance is backed by.
          *

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ import elemental.json.JsonObject;
 /**
  * Initial page settings class for modifying the bootstrap page.
  */
-public class InitialPageSettings {
+public class InitialPageSettings implements Serializable {
 
     /**
      * Append position enum.
