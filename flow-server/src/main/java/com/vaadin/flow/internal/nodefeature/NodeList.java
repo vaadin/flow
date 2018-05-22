@@ -50,7 +50,7 @@ import com.vaadin.flow.internal.change.NodeChange;
  */
 public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
-    private final class NodeListIterator implements Iterator<T>, Serializable {
+    private final class NodeListIterator implements Iterator<T> {
         private int index = -1;
         private T current;
         private Iterator<T> arrayIterator = values.iterator();

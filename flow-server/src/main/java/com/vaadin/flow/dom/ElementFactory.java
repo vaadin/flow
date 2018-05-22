@@ -25,7 +25,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  *
  * @author Vaadin Ltd
  */
-public interface ElementFactory extends Serializable {
+public interface ElementFactory {
 
     /**
      * Creates an {@code &lt;a>} element.

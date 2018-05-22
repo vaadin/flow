@@ -25,7 +25,7 @@ import java.io.Serializable;
  * @author Vaadin Ltd
  *
  */
-public interface NodeVisitor extends Serializable {
+public interface NodeVisitor {
 
     /**
      * The type of the element.

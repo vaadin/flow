@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.internal;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * A thread-safe cache for the result of doing some reflection lookup based on a
@@ -34,13 +35,13 @@ import java.util.function.Function;
  * @param <T>
  *            the cached value type
  */
-public class ReflectionCache<C, T> implements Serializable {
+public class ReflectionCache<C, T> {
     private static final Set<ReflectionCache<?, ?>> caches = Collections
             .synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     private final ConcurrentHashMap<Class<? extends C>, T> values = new ConcurrentHashMap<>();
 
-    private final Function<Class<? extends C>, T> valueProvider;
+    private final SerializableFunction<Class<? extends C>, T> valueProvider;
 
     /**
      * Creates a new reflection cache with the given value provider. The value
@@ -53,7 +54,7 @@ public class ReflectionCache<C, T> implements Serializable {
      *            a function that computes the cached value for a class, not
      *            <code>null</code>
      */
-    public ReflectionCache(Function<Class<C>, T> valueProvider) {
+    public ReflectionCache(SerializableFunction<Class<C>, T> valueProvider) {
         if (valueProvider == null) {
             throw new IllegalArgumentException("value provider cannot be null");
         }
@@ -63,8 +64,8 @@ public class ReflectionCache<C, T> implements Serializable {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static <C, T> Function<Class<? extends C>, T> wrapValueProvider(
-            Function<Class<C>, T> valueProvider) {
+    private static <C, T> SerializableFunction<Class<? extends C>, T> wrapValueProvider(
+            SerializableFunction<Class<C>, T> valueProvider) {
         return type -> {
             Map<Class<?>, CurrentInstance> instances = CurrentInstance
                     .getInstances();

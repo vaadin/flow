@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.StateNode;
@@ -39,7 +38,7 @@ public class NodeFeatureRegistry {
     private static final Map<Integer, Class<? extends NodeFeature>> idToFeature = new HashMap<>();
 
     private static class NodeFeatureData implements Serializable {
-        private final Function<StateNode, ? extends NodeFeature> factory;
+        private final SerializableFunction<StateNode, ? extends NodeFeature> factory;
         private final int id;
 
         private <T extends NodeFeature> NodeFeatureData(
