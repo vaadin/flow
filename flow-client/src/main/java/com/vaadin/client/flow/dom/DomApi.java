@@ -44,7 +44,7 @@ public class DomApi {
      *
      * Package protected for testing reasons.
      */
-    static DomApiImpl impl = node -> (DomElement) node;
+    static DomApiImpl impl;
 
     private DomApi() {
         // NOOP
@@ -59,6 +59,9 @@ public class DomApi {
      * @return a wrapped element
      */
     public static DomElement wrap(Node node) {
+        if (impl == null) {
+            return (DomElement) node;
+        }
         return impl.wrap(node);
     }
 
