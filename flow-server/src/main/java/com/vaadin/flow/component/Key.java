@@ -16,6 +16,8 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * An interface to represent keyboard keys.
@@ -207,7 +209,7 @@ public interface Key extends Serializable {
     /**
      * The Delete key, <code>Del</code>.
      */
-    Key DELETE = Key.of("Delete");
+    Key DELETE = Key.of("Delete", "Del");
 
     /**
      * Erase to End of Field. Deletes all characters from the current cursor
@@ -276,7 +278,7 @@ public interface Key extends Serializable {
      * used to signal the start of a special control sequence of characters
      * called an "escape sequence."
      */
-    Key ESCAPE = Key.of("Escape");
+    Key ESCAPE = Key.of("Escape", "Esc");
 
     /**
      * The <code>Execute</code> key.
@@ -1754,25 +1756,36 @@ public interface Key extends Serializable {
     Key SEPARATOR = Key.of("Separator");
 
     /**
-     * Returns a {@link Key} instance representing the {@code key}.
+     * Returns a {@link Key} instance representing the {@code keys} codes.
      *
-     * @param key
-     *            the string representation of the key
+     * @param keys
+     *            the codes representing the key
      * @return the {@link Key} instance
      */
-    static Key of(String key) {
-        return () -> key;
+    static Key of(String... keys) {
+        return () -> Arrays.asList(keys);
     }
 
     /**
-     * Returns the string representation of the key, which should be the same as
-     * the <code>key</code> property in the JavaScript
+     * Returns the list of codes representing the key, which should be the same
+     * as the <code>key</code> property in the JavaScript
      * <code>KeyboardEvent</code>.
      * <p>
      * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
      *
-     * @return the string representation of the key
+     * @return the list of codes representing the key
      */
-    String getKey();
+    List<String> getKeys();
+
+    /**
+     * Checks if the {@code key} code represents this {@link Key}.
+     *
+     * @param key
+     *            the key code
+     * @return true, if this {@link Key} matches the code
+     */
+    default boolean matches(String key) {
+        return getKeys().contains(key);
+    }
 
 }
