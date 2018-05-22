@@ -72,6 +72,44 @@ public final class PolymerUtils {
     }-*/;
 
     /**
+     * Sets a new value to a property defined by a given path. If the element
+     * doesn't support the {@code set} function, a simple assignment is done for
+     * the property is done instead.
+     * 
+     * @param htmlNode
+     *            node to call set method on
+     * @param path
+     *            polymer model path to property. If the {@code set} function is
+     *            not supported, the path is parsed to allow a simple property
+     *            assignment
+     * @param newValue
+     *            new value to be set
+     * 
+     * @see <a href=
+     *      "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer
+     *      docs</a> for more info.
+     */
+    public static native void setPropertyValue(Node htmlNode, String path,
+            JsonValue newValue)
+    /*-{
+        if (!htmlNode.set){
+          var split = path.split(".");
+          var prop = htmlNode;
+          for (var i = 0; i < split.length - 1; i++) {
+            if (!prop) {
+              break;
+            }
+            prop = prop[split[i]];
+          }
+          if (prop) {
+            prop[split[split.length - 1]] = newValue;
+          }
+        } else {
+            htmlNode.set(path, newValue);
+        }
+    }-*/;
+
+    /**
      * Calls Polymer {@code splice} method on specified {@code htmlNode}.
      *
      * Splice call is made via {@code apply} method in order to force the method

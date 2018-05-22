@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow;
 
+import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -22,7 +23,9 @@ import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.ClientJsonCodec;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonArray;
@@ -156,6 +159,8 @@ public class TreeChangeProcessor {
             JsonValue jsonValue = change.get(JsonConstants.CHANGE_PUT_VALUE);
             Object value = ClientJsonCodec.decodeWithoutTypeInfo(jsonValue);
             property.setValue(value);
+            Reactive.addPostFlushListener(() -> setValueInsideListIfApplicable(
+                    node, property, value));
         } else if (change.hasKey(JsonConstants.CHANGE_PUT_NODE_VALUE)) {
             int childId = (int) change
                     .getNumber(JsonConstants.CHANGE_PUT_NODE_VALUE);
@@ -168,6 +173,85 @@ public class TreeChangeProcessor {
             assert false : "Change should have either value or nodeValue property: "
                     + WidgetUtil.stringify(change);
         }
+    }
+
+    /**
+     * Sets a property value on objects inside lists defined in a TemplateModel.
+     * It's a NO-OP in case the property is not part of an object inside a list,
+     * or if the list is not a direct property of the template model.
+     * 
+     * @param node
+     *            the property node
+     * @param property
+     *            the property to be updated
+     * @param value
+     *            the new value of the property
+     */
+    private static void setValueInsideListIfApplicable(StateNode node,
+            MapProperty property, Object value) {
+
+        StateNode parent = getParentNodeAttachedToADomNode(node);
+        if (parent == null
+                || !parent.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            return;
+        }
+
+        NodeMap feature = parent.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        feature.forEachProperty((parentProperty,
+                parentPropertyName) -> updatePropertyInsideList(parent, node,
+                        parentProperty, parentPropertyName, property, value));
+    }
+
+    /**
+     * Gets the first parent node that also has a DOM Node attached to it.
+     * 
+     * @param node
+     *            the node
+     * @return the first parent node with a DOM Node, or <code>null</code> if
+     *         none can be found
+     */
+    private static StateNode getParentNodeAttachedToADomNode(StateNode node) {
+        StateNode parent = node.getParent();
+        while (parent != null && parent.getDomNode() == null) {
+            parent = parent.getParent();
+        }
+        return parent;
+    }
+
+    private static void updatePropertyInsideList(StateNode parent,
+            StateNode node, MapProperty parentProperty,
+            String parentPropertyName, MapProperty nodeProperty, Object value) {
+
+        if (!(parentProperty.getValue() instanceof StateNode)) {
+            return;
+        }
+
+        StateNode mapValue = (StateNode) parentProperty.getValue();
+        if (!mapValue.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+            return;
+        }
+
+        int indexInTheList = -1;
+        NodeList children = mapValue.getList(NodeFeatures.TEMPLATE_MODELLIST);
+
+        for (int i = 0; i < children.length(); i++) {
+            Object object = children.get(i);
+            if (node.equals(object)) {
+                indexInTheList = i;
+                break;
+            }
+        }
+
+        if (indexInTheList < 0) {
+            return;
+        }
+
+        StringBuilder path = new StringBuilder(parentPropertyName).append(".")
+                .append(indexInTheList).append(".")
+                .append(nodeProperty.getName());
+
+        PolymerUtils.setPropertyValue(parent.getDomNode(), path.toString(),
+                PolymerUtils.convertToJson(value));
     }
 
     private static void processRemoveChange(JsonObject change, StateNode node) {
