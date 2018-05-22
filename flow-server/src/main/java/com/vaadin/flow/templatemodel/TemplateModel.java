@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.vaadin.flow.function.SerializablePredicate;
-
 /**
  * Interface for a template model. Extending this interface and adding getters
  * and setters makes it possible to easily bind data to a template.
@@ -161,7 +159,7 @@ public interface TemplateModel extends Serializable {
      * @see TemplateModel supported property types
      */
     default void importBean(String modelPath, Object bean,
-                SerializablePredicate<String> propertyNameFilter) {
+                Predicate<String> propertyNameFilter) {
         TemplateModelUtil.resolveBeanAndRun(this, modelPath, (type, map) -> {
             type.importProperties(map, bean,
                     new PropertyFilter(propertyNameFilter));
@@ -180,12 +178,12 @@ public interface TemplateModel extends Serializable {
      * @param propertyNameFilter
      *            a filter determining which bean properties to import
      *
-     * @see #importBean(String, Object, SerializablePredicate)
+     * @see #importBean(String, Object, Predicate)
      * @see TemplateModel supported property types
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     default void importBeans(String modelPath, List<?> beans,
-            SerializablePredicate<String> propertyNameFilter) {
+            Predicate<String> propertyNameFilter) {
         TemplateModelUtil.resolveListAndRun(this, modelPath, (type, list) -> {
             type.importBeans(list, (List) beans,
                     new PropertyFilter(propertyNameFilter));

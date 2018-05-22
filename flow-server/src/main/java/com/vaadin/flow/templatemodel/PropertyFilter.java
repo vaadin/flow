@@ -17,17 +17,15 @@ package com.vaadin.flow.templatemodel;
 
 import java.util.function.Predicate;
 
-import com.vaadin.flow.function.SerializablePredicate;
-
 /**
  * Property name filter that supports composition for resolving sub properties.
  *
  * @author Vaadin Ltd
  */
-public class PropertyFilter implements SerializablePredicate<String> {
+public class PropertyFilter implements Predicate<String> {
     private final String prefix;
 
-    private final SerializablePredicate<String> predicate;
+    private final Predicate<String> predicate;
 
     /**
      * An unwrapped filter that accepts all property names.
@@ -41,7 +39,7 @@ public class PropertyFilter implements SerializablePredicate<String> {
      * @param predicate
      *            the predicate to use for this filter, not <code>null</code>
      */
-    public PropertyFilter(SerializablePredicate<String> predicate) {
+    public PropertyFilter(Predicate<String> predicate) {
         this("", predicate);
     }
 
@@ -58,7 +56,7 @@ public class PropertyFilter implements SerializablePredicate<String> {
      *            a predicate matching property names in the inner scope
      */
     public PropertyFilter(PropertyFilter outerFilter, String scopeName,
-                          SerializablePredicate<String> predicate) {
+                          Predicate<String> predicate) {
         this(composePrefix(outerFilter, scopeName),
                 predicate.and(composeFilter(outerFilter, scopeName)));
     }
@@ -76,7 +74,7 @@ public class PropertyFilter implements SerializablePredicate<String> {
         this(outerFilter, scopeName, name -> true);
     }
 
-    private PropertyFilter(String prefix, SerializablePredicate<String> predicate) {
+    private PropertyFilter(String prefix, Predicate<String> predicate) {
         assert predicate != null;
         assert prefix != null;
         assert prefix.isEmpty() || prefix.endsWith(".");
@@ -95,7 +93,7 @@ public class PropertyFilter implements SerializablePredicate<String> {
         return outerFilter.prefix + scopeName + ".";
     }
 
-    private static SerializablePredicate<? super String> composeFilter(
+    private static Predicate<? super String> composeFilter(
             PropertyFilter outerFilter, String scopeName) {
         return name -> outerFilter.test(scopeName + "." + name);
     }

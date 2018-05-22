@@ -210,7 +210,7 @@ public class ClassesSerializableTest {
      * @throws Exception
      */
     @Test
-    public void testClassesSerializable() throws Exception {
+    public void classesSerializable() throws Exception {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 
         List<String> classes = new ArrayList<>();
