@@ -412,12 +412,13 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
         };
-    
+
         element.callbackCallCount = 0;
         $wnd.customElements = {
             whenDefined: function() {
                 return {
                     then: function (callback) {
+                        $wnd.Polymer = $wnd.OldPolymer;
                         element.callbackCallCount += 1;
                         callback();
                     }
@@ -443,6 +444,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
     private native void emulatePolymerNotLoaded()
     /*-{
+        $wnd.OldPolymer = $wnd.Polymer;
         $wnd.Polymer = null;
     }-*/;
 

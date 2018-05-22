@@ -1685,11 +1685,14 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     public void testReadyCallback_deferredPolymerElementAndNoListeners_readyIsCalled() {
         element = Browser.getDocument().createElement("x-my");
+        WidgetUtil.setJsProperty(element, "localName", "x-my");
+
         assertDeferredPolymerElement_originalReadyIsCalled(element);
     }
 
     public void testReadyCallback_deferredPolymerElement_readyIsCalledAndNotified() {
         element = Browser.getDocument().createElement("x-my");
+        WidgetUtil.setJsProperty(element, "localName", "x-my");
 
         PolymerUtils.addReadyListener(element,
                 () -> WidgetUtil.setJsProperty(element, "baz", "foobar"));
@@ -1701,6 +1704,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private void assertDeferredPolymerElement_originalReadyIsCalled(
             Element element) {
+        initPolymer(element);
         mockWhenDefined(element);
 
         NativeFunction function = NativeFunction.create("this['foo']='bar';");
@@ -1792,6 +1796,8 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private native void mockWhenDefined(Element element)
     /*-{
+        $wnd.OldPolymer = $wnd.Polymer;
+        $wnd.Polymer = null;
         $wnd.customElements = {
             whenDefined: function() {
                 return {
@@ -1805,6 +1811,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private native void runWhenDefined(Element element)
     /*-{
+        $wnd.Polymer = $wnd.OldPolymer;
         element.callback();
     }-*/;
 
