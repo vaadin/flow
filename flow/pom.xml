@@ -45,8 +45,6 @@
                         <!-- Exclude client engine since it is not user facing API -->
                         <dependencySourceExclude>com.vaadin:flow-client</dependencySourceExclude>
                     </dependencySourceExcludes>
-                    <!-- Don't fail on errors, there is plenty of those -->
-                    <doclint>none</doclint>
                     <quiet>true</quiet>
                 </configuration>
             </plugin>
