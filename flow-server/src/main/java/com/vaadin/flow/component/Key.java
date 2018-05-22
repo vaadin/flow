@@ -1778,11 +1778,11 @@ public interface Key extends Serializable {
     List<String> getKeys();
 
     /**
-     * Checks if the {@code key} code represents this {@link Key}.
+     * Checks if the <code>key</code> code represents this <code>Key</code>.
      *
      * @param key
      *            the key code
-     * @return true, if this {@link Key} matches the code
+     * @return true, if this <code>Key</code> matches the code
      */
     default boolean matches(String key) {
         return getKeys().contains(key);
