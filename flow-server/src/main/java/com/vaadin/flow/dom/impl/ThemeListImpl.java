@@ -35,7 +35,7 @@ import com.vaadin.flow.dom.ThemeList;
  * 
  * @author Vaadin Ltd.
  */
-public class ThemeListImpl implements ThemeList {
+public class ThemeListImpl implements ThemeList, Serializable {
     public static final String THEME_ATTRIBUTE_NAME = "theme";
     private static final String THEME_NAMES_DELIMITER = " ";
 

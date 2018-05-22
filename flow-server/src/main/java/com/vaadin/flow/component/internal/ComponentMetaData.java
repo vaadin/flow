@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,14 +45,14 @@ import com.vaadin.flow.shared.ui.LoadMode;
  *
  * @author Vaadin Ltd
  */
-public class ComponentMetaData implements Serializable {
+public class ComponentMetaData {
 
     /**
      * Dependencies defined for a {@link Component} class.
      * <p>
      * Framework internal class, thus package-private.
      */
-    public static class DependencyInfo implements Serializable {
+    public static class DependencyInfo {
         private final List<HtmlImportDependency> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
@@ -72,7 +71,7 @@ public class ComponentMetaData implements Serializable {
 
     }
 
-    public static class HtmlImportDependency implements Serializable {
+    public static class HtmlImportDependency {
 
         private final Collection<String> uris;
 
@@ -98,7 +97,7 @@ public class ComponentMetaData implements Serializable {
      * <p>
      * Framework internal class, thus package-private.
      */
-    public static class SynchronizedPropertyInfo implements Serializable {
+    public static class SynchronizedPropertyInfo {
         private final String property;
         private final DisabledUpdateMode mode;
         private final String[] eventNames;
