@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -39,10 +40,14 @@ public class ExpireSessionIT extends ChromeBrowserTest {
         // Just click on any button to make a request after killing the session
         clickButton(CLOSE_SESSION);
 
-        Assert.assertFalse(
-                "After killing the session, the page should be refreshed, "
-                        + "resetting the state of the UI.",
-                isMessageUpdated());
+        try {
+            waitUntil(driver -> !isMessageUpdated());
+        } catch (TimeoutException e) {
+            Assert.fail(
+                    "After killing the session, the page should be refreshed, "
+                            + "resetting the state of the UI.");
+        }
+
         Assert.assertFalse(
                 "By default, the 'Session Expired' notification "
                         + "should not be used",
