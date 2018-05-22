@@ -543,7 +543,23 @@ public class ReflectTools implements Serializable {
      * @return a parameterized type
      */
     public static Type createParameterizedType(Class<?> rawType, Type subType) {
-        return new SerializableParameterizedType(rawType, subType);
+        return new ParameterizedType() {
+
+            @Override
+            public Type getRawType() {
+                return rawType;
+            }
+
+            @Override
+            public Type getOwnerType() {
+                return null;
+            }
+
+            @Override
+            public Type[] getActualTypeArguments() {
+                return new Type[] { subType };
+            }
+        };
     }
 
     /**
@@ -707,32 +723,5 @@ public class ReflectTools implements Serializable {
             }
         }
         return staticFinalFields;
-    }
-
-    private static class SerializableParameterizedType implements
-            ParameterizedType, Serializable {
-
-        private final Class<?> rawType;
-        private final Type subType;
-
-        public SerializableParameterizedType(Class<?> rawType, Type subType) {
-            this.rawType = rawType;
-            this.subType = subType;
-        }
-
-        @Override
-        public Type getRawType() {
-            return rawType;
-        }
-
-        @Override
-        public Type getOwnerType() {
-            return null;
-        }
-
-        @Override
-        public Type[] getActualTypeArguments() {
-            return new Type[]{subType};
-        }
     }
 }

@@ -104,6 +104,9 @@ public class ClassesSerializableTest {
             "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
             "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
             "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeList(\\$.*)?",
+            "com\\.vaadin\\.flow\\.templatemodel\\.PropertyFilter",
+            "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?",
+            "com\\.vaadin\\.flow\\.server\\.FutureAccess",
 
             //Various test classes
             "com\\.vaadin\\.flow\\.server\\.MockVaadinServletService",

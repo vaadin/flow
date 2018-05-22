@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import org.slf4j.Logger;
@@ -28,7 +27,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Vaadin Ltd
  */
-public class FutureAccess extends FutureTask<Void> implements Serializable {
+public class FutureAccess extends FutureTask<Void> {
     private final VaadinSession session;
     private final Command command;
 
