@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -54,8 +55,8 @@ public enum KeyModifier implements Key {
      * @return the key value
      */
     @Override
-    public String getKey() {
-        return key.getKey();
+    public List<String> getKeys() {
+        return key.getKeys();
     }
 
     /**
@@ -66,8 +67,8 @@ public enum KeyModifier implements Key {
      * @return the {@code KeyModifier}
      */
     public static KeyModifier of(String key) {
-        return Stream.of(values()).filter(k -> k.getKey().equals(key))
-                .findFirst().orElseThrow(IllegalArgumentException::new);
+        return Stream.of(values()).filter(k -> k.matches(key)).findFirst()
+                .orElseThrow(IllegalArgumentException::new);
     }
 
 }
