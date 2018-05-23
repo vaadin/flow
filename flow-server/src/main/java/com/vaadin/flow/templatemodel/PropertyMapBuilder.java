@@ -23,10 +23,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.templatemodel.BeanModelType.BeanModelTypeProperty;
 
@@ -128,10 +128,10 @@ class PropertyMapBuilder {
                             }));
         }
 
-        private SerializablePredicate<String> getExcludeFieldsFilter() {
+        private Predicate<String> getExcludeFieldsFilter() {
             return accessors.stream()
                     .map(TemplateModelUtil::getFilterFromIncludeExclude)
-                    .reduce(SerializablePredicate::and).orElse(fieldName -> true);
+                    .reduce(Predicate::and).orElse(fieldName -> true);
         }
 
         private String getPropertyName() {
