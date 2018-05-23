@@ -61,7 +61,7 @@ public class KeyEventListener<E extends KeyboardEvent>
 
     @Override
     public void onComponentEvent(E event) {
-        if (event.getKey().equals(key)
+        if (key.getKeys().stream().anyMatch(event.getKey()::matches)
                 && event.getModifiers().containsAll(modifiers)) {
             listener.onComponentEvent(event);
         }
