@@ -9,7 +9,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -23,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,18 +30,28 @@ import java.util.stream.Stream;
 import org.junit.Test;
 
 import static java.lang.reflect.Modifier.isStatic;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+/**
+ * A superclass for serialization testing. The test scans all the classpath and
+ * tries to serialize every single class (except ones from whitelist) in the
+ * classpath. Subclasses may adjust the whitelist by overriding
+ * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
+ * {@link  #getJarPattern()}
+ */
 
 public abstract class ClassesSerializableTest {
 
-    protected static Stream<Pattern> getExcludedPatterns() {
+    private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
+
+    @SuppressWarnings("WeakerAccess")
+    protected static Stream<String> getExcludedPatterns() {
         return Stream.of(
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
                 ".*\\.slf4j\\..*",
                 ".*\\.testbench\\..*",
-                ".*\\.test(s)?\\..*",
                 "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$", //Various utils with inner classes
 
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
@@ -103,6 +113,8 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
 
                 //Various test classes
+                ".*\\.test(s)?\\..*",
+                ".*Test.*",
                 "com\\.vaadin\\.flow\\.server\\.MockVaadinServletService",
                 "com\\.vaadin\\.flow\\.server\\.MockServletServiceSessionSetup",
                 "com\\.vaadin\\.flow\\.server\\.MockServletConfig",
@@ -110,14 +122,12 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.templatemodel\\.Bean",
                 "com\\.vaadin\\.flow\\.internal\\.HasCurrentService",
                 "com\\.vaadin\\.flow\\.component\\.ValueChangeMonitor",
-                "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?")
-                .map(Pattern::compile);
+                "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?");
     }
 
-    ;
-
-    public static <T> T serializeAndDeserialize(T instance)
-            throws IOException, ClassNotFoundException {
+    @SuppressWarnings("UnusedReturnValue")
+    private static <T> T serializeAndDeserialize(T instance)
+            throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(instance);
@@ -145,7 +155,6 @@ public abstract class ClassesSerializableTest {
      */
     private static List<String> getRawClasspathEntries() {
         // try to keep the order of the classpath
-        List<String> locations = new ArrayList<>();
 
         String pathSep = System.getProperty("path.separator");
         String classpath = System.getProperty("java.class.path");
@@ -158,9 +167,7 @@ public abstract class ClassesSerializableTest {
         }
 
         String[] split = classpath.split(pathSep);
-        locations.addAll(Arrays.asList(split));
-
-        return locations;
+        return Arrays.asList(split);
     }
 
     /**
@@ -189,6 +196,7 @@ public abstract class ClassesSerializableTest {
 
         // add all directories recursively
         File[] files = parent.listFiles();
+        assertNotNull(files);
         for (File child : files) {
             if (child.isDirectory()) {
                 classNames.addAll(findClassesInDirectory(
@@ -220,10 +228,9 @@ public abstract class ClassesSerializableTest {
      * Tests that all the relevant classes and interfaces under
      * {@link #getBasePackages} implement Serializable.
      *
-     * @throws Exception
      */
     @Test
-    public void classesSerializable() throws Exception {
+    public void classesSerializable() throws Throwable {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 
         List<String> classes = new ArrayList<>();
@@ -265,11 +272,8 @@ public abstract class ClassesSerializableTest {
                     // Single interface implementors
                     Class<?> iface = cls.getInterfaces()[0];
 
-                    if (iface == Runnable.class) {
-                        // Ignore Runnables used with access()
-                        continue;
-                    } else if (iface == Comparator.class) {
-                        // Ignore inline comparators
+                    if (iface == Runnable.class|| iface == Comparator.class) {
+                        // Ignore inline comparators and Runnables used with access()
                         continue;
                     }
                 }
@@ -291,9 +295,7 @@ public abstract class ClassesSerializableTest {
     }
 
     private void serializeAndDeserialize(Class<?> clazz)
-            throws IOException, ClassNotFoundException, InstantiationException,
-            IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException {
+            throws Throwable {
         Optional<Constructor<?>> defaultCtor = Stream
                 .of(clazz.getDeclaredConstructors())
                 .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
@@ -301,12 +303,8 @@ public abstract class ClassesSerializableTest {
             return;
         }
         defaultCtor.get().setAccessible(true);
-        try { //todo remove this try when the test is passable
-            Object instance = defaultCtor.get().newInstance();
-            serializeAndDeserialize(instance);
-        } catch (Throwable e) {
-            System.err.println(clazz.getName());
-        }
+        Object instance = defaultCtor.get().newInstance();
+        serializeAndDeserialize(instance);
     }
 
     private void failSerializableFields(
@@ -322,18 +320,17 @@ public abstract class ClassesSerializableTest {
 
     private void failSerializableClasses(
             List<Class<?>> nonSerializableClasses) {
-        String nonSerializableString = "";
+        StringBuilder nonSerializableString =new StringBuilder();
         for (Class<?> c : nonSerializableClasses) {
-            nonSerializableString += ",\n" + c.getName();
+            nonSerializableString.append(",\n").append(c.getName());
             if (c.isAnonymousClass()) {
-                nonSerializableString += "(super: ";
-                nonSerializableString += c.getSuperclass().getName();
-                nonSerializableString += ", interfaces: ";
+                nonSerializableString.append("(super: ")
+                        .append(c.getSuperclass().getName())
+                        .append(", interfaces: ");
                 for (Class<?> i : c.getInterfaces()) {
-                    nonSerializableString += i.getName();
-                    nonSerializableString += ",";
+                    nonSerializableString.append(i.getName()).append(",");
                 }
-                nonSerializableString += ")";
+                nonSerializableString.append(")");
             }
         }
         fail("Serializable not implemented by the following classes and interfaces: "
@@ -364,13 +361,10 @@ public abstract class ClassesSerializableTest {
      * Only classes under {@link #getBasePackages} are considered, and those
      * matching {@link #getExcludedPatterns()} are filtered out.
      *
-     * @param classpathEntry
-     * @return
-     * @throws IOException
      */
     private List<String> findServerClasses(String classpathEntry)
             throws IOException {
-        Collection<String> classes = new ArrayList<>();
+        Collection<String> classes;
 
         File file = new File(classpathEntry);
         if (file.isDirectory()) {
@@ -378,30 +372,14 @@ public abstract class ClassesSerializableTest {
         } else if (getJarPattern().matcher(file.getName()).matches()) {
             classes = findClassesInJar(file);
         } else {
-            System.out.println("Ignoring " + classpathEntry);
+            LOGGER.info("Ignoring " + classpathEntry);
             return Collections.emptyList();
         }
-
-        List<String> filteredClasses = new ArrayList<>();
-        for (String className : classes) {
-            if (getBasePackages()
-                    .noneMatch(basePackage -> className.startsWith(basePackage + "."))) {
-                continue;
-            }
-
-            if(getExcludedPatterns().anyMatch(p->p.matcher(className).matches()))
-            {
-                continue;
-            }
-
-            // Don't add test classes
-            if (!className.contains("Test")) {
-                filteredClasses.add(className);
-            }
-
-        }
-
-        return filteredClasses;
+        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile).collect(Collectors.toList());
+        return classes.stream()
+                .filter(className -> getBasePackages().anyMatch(basePackage -> className.startsWith(basePackage + ".")))
+                .filter(className -> excludes.stream().noneMatch(p -> p.matcher(className).matches()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -409,7 +387,6 @@ public abstract class ClassesSerializableTest {
      *
      * @param file a valid JAR file
      * @return collection of fully qualified class names in the JAR
-     * @throws IOException
      */
     private Collection<String> findClassesInJar(File file) throws IOException {
         Collection<String> classes = new ArrayList<>();
