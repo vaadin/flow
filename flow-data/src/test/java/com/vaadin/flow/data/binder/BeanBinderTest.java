@@ -87,9 +87,6 @@ public class BeanBinderTest
         @NotEmpty
         private String lastname;
 
-        @Size(min = 1)
-        private int sizeless;
-
         private SubConstraint subfield;
 
         public String getFirstname() {
@@ -122,14 +119,6 @@ public class BeanBinderTest
 
         public void setSubfield(SubConstraint subfield) {
             this.subfield = subfield;
-        }
-
-        public int getSizeless() {
-            return sizeless;
-        }
-
-        public void setSizeless(int sizeless) {
-            this.sizeless = sizeless;
         }
 
         public static class SubConstraint implements Serializable {
@@ -459,24 +448,6 @@ public class BeanBinderTest
 
         Assert.assertFalse(
                 "@NotNull field with default value \"\" should not be required",
-                field.isRequiredIndicatorVisible());
-        testSerialization(binder);
-    }
-
-    @Test
-    public void sizeless_sizeConstraint_fieldIsNotRequired() {
-        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
-                RequiredConstraints.class);
-        RequiredConstraints bean = new RequiredConstraints();
-
-        TestTextField field = new TestTextField();
-        binder.forField(field)
-                .withConverter(new StringToIntegerConverter("yada"))
-                .bind("sizeless");
-        binder.setBean(bean);
-
-        Assert.assertFalse(
-                "@Size(min=1) field with integer value should not be required",
                 field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
