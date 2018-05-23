@@ -33,17 +33,17 @@ public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
     @Override
     default SerializablePredicate<T> and(Predicate<? super T> other) {
         Objects.requireNonNull(other);
-        return (t) -> test(t) && other.test(t);
+        return t -> test(t) && other.test(t);
     }
 
     @Override
     default SerializablePredicate<T> negate() {
-        return (t) -> !test(t);
+        return t -> !test(t);
     }
 
     @Override
     default SerializablePredicate<T> or(Predicate<? super T> other) {
         Objects.requireNonNull(other);
-        return (t) -> test(t) || other.test(t);
+        return t -> test(t) || other.test(t);
     }
 }

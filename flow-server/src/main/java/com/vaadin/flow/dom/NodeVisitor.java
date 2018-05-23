@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.dom;
 
-import java.io.Serializable;
-
 /**
  * Element API node visitor interface.
  *

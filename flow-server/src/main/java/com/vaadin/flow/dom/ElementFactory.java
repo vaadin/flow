@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.dom;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.shared.ApplicationConstants;
 
