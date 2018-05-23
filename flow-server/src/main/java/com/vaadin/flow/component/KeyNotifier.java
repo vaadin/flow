@@ -92,7 +92,7 @@ public interface KeyNotifier extends Serializable {
 
     /**
      * Adds a {@code keydown} listener to this component, which will trigger
-     * only if the keys involved in the event matche the {@code key} and
+     * only if the keys involved in the event match the {@code key} and
      * {@code modifiers} parameters.
      * <p>
      * See {@link Key} for common static instances or use
@@ -116,7 +116,7 @@ public interface KeyNotifier extends Serializable {
 
     /**
      * Adds a {@code keypress} listener to this component, which will trigger
-     * only if the keys involved in the event matche the {@code key} and
+     * only if the keys involved in the event match the {@code key} and
      * {@code modifiers} parameters.
      * <p>
      * See {@link Key} for common static instances or use
@@ -140,7 +140,7 @@ public interface KeyNotifier extends Serializable {
 
     /**
      * Adds a {@code keyup} listener to this component, which will trigger only
-     * if the keys involved in the event matche the {@code key} and
+     * if the keys involved in the event match the {@code key} and
      * {@code modifiers} parameters.
      * <p>
      * See {@link Key} for common static instances or use
