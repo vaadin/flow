@@ -19,6 +19,7 @@ import java.util.function.Function;
 
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
@@ -121,6 +122,17 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
         properties.forEach(callback);
     }
 
+    /**
+     * Gets all property names in this map.
+     * 
+     * @return a list with the property names, never <code>null</code>
+     */
+    public JsArray<String> getPropertyNames() {
+        JsArray<String> list = JsCollections.array();
+        forEachProperty((property, propertyName) -> list.push(propertyName));
+        return list;
+    }
+
     @Override
     public JsonValue getDebugJson() {
         JsonObject json = WidgetUtil.createJsonObject();
@@ -151,10 +163,6 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
                 json.put(name, jsonValue);
             }
         });
-
-        if (json.keys().length == 0) {
-            return null;
-        }
 
         return json;
     }

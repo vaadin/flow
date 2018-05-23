@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.uitest.ui.template.collections;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -33,11 +35,23 @@ import com.vaadin.flow.uitest.ui.template.collections.ModelListView.MyModel;
 public class ModelListView extends PolymerTemplate<MyModel> {
 
     public interface MyModel extends TemplateModel {
-        public List<Item> getItems();
+        List<Item> getItems();
 
-        public void setItems(List<Item> items);
+        List<List<Item>> getLotsOfItems();
 
-        public List<Item> getMoreItems();
+        void setLotsOfItems(List<List<Item>> lotsOfItems);
+
+        void setItems(List<Item> items);
+
+        List<Item> getMoreItems();
+
+        ItemWithItems getItemWithItems();
+
+        void setItemWithItems(ItemWithItems itemWithItems);
+
+        ItemWithItem getItemWithItem();
+
+        void setItemWithItem(ItemWithItem itemWithItem);
     }
 
     public static class Item {
@@ -68,15 +82,56 @@ public class ModelListView extends PolymerTemplate<MyModel> {
         }
     }
 
+    public static class ItemWithItems {
+        private List<Item> items;
+
+        public List<Item> getItems() {
+            return items;
+        }
+
+        public void setItems(List<Item> items) {
+            this.items = items;
+        }
+    }
+
+    public static class ItemWithItem {
+        private Item item;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+    }
+
     public ModelListView() {
         getModel().getItems().add(new Item("Item 1"));
         getModel().getMoreItems().add(new Item("Item 2"));
+        getModel().setLotsOfItems(
+                Arrays.asList(new ArrayList<>(), new ArrayList<>()));
+        getModel().getLotsOfItems().get(0).add(new Item("Item 3"));
+        getModel().getLotsOfItems().get(1).add(new Item("Item 4"));
+
+        getModel().setItemWithItems(new ItemWithItems());
+        getModel().getItemWithItems().getItems().add(new Item("Item 5"));
+
+        getModel().setItemWithItem(new ItemWithItem());
+        getModel().getItemWithItem().setItem(new Item("Item 6"));
     }
 
     @ClientCallable
     public void add() {
         getModel().getItems().add(new Item("New item 1"));
         getModel().getMoreItems().add(new Item("New item 2"));
+
+        getModel().getLotsOfItems().get(0).add(new Item("New item 3"));
+        getModel().getLotsOfItems().get(1).add(new Item("New item 4"));
+
+        getModel().getItemWithItems().getItems().add(new Item("New item 5"));
+
+        getModel().getItemWithItem().setItem(new Item("New item 6"));
     }
 
     @ClientCallable
@@ -88,6 +143,13 @@ public class ModelListView extends PolymerTemplate<MyModel> {
     public void setNullTexts() {
         getModel().getItems().forEach(item -> item.setText(null));
         getModel().getMoreItems().forEach(item -> item.setText(null));
+        getModel().getLotsOfItems()
+                .forEach(list -> list.forEach(item -> item.setText(null)));
+
+        getModel().getItemWithItems().getItems()
+                .forEach(item -> item.setText(null));
+
+        getModel().getItemWithItem().getItem().setText(null);
     }
 
 }

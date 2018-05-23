@@ -30,11 +30,18 @@
             </template>
         </div>
         <div id="repeat-3">
+            <template is="dom-repeat" items="[[lotsOfItems]]" as="outerItem">
+                <template is="dom-repeat" items="[[outerItem]]">
+                    <div on-click="toggle">[[item.clicked]] [[item.text]]</div>
+                </template>
+            </template>
+        </div>
+        <div id="repeat-4">
             <template is="dom-repeat" items="[[itemWithItems.items]]">
                 <div on-click="toggle">[[item.clicked]] [[item.text]]</div>
             </template>
         </div>
-        <div>[[itemWithItems.clicked]] [[itemWithItems.text]]</div>
+        <div id="item-with-item-div" on-click="toggleItemWithItem">[[itemWithItem.item.clicked]] [[itemWithItem.item.text]]</div>
         <button on-click="setNullTexts" id="set-null">Set null texts</button>
 </template>
     <script>
@@ -48,6 +55,10 @@
             }
             toggle(e) {
                 let item = e.model.item;
+                this.$server.toggle(item);
+            }
+            toggleItemWithItem(e) {
+                let item = this.itemWithItem.item;
                 this.$server.toggle(item);
             }
             setNullTexts(e) {
