@@ -47,7 +47,7 @@ public class ComponentEventBusUtil {
             EventTypeInfo::new);
 
     private static class EventTypeInfo {
-        private final LinkedHashMap<String, Pair<Class<?>, Boolean>> dataExpressions;
+        private final LinkedHashMap<String, Class<?>> dataExpressions;
         private final Constructor<? extends ComponentEvent<?>> eventConstructor;
 
         public EventTypeInfo(Class<? extends ComponentEvent<?>> type) {
@@ -73,7 +73,7 @@ public class ComponentEventBusUtil {
      * @return a map of event expressions, ordered in constructor parameter
      *         order
      */
-    public static LinkedHashMap<String, Pair<Class<?>, Boolean>> getEventDataExpressions(
+    public static LinkedHashMap<String, Class<?>> getEventDataExpressions(
             Class<? extends ComponentEvent<?>> eventType) {
         return cache.get(eventType).dataExpressions;
     }
@@ -87,9 +87,9 @@ public class ComponentEventBusUtil {
      * @return a map of event data expressions, in the order defined by the
      *         component event constructor parameters
      */
-    private static LinkedHashMap<String, Pair<Class<?>, Boolean>> findEventDataExpressions(
+    private static LinkedHashMap<String, Class<?>> findEventDataExpressions(
             Constructor<? extends ComponentEvent<?>> eventConstructor) {
-        LinkedHashMap<String, Pair<Class<?>, Boolean>> eventDataExpressions = new LinkedHashMap<>();
+        LinkedHashMap<String, Class<?>> eventDataExpressions = new LinkedHashMap<>();
         // Parameter 0 is always "Component source"
         // Parameter 1 is always "boolean fromClient"
         for (int i = 2; i < eventConstructor.getParameterCount(); i++) {
@@ -103,9 +103,7 @@ public class ComponentEventBusUtil {
                         p.getName(), eventConstructor.toString(),
                         EventData.class.getSimpleName()));
             }
-            eventDataExpressions.put(eventData.value(),
-                    new Pair<>(ReflectTools.convertPrimitiveType(p.getType()),
-                            p.getType().isPrimitive()));
+            eventDataExpressions.put(eventData.value(),p.getType());
         }
         return eventDataExpressions;
     }

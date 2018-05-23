@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import javafx.util.Pair;
-
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -32,6 +30,7 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
@@ -192,7 +191,7 @@ public class ComponentEventBus implements Serializable {
                 domEventType, event -> handleDomEvent(eventType, event));
         registration.setDisabledUpdateMode(mode);
 
-        LinkedHashMap<String, Pair<Class<?>, Boolean>> eventDataExpressions =
+        LinkedHashMap<String, Class<?>> eventDataExpressions =
                 ComponentEventBusUtil.getEventDataExpressions(eventType);
         eventDataExpressions.keySet().forEach(registration::addEventData);
 
@@ -232,17 +231,17 @@ public class ComponentEventBus implements Serializable {
             Class<? extends ComponentEvent<?>> eventType) {
         List<Object> eventDataObjects = new ArrayList<>();
 
-        LinkedHashMap<String, Pair<Class<?>, Boolean>> expressions =
+        LinkedHashMap<String, Class<?>> expressions =
                 ComponentEventBusUtil.getEventDataExpressions(eventType);
         expressions.forEach((expression, type) -> {
             JsonValue jsonValue = domEvent.getEventData().get(expression);
             if (jsonValue == null) {
                 jsonValue = Json.createNull();
             }
-            // type.getValue has info of value being primitive
             // primitive value may not fall back to null
-            Object value = JsonCodec.decodeAs(jsonValue, type.getKey(),
-                    !type.getValue());
+            Object value = JsonCodec.decodeAs(jsonValue,
+                    ReflectTools.convertPrimitiveType(type),
+                    !type.isPrimitive());
             eventDataObjects.add(value);
         });
         return eventDataObjects;
