@@ -204,36 +204,38 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsArray<EventRemover> listeners = JsCollections.array();
 
         if (isVisible) {
-            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                    property -> updateProperty(property, htmlNode),
-                    createComputations(computationsCollection), stateNode));
+            // Potential dependencies for any observer
+            listeners.push(bindClientCallableMethods(context));
+            listeners.push(bindPolymerEventHandlerNames(context));
+
+            // Flow's own event listeners
+            listeners.push(bindDomEventListeners(context));
+            listeners.push(bindSynchronizedPropertyEvents(context));
+
+            // Dom structure, shouldn't trigger observers synchronously
+            listeners.push(bindVirtualChildren(context));
+            listeners.push(bindChildren(context));
+            listeners.push(bindShadowRoot(context));
+
+            // Styling might be looked at by observers, but will typically not
+            // trigger any observers synchronously
+            listeners.push(bindClassList(htmlNode, stateNode));
             listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     property -> updateStyleProperty(property, htmlNode),
                     createComputations(computationsCollection), stateNode));
+
+            // The things that might actually be observed
             listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES,
                     property -> updateAttribute(property, htmlNode),
                     createComputations(computationsCollection), stateNode));
+            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
+                    property -> updateProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+            bindPolymerModelProperties(stateNode, htmlNode);
 
-            listeners.push(bindSynchronizedPropertyEvents(context));
-
-            listeners.push(bindVirtualChildren(context));
-
-            listeners.push(bindChildren(context));
-
+            // Prepare teardown
             listeners.push(stateNode.addUnregisterListener(
                     e -> remove(listeners, context, computationsCollection)));
-
-            listeners.push(bindDomEventListeners(context));
-
-            listeners.push(bindClassList(htmlNode, stateNode));
-
-            listeners.push(bindClientCallableMethods(context));
-
-            listeners.push(bindPolymerEventHandlerNames(context));
-
-            listeners.push(bindShadowRoot(context));
-
-            bindPolymerModelProperties(stateNode, htmlNode);
         }
         listeners.push(bindVisibility(listeners, context,
                 computationsCollection, nodeFactory));
@@ -278,7 +280,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -288,8 +290,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-
-       
+    
+    
     var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -409,7 +411,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .forEachProperty((property, key) -> bindSubProperty(stateNode,
                         htmlNode, path, property));
-        invokeWhenNodeIsConstructed(command, stateNode);
+        invokeWhenNodeIsConstructed(command, stateNode).recompute();
     }
 
     private void bindSubProperty(StateNode stateNode, Element htmlNode,
@@ -509,8 +511,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private EventRemover bindMap(int featureId, PropertyUser user,
             JsMap<String, Computation> bindings, StateNode node) {
         NodeMap map = node.getMap(featureId);
-        map.forEachProperty(
-                (property, name) -> bindProperty(user, property, bindings));
+        map.forEachProperty((property,
+                name) -> bindProperty(user, property, bindings).recompute());
 
         return map.addPropertyAddListener(
                 e -> bindProperty(user, e.getProperty(), bindings));
@@ -616,8 +618,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .getValue());
     }
 
-    private static void bindProperty(PropertyUser user, MapProperty property,
-            JsMap<String, Computation> bindings) {
+    private static Computation bindProperty(PropertyUser user,
+            MapProperty property, JsMap<String, Computation> bindings) {
         String name = property.getName();
 
         assert !bindings.has(name) : "There's already a binding for " + name;
@@ -626,6 +628,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .runWhenDependenciesChange(() -> user.use(property));
 
         bindings.set(name, computation);
+
+        return computation;
     }
 
     private void updateProperty(MapProperty mapProperty, Element element) {
@@ -934,9 +938,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return (JsonObject) map.getProperty(NodeProperties.PAYLOAD).getValue();
     }
 
-    private void invokeWhenNodeIsConstructed(Command command, StateNode node) {
+    private Computation invokeWhenNodeIsConstructed(Command command,
+            StateNode node) {
         Computation computation = Reactive.runWhenDependenciesChange(command);
         node.addUnregisterListener(event -> computation.stop());
+        return computation;
     }
 
     private void handleChildrenSplice(ListSpliceEvent event,

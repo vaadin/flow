@@ -89,12 +89,20 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("foo", element.getLang());
     }
 
-    public void testBindingBeforeFlush() {
+    public void testBindBeforeFlush() {
         titleProperty.setValue("foo");
 
         Binder.bind(node, element);
 
-        assertEquals("", element.getTitle());
+        assertEquals("foo", element.getTitle());
+    }
+
+    public void testSetBeforeFlush() {
+        Binder.bind(node, element);
+
+        titleProperty.setValue("foo");
+
+        assertEquals("null", element.getTitle());
     }
 
     public void testUnbindBeforeFlush() {
@@ -111,7 +119,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals("", element.getTitle());
+        assertEquals("null", element.getTitle());
         assertEquals("", element.getId());
         assertEquals("", element.getLang());
     }
@@ -206,10 +214,18 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("foo", element.getLang());
     }
 
-    public void testSetAttributeWithoutFlush() {
+    public void testBindAttributeWithoutFlush() {
         idAttribute.setValue("foo");
 
         Binder.bind(node, element);
+
+        assertEquals("foo", element.getId());
+    }
+
+    public void testSetAttributeWithoutFlush() {
+        Binder.bind(node, element);
+
+        idAttribute.setValue("foo");
 
         assertEquals("", element.getId());
     }
@@ -1821,7 +1837,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         $wnd.Polymer.dom = function(node){
             return node;
         };
-        $wnd.Polymer.Element = {};
+        $wnd.Polymer.Element = {
+          set: function() {}
+        };
         element.__proto__ = $wnd.Polymer.Element;
         if( !element.removeAttribute ) {
             element.removeAttribute = function(attribute){
