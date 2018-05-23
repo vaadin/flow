@@ -63,12 +63,14 @@ public abstract class ClassesSerializableTest {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @SuppressWarnings("WeakerAccess")
-    protected static Stream<String> getExcludedPatterns() {
+    protected Stream<String> getExcludedPatterns() {
         return Stream.of(
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
                 ".*\\.slf4j\\..*",
                 ".*\\.testbench\\..*",
+                ".*\\.testutil\\..*",
+                ".*\\.demo\\..*",
                 "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$", //Various utils with inner classes
 
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
