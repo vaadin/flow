@@ -70,7 +70,6 @@ public class NodeFeatureRegistry {
         registerFeature(SynchronizedPropertyEventsList.class,
                 SynchronizedPropertyEventsList::new);
         registerFeature(ComponentMapping.class, ComponentMapping::new);
-        registerFeature(ModelMap.class, ModelMap::new);
         registerFeature(ModelList.class, ModelList::new);
         registerFeature(PolymerServerEventHandlers.class,
                 PolymerServerEventHandlers::new);

@@ -390,8 +390,6 @@ public class StateTree {
                     "synchronizedPropertyEvents");
             nodeFeatureDebugName.set(NodeFeatures.COMPONENT_MAPPING,
                     "componentMapping");
-            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELMAP,
-                    "templateModelMap");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST,
                     "modelList");
             nodeFeatureDebugName.set(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,

@@ -80,7 +80,6 @@ public class NodeFeatureTest {
         expectedIds.put(SynchronizedPropertyEventsList.class,
                 NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         expectedIds.put(ComponentMapping.class, NodeFeatures.COMPONENT_MAPPING);
-        expectedIds.put(ModelMap.class, NodeFeatures.TEMPLATE_MODELMAP);
         expectedIds.put(ModelList.class, NodeFeatures.TEMPLATE_MODELLIST);
         expectedIds.put(PolymerServerEventHandlers.class,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
