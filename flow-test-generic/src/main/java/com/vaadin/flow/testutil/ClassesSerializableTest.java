@@ -60,7 +60,7 @@ import static org.junit.Assert.fail;
 
 public abstract class ClassesSerializableTest {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @SuppressWarnings("WeakerAccess")
     protected static Stream<String> getExcludedPatterns() {
@@ -245,14 +245,16 @@ public abstract class ClassesSerializableTest {
      * Tests that all the relevant classes and interfaces under
      * {@link #getBasePackages} implement Serializable.
      *
+     * @throws Throwable serialization goes wrong
      */
     @Test
     public void classesSerializable() throws Throwable {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 
         List<String> classes = new ArrayList<>();
+        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile).collect(Collectors.toList());
         for (String location : rawClasspathEntries) {
-            classes.addAll(findServerClasses(location));
+            classes.addAll(findServerClasses(location, excludes));
         }
 
         ArrayList<Field> nonSerializableFunctionFields = new ArrayList<>();
@@ -283,17 +285,7 @@ public abstract class ClassesSerializableTest {
             }
 
             // report non-serializable classes and interfaces
-            if (!Serializable.class.isAssignableFrom(cls)) {
-                if (cls.getSuperclass() == Object.class
-                        && cls.getInterfaces().length == 1) {
-                    // Single interface implementors
-                    Class<?> iface = cls.getInterfaces()[0];
-
-                    if (iface == Runnable.class|| iface == Comparator.class) {
-                        // Ignore inline comparators and Runnables used with access()
-                        continue;
-                    }
-                }
+            if (!Serializable.class.isAssignableFrom(cls) && (!isSkippable(cls))) {
                 nonSerializableClasses.add(cls);
                 // TODO easier to read when testing
                 // System.err.println(cls);
@@ -309,6 +301,21 @@ public abstract class ClassesSerializableTest {
         if (!nonSerializableFunctionFields.isEmpty()) {
             failSerializableFields(nonSerializableFunctionFields);
         }
+    }
+
+    private boolean isSkippable(Class<?> cls) {
+        boolean skip = false;
+        if (cls.getSuperclass() == Object.class
+                && cls.getInterfaces().length == 1) {
+            // Single interface implementors
+            Class<?> iface = cls.getInterfaces()[0];
+
+            if (iface == Runnable.class || iface == Comparator.class) {
+                // Ignore inline comparators and Runnables used with access()
+                skip=true;
+            }
+        }
+        return skip;
     }
 
     private void serializeAndDeserialize(Class<?> clazz)
@@ -337,7 +344,7 @@ public abstract class ClassesSerializableTest {
 
     private void failSerializableClasses(
             List<Class<?>> nonSerializableClasses) {
-        StringBuilder nonSerializableString =new StringBuilder();
+        StringBuilder nonSerializableString = new StringBuilder();
         for (Class<?> c : nonSerializableClasses) {
             nonSerializableString.append(",\n").append(c.getName());
             if (c.isAnonymousClass()) {
@@ -377,9 +384,8 @@ public abstract class ClassesSerializableTest {
      * <p>
      * Only classes under {@link #getBasePackages} are considered, and those
      * matching {@link #getExcludedPatterns()} are filtered out.
-     *
      */
-    private List<String> findServerClasses(String classpathEntry)
+    private List<String> findServerClasses(String classpathEntry, Collection<Pattern> excludes)
             throws IOException {
         Collection<String> classes;
 
@@ -389,10 +395,9 @@ public abstract class ClassesSerializableTest {
         } else if (getJarPattern().matcher(file.getName()).matches()) {
             classes = findClassesInJar(file);
         } else {
-            LOGGER.info("Ignoring " + classpathEntry);
+            logger.debug("Ignoring " + classpathEntry);
             return Collections.emptyList();
         }
-        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile).collect(Collectors.toList());
         return classes.stream()
                 .filter(className -> getBasePackages().anyMatch(basePackage -> className.startsWith(basePackage + ".")))
                 .filter(className -> excludes.stream().noneMatch(p -> p.matcher(className).matches()))
