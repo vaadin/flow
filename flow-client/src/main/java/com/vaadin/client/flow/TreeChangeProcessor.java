@@ -247,8 +247,11 @@ public class TreeChangeProcessor {
         }
 
         StringBuilder path = new StringBuilder(parentPropertyName).append(".")
-                .append(indexInTheList).append(".")
-                .append(nodeProperty.getName());
+                .append(indexInTheList);
+
+        if (!node.hasFeature(NodeFeatures.BASIC_TYPE_VALUE)) {
+            path.append(".").append(nodeProperty.getName());
+        }
 
         PolymerUtils.setPropertyValue(parent.getDomNode(), path.toString(),
                 PolymerUtils.convertToJson(value));
