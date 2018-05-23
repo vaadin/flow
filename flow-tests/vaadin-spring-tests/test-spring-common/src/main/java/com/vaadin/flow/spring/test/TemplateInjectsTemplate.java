@@ -9,7 +9,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("parent-template")
-@HtmlImport("/components/ParentTemplate.html")
+@HtmlImport("ParentTemplate.html")
 @Route("parent-template")
 public class TemplateInjectsTemplate extends PolymerTemplate<TemplateModel> {
 

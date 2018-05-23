@@ -26,7 +26,7 @@ import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("child-template")
-@HtmlImport("/components/ChildTemplate.html")
+@HtmlImport("ChildTemplate.html")
 public class ChildTemplate extends PolymerTemplate<TemplateModel> {
 
     @Component
