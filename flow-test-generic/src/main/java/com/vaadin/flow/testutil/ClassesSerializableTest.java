@@ -22,12 +22,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.lang.reflect.Modifier.isStatic;
 import static org.junit.Assert.assertNotNull;
@@ -43,7 +44,7 @@ import static org.junit.Assert.fail;
 
 public abstract class ClassesSerializableTest {
 
-    private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     @SuppressWarnings("WeakerAccess")
     protected static Stream<String> getExcludedPatterns() {
