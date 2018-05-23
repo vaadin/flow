@@ -95,8 +95,9 @@ public interface KeyNotifier extends Serializable {
      * only if the keys involved in the event matche the {@code key} and
      * {@code modifiers} parameters.
      * <p>
-     * See {@link Key} for common static instances or use {@link Key#of(String[])}
-     * to get an instance from an arbitrary value.
+     * See {@link Key} for common static instances or use
+     * {@link Key#of(String, String...)} to get an instance from an arbitrary
+     * value.
      *
      * @param key
      *            the key to match
@@ -118,8 +119,9 @@ public interface KeyNotifier extends Serializable {
      * only if the keys involved in the event matche the {@code key} and
      * {@code modifiers} parameters.
      * <p>
-     * See {@link Key} for common static instances or use {@link Key#of(String[])}
-     * to get an instance from an arbitrary value.
+     * See {@link Key} for common static instances or use
+     * {@link Key#of(String, String...)} to get an instance from an arbitrary
+     * value.
      *
      * @param key
      *            the key to match
@@ -141,8 +143,9 @@ public interface KeyNotifier extends Serializable {
      * if the keys involved in the event matche the {@code key} and
      * {@code modifiers} parameters.
      * <p>
-     * See {@link Key} for common static instances or use {@link Key#of(String[])}
-     * to get an instance from an arbitrary value.
+     * See {@link Key} for common static instances or use
+     * {@link Key#of(String, String...)} to get an instance from an arbitrary
+     * value.
      *
      * @param key
      *            the key to match
