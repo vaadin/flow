@@ -194,7 +194,7 @@ public class JsonCodec {
      * Decodes the given JSON value as the given type.
      * <p>
      * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double}.
+     * {@link Double} and primitives boolean, int, double
      *
      * @param <T>
      *            the decoded type
@@ -208,18 +208,18 @@ public class JsonCodec {
      */
     public static <T> T decodeAs(JsonValue json, Class<T> type) {
         assert json != null;
-        if (json.getType() == JsonType.NULL) {
+        if (json.getType() == JsonType.NULL && !type.isPrimitive()) {
             return null;
         }
-
+        Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
         if (type == String.class) {
             return type.cast(json.asString());
-        } else if (type == Boolean.class) {
-            return type.cast(Boolean.valueOf(json.asBoolean()));
-        } else if (type == Double.class) {
-            return type.cast(Double.valueOf(json.asNumber()));
-        } else if (type == Integer.class) {
-            return type.cast(Integer.valueOf((int) json.asNumber()));
+        } else if (convertedType == Boolean.class) {
+            return (T) convertedType.cast(Boolean.valueOf(json.asBoolean()));
+        } else if (convertedType == Double.class) {
+            return (T) convertedType.cast(Double.valueOf(json.asNumber()));
+        } else if (convertedType == Integer.class) {
+            return (T) convertedType.cast(Integer.valueOf((int) json.asNumber()));
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {

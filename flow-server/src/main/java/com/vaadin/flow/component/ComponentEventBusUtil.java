@@ -101,8 +101,7 @@ public class ComponentEventBusUtil {
                         p.getName(), eventConstructor.toString(),
                         EventData.class.getSimpleName()));
             }
-            eventDataExpressions.put(eventData.value(),
-                    ReflectTools.convertPrimitiveType(p.getType()));
+            eventDataExpressions.put(eventData.value(),p.getType());
         }
         return eventDataExpressions;
     }
