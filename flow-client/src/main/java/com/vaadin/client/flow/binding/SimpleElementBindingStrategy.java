@@ -293,11 +293,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
+
          var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
-    
+
          var originalReady = element.ready;
-    
+
          element.ready = function (){
             originalReady.apply(this, arguments);
             @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
@@ -396,7 +396,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         // AllowClientUpdates ignores bean properties in
         // lists ( if "list" is a property name of list type property and
         // "name" is a property of a bean then
-        // whether "list.name" is not in the UpdatableModelProperties ).
+        // "list.name" is not in the UpdatableModelProperties ).
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
         MapProperty mapProperty = map.getProperty(property);
         mapProperty.syncToServer(value);
