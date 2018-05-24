@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
+
 /**
  * Interface for navigation targets to resolve their title dynamically
  * at runtime.
@@ -26,7 +28,7 @@ package com.vaadin.flow.router;
  * @author Vaadin Ltd.
  */
 @FunctionalInterface
-public interface HasDynamicTitle {
+public interface HasDynamicTitle extends Serializable {
 
     /**
      * Gets the title of this navigation target.

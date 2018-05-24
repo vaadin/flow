@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
+
 /**
  * Interface for defining a view that handles the exceptions for the set
  * Exception type T.
@@ -25,7 +27,7 @@ package com.vaadin.flow.router;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface HasErrorParameter<T extends Exception> {
+public interface HasErrorParameter<T extends Exception> extends Serializable {
 
     /**
      * Method called before rendering the exception view.

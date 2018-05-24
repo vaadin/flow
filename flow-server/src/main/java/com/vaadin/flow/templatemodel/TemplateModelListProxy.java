@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.templatemodel;
 
+import java.io.Serializable;
 import java.util.AbstractList;
 
 import com.vaadin.flow.internal.StateNode;
@@ -29,7 +30,7 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
  * @param <T>
  *            the type of items in the list
  */
-public class TemplateModelListProxy<T> extends AbstractList<T> {
+public class TemplateModelListProxy<T> extends AbstractList<T> implements Serializable {
     private final StateNode stateNode;
     private final ComplexModelType<T> itemType;
 

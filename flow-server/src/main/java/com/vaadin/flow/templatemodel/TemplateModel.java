@@ -156,11 +156,10 @@ public interface TemplateModel extends Serializable {
      *            the to import
      * @param propertyNameFilter
      *            the filter to apply to the bean's properties
-     * @see #importBean(String, Object, Predicate)
      * @see TemplateModel supported property types
      */
     default void importBean(String modelPath, Object bean,
-            Predicate<String> propertyNameFilter) {
+                Predicate<String> propertyNameFilter) {
         TemplateModelUtil.resolveBeanAndRun(this, modelPath, (type, map) -> {
             type.importProperties(map, bean,
                     new PropertyFilter(propertyNameFilter));

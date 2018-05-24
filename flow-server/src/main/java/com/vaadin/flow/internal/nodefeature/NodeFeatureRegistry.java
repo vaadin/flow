@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 
@@ -36,12 +37,12 @@ public class NodeFeatureRegistry {
     static final Map<Class<? extends NodeFeature>, NodeFeatureData> nodeFeatures = new HashMap<>();
     private static final Map<Integer, Class<? extends NodeFeature>> idToFeature = new HashMap<>();
 
-    private static class NodeFeatureData {
-        private final Function<StateNode, ? extends NodeFeature> factory;
+    private static class NodeFeatureData implements Serializable {
+        private final SerializableFunction<StateNode, ? extends NodeFeature> factory;
         private final int id;
 
         private <T extends NodeFeature> NodeFeatureData(
-                Function<StateNode, T> factory) {
+                SerializableFunction<StateNode, T> factory) {
             this.factory = factory;
             id = nextNodeFeatureId++;
         }
@@ -90,7 +91,7 @@ public class NodeFeatureRegistry {
     }
 
     private static <T extends NodeFeature> void registerFeature(Class<T> type,
-            Function<StateNode, T> factory) {
+            SerializableFunction<StateNode, T> factory) {
         NodeFeatureData featureData = new NodeFeatureData(factory);
         nodeFeatures.put(type, featureData);
         idToFeature.put(featureData.id, type);
