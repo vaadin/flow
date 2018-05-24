@@ -283,9 +283,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-
+    
         var originalPropertiesChanged = element._propertiesChanged;
-
+    
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
@@ -294,17 +294,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
+
         var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
-    
+
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
             @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
-    
+
             var replaceDomRepeatPropertyChange = function(){
                 var domRepeat = element.root.querySelector('dom-repeat');
-
+    
                 if ( domRepeat ){
                  element.removeEventListener('dom-change', replaceDomRepeatPropertyChange);
                 }
@@ -313,12 +313,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 }
                 if ( !domRepeat.constructor.prototype.$propChangedModified){
                     domRepeat.constructor.prototype.$propChangedModified = true;
-    
+
                     var changed = domRepeat.constructor.prototype._propertiesChanged;
-    
+
                     domRepeat.constructor.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){
                         changed.apply(this, arguments);
-
+    
                         var props = Object.getOwnPropertyNames(changedProps);
                         var items = "items.";
                         for(i=0; i<props.length; i++){
@@ -329,17 +329,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                 if ( index >0){
                                     var arrayIndex = prop.substr(0,index);
                                     var propertyName = prop.substr(index+1);
-    
+
                                     var nodeId = currentProps.items[arrayIndex].nodeId;
                                     var value = currentProps.items[arrayIndex][propertyName];
-    
+
                                     // this is an attempt to find the template element
                                     // which is not available as a context in the protype method
                                     var host = this.__dataHost;
                                     while( !host.localName || host.__dataHost ){
                                         host = host.__dataHost;
                                     }
-
+    
                                     $entry(function () {
                                         @SimpleElementBindingStrategy::handlePropertyChange(*)(nodeId, host, propertyName, value, tree);
                                     })();
@@ -349,7 +349,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     };
                 }
             };
-    
+
             if ( element.root.querySelector('dom-repeat') ){
                 replaceDomRepeatPropertyChange();
             }
@@ -357,7 +357,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
             }
         }
-    
+
     }-*/;
 
     private static void handlePropertyChange(double nodeId, Element host,
@@ -396,7 +396,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         // AllowClientUpdates ignores bean properties in
         // lists ( if "list" is a property name of list type property and
         // "name" is a property of a bean then
-        // whether "list.name" is not in the UpdatableModelProperties ).
+        // "list.name" is not in the UpdatableModelProperties ).
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
         MapProperty mapProperty = map.getProperty(property);
         mapProperty.syncToServer(value);
