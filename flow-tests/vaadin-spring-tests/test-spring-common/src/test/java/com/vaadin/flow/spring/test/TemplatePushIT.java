@@ -2,10 +2,9 @@ package com.vaadin.flow.spring.test;
 
 import org.junit.Test;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class TemplatePushIT extends ChromeBrowserTest {
+public class TemplatePushIT extends AbstractSpringTest {
 
     @Test
     public void elementChangesPushed() throws Exception {

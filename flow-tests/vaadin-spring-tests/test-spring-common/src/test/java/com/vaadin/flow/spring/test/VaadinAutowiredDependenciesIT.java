@@ -20,9 +20,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class VaadinAutowiredDependenciesIT extends ChromeBrowserTest {
+public class VaadinAutowiredDependenciesIT extends AbstractSpringTest {
 
     @Override
     protected String getTestPath() {

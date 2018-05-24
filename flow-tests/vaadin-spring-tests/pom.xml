@@ -22,6 +22,7 @@
         <module>test-spring-war</module>
         <module>test-spring</module>
         <module>test-spring-common</module>
+        <module>test-spring-boot-contextpath</module>
     </modules>
 
     <properties>

@@ -3,10 +3,9 @@ package com.vaadin.flow.spring.test;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class PushIT extends ChromeBrowserTest {
+public class PushIT extends AbstractSpringTest {
 
     @Test
     public void websocketsWork() throws Exception {

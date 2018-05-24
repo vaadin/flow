@@ -19,9 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class NPEHandlerIT extends ChromeBrowserTest {
+public class NPEHandlerIT extends AbstractSpringTest {
 
     @Override
     protected String getTestPath() {
@@ -41,8 +39,8 @@ public class NPEHandlerIT extends ChromeBrowserTest {
     @Test
     public void noRouteIsHandledByExistingFlowComponent() {
         String nonExistingRoutePath = "non-existing-route";
-        getDriver().get(getTestURL(getRootURL(), '/' + nonExistingRoutePath,
-                new String[0]));
+        getDriver().get(getTestURL(getRootURL(),
+                getContextPath() + '/' + nonExistingRoutePath, new String[0]));
 
         Assert.assertTrue(getDriver().getPageSource().contains(String
                 .format("Could not navigate to '%s'", nonExistingRoutePath)));

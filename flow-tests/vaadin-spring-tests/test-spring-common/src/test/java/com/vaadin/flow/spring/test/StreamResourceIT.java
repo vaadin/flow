@@ -31,9 +31,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class StreamResourceIT extends ChromeBrowserTest {
+public class StreamResourceIT extends AbstractSpringTest {
 
     @Override
     protected String getTestPath() {

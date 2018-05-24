@@ -19,13 +19,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 /**
  * @author Vaadin Ltd
  *
  */
-public class ScopesIT extends ChromeBrowserTest {
+public class ScopesIT extends AbstractSpringTest {
 
     @Override
     protected String getTestPath() {

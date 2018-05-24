@@ -20,9 +20,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class CoExistingSpringEndpointsIT extends ChromeBrowserTest {
+public class CoExistingSpringEndpointsIT extends AbstractSpringTest {
 
     @Override
     protected String getTestPath() {
@@ -36,14 +34,14 @@ public class CoExistingSpringEndpointsIT extends ChromeBrowserTest {
         String nonExistingRoutePath = "non-existing-route";
         Assert.assertTrue(isElementPresent(By.id("main")));
 
-        getDriver().get(getRootURL() + '/' + nonExistingRoutePath);
+        getDriver().get(getContextRootURL() + '/' + nonExistingRoutePath);
 
         Assert.assertTrue(getDriver().getPageSource().contains(String
                 .format("Could not navigate to '%s'", nonExistingRoutePath)));
         Assert.assertTrue(getDriver().getPageSource().contains(String.format(
                 "Reason: Couldn't find route for '%s'", nonExistingRoutePath)));
 
-        getDriver().get(getRootURL() + "/oauth/authorize");
+        getDriver().get(getContextRootURL() + "/oauth/authorize");
 
         WebElement header = findElement(By.tagName("h1"));
         Assert.assertEquals("OAuth Error", header.getText());
