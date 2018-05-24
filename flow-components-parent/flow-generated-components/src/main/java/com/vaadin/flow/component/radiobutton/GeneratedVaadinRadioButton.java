@@ -99,7 +99,7 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.RadioButtonElement#1.0.0", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.RadioButtonElement#1.0.1", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-radio-button")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-button.html")
 public abstract class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
