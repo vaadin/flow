@@ -149,12 +149,7 @@ public abstract class ClassesSerializableTest {
             throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
-        setupThreadLocals();
-        try {
-            out.writeObject(instance);
-        } finally {
-            resetThreadLocals();
-        }
+        out.writeObject(instance);
         byte[] data = bs.toByteArray();
         ObjectInputStream in = new ObjectInputStream(
                 new ByteArrayInputStream(data));
@@ -166,8 +161,8 @@ public abstract class ClassesSerializableTest {
     }
 
     /**
-     * The method is called right after serialization and might be overriden
-     * by subclasses to reset thread local values (ex. current UI).
+     * The method is called right after a class instantiation and might be
+     * overriden by subclasses to reset thread local values (ex. current UI).
      * @see #setupThreadLocals
      */
     @SuppressWarnings("WeakerAccess")
@@ -175,8 +170,9 @@ public abstract class ClassesSerializableTest {
     }
 
     /**
-     * The method is called right before serialization and might be overriden
-     * by subclasses to install some necessary thread local values (ex. current UI).
+     * The method is called right a class instantiation
+     * and might be overriden by subclasses to install some necessary thread
+     * local values (ex. current UI).
      * @see #resetThreadLocals
      */
     @SuppressWarnings("WeakerAccess")
@@ -337,7 +333,13 @@ public abstract class ClassesSerializableTest {
                 return;
             }
             defaultCtor.get().setAccessible(true);
-            Object instance = defaultCtor.get().newInstance();
+            setupThreadLocals();
+            Object instance;
+            try {
+                instance = defaultCtor.get().newInstance();
+            } finally {
+                resetThreadLocals();
+            }
             serializeAndDeserialize(instance);
         } catch (Throwable e) {
             throw new AssertionError(clazz.getName(), e);
