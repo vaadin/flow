@@ -103,15 +103,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsonValue evaluate(Event event, Element element);
     }
 
-    private static final JsMap<String, EventExpression> expressionCache = JsCollections
-            .map();
+    private static JsMap<String, EventExpression> expressionCache;
 
     /**
      * This is used as a weak set. Only keys are important so that they are
      * weakly referenced
      */
-    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections
-            .weakMap();
+    private static JsWeakMap<StateNode, Boolean> boundNodes;
 
     /**
      * Just a context class whose instance is passed as a parameter between the
@@ -191,10 +189,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 + htmlNode.getTagName() + "', but the required tag name is "
                 + getTag(stateNode);
 
-        if (BOUND.has(stateNode)) {
+        if (boundNodes == null) {
+            boundNodes = JsCollections.weakMap();
+        }
+
+        if (boundNodes.has(stateNode)) {
             return;
         }
-        BOUND.set(stateNode, true);
+        boundNodes.set(stateNode, true);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
                 nodeFactory);
@@ -205,36 +207,38 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsArray<EventRemover> listeners = JsCollections.array();
 
         if (isVisible) {
-            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                    property -> updateProperty(property, htmlNode),
-                    createComputations(computationsCollection), stateNode));
+            // Potential dependencies for any observer
+            listeners.push(bindClientCallableMethods(context));
+            listeners.push(bindPolymerEventHandlerNames(context));
+
+            // Flow's own event listeners
+            listeners.push(bindDomEventListeners(context));
+            listeners.push(bindSynchronizedPropertyEvents(context));
+
+            // Dom structure, shouldn't trigger observers synchronously
+            listeners.push(bindVirtualChildren(context));
+            listeners.push(bindChildren(context));
+            listeners.push(bindShadowRoot(context));
+
+            // Styling might be looked at by observers, but will typically not
+            // trigger any observers synchronously
+            listeners.push(bindClassList(htmlNode, stateNode));
             listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     property -> updateStyleProperty(property, htmlNode),
                     createComputations(computationsCollection), stateNode));
+
+            // The things that might actually be observed
             listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES,
                     property -> updateAttribute(property, htmlNode),
                     createComputations(computationsCollection), stateNode));
+            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
+                    property -> updateProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+            bindPolymerModelProperties(stateNode, htmlNode);
 
-            listeners.push(bindSynchronizedPropertyEvents(context));
-
-            listeners.push(bindVirtualChildren(context));
-
-            listeners.push(bindChildren(context));
-
+            // Prepare teardown
             listeners.push(stateNode.addUnregisterListener(
                     e -> remove(listeners, context, computationsCollection)));
-
-            listeners.push(bindDomEventListeners(context));
-
-            listeners.push(bindClassList(htmlNode, stateNode));
-
-            listeners.push(bindClientCallableMethods(context));
-
-            listeners.push(bindPolymerEventHandlerNames(context));
-
-            listeners.push(bindShadowRoot(context));
-
-            bindPolymerModelProperties(stateNode, htmlNode);
         }
         listeners.push(bindVisibility(listeners, context,
                 computationsCollection, nodeFactory));
@@ -264,7 +268,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
           var self = this;
           try {
               $wnd.customElements.whenDefined(element.localName).then( function () {
-                  self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
+                  if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
+                      self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
+                  }
               });
           }
           catch (e) {
@@ -290,7 +296,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     
         var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
-    
+        
         var originalReady = element.ready;
         element.ready = function (){
             originalReady.apply(this, arguments);
@@ -515,11 +521,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
             String path) {
+        assert PolymerUtils.isPolymerElement(htmlNode);
+
         Command command = () -> stateNode
                 .getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .forEachProperty((property, key) -> bindSubProperty(stateNode,
                         htmlNode, path, property));
-        invokeWhenNodeIsConstructed(command, stateNode);
+        invokeWhenNodeIsConstructed(command, stateNode).recompute();
     }
 
     private void bindSubProperty(StateNode stateNode, Element htmlNode,
@@ -619,8 +627,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private EventRemover bindMap(int featureId, PropertyUser user,
             JsMap<String, Computation> bindings, StateNode node) {
         NodeMap map = node.getMap(featureId);
-        map.forEachProperty(
-                (property, name) -> bindProperty(user, property, bindings));
+        map.forEachProperty((property,
+                name) -> bindProperty(user, property, bindings).recompute());
 
         return map.addPropertyAddListener(
                 e -> bindProperty(user, e.getProperty(), bindings));
@@ -726,8 +734,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .getValue());
     }
 
-    private static void bindProperty(PropertyUser user, MapProperty property,
-            JsMap<String, Computation> bindings) {
+    private static Computation bindProperty(PropertyUser user,
+            MapProperty property, JsMap<String, Computation> bindings) {
         String name = property.getName();
 
         assert !bindings.has(name) : "There's already a binding for " + name;
@@ -736,6 +744,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .runWhenDependenciesChange(() -> user.use(property));
 
         bindings.set(name, computation);
+
+        return computation;
     }
 
     private void updateProperty(MapProperty mapProperty, Element element) {
@@ -1044,9 +1054,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return (JsonObject) map.getProperty(NodeProperties.PAYLOAD).getValue();
     }
 
-    private void invokeWhenNodeIsConstructed(Command command, StateNode node) {
+    private Computation invokeWhenNodeIsConstructed(Command command,
+            StateNode node) {
         Computation computation = Reactive.runWhenDependenciesChange(command);
         node.addUnregisterListener(event -> computation.stop());
+        return computation;
     }
 
     private void handleChildrenSplice(ListSpliceEvent event,
@@ -1187,7 +1199,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         context.synchronizedPropertyEventListeners
                 .forEach(EventRemover::remove);
 
-        BOUND.delete(context.node);
+        assert boundNodes != null;
+        boundNodes.delete(context.node);
     }
 
     private EventRemover bindDomEventListeners(BindingContext context) {
@@ -1404,6 +1417,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private static EventExpression getOrCreateExpression(
             String expressionString) {
+        if (expressionCache == null) {
+            expressionCache = JsCollections.map();
+        }
         EventExpression expression = expressionCache.get(expressionString);
 
         if (expression == null) {

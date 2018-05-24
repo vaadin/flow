@@ -13,23 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.internal;
+package com.vaadin.flow.uitest.ui;
 
-import java.io.Serializable;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-/**
- * The base interface for every interface that handles {@link BeforeEnterEvent}.
- */
-@FunctionalInterface
-public interface BeforeEnterHandler extends Serializable {
+public class SerializeUIIT extends ChromeBrowserTest {
 
-    /**
-     * Method called before navigation to attaching Component chain is made.
-     *
-     * @param event
-     *            before navigation event with event details
-     */
-    void beforeEnter(BeforeEnterEvent event);
+    @Test
+    public void serializeUI() {
+        open();
+
+        WebElement serialize = findElement(By.id("serialize"));
+        serialize.click();
+
+        WebElement message = findElement(By.id("message"));
+        Assert.assertEquals("Successfully serialized ui", message.getText());
+    }
 }

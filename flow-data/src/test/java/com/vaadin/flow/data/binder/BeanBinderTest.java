@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.data.binder;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,10 +27,10 @@ import java.util.Set;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import org.hibernate.validator.constraints.NotEmpty;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,11 +40,6 @@ import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubSubCons
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class BeanBinderTest
         extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
@@ -416,7 +416,28 @@ public class BeanBinderTest
     }
 
     @Test
-    public void firstName_isNotNullConstraint_fieldIsRequired() {
+    public void firstName_isNotNullConstraint_nullableFieldIsRequired() {
+        BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
+                RequiredConstraints.class);
+        RequiredConstraints bean = new RequiredConstraints();
+
+        TestTextField field = new TestTextField() {
+            @Override
+            public String getEmptyValue() {
+                return null;
+            }
+        };
+        binder.bind(field, "firstname");
+        binder.setBean(bean);
+
+        Assert.assertTrue(
+                "@NotNull field with default value null should be required",
+                field.isRequiredIndicatorVisible());
+        testSerialization(binder);
+    }
+
+    @Test
+    public void firstName_isNotNullConstraint_textFieldIsNotRequired() {
         BeanValidationBinder<RequiredConstraints> binder = new BeanValidationBinder<>(
                 RequiredConstraints.class);
         RequiredConstraints bean = new RequiredConstraints();
@@ -425,7 +446,9 @@ public class BeanBinderTest
         binder.bind(field, "firstname");
         binder.setBean(bean);
 
-        Assert.assertTrue(field.isRequiredIndicatorVisible());
+        Assert.assertFalse(
+                "@NotNull field with default value \"\" should not be required",
+                field.isRequiredIndicatorVisible());
         testSerialization(binder);
     }
 

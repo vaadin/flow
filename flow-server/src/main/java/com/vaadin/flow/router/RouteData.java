@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +27,7 @@ import com.vaadin.flow.router.internal.RouterUtil;
 /**
  * Data collection of information for a specific registered route target.
  */
-public class RouteData implements Comparable<RouteData> {
+public class RouteData implements Comparable<RouteData>, Serializable {
     private final Class<? extends RouterLayout> parentLayout;
     private final String url;
     private final List<Class<?>> parameters;
@@ -36,7 +37,7 @@ public class RouteData implements Comparable<RouteData> {
     /**
      * Data class with information pertaining to the {@link RouteAlias}.
      */
-    public static class AliasData implements Comparable<AliasData> {
+    public static class AliasData implements Comparable<AliasData>, Serializable {
         private final Class<? extends RouterLayout> parentLayout;
         private final String url;
 
