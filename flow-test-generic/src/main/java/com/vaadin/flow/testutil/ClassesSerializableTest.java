@@ -144,6 +144,13 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?");
     }
 
+    /**
+     * Performs actual serialization/deserialization
+     *
+     * @param instance the instance
+     * @return the copy of the source object
+     * @throws Throwable if something goes wrong.
+     */
     @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
     public <T> T serializeAndDeserialize(T instance)
             throws Throwable {
