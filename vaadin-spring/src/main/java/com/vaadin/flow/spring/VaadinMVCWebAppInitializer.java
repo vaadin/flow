@@ -68,13 +68,23 @@ public abstract class VaadinMVCWebAppInitializer
             dispatcherRegistration.addMapping("/*");
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
-                    mapping.replace("*", ""));
+                    makeContextRelative(mapping.replace("*", "")));
         }
         registration.setInitParameters(initParameters);
         registration.addMapping(mapping);
         registration.setAsyncSupported(
                 Boolean.TRUE.toString().equals(env.getProperty(
                         "vaadin.asyncSupported", Boolean.TRUE.toString())));
+    }
+
+    static String makeContextRelative(String url) {
+        // / -> context://
+        // foo -> context://foo
+        // /foo -> context://foo
+        if (url.startsWith("/")) {
+            url = url.substring(1);
+        }
+        return "context://" + url;
     }
 
     /**
@@ -110,4 +120,3 @@ public abstract class VaadinMVCWebAppInitializer
     protected abstract Collection<Class<?>> getConfigurationClasses();
 
 }
-
