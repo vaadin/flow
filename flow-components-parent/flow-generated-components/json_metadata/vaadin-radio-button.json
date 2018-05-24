@@ -2,7 +2,7 @@
   "name": "Vaadin.RadioButtonElement",
   "tag": "vaadin-radio-button",
   "baseUrl": "vaadin-radio-button/src/vaadin-radio-button.html",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "properties": [
     {
       "name": "autofocus",
