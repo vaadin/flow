@@ -102,15 +102,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsonValue evaluate(Event event, Element element);
     }
 
-    private static final JsMap<String, EventExpression> expressionCache = JsCollections
-            .map();
+    private static JsMap<String, EventExpression> expressionCache;
 
     /**
      * This is used as a weak set. Only keys are important so that they are
      * weakly referenced
      */
-    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections
-            .weakMap();
+    private static JsWeakMap<StateNode, Boolean> boundNodes;
 
     /**
      * Just a context class whose instance is passed as a parameter between the
@@ -190,10 +188,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 + htmlNode.getTagName() + "', but the required tag name is "
                 + getTag(stateNode);
 
-        if (BOUND.has(stateNode)) {
+        if (boundNodes == null) {
+            boundNodes = JsCollections.weakMap();
+        }
+
+        if (boundNodes.has(stateNode)) {
             return;
         }
-        BOUND.set(stateNode, true);
+        boundNodes.set(stateNode, true);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
                 nodeFactory);
@@ -1083,7 +1085,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         context.synchronizedPropertyEventListeners
                 .forEach(EventRemover::remove);
 
-        BOUND.delete(context.node);
+        assert boundNodes != null;
+        boundNodes.delete(context.node);
     }
 
     private EventRemover bindDomEventListeners(BindingContext context) {
@@ -1300,6 +1303,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private static EventExpression getOrCreateExpression(
             String expressionString) {
+        if (expressionCache == null) {
+            expressionCache = JsCollections.map();
+        }
         EventExpression expression = expressionCache.get(expressionString);
 
         if (expression == null) {

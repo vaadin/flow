@@ -91,18 +91,23 @@ public interface KeyNotifier extends Serializable {
     }
 
     /**
-     * Adds a {@code keydown} listener to this component, conditional on key and
-     * modifiers.
+     * Adds a {@code keydown} listener to this component, which will trigger
+     * only if the keys involved in the event match the {@code key} and
+     * {@code modifiers} parameters.
+     * <p>
+     * See {@link Key} for common static instances or use
+     * {@link Key#of(String, String...)} to get an instance from an arbitrary
+     * value.
      *
      * @param key
      *            the key to match
      * @param listener
      *            the listener to add, not <code>null</code>
      * @param modifiers
-     *            the modifiers to match
+     *            the optional modifiers to match
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyDownListener(String key,
+    default Registration addKeyDownListener(Key key,
             ComponentEventListener<KeyDownEvent> listener,
             KeyModifier... modifiers) {
         return addKeyDownListener(
@@ -110,18 +115,23 @@ public interface KeyNotifier extends Serializable {
     }
 
     /**
-     * Adds a {@code keypress} listener to this component, conditional on key
-     * and modifiers.
+     * Adds a {@code keypress} listener to this component, which will trigger
+     * only if the keys involved in the event match the {@code key} and
+     * {@code modifiers} parameters.
+     * <p>
+     * See {@link Key} for common static instances or use
+     * {@link Key#of(String, String...)} to get an instance from an arbitrary
+     * value.
      *
      * @param key
      *            the key to match
      * @param listener
      *            the listener to add, not <code>null</code>
      * @param modifiers
-     *            the modifiers to match
+     *            the optional modifiers to match
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyPressListener(String key,
+    default Registration addKeyPressListener(Key key,
             ComponentEventListener<KeyPressEvent> listener,
             KeyModifier... modifiers) {
         return addKeyPressListener(
@@ -129,18 +139,23 @@ public interface KeyNotifier extends Serializable {
     }
 
     /**
-     * Adds a {@code keyup} listener to this component, conditional on key and
-     * modifiers.
+     * Adds a {@code keyup} listener to this component, which will trigger only
+     * if the keys involved in the event match the {@code key} and
+     * {@code modifiers} parameters.
+     * <p>
+     * See {@link Key} for common static instances or use
+     * {@link Key#of(String, String...)} to get an instance from an arbitrary
+     * value.
      *
      * @param key
      *            the key to match
      * @param listener
      *            the listener to add, not <code>null</code>
      * @param modifiers
-     *            the modifiers to match
+     *            the optional modifiers to match
      * @return a handle that can be used for removing the listener
      */
-    default Registration addKeyUpListener(String key,
+    default Registration addKeyUpListener(Key key,
             ComponentEventListener<KeyUpEvent> listener,
             KeyModifier... modifiers) {
         return addKeyUpListener(

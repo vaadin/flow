@@ -34,7 +34,7 @@ import com.vaadin.flow.shared.Registration;
  *            the value type
  * @author Vaadin Ltd.
  */
-public interface HasValue<E extends ValueChangeEvent<V>, V> {
+public interface HasValue<E extends ValueChangeEvent<V>, V> extends Serializable {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -42,7 +42,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V> {
      * @param <V>
      *            the value type
      */
-    interface ValueChangeEvent<V> {
+    interface ValueChangeEvent<V> extends Serializable {
         HasValue<?, V> getHasValue();
 
         /**

@@ -1287,7 +1287,7 @@ public class Binder<BEAN> implements Serializable {
 
     private final Map<HasValue<?, ?>, ConverterDelegate<?>> initialConverters = new IdentityHashMap<>();
 
-    private HashMap<Class<?>, List<Consumer<?>>> listeners = new HashMap<>();
+    private HashMap<Class<?>, List<SerializableConsumer<?>>> listeners = new HashMap<>();
 
     private HasText statusLabel;
 
@@ -2150,7 +2150,7 @@ public class Binder<BEAN> implements Serializable {
      */
     protected <T> Registration addListener(Class<T> eventType,
             SerializableConsumer<T> method) {
-        List<Consumer<?>> list = listeners.computeIfAbsent(eventType,
+        List<SerializableConsumer<?>> list = listeners.computeIfAbsent(eventType,
                 key -> new ArrayList<>());
         list.add(method);
         return () -> list.remove(method);
