@@ -20,12 +20,12 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 
+import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
@@ -285,16 +285,22 @@ public class DependencyLoaderTest {
                 mockResourceLoader.loadingHtml);
     }
 
-    private Map<LoadMode, JsonArray> createDependenciesMap(
+    private JsMap<LoadMode, JsonArray> createDependenciesMap(
             JsonObject... dependencies) {
-        Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
+        JsMap<LoadMode, JsonArray> result = JsCollections.map();
         for (int i = 0; i < dependencies.length; i++) {
             JsonObject dependency = dependencies[i];
             LoadMode loadMode = LoadMode
                     .valueOf(dependency.getString(Dependency.KEY_LOAD_MODE));
             JsonArray jsonArray = Json.createArray();
             jsonArray.set(0, dependency);
-            result.merge(loadMode, jsonArray, this::mergeArrays);
+
+            JsonArray oldResult = result.get(loadMode);
+            if (oldResult == null) {
+                result.set(loadMode, jsonArray);
+            } else {
+                mergeArrays(oldResult, jsonArray);
+            }
         }
         return result;
     }

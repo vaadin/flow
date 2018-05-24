@@ -16,7 +16,6 @@
 package com.vaadin.client.communication;
 
 import java.util.Date;
-import java.util.EnumMap;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
@@ -35,6 +34,7 @@ import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.TreeChangeProcessor;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -336,11 +336,10 @@ public class MessageHandler {
 
     private void handleDependencies(JsonObject inputJson) {
         Console.log("Handling dependencies");
-        EnumMap<LoadMode, JsonArray> dependencies = new EnumMap<>(
-                LoadMode.class);
+        JsMap<LoadMode, JsonArray> dependencies = JsCollections.map();
         for (LoadMode loadMode : LoadMode.values()) {
             if (inputJson.hasKey(loadMode.name())) {
-                dependencies.put(loadMode, inputJson.getArray(loadMode.name()));
+                dependencies.set(loadMode, inputJson.getArray(loadMode.name()));
             }
         }
 

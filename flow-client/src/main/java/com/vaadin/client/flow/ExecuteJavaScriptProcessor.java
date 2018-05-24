@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.flow;
 
-import java.util.Arrays;
-
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
@@ -163,7 +161,15 @@ public class ExecuteJavaScriptProcessor {
                     "Exception is thrown during JavaScript execution. Stacktrace will be dumped separately.");
             registry.getSystemErrorHandler().handleError(exception);
             if (!registry.getApplicationConfiguration().isProductionMode()) {
-                String code = Arrays.asList(parameterNamesAndCode).toString();
+                StringBuilder codeBuilder = new StringBuilder("[");
+                String delimiter = "";
+                for (String snippet : parameterNamesAndCode) {
+                    codeBuilder.append(delimiter).append(snippet);
+                    delimiter = ", ";
+                }
+                codeBuilder.append("]");
+                String code = codeBuilder.toString();
+
                 if (code.charAt(0) == '[') {
                     code = code.substring(1);
                 }
