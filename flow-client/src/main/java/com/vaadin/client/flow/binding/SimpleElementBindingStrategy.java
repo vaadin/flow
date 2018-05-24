@@ -341,7 +341,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                     }
 
                                     $entry(function () {
-                                        @SimpleElementBindingStrategy::handleProeprtyChange(*)(nodeId, host, propertyName, value, tree);
+                                        @SimpleElementBindingStrategy::handlePropertyChange(*)(nodeId, host, propertyName, value, tree);
                                     })();
                                 }
                             }
@@ -360,7 +360,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     
     }-*/;
 
-    private static void handleProeprtyChange(double nodeId, Element host,
+    private static void handlePropertyChange(double nodeId, Element host,
             String property, Object value, StateTree tree) {
         // Warning : it's important that <code>tree</code> is passed as an
         // argument instead of StateNode or Element ! We have replaced a method
