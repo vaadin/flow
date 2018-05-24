@@ -43,8 +43,7 @@ import elemental.json.JsonValue;
  */
 public final class PolymerUtils {
 
-    private static final JsWeakMap<Element, JsSet<Runnable>> readyListeners = JsCollections
-            .weakMap();
+    private static JsWeakMap<Element, JsSet<Runnable>> readyListeners;
 
     private PolymerUtils() {
     }
@@ -356,6 +355,9 @@ public final class PolymerUtils {
      */
     public static void addReadyListener(Element polymerElement,
             Runnable listener) {
+        if (readyListeners == null) {
+            readyListeners = JsCollections.weakMap();
+        }
         JsSet<Runnable> set = readyListeners.get(polymerElement);
         if (set == null) {
             set = JsCollections.set();
@@ -371,6 +373,9 @@ public final class PolymerUtils {
      *            the custom (polymer) element whose state is "ready"
      */
     public static void fireReadyEvent(Element polymerElement) {
+        if (readyListeners == null) {
+            return;
+        }
         JsSet<Runnable> listeners = readyListeners.get(polymerElement);
         if (listeners != null) {
             readyListeners.delete(polymerElement);
