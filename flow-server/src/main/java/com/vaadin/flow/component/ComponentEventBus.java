@@ -30,7 +30,6 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
@@ -238,10 +237,7 @@ public class ComponentEventBus implements Serializable {
             if (jsonValue == null) {
                 jsonValue = Json.createNull();
             }
-            // primitive value may not fall back to null
-            Object value = JsonCodec.decodeAs(jsonValue,
-                    ReflectTools.convertPrimitiveType(type),
-                    !type.isPrimitive());
+            Object value = JsonCodec.decodeAs(jsonValue,type);
             eventDataObjects.add(value);
         });
         return eventDataObjects;

@@ -195,13 +195,30 @@ public class JsonCodecTest {
     public void decodeAs_jsonValue() {
         JsonObject json = Json.createObject();
         json.put("foo", "bar");
-        Assert.assertTrue(JsonCodec.decodeAs(json, Boolean.class));
         Assert.assertEquals("[object Object]",
                 JsonCodec.decodeAs(json, String.class));
+        Assert.assertEquals(json, JsonCodec.decodeAs(json, JsonValue.class));
+        // boolean
+        Assert.assertTrue(JsonCodec.decodeAs(json, Boolean.class));
+        Assert.assertNull(JsonCodec.decodeAs(Json.createNull(), Boolean.class));
+        Assert.assertTrue(JsonCodec.decodeAs(json, boolean.class));
+        Assert.assertFalse(
+                JsonCodec.decodeAs(Json.createNull(), boolean.class));
+        // integer
         Assert.assertEquals(Integer.valueOf(0),
                 JsonCodec.decodeAs(json, Integer.class));
+        Assert.assertNull(JsonCodec.decodeAs(Json.createNull(), Integer.class));
+        Assert.assertEquals(Integer.valueOf(0),
+                JsonCodec.decodeAs(json, int.class));
+        Assert.assertEquals(Integer.valueOf(0),
+                JsonCodec.decodeAs(Json.createNull(), int.class));
+        //double
+        Assert.assertNull(JsonCodec.decodeAs(Json.createNull(), Double.class));
         Assert.assertTrue(JsonCodec.decodeAs(json, Double.class).isNaN());
-        Assert.assertEquals(json, JsonCodec.decodeAs(json, JsonValue.class));
+        Assert.assertTrue(JsonCodec.decodeAs(json, double.class).isNaN());
+        Assert.assertEquals(0.0d,
+                JsonCodec.decodeAs(Json.createNull(), double.class),
+                0.0001d);
     }
 
     @Test(expected = ClassCastException.class)
@@ -214,6 +231,6 @@ public class JsonCodecTest {
     @Test(expected = IllegalArgumentException.class)
     public void decodeAs_unsupportedType() {
         Assert.assertNull(
-                JsonCodec.decodeAs(Json.create("foo"), boolean.class));
+                JsonCodec.decodeAs(Json.create("foo"), float.class));
     }
 }

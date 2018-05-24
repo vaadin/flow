@@ -194,7 +194,7 @@ public class JsonCodec {
      * Decodes the given JSON value as the given type.
      * <p>
      * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double}.
+     * {@link Double} and primitives boolean, int, double
      *
      * @param <T>
      *            the decoded type
@@ -207,43 +207,19 @@ public class JsonCodec {
      *             if the type was unsupported
      */
     public static <T> T decodeAs(JsonValue json, Class<T> type) {
-        return decodeAs(json, type, true);
-    }
-
-    /**
-     * Decodes the given JSON value as the given type.
-     * <p>
-     * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double}.
-     *
-     * @param <T>
-     *            the decoded type
-     * @param json
-     *            the JSON value
-     * @param type
-     *            the type to decode as
-     * @param allowNull
-     *            if return type of null is allowed - check to false in case
-     *            you would like to have default values in case of nulls
-     *            (for example, when having primitives)
-     * @return the value decoded as the given type
-     * @throws IllegalArgumentException
-     *             if the type was unsupported
-     */
-    public static <T> T decodeAs(JsonValue json, Class<T> type, boolean allowNull) {
         assert json != null;
-        if (json.getType() == JsonType.NULL && allowNull) {
+        if (json.getType() == JsonType.NULL && !type.isPrimitive()) {
             return null;
         }
-
+        Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
         if (type == String.class) {
             return type.cast(json.asString());
-        } else if (type == Boolean.class) {
-            return type.cast(Boolean.valueOf(json.asBoolean()));
-        } else if (type == Double.class) {
-            return type.cast(Double.valueOf(json.asNumber()));
-        } else if (type == Integer.class) {
-            return type.cast(Integer.valueOf((int) json.asNumber()));
+        } else if (convertedType == Boolean.class) {
+            return (T) convertedType.cast(Boolean.valueOf(json.asBoolean()));
+        } else if (convertedType == Double.class) {
+            return (T) convertedType.cast(Double.valueOf(json.asNumber()));
+        } else if (convertedType == Integer.class) {
+            return (T) convertedType.cast(Integer.valueOf((int) json.asNumber()));
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
