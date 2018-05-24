@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
@@ -130,6 +129,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.templatemodel\\.PropertyFilter",
                 "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
+                "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
 
                 //Various test classes
                 ".*\\.test(s)?\\..*",
@@ -144,12 +144,17 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?");
     }
 
-    @SuppressWarnings("UnusedReturnValue")
-    private static <T> T serializeAndDeserialize(T instance)
+    @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
+    public <T> T serializeAndDeserialize(T instance)
             throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
-        out.writeObject(instance);
+        setupThreadLocals();
+        try {
+            out.writeObject(instance);
+        } finally {
+            resetThreadLocals();
+        }
         byte[] data = bs.toByteArray();
         ObjectInputStream in = new ObjectInputStream(
                 new ByteArrayInputStream(data));
@@ -158,6 +163,24 @@ public abstract class ClassesSerializableTest {
         T readObject = (T) in.readObject();
 
         return readObject;
+    }
+
+    /**
+     * The method is called right after serialization and might be overriden
+     * by subclasses to reset thread local values (ex. current UI).
+     * @see #setupThreadLocals
+     */
+    @SuppressWarnings("WeakerAccess")
+    protected void resetThreadLocals() {
+    }
+
+    /**
+     * The method is called right before serialization and might be overriden
+     * by subclasses to install some necessary thread local values (ex. current UI).
+     * @see #resetThreadLocals
+     */
+    @SuppressWarnings("WeakerAccess")
+    protected void setupThreadLocals() {
     }
 
     private static boolean isFunctionalType(Type type) {
@@ -287,7 +310,7 @@ public abstract class ClassesSerializableTest {
             }
 
             // report non-serializable classes and interfaces
-            if (!Serializable.class.isAssignableFrom(cls) && (!isSkippable(cls))) {
+            if (!Serializable.class.isAssignableFrom(cls)) {
                 nonSerializableClasses.add(cls);
                 // TODO easier to read when testing
                 // System.err.println(cls);
@@ -305,32 +328,20 @@ public abstract class ClassesSerializableTest {
         }
     }
 
-    private boolean isSkippable(Class<?> cls) {
-        boolean skip = false;
-        if (cls.getSuperclass() == Object.class
-                && cls.getInterfaces().length == 1) {
-            // Single interface implementors
-            Class<?> iface = cls.getInterfaces()[0];
-
-            if (iface == Runnable.class || iface == Comparator.class) {
-                // Ignore inline comparators and Runnables used with access()
-                skip=true;
+    private void serializeAndDeserialize(Class<?> clazz) {
+        try {
+            Optional<Constructor<?>> defaultCtor = Stream
+                    .of(clazz.getDeclaredConstructors())
+                    .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
+            if (!defaultCtor.isPresent()) {
+                return;
             }
+            defaultCtor.get().setAccessible(true);
+            Object instance = defaultCtor.get().newInstance();
+            serializeAndDeserialize(instance);
+        } catch (Throwable e) {
+            throw new AssertionError(clazz.getName(), e);
         }
-        return skip;
-    }
-
-    private void serializeAndDeserialize(Class<?> clazz)
-            throws Throwable {
-        Optional<Constructor<?>> defaultCtor = Stream
-                .of(clazz.getDeclaredConstructors())
-                .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
-        if (!defaultCtor.isPresent()) {
-            return;
-        }
-        defaultCtor.get().setAccessible(true);
-        Object instance = defaultCtor.get().newInstance();
-        serializeAndDeserialize(instance);
     }
 
     private void failSerializableFields(
