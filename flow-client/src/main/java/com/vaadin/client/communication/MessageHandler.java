@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.Date;
 import java.util.EnumMap;
 
 import com.google.gwt.core.client.Duration;
@@ -259,7 +258,7 @@ public class MessageHandler {
             return;
         }
 
-        final Date start = new Date();
+        double start = Duration.currentTimeMillis();
         /*
          * Lock response handling to avoid a situation where something pushed
          * from the server gets processed while waiting for e.g. lazily loaded
@@ -360,7 +359,7 @@ public class MessageHandler {
      * @param start
      *            the time stamp when processing started
      */
-    private void processMessage(ValueMap valueMap, Object lock, Date start) {
+    private void processMessage(ValueMap valueMap, Object lock, double start) {
         assert getServerId(valueMap) == -1
                 || getServerId(valueMap) == lastSeenServerSyncId;
 
@@ -418,8 +417,7 @@ public class MessageHandler {
             nextResponseSessionExpiredHandler = null;
             Reactive.flush();
 
-            lastProcessingTime = (int) ((new Date().getTime())
-                    - start.getTime());
+            lastProcessingTime = (int) (Duration.currentTimeMillis() - start);
             totalProcessingTime += lastProcessingTime;
             if (!initialMessageHandled) {
                 initialMessageHandled = true;
