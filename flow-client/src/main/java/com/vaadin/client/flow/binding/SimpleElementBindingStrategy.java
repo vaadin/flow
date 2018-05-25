@@ -548,10 +548,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // properties to the server (won't work for readonly properties).
             if (WidgetUtil.isUndefined(domValue)
                     || !Objects.equals(domValue, treeValue)) {
-                Reactive.runWithComputation(null, () -> {
-                    WidgetUtil.setJsProperty(element, name,
-                            PolymerUtils.createModelTree(treeValue));
-                });
+                Reactive.runWithComputation(null,
+                        () -> WidgetUtil.setJsProperty(element, name,
+                                PolymerUtils.createModelTree(treeValue)));
             }
         } else if (WidgetUtil.hasOwnJsProperty(element, name)) {
             WidgetUtil.deleteJsProperty(element, name);

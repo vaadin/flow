@@ -149,33 +149,9 @@ public final class PolymerUtils {
             JsonValue convert = feature.convert(PolymerUtils::createModelTree);
             if (convert instanceof JsonObject
                     && !((JsonObject) convert).hasKey("nodeId")) {
+
                 ((JsonObject) convert).put("nodeId", node.getId());
-
-                JsArray<EventRemover> registrations = JsCollections.array();
-                if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
-                    NodeMap map = (NodeMap) feature;
-                    map.forEachProperty((property, propertyName) -> {
-                        registrations.push(property.addChangeListener(
-                                event -> handlePropertyChange(property,
-                                        convert)));
-                    });
-                    registrations.push(map.addPropertyAddListener(event -> {
-                        MapProperty property = event.getProperty();
-                        registrations.push(property.addChangeListener(
-                                change -> handlePropertyChange(property,
-                                        convert)));
-                        handlePropertyChange(property, convert);
-                    }));
-                } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-                    NodeList list = (NodeList) feature;
-                    registrations.push(list.addSpliceListener(
-                            event -> handleListChange(event, convert)));
-                }
-                assert !registrations
-                        .isEmpty() : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
-
-                node.addUnregisterListener(
-                        event -> registrations.forEach(EventRemover::remove));
+                registerPropertyChangesHandlers(node, feature, convert);
             }
             return convert;
         } else if (object instanceof MapProperty) {
@@ -191,6 +167,33 @@ public final class PolymerUtils {
         } else {
             return WidgetUtil.crazyJsoCast(object);
         }
+    }
+
+    private static void registerPropertyChangesHandlers(StateNode node,
+            NodeFeature feature, JsonValue value) {
+
+        JsArray<EventRemover> registrations = JsCollections.array();
+        if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            NodeMap map = (NodeMap) feature;
+            map.forEachProperty((property, propertyName) -> registrations
+                    .push(property.addChangeListener(
+                            event -> handlePropertyChange(property, value))));
+            registrations.push(map.addPropertyAddListener(event -> {
+                MapProperty property = event.getProperty();
+                registrations.push(property.addChangeListener(
+                        change -> handlePropertyChange(property, value)));
+                handlePropertyChange(property, value);
+            }));
+        } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+            NodeList list = (NodeList) feature;
+            registrations.push(list.addSpliceListener(
+                    event -> handleListChange(event, value)));
+        }
+        assert !registrations
+                .isEmpty() : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
+
+        node.addUnregisterListener(
+                event -> registrations.forEach(EventRemover::remove));
     }
 
     private static void handleListChange(ListSpliceEvent event,
@@ -273,44 +276,60 @@ public final class PolymerUtils {
 
         StateNode parent = currentNode.getParent();
         if (parent.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-            int indexInTheList = -1;
-            NodeList children = parent.getList(NodeFeatures.TEMPLATE_MODELLIST);
-
-            for (int i = 0; i < children.length(); i++) {
-                Object object = children.get(i);
-                if (currentNode.equals(object)) {
-                    indexInTheList = i;
-                    break;
-                }
-            }
-
-            if (indexInTheList < 0) {
+            if (!buildListNotificationPath(currentNode, path)) {
                 return false;
             }
-            path.push(String.valueOf(indexInTheList));
         } else if (parent.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
-            String propertyNameInTheMap = null;
-            NodeMap map = parent.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-
-            JsArray<String> propertyNames = map.getPropertyNames();
-            for (int i = 0; i < propertyNames.length(); i++) {
-                String propertyName = propertyNames.get(i);
-                if (currentNode
-                        .equals(map.getProperty(propertyName).getValue())) {
-                    propertyNameInTheMap = propertyName;
-                    break;
-                }
-            }
-            if (propertyNameInTheMap == null) {
+            if (!buildPropertiesNotificationPath(currentNode, path)) {
                 return false;
             }
-            path.push(propertyNameInTheMap);
         }
-
         if (!parent.equals(rootNode)) {
             return buildNotificationPath(rootNode, parent, path);
         }
 
+        return true;
+    }
+
+    private static boolean buildListNotificationPath(StateNode currentNode,
+            JsArray<String> path) {
+        int indexInTheList = -1;
+        NodeList children = currentNode.getParent()
+                .getList(NodeFeatures.TEMPLATE_MODELLIST);
+
+        for (int i = 0; i < children.length(); i++) {
+            Object object = children.get(i);
+            if (currentNode.equals(object)) {
+                indexInTheList = i;
+                break;
+            }
+        }
+
+        if (indexInTheList < 0) {
+            return false;
+        }
+        path.push(String.valueOf(indexInTheList));
+        return true;
+    }
+
+    private static boolean buildPropertiesNotificationPath(
+            StateNode currentNode, JsArray<String> path) {
+        String propertyNameInTheMap = null;
+        NodeMap map = currentNode.getParent()
+                .getMap(NodeFeatures.ELEMENT_PROPERTIES);
+
+        JsArray<String> propertyNames = map.getPropertyNames();
+        for (int i = 0; i < propertyNames.length(); i++) {
+            String propertyName = propertyNames.get(i);
+            if (currentNode.equals(map.getProperty(propertyName).getValue())) {
+                propertyNameInTheMap = propertyName;
+                break;
+            }
+        }
+        if (propertyNameInTheMap == null) {
+            return false;
+        }
+        path.push(propertyNameInTheMap);
         return true;
     }
 
@@ -572,6 +591,16 @@ public final class PolymerUtils {
         return null;
     }
 
+    /**
+     * Sets a property to an element by using the Polymer {@code set} method.
+     * 
+     * @param element
+     *            the element to set the property to
+     * @param path
+     *            the path of the property
+     * @param value
+     *            the value
+     */
     public static native void setProperty(Element element, String path,
             Object value)
     /*-{
