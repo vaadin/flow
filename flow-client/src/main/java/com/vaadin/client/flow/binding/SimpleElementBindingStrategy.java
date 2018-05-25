@@ -546,7 +546,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // We compare with the current property to avoid setting properties
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
-            if (!Objects.equals(domValue, treeValue)) {
+            if (WidgetUtil.isUndefined(domValue)
+                    || !Objects.equals(domValue, treeValue)) {
                 Reactive.runWithComputation(null, () -> {
                     WidgetUtil.setJsProperty(element, name,
                             PolymerUtils.createModelTree(treeValue));
