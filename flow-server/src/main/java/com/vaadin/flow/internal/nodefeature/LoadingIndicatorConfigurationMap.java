@@ -31,12 +31,14 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
     public static final int SECOND_DELAY_DEFAULT = 1500;
     public static final String THIRD_DELAY_KEY = "third";
     public static final int THIRD_DELAY_DEFAULT = 5000;
+    public static final String DEFAULT_THEME_APPLIED_KEY = "theme";
+    public static final boolean DEFAULT_THEME_APPLIED_DEFAULT = true;
 
     /**
      * Creates a new map for the given node.
      *
      * @param node
-     *            the node that the map belongs to
+     *         the node that the map belongs to
      */
     public LoadingIndicatorConfigurationMap(StateNode node) {
         super(node);
@@ -70,5 +72,15 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
     @Override
     public int getThirdDelay() {
         return getOrDefault(THIRD_DELAY_KEY, THIRD_DELAY_DEFAULT);
+    }
+
+    @Override
+    public boolean isDefaultThemeApplied() {
+        return getOrDefault(DEFAULT_THEME_APPLIED_KEY, DEFAULT_THEME_APPLIED_DEFAULT);
+    }
+
+    @Override
+    public void setDefaultThemeApplied(boolean defaultThemeApplied) {
+        put(DEFAULT_THEME_APPLIED_KEY, defaultThemeApplied);
     }
 }

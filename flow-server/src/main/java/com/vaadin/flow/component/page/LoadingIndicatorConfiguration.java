@@ -77,4 +77,8 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      * @return The delay before going into the "third" state (in ms)
      */
     int getThirdDelay();
+
+    boolean isDefaultThemeApplied();
+
+    void setDefaultThemeApplied(boolean defaultThemeApplied);
 }

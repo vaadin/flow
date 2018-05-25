@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
@@ -25,12 +24,19 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.LoadingIndicatorView", layout = ViewTestLayout.class)
-@StyleSheet("/com/vaadin/flow/uitest/ui/loading-indicator.css")
 public class LoadingIndicatorView extends AbstractDivView {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
 
+        NativeButton disableButton = new NativeButton("Disable default loading indicator theme and add custom");
+        disableButton.addClickListener(
+                clickEvent -> {
+                    clickEvent.getSource().getUI().get().getLoadingIndicatorConfiguration().setDefaultThemeApplied(false);
+                    clickEvent.getSource().getUI().get().getPage().addStyleSheet("frontend://com/vaadin/flow/uitest/ui/loading-indicator.css");
+                }
+        );
+        add(disableButton);
         add(divWithText("First delay: "
                 + getLoadingIndicatorConfiguration().getFirstDelay()));
         add(divWithText("Second delay: "
@@ -38,7 +44,7 @@ public class LoadingIndicatorView extends AbstractDivView {
         add(divWithText("Third delay: "
                 + getLoadingIndicatorConfiguration().getThirdDelay()));
 
-        int[] delays = new int[] { 100, 200, 500, 1000, 2000, 5000, 10000 };
+        int[] delays = new int[]{100, 200, 500, 1000, 2000, 5000, 10000};
         for (int delay : delays) {
             NativeButton button = new NativeButton(
                     "Trigger event which takes " + delay + "ms",
