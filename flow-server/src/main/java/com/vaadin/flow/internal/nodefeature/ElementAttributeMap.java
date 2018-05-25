@@ -26,6 +26,7 @@ import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -46,8 +47,7 @@ public class ElementAttributeMap extends NodeMap {
     /**
      * Creates a new element attribute map for the given node.
      *
-     * @param node
-     *            the node that the map belongs to
+     * @param node the node that the map belongs to
      */
     public ElementAttributeMap(StateNode node) {
         super(node);
@@ -56,10 +56,8 @@ public class ElementAttributeMap extends NodeMap {
     /**
      * Sets the given attribute to the given value.
      *
-     * @param attribute
-     *            the attribute name
-     * @param value
-     *            the value
+     * @param attribute the attribute name
+     * @param value     the value
      */
     public void set(String attribute, String value) {
         unregisterResource(attribute);
@@ -69,10 +67,9 @@ public class ElementAttributeMap extends NodeMap {
     /**
      * Checks whether an attribute with the given name has been set.
      *
-     * @param attribute
-     *            the name of the attribute
+     * @param attribute the name of the attribute
      * @return <code>true</code> if there is a property with the given name;
-     *         <code>false</code> if there is no property
+     * <code>false</code> if there is no property
      */
     public boolean has(String attribute) {
         return contains(attribute);
@@ -81,8 +78,7 @@ public class ElementAttributeMap extends NodeMap {
     /**
      * Removes the named attribute.
      *
-     * @param attribute
-     *            the name of the attribute to remove
+     * @param attribute the name of the attribute to remove
      */
     @Override
     public Serializable remove(String attribute) {
@@ -93,10 +89,9 @@ public class ElementAttributeMap extends NodeMap {
     /**
      * Gets the value of an attribute.
      *
-     * @param attribute
-     *            the name of the property
+     * @param attribute the name of the property
      * @return the attribute value or <code>null</code> if the attribute has not
-     *         been set
+     * been set
      */
     @Override
     public String get(String attribute) {
@@ -115,10 +110,8 @@ public class ElementAttributeMap extends NodeMap {
     /**
      * Sets the given attribute to the given {@link StreamResource} value.
      *
-     * @param attribute
-     *            the attribute name
-     * @param resource
-     *            the value
+     * @param attribute the attribute name
+     * @param resource  the value
      */
     public void setResource(String attribute, AbstractStreamResource resource) {
         set(attribute, StreamResourceRegistry.getURI(resource).toASCIIString());
@@ -163,17 +156,26 @@ public class ElementAttributeMap extends NodeMap {
     }
 
     private void deferRegistration(String attribute,
-            AbstractStreamResource resource) {
+                                   AbstractStreamResource resource) {
         ensurePendingRegistrations();
 
         assert !pendingRegistrations.containsKey(attribute);
         Registration handle = getNode()
-                .addAttachListener(() -> registerResource(attribute, resource));
+                // This explicit class instantiation is the workaround
+                // which fixes a JVM optimization+serialization bug.
+                // Do not convert to lambda
+                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                .addAttachListener(new Command() {
+                    @Override
+                    public void execute() {
+                        registerResource(attribute, resource);
+                    }
+                });
         pendingRegistrations.put(attribute, handle);
     }
 
     private void registerResource(String attribute,
-            AbstractStreamResource resource) {
+                                  AbstractStreamResource resource) {
         ensureResourceRegistrations();
         ensurePendingRegistrations();
 
@@ -186,7 +188,18 @@ public class ElementAttributeMap extends NodeMap {
             handle.remove();
         }
         pendingRegistrations.put(attribute,
-                getNode().addDetachListener(() -> unsetResource(attribute)));
+                getNode().addDetachListener(
+                        // This explicit class instantiation is the workaround
+                        // which fixes a JVM optimization+serialization bug.
+                        // Do not convert to lambda
+                        // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                        // see ElementAttributeMap#deferRegistration
+                        new Command() {
+                            @Override
+                            public void execute() {
+                                ElementAttributeMap.this.unsetResource(attribute);
+                            }
+                        }));
     }
 
     private void unsetResource(String attribute) {
