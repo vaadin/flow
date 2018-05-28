@@ -73,8 +73,7 @@ public class ComponentEvent<T extends Component> extends EventObject {
      * @param unregisterListenerCommand
      *            the unregister command
      */
-    public void setUnregisterListenerCommand(
-            Command unregisterListenerCommand) {
+    void setUnregisterListenerCommand(Command unregisterListenerCommand) {
         this.unregisterListenerCommand = unregisterListenerCommand;
     }
 
