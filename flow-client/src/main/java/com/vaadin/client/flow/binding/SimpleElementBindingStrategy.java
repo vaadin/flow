@@ -301,16 +301,23 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
          element.ready = function (){
             originalReady.apply(this, arguments);
             @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
-
+    
+            // The  _propertiesChanged method which is replaced above for the element
+            // doesn't do anything for items in dom-repeat.
+            // Instead it's called with some meaningful info for the <code>dom-repeat</code> element.
+            // So here <code>_propertiesChanged</code> is changed for the <code>dom-repeat</code> prototype
+            // which changes this method for any dom-repeat instance.
             var replaceDomRepeatPropertyChange = function(){
                 var domRepeat = element.root.querySelector('dom-repeat');
     
                 if ( domRepeat ){
+                 // dom-repeat may be already in the DOM but may be not yet.
                  element.removeEventListener('dom-change', replaceDomRepeatPropertyChange);
                 }
                 else {
                     return;
                 }
+                // if dom-repeat is found => replace _propertiesChanged method in the prototype and mark it as replaced.
                 if ( !domRepeat.constructor.prototype.$propChangedModified){
                     domRepeat.constructor.prototype.$propChangedModified = true;
 
@@ -322,12 +329,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                         var props = Object.getOwnPropertyNames(changedProps);
                         var items = "items.";
                         for(i=0; i<props.length; i++){
+                            // There should be a property which starts with "items."
+                            // and the next token is the index of changed item
+                            // the code parses this proeprty
                             var index = props[i].indexOf(items);
                             if ( index == 0 ){
                                 var prop = props[i].substr(items.length);
                                 index = prop.indexOf('.');
                                 if ( index >0){
+                                    // this is the index of the changed item
                                     var arrayIndex = prop.substr(0,index);
+                                    // this is the property name of the cahnged item
                                     var propertyName = prop.substr(index+1);
 
                                     var nodeId = currentProps.items[arrayIndex].nodeId;
@@ -336,6 +348,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                     // this is an attempt to find the template element
                                     // which is not available as a context in the protype method
                                     var host = this.__dataHost;
+                                    // __dataHost is an element in the local DOM which owns the changed data
+                                    // Such elements form a linked list where the head is the dom-repeat (this)
+                                    //  and the tail is the template which owns the local DOM, so this code
+                                    // goes via this list and search for the tail which is supposed to be a template
                                     while( !host.localName || host.__dataHost ){
                                         host = host.__dataHost;
                                     }
@@ -349,11 +365,18 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     };
                 }
             };
-
+    
+            // dom-repeat doesn't have to be in DOM even if template has it
+            //  such situation happens if there is dom-if e.g. which evaluates to <code>false</code> initially.
+            // in this case dom-repeat is not yet in the DOM tree until dom-if becomes <code>true</code>
             if ( element.root.querySelector('dom-repeat') ){
                 replaceDomRepeatPropertyChange();
             }
             else {
+                // if there is no dom-repat at the moment just add a dom-change
+                // listener which will be notified once local DOM is changed
+                // and the  <code>replaceDomRepeatPropertyChange</code> will get a chance
+                // to execute its logic if there is dom-repeat.
                 element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
             }
         }
