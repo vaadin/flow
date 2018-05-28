@@ -465,9 +465,10 @@ public class ComponentTest {
         new TestComponentWithEmptyTag();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void createComponentWithoutTag() {
-        new TestComponentWithoutTag();
+        Assert.assertEquals("test-component-without-tag",
+                new TestComponentWithoutTag().getElement().getTag());
     }
 
     @Test

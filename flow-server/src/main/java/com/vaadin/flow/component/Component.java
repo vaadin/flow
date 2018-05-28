@@ -28,7 +28,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
@@ -93,21 +92,7 @@ public abstract class Component
      * instead of creating a new element.
      */
     protected Component() {
-        Optional<String> tagNameAnnotation = AnnotationReader
-                .getAnnotationFor(getClass(), Tag.class).map(Tag::value);
-        if (!tagNameAnnotation.isPresent()) {
-            throw new IllegalStateException(getClass().getSimpleName()
-                    + " (or a super class) must be annotated with @"
-                    + Tag.class.getName()
-                    + " if the default constructor is used.");
-        }
-
-        String tagName = tagNameAnnotation.get();
-        if (tagName.isEmpty()) {
-            throw new IllegalStateException("@" + Tag.class.getSimpleName()
-                    + " value cannot be empty.");
-        }
-
+        String tagName = ComponentUtil.resolveTagName(getClass());
         if (elementToMapTo.get() != null) {
             mapToElement(tagName);
             templateMapped = element != null && element.isVirtualChild();
@@ -621,4 +606,5 @@ public abstract class Component
         }
         return locale;
     }
+
 }

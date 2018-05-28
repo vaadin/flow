@@ -35,7 +35,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
 
-import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.VaadinService;
@@ -173,7 +173,7 @@ class TemplateDataAnalyzer {
         this.templateClass = templateClass;
         this.parser = parser;
         this.service = service;
-        tag = getTag(templateClass);
+        tag = ComponentUtil.resolveTagName(templateClass);
     }
 
     /**
@@ -265,13 +265,6 @@ class TemplateDataAnalyzer {
     private ParserData readData() {
         return new ParserData(idByField, tagById, twoWayBindingPaths,
                 subTemplates);
-    }
-
-    private String getTag(Class<? extends PolymerTemplate<?>> clazz) {
-        Optional<String> tagNameAnnotation = AnnotationReader
-                .getAnnotationFor(clazz, Tag.class).map(Tag::value);
-        assert tagNameAnnotation.isPresent();
-        return tagNameAnnotation.get();
     }
 
     private void inspectCustomElements(org.jsoup.nodes.Element childElement,
