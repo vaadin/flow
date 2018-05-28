@@ -85,7 +85,7 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      *
      * @return {@code true} for applying default theme, {@code false} for not
      */
-    boolean isDefaultThemeApplied();
+    boolean isApplyDefaultTheme();
 
     /**
      * Sets whether the default theming is applied for the loading indicator.
@@ -94,7 +94,7 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      * of the viewport shown after a delay to the users while there is an active
      * server request in process.
      *
-     * @param defaultThemeApplied {@code true} to apply default theming, {@code false} for not
+     * @param applyDefaultTheme {@code true} to apply default theming, {@code false} for not
      */
-    void setDefaultThemeApplied(boolean defaultThemeApplied);
+    void setApplyDefaultTheme(boolean applyDefaultTheme);
 }

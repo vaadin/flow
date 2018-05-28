@@ -35,7 +35,7 @@ public class LoadingIndicatorConfigurationMapTest
                 map.getThirdDelay());
         Assert.assertEquals(
                 LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT,
-                map.isDefaultThemeApplied());
+                map.isApplyDefaultTheme());
     }
 
     @Test
@@ -59,6 +59,6 @@ public class LoadingIndicatorConfigurationMapTest
     @Test
     public void setGetDefaultThemeApplied() {
         testBoolean(map, LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY,
-                map::setDefaultThemeApplied, map::isDefaultThemeApplied);
+                map::setApplyDefaultTheme, map::isApplyDefaultTheme);
     }
 }

@@ -339,7 +339,7 @@ public class BootstrapHandlerTest {
 
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.getLoadingIndicatorConfiguration().setDefaultThemeApplied(false);
+            settings.getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
             settings.getLoadingIndicatorConfiguration().setSecondDelay(SECOND_DELAY);
 
             settings.getPushConfiguration().setPushMode(PushMode.MANUAL);
@@ -1573,13 +1573,13 @@ public class BootstrapHandlerTest {
 
     @Test
     public void testUIConfiguration_usingPageSettings() throws Exception {
-        Assert.assertTrue("By default loading indicator is themed", testUI.getLoadingIndicatorConfiguration().isDefaultThemeApplied());
+        Assert.assertTrue("By default loading indicator is themed", testUI.getLoadingIndicatorConfiguration().isApplyDefaultTheme());
 
         initUI(testUI, createVaadinRequest(), Collections.singleton(InitialPageConfiguratorRoute.class));
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
-        Assert.assertFalse("Default indicator theme is not themed anymore", testUI.getLoadingIndicatorConfiguration().isDefaultThemeApplied());
+        Assert.assertFalse("Default indicator theme is not themed anymore", testUI.getLoadingIndicatorConfiguration().isApplyDefaultTheme());
 
         Assert.assertEquals(InitialPageConfiguratorRoute.SECOND_DELAY, testUI.getLoadingIndicatorConfiguration().getSecondDelay());
 

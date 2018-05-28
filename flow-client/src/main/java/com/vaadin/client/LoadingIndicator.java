@@ -119,7 +119,7 @@ public class LoadingIndicator {
     private Element element;
 
     private Element styleElement;
-    private boolean defaultThemeApplied = true;
+    private boolean applyDefaultTheme = true;
 
     /**
      * Returns the delay (in ms) which must pass before the loading indicator
@@ -288,9 +288,9 @@ public class LoadingIndicator {
         }
 
         boolean attached = styleElement.getParentElement() != null;
-        if (defaultThemeApplied && !attached) {
+        if (isApplyDefaultTheme() && !attached) {
             Browser.getDocument().getHead().appendChild(styleElement);
-        } else if (!defaultThemeApplied && attached) {
+        } else if (!isApplyDefaultTheme() && attached) {
             styleElement.getParentElement().removeChild(styleElement);
         }
     }
@@ -300,11 +300,11 @@ public class LoadingIndicator {
      * <p>
      * Default is {@code true}.
      *
-     * @param defaultThemeApplied
+     * @param applyDefaultTheme
      *         {@code true} for applying the default theming, {@code false} for not
      */
-    public void setDefaultThemeApplied(boolean defaultThemeApplied) {
-        this.defaultThemeApplied = defaultThemeApplied;
+    public void setApplyDefaultTheme(boolean applyDefaultTheme) {
+        this.applyDefaultTheme = applyDefaultTheme;
         setupTheming();
     }
 
@@ -315,7 +315,7 @@ public class LoadingIndicator {
      *
      * @return {@code true} for applying the default theming, {@code false} for not
      */
-    public boolean isDefaultThemeApplied() {
-        return defaultThemeApplied;
+    public boolean isApplyDefaultTheme() {
+        return applyDefaultTheme;
     }
 }

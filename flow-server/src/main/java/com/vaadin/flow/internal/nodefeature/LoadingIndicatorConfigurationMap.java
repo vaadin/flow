@@ -75,12 +75,12 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
     }
 
     @Override
-    public boolean isDefaultThemeApplied() {
+    public boolean isApplyDefaultTheme() {
         return getOrDefault(DEFAULT_THEME_APPLIED_KEY, DEFAULT_THEME_APPLIED_DEFAULT);
     }
 
     @Override
-    public void setDefaultThemeApplied(boolean defaultThemeApplied) {
-        put(DEFAULT_THEME_APPLIED_KEY, defaultThemeApplied);
+    public void setApplyDefaultTheme(boolean applyDefaultTheme) {
+        put(DEFAULT_THEME_APPLIED_KEY, applyDefaultTheme);
     }
 }

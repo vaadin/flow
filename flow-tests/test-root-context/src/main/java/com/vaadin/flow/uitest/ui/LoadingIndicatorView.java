@@ -30,9 +30,10 @@ public class LoadingIndicatorView extends AbstractDivView {
     public void beforeEnter(BeforeEnterEvent event) {
 
         NativeButton disableButton = new NativeButton("Disable default loading indicator theme and add custom");
+        disableButton.setId("disable-theme");
         disableButton.addClickListener(
                 clickEvent -> {
-                    clickEvent.getSource().getUI().get().getLoadingIndicatorConfiguration().setDefaultThemeApplied(false);
+                    clickEvent.getSource().getUI().get().getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
                     clickEvent.getSource().getUI().get().getPage().addStyleSheet("frontend://com/vaadin/flow/uitest/ui/loading-indicator.css");
                 }
         );

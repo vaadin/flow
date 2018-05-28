@@ -62,7 +62,7 @@ public class LoadingIndicatorConfigurator {
                 LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT);
 
         MapProperty defaultThemeProperty = configMap.getProperty(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
-        defaultThemeProperty.addChangeListener(event -> loadingIndicator.setDefaultThemeApplied(event.getSource().getValueOrDefault(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
+        defaultThemeProperty.addChangeListener(event -> loadingIndicator.setApplyDefaultTheme(event.getSource().getValueOrDefault(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
     }
 
     /**
