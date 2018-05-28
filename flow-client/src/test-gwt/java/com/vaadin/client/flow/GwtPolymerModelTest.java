@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
+
 import com.vaadin.client.CustomScheduler;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
@@ -28,7 +29,6 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd.
  */
 public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
-    private static final String PROPERTY_PREFIX = "_";
     private static final String MODEL_PROPERTY_NAME = "model";
     private static final String LIST_PROPERTY_NAME = "listProperty";
 
@@ -48,6 +48,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         initPolymer(element);
 
         initScheduler(new CustomScheduler());
+        node.setDomNode(element);
     }
 
     public void testPropertyAdded() {
@@ -57,8 +58,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
         setModelProperty(node, propertyName, propertyValue);
 
-        assertEquals(propertyValue, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + propertyName));
+        assertEquals(propertyValue,
+                WidgetUtil.getJsProperty(element, propertyName));
     }
 
     public void testPropertyUpdated() {
@@ -70,8 +71,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
         setModelProperty(node, propertyName, newValue);
 
-        assertEquals(newValue, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + propertyName));
+        assertEquals(newValue, WidgetUtil.getJsProperty(element, propertyName));
     }
 
     public void testUnregister() {
@@ -84,8 +84,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         node.unregister();
         setModelProperty(node, propertyName, notUpdatedValue);
 
-        assertEquals(propertyValue, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + propertyName));
+        assertEquals(propertyValue,
+                WidgetUtil.getJsProperty(element, propertyName));
     }
 
     public void testSetSubProperty() {
@@ -96,8 +96,10 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
         Reactive.flush();
 
-        assertEquals(value, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + MODEL_PROPERTY_NAME + "." + subProperty));
+        assertEquals(value,
+                WidgetUtil.getJsProperty(
+                        WidgetUtil.getJsProperty(element, MODEL_PROPERTY_NAME),
+                        subProperty));
     }
 
     public void testUpdateSubProperty() {
@@ -107,19 +109,13 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         String value = "foo";
         setModelProperty(modelNode, subProperty, value, true);
 
-        // the property is set to an empty object '{}' at this point, reset it
-        // it null to make sure it is not updated
-        WidgetUtil.setJsProperty(element, PROPERTY_PREFIX + MODEL_PROPERTY_NAME,
-                null);
-
         String newValue = "bar";
         setModelProperty(modelNode, subProperty, newValue, true);
 
-        assertEquals(newValue, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + MODEL_PROPERTY_NAME + "." + subProperty));
-        // Now check that the value for the property has not been updated
-        assertEquals(null, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + MODEL_PROPERTY_NAME));
+        assertEquals(newValue,
+                WidgetUtil.getJsProperty(
+                        WidgetUtil.getJsProperty(element, MODEL_PROPERTY_NAME),
+                        subProperty));
     }
 
     public void testSubPropertyUnregister() {
@@ -133,8 +129,10 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
         setModelProperty(modelNode, subProperty, "bar", true);
 
-        assertEquals(value, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + MODEL_PROPERTY_NAME + "." + subProperty));
+        assertEquals(value,
+                WidgetUtil.getJsProperty(
+                        WidgetUtil.getJsProperty(element, MODEL_PROPERTY_NAME),
+                        subProperty));
     }
 
     public void testAddList() {
@@ -225,7 +223,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         StateNode andAttachNodeWithList = createAndAttachNodeWithList(modelNode,
                 serverList);
 
-        JsonValue jsonValue = PolymerUtils.convertToJson(andAttachNodeWithList);
+        JsonValue jsonValue = PolymerUtils
+                .createModelTree(andAttachNodeWithList);
 
         assertTrue(
                 "Expected instance of JsonObject from converter, but was not.",
@@ -253,8 +252,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertEquals(
                 "Expected to have property with name " + propertyName
                         + " defined after initial binding",
-                propertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName));
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
 
         String newPropertyValue = "bubblegum";
         emulatePolymerPropertyChange(element, propertyName, newPropertyValue);
@@ -262,8 +260,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertEquals(
                 "Expected to have property with name " + propertyName
                         + " updated from client side",
-                newPropertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName));
+                newPropertyValue,
+                WidgetUtil.getJsProperty(element, propertyName));
 
         MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .getProperty(propertyName);
@@ -294,8 +292,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertEquals(
                 "Expected to have property with name " + propertyName
                         + " defined after initial binding",
-                propertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName));
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
 
         String newPropertyValue = "bubblegum";
         emulatePolymerPropertyChange(element, propertyName, newPropertyValue);
@@ -303,8 +300,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertEquals(
                 "Expected to have property with name " + propertyName
                         + " updated from client side",
-                newPropertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName));
+                newPropertyValue,
+                WidgetUtil.getJsProperty(element, propertyName));
         MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .getProperty(propertyName);
         assertEquals(newPropertyValue, property.getValue());
@@ -333,8 +330,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertEquals(
                 "Expected to have property with name " + propertyName
                         + " defined after initial binding",
-                propertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName));
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
 
         String newPropertyValue = "bubblegum";
         emulatePolymerPropertyChange(element, propertyName, newPropertyValue);
@@ -342,8 +338,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertEquals(
                 "Expected to have property with name " + propertyName
                         + " updated from client side",
-                propertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName));
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
         MapProperty property = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .getProperty(propertyName);
         assertEquals(propertyValue, property.getValue());
@@ -355,22 +350,23 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         addMockMethods(element);
         setModelProperty(node, "bar", modelNode);
 
-        String subpropertyName = "bar.foo";
-        node.setNodeData(new UpdatableModelProperties(
-                JsCollections.array(subpropertyName)));
+        node.setNodeData(
+                new UpdatableModelProperties(JsCollections.array("bar.foo")));
 
         Binder.bind(node, element);
         Reactive.flush();
 
         String newSubPropertyValue = "baz";
-        emulatePolymerPropertyChange(element, subpropertyName,
-                newSubPropertyValue);
+        PolymerUtils.setProperty(element, "bar.foo", "baz");
+        emulatePolymerPropertyChange(element, "bar.foo", "baz");
         Reactive.flush();
+
         assertEquals(
-                "Expected to have property with name " + subpropertyName
+                "Expected to have an object 'bar' with a property named 'foo'"
                         + " updated from client side",
-                newSubPropertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + subpropertyName));
+                newSubPropertyValue, WidgetUtil.getJsProperty(
+                        WidgetUtil.getJsProperty(element, "bar"), "foo"));
+
         MapProperty property = modelNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                 .getProperty("foo");
         assertEquals(newSubPropertyValue, property.getValue());
@@ -393,16 +389,14 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertEquals(
                 "Expected to have property with name " + propertyName
                         + " defined after initial binding",
-                propertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName));
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
 
         emulatePolymerPropertyChange(element, propertyName, "doesNotMatter");
         Reactive.flush();
         assertEquals(
                 "Expected the property with name " + propertyName
                         + " not to be updated since it's not updatable",
-                propertyValue, WidgetUtil.getJsProperty(element,
-                        PROPERTY_PREFIX + propertyName));
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
     }
 
     ////////////////////////
@@ -412,7 +406,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
         };
-
+    
         element.callbackCallCount = 0;
         $wnd.customElements = {
             whenDefined: function() {
@@ -453,6 +447,16 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     /*-{
         var changedProperties = {};
         changedProperties[propertyName] = newPropertyValue;
+        element._propertiesChanged({}, changedProperties, {});
+    }-*/;
+
+    private native void emulatePolymerPropertyChange(Element element,
+            String objectName, String propertyName, String newPropertyValue)
+    /*-{
+        var changedProperties = {};
+        changedProperties[objectName] = {};
+        element._propertiesChanged({}, changedProperties, {});
+        changedProperties[objectName][propertyName] = newPropertyValue;
         element._propertiesChanged({}, changedProperties, {});
     }-*/;
 
@@ -500,8 +504,9 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
     private StateNode createAndAttachModelNode(String modelPropertyName) {
         StateNode modelNode = new StateNode(nextId, node.getTree());
+        modelNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
         nextId++;
-        setModelProperty(node, modelPropertyName, modelNode, false);
+        setModelProperty(node, modelPropertyName, modelNode, true);
         return modelNode;
     }
 
@@ -509,7 +514,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         String name = "custom-div";
         Element element = Browser.getDocument().createElement(name);
         WidgetUtil.setJsProperty(element, "localName", name);
-        setupSetMethod(element, PROPERTY_PREFIX);
+        setupSetMethod(element);
         setupMockSpliceMethod(element);
         WidgetUtil.setJsProperty(element, "removeAttribute",
                 new NativeFunction(""));
@@ -520,11 +525,22 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         return element;
     }
 
-    private void setupSetMethod(Element element, String prefix) {
-        NativeFunction function = NativeFunction
-                .create("this['" + prefix + "'+arguments[0]]=arguments[1]");
-        WidgetUtil.setJsProperty(element, "set", function);
-    }
+    private native void setupSetMethod(Element element)
+    /*-{
+          element.set = function(path, newValue) {
+              var split = path.split(".");
+              var prop = element;
+              for (var i = 0; i < split.length - 1; i++) {
+                if (!prop) {
+                  break;
+                }
+                prop = prop[split[i]];
+              }
+              if (prop) {
+                prop[split[split.length - 1]] = newValue;
+              }
+          }
+    }-*/;
 
     /**
      * Sets up mock splice method, that is called when model list is modified.
@@ -545,6 +561,9 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
             Object value, boolean flush) {
         stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(name)
                 .setValue(value);
+        if (value instanceof StateNode) {
+            ((StateNode) value).setParent(stateNode);
+        }
         if (flush) {
             Reactive.flush();
         }
@@ -557,7 +576,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
     private StateNode createAndAttachNodeWithList(StateNode modelNode,
             List<String> listItems, Function<Object, ?> converter) {
-        StateNode nodeWithList = new StateNode(nextId, modelNode.getTree());
+        StateNode nodeWithList = new StateNode(nextId, node.getTree());
         nextId++;
         fillNodeWithListItems(nodeWithList, listItems, converter);
         setModelProperty(modelNode, LIST_PROPERTY_NAME, nodeWithList, false);
@@ -591,9 +610,9 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     }
 
     private JsonArray getClientList() {
-        return WidgetUtil
-                .crazyJsCast(WidgetUtil.getJsProperty(element, PROPERTY_PREFIX
-                        + MODEL_PROPERTY_NAME + "." + LIST_PROPERTY_NAME));
+        return WidgetUtil.crazyJsCast(WidgetUtil.getJsProperty(
+                WidgetUtil.getJsProperty(element, MODEL_PROPERTY_NAME),
+                LIST_PROPERTY_NAME));
     }
 
     private StateNode createBasicTypeWrapper(Object value) {
