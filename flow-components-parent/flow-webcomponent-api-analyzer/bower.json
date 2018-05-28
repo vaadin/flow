@@ -26,7 +26,7 @@
   ],
   "dependencies": {
     "vaadin-button": "2.0.1",
-    "vaadin-checkbox": "2.1.0",
+    "vaadin-checkbox": "2.1.1",
     "vaadin-combo-box": "4.0.1",
     "vaadin-date-picker": "3.0.1",
     "vaadin-dialog": "2.0.2",
