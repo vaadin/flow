@@ -78,8 +78,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
  * initial GET request.
@@ -675,6 +673,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "border: 1px solid black;" //
                 + "padding: 1em;" //
                 + "z-index: 10000;" //
+                + "pointer-events: auto;" //
                 + "}");
     }
 
