@@ -26,6 +26,7 @@ import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -168,7 +169,16 @@ public class ElementAttributeMap extends NodeMap {
 
         assert !pendingRegistrations.containsKey(attribute);
         Registration handle = getNode()
-                .addAttachListener(() -> registerResource(attribute, resource));
+                // This explicit class instantiation is the workaround
+                // which fixes a JVM optimization+serialization bug.
+                // Do not convert to lambda
+                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                .addAttachListener(new Command() {
+                    @Override
+                    public void execute() {
+                        registerResource(attribute, resource);
+                    }
+                });
         pendingRegistrations.put(attribute, handle);
     }
 
@@ -186,7 +196,18 @@ public class ElementAttributeMap extends NodeMap {
             handle.remove();
         }
         pendingRegistrations.put(attribute,
-                getNode().addDetachListener(() -> unsetResource(attribute)));
+                getNode().addDetachListener(
+                        // This explicit class instantiation is the workaround
+                        // which fixes a JVM optimization+serialization bug.
+                        // Do not convert to lambda
+                        // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                        // see ElementAttributeMap#deferRegistration
+                        new Command() {
+                            @Override
+                            public void execute() {
+                                ElementAttributeMap.this.unsetResource(attribute);
+                            }
+                        }));
     }
 
     private void unsetResource(String attribute) {
