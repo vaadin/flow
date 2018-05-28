@@ -151,7 +151,7 @@ public final class PolymerUtils {
                     && !((JsonObject) convert).hasKey("nodeId")) {
 
                 ((JsonObject) convert).put("nodeId", node.getId());
-                registerPropertyChangesHandlers(node, feature, convert);
+                registerPropertyChangeHandlers(node, feature, convert);
             }
             return convert;
         } else if (object instanceof MapProperty) {
@@ -169,22 +169,20 @@ public final class PolymerUtils {
         }
     }
 
-    private static void registerPropertyChangesHandlers(StateNode node,
+    private static void registerPropertyChangeHandlers(StateNode node,
             NodeFeature feature, JsonValue value) {
 
         JsArray<EventRemover> registrations = JsCollections.array();
         if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            assert feature instanceof NodeMap : "Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. It should be NodeMap, but it is: "
+                    + feature;
             NodeMap map = (NodeMap) feature;
-            map.forEachProperty((property, propertyName) -> registrations
-                    .push(property.addChangeListener(
-                            event -> handlePropertyChange(property, value))));
-            registrations.push(map.addPropertyAddListener(event -> {
-                MapProperty property = event.getProperty();
-                registrations.push(property.addChangeListener(
-                        change -> handlePropertyChange(property, value)));
-                handlePropertyChange(property, value);
-            }));
+            registerPropertyChangeHandlerForEachProperty(value, registrations,
+                    map);
+            registerPropertyAddHandler(value, registrations, map);
         } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+            assert feature instanceof NodeList : "Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. It should be NodeList, but it is: "
+                    + feature;
             NodeList list = (NodeList) feature;
             registrations.push(list.addSpliceListener(
                     event -> handleListChange(event, value)));
@@ -192,8 +190,25 @@ public final class PolymerUtils {
         assert !registrations
                 .isEmpty() : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
 
-        node.addUnregisterListener(
-                event -> registrations.forEach(EventRemover::remove));
+        registrations.push(node.addUnregisterListener(
+                event -> registrations.forEach(EventRemover::remove)));
+    }
+
+    private static void registerPropertyAddHandler(JsonValue value,
+            JsArray<EventRemover> registrations, NodeMap map) {
+        registrations.push(map.addPropertyAddListener(event -> {
+            MapProperty property = event.getProperty();
+            registrations.push(property.addChangeListener(
+                    change -> handlePropertyChange(property, value)));
+            handlePropertyChange(property, value);
+        }));
+    }
+
+    private static void registerPropertyChangeHandlerForEachProperty(
+            JsonValue value, JsArray<EventRemover> registrations, NodeMap map) {
+        map.forEachProperty((property, propertyName) -> registrations
+                .push(property.addChangeListener(
+                        event -> handlePropertyChange(property, value))));
     }
 
     private static void handleListChange(ListSpliceEvent event,
@@ -207,7 +222,7 @@ public final class PolymerUtils {
         int index = event.getIndex();
         int remove = event.getRemove().length();
         StateNode node = event.getSource().getNode();
-        StateNode root = getParentNodeAttachedToADomNode(node);
+        StateNode root = getFirstParentWithDomNode(node);
         if (root == null) {
             Console.warn("Root node for node " + node.getId()
                     + " could not be found");
@@ -218,16 +233,11 @@ public final class PolymerUtils {
         add.forEach(item -> array.push(createModelTree(item)));
 
         if (isPolymerElement((Element) root.getDomNode())) {
-            JsArray<String> path = JsCollections.array();
-            if (buildNotificationPath(root, node, path)) {
-                StringBuilder pathBuilder = new StringBuilder();
-                String sep = "";
-                for (int i = path.length() - 1; i >= 0; i--) {
-                    pathBuilder.append(sep).append(path.get(i));
-                    sep = ".";
-                }
-                splice((Element) root.getDomNode(), pathBuilder.toString(),
-                        index, remove, WidgetUtil.crazyJsoCast(array));
+            String path = getNotificationPath(root, node, null);
+            if (path != null) {
+
+                splice((Element) root.getDomNode(), path, index, remove,
+                        WidgetUtil.crazyJsoCast(array));
                 return;
             }
         }
@@ -245,7 +255,7 @@ public final class PolymerUtils {
             JsonValue value) {
         String propertyName = property.getName();
         StateNode node = property.getMap().getNode();
-        StateNode root = getParentNodeAttachedToADomNode(node);
+        StateNode root = getFirstParentWithDomNode(node);
         if (root == null) {
             Console.warn("Root node for node " + node.getId()
                     + " could not be found");
@@ -254,45 +264,56 @@ public final class PolymerUtils {
         JsonValue modelTree = createModelTree(property.getValue());
 
         if (isPolymerElement((Element) root.getDomNode())) {
-            JsArray<String> path = JsCollections.array();
-            path.push(propertyName);
-            if (buildNotificationPath(root, node, path)) {
-                StringBuilder pathBuilder = new StringBuilder();
-                String sep = "";
-                for (int i = path.length() - 1; i >= 0; i--) {
-                    pathBuilder.append(sep).append(path.get(i));
-                    sep = ".";
-                }
-                setProperty((Element) root.getDomNode(), pathBuilder.toString(),
-                        modelTree);
+            String path = getNotificationPath(root, node, propertyName);
+            if (path != null) {
+                setProperty((Element) root.getDomNode(), path, modelTree);
             }
             return;
         }
         WidgetUtil.setJsProperty(value, propertyName, modelTree);
     }
 
-    private static boolean buildNotificationPath(StateNode rootNode,
+    private static String getNotificationPath(StateNode rootNode,
+            StateNode currentNode, String propertyName) {
+
+        JsArray<String> path = JsCollections.array();
+        if (propertyName != null) {
+            path.push(propertyName);
+        }
+        return doGetNotificationPath(rootNode, currentNode, path);
+    }
+
+    private static String doGetNotificationPath(StateNode rootNode,
             StateNode currentNode, JsArray<String> path) {
 
         StateNode parent = currentNode.getParent();
         if (parent.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-            if (!buildListNotificationPath(currentNode, path)) {
-                return false;
+            String listPath = getListNotificationPath(currentNode);
+            if (listPath == null) {
+                return null;
             }
+            path.push(listPath);
         } else if (parent.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
-            if (!buildPropertiesNotificationPath(currentNode, path)) {
-                return false;
+            String propertyPath = getPropertiesNotificationPath(currentNode);
+            if (propertyPath == null) {
+                return null;
             }
+            path.push(propertyPath);
         }
         if (!parent.equals(rootNode)) {
-            return buildNotificationPath(rootNode, parent, path);
+            return doGetNotificationPath(rootNode, parent, path);
         }
 
-        return true;
+        StringBuilder pathBuilder = new StringBuilder();
+        String sep = "";
+        for (int i = path.length() - 1; i >= 0; i--) {
+            pathBuilder.append(sep).append(path.get(i));
+            sep = ".";
+        }
+        return pathBuilder.toString();
     }
 
-    private static boolean buildListNotificationPath(StateNode currentNode,
-            JsArray<String> path) {
+    private static String getListNotificationPath(StateNode currentNode) {
         int indexInTheList = -1;
         NodeList children = currentNode.getParent()
                 .getList(NodeFeatures.TEMPLATE_MODELLIST);
@@ -306,14 +327,12 @@ public final class PolymerUtils {
         }
 
         if (indexInTheList < 0) {
-            return false;
+            return null;
         }
-        path.push(String.valueOf(indexInTheList));
-        return true;
+        return String.valueOf(indexInTheList);
     }
 
-    private static boolean buildPropertiesNotificationPath(
-            StateNode currentNode, JsArray<String> path) {
+    private static String getPropertiesNotificationPath(StateNode currentNode) {
         String propertyNameInTheMap = null;
         NodeMap map = currentNode.getParent()
                 .getMap(NodeFeatures.ELEMENT_PROPERTIES);
@@ -327,10 +346,9 @@ public final class PolymerUtils {
             }
         }
         if (propertyNameInTheMap == null) {
-            return false;
+            return null;
         }
-        path.push(propertyNameInTheMap);
-        return true;
+        return propertyNameInTheMap;
     }
 
     /**
@@ -341,7 +359,7 @@ public final class PolymerUtils {
      * @return the first parent node with a DOM Node, or <code>null</code> if
      *         none can be found
      */
-    private static StateNode getParentNodeAttachedToADomNode(StateNode node) {
+    private static StateNode getFirstParentWithDomNode(StateNode node) {
         StateNode parent = node.getParent();
         while (parent != null && parent.getDomNode() == null) {
             parent = parent.getParent();

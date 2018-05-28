@@ -1,10 +1,6 @@
 package com.vaadin.client;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import com.google.gwt.junit.tools.GWTTestSuite;
-
 import com.vaadin.client.communication.GwtDefaultReconnectDialogTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
@@ -21,6 +17,9 @@ import com.vaadin.client.flow.collection.GwtJsWeakMapTest;
 import com.vaadin.client.flow.dom.GwtDomApiTest;
 import com.vaadin.client.flow.dom.GwtPolymerApiImplTest;
 import com.vaadin.client.flow.util.GwtNativeFunctionTest;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 public class GwtSuite extends GWTTestSuite {
     public static Test suite() {
