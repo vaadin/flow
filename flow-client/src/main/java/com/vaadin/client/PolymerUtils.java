@@ -151,7 +151,7 @@ public final class PolymerUtils {
                     && !((JsonObject) convert).hasKey("nodeId")) {
 
                 ((JsonObject) convert).put("nodeId", node.getId());
-                registerPropertyChangeHandlers(node, feature, convert);
+                registerChangeHandlers(node, feature, convert);
             }
             return convert;
         } else if (object instanceof MapProperty) {
@@ -169,7 +169,7 @@ public final class PolymerUtils {
         }
     }
 
-    private static void registerPropertyChangeHandlers(StateNode node,
+    private static void registerChangeHandlers(StateNode node,
             NodeFeature feature, JsonValue value) {
 
         JsArray<EventRemover> registrations = JsCollections.array();
@@ -177,7 +177,7 @@ public final class PolymerUtils {
             assert feature instanceof NodeMap : "Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. It should be NodeMap, but it is: "
                     + feature;
             NodeMap map = (NodeMap) feature;
-            registerPropertyChangeHandlerForEachProperty(value, registrations,
+            registerPropertyChangeHandlers(value, registrations,
                     map);
             registerPropertyAddHandler(value, registrations, map);
         } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
@@ -204,7 +204,7 @@ public final class PolymerUtils {
         }));
     }
 
-    private static void registerPropertyChangeHandlerForEachProperty(
+    private static void registerPropertyChangeHandlers(
             JsonValue value, JsArray<EventRemover> registrations, NodeMap map) {
         map.forEachProperty((property, propertyName) -> registrations
                 .push(property.addChangeListener(

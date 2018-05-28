@@ -346,6 +346,35 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertFalse(tree.synchronizedProperties.has(node));
     }
 
+    public void testUpdateModelSubProperty_subpropertyIsUpdatableAndIsNotSetFromServer_subpropertyIsSync() {
+        addMockMethods(element);
+        setModelProperty(node, "bar", modelNode);
+
+        node.setNodeData(
+                new UpdatableModelProperties(JsCollections.array("bar.foo")));
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        String newSubPropertyValue = "baz";
+        PolymerUtils.setProperty(element, "bar.foo", "baz");
+        emulatePolymerPropertyChange(element, "bar.foo", "baz");
+        Reactive.flush();
+
+        assertEquals(
+                "Expected to have an object 'bar' with a property named 'foo'"
+                        + " updated from client side",
+                newSubPropertyValue, WidgetUtil.getJsProperty(
+                        WidgetUtil.getJsProperty(element, "bar"), "foo"));
+
+        MapProperty property = modelNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty("foo");
+        assertEquals(newSubPropertyValue, property.getValue());
+
+        assertEquals(newSubPropertyValue,
+                tree.synchronizedProperties.get(modelNode).get("foo"));
+    }
+
     public void testUpdateModelProperty_propertyIsNotUpdatable_propertyIsNotSync() {
         emulatePolymerNotLoaded();
         addMockMethods(element);
@@ -418,6 +447,16 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     /*-{
         var changedProperties = {};
         changedProperties[propertyName] = newPropertyValue;
+        element._propertiesChanged({}, changedProperties, {});
+    }-*/;
+
+    private native void emulatePolymerPropertyChange(Element element,
+            String objectName, String propertyName, String newPropertyValue)
+    /*-{
+        var changedProperties = {};
+        changedProperties[objectName] = {};
+        element._propertiesChanged({}, changedProperties, {});
+        changedProperties[objectName][propertyName] = newPropertyValue;
         element._propertiesChanged({}, changedProperties, {});
     }-*/;
 
