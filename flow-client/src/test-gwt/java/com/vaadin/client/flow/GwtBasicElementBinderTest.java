@@ -1851,6 +1851,18 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
                 return element[attribute];
             };
         }
+        if ( !element.root ){
+            element.root=element;
+        }
+        if ( !element.querySelector ){
+            element.querySelector = function(){
+                return null;
+            }
+        }
+        if ( !element.addEventListener){
+            element.addEventListener = function(){
+            }
+        }
     }-*/;
 
 }

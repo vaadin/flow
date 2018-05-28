@@ -41,26 +41,6 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
     static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");
     static final String INITIAL_STATE = "foo";
 
-    public static class Message {
-        private String text;
-
-        public Message() {
-        }
-
-        public Message(String text) {
-            this.text = text;
-        }
-
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
-        public String getText() {
-            return text;
-        }
-
-        public void setText(String text) {
-            this.text = text;
-        }
-    }
-
     public interface ListBindingModel extends TemplateModel {
         void setSelectedMessage(Message selectedMessage);
 
