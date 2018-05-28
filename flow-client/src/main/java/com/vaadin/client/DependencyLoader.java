@@ -15,8 +15,6 @@
  */
 package com.vaadin.client;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.function.BiConsumer;
 
 import com.google.gwt.core.client.Scheduler;
@@ -24,6 +22,7 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
@@ -156,16 +155,17 @@ public class DependencyLoader {
      *            the map of the dependencies to load, divided into groups by
      *            load mode, not {@code null}.
      */
-    public void loadDependencies(Map<LoadMode, JsonArray> clientDependencies) {
+    public void loadDependencies(
+            JsMap<LoadMode, JsonArray> clientDependencies) {
         assert clientDependencies != null;
 
-        LinkedHashMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = new LinkedHashMap<>();
+        JsMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = JsCollections
+                .map();
 
-        for (Map.Entry<LoadMode, JsonArray> entry : clientDependencies
-                .entrySet()) {
-            lazyDependencies.putAll(extractLazyDependenciesAndLoadOthers(
-                    entry.getKey(), entry.getValue()));
-        }
+        clientDependencies.forEach((dependencies, mode) -> {
+            extractLazyDependenciesAndLoadOthers(mode, dependencies).forEach(
+                    (loader, url) -> lazyDependencies.set(url, loader));
+        });
 
         // postpone load dependencies execution after the browser event
         // loop to make possible to execute all other commands that should be
@@ -176,14 +176,16 @@ public class DependencyLoader {
                     () -> Scheduler.get().scheduleDeferred(() -> {
                         Console.log(
                                 "Finished loading eager dependencies, loading lazy.");
-                        lazyDependencies.forEach(this::loadLazyDependency);
+                        lazyDependencies.forEach((loader,
+                                url) -> loadLazyDependency(url, loader));
                     }));
         }
     }
 
-    private Map<String, BiConsumer<String, ResourceLoadListener>> extractLazyDependenciesAndLoadOthers(
+    private JsMap<String, BiConsumer<String, ResourceLoadListener>> extractLazyDependenciesAndLoadOthers(
             LoadMode loadMode, JsonArray dependencies) {
-        LinkedHashMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = new LinkedHashMap<>();
+        JsMap<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = JsCollections
+                .map();
         for (int i = 0; i < dependencies.length(); i++) {
             JsonObject dependencyJson = dependencies.getObject(i);
             BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
@@ -197,7 +199,7 @@ public class DependencyLoader {
                         resourceLoader);
                 break;
             case LAZY:
-                lazyDependencies.put(getDependencyUrl(dependencyJson),
+                lazyDependencies.set(getDependencyUrl(dependencyJson),
                         resourceLoader);
                 break;
             case INLINE:
