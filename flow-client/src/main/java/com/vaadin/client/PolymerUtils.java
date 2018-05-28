@@ -287,18 +287,18 @@ public final class PolymerUtils {
             StateNode currentNode, JsArray<String> path) {
 
         StateNode parent = currentNode.getParent();
-        if (parent.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-            String listPath = getListNotificationPath(currentNode);
-            if (listPath == null) {
-                return null;
-            }
-            path.push(listPath);
-        } else if (parent.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+        if (parent.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
             String propertyPath = getPropertiesNotificationPath(currentNode);
             if (propertyPath == null) {
                 return null;
             }
             path.push(propertyPath);
+        } else if (parent.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+            String listPath = getListNotificationPath(currentNode);
+            if (listPath == null) {
+                return null;
+            }
+            path.push(listPath);
         }
         if (!parent.equals(rootNode)) {
             return doGetNotificationPath(rootNode, parent, path);
