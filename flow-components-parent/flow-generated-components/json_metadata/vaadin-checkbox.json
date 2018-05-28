@@ -2,7 +2,7 @@
   "name": "Vaadin.CheckboxElement",
   "tag": "vaadin-checkbox",
   "baseUrl": "vaadin-checkbox/src/vaadin-checkbox.html",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "properties": [
     {
       "name": "autofocus",
