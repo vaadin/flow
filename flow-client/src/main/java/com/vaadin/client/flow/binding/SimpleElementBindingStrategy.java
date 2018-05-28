@@ -398,6 +398,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         StateNode node = tree.getNode((int) nodeId);
 
+        if (!node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            return;
+        }
+
         assert checkParent(node,
                 host) : "Host element is not a parent of the node whose property has changed. "
                         + "This is an implementation error. "
