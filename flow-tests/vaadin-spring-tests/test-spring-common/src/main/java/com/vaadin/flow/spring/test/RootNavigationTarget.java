@@ -21,6 +21,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 
 @Route("")
 public class RootNavigationTarget extends Div {
@@ -33,8 +34,8 @@ public class RootNavigationTarget extends Div {
         add(label);
 
         section.addAttachListener(event -> {
-            section.setId("singleton");
-            section.setText("singleton");
+            section.setId("singleton-in-ui");
+            section.setText("UI singleton");
         });
     }
 
@@ -43,6 +44,10 @@ public class RootNavigationTarget extends Div {
         Label label = new Label(String.valueOf(getUI().get().getUIId()));
         label.setId("ui-id");
         add(label);
+
+        RouterLink link = new RouterLink("foo", FooNavigationTarget.class);
+        link.setId("foo");
+        add(link);
     }
 
 }

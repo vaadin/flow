@@ -15,20 +15,15 @@
  */
 package com.vaadin.flow.spring.test;
 
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.UIScope;
 
-/**
- * @author Vaadin Ltd
- *
- */
 @Route("foo")
 @Component
-@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+@UIScope
 public class FooNavigationTarget extends Div {
 
 }

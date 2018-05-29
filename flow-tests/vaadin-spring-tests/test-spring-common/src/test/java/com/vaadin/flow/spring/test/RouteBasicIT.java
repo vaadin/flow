@@ -33,8 +33,8 @@ public class RouteBasicIT extends AbstractSpringTest {
 
         Assert.assertTrue(isElementPresent(By.id("main")));
 
-        getDriver().get(getTestURL() + "foo");
+        findElement(By.id("foo")).click();
 
-        waitUntil(driver -> isElementPresent(By.id("singleton")));
+        waitUntil(driver -> isElementPresent(By.id("singleton-in-ui")));
     }
 }
