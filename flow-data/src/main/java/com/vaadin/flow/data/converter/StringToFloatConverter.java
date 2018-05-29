@@ -14,12 +14,12 @@
  * the License.
  */
 
-
 package com.vaadin.flow.data.converter;
 
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -36,7 +36,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * @since 8.0
  */
 public class StringToFloatConverter
-extends AbstractStringToNumberConverter<Float> {
+        extends AbstractStringToNumberConverter<Float> {
 
     /**
      * Creates a new converter instance with the given error message. Empty
@@ -63,10 +63,35 @@ extends AbstractStringToNumberConverter<Float> {
         super(emptyValue, errorMessage);
     }
 
+    /**
+     * Creates a new converter instance with the given error message provider.
+     * Empty strings are converted to <code>null</code>.
+     *
+     * @param errorMessageProvider
+     *            the error message provider to use if conversion fails
+     */
+    public StringToFloatConverter(ErrorMessageProvider errorMessageProvider) {
+        this(null, errorMessageProvider);
+    }
+
+    /**
+     * Creates a new converter instance with the given empty string value and
+     * error message provider.
+     *
+     * @param emptyValue
+     *            the presentation value to return when converting an empty
+     *            string, may be <code>null</code>
+     * @param errorMessageProvider
+     *            the error message provider to use if conversion fails
+     */
+    public StringToFloatConverter(Float emptyValue,
+            ErrorMessageProvider errorMessageProvider) {
+        super(emptyValue, errorMessageProvider);
+    }
+
     @Override
     public Result<Float> convertToModel(String value, ValueContext context) {
-        Result<Number> n = convertToNumber(value,
-                context.getLocale().orElse(null));
+        Result<Number> n = convertToNumber(value, context);
 
         return n.map(number -> {
             if (number == null) {

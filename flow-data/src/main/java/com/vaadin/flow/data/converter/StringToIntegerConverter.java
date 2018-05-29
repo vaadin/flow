@@ -19,6 +19,7 @@ package com.vaadin.flow.data.converter;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
@@ -34,7 +35,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * @since 8.0
  */
 public class StringToIntegerConverter
-extends AbstractStringToNumberConverter<Integer> {
+        extends AbstractStringToNumberConverter<Integer> {
 
     /**
      * Creates a new converter instance with the given error message. Empty
@@ -62,6 +63,32 @@ extends AbstractStringToNumberConverter<Integer> {
     }
 
     /**
+     * Creates a new converter instance with the given error message provider.
+     * Empty strings are converted to <code>null</code>.
+     *
+     * @param errorMessageProvider
+     *            the error message provider to use if conversion fails
+     */
+    public StringToIntegerConverter(ErrorMessageProvider errorMessageProvider) {
+        this(null, errorMessageProvider);
+    }
+
+    /**
+     * Creates a new converter instance with the given empty string value and
+     * error message provider.
+     *
+     * @param emptyValue
+     *            the presentation value to return when converting an empty
+     *            string, may be <code>null</code>
+     * @param errorMessageProvider
+     *            the error message provider to use if conversion fails
+     */
+    public StringToIntegerConverter(Integer emptyValue,
+            ErrorMessageProvider errorMessageProvider) {
+        super(emptyValue, errorMessageProvider);
+    }
+
+    /**
      * Returns the format used by
      * {@link #convertToPresentation(Object, ValueContext)} and
      * {@link #convertToModel(String, ValueContext)}.
@@ -80,8 +107,7 @@ extends AbstractStringToNumberConverter<Integer> {
 
     @Override
     public Result<Integer> convertToModel(String value, ValueContext context) {
-        Result<Number> n = convertToNumber(value,
-                context.getLocale().orElse(null));
+        Result<Number> n = convertToNumber(value, context);
         return n.flatMap(number -> {
             if (number == null) {
                 return Result.ok(null);
@@ -94,7 +120,7 @@ extends AbstractStringToNumberConverter<Integer> {
                     // long and thus does not need to consider wrap-around.
                     return Result.ok(intValue);
                 } else {
-                    return Result.error(getErrorMessage());
+                    return Result.error(getErrorMessage(context));
                 }
             }
         });
