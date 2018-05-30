@@ -29,6 +29,9 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.annotations.BrowserConfiguration;
@@ -65,7 +68,20 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     public static final boolean USE_HUB = Boolean.TRUE.toString()
             .equals(System.getProperty(USE_HUB_PROPERTY, "false"));
 
+    public static final String USE_BROWSERSTACK_PROPERTY = "test.use.browserstack";
+
+    public static final boolean USE_BROWSERSTACK = Boolean.TRUE.toString()
+            .equals(System.getProperty(USE_BROWSERSTACK_PROPERTY, "false"));
+
+    public static final String BROWSERSTACK_IDENTIFIER_PROPERTY = "test.browserstack.identifier";
+
+    public static final String BROWSERSTACK_IDENTIFIER = System
+            .getProperty(BROWSERSTACK_IDENTIFIER_PROPERTY, "");
+
     private boolean serverAvailabilityChecked;
+
+    @Rule
+    private TestName testName = new TestName();
 
     /**
      * Checks that server is available before running the actual test.
@@ -83,6 +99,9 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             }
             serverAvailabilityChecked = true;
         }
+
+        getDesiredCapabilities().setCapability("name", String.format("%s.%s",
+                getClass().getCanonicalName(), testName.getMethodName()));
     }
 
     protected void open() {
@@ -217,7 +236,30 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             Browser... browsers) {
         List<DesiredCapabilities> capabilities = new ArrayList<>();
         for (Browser browser : browsers) {
-            capabilities.add(browser.getDesiredCapabilities());
+            DesiredCapabilities caps = browser.getDesiredCapabilities();
+
+            if (USE_BROWSERSTACK) {
+                if (browser.equals(Browser.IE11)) {
+                    caps.setVersion("11");
+                }
+                caps.setCapability("os", "Windows");
+                caps.setCapability("os_version", "7");
+                caps.setPlatform(Platform.WINDOWS);
+
+                if (!BROWSERSTACK_IDENTIFIER.isEmpty()) {
+                    caps.setCapability("browserstack.localIdentifier",
+                            BROWSERSTACK_IDENTIFIER);
+                }
+                caps.setCapability("build", "BrowserStack Tests"
+                        + (BROWSERSTACK_IDENTIFIER.isEmpty() ? ""
+                                : " [" + BROWSERSTACK_IDENTIFIER + "]"));
+
+                caps.setCapability("acceptSslCerts", "true");
+                caps.setCapability("resolution", "1680x1050");
+            }
+
+            caps.setCapability("project", "Flow");
+            capabilities.add(caps);
         }
         return capabilities;
     }
