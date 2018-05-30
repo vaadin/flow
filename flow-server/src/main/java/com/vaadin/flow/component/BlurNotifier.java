@@ -51,29 +51,28 @@ public interface BlurNotifier<T extends Component> extends Serializable {
                     "addBlurListener"));
         }
     }
-}
-
-/**
- * Class that represents the DOM event "blur".
- *
- * @param <C>
- *            The source component type.
- */
-@DomEvent("blur")
-class BlurEvent<C extends Component> extends ComponentEvent<C> {
 
     /**
-     * BlurEvent base constructor.
+     * Class that represents the DOM event "blur".
      *
-     * @param source
-     *            the source component
-     * @param fromClient
-     *            <code>true</code> if the event originated from the client
-     *            side, <code>false</code> otherwise
-     * @see ComponentEvent
+     * @param <C>
+     *            The source component type.
      */
-    public BlurEvent(C source, boolean fromClient) {
-        super(source, fromClient);
-    }
+    @DomEvent("blur")
+    class BlurEvent<C extends Component> extends ComponentEvent<C> {
 
+        /**
+         * BlurEvent base constructor.
+         *
+         * @param source
+         *            the source component
+         * @param fromClient
+         *            <code>true</code> if the event originated from the client
+         *            side, <code>false</code> otherwise
+         * @see ComponentEvent
+         */
+        public BlurEvent(C source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
 }
