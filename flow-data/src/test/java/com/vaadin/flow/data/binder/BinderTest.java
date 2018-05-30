@@ -840,6 +840,25 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void remove_binding_fromFieldValueChangeListener() {
+        // Add listener before bind to make sure it will be executed first.
+        nameField.addValueChangeListener(e -> {
+            if (e.getValue() == "REMOVE") {
+                binder.removeBinding(nameField);
+            }
+        });
+
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        binder.setBean(item);
+
+        nameField.setValue("REMOVE");
+
+        // Removed binding should not update bean.
+        assertNotEquals("REMOVE", item.getFirstName());
+    }
+
+    @Test
     public void removed_binding_not_updates_value() {
         Binding<Person, Integer> binding = binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter("Can't convert"))
