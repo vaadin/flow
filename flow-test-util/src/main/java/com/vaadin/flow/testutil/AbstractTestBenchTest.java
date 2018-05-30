@@ -81,7 +81,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     private boolean serverAvailabilityChecked;
 
     @Rule
-    private TestName testName = new TestName();
+    public TestName testName = new TestName();
 
     /**
      * Checks that server is available before running the actual test.
