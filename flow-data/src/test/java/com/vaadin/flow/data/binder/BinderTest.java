@@ -16,20 +16,10 @@
 
 package com.vaadin.flow.data.binder;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -47,6 +37,18 @@ import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyString;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -1164,5 +1166,29 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 Assert.fail("Setter should not be called");
             }
         });
+    }
+
+    @Test
+    public void valueChangeListenerOrder() {
+        AtomicBoolean beanSet = new AtomicBoolean();
+        nameField.addValueChangeListener(e -> {
+            if (!beanSet.get()) {
+                assertEquals("Value in bean updated earlier than expected",
+                        e.getOldValue(), item.getFirstName());
+            }
+        });
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+        nameField.addValueChangeListener(e -> {
+            if (!beanSet.get()) {
+                assertEquals("Value in bean not updated when expected",
+                        e.getValue(), item.getFirstName());
+            }
+        });
+
+        beanSet.set(true);
+        binder.setBean(item);
+        beanSet.set(false);
+
+        nameField.setValue("Foo");
     }
 }
