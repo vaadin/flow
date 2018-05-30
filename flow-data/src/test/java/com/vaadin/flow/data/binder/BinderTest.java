@@ -16,23 +16,13 @@
 
 package com.vaadin.flow.data.binder;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,12 +31,25 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyString;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -522,6 +525,95 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals("foobar", componentErrors.get(textField));
         // validation is done for all changed bindings once.
         Assert.assertEquals(1, invokes.get());
+
+        textField.setValue("value");
+        assertFalse(textField.isInvalid());
+        assertTrue(textField.isRequiredIndicatorVisible());
+    }
+
+    @Test
+    public void setRequired_withCustomValidator_fieldGetsRequiredIndicatorAndValidator() {
+        TestTextField textField = new TestTextField();
+        assertFalse(textField.isRequiredIndicatorVisible());
+
+        BindingBuilder<Person, String> binding = binder.forField(textField);
+        assertFalse(textField.isRequiredIndicatorVisible());
+        AtomicInteger invokes = new AtomicInteger();
+
+        Validator<String> customRequiredValidator = (value, context) -> {
+            invokes.incrementAndGet();
+            if (StringUtils.isBlank(value)) {
+                return ValidationResult.error("Input is required.");
+            }
+            return ValidationResult.ok();
+        };
+        binding.asRequired(customRequiredValidator);
+        assertTrue(textField.isRequiredIndicatorVisible());
+        binding.bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(item);
+
+        assertThat(textField.getErrorMessage(), isEmptyString());
+        // assertEquals(0, invokes.get());
+
+        textField.setValue("        ");
+        String errorMessage = textField.getErrorMessage();
+        assertNotNull(errorMessage);
+        assertEquals("Input is required.",
+                componentErrors.get(textField));
+        // validation is done for all changed bindings once.
+        // assertEquals(1, invokes.get());
+
+        textField.setValue("value");
+        assertFalse(textField.isInvalid());
+        assertTrue(textField.isRequiredIndicatorVisible());
+    }
+
+    @Test
+    public void setRequired_withCustomValidator_modelConverterBeforeValidator() {
+        TestTextField textField = new TestTextField();
+        assertFalse(textField.isRequiredIndicatorVisible());
+
+        Converter<String, String> stringBasicPreProcessingConverter = new Converter<String, String>() {
+            @Override
+            public Result<String> convertToModel(String value,
+                    ValueContext context) {
+                if (StringUtils.isBlank(value)) {
+                    return Result.ok(null);
+                }
+                return Result.ok(StringUtils.trim(value));
+            }
+
+            @Override
+            public String convertToPresentation(String value,
+                    ValueContext context) {
+                if (value == null) {
+                    return "";
+                }
+                return value;
+            }
+        };
+
+        AtomicInteger invokes = new AtomicInteger();
+        Validator<String> customRequiredValidator = (value, context) -> {
+            invokes.incrementAndGet();
+            if (value == null) {
+                return ValidationResult.error("Input required.");
+            }
+            return ValidationResult.ok();
+        };
+
+        binder.forField(textField)
+                .withConverter(stringBasicPreProcessingConverter)
+                .asRequired(customRequiredValidator)
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(item);
+        assertThat(textField.getErrorMessage(), isEmptyString());
+        assertEquals(0, invokes.get());
+        textField.setValue(" ");
+        assertNotNull(textField.getErrorMessage());
+        assertEquals("Input required.", componentErrors.get(textField));
+        // validation is done for all changed bindings once.
+        assertEquals(1, invokes.get());
 
         textField.setValue("value");
         assertFalse(textField.isInvalid());
