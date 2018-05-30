@@ -954,8 +954,8 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean readOnly;
 
-        // Not final since we temporarily remove listener while changing values
-        private Registration onValueChange;
+        private final Registration onValueChange;
+        private boolean valueInit = false;
 
         /**
          * Contains all converters and validators chained together in the
@@ -1023,7 +1023,6 @@ public class Binder<BEAN> implements Serializable {
         public void unbind() {
             if (onValueChange != null) {
                 onValueChange.remove();
-                onValueChange = null;
             }
             binder.removeBindingInternal(this);
             binder = null;
@@ -1092,7 +1091,7 @@ public class Binder<BEAN> implements Serializable {
         private void initFieldValue(BEAN bean, boolean writeBackChangedValues) {
             assert bean != null;
             assert onValueChange != null;
-            onValueChange.remove();
+            valueInit = true;
             try {
                 TARGET originalValue = getter.apply(bean);
                 field.setValue(convertToFieldType(originalValue));
@@ -1105,9 +1104,7 @@ public class Binder<BEAN> implements Serializable {
                     });
                 }
             } finally {
-                // Lambda instead of methref because of parser bug in Eclipse
-                onValueChange = getField().addValueChangeListener(
-                        event -> this.handleFieldValueChange(event));
+                valueInit = false;
             }
         }
 
@@ -1124,6 +1121,11 @@ public class Binder<BEAN> implements Serializable {
          */
         private void handleFieldValueChange(
                 ValueChangeEvent<FIELDVALUE> event) {
+            // Don't handle change events when setting initial value
+            if (valueInit) {
+                return;
+            }
+
             if (binder != null) {
                 // Inform binder of changes; if setBean: writeIfValid
                 getBinder().handleFieldValueChange(this);
