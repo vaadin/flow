@@ -74,6 +74,8 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
  * initial GET request.
