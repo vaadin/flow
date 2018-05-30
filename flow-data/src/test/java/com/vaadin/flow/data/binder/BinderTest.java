@@ -554,7 +554,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(item);
 
         assertThat(textField.getErrorMessage(), isEmptyString());
-        assertEquals(0, invokes.get());
+        assertEquals(1, invokes.get());
 
         textField.setValue("        ");
         String errorMessage = textField.getErrorMessage();
@@ -562,7 +562,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertEquals("Input is required.",
                 componentErrors.get(textField));
         // validation is done for all changed bindings once.
-        assertEquals(1, invokes.get());
+        assertEquals(2, invokes.get());
 
         textField.setValue("value");
         assertFalse(textField.isInvalid());
@@ -609,12 +609,12 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 .bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
         assertThat(textField.getErrorMessage(), isEmptyString());
-        assertEquals(0, invokes.get());
+        assertEquals(1, invokes.get());
         textField.setValue(" ");
         assertNotNull(textField.getErrorMessage());
         assertEquals("Input required.", componentErrors.get(textField));
         // validation is done for all changed bindings once.
-        assertEquals(1, invokes.get());
+        assertEquals(2, invokes.get());
 
         textField.setValue("value");
         assertFalse(textField.isInvalid());
