@@ -16,7 +16,19 @@
 
 package com.vaadin.flow.data.binder;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,18 +49,6 @@ import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -430,8 +430,9 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         String customNullPointerRepresentation = "foo";
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forField(nameField)
-                .withConverter(value -> value, value -> value == null
-                        ? customNullPointerRepresentation : value)
+                .withConverter(value -> value,
+                        value -> value == null ? customNullPointerRepresentation
+                                : value)
                 .bind("firstName");
 
         Person person = new Person();
@@ -1166,6 +1167,31 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 Assert.fail("Setter should not be called");
             }
         });
+    }
+
+    @Test
+    public void conversionWithLocaleBasedErrorMessage() {
+        String fiError = "VIRHE";
+        String otherError = "ERROR";
+
+        StringToIntegerConverter converter = new StringToIntegerConverter(
+                context -> context.getLocale().map(Locale::getLanguage)
+                        .orElse("en").equals("fi") ? fiError : otherError);
+
+        binder.forField(ageField).withConverter(converter).bind(Person::getAge,
+                Person::setAge);
+
+        binder.setBean(item);
+
+        ageField.setValue("not a number");
+
+        assertEquals(otherError, ageField.getErrorMessage());
+
+        // No UI present for changing Locale, so need to change the default
+        Locale.setDefault(new Locale("fi"));
+        // Re-validate to get the error message with correct locale
+        binder.validate();
+        assertEquals(fiError, ageField.getErrorMessage());
     }
 
     @Test
