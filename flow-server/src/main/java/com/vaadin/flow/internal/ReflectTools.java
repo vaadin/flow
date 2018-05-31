@@ -29,13 +29,14 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -59,6 +60,8 @@ public class ReflectTools implements Serializable {
     static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a public no-arg constructor.";
     static final String CREATE_INSTANCE_FAILED_LOCAL_CLASS = "Cannot instantiate local class '%s'. Move class declaration outside the method.";
     static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of '%s'. The constructor threw an exception.";
+
+    private static final Predicate<Method> IS_SYNTHETIC = Method::isSynthetic;
 
     /**
      * Locates the method in the given class. Returns null if the method is not
@@ -354,7 +357,8 @@ public class ReflectTools implements Serializable {
      * @return a stream of getter methods
      */
     public static Stream<Method> getGetterMethods(Class<?> type) {
-        return Stream.of(type.getMethods()).filter(ReflectTools::isGetter)
+        return Stream.of(type.getMethods()).filter(IS_SYNTHETIC.negate())
+                .filter(ReflectTools::isGetter)
                 .filter(ReflectTools::isNotObjectMethod);
     }
 
@@ -366,7 +370,8 @@ public class ReflectTools implements Serializable {
      * @return a stream of setter methods
      */
     public static Stream<Method> getSetterMethods(Class<?> type) {
-        return Stream.of(type.getMethods()).filter(ReflectTools::isSetter);
+        return Stream.of(type.getMethods()).filter(IS_SYNTHETIC.negate())
+                .filter(ReflectTools::isSetter);
     }
 
     /**

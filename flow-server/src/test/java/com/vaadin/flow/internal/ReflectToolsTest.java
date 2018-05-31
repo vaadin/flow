@@ -15,14 +15,20 @@
  */
 package com.vaadin.flow.internal;
 
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import static org.junit.Assert.assertSame;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.junit.Assert.assertSame;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 
 public class ReflectToolsTest {
 
@@ -70,6 +76,24 @@ public class ReflectToolsTest {
 
         public VarArgsCtor(String... args) {
 
+        }
+    }
+
+    public interface Entity<ID> {
+        ID getId();
+
+        void setId(ID id);
+    }
+
+    public class Category implements Serializable, Entity<Long> {
+
+        @Override
+        public Long getId() {
+            return null;
+        }
+
+        @Override
+        public void setId(Long id) {
         }
     }
 
@@ -226,6 +250,15 @@ public class ReflectToolsTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("a cannot be a primitive type");
         ReflectTools.findCommonBaseType(int.class, Object.class);
+    }
+
+    @Test
+    public void getSetters_classIsGeneric_syntheticMethodsAreFilteredOut() {
+        List<Method> setters = ReflectTools.getSetterMethods(Category.class)
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, setters.size());
+        Method setter = setters.get(0);
+        Assert.assertEquals("setId", setter.getName());
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {
