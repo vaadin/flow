@@ -50,8 +50,8 @@ public class StringToFloatConverter
     }
 
     /**
-     * Creates a new converter instance with the given empty string value and
-     * error message.
+     * Creates a new converter instance with the given presentation value for
+     * empty string and error message.
      *
      * @param emptyValue
      *            the presentation value to return when converting an empty
@@ -75,8 +75,8 @@ public class StringToFloatConverter
     }
 
     /**
-     * Creates a new converter instance with the given empty string value and
-     * error message provider.
+     * Creates a new converter instance with the given presentation value for
+     * empty string and error message provider.
      *
      * @param emptyValue
      *            the presentation value to return when converting an empty
