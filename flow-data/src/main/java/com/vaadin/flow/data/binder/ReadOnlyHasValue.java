@@ -80,38 +80,10 @@ public class ReadOnlyHasValue<V>
 
         if (listenerList != null && !Objects.equals(oldValue, value)) {
             for (ValueChangeListener<? super ValueChangeEvent<V>> valueChangeListener : listenerList) {
-                fireValueChangeEvent(valueChangeListener, value, oldValue);
+                valueChangeListener.valueChanged(
+                        new ReadOnlyValueChangeEvent<>(this, value, oldValue));
             }
         }
-    }
-
-    private void fireValueChangeEvent(
-            ValueChangeListener<? super ValueChangeEvent<V>> valueChangeListener,
-            V value, V oldValue) {
-
-        HasValue<ValueChangeEvent<V>, V> that = this;
-
-        valueChangeListener.valueChanged(new ValueChangeEvent<V>() {
-            @Override
-            public HasValue<?, V> getHasValue() {
-                return that;
-            }
-
-            @Override
-            public boolean isFromClient() {
-                return false;
-            }
-
-            @Override
-            public V getOldValue() {
-                return oldValue;
-            }
-
-            @Override
-            public V getValue() {
-                return value;
-            }
-        });
     }
 
     @Override
@@ -158,5 +130,40 @@ public class ReadOnlyHasValue<V>
     @Override
     public V getEmptyValue() {
         return emptyValue;
+    }
+
+    private static class ReadOnlyValueChangeEvent<V>
+            implements ValueChangeEvent<V> {
+
+        private HasValue<?, V> hasValue;
+        private V value;
+        private V oldValue;
+
+        public ReadOnlyValueChangeEvent(HasValue<?, V> hasValue, V value,
+                V oldValue) {
+            this.hasValue = hasValue;
+            this.value = value;
+            this.oldValue = oldValue;
+        }
+
+        @Override
+        public HasValue<?, V> getHasValue() {
+            return hasValue;
+        }
+
+        @Override
+        public boolean isFromClient() {
+            return false;
+        }
+
+        @Override
+        public V getOldValue() {
+            return oldValue;
+        }
+
+        @Override
+        public V getValue() {
+            return value;
+        }
     }
 }
