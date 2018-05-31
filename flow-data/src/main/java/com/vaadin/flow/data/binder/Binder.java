@@ -954,8 +954,8 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean readOnly;
 
-        // Not final since we temporarily remove listener while changing values
-        private Registration onValueChange;
+        private final Registration onValueChange;
+        private boolean valueInit = false;
 
         /**
          * Contains all converters and validators chained together in the
@@ -1023,7 +1023,6 @@ public class Binder<BEAN> implements Serializable {
         public void unbind() {
             if (onValueChange != null) {
                 onValueChange.remove();
-                onValueChange = null;
             }
             binder.removeBindingInternal(this);
             binder = null;
@@ -1092,7 +1091,7 @@ public class Binder<BEAN> implements Serializable {
         private void initFieldValue(BEAN bean, boolean writeBackChangedValues) {
             assert bean != null;
             assert onValueChange != null;
-            onValueChange.remove();
+            valueInit = true;
             try {
                 TARGET originalValue = getter.apply(bean);
                 field.setValue(convertToFieldType(originalValue));
@@ -1105,9 +1104,7 @@ public class Binder<BEAN> implements Serializable {
                     });
                 }
             } finally {
-                // Lambda instead of methref because of parser bug in Eclipse
-                onValueChange = getField().addValueChangeListener(
-                        event -> this.handleFieldValueChange(event));
+                valueInit = false;
             }
         }
 
@@ -1124,9 +1121,16 @@ public class Binder<BEAN> implements Serializable {
          */
         private void handleFieldValueChange(
                 ValueChangeEvent<FIELDVALUE> event) {
-            // Inform binder of changes; if setBean: writeIfValid
-            getBinder().handleFieldValueChange(this);
-            getBinder().fireEvent(event);
+            // Don't handle change events when setting initial value
+            if (valueInit) {
+                return;
+            }
+
+            if (binder != null) {
+                // Inform binder of changes; if setBean: writeIfValid
+                getBinder().handleFieldValueChange(this);
+                getBinder().fireEvent(event);
+            }
         }
 
         /**
@@ -2160,7 +2164,9 @@ public class Binder<BEAN> implements Serializable {
      * Adds field value change listener to all the fields in the binder.
      * <p>
      * Added listener is notified every time whenever any bound field value is
-     * changed. The same functionality can be achieved by adding a
+     * changed, i.e. the UI component value was changed, passed all the
+     * conversions and validations then propagated to the bound bean field. The same
+     * functionality can be achieved by adding a
      * {@link ValueChangeListener} to all fields in the {@link Binder}.
      * <p>
      * The listener is added to all fields regardless of whether the method is

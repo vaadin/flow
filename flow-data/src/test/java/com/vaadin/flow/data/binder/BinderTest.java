@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -842,6 +843,25 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void remove_binding_fromFieldValueChangeListener() {
+        // Add listener before bind to make sure it will be executed first.
+        nameField.addValueChangeListener(e -> {
+            if (e.getValue() == "REMOVE") {
+                binder.removeBinding(nameField);
+            }
+        });
+
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        binder.setBean(item);
+
+        nameField.setValue("REMOVE");
+
+        // Removed binding should not update bean.
+        assertNotEquals("REMOVE", item.getFirstName());
+    }
+
+    @Test
     public void removed_binding_not_updates_value() {
         Binding<Person, Integer> binding = binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter("Can't convert"))
@@ -1172,5 +1192,29 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // Re-validate to get the error message with correct locale
         binder.validate();
         assertEquals(fiError, ageField.getErrorMessage());
+    }
+
+    @Test
+    public void valueChangeListenerOrder() {
+        AtomicBoolean beanSet = new AtomicBoolean();
+        nameField.addValueChangeListener(e -> {
+            if (!beanSet.get()) {
+                assertEquals("Value in bean updated earlier than expected",
+                        e.getOldValue(), item.getFirstName());
+            }
+        });
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+        nameField.addValueChangeListener(e -> {
+            if (!beanSet.get()) {
+                assertEquals("Value in bean not updated when expected",
+                        e.getValue(), item.getFirstName());
+            }
+        });
+
+        beanSet.set(true);
+        binder.setBean(item);
+        beanSet.set(false);
+
+        nameField.setValue("Foo");
     }
 }

@@ -18,8 +18,6 @@ package com.vaadin.flow.internal.nodefeature;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
-
 public class LoadingIndicatorConfigurationMapTest
         extends AbstractMapFeatureTest<LoadingIndicatorConfigurationMap> {
     private final LoadingIndicatorConfigurationMap map = createFeature();
@@ -35,6 +33,9 @@ public class LoadingIndicatorConfigurationMapTest
         Assert.assertEquals(
                 LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT,
                 map.getThirdDelay());
+        Assert.assertEquals(
+                LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT,
+                map.isApplyDefaultTheme());
     }
 
     @Test
@@ -55,4 +56,9 @@ public class LoadingIndicatorConfigurationMapTest
                 map::setThirdDelay, map::getThirdDelay);
     }
 
+    @Test
+    public void setGetDefaultThemeApplied() {
+        testBoolean(map, LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY,
+                map::setApplyDefaultTheme, map::isApplyDefaultTheme);
+    }
 }

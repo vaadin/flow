@@ -23,6 +23,9 @@ import com.vaadin.client.bootstrap.ErrorMessage;
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
+import elemental.events.Event;
+import elemental.events.KeyboardEvent;
+import elemental.events.KeyboardEvent.KeyCode;
 
 /**
  * Class handling system errors in the application.
@@ -117,6 +120,13 @@ public class SystemErrorHandler {
 
         systemErrorContainer.addEventListener("click",
                 e -> WidgetUtil.redirect(url), false);
+
+        document.addEventListener(Event.KEYDOWN, e -> {
+            int keyCode = ((KeyboardEvent) e).getKeyCode();
+            if (keyCode == KeyCode.ESC) {
+                WidgetUtil.redirect(url);
+            }
+        }, false);
 
         document.getBody().appendChild(systemErrorContainer);
     }

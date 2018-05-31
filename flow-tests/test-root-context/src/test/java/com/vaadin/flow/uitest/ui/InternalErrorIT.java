@@ -15,17 +15,23 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
+ * Tests for handling internal errors and session expiration
+ * 
  * @author Vaadin Ltd.
  */
-public class ExpireSessionIT extends ChromeBrowserTest {
+public class InternalErrorIT extends ChromeBrowserTest {
 
     private static final String UPDATE = "update";
     private static final String CLOSE_SESSION = "close-session";
@@ -77,16 +83,87 @@ public class ExpireSessionIT extends ChromeBrowserTest {
                 isSessionExpiredNotificationPresent());
     }
 
+    @Test
+    public void internalError_showNotification_clickNotification_refresh() {
+        open();
+
+        clickButton(UPDATE);
+
+        clickButton("cause-exception");
+
+        Assert.assertTrue("The page should not be immediately refreshed after "
+                + "a server-side exception", isMessageUpdated());
+        Assert.assertTrue(
+                "'Internal error' notification should be present after "
+                        + "a server-side exception",
+                isInternalErrorNotificationPresent());
+
+        getErrorNotification().click();
+        try {
+            waitUntil(driver -> !isMessageUpdated());
+        } catch (TimeoutException e) {
+            Assert.fail("After internal error, clicking the notification "
+                    + "should refresh the page, resetting the state of the UI.");
+        }
+        Assert.assertFalse(
+                "'Internal error' notification should be gone after refreshing",
+                isInternalErrorNotificationPresent());
+    }
+
+    @Test
+    public void internalError_showNotification_clickEsc_refresh() {
+        open();
+
+        clickButton(UPDATE);
+
+        clickButton("cause-exception");
+
+        Assert.assertTrue("The page should not be immediately refreshed after "
+                + "a server-side exception", isMessageUpdated());
+        Assert.assertTrue(
+                "'Internal error' notification should be present after "
+                        + "a server-side exception",
+                isInternalErrorNotificationPresent());
+
+        new Actions(getDriver()).sendKeys(Keys.ESCAPE).build().perform();
+        try {
+            waitUntil(driver -> !isMessageUpdated());
+        } catch (TimeoutException e) {
+            Assert.fail(
+                    "After internal error, pressing esc-key should refresh the page, "
+                            + "resetting the state of the UI.");
+        }
+        Assert.assertFalse(
+                "'Internal error' notification should be gone after refreshing",
+                isInternalErrorNotificationPresent());
+    }
+
+    @After
+    public void resetSystemMessages() {
+        clickButton("reset-system-messages");
+    }
+
     private boolean isMessageUpdated() {
         return "Updated".equals(findElement(By.id("message")).getText());
     }
 
     private boolean isSessionExpiredNotificationPresent() {
+        return isErrorNotificationPresent("Session Expired");
+    }
+
+    private boolean isInternalErrorNotificationPresent() {
+        return isErrorNotificationPresent("Internal error");
+    }
+
+    private boolean isErrorNotificationPresent(String text) {
         if (!isElementPresent(By.className("v-system-error"))) {
             return false;
         }
-        return findElement(By.className("v-system-error"))
-                .getAttribute("innerHTML").contains("Session Expired");
+        return getErrorNotification().getAttribute("innerHTML").contains(text);
+    }
+
+    private WebElement getErrorNotification() {
+        return findElement(By.className("v-system-error"));
     }
 
     private void clickButton(String id) {
