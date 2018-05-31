@@ -78,34 +78,40 @@ public class ReadOnlyHasValue<V>
         this.value = value;
         valueProcessor.accept(value);
 
-        HasValue<ValueChangeEvent<V>, V> that = this;
         if (listenerList != null && !Objects.equals(oldValue, value)) {
             for (ValueChangeListener<? super ValueChangeEvent<V>> valueChangeListener : listenerList) {
-                valueChangeListener.valueChanged(
-
-                        new ValueChangeEvent<V>() {
-                            @Override
-                            public HasValue<?, V> getHasValue() {
-                                return that;
-                            }
-
-                            @Override
-                            public boolean isFromClient() {
-                                return false;
-                            }
-
-                            @Override
-                            public V getOldValue() {
-                                return oldValue;
-                            }
-
-                            @Override
-                            public V getValue() {
-                                return value;
-                            }
-                        });
+                fireValueChangeEvent(valueChangeListener, value, oldValue);
             }
         }
+    }
+
+    private void fireValueChangeEvent(
+            ValueChangeListener<? super ValueChangeEvent<V>> valueChangeListener,
+            V value, V oldValue) {
+
+        HasValue<ValueChangeEvent<V>, V> that = this;
+
+        valueChangeListener.valueChanged(new ValueChangeEvent<V>() {
+            @Override
+            public HasValue<?, V> getHasValue() {
+                return that;
+            }
+
+            @Override
+            public boolean isFromClient() {
+                return false;
+            }
+
+            @Override
+            public V getOldValue() {
+                return oldValue;
+            }
+
+            @Override
+            public V getValue() {
+                return value;
+            }
+        });
     }
 
     @Override
@@ -132,14 +138,16 @@ public class ReadOnlyHasValue<V>
 
     @Override
     public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        if (requiredIndicatorVisible)
+        if (requiredIndicatorVisible) {
             throw new IllegalArgumentException("Not Writable");
+        }
     }
 
     @Override
     public void setReadOnly(boolean readOnly) {
-        if (!readOnly)
+        if (!readOnly) {
             throw new IllegalArgumentException("Not Writable");
+        }
     }
 
     @Override
