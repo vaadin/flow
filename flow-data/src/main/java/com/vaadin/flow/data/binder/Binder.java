@@ -692,6 +692,22 @@ public class Binder<BEAN> implements Serializable {
         BindingBuilder<BEAN, TARGET> asRequired(
                 ErrorMessageProvider errorMessageProvider);
 
+        /**
+         * Sets the field to be required and delegates the required check to a
+         * custom validator. This means two things:
+         * <ol>
+         * <li>the required indicator will be displayed for this field</li>
+         * <li>the field value is validated by customRequiredValidator</li>
+         * </ol>
+         *
+         * @see HasValue#setRequiredIndicatorVisible(boolean)
+         * @param customRequiredValidator
+         *            validator responsible for the required check
+         * @return this binding, for chaining
+         * @since
+         */
+        public BindingBuilder<BEAN, TARGET> asRequired(
+                Validator<TARGET> customRequiredValidator);
     }
 
     /**
@@ -853,11 +869,17 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public BindingBuilder<BEAN, TARGET> asRequired(
                 ErrorMessageProvider errorMessageProvider) {
+            return asRequired(Validator.from(
+                    value -> !Objects.equals(value, field.getEmptyValue()),
+                    errorMessageProvider));
+        }
+
+        @Override
+        public BindingBuilder<BEAN, TARGET> asRequired(
+                Validator<TARGET> customRequiredValidator) {
             checkUnbound();
             field.setRequiredIndicatorVisible(true);
-            return withValidator(
-                    value -> !Objects.equals(value, field.getEmptyValue()),
-                    errorMessageProvider);
+            return withValidator(customRequiredValidator);
         }
 
         /**
