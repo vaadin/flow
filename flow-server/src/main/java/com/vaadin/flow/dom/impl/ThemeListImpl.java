@@ -73,7 +73,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
         themes = Optional.ofNullable(element.getAttribute(THEME_ATTRIBUTE_NAME))
                 .map(value -> value.split(THEME_NAMES_DELIMITER))
                 .map(Stream::of)
-                .map(stream -> stream.filter(s -> !s.isEmpty())
+                .map(stream -> stream.filter(themeName -> !themeName.isEmpty())
                         .collect(Collectors.toSet()))
                 .orElseGet(HashSet::new);
     }
