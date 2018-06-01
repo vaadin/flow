@@ -18,7 +18,6 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow</artifactId>
-            <version>${vaadin.version}</version>
         </dependency>
 
         <dependency>

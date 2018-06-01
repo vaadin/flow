@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
-            <version>${vaadin.version}</version>
+            <version>${vaadin.flow.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
