@@ -259,6 +259,7 @@ public class ReflectToolsTest {
         Assert.assertEquals(1, setters.size());
         Method setter = setters.get(0);
         Assert.assertEquals("setId", setter.getName());
+        Assert.assertEquals(Long.class, setter.getParameterTypes()[0]);
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {
