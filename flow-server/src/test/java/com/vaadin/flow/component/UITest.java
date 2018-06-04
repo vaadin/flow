@@ -2,6 +2,7 @@ package com.vaadin.flow.component;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -326,7 +327,7 @@ public class UITest {
     }
 
     @Test
-    public void unsetSession_dettachEventIsFired()
+    public void unsetSession_detachEventIsFired()
             throws InvalidRouteConfigurationException {
         UI ui = createTestUI();
         List<DetachEvent> events = new ArrayList<>();
@@ -340,6 +341,26 @@ public class UITest {
 
         assertEquals(1, events.size());
         assertEquals(ui, events.get(0).getSource());
+    }
+
+    @Test
+    public void unsetSession_detachEventIsFiredForUIChildren()
+            throws InvalidRouteConfigurationException {
+        UI ui = createTestUI();
+        List<DetachEvent> events = new ArrayList<>();
+        initUI(ui, "", null);
+
+        Component childComponent = new AttachableComponent();
+        ui.add(childComponent);
+        childComponent.addDetachListener(events::add);
+
+        ui.getSession().access(() -> ui.getInternals().setSession(null));
+
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
+
+        assertEquals(1, events.size());
+        assertEquals(childComponent, events.get(0).getSource());
     }
 
     @Test

@@ -15,9 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.Date;
-import java.util.EnumMap;
-
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
@@ -35,6 +32,7 @@ import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.TreeChangeProcessor;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -259,7 +257,7 @@ public class MessageHandler {
             return;
         }
 
-        final Date start = new Date();
+        double start = Duration.currentTimeMillis();
         /*
          * Lock response handling to avoid a situation where something pushed
          * from the server gets processed while waiting for e.g. lazily loaded
@@ -336,11 +334,10 @@ public class MessageHandler {
 
     private void handleDependencies(JsonObject inputJson) {
         Console.log("Handling dependencies");
-        EnumMap<LoadMode, JsonArray> dependencies = new EnumMap<>(
-                LoadMode.class);
+        JsMap<LoadMode, JsonArray> dependencies = JsCollections.map();
         for (LoadMode loadMode : LoadMode.values()) {
             if (inputJson.hasKey(loadMode.name())) {
-                dependencies.put(loadMode, inputJson.getArray(loadMode.name()));
+                dependencies.set(loadMode, inputJson.getArray(loadMode.name()));
             }
         }
 
@@ -360,7 +357,7 @@ public class MessageHandler {
      * @param start
      *            the time stamp when processing started
      */
-    private void processMessage(ValueMap valueMap, Object lock, Date start) {
+    private void processMessage(ValueMap valueMap, Object lock, double start) {
         assert getServerId(valueMap) == -1
                 || getServerId(valueMap) == lastSeenServerSyncId;
 
@@ -418,8 +415,7 @@ public class MessageHandler {
             nextResponseSessionExpiredHandler = null;
             Reactive.flush();
 
-            lastProcessingTime = (int) ((new Date().getTime())
-                    - start.getTime());
+            lastProcessingTime = (int) (Duration.currentTimeMillis() - start);
             totalProcessingTime += lastProcessingTime;
             if (!initialMessageHandled) {
                 initialMessageHandled = true;

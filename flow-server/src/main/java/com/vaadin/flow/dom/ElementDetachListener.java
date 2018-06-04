@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
+
 /**
  * Listener for element detach events. It is invoked when the element is
  * detached from the UI.
  */
 @FunctionalInterface
-public interface ElementDetachListener {
+public interface ElementDetachListener extends Serializable {
     /**
      * Invoked when an element is detached from the UI.
      *

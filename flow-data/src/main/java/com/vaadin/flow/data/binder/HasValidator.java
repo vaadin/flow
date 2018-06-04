@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.binder;
 
+import java.io.Serializable;
+
 /**
  * A generic interface for field components and other user interface objects
  * that have a user-editable value that should be validated.
@@ -24,7 +26,7 @@ package com.vaadin.flow.data.binder;
  * @param <V>
  *            the value type
  */
-public interface HasValidator<V> {
+public interface HasValidator<V> extends Serializable {
 
     /**
      * Returns a validator that checks the state of the Value. This should be

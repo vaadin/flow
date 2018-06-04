@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Set;
  *
  * @author Vaadin Ltd
  */
-public interface ThemeList extends Set<String> {
+public interface ThemeList extends Set<String>, Serializable {
 
     /**
      * Sets or removes the given theme name, based on the {@code set} parameter.

@@ -16,12 +16,26 @@
 
 package com.vaadin.flow.data.binder;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,24 +44,13 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -365,7 +368,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(namelessPerson);
 
         assertTrue(nullTextField.isEmpty());
-        Assert.assertEquals(null, namelessPerson.getFirstName());
+        Assert.assertEquals("null", namelessPerson.getFirstName());
 
         // Change value, see that textfield is not empty and bean is updated.
         nullTextField.setValue("");
@@ -524,6 +527,95 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals("foobar", componentErrors.get(textField));
         // validation is done for all changed bindings once.
         Assert.assertEquals(1, invokes.get());
+
+        textField.setValue("value");
+        assertFalse(textField.isInvalid());
+        assertTrue(textField.isRequiredIndicatorVisible());
+    }
+
+    @Test
+    public void setRequired_withCustomValidator_fieldGetsRequiredIndicatorAndValidator() {
+        TestTextField textField = new TestTextField();
+        assertFalse(textField.isRequiredIndicatorVisible());
+
+        BindingBuilder<Person, String> binding = binder.forField(textField);
+        assertFalse(textField.isRequiredIndicatorVisible());
+        AtomicInteger invokes = new AtomicInteger();
+
+        Validator<String> customRequiredValidator = (value, context) -> {
+            invokes.incrementAndGet();
+            if (StringUtils.isBlank(value)) {
+                return ValidationResult.error("Input is required.");
+            }
+            return ValidationResult.ok();
+        };
+        binding.asRequired(customRequiredValidator);
+        assertTrue(textField.isRequiredIndicatorVisible());
+        binding.bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(item);
+
+        assertThat(textField.getErrorMessage(), isEmptyString());
+        assertEquals(1, invokes.get());
+
+        textField.setValue("        ");
+        String errorMessage = textField.getErrorMessage();
+        assertNotNull(errorMessage);
+        assertEquals("Input is required.",
+                componentErrors.get(textField));
+        // validation is done for all changed bindings once.
+        assertEquals(2, invokes.get());
+
+        textField.setValue("value");
+        assertFalse(textField.isInvalid());
+        assertTrue(textField.isRequiredIndicatorVisible());
+    }
+
+    @Test
+    public void setRequired_withCustomValidator_modelConverterBeforeValidator() {
+        TestTextField textField = new TestTextField();
+        assertFalse(textField.isRequiredIndicatorVisible());
+
+        Converter<String, String> stringBasicPreProcessingConverter = new Converter<String, String>() {
+            @Override
+            public Result<String> convertToModel(String value,
+                    ValueContext context) {
+                if (StringUtils.isBlank(value)) {
+                    return Result.ok(null);
+                }
+                return Result.ok(StringUtils.trim(value));
+            }
+
+            @Override
+            public String convertToPresentation(String value,
+                    ValueContext context) {
+                if (value == null) {
+                    return "";
+                }
+                return value;
+            }
+        };
+
+        AtomicInteger invokes = new AtomicInteger();
+        Validator<String> customRequiredValidator = (value, context) -> {
+            invokes.incrementAndGet();
+            if (value == null) {
+                return ValidationResult.error("Input required.");
+            }
+            return ValidationResult.ok();
+        };
+
+        binder.forField(textField)
+                .withConverter(stringBasicPreProcessingConverter)
+                .asRequired(customRequiredValidator)
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(item);
+        assertThat(textField.getErrorMessage(), isEmptyString());
+        assertEquals(1, invokes.get());
+        textField.setValue(" ");
+        assertNotNull(textField.getErrorMessage());
+        assertEquals("Input required.", componentErrors.get(textField));
+        // validation is done for all changed bindings once.
+        assertEquals(2, invokes.get());
 
         textField.setValue("value");
         assertFalse(textField.isInvalid());
@@ -842,6 +934,25 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void remove_binding_fromFieldValueChangeListener() {
+        // Add listener before bind to make sure it will be executed first.
+        nameField.addValueChangeListener(e -> {
+            if (e.getValue() == "REMOVE") {
+                binder.removeBinding(nameField);
+            }
+        });
+
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        binder.setBean(item);
+
+        nameField.setValue("REMOVE");
+
+        // Removed binding should not update bean.
+        assertNotEquals("REMOVE", item.getFirstName());
+    }
+
+    @Test
     public void removed_binding_not_updates_value() {
         Binding<Person, Integer> binding = binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter("Can't convert"))
@@ -1106,5 +1217,95 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binding.setReadOnly(true);
         assertTrue("Binding should be readonly", binding.isReadOnly());
         assertTrue("Name field should be readonly", nameField.isReadOnly());
+    }
+
+    @Test
+    public void nonSymetricValue_setBean_writtenToBean() {
+        binder.bind(nameField, Person::getLastName, Person::setLastName);
+
+        Assert.assertNull(item.getLastName());
+
+        binder.setBean(item);
+
+        Assert.assertEquals("", item.getLastName());
+    }
+
+    @Test
+    public void nonSymmetricValue_readBean_beanNotTouched() {
+        binder.bind(nameField, Person::getLastName, Person::setLastName);
+        binder.addValueChangeListener(
+                event -> Assert.fail("No value change event should be fired"));
+
+        Assert.assertNull(item.getLastName());
+
+        binder.readBean(item);
+
+        Assert.assertNull(item.getLastName());
+    }
+
+    @Test
+    public void symetricValue_setBean_beanNotUpdated() {
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        binder.setBean(new Person() {
+            @Override
+            public String getFirstName() {
+                return "First";
+            }
+
+            @Override
+            public void setFirstName(String firstName) {
+                Assert.fail("Setter should not be called");
+            }
+        });
+    }
+
+    @Test
+    public void conversionWithLocaleBasedErrorMessage() {
+        String fiError = "VIRHE";
+        String otherError = "ERROR";
+
+        StringToIntegerConverter converter = new StringToIntegerConverter(
+                context -> context.getLocale().map(Locale::getLanguage)
+                        .orElse("en").equals("fi") ? fiError : otherError);
+
+        binder.forField(ageField).withConverter(converter).bind(Person::getAge,
+                Person::setAge);
+
+        binder.setBean(item);
+
+        ageField.setValue("not a number");
+
+        assertEquals(otherError, ageField.getErrorMessage());
+
+        // No UI present for changing Locale, so need to change the default
+        Locale.setDefault(new Locale("fi"));
+        // Re-validate to get the error message with correct locale
+        binder.validate();
+        assertEquals(fiError, ageField.getErrorMessage());
+    }
+
+    @Test
+    public void valueChangeListenerOrder() {
+        AtomicBoolean beanSet = new AtomicBoolean();
+        nameField.addValueChangeListener(e -> {
+            if (!beanSet.get()) {
+                assertEquals("Value in bean updated earlier than expected",
+                        e.getOldValue(), item.getFirstName());
+            }
+        });
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+        nameField.addValueChangeListener(e -> {
+            if (!beanSet.get()) {
+                assertEquals("Value in bean not updated when expected",
+                        e.getValue(), item.getFirstName());
+            }
+        });
+
+        beanSet.set(true);
+        binder.setBean(item);
+        beanSet.set(false);
+
+        nameField.setValue("Foo");
     }
 }

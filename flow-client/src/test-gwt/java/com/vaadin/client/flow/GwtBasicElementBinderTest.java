@@ -89,12 +89,20 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("foo", element.getLang());
     }
 
-    public void testBindingBeforeFlush() {
+    public void testBindBeforeFlush() {
         titleProperty.setValue("foo");
 
         Binder.bind(node, element);
 
-        assertEquals("", element.getTitle());
+        assertEquals("foo", element.getTitle());
+    }
+
+    public void testSetBeforeFlush() {
+        Binder.bind(node, element);
+
+        titleProperty.setValue("foo");
+
+        assertEquals("null", element.getTitle());
     }
 
     public void testUnbindBeforeFlush() {
@@ -111,7 +119,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals("", element.getTitle());
+        assertEquals("null", element.getTitle());
         assertEquals("", element.getId());
         assertEquals("", element.getLang());
     }
@@ -206,10 +214,18 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("foo", element.getLang());
     }
 
-    public void testSetAttributeWithoutFlush() {
+    public void testBindAttributeWithoutFlush() {
         idAttribute.setValue("foo");
 
         Binder.bind(node, element);
+
+        assertEquals("foo", element.getId());
+    }
+
+    public void testSetAttributeWithoutFlush() {
+        Binder.bind(node, element);
+
+        idAttribute.setValue("foo");
 
         assertEquals("", element.getId());
     }
@@ -1685,11 +1701,14 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     public void testReadyCallback_deferredPolymerElementAndNoListeners_readyIsCalled() {
         element = Browser.getDocument().createElement("x-my");
+        WidgetUtil.setJsProperty(element, "localName", "x-my");
+
         assertDeferredPolymerElement_originalReadyIsCalled(element);
     }
 
     public void testReadyCallback_deferredPolymerElement_readyIsCalledAndNotified() {
         element = Browser.getDocument().createElement("x-my");
+        WidgetUtil.setJsProperty(element, "localName", "x-my");
 
         PolymerUtils.addReadyListener(element,
                 () -> WidgetUtil.setJsProperty(element, "baz", "foobar"));
@@ -1701,6 +1720,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private void assertDeferredPolymerElement_originalReadyIsCalled(
             Element element) {
+        initPolymer(element);
         mockWhenDefined(element);
 
         NativeFunction function = NativeFunction.create("this['foo']='bar';");
@@ -1792,6 +1812,8 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private native void mockWhenDefined(Element element)
     /*-{
+        $wnd.OldPolymer = $wnd.Polymer;
+        $wnd.Polymer = null;
         $wnd.customElements = {
             whenDefined: function() {
                 return {
@@ -1805,6 +1827,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private native void runWhenDefined(Element element)
     /*-{
+        $wnd.Polymer = $wnd.OldPolymer;
         element.callback();
     }-*/;
 
@@ -1814,7 +1837,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         $wnd.Polymer.dom = function(node){
             return node;
         };
-        $wnd.Polymer.Element = {};
+        $wnd.Polymer.Element = {
+          set: function() {}
+        };
         element.__proto__ = $wnd.Polymer.Element;
         if( !element.removeAttribute ) {
             element.removeAttribute = function(attribute){
@@ -1825,6 +1850,18 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
             element.getAttribute = function( attribute ){
                 return element[attribute];
             };
+        }
+        if ( !element.root ){
+            element.root=element;
+        }
+        if ( !element.querySelector ){
+            element.querySelector = function(){
+                return null;
+            }
+        }
+        if ( !element.addEventListener){
+            element.addEventListener = function(){
+            }
         }
     }-*/;
 

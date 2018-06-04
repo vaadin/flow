@@ -362,6 +362,7 @@ public class UIInternals implements Serializable {
             if (session == null) {
                 try {
                     ComponentUtil.onComponentDetach(ui);
+                    ui.getChildren().forEach(ComponentUtil::onComponentDetach);
                 } catch (Exception e) {
                     getLogger().warn("Error while detaching UI from session",
                             e);

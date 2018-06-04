@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,7 +82,7 @@ public class DefaultRouteResolver implements RouteResolver {
         return builder.build();
     }
 
-    private static class PathDetails {
+    private static class PathDetails implements Serializable {
         private final String path;
         private final List<String> segments;
 

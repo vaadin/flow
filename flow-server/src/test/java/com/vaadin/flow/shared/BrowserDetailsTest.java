@@ -45,6 +45,8 @@ public class BrowserDetailsTest extends TestCase {
 
     private static final String SAFARI3_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 5.1; cs-CZ) AppleWebKit/525.28.3 (KHTML, like Gecko) Version/3.2.3 Safari/525.29";
     private static final String SAFARI4_MAC = "Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10_5_8; en-us) AppleWebKit/531.22.7 (KHTML, like Gecko) Version/4.0.5 Safari/531.22.7";
+    private static final String SAFARI10_WINDOWS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.1.2 Safari/603.3.8";
+    private static final String SAFARI11_MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15";
 
     private static final String IPHONE_IOS_5_1 = "Mozilla/5.0 (iPhone; CPU iPhone OS 5_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9B179 Safari/7534.48.3";
     private static final String IPHONE_IOS_4_0 = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_0 like Mac OS X; en-us) AppleWebKit/532.9 (KHTML, like Gecko) Version/4.0.5 Mobile/8A293 Safari/6531.22.7";
@@ -86,6 +88,28 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 531.22f);
         assertMacOSX(bd);
         assertEs5(bd);
+    }
+
+    public void testSafari10() {
+        BrowserDetails bd = new BrowserDetails(SAFARI10_WINDOWS);
+        assertWebKit(bd);
+        assertSafari(bd);
+        assertBrowserMajorVersion(bd, 10);
+        assertBrowserMinorVersion(bd, 1);
+        assertEngineVersion(bd, 603.3f);
+        assertMacOSX(bd);
+        assertEs5(bd);
+    }
+
+    public void testSafari11() {
+        BrowserDetails bd = new BrowserDetails(SAFARI11_MAC);
+        assertWebKit(bd);
+        assertSafari(bd);
+        assertBrowserMajorVersion(bd, 11);
+        assertBrowserMinorVersion(bd, 1);
+        assertEngineVersion(bd, 605.1f);
+        assertMacOSX(bd);
+        assertEs6(bd);
     }
 
     public void testIPhoneIOS6Homescreen() {

@@ -22,6 +22,7 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -104,7 +105,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.CheckboxElement#2.0.0", "Flow#1.0-SNAPSHOT" })
+        "WebComponent: Vaadin.CheckboxElement#2.1.1", "Flow#1.0-SNAPSHOT" })
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/src/vaadin-checkbox.html")
 public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R, T>, T>
@@ -230,6 +231,28 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      */
     protected void setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
+    }
+
+    @DomEvent("change")
+    public static class ChangeEvent<R extends GeneratedVaadinCheckbox<R, ?>>
+            extends ComponentEvent<R> {
+        public ChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code change} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addChangeListener(
+            ComponentEventListener<ChangeEvent<R>> listener) {
+        return addListener(ChangeEvent.class,
+                (ComponentEventListener) listener);
     }
 
     public static class CheckedChangeEvent<R extends GeneratedVaadinCheckbox<R, ?>>

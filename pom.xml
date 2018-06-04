@@ -23,6 +23,7 @@
         <module>flow-server-production-mode</module>
         <module>flow-components-parent</module>
         <module>flow-maven-plugin</module>
+        <module>flow-test-generic</module>
         <module>build-tools</module>
     </modules>
 
@@ -86,7 +87,7 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
-        <testbench.version>6.0.0.beta10</testbench.version>
+        <testbench.version>6.0.0.rc1</testbench.version>
         <jetty.version>9.4.9.v20180320</jetty.version>
 
         <!-- Frontend -->

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.io.Serializable;
+
 import elemental.json.JsonValue;
 
 /**
@@ -33,7 +35,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-public interface RpcDecoder {
+public interface RpcDecoder extends Serializable {
 
     /**
      * Returns {@code true} if the decoder is applicable for the given

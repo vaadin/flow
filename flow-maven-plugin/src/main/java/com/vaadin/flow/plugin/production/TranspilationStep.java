@@ -22,13 +22,13 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 
 /**
  * Transpiles artifacts in the specified directory.
  * <p>
- * Note: this class is intended to be independent from Maven dependencies so that it can be reused in Gradle plugin in future.
+ * Note: this class is intended to be independent from Maven dependencies so
+ * that it can be reused in Gradle plugin in future.
  *
  * @author Vaadin Ltd.
  */
@@ -38,35 +38,55 @@ public class TranspilationStep {
     /**
      * Prepares the step.
      *
-     * @param frontendToolsManager the manager to be used to transpile files, not {@code null}
-     * @param proxyConfig proxy config to use when downloading frontend tools, not {@code null}
-     * @param nodeVersion node version to install, not {@code null}
-     * @param yarnVersion yarn version to install, not {@code null}
+     * @param frontendToolsManager
+     *            the manager to be used to transpile files, not {@code null}
+     * @param proxyConfig
+     *            proxy config to use when downloading frontend tools, not
+     *            {@code null}
+     * @param nodeVersion
+     *            node version to install, not {@code null}
+     * @param yarnVersion
+     *            yarn version to install, not {@code null}
+     * @param networkConcurrency
+     *            maximum number of concurrent network requests
      */
-    public TranspilationStep(FrontendToolsManager frontendToolsManager, ProxyConfig proxyConfig, String nodeVersion, String yarnVersion) {
-        this.frontendToolsManager = Objects.requireNonNull(frontendToolsManager);
-        frontendToolsManager.installFrontendTools(proxyConfig, nodeVersion, yarnVersion);
+    public TranspilationStep(FrontendToolsManager frontendToolsManager,
+            ProxyConfig proxyConfig, String nodeVersion, String yarnVersion,
+            int networkConcurrency) {
+        this.frontendToolsManager = Objects
+                .requireNonNull(frontendToolsManager);
+        frontendToolsManager.installFrontendTools(proxyConfig, nodeVersion,
+                yarnVersion, networkConcurrency);
     }
 
     /**
      * Transpiles the files from source directory into the output directory.
      *
-     * @param es6SourceDirectory   the directory with original ES6 files
-     * @param outputDirectory      the directory that will have processed files in
-     * @param skipEs5              whether to skip the transpilation step or not
-     * @throws IllegalStateException if no transpilation results found
-     * @throws UncheckedIOException  if {@link IOException} occurs during file operations
+     * @param es6SourceDirectory
+     *            the directory with original ES6 files
+     * @param outputDirectory
+     *            the directory that will have processed files in
+     * @param skipEs5
+     *            whether to skip the transpilation step or not
+     * @throws IllegalStateException
+     *             if no transpilation results found
+     * @throws UncheckedIOException
+     *             if {@link IOException} occurs during file operations
      */
-    public void transpileFiles(File es6SourceDirectory, File outputDirectory, boolean skipEs5) {
-        Map<String, File> transpilationResult = frontendToolsManager.transpileFiles(es6SourceDirectory, outputDirectory, skipEs5);
+    public void transpileFiles(File es6SourceDirectory, File outputDirectory,
+            boolean skipEs5) {
+        Map<String, File> transpilationResult = frontendToolsManager
+                .transpileFiles(es6SourceDirectory, outputDirectory, skipEs5);
         if (transpilationResult.isEmpty()) {
-            throw new IllegalStateException("Received no transpilation results from frontend tools");
+            throw new IllegalStateException(
+                    "Received no transpilation results from frontend tools");
         }
-        transpilationResult.values().stream()
-                .filter(configurationOutput -> !configurationOutput.isDirectory())
-                .findAny()
-                .ifPresent(nonExistingDirectory -> {
-                    throw new IllegalStateException(String.format("Transpilation output at '%s' is not a directory or does not exist", nonExistingDirectory));
+        transpilationResult.values().stream().filter(
+                configurationOutput -> !configurationOutput.isDirectory())
+                .findAny().ifPresent(nonExistingDirectory -> {
+                    throw new IllegalStateException(String.format(
+                            "Transpilation output at '%s' is not a directory or does not exist",
+                            nonExistingDirectory));
                 });
     }
 }

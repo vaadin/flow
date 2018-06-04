@@ -34,7 +34,7 @@ import com.vaadin.flow.shared.Registration;
  *            the value type
  * @author Vaadin Ltd.
  */
-public interface HasValue<E extends ValueChangeEvent<V>, V> {
+public interface HasValue<E extends ValueChangeEvent<V>, V> extends Serializable {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -42,7 +42,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V> {
      * @param <V>
      *            the value type
      */
-    interface ValueChangeEvent<V> {
+    interface ValueChangeEvent<V> extends Serializable {
         HasValue<?, V> getHasValue();
 
         /**
@@ -204,6 +204,17 @@ public interface HasValue<E extends ValueChangeEvent<V>, V> {
      * Sets the required indicator visible or not.
      * <p>
      * If set visible, it is visually indicated in the user interface.
+     * <p>
+     * The method is intended to be used with <code>Binder</code> which does
+     * server-side validation. In case HTML element has its own (client-side)
+     * validation it should be disabled when
+     * <code>setRequiredIndicatorVisible(true)</code> is called and re-enabled
+     * back on <code>setRequiredIndicatorVisible(false)</code>. It's
+     * responsibility of each component implementation to follow the contract so
+     * that the method call doesn't do anything else than show/hide the
+     * "required" indication. Usually components provide their own
+     * <code>setRequired</code> method which should be called in case the
+     * client-side validation is required.
      *
      * @param requiredIndicatorVisible
      *            <code>true</code> to make the required indicator visible,

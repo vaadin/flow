@@ -78,6 +78,11 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     @Override
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
+        if (!getLocalExecution().isPresent() && USE_BROWSERSTACK) {
+            // Use IE11 when running with Browserstack
+            return getBrowserCapabilities(Browser.IE11);
+        }
+
         return getBrowserCapabilities(Browser.CHROME);
     }
 }

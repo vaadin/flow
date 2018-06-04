@@ -366,6 +366,17 @@ public class ModelDescriptorTest {
     }
 
     @Test
+    public void basicComplexModelType_intAndInteger_numberFromClient() {
+        ComplexModelType<?> type = BasicComplexModelType.get(Integer.class)
+                .get();
+
+        StateNode stateNode = type.applicationToModel(2.0d, null);
+        Object applicationValue = type.modelToApplication(stateNode);
+
+        Assert.assertEquals(Integer.valueOf(2), applicationValue);
+    }
+
+    @Test
     public void basicComplexModelType_booleabAndBoolean() {
         assertComplexModeType(boolean.class, true, false);
         assertComplexModeType(Boolean.class, false, true);

@@ -18,6 +18,7 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.flow.dom.DomApi;
 
 import elemental.client.Browser;
@@ -223,6 +224,20 @@ public class WidgetUtil {
     }-*/;
 
     /**
+     * Checks if the given value is explicitly undefined. <code>null</code>
+     * values returns <code>false</code>.
+     * 
+     * @param property
+     *            the value to be verified
+     * @return <code>true</code> is the value is explicitly undefined,
+     *         <code>false</code> otherwise
+     */
+    public static native boolean isUndefined(Object property)
+    /*-{
+      return property === undefined;
+    }-*/;
+
+    /**
      * Removes a JavaScript property from an object.
      *
      * @param object
@@ -295,12 +310,12 @@ public class WidgetUtil {
      * @return json string of given object
      */
     public static native String stringify(JsonObject payload) /*-{
-        return JSON.stringify(payload, function(key, value) {
-            if(value instanceof Node){
-                throw "Message JsonObject contained a dom node reference which " +
-                "should not be sent to the server and can cause a cyclic dependecy.";
-            }
-            return value;
-        });
-    }-*/;
+                                                              return JSON.stringify(payload, function(key, value) {
+                                                              if(value instanceof Node){
+                                                              throw "Message JsonObject contained a dom node reference which " +
+                                                              "should not be sent to the server and can cause a cyclic dependecy.";
+                                                              }
+                                                              return value;
+                                                              });
+                                                              }-*/;
 }

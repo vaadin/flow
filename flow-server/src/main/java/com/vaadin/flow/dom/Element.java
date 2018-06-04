@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 
@@ -1333,7 +1334,17 @@ public class Element extends Node<Element> {
         }
 
         return getNode().addAttachListener(
-                () -> attachListener.onAttach(new ElementAttachEvent(this)));
+                // This explicit class instantiation is the workaround
+                // which fixes a JVM optimization+serialization bug.
+                // Do not convert to lambda
+                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // see ElementAttributeMap#deferRegistration
+                new Command() {
+                    @Override
+                    public void execute() {
+                        attachListener.onAttach(new ElementAttachEvent(Element.this));
+                    }
+                });
     }
 
     /**
@@ -1355,7 +1366,17 @@ public class Element extends Node<Element> {
         }
 
         return getNode().addDetachListener(
-                () -> detachListener.onDetach(new ElementDetachEvent(this)));
+                // This explicit class instantiation is the workaround
+                // which fixes a JVM optimization+serialization bug.
+                // Do not convert to lambda
+                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // see ElementAttributeMap#deferRegistration
+                new Command() {
+                    @Override
+                    public void execute() {
+                        detachListener.onDetach(new ElementDetachEvent(Element.this));
+                    }
+                });
     }
 
     @Override

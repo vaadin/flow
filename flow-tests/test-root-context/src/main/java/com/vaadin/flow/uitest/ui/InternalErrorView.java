@@ -19,16 +19,17 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.CustomizedSystemMessages;
+import com.vaadin.flow.server.DefaultSystemMessagesProvider;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
  * @author Vaadin Ltd.
  */
-@Route("com.vaadin.flow.uitest.ui.ExpireSessionView")
-public class ExpireSessionView extends AbstractDivView {
+@Route("com.vaadin.flow.uitest.ui.InternalErrorView")
+public class InternalErrorView extends AbstractDivView {
 
-    public ExpireSessionView() {
+    public InternalErrorView() {
         Div message = new Div();
         message.setId("message");
 
@@ -45,8 +46,17 @@ public class ExpireSessionView extends AbstractDivView {
                 event -> enableSessionExpiredNotification());
         enableNotificationButton.setId("enable-notification");
 
+        NativeButton causeExceptionButton = new NativeButton("Cause exception",
+                event -> System.out.println(1 / 0));
+        causeExceptionButton.setId("cause-exception");
+
+        NativeButton resetSystemMessagesButton = new NativeButton(
+                "Reset system messages", event -> resetSystemMessages());
+        resetSystemMessagesButton.setId("reset-system-messages");
+
         add(message, updateMessageButton, closeSessionButton,
-                enableNotificationButton);
+                enableNotificationButton, causeExceptionButton,
+                resetSystemMessagesButton);
     }
 
     private void enableSessionExpiredNotification() {
@@ -55,5 +65,10 @@ public class ExpireSessionView extends AbstractDivView {
 
         VaadinService.getCurrent()
                 .setSystemMessagesProvider(systemMessagesInfo -> sysMessages);
+    }
+
+    private void resetSystemMessages() {
+        VaadinService.getCurrent()
+                .setSystemMessagesProvider(DefaultSystemMessagesProvider.get());
     }
 }

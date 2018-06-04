@@ -16,6 +16,7 @@
 package com.vaadin.flow.function;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -28,5 +29,21 @@ import java.util.function.Predicate;
  *
  */
 public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
-    // Only method inherited from Predicate
+
+    @Override
+    default SerializablePredicate<T> and(Predicate<? super T> other) {
+        Objects.requireNonNull(other);
+        return t -> test(t) && other.test(t);
+    }
+
+    @Override
+    default SerializablePredicate<T> negate() {
+        return t -> !test(t);
+    }
+
+    @Override
+    default SerializablePredicate<T> or(Predicate<? super T> other) {
+        Objects.requireNonNull(other);
+        return t -> test(t) || other.test(t);
+    }
 }

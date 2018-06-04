@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.i18n;
 
+import java.io.Serializable;
+
 /**
  * Any {@code com.vaadin.ui.Component} implementing this interface will be
  * informed when the UI locale is changed and on attach.
@@ -22,7 +24,7 @@ package com.vaadin.flow.i18n;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface LocaleChangeObserver {
+public interface LocaleChangeObserver extends Serializable {
 
     /**
      * Method called when the UI locale is changed.

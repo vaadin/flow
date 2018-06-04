@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.router.AfterNavigationEvent;
 
 /**
  * The base interface for every interface that handles {@link AfterNavigationEvent}.
  */
 @FunctionalInterface
-public interface AfterNavigationHandler {
+public interface AfterNavigationHandler extends Serializable {
 
     /**
      * Method called after navigation has been executed.

@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server.startup;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +36,7 @@ import com.vaadin.flow.component.Tag;
  *
  * @author Vaadin Ltd.
  */
-class CustomElements {
+class CustomElements implements Serializable {
     private final Map<String, Set<Class<? extends Component>>> elements = new HashMap<>();
 
     private static Optional<String> validateComponentClasses(String tagName,

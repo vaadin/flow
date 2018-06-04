@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -77,7 +78,7 @@ public class StateTree implements NodeOwner {
      * @see StateTree#beforeClientResponse(StateNode, SerializableConsumer)
      * @see StateTree#runExecutionsBeforeClientResponse()
      */
-    public static final class BeforeClientResponseEntry {
+    public static final class BeforeClientResponseEntry implements Serializable {
         private static final Comparator<BeforeClientResponseEntry> COMPARING_INDEX = Comparator
                 .comparingInt(BeforeClientResponseEntry::getIndex);
 

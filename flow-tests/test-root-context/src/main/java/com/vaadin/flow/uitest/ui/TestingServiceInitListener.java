@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -32,13 +35,19 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
-        event.getSource().addUIInitListener(initEvent ->
-                initEvent.getUI().addBeforeEnterListener(e -> {
-                    if (!redirected && ServiceInitListenersView.class.equals(e.getNavigationTarget())) {
-                        e.rerouteTo(e.getLocation().getPath(), 22);
-                        redirected = true;
-                    }
-                }));
+        event.getSource().addUIInitListener(
+                (UIInitListener & Serializable) initEvent -> initEvent.getUI()
+                        .addBeforeEnterListener(
+                                (BeforeEnterListener & Serializable) e -> {
+                                    if (!redirected
+                                            && ServiceInitListenersView.class
+                                                    .equals(e
+                                                            .getNavigationTarget())) {
+                                        e.rerouteTo(e.getLocation().getPath(),
+                                                22);
+                                        redirected = true;
+                                    }
+                                }));
         initCount.incrementAndGet();
 
         event.addRequestHandler((session, request, response) -> {

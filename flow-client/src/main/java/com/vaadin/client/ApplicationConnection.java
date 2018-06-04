@@ -18,14 +18,12 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-
+import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
-import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
-
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -57,6 +55,7 @@ public class ApplicationConnection {
         // Bind UI configuration objects
         PollConfigurator.observe(rootNode, registry.getPoller());
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
+        LoadingIndicatorConfigurator.observe(rootNode, registry.getLoadingIndicator());
 
         new PopStateHandler(registry).bind();
 

@@ -28,6 +28,7 @@ import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -102,15 +103,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsonValue evaluate(Event event, Element element);
     }
 
-    private static final JsMap<String, EventExpression> expressionCache = JsCollections
-            .map();
+    private static JsMap<String, EventExpression> expressionCache;
 
     /**
      * This is used as a weak set. Only keys are important so that they are
      * weakly referenced
      */
-    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections
-            .weakMap();
+    private static JsWeakMap<StateNode, Boolean> boundNodes;
 
     /**
      * Just a context class whose instance is passed as a parameter between the
@@ -190,10 +189,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 + htmlNode.getTagName() + "', but the required tag name is "
                 + getTag(stateNode);
 
-        if (BOUND.has(stateNode)) {
+        if (boundNodes == null) {
+            boundNodes = JsCollections.weakMap();
+        }
+
+        if (boundNodes.has(stateNode)) {
             return;
         }
-        BOUND.set(stateNode, true);
+        boundNodes.set(stateNode, true);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
                 nodeFactory);
@@ -204,36 +207,38 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsArray<EventRemover> listeners = JsCollections.array();
 
         if (isVisible) {
-            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                    property -> updateProperty(property, htmlNode),
-                    createComputations(computationsCollection), stateNode));
+            // Potential dependencies for any observer
+            listeners.push(bindClientCallableMethods(context));
+            listeners.push(bindPolymerEventHandlerNames(context));
+
+            // Flow's own event listeners
+            listeners.push(bindDomEventListeners(context));
+            listeners.push(bindSynchronizedPropertyEvents(context));
+
+            // Dom structure, shouldn't trigger observers synchronously
+            listeners.push(bindVirtualChildren(context));
+            listeners.push(bindChildren(context));
+            listeners.push(bindShadowRoot(context));
+
+            // Styling might be looked at by observers, but will typically not
+            // trigger any observers synchronously
+            listeners.push(bindClassList(htmlNode, stateNode));
             listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     property -> updateStyleProperty(property, htmlNode),
                     createComputations(computationsCollection), stateNode));
+
+            // The things that might actually be observed
             listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES,
                     property -> updateAttribute(property, htmlNode),
                     createComputations(computationsCollection), stateNode));
+            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
+                    property -> updateProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+            bindPolymerModelProperties(stateNode, htmlNode);
 
-            listeners.push(bindSynchronizedPropertyEvents(context));
-
-            listeners.push(bindVirtualChildren(context));
-
-            listeners.push(bindChildren(context));
-
+            // Prepare teardown
             listeners.push(stateNode.addUnregisterListener(
                     e -> remove(listeners, context, computationsCollection)));
-
-            listeners.push(bindDomEventListeners(context));
-
-            listeners.push(bindClassList(htmlNode, stateNode));
-
-            listeners.push(bindClientCallableMethods(context));
-
-            listeners.push(bindPolymerEventHandlerNames(context));
-
-            listeners.push(bindShadowRoot(context));
-
-            bindPolymerModelProperties(stateNode, htmlNode);
         }
         listeners.push(bindVisibility(listeners, context,
                 computationsCollection, nodeFactory));
@@ -263,7 +268,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
           var self = this;
           try {
               $wnd.customElements.whenDefined(element.localName).then( function () {
-                  self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
+                  if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
+                      self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
+                  }
               });
           }
           catch (e) {
@@ -274,10 +281,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private native void hookUpPolymerElement(StateNode node, Element element)
     /*-{
-        this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
     
         var originalPropertiesChanged = element._propertiesChanged;
+    
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
@@ -286,14 +293,159 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-
-       
-    var originalReady = element.ready;
+    
+    
+        var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
+    
+        var originalReady = element.ready;
+    
         element.ready = function (){
             originalReady.apply(this, arguments);
             @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
+
+            // The  _propertiesChanged method which is replaced above for the element
+            // doesn't do anything for items in dom-repeat.
+            // Instead it's called with some meaningful info for the <code>dom-repeat</code> element.
+            // So here the <code>_propertiesChanged</code> method is replaced
+            // for the <code>dom-repeat</code> prototype
+            // which changes this method for any dom-repeat instance.
+            var replaceDomRepeatPropertyChange = function(){
+                var domRepeat = element.root.querySelector('dom-repeat');
+    
+                if ( domRepeat ){
+                 // If the <code>dom-repeat</code> element is in the DOM then
+                 // this method should not be executed anymore. The logic below will replace
+                 // the <code>_propertiesChanged</code> method in its prototype so that our
+                 // method will work for any dom-repeat instance.
+                 element.removeEventListener('dom-change', replaceDomRepeatPropertyChange);
+                }
+                else {
+                    return;
+                }
+                // if dom-repeat is found => replace _propertiesChanged method in the prototype and mark it as replaced.
+                if ( !domRepeat.constructor.prototype.$propChangedModified){
+                    domRepeat.constructor.prototype.$propChangedModified = true;
+
+                    var changed = domRepeat.constructor.prototype._propertiesChanged;
+
+                    domRepeat.constructor.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){
+                        changed.apply(this, arguments);
+    
+                        var props = Object.getOwnPropertyNames(changedProps);
+                        var items = "items.";
+                        for(i=0; i<props.length; i++){
+                            // There should be a property which starts with "items."
+                            // and the next token is the index of changed item
+                            // the code parses this proeprty
+                            var index = props[i].indexOf(items);
+                            if ( index == 0 ){
+                                var prop = props[i].substr(items.length);
+                                index = prop.indexOf('.');
+                                if ( index >0){
+                                    // this is the index of the changed item
+                                    var arrayIndex = prop.substr(0,index);
+                                    // this is the property name of the changed item
+                                    var propertyName = prop.substr(index+1);
+
+                                    var nodeId = currentProps.items[arrayIndex].nodeId;
+                                    var value = currentProps.items[arrayIndex][propertyName];
+
+                                    // this is an attempt to find the template element
+                                    // which is not available as a context in the protype method
+                                    var host = this.__dataHost;
+                                    // __dataHost is an element in the local DOM which owns the changed data
+                                    // Such elements form a linked list where the head is the dom-repeat (this)
+                                    //  and the tail is the template which owns the local DOM, so this code
+                                    // goes via this list and search for the tail which is supposed to be a template
+                                    while( !host.localName || host.__dataHost ){
+                                        host = host.__dataHost;
+                                    }
+    
+                                    $entry(function () {
+                                        @SimpleElementBindingStrategy::handleListItemPropertyChange(*)(nodeId, host, propertyName, value, tree);
+                                    })();
+                                }
+                            }
+                        }
+                    };
+                }
+            };
+
+            // dom-repeat doesn't have to be in DOM even if template has it
+            //  such situation happens if there is dom-if e.g. which evaluates to <code>false</code> initially.
+            // in this case dom-repeat is not yet in the DOM tree until dom-if becomes <code>true</code>
+            if ( element.root && element.root.querySelector('dom-repeat') ){
+                replaceDomRepeatPropertyChange();
+            }
+            else {
+                // if there is no dom-repat at the moment just add a dom-change
+                // listener which will be notified once local DOM is changed
+                // and the  <code>replaceDomRepeatPropertyChange</code> will get a chance
+                // to execute its logic if there is dom-repeat.
+                element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
+            }
         }
+
     }-*/;
+
+    private static void handleListItemPropertyChange(double nodeId,
+            Element host, String property, Object value, StateTree tree) {
+        // Warning : it's important that <code>tree</code> is passed as an
+        // argument instead of StateNode or Element ! We have replaced a method
+        // in the prototype which means that it may not use the context from the
+        // hookUpPolymerElement method. Only a tree may be use as a context
+        // since StateTree is a singleton.
+
+        StateNode node = tree.getNode((int) nodeId);
+
+        if (!node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            return;
+        }
+
+        assert checkParent(node,
+                host) : "Host element is not a parent of the node whose property has changed. "
+                        + "This is an implementation error. "
+                        + "Most likely it means that there are several StateTrees on the same page "
+                        + "(might be possible with portlets) and the target StateTree should not be passed "
+                        + "into the method as an argument but somehow detected from the host element. "
+                        + "Another option is that host element is calculated incorrectly.";
+
+        // TODO: this code doesn't care about "security feature" which prevents
+        // sending
+        // data from the client side to the server side if property is not
+        // "updatable". See <code>handlePropertyChange</code> and
+        // UpdatableModelProperties.
+        // It should be aware of that. The current issue is that we don't know
+        // the full property path (dot separated) to the property which is a
+        // property for the <code>host</code> StateNode and not
+        // for the <code>node</code> below. It's tricky to calculate FQN
+        // property name at this point though the <code>host</code> element
+        // which is
+        // the template element could be used for that: a StateNode of
+        // <code>host</code> is an ancestor of the <code>node</code> and it
+        // should be possible to calculate FQN using this info. Also at the
+        // moment
+        // AllowClientUpdates ignores bean properties in
+        // lists ( if "list" is a property name of list type property and
+        // "name" is a property of a bean then
+        // "list.name" is not in the UpdatableModelProperties ).
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty mapProperty = map.getProperty(property);
+        mapProperty.syncToServer(value);
+    }
+
+    private static boolean checkParent(StateNode node, Element supposedParent) {
+        StateNode parent = node;
+        while (true) {
+            parent = parent.getParent();
+            if (parent == null) {
+                return false;
+            }
+            if (supposedParent.equals(parent.getDomNode())) {
+                return true;
+            }
+        }
+    }
 
     private void handlePropertiesChanged(
             JavaScriptObject changedPropertyPathsToValues, StateNode node) {
@@ -394,101 +546,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void bindInitialModelProperties(StateNode stateNode,
-            Element htmlNode) {
-        bindModelProperties(stateNode, htmlNode, "");
-    }
-
-    private void bindModelProperties(StateNode stateNode, Element htmlNode,
-            String path) {
-        Command command = () -> stateNode
-                .getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .forEachProperty((property, key) -> bindSubProperty(stateNode,
-                        htmlNode, path, property));
-        invokeWhenNodeIsConstructed(command, stateNode);
-    }
-
-    private void bindSubProperty(StateNode stateNode, Element htmlNode,
-            String path, MapProperty property) {
-        setSubProperties(htmlNode, property, path);
-        PolymerUtils.storeNodeId(htmlNode, stateNode.getId(), path);
-    }
-
-    private void setSubProperties(Element htmlNode, MapProperty property,
-            String path) {
-        String newPath = path.isEmpty() ? property.getName()
-                : path + "." + property.getName();
-        NativeFunction setValueFunction = NativeFunction.create("path", "value",
-                "this.set(path, value)");
-        if (property.getValue() instanceof StateNode) {
-            StateNode subNode = (StateNode) property.getValue();
-
-            if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-                setValueFunction.call(htmlNode, newPath,
-                        PolymerUtils.convertToJson(subNode));
-                addModelListChangeListener(htmlNode,
-                        subNode.getList(NodeFeatures.TEMPLATE_MODELLIST),
-                        newPath);
-            } else {
-                NativeFunction function = NativeFunction.create("path", "value",
-                        "this.set(path, {})");
-                function.call(htmlNode, newPath);
-                bindModelProperties(subNode, htmlNode, newPath);
-            }
-        } else {
-            setValueFunction.call(htmlNode, newPath, property.getValue());
-        }
-    }
-
-    private void addModelListChangeListener(Element htmlNode,
-            NodeList modelList, String polymerModelPath) {
-        modelList.addSpliceListener(event -> Reactive
-                .addFlushListener(() -> processModelListChange(htmlNode,
-                        polymerModelPath, event)));
-    }
-
-    private void processModelListChange(Element htmlNode,
-            String polymerModelPath, ListSpliceEvent event) {
-        JsonArray itemsToAdd = convertItemsToAdd(event.getAdd(), htmlNode,
-                polymerModelPath, event.getIndex());
-        PolymerUtils.splice(htmlNode, polymerModelPath, event.getIndex(),
-                event.getRemove().length(), itemsToAdd);
-    }
-
-    private JsonArray convertItemsToAdd(JsArray<?> itemsToAdd, Element htmlNode,
-            String polymerModelPath, int splitIndex) {
-        JsonArray convertedItems = Json.createArray();
-        for (int i = 0; i < itemsToAdd.length(); i++) {
-            Object item = itemsToAdd.get(i);
-            listenToSubPropertiesChanges(htmlNode, polymerModelPath,
-                    splitIndex + i, item);
-            convertedItems.set(i, PolymerUtils.convertToJson(item));
-        }
-        return convertedItems;
-    }
-
-    private void listenToSubPropertiesChanges(Element htmlNode,
-            String polymerModelPath, int subNodeIndex, Object item) {
-        if (item instanceof StateNode) {
-            StateNode stateNode = (StateNode) item;
-            NodeMap feature = null;
-            if (stateNode.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
-                feature = stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-            } else if (stateNode.hasFeature(NodeFeatures.BASIC_TYPE_VALUE)) {
-                feature = stateNode.getMap(NodeFeatures.BASIC_TYPE_VALUE);
-            }
-
-            if (feature != null) {
-                feature.addPropertyAddListener(event -> {
-                    Command command = () -> PolymerUtils.setListValueByIndex(
-                            htmlNode, polymerModelPath, subNodeIndex,
-                            PolymerUtils.convertToJson(event.getProperty()));
-                    invokeWhenNodeIsConstructed(command, stateNode);
-                });
-            }
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private JsMap<String, Computation> createComputations(
             JsArray<JsMap<String, Computation>> computationsCollection) {
@@ -505,8 +562,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private EventRemover bindMap(int featureId, PropertyUser user,
             JsMap<String, Computation> bindings, StateNode node) {
         NodeMap map = node.getMap(featureId);
-        map.forEachProperty(
-                (property, name) -> bindProperty(user, property, bindings));
+        map.forEachProperty((property,
+                name) -> bindProperty(user, property, bindings).recompute());
 
         return map.addPropertyAddListener(
                 e -> bindProperty(user, e.getProperty(), bindings));
@@ -612,8 +669,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .getValue());
     }
 
-    private static void bindProperty(PropertyUser user, MapProperty property,
-            JsMap<String, Computation> bindings) {
+    private static Computation bindProperty(PropertyUser user,
+            MapProperty property, JsMap<String, Computation> bindings) {
         String name = property.getName();
 
         assert !bindings.has(name) : "There's already a binding for " + name;
@@ -622,13 +679,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .runWhenDependenciesChange(() -> user.use(property));
 
         bindings.set(name, computation);
+
+        return computation;
     }
 
     private void updateProperty(MapProperty mapProperty, Element element) {
-        if (PolymerUtils.isPolymerElement(element)) {
-            // another way of property binding is used for polymer elements.
-            return;
-        }
         String name = mapProperty.getName();
         if (mapProperty.hasValue()) {
             Object treeValue = mapProperty.getValue();
@@ -636,8 +691,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // We compare with the current property to avoid setting properties
             // which are updated on the client side, e.g. when synchronizing
             // properties to the server (won't work for readonly properties).
-            if (!Objects.equals(domValue, treeValue)) {
-                WidgetUtil.setJsProperty(element, name, treeValue);
+            if (WidgetUtil.isUndefined(domValue)
+                    || !Objects.equals(domValue, treeValue)) {
+                Reactive.runWithComputation(null,
+                        () -> WidgetUtil.setJsProperty(element, name,
+                                PolymerUtils.createModelTree(treeValue)));
             }
         } else if (WidgetUtil.hasOwnJsProperty(element, name)) {
             WidgetUtil.deleteJsProperty(element, name);
@@ -930,9 +988,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return (JsonObject) map.getProperty(NodeProperties.PAYLOAD).getValue();
     }
 
-    private void invokeWhenNodeIsConstructed(Command command, StateNode node) {
+    private Computation invokeWhenNodeIsConstructed(Command command,
+            StateNode node) {
         Computation computation = Reactive.runWhenDependenciesChange(command);
         node.addUnregisterListener(event -> computation.stop());
+        return computation;
     }
 
     private void handleChildrenSplice(ListSpliceEvent event,
@@ -1073,7 +1133,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         context.synchronizedPropertyEventListeners
                 .forEach(EventRemover::remove);
 
-        BOUND.delete(context.node);
+        assert boundNodes != null;
+        boundNodes.delete(context.node);
     }
 
     private EventRemover bindDomEventListeners(BindingContext context) {
@@ -1290,6 +1351,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private static EventExpression getOrCreateExpression(
             String expressionString) {
+        if (expressionCache == null) {
+            expressionCache = JsCollections.map();
+        }
         EventExpression expression = expressionCache.get(expressionString);
 
         if (expression == null) {

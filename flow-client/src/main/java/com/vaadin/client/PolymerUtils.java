@@ -17,18 +17,24 @@
 package com.vaadin.client;
 
 import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
+import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeFeature;
+import com.vaadin.client.flow.nodefeature.NodeList;
+import com.vaadin.client.flow.nodefeature.NodeMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.ShadowRoot;
+import elemental.events.EventRemover;
 import elemental.html.HTMLCollection;
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -43,8 +49,7 @@ import elemental.json.JsonValue;
  */
 public final class PolymerUtils {
 
-    private static final JsWeakMap<Element, JsSet<Runnable>> readyListeners = JsCollections
-            .weakMap();
+    private static JsWeakMap<Element, JsSet<Runnable>> readyListeners;
 
     private PolymerUtils() {
     }
@@ -126,7 +131,7 @@ public final class PolymerUtils {
      *            the object to convert to json
      * @return json from object, {@code null} for null
      */
-    public static JsonValue convertToJson(Object object) {
+    public static JsonValue createModelTree(Object object) {
         if (object instanceof StateNode) {
             StateNode node = (StateNode) object;
             NodeFeature feature = null;
@@ -135,30 +140,231 @@ public final class PolymerUtils {
             } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
             } else if (node.hasFeature(NodeFeatures.BASIC_TYPE_VALUE)) {
-                return convertToJson(node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
-                        .getProperty(NodeProperties.VALUE));
+                return createModelTree(
+                        node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
+                                .getProperty(NodeProperties.VALUE));
             }
             assert feature != null : "Don't know how to convert node without map or list features";
 
-            JsonValue convert = feature.convert(PolymerUtils::convertToJson);
+            JsonValue convert = feature.convert(PolymerUtils::createModelTree);
             if (convert instanceof JsonObject
                     && !((JsonObject) convert).hasKey("nodeId")) {
+
                 ((JsonObject) convert).put("nodeId", node.getId());
+                registerChangeHandlers(node, feature, convert);
             }
             return convert;
         } else if (object instanceof MapProperty) {
             MapProperty property = (MapProperty) object;
             if (property.getMap().getId() == NodeFeatures.BASIC_TYPE_VALUE) {
-                return convertToJson(property.getValue());
+                return createModelTree(property.getValue());
             } else {
                 JsonObject convertedObject = Json.createObject();
                 convertedObject.put(property.getName(),
-                        convertToJson(property.getValue()));
+                        createModelTree(property.getValue()));
                 return convertedObject;
             }
         } else {
             return WidgetUtil.crazyJsoCast(object);
         }
+    }
+
+    private static void registerChangeHandlers(StateNode node,
+            NodeFeature feature, JsonValue value) {
+
+        JsArray<EventRemover> registrations = JsCollections.array();
+        if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            assert feature instanceof NodeMap : "Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. It should be NodeMap, but it is: "
+                    + feature;
+            NodeMap map = (NodeMap) feature;
+            registerPropertyChangeHandlers(value, registrations,
+                    map);
+            registerPropertyAddHandler(value, registrations, map);
+        } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+            assert feature instanceof NodeList : "Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. It should be NodeList, but it is: "
+                    + feature;
+            NodeList list = (NodeList) feature;
+            registrations.push(list.addSpliceListener(
+                    event -> handleListChange(event, value)));
+        }
+        assert !registrations
+                .isEmpty() : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
+
+        registrations.push(node.addUnregisterListener(
+                event -> registrations.forEach(EventRemover::remove)));
+    }
+
+    private static void registerPropertyAddHandler(JsonValue value,
+            JsArray<EventRemover> registrations, NodeMap map) {
+        registrations.push(map.addPropertyAddListener(event -> {
+            MapProperty property = event.getProperty();
+            registrations.push(property.addChangeListener(
+                    change -> handlePropertyChange(property, value)));
+            handlePropertyChange(property, value);
+        }));
+    }
+
+    private static void registerPropertyChangeHandlers(
+            JsonValue value, JsArray<EventRemover> registrations, NodeMap map) {
+        map.forEachProperty((property, propertyName) -> registrations
+                .push(property.addChangeListener(
+                        event -> handlePropertyChange(property, value))));
+    }
+
+    private static void handleListChange(ListSpliceEvent event,
+            JsonValue value) {
+        Reactive.addFlushListener(() -> doHandleListChange(event, value));
+    }
+
+    private static void doHandleListChange(ListSpliceEvent event,
+            JsonValue value) {
+        JsArray<?> add = event.getAdd();
+        int index = event.getIndex();
+        int remove = event.getRemove().length();
+        StateNode node = event.getSource().getNode();
+        StateNode root = getFirstParentWithDomNode(node);
+        if (root == null) {
+            Console.warn("Root node for node " + node.getId()
+                    + " could not be found");
+            return;
+        }
+
+        JsArray<Object> array = JsCollections.array();
+        add.forEach(item -> array.push(createModelTree(item)));
+
+        if (isPolymerElement((Element) root.getDomNode())) {
+            String path = getNotificationPath(root, node, null);
+            if (path != null) {
+
+                splice((Element) root.getDomNode(), path, index, remove,
+                        WidgetUtil.crazyJsoCast(array));
+                return;
+            }
+        }
+        @SuppressWarnings("unchecked")
+        JsArray<Object> payload = (JsArray<Object>) value;
+        payload.spliceArray(index, remove, array);
+    }
+
+    private static void handlePropertyChange(MapProperty property,
+            JsonValue bean) {
+        Reactive.addFlushListener(() -> doHandlePropertyChange(property, bean));
+    }
+
+    private static void doHandlePropertyChange(MapProperty property,
+            JsonValue value) {
+        String propertyName = property.getName();
+        StateNode node = property.getMap().getNode();
+        StateNode root = getFirstParentWithDomNode(node);
+        if (root == null) {
+            Console.warn("Root node for node " + node.getId()
+                    + " could not be found");
+            return;
+        }
+        JsonValue modelTree = createModelTree(property.getValue());
+
+        if (isPolymerElement((Element) root.getDomNode())) {
+            String path = getNotificationPath(root, node, propertyName);
+            if (path != null) {
+                setProperty((Element) root.getDomNode(), path, modelTree);
+            }
+            return;
+        }
+        WidgetUtil.setJsProperty(value, propertyName, modelTree);
+    }
+
+    private static String getNotificationPath(StateNode rootNode,
+            StateNode currentNode, String propertyName) {
+
+        JsArray<String> path = JsCollections.array();
+        if (propertyName != null) {
+            path.push(propertyName);
+        }
+        return doGetNotificationPath(rootNode, currentNode, path);
+    }
+
+    private static String doGetNotificationPath(StateNode rootNode,
+            StateNode currentNode, JsArray<String> path) {
+
+        StateNode parent = currentNode.getParent();
+        if (parent.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            String propertyPath = getPropertiesNotificationPath(currentNode);
+            if (propertyPath == null) {
+                return null;
+            }
+            path.push(propertyPath);
+        } else if (parent.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+            String listPath = getListNotificationPath(currentNode);
+            if (listPath == null) {
+                return null;
+            }
+            path.push(listPath);
+        }
+        if (!parent.equals(rootNode)) {
+            return doGetNotificationPath(rootNode, parent, path);
+        }
+
+        StringBuilder pathBuilder = new StringBuilder();
+        String sep = "";
+        for (int i = path.length() - 1; i >= 0; i--) {
+            pathBuilder.append(sep).append(path.get(i));
+            sep = ".";
+        }
+        return pathBuilder.toString();
+    }
+
+    private static String getListNotificationPath(StateNode currentNode) {
+        int indexInTheList = -1;
+        NodeList children = currentNode.getParent()
+                .getList(NodeFeatures.TEMPLATE_MODELLIST);
+
+        for (int i = 0; i < children.length(); i++) {
+            Object object = children.get(i);
+            if (currentNode.equals(object)) {
+                indexInTheList = i;
+                break;
+            }
+        }
+
+        if (indexInTheList < 0) {
+            return null;
+        }
+        return String.valueOf(indexInTheList);
+    }
+
+    private static String getPropertiesNotificationPath(StateNode currentNode) {
+        String propertyNameInTheMap = null;
+        NodeMap map = currentNode.getParent()
+                .getMap(NodeFeatures.ELEMENT_PROPERTIES);
+
+        JsArray<String> propertyNames = map.getPropertyNames();
+        for (int i = 0; i < propertyNames.length(); i++) {
+            String propertyName = propertyNames.get(i);
+            if (currentNode.equals(map.getProperty(propertyName).getValue())) {
+                propertyNameInTheMap = propertyName;
+                break;
+            }
+        }
+        if (propertyNameInTheMap == null) {
+            return null;
+        }
+        return propertyNameInTheMap;
+    }
+
+    /**
+     * Gets the first parent node that also has a DOM Node attached to it.
+     * 
+     * @param node
+     *            the node
+     * @return the first parent node with a DOM Node, or <code>null</code> if
+     *         none can be found
+     */
+    private static StateNode getFirstParentWithDomNode(StateNode node) {
+        StateNode parent = node.getParent();
+        while (parent != null && parent.getDomNode() == null) {
+            parent = parent.getParent();
+        }
+        return parent;
     }
 
     /**
@@ -356,6 +562,9 @@ public final class PolymerUtils {
      */
     public static void addReadyListener(Element polymerElement,
             Runnable listener) {
+        if (readyListeners == null) {
+            readyListeners = JsCollections.weakMap();
+        }
         JsSet<Runnable> set = readyListeners.get(polymerElement);
         if (set == null) {
             set = JsCollections.set();
@@ -371,6 +580,9 @@ public final class PolymerUtils {
      *            the custom (polymer) element whose state is "ready"
      */
     public static void fireReadyEvent(Element polymerElement) {
+        if (readyListeners == null) {
+            return;
+        }
         JsSet<Runnable> listeners = readyListeners.get(polymerElement);
         if (listeners != null) {
             readyListeners.delete(polymerElement);
@@ -396,5 +608,21 @@ public final class PolymerUtils {
         }
         return null;
     }
+
+    /**
+     * Sets a property to an element by using the Polymer {@code set} method.
+     * 
+     * @param element
+     *            the element to set the property to
+     * @param path
+     *            the path of the property
+     * @param value
+     *            the value
+     */
+    public static native void setProperty(Element element, String path,
+            Object value)
+    /*-{
+         element.set(path, value);
+     }-*/;
 
 }
