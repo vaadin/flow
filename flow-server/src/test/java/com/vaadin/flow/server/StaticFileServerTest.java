@@ -45,7 +45,6 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.startup.FakeBrowser;
 
 public class StaticFileServerTest implements Serializable {
 
@@ -258,7 +257,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isResourceRequest() throws Exception {
         setupRequestURI("", "/static", "/file.png");
-        Mockito.when(servletService.getResource("/static/file.png", FakeBrowser.getEs6(), null))
+        Mockito.when(servletService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
         Assert.assertTrue(fileServer.isStaticResourceRequest(request));
     }
@@ -266,7 +265,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isResourceRequestWithContextPath() throws Exception {
         setupRequestURI("/foo", "/static", "/file.png");
-        Mockito.when(servletService.getResource("/static/file.png", FakeBrowser.getEs6(), null))
+        Mockito.when(servletService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
         Assert.assertTrue(fileServer.isStaticResourceRequest(request));
     }
@@ -440,7 +439,7 @@ public class StaticFileServerTest implements Serializable {
         setupRequestURI("", "/some", "/file.js");
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
-        Mockito.when(servletService.getResource("/some/file.js", FakeBrowser.getEs6(), null)).thenReturn(
+        Mockito.when(servletService.getStaticResource("/some/file.js")).thenReturn(
                 createFileURLWithDataAndLength("/some/file.js", fileData));
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
@@ -460,7 +459,7 @@ public class StaticFileServerTest implements Serializable {
 
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
-        Mockito.when(servletService.getResource("/some/file.js", FakeBrowser.getEs6(), null))
+        Mockito.when(servletService.getStaticResource("/some/file.js"))
                 .thenReturn(createFileURLWithDataAndLength("/some/file.js",
                         fileData, fileModified));
 

@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
-import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -52,10 +50,8 @@ public class StaticFileServer implements Serializable {
     /**
      * Constructs a file server.
      *
-     * @param servlet
-     *            the servlet using this server, not <code>null</code>
      * @param servletService
-     *            configuration for the deployment, not <code>null</code>
+     *            servlet service for the deployment, not <code>null</code>
      */
     public StaticFileServer(VaadinServletService servletService) {
         this.servletService = servletService;
@@ -87,13 +83,9 @@ public class StaticFileServer implements Serializable {
             // We rather serve 404 than let it fall through
             return true;
         }
-        resource = getResource(requestFilename);
+        resource = servletService.getStaticResource(requestFilename);
 
         return resource != null;
-    }
-
-    private URL getResource(String path) {
-            return servletService.getResource(path, FakeBrowser.getEs6(), null);
     }
 
     /**
@@ -113,7 +105,7 @@ public class StaticFileServer implements Serializable {
     public boolean serveStaticResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         String filenameWithPath = getRequestFilename(request);
-        URL resourceUrl = getResource(filenameWithPath);
+        URL resourceUrl = servletService.getStaticResource(filenameWithPath);
 
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR

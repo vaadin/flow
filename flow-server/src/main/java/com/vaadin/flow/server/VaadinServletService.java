@@ -16,15 +16,14 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,6 +191,17 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
+    public URL getStaticResource(String path) {
+        try {
+            return getServlet().getServletContext().getResource(path);
+        } catch (MalformedURLException e) {
+            getLogger().warn("Error finding resource for '{}'", path, e);
+        }
+
+        return null;
+    }
+
+    @Override
     public URL getResource(String path, WebBrowser browser,
             AbstractTheme theme) {
         return getResourceInServletContextOrWebJar(
@@ -208,8 +218,8 @@ public class VaadinServletService extends VaadinService {
     @Override
     public Optional<String> getThemedUrl(String url, WebBrowser browser,
             AbstractTheme theme) {
-        if (theme != null
-                && !resolveResource(url, browser).equals(getThemedOrRawPath(url, browser, theme))) {
+        if (theme != null && !resolveResource(url, browser)
+                .equals(getThemedOrRawPath(url, browser, theme))) {
             return Optional.of(theme.translateUrl(url));
         }
         return Optional.empty();
