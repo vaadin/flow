@@ -337,6 +337,8 @@ public class ComponentUtil {
      *
      * @see Component#fireEvent(ComponentEvent)
      *
+     * @param <T>
+     *            the type of the component
      * @param component
      *            the component for which to fire events
      * @param componentEvent
@@ -488,6 +490,8 @@ public class ComponentUtil {
      * @see #setData(Component, String, Object)
      * @see #getData(Component, Class)
      *
+     * @param <T>
+     *            the data instance type
      * @param component
      *            the component for which to set the data
      * @param type
@@ -533,6 +537,8 @@ public class ComponentUtil {
      *
      * @see #setData(Component, Class, Object)
      *
+     * @param <T>
+     *            the data instance type
      * @param component
      *            the component from which to get the data
      * @param type

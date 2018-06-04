@@ -880,7 +880,7 @@ public class UIInternals implements Serializable {
      * Sets the application id tied with this UI. Different applications in the
      * same page have different unique ids.
      *
-     * param appId the id of the application tied with this UI
+     * @param appId the id of the application tied with this UI
      */
     public void setAppId(String appId) {
         this.appId = appId;

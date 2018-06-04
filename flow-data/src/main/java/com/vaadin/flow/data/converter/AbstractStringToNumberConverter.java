@@ -132,6 +132,8 @@ public abstract class AbstractStringToNumberConverter<T extends Number>
     /**
      * Gets the error message to use when conversion fails.
      *
+     * @param context
+     *            The value context for generating the error message
      * @return the error message
      */
     protected String getErrorMessage(ValueContext context) {

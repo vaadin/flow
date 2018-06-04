@@ -279,6 +279,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * Gets an annotation from the topmost class in the current navigation
          * target hierarchy.
          *
+         * @param <T>
+         *            the type of the annotation
          * @param annotationType
          *            the type of the annotation to get
          * @return an annotation, or an empty optional if there is no current
@@ -298,6 +300,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * Gets a a list of annotations from the topmost class in the current
          * navigation target hierarchy.
          *
+         * @param <T>
+         *            the type of the annotations
          * @param annotationType
          *            the type of the annotation to get
          * @return a list of annotation, or an empty list if there is no current
