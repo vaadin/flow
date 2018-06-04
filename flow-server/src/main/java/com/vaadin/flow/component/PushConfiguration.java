@@ -167,7 +167,8 @@ public interface PushConfiguration extends Serializable {
     /**
      * Sets the factory that will be used to create new instances of {@link PushConnection}.
      *
-     * @param factory the factory that will be used to create new instances of {@link PushConnection}
+     * @param factory
+     *            the factory that will be used to create new instances of {@link PushConnection}
      */
     void setPushConnectionFactory(PushConnectionFactory factory);
 
