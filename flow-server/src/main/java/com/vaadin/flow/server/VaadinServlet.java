@@ -80,7 +80,7 @@ public class VaadinServlet extends HttpServlet {
 
         DeploymentConfiguration deploymentConfiguration = servletService
                 .getDeploymentConfiguration();
-        staticFileServer = new StaticFileServer(this, deploymentConfiguration);
+        staticFileServer = new StaticFileServer(servletService);
 
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -22,14 +24,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -46,7 +46,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  */
 public class StaticFileServer implements Serializable {
     private final ResponseWriter responseWriter = new ResponseWriter();
-    private final VaadinServlet servlet;
+    private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
 
     /**
@@ -54,13 +54,13 @@ public class StaticFileServer implements Serializable {
      *
      * @param servlet
      *            the servlet using this server, not <code>null</code>
-     * @param deploymentConfiguration
+     * @param servletService
      *            configuration for the deployment, not <code>null</code>
      */
-    public StaticFileServer(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration) {
-        this.servlet = servlet;
-        this.deploymentConfiguration = deploymentConfiguration;
+    public StaticFileServer(VaadinServletService servletService) {
+        this.servletService = servletService;
+        this.deploymentConfiguration = servletService
+                .getDeploymentConfiguration();
     }
 
     /**
@@ -93,14 +93,7 @@ public class StaticFileServer implements Serializable {
     }
 
     private URL getResource(String path) {
-        try {
-            return servlet.getServletContext().getResource(path);
-        } catch (MalformedURLException exception) {
-            LoggerFactory.getLogger(StaticFileServer.class)
-                    .trace("Failed to parse url {}.", path, exception);
-        }
-        return null;
-
+            return servletService.getResource(path, FakeBrowser.getEs6(), null);
     }
 
     /**
