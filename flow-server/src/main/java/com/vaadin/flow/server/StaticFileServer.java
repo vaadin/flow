@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,21 +44,19 @@ import com.vaadin.flow.shared.ApplicationConstants;
  */
 public class StaticFileServer implements Serializable {
     private final ResponseWriter responseWriter = new ResponseWriter();
-    private final VaadinServlet servlet;
+    private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
 
     /**
      * Constructs a file server.
      *
-     * @param servlet
-     *            the servlet using this server, not <code>null</code>
-     * @param deploymentConfiguration
-     *            configuration for the deployment, not <code>null</code>
+     * @param servletService
+     *            servlet service for the deployment, not <code>null</code>
      */
-    public StaticFileServer(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration) {
-        this.servlet = servlet;
-        this.deploymentConfiguration = deploymentConfiguration;
+    public StaticFileServer(VaadinServletService servletService) {
+        this.servletService = servletService;
+        this.deploymentConfiguration = servletService
+                .getDeploymentConfiguration();
     }
 
     /**
@@ -87,20 +83,9 @@ public class StaticFileServer implements Serializable {
             // We rather serve 404 than let it fall through
             return true;
         }
-        resource = getResource(requestFilename);
+        resource = servletService.getStaticResource(requestFilename);
 
         return resource != null;
-    }
-
-    private URL getResource(String path) {
-        try {
-            return servlet.getServletContext().getResource(path);
-        } catch (MalformedURLException exception) {
-            LoggerFactory.getLogger(StaticFileServer.class)
-                    .trace("Failed to parse url {}.", path, exception);
-        }
-        return null;
-
     }
 
     /**
@@ -120,7 +105,7 @@ public class StaticFileServer implements Serializable {
     public boolean serveStaticResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         String filenameWithPath = getRequestFilename(request);
-        URL resourceUrl = getResource(filenameWithPath);
+        URL resourceUrl = servletService.getStaticResource(filenameWithPath);
 
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR

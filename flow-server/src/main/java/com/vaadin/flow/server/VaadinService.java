@@ -16,8 +16,9 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,10 +46,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +76,7 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -2150,6 +2148,18 @@ public abstract class VaadinService implements Serializable {
         UIInitEvent initEvent = new UIInitEvent(ui, this);
         uiInitListeners.forEach(listener -> listener.uiInit(initEvent));
     }
+
+    /**
+     * Returns a URL to the static resource at the given URI or null if no file
+     * found.
+     *
+     * @param url
+     *            the URL for the resource
+     *
+     * @return the resource located at the named path, or <code>null</code> if
+     *         there is no resource at that path
+     */
+    public abstract URL getStaticResource(String url);
 
     /**
      * Returns a URL to the resource at the given Vaadin URI.
