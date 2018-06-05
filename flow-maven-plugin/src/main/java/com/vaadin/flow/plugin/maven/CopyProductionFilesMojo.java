@@ -29,6 +29,7 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
+import java.util.Arrays;
 
 /**
  * Goal that copies all production mode files into the
@@ -57,6 +58,19 @@ public class CopyProductionFilesMojo extends AbstractMojo {
                 .map(artifact -> new ArtifactData(artifact.getFile(),
                         artifact.getArtifactId(), artifact.getVersion()))
                 .collect(Collectors.toList());
+        
+        if(!frontendWorkingDirectory.exists()) {
+            // No directory found from given (most likely default) location,
+            // check for alternative location like for Spring boot projects
+            for(String dir : Arrays.asList("src/main/resources/META-INF/resources/frontend","src/main/resources/public/frontend","src/main/resources/static/frontend")) {
+                File directory = new File(project.getBasedir(), dir);
+                if(directory.exists()) {
+                    frontendWorkingDirectory = directory;
+                    break;
+                }
+            }
+        }
+        
         new ProductionModeCopyStep(new JarContentsManager(), projectArtifacts)
                 .copyWebApplicationFiles(copyOutputDirectory,
                         frontendWorkingDirectory, excludes);
