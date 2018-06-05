@@ -29,53 +29,53 @@ import com.vaadin.flow.dom.ThemeList;
 public interface HasTheme extends HasElement {
 
     /**
-     * Adds a theme property name to this component.
+     * Adds a theme name to this component.
      *
      * @param themeName
-     *            the theme property name to add, not <code>null</code>
+     *            the theme name to add, not <code>null</code>
      */
-    default void addThemeProperty(String themeName) {
-        getThemeProperties().add(themeName);
+    default void addThemeName(String themeName) {
+        getThemeNames().add(themeName);
     }
 
     /**
-     * Removes a theme property name from this component.
+     * Removes a theme name from this component.
      *
      * @param themeName
-     *            the theme property name to remove, not <code>null</code>
+     *            the theme name to remove, not <code>null</code>
      * @return <code>true</code> if the theme name was removed,
      *         <code>false</code> if the theme list didn't contain the theme
      *         name
      */
-    default boolean removeThemeProperty(String themeName) {
-        return getThemeProperties().remove(themeName);
+    default boolean removeThemeName(String themeName) {
+        return getThemeNames().remove(themeName);
     }
 
     /**
-     * Sets the theme property names of this component. This method overwrites
+     * Sets the theme names of this component. This method overwrites
      * any previous set theme names.
      *
      * @param themeName
      *            a space-separated string of theme names to set, or
      *            empty string to remove all theme names
      */
-    default void setThemeProperty(String themeName) {
+    default void setThemeName(String themeName) {
         getElement().setAttribute("theme", themeName);
     }
 
     /**
-     * Gets the theme property names for this component.
+     * Gets the theme names for this component.
      *
      * @return a space-separated string of theme names, empty string if
      *         there are no theme names or <code>null</code> if attribute
      *         (theme) is not set at all
      */
-    default String getThemeProperty() {
+    default String getThemeName() {
         return getElement().getAttribute("theme");
     }
 
     /**
-     * Gets the set of theme property names used for this element. The returned
+     * Gets the set of theme names used for this element. The returned
      * set can be modified to add or remove theme names. The contents of the 
      * set is also reflected in the value of the <code>theme</code> attribute.
      *
@@ -83,7 +83,7 @@ public interface HasTheme extends HasElement {
      *
      * @return a list of theme names, never <code>null</code>
      */
-    default ThemeList getThemeProperties() {
+    default ThemeList getThemeNames() {
         return getElement().getThemeList();
     }
 
@@ -96,8 +96,8 @@ public interface HasTheme extends HasElement {
      *            <code>true</code> to set the theme name, <code>false</code> to
      *            remove it
      */
-    default void setThemeProperty(String themeName, boolean set) {
-        getThemeProperties().set(themeName, set);
+    default void setThemeName(String themeName, boolean set) {
+        getThemeNames().set(themeName, set);
     }
 
     /**
@@ -108,30 +108,28 @@ public interface HasTheme extends HasElement {
      * @return <code>true</code> if the component has the given theme name,
      *         <code>false</code> otherwise
      */
-    default boolean hasThemeProperty(String themeName) {
-        return getThemeProperties().contains(themeName);
+    default boolean hasThemeName(String themeName) {
+        return getThemeNames().contains(themeName);
     }
 
     /**
-     * Adds one or more theme property names to this component. Multiple theme
+     * Adds one or more theme names to this component. Multiple theme
      * names can be specified by using multiple parameters.
      *
-     * @param themeNames the theme property name or theme names to be added to
-     *                  the component
+     * @param themeNames the theme name or theme names to be added to the component
      */
-    default void addThemeProperties(String... themeNames) {
-        getThemeProperties().addAll(Arrays.asList(themeNames));
+    default void addThemeNames(String... themeNames) {
+        getThemeNames().addAll(Arrays.asList(themeNames));
     }
 
     /**
-     * Removes one or more theme property names from component. Multiple theme
-     * names can be specified by using multiple parameters.
+     * Removes one or more theme names from component. Multiple theme names can be
+     * specified by using multiple parameters.
      *
-     * @param themeNames the theme property name or theme names to be removed
-     *                   from the component
+     * @param themeNames the theme name or theme names to be removed from the component
      */
-    default void removeThemeProperties(String... themeNames) {
-        getThemeProperties().removeAll(Arrays.asList(themeNames));
+    default void removeThemeNames(String... themeNames) {
+        getThemeNames().removeAll(Arrays.asList(themeNames));
     }
     
 }
