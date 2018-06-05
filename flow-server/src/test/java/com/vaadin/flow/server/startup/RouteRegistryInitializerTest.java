@@ -63,6 +63,7 @@ import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -1280,6 +1281,10 @@ public class RouteRegistryInitializerTest {
     public static class ThemeAliasView extends Component {
     }
 
+    public static class ThemeSingleNavigationTargetSubclass
+            extends ThemeSingleNavigationTarget {
+    }
+
     @Test
     public void onStartUp_wrong_position_theme_view_layout_throws()
             throws ServletException {
@@ -1352,6 +1357,23 @@ public class RouteRegistryInitializerTest {
                 servletContext);
     }
 
+    @Test
+    public void registerNavigationTargetWithTheme_subclassGetsTheme()
+            throws ServletException {
+        routeRegistryInitializer
+                .onStartup(Stream.of(ThemeSingleNavigationTarget.class)
+                        .collect(Collectors.toSet()), servletContext);
+
+        Optional<ThemeDefinition> theme = registry.getThemeFor(
+                ThemeSingleNavigationTargetSubclass.class, "single");
+        Assert.assertTrue(
+                "Subclass should have a theme when the superclass has",
+                theme.isPresent());
+        Assert.assertEquals(
+                "Subclass should have the same theme as its superclass",
+                MyTheme.class, theme.get().getTheme());
+    }
+
     @Route("ignored")
     public static class IgnoredView extends Component {
     }
@@ -1372,7 +1394,8 @@ public class RouteRegistryInitializerTest {
 
     // An additional filter to test that it's not enough to have only one
     // passing filter
-    public static class AlwaysTrueRouterFilter implements NavigationTargetFilter {
+    public static class AlwaysTrueRouterFilter
+            implements NavigationTargetFilter {
         @Override
         public boolean testNavigationTarget(
                 Class<? extends Component> navigationTarget) {

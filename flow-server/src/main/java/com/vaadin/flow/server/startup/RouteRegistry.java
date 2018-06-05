@@ -671,8 +671,11 @@ public class RouteRegistry implements Serializable {
                 routeTarget = routes.get().get(routePath);
             }
             if (routeTarget != null) {
-                return Optional
-                        .ofNullable(routeTarget.getThemeFor(navigationTarget));
+                ThemeDefinition theme = routeTarget
+                        .getThemeFor(navigationTarget);
+                if (theme != null) {
+                    return Optional.of(theme);
+                }
             }
         }
         return Optional.ofNullable(

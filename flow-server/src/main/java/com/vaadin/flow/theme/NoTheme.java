@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines that there this class shouldn't log for missing theme.
+ * Defines that the class shouldn't log for missing theme.
  *
  * @author Vaadin Ltd
  */
