@@ -54,7 +54,7 @@ import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
  */
 public class Router implements Serializable {
 
-    private static final Pattern PARAMETER_PATTREN = Pattern
+    private static final Pattern PARAMETER_PATTERN = Pattern
             .compile("/\\{[\\s\\S]*}");
     private RouteResolver routeResolver;
 
@@ -262,7 +262,7 @@ public class Router implements Serializable {
         String routeString = getUrlForTarget(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
                 WildcardParameter.class)) {
-            routeString = PARAMETER_PATTREN.matcher(routeString).replaceAll("");
+            routeString = PARAMETER_PATTERN.matcher(routeString).replaceAll("");
         } else if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             String message = String.format(
                     "Navigation target '%s' requires a parameter and can not be resolved. "
@@ -285,7 +285,7 @@ public class Router implements Serializable {
     public String getUrlBase(Class<? extends Component> navigationTarget) {
         String routeString = getUrlForTarget(navigationTarget);
         return trimRouteString(
-                PARAMETER_PATTREN.matcher(routeString).replaceAll(""));
+                PARAMETER_PATTERN.matcher(routeString).replaceAll(""));
     }
 
     /**
@@ -376,7 +376,7 @@ public class Router implements Serializable {
                 OptionalParameter.class)
                 || ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                         WildcardParameter.class)) {
-            routeString = PARAMETER_PATTREN.matcher(routeString).replaceAll("");
+            routeString = PARAMETER_PATTERN.matcher(routeString).replaceAll("");
         } else {
             throw new NotFoundException(String.format(
                     "The navigation target '%s' has a non optional parameter that needs to be given.",
