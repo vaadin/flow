@@ -30,6 +30,8 @@ public final class HighlightActions {
      * An action which toggles {@code className} class on the target based on
      * its highlight state.
      *
+     * @param <C>
+     *            the target type
      * @param className
      *            the class name to toggle
      * @return the highlight action
@@ -44,6 +46,8 @@ public final class HighlightActions {
      * An action which toggles {@code theme} on the target based on its
      * highlight state.
      *
+     * @param <C>
+     *            the target type
      * @param theme
      *            the theme to toggle
      * @return the highlight action
@@ -58,6 +62,8 @@ public final class HighlightActions {
      * An action which toggles the target's {@code attribute} based on its
      * highlight state.
      *
+     * @param <C>
+     *            the target type
      * @param attribute
      *            the attribute to toggle
      * @return the highlight action
@@ -71,6 +77,8 @@ public final class HighlightActions {
     /**
      * An action which does nothing, regardless of the highlight state.
      *
+     * @param <C>
+     *            the target type
      * @return the highlight action
      */
     public static <C extends HasElement> HighlightAction<C> none() {

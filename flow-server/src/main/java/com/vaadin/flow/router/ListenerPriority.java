@@ -27,22 +27,21 @@ import java.lang.annotation.Target;
  * before they are executed. Listeners that are not annotated with
  * {@literal @}ListenerPriority have a default priority of zero.
  *
- * <p>
- *    <pre>
- *      //will be executed first
- *      &#064;ListenerPriority(5)
- *      class HighPriorityListener implements BeforeEnterListener {
- *      }
+ * <pre>
+ * //will be executed first
+ * &#064;ListenerPriority(5)
+ * class HighPriorityListener implements BeforeEnterListener {
+ * }
  *
- *      //will be executed second, default priority is 0
- *      class YetAnotherListener implements BeforeEnterListener {
- *      }
+ * //will be executed second, default priority is 0
+ * class YetAnotherListener implements BeforeEnterListener {
+ * }
  *
- *      //will be executed third
- *      &#064;ListenerPriority(-5)
- *      class LowPriorityListener implements BeforeEnterListener {
- *      }
- *   </pre>
+ * //will be executed third
+ * &#064;ListenerPriority(-5)
+ * class LowPriorityListener implements BeforeEnterListener {
+ * }
+ * </pre>
  *
  * @author Bernd Hopp
  */

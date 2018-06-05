@@ -257,6 +257,8 @@ public final class JsonUtils {
      * Converts the given map into a JSON object by converting each map value to
      * a JSON value.
      *
+     * @param <T>
+     *            the type of the map values
      * @param map
      *            the map to convert into a JSON object
      * @param itemToJson

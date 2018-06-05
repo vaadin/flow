@@ -147,6 +147,7 @@ public abstract class ClassesSerializableTest {
     /**
      * Performs actual serialization/deserialization
      *
+     * @param <T> the type of the instance
      * @param instance the instance
      * @return the copy of the source object
      * @throws Throwable if something goes wrong.
@@ -258,6 +259,8 @@ public abstract class ClassesSerializableTest {
     /**
      * JARs that will be scanned for classes to test, in addition to classpath
      * directories.
+     *
+     * @return the compiled pattern
      */
     @SuppressWarnings("WeakerAccess")
     protected Pattern getJarPattern() {

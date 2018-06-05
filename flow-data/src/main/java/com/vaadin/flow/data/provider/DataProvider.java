@@ -52,8 +52,8 @@ import com.vaadin.flow.shared.Registration;
  * @see #ofCollection(Collection)
  * @see #ofItems(Object...)
  * @see #fromStream(Stream)
- * @see #fromCallbacks(FetchCallback, CountCallback)
- * @see #fromFilteringCallbacks(FetchCallback, CountCallback)
+ * @see #fromCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)
+ * @see #fromFilteringCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)
  * @see ListDataProvider
  * @see BackEndDataProvider
  */
@@ -282,7 +282,7 @@ public interface DataProvider<T, F> extends Serializable {
      * <p>
      * <strong>Using big streams is not recommended, you should instead use a
      * lazy data provider.</strong> See
-     * {@link #fromCallbacks(FetchCallback, CountCallback)} or
+     * {@link #fromCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)} or
      * {@link BackEndDataProvider} for more info.
      *
      * @param <T>

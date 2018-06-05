@@ -50,6 +50,8 @@ public final class HighlightConditions {
     /**
      * Highlight if the navigation path starts with {@code prefix}.
      *
+     * @param <C>
+     *            the target type
      * @param prefix
      *            the prefix to match on the location path
      * @return the highlight condition
@@ -63,6 +65,8 @@ public final class HighlightConditions {
     /**
      * Always highlight.
      *
+     * @param <C>
+     *            the target type
      * @return an always true highlight condition
      */
     public static <C extends HasElement> HighlightCondition<C> always() {
@@ -72,6 +76,8 @@ public final class HighlightConditions {
     /**
      * Never highlight.
      *
+     * @param <C>
+     *            the target type
      * @return an always false highlight condition
      */
     public static <C extends HasElement> HighlightCondition<C> never() {

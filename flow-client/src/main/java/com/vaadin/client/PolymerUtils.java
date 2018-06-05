@@ -68,7 +68,7 @@ public final class PolymerUtils {
      *
      * @see <a href=
      *      "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer
-     *      docs</a> for more info.
+     *      docs</a>
      */
     public static native void setListValueByIndex(Element htmlNode, String path,
             int listIndex, JsonValue newValue)
@@ -95,7 +95,7 @@ public final class PolymerUtils {
      *
      * @see <a href=
      *      "https://www.polymer-project.org/2.0/docs/devguide/model-data">Polymer
-     *      docs</a> for more info.
+     *      docs</a>
      */
     public static native void splice(Element htmlNode, String path,
             int startIndex, int deleteCount, JsonArray itemsToAdd)
