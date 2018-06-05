@@ -457,7 +457,7 @@ public class Router implements Serializable {
     public static String resolve(Class<?> component, Route route) {
         if(route.value().equals(Route.NAMING_CONVENTION)) {
             String simpleName = component.getSimpleName();
-            if(simpleName.equals("MainView") || simpleName.equals("Main")) {
+            if("MainView".equals(simpleName) || "Main".equals(simpleName)) {
                 return "";
             }
             if(simpleName.endsWith("View")) {
