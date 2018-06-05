@@ -52,21 +52,36 @@ import com.vaadin.flow.plugin.production.TranspilationStep;
  */
 @Mojo(name = "package-for-production", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class PackageForProductionMojo extends AbstractMojo {
+    
+    /**
+     * The directory that contains ES6 source files, such as template files for Flow, during the compilation. Usually those are copied to this location during your build from actual source folder.
+     */
     @Parameter(name = "transpileEs6SourceDirectory", defaultValue = "${project.build.directory}/frontend/", required = true)
     private File transpileEs6SourceDirectory;
 
     @Parameter(name = "transpileWorkingDirectory", defaultValue = "${project.build.directory}/", required = true)
     private File transpileWorkingDirectory;
 
+    /** The directory for processed files. This should end up to your WAR file or somewhere else where your application can find the transpiled files. */ 
     @Parameter(name = "transpileOutputDirectory", defaultValue = "${project.build.directory}/${project.build.finalName}/", required = true)
     private File transpileOutputDirectory;
 
+    /**
+     * The directory name for ES6 output
+     */
     @Parameter(name = "es6OutputDirectoryName", defaultValue = "frontend-es6", required = true)
     private String es6OutputDirectoryName;
 
+    /**
+     * The directory name for ES5 output
+     */
     @Parameter(name = "es5OutputDirectoryName", defaultValue = "frontend-es5", required = true)
     private String es5OutputDirectoryName;
 
+    /**
+     * A property to skip ES5 processing. Makes build faster, but you'll lose
+     * support for older browsers.
+     */
     @Parameter(property = "skipEs5", defaultValue = "false", required = true)
     private boolean skipEs5;
 
