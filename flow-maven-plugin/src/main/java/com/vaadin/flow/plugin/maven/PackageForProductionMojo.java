@@ -98,20 +98,20 @@ public class PackageForProductionMojo extends AbstractMojo {
     private List<Fragment> fragments;
 
     /**
-     * If false sources will not be bundled.
+     * If <code>false</code> sources will not be bundled.
      */
     @Parameter(property = "bundle", defaultValue = "true", required = true)
     private boolean bundle;
 
     /**
-     * If false the ES5 and ES6 code will not be minified. This will help in
+     * If <code>false</code> the ES5 and ES6 code will not be minified. This will help in
      * debugging if there are JS exception in runtime.
      */
     @Parameter(property = "minify", defaultValue = "true", required = true)
     private boolean minify;
 
     /**
-     * If false then the bundle will not receive a hash for the content. This
+     * If <code>false</code> then the bundle will not receive a hash for the content. This
      * will make the bundle not update on content change after it is cached in
      * the browser.
      */
@@ -143,7 +143,7 @@ public class PackageForProductionMojo extends AbstractMojo {
     private int yarnNetworkConcurrency;
 
     /**
-     * If false then maven proxies will be used in the ProxyConfiguration.
+     * If <code>false</code> then maven proxies will be used in the ProxyConfiguration.
      */
     @Parameter(property = "ignoreMavenProxies", defaultValue = "true", required = true)
     private boolean ignoreMavenProxies;
