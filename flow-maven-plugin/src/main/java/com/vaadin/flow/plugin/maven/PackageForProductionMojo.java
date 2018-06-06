@@ -52,54 +52,112 @@ import com.vaadin.flow.plugin.production.TranspilationStep;
  */
 @Mojo(name = "package-for-production", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class PackageForProductionMojo extends AbstractMojo {
+
+    /**
+     * Directory where the source files to use for transpilation are located.
+     * <b>Note!</b> This should match <code>copyOutputDirectory</code>
+     * configuration when using the `copy-production-files` goal.
+     */
     @Parameter(name = "transpileEs6SourceDirectory", defaultValue = "${project.build.directory}/frontend/", required = true)
     private File transpileEs6SourceDirectory;
 
+    /**
+     * The directory where we process the files from. The default is <code>${project.build}</code>.
+     */
     @Parameter(name = "transpileWorkingDirectory", defaultValue = "${project.build.directory}/", required = true)
     private File transpileWorkingDirectory;
 
+    /**
+     * Target base directory where the transpilation output should be stored. The default is <code>${project.build.directory}/${project.build.finalName}</code>.
+     */
     @Parameter(name = "transpileOutputDirectory", defaultValue = "${project.build.directory}/${project.build.finalName}/", required = true)
     private File transpileOutputDirectory;
 
+    /**
+     * Name of the ES6 directory.The default is <code>frontend-es6</code>.
+     */
     @Parameter(name = "es6OutputDirectoryName", defaultValue = "frontend-es6", required = true)
     private String es6OutputDirectoryName;
 
+    /**
+     * Name of the ES5 directory.The default is <code>frontend-es5</code>.
+     */
     @Parameter(name = "es5OutputDirectoryName", defaultValue = "frontend-es5", required = true)
     private String es5OutputDirectoryName;
 
+    /**
+     * If true skip the transpilation of javascript from ES6 to ES5.
+     */
     @Parameter(property = "skipEs5", defaultValue = "false", required = true)
     private boolean skipEs5;
 
+    /**
+     * List of bundle fragments.
+     */
     @Parameter
     private List<Fragment> fragments;
 
+    /**
+     * If <code>false</code> sources will not be bundled.
+     */
     @Parameter(property = "bundle", defaultValue = "true", required = true)
     private boolean bundle;
 
+    /**
+     * If <code>false</code> the ES5 and ES6 code will not be minified. This will help in
+     * debugging if there are JS exception in runtime.
+     */
     @Parameter(property = "minify", defaultValue = "true", required = true)
     private boolean minify;
 
+    /**
+     * If <code>false</code> then the bundle will not receive a hash for the content. This
+     * will make the bundle not update on content change after it is cached in
+     * the browser.
+     */
     @Parameter(property = "hash", defaultValue = "true", required = true)
     private boolean hash;
 
+    /**
+     * Set the bundle configuration json file.
+     */
     @Parameter(property = "bundleConfiguration", defaultValue = "${project.basedir}/bundle-configuration.json")
     private File bundleConfiguration;
 
+    /**
+     * Defines the node version. The default is <code>v8.11.1</code>.
+     */
     @Parameter(name = "nodeVersion", defaultValue = "v8.11.1", required = true)
     private String nodeVersion;
 
+    /**
+     * Defines the yarn version.The default is <code>v1.6.0</code>.
+     */
     @Parameter(name = "yarnVersion", defaultValue = "v1.6.0", required = true)
     private String yarnVersion;
 
+    /**
+     * Set yarn network concurrency.The default is <code>-1</code>.
+     */
     @Parameter(name = "yarnNetworkConcurrency", defaultValue = "-1")
     private int yarnNetworkConcurrency;
 
+    /**
+     * If <code>false</code> then maven proxies will be used in the ProxyConfiguration.
+     */
     @Parameter(property = "ignoreMavenProxies", defaultValue = "true", required = true)
     private boolean ignoreMavenProxies;
 
+    /**
+     * Set the maven session which will be used for maven proxies if they are
+     * not ignored.
+     */
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
+    /**
+     * The maven settings decrypter.
+     */
     @Component(role = SettingsDecrypter.class)
     private SettingsDecrypter decrypter;
 
