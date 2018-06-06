@@ -39,12 +39,19 @@ import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
  */
 @Mojo(name = "copy-production-files", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class CopyProductionFilesMojo extends AbstractMojo {
+    
+    /**
+     * The directory where frontend files are copied for further processing.
+     */
     @Parameter(name = "copyOutputDirectory", defaultValue = "${project.build.directory}/frontend/", required = true)
     private File copyOutputDirectory;
 
     @Parameter(name = "excludes", defaultValue = "**/LICENSE*,**/LICENCE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md,**/bower.json,**/package.json,**/package-lock.json", required = true)
     private String excludes;
 
+    /**
+     * The directory where your source files, such as Vaadin templates, are stored in this project.
+     */
     @Parameter(name = "frontendWorkingDirectory", property = "frontend.working.directory", defaultValue = "${project.basedir}/src/main/webapp/frontend/", required = true)
     private File frontendWorkingDirectory;
 
