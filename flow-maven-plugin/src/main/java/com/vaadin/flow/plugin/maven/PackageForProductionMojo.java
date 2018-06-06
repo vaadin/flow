@@ -70,7 +70,7 @@ public class PackageForProductionMojo extends AbstractMojo {
     /**
      * Target base directory where the transpilation output should be stored. The default is <code>${project.build.directory}/${project.build.finalName}</code>.
      */
-    @Parameter(name = "transpileOutputDirectory", defaultValue = "${project.build.directory}/${project.build.finalName}/", required = true)
+    @Parameter(name = "transpileOutputDirectory")
     private File transpileOutputDirectory;
 
     /**
@@ -166,6 +166,19 @@ public class PackageForProductionMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+
+        if (transpileOutputDirectory == null) {
+            if ("jar".equals(project.getPackaging())
+                    && project.getArtifactMap().containsKey("com.vaadin:vaadin-spring-boot-starter")) {
+                // in spring boot project there is not web app directory
+                transpileOutputDirectory = new File(project.getBuild().getOutputDirectory(), "META-INF/resources");
+            } else {
+                // the default assumes basic war project
+                transpileOutputDirectory = new File(project.getBuild().getDirectory(),
+                        project.getBuild().getFinalName());
+            }
+        }
+
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
                 bundle, minify, hash, transpileEs6SourceDirectory,
                 new AnnotationValuesExtractor(getProjectClassPathUrls()),
@@ -175,8 +188,8 @@ public class PackageForProductionMojo extends AbstractMojo {
                 es6OutputDirectoryName, frontendDataProvider);
         new TranspilationStep(frontendToolsManager, getProxyConfig(),
                 nodeVersion, yarnVersion, yarnNetworkConcurrency)
-                        .transpileFiles(transpileEs6SourceDirectory,
-                                transpileOutputDirectory, skipEs5);
+                .transpileFiles(transpileEs6SourceDirectory,
+                        transpileOutputDirectory, skipEs5);
     }
 
     private Map<String, Set<String>> getFragmentsData(
@@ -184,7 +197,7 @@ public class PackageForProductionMojo extends AbstractMojo {
         return Optional.ofNullable(mavenFragments)
                 .orElse(Collections.emptyList()).stream()
                 .peek(this::verifyFragment).collect(Collectors
-                        .toMap(Fragment::getName, Fragment::getFiles));
+                .toMap(Fragment::getName, Fragment::getFiles));
     }
 
     private void verifyFragment(Fragment fragment) {
@@ -216,7 +229,7 @@ public class PackageForProductionMojo extends AbstractMojo {
         return new ProxyConfig(getMavenProxies().stream()
                 .filter(Proxy::isActive)
                 .map(proxy -> decrypter
-                        .decrypt(new DefaultSettingsDecryptionRequest(proxy)))
+                .decrypt(new DefaultSettingsDecryptionRequest(proxy)))
                 .map(SettingsDecryptionResult::getProxy).map(this::createProxy)
                 .collect(Collectors.toList()));
     }
