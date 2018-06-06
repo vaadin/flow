@@ -40,12 +40,24 @@ import java.util.Arrays;
  */
 @Mojo(name = "copy-production-files", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class CopyProductionFilesMojo extends AbstractMojo {
+
+    /**
+     * Target directory where the files that are used for the production build
+     * will be copied to.
+     */
     @Parameter(name = "copyOutputDirectory", defaultValue = "${project.build.directory}/frontend/", required = true)
     private File copyOutputDirectory;
 
+    /**
+     * Files and directories that should not be copied.
+     */
     @Parameter(name = "excludes", defaultValue = "**/LICENSE*,**/LICENCE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md,**/bower.json,**/package.json,**/package-lock.json", required = true)
     private String excludes;
 
+    /**
+     * Directory from which the files for the production mode build should be
+     * copied from.
+     */
     @Parameter(name = "frontendWorkingDirectory", property = "frontend.working.directory")
     private File frontendWorkingDirectory;
 
