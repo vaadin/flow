@@ -108,6 +108,13 @@ public class PackageForProductionMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        
+        if("jar".equals(project.getPackaging()) && 
+                transpileOutputDirectory.equals(new File(project.getBuild().getOutputDirectory(), project.getBuild().getFinalName()))) {
+            // jar packaging and default value for transpile directory, assume sprinb boot project
+            transpileOutputDirectory = new File(project.getBuild().getOutputDirectory(), "classes");
+        }
+        
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
                 bundle, minify, hash, transpileEs6SourceDirectory,
                 new AnnotationValuesExtractor(getProjectClassPathUrls()),
