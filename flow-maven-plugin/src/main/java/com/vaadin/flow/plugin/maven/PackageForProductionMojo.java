@@ -58,7 +58,7 @@ public class PackageForProductionMojo extends AbstractMojo {
     @Parameter(name = "transpileWorkingDirectory", defaultValue = "${project.build.directory}/", required = true)
     private File transpileWorkingDirectory;
 
-    @Parameter(name = "transpileOutputDirectory", defaultValue = "${project.build.directory}/${project.build.finalName}/", required = true)
+    @Parameter(name = "transpileOutputDirectory")
     private File transpileOutputDirectory;
 
     @Parameter(name = "es6OutputDirectoryName", defaultValue = "frontend-es6", required = true)
@@ -108,11 +108,17 @@ public class PackageForProductionMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        
-        if("jar".equals(project.getPackaging()) && 
-                transpileOutputDirectory.equals(new File(project.getBuild().getOutputDirectory(), project.getBuild().getFinalName()))) {
-            // jar packaging and default value for transpile directory, assume sprinb boot project
-            transpileOutputDirectory = new File(project.getBuild().getOutputDirectory(), "classes");
+
+        if(transpileOutputDirectory == null) {
+            if("jar".equals(project.getPackaging()) && 
+                    project.getArtifactMap().containsKey("com.vaadin:spring-boot-starter")) {
+                // in spring boot project there is not web app directory
+                transpileOutputDirectory = new File(project.getBuild().getDirectory(), "classes");
+            } else {
+                // the default assumes basic war project
+                transpileOutputDirectory = new File(project.getBuild().getDirectory(), 
+                        project.getBuild().getFinalName());
+            }
         }
         
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(

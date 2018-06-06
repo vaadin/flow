@@ -46,7 +46,7 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     @Parameter(name = "excludes", defaultValue = "**/LICENSE*,**/LICENCE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md,**/bower.json,**/package.json,**/package-lock.json", required = true)
     private String excludes;
 
-    @Parameter(name = "frontendWorkingDirectory", property = "frontend.working.directory", defaultValue = "${project.basedir}/src/main/webapp/frontend/", required = true)
+    @Parameter(name = "frontendWorkingDirectory", property = "frontend.working.directory")
     private File frontendWorkingDirectory;
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
@@ -59,10 +59,13 @@ public class CopyProductionFilesMojo extends AbstractMojo {
                         artifact.getArtifactId(), artifact.getVersion()))
                 .collect(Collectors.toList());
         
-        if(!frontendWorkingDirectory.exists()) {
-            // No directory found from given (most likely default) location,
-            // check for alternative location like for Spring boot projects
-            for(String dir : Arrays.asList("src/main/resources/META-INF/resources/frontend","src/main/resources/public/frontend","src/main/resources/static/frontend")) {
+        if(frontendWorkingDirectory == null) {
+            // No directory given, try to find from common locations
+            for(String dir : Arrays.asList(
+                    "src/main/webapp/frontend", 
+                    "src/main/resources/META-INF/resources/frontend", 
+                    "src/main/resources/public/frontend",
+                    "src/main/resources/static/frontend")) {
                 File directory = new File(project.getBasedir(), dir);
                 if(directory.exists()) {
                     frontendWorkingDirectory = directory;
