@@ -61,11 +61,13 @@ public class CopyProductionFilesMojo extends AbstractMojo {
         
         if(frontendWorkingDirectory == null) {
             // No directory given, try to find from common locations
-            for(String dir : Arrays.asList(
-                    "src/main/webapp/frontend", 
+            final List<String> potentialFrontEndDirectories = Arrays.asList(
+                    "src/main/webapp/frontend",
                     "src/main/resources/META-INF/resources/frontend", 
                     "src/main/resources/public/frontend",
-                    "src/main/resources/static/frontend")) {
+                    "src/main/resources/static/frontend",
+                    "src/main/resources/resources/frontend");
+            for(String dir : potentialFrontEndDirectories) {
                 File directory = new File(project.getBasedir(), dir);
                 if(directory.exists()) {
                     frontendWorkingDirectory = directory;

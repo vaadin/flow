@@ -114,7 +114,7 @@ public class PackageForProductionMojo extends AbstractMojo {
             if ("jar".equals(project.getPackaging())
                     && project.getArtifactMap().containsKey("com.vaadin:vaadin-spring-boot-starter")) {
                 // in spring boot project there is not web app directory
-                transpileOutputDirectory = new File(project.getBuild().getDirectory(), "classes/META-INF/resources");
+                transpileOutputDirectory = new File(project.getBuild().getOutputDirectory(), "META-INF/resources");
             } else {
                 // the default assumes basic war project
                 transpileOutputDirectory = new File(project.getBuild().getDirectory(),
