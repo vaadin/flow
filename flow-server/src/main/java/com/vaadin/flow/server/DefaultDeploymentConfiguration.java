@@ -39,8 +39,7 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
             + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
-            + "to disable debug features.\nTo show debug window, add ?debug to "
-            + "your application URL." + SEPARATOR;
+            + "to disable debug features." + SEPARATOR;
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
