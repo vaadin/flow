@@ -19,6 +19,15 @@
       ]
     }
     
+    ready(){
+        super.ready();
+        this.addEventListener("click", function(){
+            if (this.firstChild){
+                this.firstChild.click();
+            }
+        });
+    }
+    
     _asyncAttachRenderedComponentIfAble() {
       this._debouncer = Polymer.Debouncer.debounce(
         this._debouncer,
