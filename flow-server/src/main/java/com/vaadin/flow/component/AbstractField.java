@@ -186,7 +186,7 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
      * changes to child components.
      * <p>
      * If {@link #setModelValue(Object, boolean)} is called from within this
-     * method, then value of the last invocation will be used as the model value
+     * method, the value of the last invocation will be used as the model value
      * instead of the value passed to this method. In this case
      * {@link #setPresentationValue(Object)} will not be called again. Changing
      * the provided value might be useful if the provided value is sanitized.
