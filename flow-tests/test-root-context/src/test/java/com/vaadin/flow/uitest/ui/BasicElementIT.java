@@ -20,10 +20,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.component.Tag;
 
 public class BasicElementIT extends AbstractBasicElementComponentIT {
 
@@ -41,23 +38,6 @@ public class BasicElementIT extends AbstractBasicElementComponentIT {
         Assert.assertEquals("ok",
                 addremovecontainerChildren.get(1).getAttribute("id"));
         // verify the UI still works
-
-        Assert.assertEquals(0, getThankYouCount());
-
-        findElement(By.tagName(Tag.INPUT)).sendKeys("abc" + Keys.TAB);
-        findElement(By.tagName(Tag.BUTTON)).click();
-
-        Assert.assertEquals(1, getThankYouCount());
-
-        String buttonText = getThankYouElements().get(0).getText();
-        String expected = "Thank you for clicking \"Click me\" at \\((\\d+),(\\d+)\\)! The field value is abc";
-        Assert.assertTrue(
-                "Expected '" + expected + "', was '" + buttonText + "'",
-                buttonText.matches(expected));
-
-        // Clicking removes the element
-        getThankYouElements().get(0).click();
-
-        Assert.assertEquals(0, getThankYouCount());
+        assertDomUpdatesAndEventsDoSomething();
     }
 }
