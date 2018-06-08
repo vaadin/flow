@@ -7,8 +7,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public abstract class AbstractBasicElementComponentIT
@@ -17,10 +17,17 @@ public abstract class AbstractBasicElementComponentIT
     @Test
     public void ensureDomUpdatesAndEventsDoSomething() {
         open();
+        assertDomUpdatesAndEventsDoSomething();
+    }
 
+    protected void assertDomUpdatesAndEventsDoSomething() {
         Assert.assertEquals(0, getThankYouCount());
         $(InputTextElement.class).first().setValue("abc");
-        $(NativeButtonElement.class).first().click();
+
+        // Need to call WebElement.click(), because TestBenchElement.click()
+        // clicks with JS which doesn't move the mouse on IE11, and breaks the
+        // mouse coordinate test.
+        $(NativeButtonElement.class).first().getWrappedElement().click();
 
         Assert.assertEquals(1, getThankYouCount());
 
