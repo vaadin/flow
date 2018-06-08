@@ -49,6 +49,12 @@
             <artifactId>vaadin-usage-statistics</artifactId>
             <version>1.0.8</version>
         </dependency>
+
+        <dependency>
+          <groupId>org.webjars.bowergithub.webcomponents</groupId>
+          <artifactId>webcomponentsjs</artifactId>
+          <version>[1.1.0,1.999)</version>
+        </dependency>
     </dependencies>
 
     <build>
