@@ -348,7 +348,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                     // this is the property name of the changed item
                                     var propertyName = prop.substr(index+1);
                                     var currentPropsItem = currentProps.items[arrayIndex];
-                                    if(currentPropsItem != undefined && currentPropsItem.nodeId != null){
+                                    if( currentPropsItem && currentPropsItem.nodeId ){
                                         var nodeId = currentPropsItem.nodeId;
                                         var value = currentPropsItem[propertyName];
     
