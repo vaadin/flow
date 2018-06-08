@@ -41,12 +41,12 @@
         return;
       }
       const renderedComponent = this._getRenderedComponent();
-      if (this.firstElementChild) {
+      if (this.firstChild) {
         if (!renderedComponent) {
           this._clear();
           this._asyncAttachRenderedComponentIfAble();
-        } else if (this.firstElementChild !== renderedComponent){
-          this.replaceChild(renderedComponent, this.firstElementChild);
+        } else if (this.firstChild !== renderedComponent){
+          this.replaceChild(renderedComponent, this.firstChild);
           this.onComponentRendered();
         } else {
           this.onComponentRendered();
