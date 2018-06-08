@@ -102,6 +102,15 @@
                             <goal>test-jar</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>ui</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>ui</classifier>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
