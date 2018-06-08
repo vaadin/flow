@@ -17,7 +17,10 @@ public abstract class AbstractBasicElementComponentIT
     @Test
     public void ensureDomUpdatesAndEventsDoSomething() {
         open();
+        assertDomUpdatesAndEventsDoSomething();
+    }
 
+    protected void assertDomUpdatesAndEventsDoSomething() {
         Assert.assertEquals(0, getThankYouCount());
         $(InputTextElement.class).first().setValue("abc");
 
