@@ -61,6 +61,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
+
 import jsinterop.annotations.JsFunction;
 
 /**
@@ -302,7 +303,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         element.ready = function (){
             originalReady.apply(this, arguments);
             @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
-
+    
             // The  _propertiesChanged method which is replaced above for the element
             // doesn't do anything for items in dom-repeat.
             // Instead it's called with some meaningful info for the <code>dom-repeat</code> element.
@@ -325,9 +326,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 // if dom-repeat is found => replace _propertiesChanged method in the prototype and mark it as replaced.
                 if ( !domRepeat.constructor.prototype.$propChangedModified){
                     domRepeat.constructor.prototype.$propChangedModified = true;
-
+    
                     var changed = domRepeat.constructor.prototype._propertiesChanged;
-
+    
                     domRepeat.constructor.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){
                         changed.apply(this, arguments);
     
@@ -341,36 +342,38 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                             if ( index == 0 ){
                                 var prop = props[i].substr(items.length);
                                 index = prop.indexOf('.');
-                                if ( index >0){
+                                if ( index >0 ){
                                     // this is the index of the changed item
                                     var arrayIndex = prop.substr(0,index);
                                     // this is the property name of the changed item
                                     var propertyName = prop.substr(index+1);
-
-                                    var nodeId = currentProps.items[arrayIndex].nodeId;
-                                    var value = currentProps.items[arrayIndex][propertyName];
-
-                                    // this is an attempt to find the template element
-                                    // which is not available as a context in the protype method
-                                    var host = this.__dataHost;
-                                    // __dataHost is an element in the local DOM which owns the changed data
-                                    // Such elements form a linked list where the head is the dom-repeat (this)
-                                    //  and the tail is the template which owns the local DOM, so this code
-                                    // goes via this list and search for the tail which is supposed to be a template
-                                    while( !host.localName || host.__dataHost ){
-                                        host = host.__dataHost;
-                                    }
+                                    var currentPropsItem = currentProps.items[arrayIndex];
+                                    if( currentPropsItem && currentPropsItem.nodeId ){
+                                        var nodeId = currentPropsItem.nodeId;
+                                        var value = currentPropsItem[propertyName];
     
-                                    $entry(function () {
-                                        @SimpleElementBindingStrategy::handleListItemPropertyChange(*)(nodeId, host, propertyName, value, tree);
-                                    })();
+                                        // this is an attempt to find the template element
+                                        // which is not available as a context in the protype method
+                                        var host = this.__dataHost;
+                                        // __dataHost is an element in the local DOM which owns the changed data
+                                        // Such elements form a linked list where the head is the dom-repeat (this)
+                                        //  and the tail is the template which owns the local DOM, so this code
+                                        // goes via this list and search for the tail which is supposed to be a template
+                                        while( !host.localName || host.__dataHost ){
+                                            host = host.__dataHost;
+                                        }
+    
+                                        $entry(function () {
+                                            @SimpleElementBindingStrategy::handleListItemPropertyChange(*)(nodeId, host, propertyName, value, tree);
+                                        })();
+                                    }
                                 }
                             }
                         }
                     };
                 }
             };
-
+    
             // dom-repeat doesn't have to be in DOM even if template has it
             //  such situation happens if there is dom-if e.g. which evaluates to <code>false</code> initially.
             // in this case dom-repeat is not yet in the DOM tree until dom-if becomes <code>true</code>
@@ -385,7 +388,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
             }
         }
-
+    
     }-*/;
 
     private static void handleListItemPropertyChange(double nodeId,
@@ -395,7 +398,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         // in the prototype which means that it may not use the context from the
         // hookUpPolymerElement method. Only a tree may be use as a context
         // since StateTree is a singleton.
-
         StateNode node = tree.getNode((int) nodeId);
 
         if (!node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
