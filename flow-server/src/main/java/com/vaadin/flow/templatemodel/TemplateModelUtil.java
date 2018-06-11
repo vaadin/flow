@@ -184,12 +184,17 @@ public final class TemplateModelUtil {
             Class<?> javaType) {
         if (propertyType instanceof ParameterizedType) {
             ParameterizedType type = (ParameterizedType) propertyType;
-            if (List.class.isAssignableFrom((Class<?>) type.getRawType())) {
+            while (List.class.isAssignableFrom((Class<?>) type.getRawType())) {
                 if (type.getActualTypeArguments().length > 0) {
-                    Class<?> actualType = (Class<?>) type
-                            .getActualTypeArguments()[0];
+                    Type actualType = type.getActualTypeArguments()[0];
                     if (Objects.equals(actualType, javaType)) {
                         return false;
+                    }
+                    
+                    if (actualType instanceof ParameterizedType) {
+                        type = (ParameterizedType) actualType;
+                    } else {
+                        return true;
                     }
                 }
             }
