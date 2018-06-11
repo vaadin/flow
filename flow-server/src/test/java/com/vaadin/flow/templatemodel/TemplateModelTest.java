@@ -181,6 +181,16 @@ public class TemplateModelTest extends HasCurrentService {
         List<SelfReferentialListBean> getChildren();
     }
     
+    public interface CircularDependencyModel extends TemplateModel {
+        void setItem(CircularDependencyBean bean);
+
+        CircularDependencyBean getItem();
+
+        void setItems(List<CircularDependencyBean> bean);
+
+        List<CircularDependencyBean> getItems();
+    }
+    
     public static class SuperBean {
 
         public void setSubBean(SubSubBean bean) {
@@ -1423,6 +1433,13 @@ public class TemplateModelTest extends HasCurrentService {
     @Test
     public void modelHasReferencesToItself_modelIsCreated() {
         new EmptyDivTemplate<SelfReferentialModel>() {
+            
+        };
+    }
+    
+    @Test
+    public void modelHasBeanWithCircularDependency_modelIsCreated() {
+        new EmptyDivTemplate<CircularDependencyModel>() {
             
         };
     }
