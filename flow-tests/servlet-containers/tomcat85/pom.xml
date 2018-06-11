@@ -53,6 +53,9 @@
                 <configuration>
                     <container>
                         <containerId>tomcat8x</containerId>
+                        <systemProperties>
+                            <vaadin.frontend.url.es5>context://frontend-es6/</vaadin.frontend.url.es5>
+                        </systemProperties>
                         <artifactInstaller>
                             <groupId>org.apache.tomcat</groupId>
                             <artifactId>tomcat</artifactId>
