@@ -88,7 +88,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <testbench.version>6.0.0.rc1</testbench.version>
-        <jetty.version>9.4.9.v20180320</jetty.version>
+        <jetty.version>9.4.11.v20180605</jetty.version>
 
         <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
