@@ -174,11 +174,11 @@ public class TemplateModelTest extends HasCurrentService {
 
     public interface SelfReferentialModel extends TemplateModel{
         void setItem(SelfReferentialBean item);
-        
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         SelfReferentialBean getItem();
         
         void setChildren(SelfReferentialListBean children);
-        
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
         List<SelfReferentialListBean> getChildren();
     }
     
