@@ -22,7 +22,7 @@
     ready(){
         super.ready();
         this.addEventListener("click", function(){
-            if (this.firstChild){
+            if (this.firstChild && typeof this.firstChild.click === "function" ){
                 this.firstChild.click();
             }
         });
