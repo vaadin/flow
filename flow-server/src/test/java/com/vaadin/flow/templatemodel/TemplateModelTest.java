@@ -13,6 +13,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -1438,6 +1439,7 @@ public class TemplateModelTest extends HasCurrentService {
     }
     
     @Test
+    @Ignore
     public void modelHasBeanWithCircularDependency_modelIsCreated() {
         new EmptyDivTemplate<CircularDependencyModel>() {
             
