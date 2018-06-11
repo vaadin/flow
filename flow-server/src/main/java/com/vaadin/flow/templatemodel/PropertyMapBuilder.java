@@ -70,7 +70,6 @@ class PropertyMapBuilder {
                 PropertyFilter propertyFilter,
                 PathLookup<ModelEncoder<?, ?>> outerConverters,
                 PathLookup<ClientUpdateMode> outerClientModes) {
-
             PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
                     propertyName, getExcludeFieldsFilter());
             String prefix = innerFilter.getPrefix();
@@ -165,6 +164,8 @@ class PropertyMapBuilder {
                 .collect(Collectors.toMap(PropertyData::getPropertyName,
                         Function.identity(), PropertyData::merge))
                 .entrySet().stream()
+                .filter(e -> TemplateModelUtil.isNotSelfReferencing(
+                        e.getValue().propertyType, javaType))
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         entry -> entry.getValue().buildProperty(propertyFilter,
                                 converterLookup, updateModeLookup)));

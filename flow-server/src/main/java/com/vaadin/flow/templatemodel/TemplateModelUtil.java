@@ -16,8 +16,12 @@
 package com.vaadin.flow.templatemodel;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -164,5 +168,32 @@ public final class TemplateModelUtil {
 
             return true;
         };
+    }
+
+    /**
+     * Checks whether the type of propertyType is the same as the javaType or if
+     * it refers to it through a generic type parameter of a list which is the
+     * only case of parameterized type currently supported in
+     * {@link TemplateModel}
+     * 
+     * @param propertyType
+     * @param javaType
+     * @return true if it's not self referencing
+     */
+    public static boolean isNotSelfReferencing(Type propertyType,
+            Class<?> javaType) {
+        if (propertyType instanceof ParameterizedType) {
+            ParameterizedType type = (ParameterizedType) propertyType;
+            if (List.class.isAssignableFrom((Class<?>) type.getRawType())) {
+                if (type.getActualTypeArguments().length > 0) {
+                    Class<?> actualType = (Class<?>) type
+                            .getActualTypeArguments()[0];
+                    if (Objects.equals(actualType, javaType)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return !Objects.equals(propertyType, javaType);
     }
 }

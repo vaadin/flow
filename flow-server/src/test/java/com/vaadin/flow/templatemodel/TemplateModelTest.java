@@ -171,6 +171,16 @@ public class TemplateModelTest extends HasCurrentService {
         void setValue(int value);
     }
 
+    public interface SelfReferentialModel extends TemplateModel{
+        void setItem(SelfReferentialBean item);
+        
+        SelfReferentialBean getItem();
+        
+        void setChildren(SelfReferentialListBean children);
+        
+        List<SelfReferentialListBean> getChildren();
+    }
+    
     public static class SuperBean {
 
         public void setSubBean(SubSubBean bean) {
@@ -1410,4 +1420,10 @@ public class TemplateModelTest extends HasCurrentService {
         return map.getPropertyNames().collect(Collectors.toSet());
     }
 
+    @Test
+    public void modelHasReferencesToItself_modelIsCreated() {
+        new EmptyDivTemplate<SelfReferentialModel>() {
+            
+        };
+    }
 }
