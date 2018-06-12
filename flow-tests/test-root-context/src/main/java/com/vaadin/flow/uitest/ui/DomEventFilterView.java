@@ -27,7 +27,6 @@ public class DomEventFilterView extends AbstractDivView {
     public DomEventFilterView() {
         Element space = new Element("input");
         space.setAttribute("id", "space");
-        space.setAttribute("placeholder", "With space listener");
 
         space.addEventListener("keypress",
                 e -> addMessage("Space listener triggered"))
@@ -35,7 +34,6 @@ public class DomEventFilterView extends AbstractDivView {
 
         Element debounce = new Element("input");
         debounce.setAttribute("id", "debounce");
-        debounce.setAttribute("placeholder", "With debounce listeners");
 
         debounce.addEventListener("input",
                 e -> addMessage("Trailing: "
