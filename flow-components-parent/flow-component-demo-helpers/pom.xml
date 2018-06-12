@@ -50,6 +50,12 @@
             <artifactId>vaadin-lumo-theme</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- Shadycss 1.3.0 causing flow components fail on loading files -->
+        <dependency>
+            <groupId>org.webjars.bowergithub.webcomponents</groupId>
+            <artifactId>shadycss</artifactId>
+            <version>1.2.1</version>
+        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-client</artifactId>
