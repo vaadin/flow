@@ -139,6 +139,10 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.MockServletConfig",
                 "com\\.vaadin\\.flow\\.server\\.MockServletContext",
                 "com\\.vaadin\\.flow\\.templatemodel\\.Bean",
+                "com\\.vaadin\\.flow\\.templatemodel\\.SelfReferentialBean",
+                "com\\.vaadin\\.flow\\.templatemodel\\.SelfReferentialListBean",
+                "com\\.vaadin\\.flow\\.templatemodel\\.CircularDependencyBean",
+                "com\\.vaadin\\.flow\\.templatemodel\\.CircularDependencyBeanB",
                 "com\\.vaadin\\.flow\\.internal\\.HasCurrentService",
                 "com\\.vaadin\\.flow\\.component\\.ValueChangeMonitor",
                 "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?");

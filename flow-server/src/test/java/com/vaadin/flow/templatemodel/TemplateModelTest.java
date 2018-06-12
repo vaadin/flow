@@ -13,6 +13,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -171,6 +172,26 @@ public class TemplateModelTest extends HasCurrentService {
         void setValue(int value);
     }
 
+    public interface SelfReferentialModel extends TemplateModel{
+        void setItem(SelfReferentialBean item);
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        SelfReferentialBean getItem();
+        
+        void setChildren(SelfReferentialListBean children);
+        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        List<SelfReferentialListBean> getChildren();
+    }
+    
+    public interface CircularDependencyModel extends TemplateModel {
+        void setItem(CircularDependencyBean bean);
+
+        CircularDependencyBean getItem();
+
+        void setItems(List<CircularDependencyBean> bean);
+
+        List<CircularDependencyBean> getItems();
+    }
+    
     public static class SuperBean {
 
         public void setSubBean(SubSubBean bean) {
@@ -1410,4 +1431,18 @@ public class TemplateModelTest extends HasCurrentService {
         return map.getPropertyNames().collect(Collectors.toSet());
     }
 
+    @Test
+    public void modelHasReferencesToItself_modelIsCreated() {
+        new EmptyDivTemplate<SelfReferentialModel>() {
+            
+        };
+    }
+    
+    @Test
+    @Ignore
+    public void modelHasBeanWithCircularDependency_modelIsCreated() {
+        new EmptyDivTemplate<CircularDependencyModel>() {
+            
+        };
+    }
 }
