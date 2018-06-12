@@ -21,8 +21,10 @@
     
     ready(){
         super.ready();
-        this.addEventListener("click", function(){
-            if (this.firstChild && typeof this.firstChild.click === "function" ){
+        this.addEventListener("click", function(event){
+            if (this.firstChild && 
+                    typeof this.firstChild.click === "function" && 
+                        event.target === this ){
                 this.firstChild.click();
             }
         });
