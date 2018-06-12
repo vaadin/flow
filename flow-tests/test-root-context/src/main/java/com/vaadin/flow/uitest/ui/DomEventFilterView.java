@@ -30,7 +30,8 @@ public class DomEventFilterView extends AbstractDivView {
 
         space.addEventListener("keypress",
                 e -> addMessage("Space listener triggered"))
-                .setFilter("event.key == ' '");
+                .setFilter("event.key == ' ' || event.key == 'Spacebar'");
+        // The key is called 'Spacebar' on IE11
 
         Element debounce = new Element("input");
         debounce.setAttribute("id", "debounce");
