@@ -15,27 +15,24 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.ServletConfig;
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletConfiguration;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
-@VaadinServletConfiguration(productionMode = false)
-public class ViewTestServlet extends VaadinServlet {
-
-    private static ViewClassLocator viewLocator;
-
+@WebServlet("/frontend/*")
+public class WebJarsServlet extends VaadinServlet {
     @Override
-    public void init(ServletConfig servletConfig) throws ServletException {
-        super.init(servletConfig);
-        viewLocator = new ViewClassLocator(getService().getClassLoader());
+    protected void service(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+        // Only serve static and webjar requests, don't delegate anything to
+        // VaadinService
+        if (!serveStaticOrWebJarRequest(request, response)) {
+            response.sendError(404);
+        }
     }
-
-    static ViewClassLocator getViewLocator() {
-        return viewLocator;
-    }
-
 }

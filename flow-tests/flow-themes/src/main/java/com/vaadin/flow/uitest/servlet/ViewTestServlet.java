@@ -23,19 +23,12 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
-@VaadinServletConfiguration(productionMode = false)
+@VaadinServletConfiguration(ui = ExcludeDefaultLumoUI.class, productionMode = false)
 public class ViewTestServlet extends VaadinServlet {
-
-    private static ViewClassLocator viewLocator;
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        viewLocator = new ViewClassLocator(getService().getClassLoader());
-    }
-
-    static ViewClassLocator getViewLocator() {
-        return viewLocator;
     }
 
 }
