@@ -47,7 +47,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        valueAsNumberShim();
+        valueAsNumberShimForIE11();
         addSimpleSync();
         addSyncWithInitialValue();
         addSyncOnKeyup();
@@ -122,15 +122,18 @@ public class SynchronizedPropertyView extends AbstractDivView {
         add(valueLabel, valueAsNumberLabel);
     }
 
-    /*
-     * Fixes the broken behavior of valueAsNumber property on IE11
+    /**
+     * Fixes the broken behavior of valueAsNumber property on IE11, used in
+     * {@link #addSyncMultipleProperties()}
      */
-    private void valueAsNumberShim() {
+    private void valueAsNumberShimForIE11() {
         getPage().executeJavaScript(
         //@formatter:off
         "var input = document.createElement('input');"
       + "input.setAttribute('type', 'number');"
       + "input.setAttribute('value', '123');"
+
+        // This is true only on IE11, and is fixed below:
       + "if (input.value != input.valueAsNumber) {"
       + "    Object.defineProperty(Object.getPrototypeOf(input), 'valueAsNumber', {"
       + "        get: function () { return parseInt(this.value, 10); }"
