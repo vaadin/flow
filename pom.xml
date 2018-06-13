@@ -8,6 +8,12 @@
     <name>Flow</name>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-parent</artifactId>
+        <version>2.0.0</version>
+    </parent>
 
     <modules>
         <module>flow</module>
@@ -563,7 +569,7 @@
             </build>
         </profile>
         <profile>
-            <id>prerelease</id>
+            <id>release</id>
             <modules>
                 <module>flow</module>
                 <module>flow-server</module>
@@ -577,25 +583,6 @@
                 <module>flow-components-parent</module>
                 <module>build-tools</module>
             </modules>
-            <properties>
-                <staging.server.id>vaadin-prerelease-staging</staging.server.id>
-                <!-- staging.server.url is set by the build environment profile -->
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <nexusUrl>${staging.server.url}</nexusUrl>
-                            <serverId>${staging.server.id}</serverId>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
-
 </project>
