@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.testcategory;
 
+import java.io.Serializable;
+
 /**
- * Tests that requires Chrome browser for their execution should be annotated
- * with @ {@code Category(ChromeTests.class} so they can be optionally excluded
- * from the build when needed.
+ * Base for classes and interfaces used as a JUnit test category
  * 
- * @author Vaadin Ltd
- *
+ * @author Vaadin Ltd.
  */
-public interface ChromeTests extends TestCategory {
+public interface TestCategory extends Serializable {
 
 }
