@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -17,25 +18,32 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-resources</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
         </dependency>
         
+         <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-input</artifactId>
             <version>2.2.2</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-slider</artifactId>
             <version>2.0.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.webjars.bowergithub.webcomponents</groupId>
+            <artifactId>shadycss</artifactId>
+            <version>1.2.0-0</version>
         </dependency>
 
         <dependency>
@@ -45,9 +53,9 @@
         </dependency>
 
         <dependency>
-          <groupId>org.webjars.bowergithub.webcomponents</groupId>
-          <artifactId>webcomponentsjs</artifactId>
-          <version>[1.1.0,1.999)</version>
+            <groupId>org.webjars.bowergithub.webcomponents</groupId>
+            <artifactId>webcomponentsjs</artifactId>
+            <version>[1.1.0,1.999)</version>
         </dependency>
     </dependencies>
 
@@ -70,10 +78,11 @@
                         <configuration>
                             <systemProperties>
                                 <systemProperty>
-                                   <!--  re-use the test resources already present in es6 folder -->
-                                   <name>vaadin.frontend.url.es5</name>
-                                   <value>context://frontend-es6/</value>
-                               </systemProperty>
+                                    <!-- re-use the test resources already 
+                                        present in es6 folder -->
+                                    <name>vaadin.frontend.url.es5</name>
+                                    <value>context://frontend-es6/</value>
+                                </systemProperty>
                             </systemProperties>
                         </configuration>
                     </execution>
