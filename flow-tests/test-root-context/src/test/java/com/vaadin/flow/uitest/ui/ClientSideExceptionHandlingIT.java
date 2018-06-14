@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.regex.Pattern;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -31,9 +32,11 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
         open();
         causeException();
 
-        WebElement errorMessage = findElement(ERROR_LOCATOR);
-        Assert.assertTrue(errorMessage.getText(),
-                errorMessage.getText().equals("(TypeError) : Cannot read property 'foo' of null"));
+        String errorMessage = findElement(ERROR_LOCATOR).getText();
+
+        Assert.assertTrue("Unexpected error message: " + errorMessage,
+                Pattern.matches(".*TypeError.* property 'foo' of.*null.*",
+                        errorMessage));
     }
 
     @Test

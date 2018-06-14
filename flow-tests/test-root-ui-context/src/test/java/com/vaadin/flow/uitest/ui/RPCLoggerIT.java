@@ -53,7 +53,7 @@ public class RPCLoggerIT extends ChromeBrowserTest {
 
         WebElement input = findElement(By.tagName("input"));
         input.sendKeys("foo");
-        input.sendKeys(Keys.ENTER);
+        input.sendKeys(Keys.TAB);
         // set text in the input -> server RPC with type "pSync" and required
         // node
         logs = findElements(By.className("log"));

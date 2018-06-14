@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -66,6 +67,7 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
         // message from the client
         Assert.assertEquals("Server value on create: null",
                 labelSyncOnChange.getText());
+        syncOnChangeInitialValue.sendKeys(Keys.END);
         syncOnChangeInitialValue.sendKeys("123");
         blur();
         Assert.assertEquals("Server value in change listener: initial123",
