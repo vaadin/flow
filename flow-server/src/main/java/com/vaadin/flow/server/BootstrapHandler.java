@@ -39,6 +39,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.DataNode;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.DocumentType;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
+import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
@@ -58,21 +69,12 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.ThemeDefinition;
+
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.DataNode;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.DocumentType;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
-import org.jsoup.parser.Tag;
-import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -872,6 +874,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // inside a string or not so we must escape it
         initialUIDLString = SCRIPT_END_TAG_PATTERN.matcher(initialUIDLString)
                 .replaceAll("<\\\\x2F$1");
+
+        // "<!-- <tag>" can create problems in the page, so the tag start needs
+        // to be escaped out
+        int commentIndex = initialUIDLString.indexOf("<!--");
+        if (commentIndex >= 0) {
+            StringBuilder builder = new StringBuilder(
+                    initialUIDLString.substring(0, commentIndex + 4));
+
+            builder.append(initialUIDLString.substring(commentIndex + 4)
+                    .replace("<", "&lt;"));
+            initialUIDLString = builder.toString();
+        }
 
         if (!productionMode) {
             // only used in debug mode by profiler
