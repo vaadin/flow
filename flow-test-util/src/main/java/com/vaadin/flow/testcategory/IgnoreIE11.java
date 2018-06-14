@@ -23,6 +23,6 @@ package com.vaadin.flow.testcategory;
  * @author Vaadin Ltd
  *
  */
-public interface IgnoreIE11 {
+public interface IgnoreIE11 extends TestCategory {
 
 }

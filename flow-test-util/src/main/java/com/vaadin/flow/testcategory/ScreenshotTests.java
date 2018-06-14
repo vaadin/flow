@@ -22,6 +22,6 @@ package com.vaadin.flow.testcategory;
  *
  * @author Vaadin Ltd
  */
-public interface ScreenshotTests {
+public interface ScreenshotTests extends TestCategory {
 
 }
