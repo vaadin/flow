@@ -16,7 +16,6 @@
     </parent>
 
     <modules>
-        <module>flow</module>
         <module>flow-server</module>
         <module>flow-push</module>
         <module>flow-data</module>
@@ -571,7 +570,6 @@
         <profile>
             <id>release</id>
             <modules>
-                <module>flow</module>
                 <module>flow-server</module>
                 <module>flow-push</module>
                 <module>flow-data</module>
