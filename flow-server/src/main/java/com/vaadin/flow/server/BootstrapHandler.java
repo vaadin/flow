@@ -868,8 +868,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         String initialUIDLString = JsonUtil.stringify(initialUIDL, indent);
 
-        // "<!-- <tag>" can create problems in the page, so the '<' symbol needs
-        // to be escaped
+        /*
+         * The < symbol is escaped to prevent two problems:
+         * 
+         * 1 - The browser interprets </script> as end of script no matter if it
+         * is inside a string
+         * 
+         * 2 - Scripts can be injected with <!-- <script>, that can cause
+         * unexpected behavior or complete crash of the app
+         */
         initialUIDLString = initialUIDLString.replace("<", "\\x3C");
 
         if (!productionMode) {
