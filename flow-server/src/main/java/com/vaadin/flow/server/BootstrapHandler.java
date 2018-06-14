@@ -35,7 +35,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -101,8 +100,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_PATH
             + "/client.nocache.js";
-    private static final Pattern SCRIPT_END_TAG_PATTERN = Pattern
-            .compile("</(script)", Pattern.CASE_INSENSITIVE);
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
     private static final String BABEL_HELPERS_JS = readResource(
@@ -870,22 +867,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String appConfigString = JsonUtil.stringify(appConfig, indent);
 
         String initialUIDLString = JsonUtil.stringify(initialUIDL, indent);
-        // Browser interpret </script> as end of script no matter if it is
-        // inside a string or not so we must escape it
-        initialUIDLString = SCRIPT_END_TAG_PATTERN.matcher(initialUIDLString)
-                .replaceAll("<\\\\x2F$1");
 
-        // "<!-- <tag>" can create problems in the page, so the tag start needs
-        // to be escaped out
-        int commentIndex = initialUIDLString.indexOf("<!--");
-        if (commentIndex >= 0) {
-            StringBuilder builder = new StringBuilder(
-                    initialUIDLString.substring(0, commentIndex + 4));
-
-            builder.append(initialUIDLString.substring(commentIndex + 4)
-                    .replace("<", "&lt;"));
-            initialUIDLString = builder.toString();
-        }
+        // "<!-- <tag>" can create problems in the page, so the '<' symbol needs
+        // to be escaped
+        initialUIDLString = initialUIDLString.replace("<", "\\x3C");
 
         if (!productionMode) {
             // only used in debug mode by profiler

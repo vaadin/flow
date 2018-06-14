@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
+import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -23,6 +24,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class InjectScriptTagIT extends ChromeBrowserTest {
 
+    @Test
     public void openPage_scriptIsEscaped() {
         open();
 
@@ -30,11 +32,10 @@ public class InjectScriptTagIT extends ChromeBrowserTest {
                 By.tagName("inject-script-tag-template"));
 
         WebElement div = findInShadowRoot(parent, By.id("value-div")).get(0);
-        Assert.assertEquals("&lt;!-- &lt;script>", div.getText());
+        Assert.assertEquals("<!-- <script>", div.getText());
 
-        WebElement slot = findInShadowRoot(parent, By.id("slot")).get(0);
-        Assert.assertEquals(
-                "<!-- &lt;script> --> &lt;!-- &lt;script>&lt;/script>",
+        WebElement slot = findElement(By.id("slot-1"));
+        Assert.assertEquals("<!-- <script> --><!-- <script></script>",
                 slot.getText());
 
         WebElement button = findInShadowRoot(parent, By.id("change-value"))
@@ -42,9 +43,8 @@ public class InjectScriptTagIT extends ChromeBrowserTest {
         button.click();
 
         Assert.assertEquals("<!-- <SCRIPT>", div.getText());
-
-        slot = findInShadowRoot(parent, By.id("slot")).get(0);
-        Assert.assertEquals("<!-- <script> --> <!-- <script></script>",
+        slot = findElement(By.id("slot-2"));
+        Assert.assertEquals("<!-- <SCRIPT> --><!-- <SCRIPT></SCRIPT>",
                 slot.getText());
     }
 

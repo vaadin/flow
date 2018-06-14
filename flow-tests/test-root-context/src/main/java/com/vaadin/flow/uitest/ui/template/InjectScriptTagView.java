@@ -4,6 +4,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
@@ -23,18 +24,18 @@ public class InjectScriptTagView extends PolymerTemplate<InjectionModel> {
 
     public InjectScriptTagView() {
         getModel().setValue("<!-- <script>");
-        getElement()
-                .appendChild(new Text("<!-- <script> --><!-- <script></script>")
-                        .getElement());
+        Div slot = new Div(new Text("<!-- <script> --><!-- <script></script>"));
+        slot.setId("slot-1");
+        getElement().appendChild(slot.getElement());
     }
 
     @ClientCallable
     private void changeValue() {
         getModel().setValue("<!-- <SCRIPT>");
         getElement().removeAllChildren();
-        getElement()
-                .appendChild(new Text("<!-- <script> --><!-- <script></script>")
-                        .getElement());
+        Div slot = new Div(new Text("<!-- <SCRIPT> --><!-- <SCRIPT></SCRIPT>"));
+        slot.setId("slot-2");
+        getElement().appendChild(slot.getElement());
     }
 
 }
