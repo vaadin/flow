@@ -61,19 +61,19 @@ public class ThemedTemplateIT extends ChromeBrowserTest {
 
         Assert.assertTrue(
                 "The themed HTML file for the template is not added as an HMTL import to the head",
-                hrefs.contains(
-                        "/frontend/com/vaadin/flow/uitest/ui/custom-theme/template/ThemedTemplate.html"));
+                hrefs.stream().anyMatch(href -> href.endsWith(
+                        "/frontend/bower_components/themed-template/theme/myTheme/com/ThemedTemplate.html")));
 
         Assert.assertTrue(
                 "The themed HTML file for the simple relative file (same location as the template file) "
                         + "is not added as an HMTL import to the head",
-                hrefs.contains(
-                        "/frontend/com/vaadin/flow/uitest/ui/custom-theme/template/relative1.html"));
+                hrefs.stream().anyMatch(href -> href.endsWith(
+                        "/frontend/bower_components/themed-template/theme/myTheme/com/relative1.html")));
         Assert.assertTrue(
                 "The themed HTML file for the relative file (located in the parent folder of the template file) "
                         + "is not added as an HMTL import to the head",
-                hrefs.contains(
-                        "/frontend/com/vaadin/flow/uitest/ui/custom-theme/relative2.html"));
+                hrefs.stream().anyMatch(href -> href.endsWith(
+                        "frontend/bower_components/themed-template/theme/myTheme/relative2.html")));
         Assert.assertTrue(
                 "The themed HTML file for the absolute file "
                         + "is not added as an HMTL import to the head",

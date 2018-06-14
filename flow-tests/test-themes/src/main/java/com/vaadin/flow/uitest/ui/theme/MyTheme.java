@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.vaadin.flow.theme.AbstractTheme;
 
 public class MyTheme implements AbstractTheme {
@@ -26,5 +29,11 @@ public class MyTheme implements AbstractTheme {
     @Override
     public String getThemeUrl() {
         return "theme/myTheme/";
+    }
+
+    @Override
+    public List<String> getHeaderInlineContents() {
+        return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
+                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
     }
 }

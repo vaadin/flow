@@ -20,30 +20,13 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.uitest.ui.template.ThemedTemplateView.CustomTheme;
+import com.vaadin.flow.uitest.ui.theme.MyTheme;
 
 @Tag("themed-template")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ThemedTemplate.html")
+@HtmlImport("frontend://bower_components/themed-template/src/com/ThemedTemplate.html")
 @Route(value = "com.vaadin.flow.uitest.ui.template.ThemedTemplateView")
-@Theme(CustomTheme.class)
+@Theme(MyTheme.class)
 public class ThemedTemplateView extends PolymerTemplate<TemplateModel> {
 
-    public static class CustomTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            String pkg = ThemedTemplateView.class.getPackage().getName();
-            int index = pkg.lastIndexOf('.');
-            pkg = pkg.substring(0, index);
-            return "/" + pkg.replace('.', '/');
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return getBaseUrl() + "/custom-theme";
-        }
-
-    }
 }

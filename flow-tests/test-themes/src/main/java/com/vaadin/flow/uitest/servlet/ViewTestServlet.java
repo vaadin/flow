@@ -26,16 +26,9 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
 @VaadinServletConfiguration(productionMode = false)
 public class ViewTestServlet extends VaadinServlet {
 
-    private static ViewClassLocator viewLocator;
-
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        viewLocator = new ViewClassLocator(getService().getClassLoader());
-    }
-
-    static ViewClassLocator getViewLocator() {
-        return viewLocator;
     }
 
 }
