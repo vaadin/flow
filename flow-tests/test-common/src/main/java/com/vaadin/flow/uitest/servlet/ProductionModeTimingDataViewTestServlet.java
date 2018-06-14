@@ -13,18 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.theme;
+package com.vaadin.flow.uitest.servlet;
 
-import com.vaadin.flow.theme.AbstractTheme;
+import javax.servlet.annotation.WebInitParam;
+import javax.servlet.annotation.WebServlet;
 
-public class MyTheme implements AbstractTheme {
-    @Override
-    public String getBaseUrl() {
-        return "src/";
-    }
+import com.vaadin.flow.server.VaadinServletConfiguration;
 
-    @Override
-    public String getThemeUrl() {
-        return "theme/myTheme/";
-    }
+@WebServlet(asyncSupported = true, urlPatterns = {
+        "/view-production-timing/*" }, initParams = @WebInitParam(name = "requestTiming", value = "true"))
+@VaadinServletConfiguration(productionMode = true)
+public class ProductionModeTimingDataViewTestServlet extends ViewTestServlet {
+
 }

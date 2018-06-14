@@ -13,21 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.theme;
+package com.vaadin.flow.uitest.servlet;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
+import javax.servlet.annotation.WebServlet;
 
-@Route(value = "com.vaadin.flow.uitest.ui.theme.CustomStylesView")
-@Theme(Lumo.class)
-@HtmlImport("styles/shared-styles.html")
-public class CustomStylesView extends Div {
+import com.vaadin.flow.server.VaadinServletConfiguration;
 
-    public CustomStylesView() {
-        setText("Custom font size");
-        setId("custom-style");
-    }
+@WebServlet(asyncSupported = true, urlPatterns = { "/view-production/*" })
+@VaadinServletConfiguration(productionMode = true)
+public class ProductionModeViewTestServlet extends ViewTestServlet {
+
 }
