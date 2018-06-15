@@ -26,13 +26,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-
-/**
- * @author Vaadin Ltd.
- */
-public class ScrollIT extends ChromeBrowserTest {
+public class ScrollIT extends AbstractScrollIT {
 
     @Test
     public void scrollPositionIsRestoredAfterNavigatingToNewPageAndBack() {
@@ -58,7 +52,8 @@ public class ScrollIT extends ChromeBrowserTest {
 
         findElement(By.id(LongToOpenView.BACK_BUTTON_ID)).click();
 
-        assertThat("Did not return back on initial page", driver.getCurrentUrl(), is(initialPageUrl));
+        assertThat("Did not return back on initial page",
+                driver.getCurrentUrl(), is(initialPageUrl));
         checkPageScroll(xScrollAmount, yScrollAmount);
     }
 
@@ -121,15 +116,8 @@ public class ScrollIT extends ChromeBrowserTest {
         clickElementWithJs(LongToOpenView.ANCHOR_LINK_ID);
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
-        checkPageScroll(anchorElementLocation.getX(), anchorElementLocation.getY());
+        checkPageScroll(anchorElementLocation.getX(),
+                anchorElementLocation.getY());
     }
 
-    private void checkPageScroll(int x, int y) {
-        assertThat("Unexpected x scroll position", getScrollX(), is(x));
-        assertThat("Unexpected y scroll position", getScrollY(), is(y));
-    }
-
-    private void ensureThatNewPageIsNotScrolled() {
-        checkPageScroll(0, 0);
-    }
 }
