@@ -26,13 +26,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-
-/**
- * @author Vaadin Ltd.
- */
-public class ScrollIT extends ChromeBrowserTest {
+public class ScrollIT extends AbstractScrollIT {
 
     @Test
     public void scrollPositionIsRestoredAfterNavigatingToNewPageAndBack() {
@@ -43,13 +37,13 @@ public class ScrollIT extends ChromeBrowserTest {
         final int yScrollAmount = 400;
 
         scrollBy(xScrollAmount, yScrollAmount);
-        checkPageScroll(xScrollAmount, yScrollAmount);
+        checkPageScroll(xScrollAmount, yScrollAmount, SCROLL_DELTA);
 
         clickElementWithJs(ScrollView.TRANSITION_URL_ID);
 
         while (true) {
             if (Objects.equals(initialPageUrl, driver.getCurrentUrl())) {
-                checkPageScroll(xScrollAmount, yScrollAmount);
+                checkPageScroll(xScrollAmount, yScrollAmount, SCROLL_DELTA);
             } else {
                 ensureThatNewPageIsNotScrolled();
                 break;
@@ -58,8 +52,9 @@ public class ScrollIT extends ChromeBrowserTest {
 
         findElement(By.id(LongToOpenView.BACK_BUTTON_ID)).click();
 
-        assertThat("Did not return back on initial page", driver.getCurrentUrl(), is(initialPageUrl));
-        checkPageScroll(xScrollAmount, yScrollAmount);
+        assertThat("Did not return back on initial page",
+                driver.getCurrentUrl(), is(initialPageUrl));
+        checkPageScroll(xScrollAmount, yScrollAmount, SCROLL_DELTA);
     }
 
     @Test
@@ -73,18 +68,18 @@ public class ScrollIT extends ChromeBrowserTest {
                 By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
 
         scrollBy(xScrollAmount, yScrollAmount);
-        checkPageScroll(xScrollAmount, yScrollAmount);
+        checkPageScroll(xScrollAmount, yScrollAmount, SCROLL_DELTA);
 
         clickElementWithJs(ScrollView.SIMPLE_ANCHOR_URL_ID);
         checkPageScroll(anchorElementLocation.getX(),
-                anchorElementLocation.getY());
+                anchorElementLocation.getY(), SCROLL_DELTA);
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
 
         scrollBy(xScrollAmount, yScrollAmount);
         clickElementWithJs(ScrollView.ROUTER_ANCHOR_URL_ID);
         checkPageScroll(anchorElementLocation.getX(),
-                anchorElementLocation.getY());
+                anchorElementLocation.getY(), SCROLL_DELTA);
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
     }
@@ -106,7 +101,7 @@ public class ScrollIT extends ChromeBrowserTest {
 
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
-        checkPageScroll(originalScrollX, originalScrollY);
+        checkPageScroll(originalScrollX, originalScrollY, SCROLL_DELTA);
     }
 
     @Test
@@ -121,15 +116,8 @@ public class ScrollIT extends ChromeBrowserTest {
         clickElementWithJs(LongToOpenView.ANCHOR_LINK_ID);
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
-        checkPageScroll(anchorElementLocation.getX(), anchorElementLocation.getY());
+        checkPageScroll(anchorElementLocation.getX(),
+                anchorElementLocation.getY(), SCROLL_DELTA);
     }
 
-    private void checkPageScroll(int x, int y) {
-        assertThat("Unexpected x scroll position", getScrollX(), is(x));
-        assertThat("Unexpected y scroll position", getScrollY(), is(y));
-    }
-
-    private void ensureThatNewPageIsNotScrolled() {
-        checkPageScroll(0, 0);
-    }
 }

@@ -24,12 +24,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-/**
- * @author Vaadin Ltd.
- */
-public class MultipleAnchorsIT extends ChromeBrowserTest {
+public class MultipleAnchorsIT extends AbstractScrollIT {
 
     @Test
     public void numerousDifferentAnchorsShouldWorkAndHistoryShouldBePreserved() {
@@ -83,7 +78,7 @@ public class MultipleAnchorsIT extends ChromeBrowserTest {
         driver.navigate().back();
         assertThat("Expected to have initialUrl", driver.getCurrentUrl(),
                 is(initialUrl));
-        checkPageScroll(0, 0);
+        ensureThatNewPageIsNotScrolled();
     }
 
     private void verifyAnchor(int idNumber) {
@@ -94,12 +89,7 @@ public class MultipleAnchorsIT extends ChromeBrowserTest {
                 driver.getCurrentUrl(),
                 endsWith(MultipleAnchorsView.ANCHOR_URL_BASE + idNumber));
         checkPageScroll(anchorElementLocation.getX(),
-                anchorElementLocation.getY());
-    }
-
-    private void checkPageScroll(int x, int y) {
-        assertThat("Unexpected x scroll position", getScrollX(), is(x));
-        assertThat("Unexpected y scroll position", getScrollY(), is(y));
+                anchorElementLocation.getY(), SCROLL_DELTA);
     }
 
     private Long getBrowserHistoryLength() {
