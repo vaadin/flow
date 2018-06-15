@@ -15,20 +15,14 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
-@VaadinServletConfiguration(productionMode = false)
-public class ViewTestServlet extends VaadinServlet {
-
-    @Override
-    public void init(ServletConfig servletConfig) throws ServletException {
-        super.init(servletConfig);
-    }
+@WebServlet(asyncSupported = true, urlPatterns = {
+        "/view-production-timing/*" }, initParams = @WebInitParam(name = "requestTiming", value = "true"))
+@VaadinServletConfiguration(productionMode = true)
+public class ProductionModeTimingDataViewTestServlet extends ViewTestServlet {
 
 }
