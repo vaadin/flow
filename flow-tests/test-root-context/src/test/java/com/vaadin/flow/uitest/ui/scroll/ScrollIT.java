@@ -37,13 +37,13 @@ public class ScrollIT extends AbstractScrollIT {
         final int yScrollAmount = 400;
 
         scrollBy(xScrollAmount, yScrollAmount);
-        checkPageScroll(xScrollAmount, yScrollAmount, SCROLL_DELTA);
+        checkPageScroll(xScrollAmount, yScrollAmount);
 
         clickElementWithJs(ScrollView.TRANSITION_URL_ID);
 
         while (true) {
             if (Objects.equals(initialPageUrl, driver.getCurrentUrl())) {
-                checkPageScroll(xScrollAmount, yScrollAmount, SCROLL_DELTA);
+                checkPageScroll(xScrollAmount, yScrollAmount);
             } else {
                 ensureThatNewPageIsNotScrolled();
                 break;
@@ -54,7 +54,7 @@ public class ScrollIT extends AbstractScrollIT {
 
         assertThat("Did not return back on initial page",
                 driver.getCurrentUrl(), is(initialPageUrl));
-        checkPageScroll(xScrollAmount, yScrollAmount, SCROLL_DELTA);
+        checkPageScroll(xScrollAmount, yScrollAmount);
     }
 
     @Test
@@ -68,18 +68,18 @@ public class ScrollIT extends AbstractScrollIT {
                 By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
 
         scrollBy(xScrollAmount, yScrollAmount);
-        checkPageScroll(xScrollAmount, yScrollAmount, SCROLL_DELTA);
+        checkPageScroll(xScrollAmount, yScrollAmount);
 
         clickElementWithJs(ScrollView.SIMPLE_ANCHOR_URL_ID);
         checkPageScroll(anchorElementLocation.getX(),
-                anchorElementLocation.getY(), SCROLL_DELTA);
+                anchorElementLocation.getY());
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
 
         scrollBy(xScrollAmount, yScrollAmount);
         clickElementWithJs(ScrollView.ROUTER_ANCHOR_URL_ID);
         checkPageScroll(anchorElementLocation.getX(),
-                anchorElementLocation.getY(), SCROLL_DELTA);
+                anchorElementLocation.getY());
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
     }
@@ -101,7 +101,7 @@ public class ScrollIT extends AbstractScrollIT {
 
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
-        checkPageScroll(originalScrollX, originalScrollY, SCROLL_DELTA);
+        checkPageScroll(originalScrollX, originalScrollY);
     }
 
     @Test
@@ -117,7 +117,7 @@ public class ScrollIT extends AbstractScrollIT {
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
         checkPageScroll(anchorElementLocation.getX(),
-                anchorElementLocation.getY(), SCROLL_DELTA);
+                anchorElementLocation.getY());
     }
 
 }

@@ -89,7 +89,7 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
                 driver.getCurrentUrl(),
                 endsWith(MultipleAnchorsView.ANCHOR_URL_BASE + idNumber));
         checkPageScroll(anchorElementLocation.getX(),
-                anchorElementLocation.getY(), SCROLL_DELTA);
+                anchorElementLocation.getY());
     }
 
     private Long getBrowserHistoryLength() {

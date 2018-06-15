@@ -32,6 +32,10 @@ abstract class AbstractScrollIT extends ChromeBrowserTest {
                 IsCloseTo.closeTo(y, delta));
     }
 
+    protected void checkPageScroll(int x, int y) {
+        checkPageScroll(x, y, SCROLL_DELTA);
+    }
+
     protected void ensureThatNewPageIsNotScrolled() {
         checkPageScroll(0, 0, 0);
     }
