@@ -155,7 +155,9 @@
             <id>productionMode</id>
             <activation>
                 <property>
-                    <name>vaadin.productionMode</name>
+                    <!-- In BrowserStack tests are run on IE11, and transpilation is needed -->
+                    <name>test.use.browserstack</name>
+                    <value>true</value>
                 </property>
             </activation>
 
