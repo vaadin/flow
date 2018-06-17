@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -135,6 +136,10 @@ public class PublishedServerEventHandlerRpcHandler
             throw new IllegalStateException(msg);
         } else if (methods.size() == 1) {
             invokeMethod(instance, methods.get(0), args);
+        } else if (Composite.class.equals(clazz)) {
+            Component compositeContent = ((Composite<?>) instance).getContent();
+            invokeMethod(compositeContent, compositeContent.getClass(),
+                    methodName, args);
         } else if (!Component.class.equals(clazz)) {
             invokeMethod(instance, clazz.getSuperclass(), methodName, args);
         } else {

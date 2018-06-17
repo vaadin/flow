@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Element;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,6 +25,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -40,7 +42,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
@@ -53,7 +54,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         private boolean isInvoked;
 
-        ComponentWithMethod() {
+        public ComponentWithMethod() {
             super((clazz, tag, service) -> new TemplateData("",
                     new Element("a")));
         }
@@ -189,6 +190,10 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         }
     }
 
+    public static class CompositeOfComponentWithMethod
+            extends Composite<ComponentWithMethod> {
+    }
+
     @Before
     public void setUp() {
         Assert.assertNull(System.getSecurityManager());
@@ -213,6 +218,16 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         ComponentWithMethod component = new ComponentWithMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", Json.createArray());
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    @Test
+    public void methodIsInvokedOnCompositeContent() {
+        CompositeOfComponentWithMethod composite = new CompositeOfComponentWithMethod();
+        ComponentWithMethod component = composite.getContent();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
+                composite.getClass(), "method", Json.createArray());
 
         Assert.assertTrue(component.isInvoked);
     }
