@@ -24,10 +24,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 /**
  * Tests to validate the ordering of server-side nodes when added alongside
@@ -37,19 +34,19 @@ import com.vaadin.testbench.TestBenchElement;
  */
 public class ChildOrderIT extends ChromeBrowserTest {
 
-    private TestBenchElement root;
+    private WebElement root;
 
     @Before
     public void init() {
         open();
-        waitForElementPresent(By.tagName("child-order-template"));
-        root = $("child-order-template").first();
+        waitForElementPresent(By.id("root"));
+        root = findElement(By.id("root"));
     }
 
     @Test
     public void appendElementsFromServer_elementsAreAddedAfterExistingOnes() {
-        DivElement container = root.$(DivElement.class)
-                .id("containerWithElement");
+        WebElement container = findInShadowRoot(root,
+                By.id("containerWithElement")).get(0);
 
         assertNodeOrder(container, "Client child");
 
@@ -86,8 +83,8 @@ public class ChildOrderIT extends ChromeBrowserTest {
 
     @Test
     public void prependElementsFromServer_elementsAreAddedBeforeExistingOnes() {
-        DivElement container = root.$(DivElement.class)
-                .id("containerWithElement");
+        WebElement container = findInShadowRoot(root,
+                By.id("containerWithElement")).get(0);
 
         assertNodeOrder(container, "Client child");
 
@@ -120,7 +117,8 @@ public class ChildOrderIT extends ChromeBrowserTest {
 
     @Test
     public void appendTextsFromServer_textsAreAddedAfterExistingOnes() {
-        DivElement container = root.$(DivElement.class).id("containerWithText");
+        WebElement container = findInShadowRoot(root,
+                By.id("containerWithText")).get(0);
 
         assertNodeOrder(container, "Client text");
 
@@ -157,7 +155,8 @@ public class ChildOrderIT extends ChromeBrowserTest {
 
     @Test
     public void prependTextsFromServer_textsAreAddedBeforeExistingOnes() {
-        DivElement container = root.$(DivElement.class).id("containerWithText");
+        WebElement container = findInShadowRoot(root,
+                By.id("containerWithText")).get(0);
 
         assertNodeOrder(container, "Client text");
 
@@ -190,8 +189,8 @@ public class ChildOrderIT extends ChromeBrowserTest {
 
     @Test
     public void containerWithElementAddedOnConstructor_orderIsPreserved() {
-        DivElement container = root.$(DivElement.class)
-                .id("containerWithElementAddedOnConstructor");
+        WebElement container = findInShadowRoot(root,
+                By.id("containerWithElementAddedOnConstructor")).get(0);
 
         assertNodeOrder(container, "Client child", "Server child 1",
                 "Server child 2");
@@ -200,8 +199,7 @@ public class ChildOrderIT extends ChromeBrowserTest {
     private void clickAndWaitForContainerToChange(WebElement container,
             String buttonToclick) {
         String innertText = container.getAttribute("innerText");
-        NativeButtonElement button = root.$(NativeButtonElement.class)
-                .id(buttonToclick);
+        WebElement button = findInShadowRoot(root, By.id(buttonToclick)).get(0);
         button.click();
         waitUntilNot(driver -> container.getAttribute("innerText")
                 .equals(innertText));
