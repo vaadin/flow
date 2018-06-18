@@ -19,10 +19,11 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class PolymerPropertyChangeEventIT extends ChromeBrowserTest {
 
@@ -30,8 +31,9 @@ public class PolymerPropertyChangeEventIT extends ChromeBrowserTest {
     public void propertyChangeEvent() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        getInShadowRoot(template, By.id("input")).sendKeys("foo");
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        template.$(TestBenchElement.class).id("input")
+                .sendKeys("foo");
 
         List<WebElement> changeEvents = findElements(
                 By.className("change-event"));
