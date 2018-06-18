@@ -71,8 +71,7 @@ public class ListBindingIT extends ChromeBrowserTest {
         assertMethodWorksCorrectly("sortDescending", template, "3", "2", "1");
 
         assertMethodWorksCorrectly("setInitialStateToEachMessage", template,
-                ListBindingView.INITIAL_STATE,
-                ListBindingView.INITIAL_STATE,
+                ListBindingView.INITIAL_STATE, ListBindingView.INITIAL_STATE,
                 ListBindingView.INITIAL_STATE);
     }
 
@@ -108,8 +107,7 @@ public class ListBindingIT extends ChromeBrowserTest {
 
     private void resetState(TestBenchElement template) {
         template.$(TestBenchElement.class).id("reset").click();
-        Assert.assertEquals(ListBindingView.RESET_STATE,
-                getMessages(template));
+        Assert.assertEquals(ListBindingView.RESET_STATE, getMessages(template));
     }
 
     private List<String> getMessages(TestBenchElement template) {
