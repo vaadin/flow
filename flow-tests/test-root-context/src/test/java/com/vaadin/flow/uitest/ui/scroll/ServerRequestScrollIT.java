@@ -19,8 +19,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 public class ServerRequestScrollIT extends ChromeBrowserTest {
 
@@ -28,8 +28,8 @@ public class ServerRequestScrollIT extends ChromeBrowserTest {
     public void scrollPositionIsTheSameAfterServerRequest() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement button = getInShadowRoot(template, By.id("send-request"));
+        WebElement button = $("server-request").id("template")
+                .$(NativeButtonElement.class).first();
 
         int y = button.getLocation().getY();
 

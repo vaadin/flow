@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class JsGrandParentIT extends ChromeBrowserTest {
 
@@ -27,12 +27,11 @@ public class JsGrandParentIT extends ChromeBrowserTest {
     public void callJsInsideGrandInjected() {
         open();
 
-        WebElement parent = findElement(By.tagName("js-grand-parent"));
-        WebElement child = getInShadowRoot(parent,
-                By.cssSelector("js-sub-template"));
-        WebElement grandChild = getInShadowRoot(child,
-                By.cssSelector("js-injected-grand-child"));
-        WebElement label = getInShadowRoot(grandChild, By.id("foo-prop"));
+        TestBenchElement parent = $("js-grand-parent").first();
+        TestBenchElement child = parent.$("js-sub-template").first();
+        TestBenchElement grandChild = child.$("js-injected-grand-child")
+                .first();
+        WebElement label = grandChild.$(TestBenchElement.class).id("foo-prop");
 
         waitUntil(driver -> "bar".equals(label.getText()));
     }

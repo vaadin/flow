@@ -9,7 +9,6 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
  * loaded correctly.
  *
  * @author Vaadin Ltd.
- * @see DependenciesLoadingAnnotationsView
  */
 public class DependenciesLoadingBaseView extends AbstractDivView {
     static final String PRELOADED_DIV_ID = "preloadedDiv";
