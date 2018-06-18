@@ -16,15 +16,13 @@
 
 package com.vaadin.flow.uitest.ui.template;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
  * @author Vaadin Ltd.
@@ -37,36 +35,37 @@ public class OneWayPolymerBindingIT extends ChromeBrowserTest {
     public void initialModelValueIsPresentAndModelUpdatesNormally() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
 
         checkInitialState(template);
         checkTemplateModel(template);
 
-        getInShadowRoot(template, By.id("changeModelValue")).click();
+        template.$(TestBenchElement.class).id("changeModelValue").click();
 
         checkStateAfterClick(template);
         checkTemplateModel(template);
     }
 
-    private void checkInitialState(WebElement template) {
-        String messageDivText = getInShadowRoot(template, By.id("messageDiv"))
+    private void checkInitialState(TestBenchElement template) {
+        String messageDivText = template.$(TestBenchElement.class)
+                .id("messageDiv").getText();
+        String titleDivText = template.$(TestBenchElement.class).id("titleDiv")
                 .getText();
-        String titleDivText = getInShadowRoot(template, By.id("titleDiv"))
-                .getText();
-        Assert.assertEquals(OneWayPolymerBindingView.MESSAGE,
-                messageDivText);
+        Assert.assertEquals(OneWayPolymerBindingView.MESSAGE, messageDivText);
         Assert.assertEquals("", titleDivText);
     }
 
-    private void checkTemplateModel(WebElement template) {
-        assertTrue(isPresentInShadowRoot(template, By.id("titleDivConditional")));
-        assertFalse(isPresentInShadowRoot(template, By.id("nonExistingProperty")));
+    private void checkTemplateModel(TestBenchElement template) {
+        assertTrue(template.$(TestBenchElement.class)
+                .attribute("id", "titleDivConditional").all().size() > 0);
+        Assert.assertEquals(0, template.$(TestBenchElement.class)
+                .attribute("id", "nonExistingProperty").all().size());
     }
 
-    private void checkStateAfterClick(WebElement template) {
-        String changedMessageDivText = getInShadowRoot(template,
-                By.id("messageDiv")).getText();
-        String titleDivText = getInShadowRoot(template, By.id("titleDiv"))
+    private void checkStateAfterClick(TestBenchElement template) {
+        String changedMessageDivText = template.$(TestBenchElement.class)
+                .id("messageDiv").getText();
+        String titleDivText = template.$(TestBenchElement.class).id("titleDiv")
                 .getText();
 
         Assert.assertEquals(OneWayPolymerBindingView.NEW_MESSAGE,
