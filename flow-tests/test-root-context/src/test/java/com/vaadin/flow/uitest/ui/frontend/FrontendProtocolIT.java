@@ -95,9 +95,10 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
         waitForElementPresent(By.tagName("frontend-protocol"));
 
         TestBenchElement element = $("frontend-protocol").first();
-        DivElement interList = element.$(DivElement.class).id("frontend-protocol-div");
+        DivElement innerList = element.$(DivElement.class)
+                .id("frontend-protocol-div");
 
-        return interList.getText();
+        return innerList.getText();
     }
 
 }

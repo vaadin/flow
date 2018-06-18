@@ -43,11 +43,11 @@ public class TemplateWithConnectedCallbacksIT extends ChromeBrowserTest {
         waitForElementPresent(By.tagName("template-with-connected-callbacks"));
         TestBenchElement element = $(
                 "template-with-connected-callbacks").first();
-        TestBenchElement Message = element.$(TestBenchElement.class)
+        TestBenchElement messageElement = element.$(TestBenchElement.class)
                 .id("connectedMessage");
 
         Assert.assertEquals("Connected (checked from server side)",
-                Message.getText());
+                messageElement.getText());
     }
 
 }

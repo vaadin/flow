@@ -29,8 +29,8 @@ public class BasicTypeInListIT extends ChromeBrowserTest {
     @Test
     public void basicTypeInModeList() {
         open();
-        TestBenchElement tempalte = $(TestBenchElement.class).id("template");
-        List<TestBenchElement> items = tempalte.$(TestBenchElement.class)
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        List<TestBenchElement> items = template.$(TestBenchElement.class)
                 .attribute("class", "item").all();
 
         Assert.assertEquals(2, items.size());
@@ -39,7 +39,7 @@ public class BasicTypeInListIT extends ChromeBrowserTest {
 
         findElement(By.id("add")).click();
 
-        items = tempalte.$(TestBenchElement.class)
+        items = template.$(TestBenchElement.class)
                 .attribute("class", "item").all();
 
         Assert.assertEquals(3, items.size());
@@ -47,7 +47,7 @@ public class BasicTypeInListIT extends ChromeBrowserTest {
 
         findElement(By.id("remove")).click();
 
-        items = tempalte.$(TestBenchElement.class).attribute("class", "item")
+        items = template.$(TestBenchElement.class).attribute("class", "item")
                 .all();
 
         Assert.assertEquals(2, items.size());

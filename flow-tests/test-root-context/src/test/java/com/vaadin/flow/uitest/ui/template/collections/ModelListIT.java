@@ -14,17 +14,16 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.ElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 
 public class ModelListIT extends ChromeBrowserTest {
 
-    private ElementQuery<TestBenchElement> modelList;
+    private TestBenchElement modelList;
 
     @Before
     public void init() {
         open();
-        modelList = $("model-list");
+        modelList = $("model-list").first();
     }
 
     @Test
@@ -78,7 +77,7 @@ public class ModelListIT extends ChromeBrowserTest {
         DivElement repeat4 = findRepeatByID("repeat-4");
 
         assertClickedStates();
-        modelList.first().$(NativeButtonElement.class).id("set-null").click();
+        modelList.$(NativeButtonElement.class).id("set-null").click();
 
         List<WebElement> repeated1 = repeat1.findElements(By.tagName("div"));
         List<WebElement> repeated2 = repeat2.findElements(By.tagName("div"));
@@ -119,7 +118,7 @@ public class ModelListIT extends ChromeBrowserTest {
     }
 
     private DivElement findRepeatByID(String id) {
-        return modelList.first().$(DivElement.class).id(id);
+        return modelList.$(DivElement.class).id(id);
     }
 
 }

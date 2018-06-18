@@ -120,7 +120,7 @@ public class ChildOrderIT extends ChromeBrowserTest {
     public void appendTextsFromServer_textsAreAddedAfterExistingOnes() {
         TestBenchElement container = root.$(TestBenchElement.class)
                 .id("containerWithText");
-        
+
         assertNodeOrder(container, "Client text");
 
         clickAndWaitForContainerToChange(container, "addChildToContainer2");
