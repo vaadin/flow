@@ -17,10 +17,9 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class ConvertToBeanIT extends ChromeBrowserTest {
 
@@ -28,14 +27,14 @@ public class ConvertToBeanIT extends ChromeBrowserTest {
     public void convertToBean_valuesAreUpdated() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        getInShadowRoot(template, By.id("day")).sendKeys("2");
-        getInShadowRoot(template, By.id("month")).sendKeys("5");
-        getInShadowRoot(template, By.id("year")).sendKeys("2000");
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        template.$(TestBenchElement.class).id("day").sendKeys("2");
+        template.$(TestBenchElement.class).id("month").sendKeys("5");
+        template.$(TestBenchElement.class).id("year").sendKeys("2000");
 
-        getInShadowRoot(template, By.id("click")).click();
+        template.$(TestBenchElement.class).id("click").click();
 
-        String text = getInShadowRoot(template, By.id("msg")).getText();
+        String text = template.$(TestBenchElement.class).id("msg").getText();
         Assert.assertEquals("02.05.2000", text);
     }
 }
