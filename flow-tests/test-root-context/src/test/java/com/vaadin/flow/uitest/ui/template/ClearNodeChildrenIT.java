@@ -25,6 +25,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
  * Tests for validating the {@code removeAll()} feature, that should clear all
@@ -35,15 +36,15 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  */
 public class ClearNodeChildrenIT extends ChromeBrowserTest {
 
-    private WebElement root;
-    private WebElement message;
+    private TestBenchElement root;
+    private TestBenchElement message;
 
     @Before
     public void init() {
         open();
         waitForElementPresent(By.id("root"));
-        root = findElement(By.id("root"));
-        message = findInShadowRoot(root, By.id("message")).get(0);
+        root = $(TestBenchElement.class).id("root");
+        message = root.$(TestBenchElement.class).id("message");
     }
 
     @Test
@@ -64,12 +65,12 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
     private void processContainerWithClientSideNodes_allNodesAreRemoved(
             String buttonToClick, String expectedMessage,
             String expectedInnerText) {
-        WebElement container = findInShadowRoot(root,
-                By.id("containerWithElementChildren")).get(0);
+        TestBenchElement container = root.$(TestBenchElement.class)
+                .id("containerWithElementChildren");
         List<WebElement> divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(2, divs.size());
 
-        WebElement button = findInShadowRoot(root, By.id(buttonToClick)).get(0);
+        TestBenchElement button = root.$(TestBenchElement.class).id(buttonToClick);
         String oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);
@@ -99,20 +100,23 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
     private void addTextNode_processContainerWithClientSideNodes_allNodesAreRemoved(
             String buttonToClick, String expectedMessage,
             String expectedInnerText) {
-        WebElement container = findInShadowRoot(root,
-                By.id("containerWithElementChildren")).get(0);
+
+        TestBenchElement container = root.$(TestBenchElement.class)
+                .id("containerWithElementChildren");
+
         List<WebElement> divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(2, divs.size());
 
-        WebElement addTextNode = findInShadowRoot(root,
-                By.id("addTextNodeToContainer1")).get(0);
+        TestBenchElement addTextNode = root.$(TestBenchElement.class)
+                .id("addTextNodeToContainer1");
         String oldTtext = message.getText();
         addTextNode.click();
         waitForMessageToChange(oldTtext);
         assertMessageEndsWith(
                 "Added 'Text node' to div with id 'containerWithElementChildren'.");
 
-        WebElement button = findInShadowRoot(root, By.id(buttonToClick)).get(0);
+        TestBenchElement button = root.$(TestBenchElement.class)
+                .id(buttonToClick);
         oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);
@@ -143,13 +147,14 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
     private void processContainerWithClientAndServerSideNodes_allNodesAreRemoved_serverNodesAreDetached(
             String buttonToClick, String expectedMessage,
             String expectedInnerText) {
-        WebElement container = findInShadowRoot(root,
-                By.id("containerWithElementChildren")).get(0);
+        TestBenchElement container = root.$(TestBenchElement.class)
+                .id("containerWithElementChildren");
         List<WebElement> divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(2, divs.size());
 
-        WebElement add = findInShadowRoot(root, By.id("addChildToContainer1"))
-                .get(0);
+        TestBenchElement add = root.$(TestBenchElement.class)
+                .id("addChildToContainer1");
+
         String oldTtext = message.getText();
         add.click();
         waitForMessageToChange(oldTtext);
@@ -158,7 +163,8 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(3, divs.size());
 
-        WebElement button = findInShadowRoot(root, By.id(buttonToClick)).get(0);
+        TestBenchElement button = root.$(TestBenchElement.class)
+                .id(buttonToClick);
         oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);
@@ -186,8 +192,8 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
     private void processContainerWithTextNodes_allNodesAreRemoved(
             String buttonToClick, String expectedMessage,
             String expectedInnerText) {
-        WebElement container = findInShadowRoot(root,
-                By.id("containerWithMixedChildren")).get(0);
+        TestBenchElement container = root.$(TestBenchElement.class)
+                .id("containerWithMixedChildren");
 
         Assert.assertThat(container.getText(),
                 CoreMatchers.allOf(CoreMatchers.containsString("Some text 1"),
@@ -197,7 +203,8 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         List<WebElement> divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(2, divs.size());
 
-        WebElement button = findInShadowRoot(root, By.id(buttonToClick)).get(0);
+        TestBenchElement button = root.$(TestBenchElement.class)
+                .id(buttonToClick);
         String oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);
@@ -227,19 +234,21 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
     private void addClientSideChildren_processContainer_allNodesAreRemoved(
             String buttonToClick, String expectedMessage,
             String expectedInnerText) {
-        WebElement container = findInShadowRoot(root,
-                By.id("containerWithClientSideChildren")).get(0);
+
+        TestBenchElement container = root.$(TestBenchElement.class)
+                .id("containerWithClientSideChildren");
 
         List<WebElement> divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
 
-        WebElement add = findInShadowRoot(root, By.id("addClientSideChild"))
-                .get(0);
+        TestBenchElement add = root.$(TestBenchElement.class)
+                .id("addClientSideChild");
         add.click();
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(1, divs.size());
 
-        WebElement button = findInShadowRoot(root, By.id(buttonToClick)).get(0);
+        TestBenchElement button = root.$(TestBenchElement.class)
+                .id(buttonToClick);
         String oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);
@@ -270,20 +279,20 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
     private void addClienAndServertSideChildren_processContainer_allNodesAreRemoved_serverNodesAreDetached(
             String buttonToClick, String expectedMessage,
             String expectedInnerText) {
-        WebElement container = findInShadowRoot(root,
-                By.id("containerWithClientSideChildren")).get(0);
+        TestBenchElement container = root.$(TestBenchElement.class)
+                .id("containerWithClientSideChildren");
 
         List<WebElement> divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
 
-        WebElement addClientNode = findInShadowRoot(root,
-                By.id("addClientSideChild")).get(0);
+        TestBenchElement addClientNode = root.$(TestBenchElement.class)
+                .id("addClientSideChild");
         addClientNode.click();
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(1, divs.size());
 
-        WebElement addServerNode = findInShadowRoot(root,
-                By.id("addChildToContainer3")).get(0);
+        TestBenchElement addServerNode = root.$(TestBenchElement.class)
+                .id("addChildToContainer3");
         String oldTtext = message.getText();
         addServerNode.click();
         waitForMessageToChange(oldTtext);
@@ -291,8 +300,8 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
 
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(2, divs.size());
-
-        WebElement button = findInShadowRoot(root, By.id(buttonToClick)).get(0);
+        TestBenchElement button = root.$(TestBenchElement.class)
+                .id(buttonToClick);
         oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);
@@ -325,13 +334,15 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         List<WebElement> divs = root.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
 
-        WebElement add = findInShadowRoot(root, By.id("addChildToSlot")).get(0);
+        TestBenchElement add = root.$(TestBenchElement.class)
+                .id("addChildToSlot");
         String oldTtext = message.getText();
         add.click();
         waitForMessageToChange(oldTtext);
         assertMessageEndsWith("Div 'Server div 1' attached.");
 
-        WebElement button = findInShadowRoot(root, By.id(buttonToClick)).get(0);
+        TestBenchElement button = root.$(TestBenchElement.class)
+                .id(buttonToClick);
         oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);
@@ -359,14 +370,14 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
     private void addNodeToNestedContainer_processParentContainer_allNodesAreRemoved(
             String buttonToClick, String expectedMessage,
             String expectedInnerText) {
-        WebElement container = findInShadowRoot(root, By.id("nestedContainer"))
-                .get(0);
+        TestBenchElement container = root.$(TestBenchElement.class)
+                .id("nestedContainer");
 
         List<WebElement> divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
 
-        WebElement add = findInShadowRoot(root,
-                By.id("addChildToNestedContainer")).get(0);
+        TestBenchElement add = root.$(TestBenchElement.class)
+                .id("addChildToNestedContainer");
         String oldTtext = message.getText();
         add.click();
         waitForMessageToChange(oldTtext);
@@ -375,7 +386,8 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(1, divs.size());
 
-        WebElement button = findInShadowRoot(root, By.id(buttonToClick)).get(0);
+        TestBenchElement button = root.$(TestBenchElement.class)
+                .id(buttonToClick);
         oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);
@@ -385,8 +397,7 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
          */
         assertMessageEndsWith(expectedMessage);
 
-        container = findInShadowRoot(root, By.id("containerWithContainer"))
-                .get(0);
+        container = root.$(TestBenchElement.class).id("containerWithContainer");
         divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(0, divs.size());
         Assert.assertEquals(expectedInnerText, container.getText());

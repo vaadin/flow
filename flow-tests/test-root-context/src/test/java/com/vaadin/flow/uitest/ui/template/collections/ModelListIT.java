@@ -11,28 +11,29 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.ElementQuery;
+import com.vaadin.testbench.TestBenchElement;
 
 public class ModelListIT extends ChromeBrowserTest {
 
-    private WebElement modelList;
+    private ElementQuery<TestBenchElement> modelList;
 
     @Before
     public void init() {
         open();
-        modelList = findElement(By.tagName("model-list"));
+        modelList = $("model-list");
     }
 
     @Test
     public void clickOnOldItems_itemsAreUpdated() {
-        WebElement repeat1 = findInShadowRoot(modelList, By.id("repeat-1"))
-                .get(0);
-        WebElement repeat2 = findInShadowRoot(modelList, By.id("repeat-2"))
-                .get(0);
-        WebElement repeat3 = findInShadowRoot(modelList, By.id("repeat-3"))
-                .get(0);
-        WebElement repeat4 = findInShadowRoot(modelList, By.id("repeat-4"))
-                .get(0);
+
+        DivElement repeat1 = findRepeatByID("repeat-1");
+        DivElement repeat2 = findRepeatByID("repeat-2");
+        DivElement repeat3 = findRepeatByID("repeat-3");
+        DivElement repeat4 = findRepeatByID("repeat-4");
 
         assertClickedStates();
         repeat1.findElements(By.tagName("div")).get(0).click();
@@ -45,20 +46,16 @@ public class ModelListIT extends ChromeBrowserTest {
         assertClickedStates(0, 2, 4, 6);
         repeat4.findElements(By.tagName("div")).get(0).click();
         assertClickedStates(0, 2, 4, 6, 8);
-        findInShadowRoot(modelList, By.id("item-with-item-div")).get(0).click();
+        findRepeatByID("item-with-item-div").click();
         assertClickedStates(0, 2, 4, 6, 8, 10);
     }
 
     @Test
     public void clickOnAddedItems_itemsAreUpdated() {
-        WebElement repeat1 = findInShadowRoot(modelList, By.id("repeat-1"))
-                .get(0);
-        WebElement repeat2 = findInShadowRoot(modelList, By.id("repeat-2"))
-                .get(0);
-        WebElement repeat3 = findInShadowRoot(modelList, By.id("repeat-3"))
-                .get(0);
-        WebElement repeat4 = findInShadowRoot(modelList, By.id("repeat-4"))
-                .get(0);
+        DivElement repeat1 = findRepeatByID("repeat-1");
+        DivElement repeat2 = findRepeatByID("repeat-2");
+        DivElement repeat3 = findRepeatByID("repeat-3");
+        DivElement repeat4 = findRepeatByID("repeat-4");
 
         assertClickedStates();
         repeat1.findElements(By.tagName("div")).get(1).click();
@@ -75,17 +72,13 @@ public class ModelListIT extends ChromeBrowserTest {
 
     @Test
     public void setNullValues_itemsAreUpdated() {
-        WebElement repeat1 = findInShadowRoot(modelList, By.id("repeat-1"))
-                .get(0);
-        WebElement repeat2 = findInShadowRoot(modelList, By.id("repeat-2"))
-                .get(0);
-        WebElement repeat3 = findInShadowRoot(modelList, By.id("repeat-3"))
-                .get(0);
-        WebElement repeat4 = findInShadowRoot(modelList, By.id("repeat-4"))
-                .get(0);
+        DivElement repeat1 = findRepeatByID("repeat-1");
+        DivElement repeat2 = findRepeatByID("repeat-2");
+        DivElement repeat3 = findRepeatByID("repeat-3");
+        DivElement repeat4 = findRepeatByID("repeat-4");
 
         assertClickedStates();
-        findInShadowRoot(modelList, By.id("set-null")).get(0).click();
+        modelList.first().$(NativeButtonElement.class).id("set-null").click();
 
         List<WebElement> repeated1 = repeat1.findElements(By.tagName("div"));
         List<WebElement> repeated2 = repeat2.findElements(By.tagName("div"));
@@ -104,21 +97,17 @@ public class ModelListIT extends ChromeBrowserTest {
 
     private void assertClickedStates(int... clicked) {
 
-        WebElement repeat1 = findInShadowRoot(modelList, By.id("repeat-1"))
-                .get(0);
-        WebElement repeat2 = findInShadowRoot(modelList, By.id("repeat-2"))
-                .get(0);
-        WebElement repeat3 = findInShadowRoot(modelList, By.id("repeat-3"))
-                .get(0);
-        WebElement repeat4 = findInShadowRoot(modelList, By.id("repeat-4"))
-                .get(0);
+        DivElement repeat1 = findRepeatByID("repeat-1");
+        DivElement repeat2 = findRepeatByID("repeat-2");
+        DivElement repeat3 = findRepeatByID("repeat-3");
+        DivElement repeat4 = findRepeatByID("repeat-4");
 
-        List<WebElement> divs = new ArrayList<>();
-        divs.addAll(repeat1.findElements(By.tagName("div")));
-        divs.addAll(repeat2.findElements(By.tagName("div")));
-        divs.addAll(repeat3.findElements(By.tagName("div")));
-        divs.addAll(repeat4.findElements(By.tagName("div")));
-        divs.addAll(findInShadowRoot(modelList, By.id("item-with-item-div")));
+        List<DivElement> divs = new ArrayList<>();
+        divs.addAll(repeat1.$(DivElement.class).all());
+        divs.addAll(repeat2.$(DivElement.class).all());
+        divs.addAll(repeat3.$(DivElement.class).all());
+        divs.addAll(repeat4.$(DivElement.class).all());
+        divs.add(findRepeatByID("item-with-item-div"));
 
         for (int i = 0; i < divs.size(); i++) {
             int index = i;
@@ -128,4 +117,9 @@ public class ModelListIT extends ChromeBrowserTest {
                     CoreMatchers.startsWith(String.valueOf(clickedState)));
         }
     }
+
+    private DivElement findRepeatByID(String id) {
+        return modelList.first().$(DivElement.class).id(id);
+    }
+
 }

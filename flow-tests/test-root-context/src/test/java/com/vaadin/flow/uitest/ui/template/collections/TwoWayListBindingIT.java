@@ -23,6 +23,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class TwoWayListBindingIT extends ChromeBrowserTest {
@@ -33,9 +34,8 @@ public class TwoWayListBindingIT extends ChromeBrowserTest {
 
         findElement(By.id("enable")).click();
 
-        List<WebElement> fields = findInShadowRoot(
-                findElement(By.tagName("two-way-list-binding")),
-                By.cssSelector("input"));
+        List<WebElement> fields = $("two-way-list-binding").first()
+                .$(DivElement.class).first().findElements(By.id("input"));
 
         // self check
         Assert.assertEquals(2, fields.size());

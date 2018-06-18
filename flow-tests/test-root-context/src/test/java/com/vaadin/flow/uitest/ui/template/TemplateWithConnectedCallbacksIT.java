@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class TemplateWithConnectedCallbacksIT extends ChromeBrowserTest {
 
@@ -42,15 +41,13 @@ public class TemplateWithConnectedCallbacksIT extends ChromeBrowserTest {
 
     private void assertMessageIsWrittenFromServer() {
         waitForElementPresent(By.tagName("template-with-connected-callbacks"));
-        WebElement element = findElement(
-                By.tagName("template-with-connected-callbacks"));
-        List<WebElement> elementList = findInShadowRoot(element,
-                By.id("connectedMessage"));
-        Assert.assertEquals(1, elementList.size());
+        TestBenchElement element = $(
+                "template-with-connected-callbacks").first();
+        TestBenchElement Message = element.$(TestBenchElement.class)
+                .id("connectedMessage");
 
-        WebElement messageElement = elementList.get(0);
         Assert.assertEquals("Connected (checked from server side)",
-                messageElement.getText());
+                Message.getText());
     }
 
 }
