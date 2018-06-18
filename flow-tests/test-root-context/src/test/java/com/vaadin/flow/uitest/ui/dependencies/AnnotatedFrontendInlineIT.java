@@ -26,9 +26,4 @@ package com.vaadin.flow.uitest.ui.dependencies;
  */
 public class AnnotatedFrontendInlineIT extends AbstractFrontendInlineIT {
 
-    @Override
-    protected String getTemplateTag() {
-        return "frontend-inline";
-    }
-
 }

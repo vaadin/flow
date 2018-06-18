@@ -22,6 +22,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
 
@@ -29,7 +30,7 @@ public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
     public void inlineDependeciesWithFrontendProtocol() {
         open();
 
-        WebElement templateElement = $(getTemplateTag()).id("template")
+        WebElement templateElement = $(TestBenchElement.class).id("template")
                 .$(DivElement.class).id("frontend-inline");
 
         Assert.assertEquals("Inline HTML loaded via frontent protocol",
@@ -42,5 +43,4 @@ public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
         Assert.assertEquals("Inlined JS", js.getText());
     }
 
-    protected abstract String getTemplateTag();
 }
