@@ -17,10 +17,10 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class InjectsJsTemplateIT extends ChromeBrowserTest {
 
@@ -28,20 +28,21 @@ public class InjectsJsTemplateIT extends ChromeBrowserTest {
     public void executeJsOnInjectedElement() {
         open();
 
-        WebElement parent = findElement(By.tagName("injects-js-template"));
+        TestBenchElement parent = $("injects-js-template").first();
 
-        WebElement injectedTemplate = getInShadowRoot(parent,
-                By.id("injected-template"));
+        TestBenchElement injectedTemplate = parent.$(TestBenchElement.class)
+                .id("injected-template");
 
-        WebElement fooLabel = getInShadowRoot(injectedTemplate,
-                By.id("foo-prop"));
+        WebElement fooLabel = injectedTemplate.$(TestBenchElement.class)
+                .id("foo-prop");
         Assert.assertEquals("bar", fooLabel.getText());
 
-        WebElement bazLabel = getInShadowRoot(injectedTemplate,
-                By.id("baz-prop"));
+        WebElement bazLabel = injectedTemplate.$(TestBenchElement.class)
+                .id("baz-prop");
         Assert.assertEquals("setFromParent", bazLabel.getText());
 
-        WebElement injectedDiv = getInShadowRoot(parent, By.id("injected-div"));
+        WebElement injectedDiv = parent.$(TestBenchElement.class)
+                .id("injected-div");
         Assert.assertEquals("setFromParent", injectedDiv.getAttribute("class"));
     }
 }
