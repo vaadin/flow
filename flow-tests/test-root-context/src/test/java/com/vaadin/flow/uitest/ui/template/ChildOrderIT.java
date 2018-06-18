@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
@@ -44,6 +45,14 @@ public class ChildOrderIT extends ChromeBrowserTest {
         open();
         waitForElementPresent(By.tagName("child-order-template"));
         root = $("child-order-template").first();
+        waitUntil(driver -> {
+            try {
+                root.$(DivElement.class).id("containerWithElement");
+            } catch (NoSuchElementException e) {
+                return false;
+            }
+            return true;
+        });
     }
 
     @Test
