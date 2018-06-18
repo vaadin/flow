@@ -124,6 +124,23 @@ public class PublishedServerEventHandlerRpcHandler
     static void invokeMethod(Component instance, Class<?> clazz,
             String methodName, JsonArray args) {
         assert instance != null;
+        Optional<Method> method = findMethod(instance, clazz, methodName);
+        if (method.isPresent()) {
+            invokeMethod(instance, method.get(), args);
+        } else if (instance instanceof Composite) {
+            Component compositeContent = ((Composite<?>) instance).getContent();
+            invokeMethod(compositeContent, compositeContent.getClass(),
+                    methodName, args);
+        } else {
+            String msg = String.format("Neither class '%s' "
+                    + "nor its super classes declare event handler method '%s'",
+                    instance.getClass().getName(), methodName);
+            throw new IllegalStateException(msg);
+        }
+    }
+
+    private static Optional<Method> findMethod(Component instance,
+            Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
                 .filter(method -> method.isAnnotationPresent(EventHandler.class)
@@ -135,22 +152,11 @@ public class PublishedServerEventHandlerRpcHandler
                     instance.getClass().getName(), methodName);
             throw new IllegalStateException(msg);
         } else if (methods.size() == 1) {
-            invokeMethod(instance, methods.get(0), args);
-        } else if (instance instanceof Composite) {
-            Component compositeContent = ((Composite<?>) instance).getContent();
-            try {
-                invokeMethod(compositeContent, compositeContent.getClass(),
-                        methodName, args);
-            } catch (IllegalStateException e) {
-                invokeMethod(instance, clazz.getSuperclass(), methodName, args);
-            }
+            return Optional.of(methods.get(0));
         } else if (!Component.class.equals(clazz)) {
-            invokeMethod(instance, clazz.getSuperclass(), methodName, args);
+            return findMethod(instance, clazz.getSuperclass(), methodName);
         } else {
-            String msg = String.format("Neither class '%s' "
-                    + "nor its super classes declare event handler method '%s'",
-                    instance.getClass().getName(), methodName);
-            throw new IllegalStateException(msg);
+            return Optional.empty();
         }
     }
 
