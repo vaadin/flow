@@ -23,6 +23,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class AfterServerChangesIT extends ChromeBrowserTest {
 
@@ -30,8 +31,7 @@ public class AfterServerChangesIT extends ChromeBrowserTest {
     public void notifyServerUpdateOnTheClientSide() {
         open();
 
-        List<WebElement> components = findElements(
-                By.tagName("after-server-changes"));
+        List<TestBenchElement> components = $("after-server-changes").all();
         components.forEach(component -> assertAfterServerUpdate(component, 1));
 
         WebElement update = findElement(By.id("update"));
@@ -46,15 +46,14 @@ public class AfterServerChangesIT extends ChromeBrowserTest {
 
         // The second components is removed
         // No exceptions , everything is functional
-        assertAfterServerUpdate(findElement(By.tagName("after-server-changes")),
-                3);
+        assertAfterServerUpdate($("after-server-changes").first(), 3);
     }
 
-    private void assertAfterServerUpdate(WebElement component, int i) {
-        WebElement count = getInShadowRoot(component, By.id("count"));
+    private void assertAfterServerUpdate(TestBenchElement element, int i) {
+        WebElement count = element.$(TestBenchElement.class).id("count");
         Assert.assertEquals(String.valueOf(i), count.getText());
 
-        WebElement delta = getInShadowRoot(component, By.id("delta"));
+        WebElement delta = element.$(TestBenchElement.class).id("delta");
         Assert.assertEquals(Boolean.TRUE.toString(), delta.getText());
     }
 }
