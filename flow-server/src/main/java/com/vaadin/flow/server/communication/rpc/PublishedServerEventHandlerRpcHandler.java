@@ -136,10 +136,14 @@ public class PublishedServerEventHandlerRpcHandler
             throw new IllegalStateException(msg);
         } else if (methods.size() == 1) {
             invokeMethod(instance, methods.get(0), args);
-        } else if (Composite.class.equals(clazz)) {
+        } else if (instance instanceof Composite) {
             Component compositeContent = ((Composite<?>) instance).getContent();
-            invokeMethod(compositeContent, compositeContent.getClass(),
-                    methodName, args);
+            try {
+                invokeMethod(compositeContent, compositeContent.getClass(),
+                        methodName, args);
+            } catch (IllegalStateException e) {
+                invokeMethod(instance, clazz.getSuperclass(), methodName, args);
+            }
         } else if (!Component.class.equals(clazz)) {
             invokeMethod(instance, clazz.getSuperclass(), methodName, args);
         } else {

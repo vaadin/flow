@@ -194,6 +194,10 @@ public class PublishedServerEventHandlerRpcHandlerTest {
             extends Composite<ComponentWithMethod> {
     }
 
+    public static class CompositeOfComposite
+            extends Composite<CompositeOfComponentWithMethod> {
+    }
+
     @Before
     public void setUp() {
         Assert.assertNull(System.getSecurityManager());
@@ -226,6 +230,16 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public void methodIsInvokedOnCompositeContent() {
         CompositeOfComponentWithMethod composite = new CompositeOfComponentWithMethod();
         ComponentWithMethod component = composite.getContent();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
+                composite.getClass(), "method", Json.createArray());
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    @Test
+    public void methodIsInvokectOnCompositeOfComposite() {
+        CompositeOfComposite composite = new CompositeOfComposite();
+        ComponentWithMethod component = composite.getContent().getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
                 composite.getClass(), "method", Json.createArray());
 
