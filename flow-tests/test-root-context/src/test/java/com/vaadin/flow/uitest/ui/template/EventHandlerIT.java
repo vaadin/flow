@@ -19,10 +19,10 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class EventHandlerIT extends ChromeBrowserTest {
 
@@ -30,16 +30,16 @@ public class EventHandlerIT extends ChromeBrowserTest {
     public void handleEventOnServer() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        getInShadowRoot(template, By.id("handle")).click();
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        template.$(TestBenchElement.class).id("handle").click();
         Assert.assertTrue(
                 "Unable to find server event handler invocation confirmation. "
                         + "Looks like 'click' event handler has not been invoked on the server side",
                 isElementPresent(By.id("event-handler-result")));
 
-        getInShadowRoot(template, By.id("send")).click();
-        WebElement container = findElement(By.id("event-data"));
-        List<WebElement> divs = container.findElements(By.tagName("div"));
+        template.$(TestBenchElement.class).id("send").click();
+        TestBenchElement container = $(TestBenchElement.class).id("event-data");
+        List<TestBenchElement> divs = container.$("div").all();
 
         Assert.assertEquals(
                 "Unexpected 'button' event data in the received event handler parameter",
@@ -53,7 +53,7 @@ public class EventHandlerIT extends ChromeBrowserTest {
 
         // Check event functionality for event with both client and server
         // handler
-        getInShadowRoot(template, By.id("overridden")).click();
+        template.$(TestBenchElement.class).id("overridden").click();
 
         Assert.assertTrue(
                 "Unable to find server event handler invocation confirmation.",
