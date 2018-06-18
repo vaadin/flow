@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.List;
 
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -56,7 +55,7 @@ public class BeanInListingIT extends ChromeBrowserTest {
     public void beanInTwoWayBinding() throws InterruptedException {
         open();
 
-        WebElement selected = $(TestBenchElement.class).id("template")
+        TestBenchElement selected = $(TestBenchElement.class).id("template")
                 .$(TestBenchElement.class).id("selected");
 
         assertSelectionValue("user-item", selected, "foo");
@@ -70,9 +69,9 @@ public class BeanInListingIT extends ChromeBrowserTest {
 
     private void assertSelectionValue(String className, WebElement selected,
             String item) {
-        WebElement template = findElement(By.id("template"));
-        List<WebElement> items = findInShadowRoot(template,
-                By.className(className));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        List<TestBenchElement> items = template
+                .$(TestBenchElement.class).attribute("class", className).all();
         items.stream().filter(itemElement -> itemElement.getText().equals(item))
                 .findFirst().get().click();
 

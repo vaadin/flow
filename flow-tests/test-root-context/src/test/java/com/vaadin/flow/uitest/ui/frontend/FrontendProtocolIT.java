@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.frontend;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
  * A test that ensures the correct behavior of the "frontend://" protocol under
@@ -94,12 +93,12 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
 
     private String getComponentInnerText() {
         waitForElementPresent(By.tagName("frontend-protocol"));
-        WebElement element = findElement(By.tagName("frontend-protocol"));
-        List<WebElement> innerList = findInShadowRoot(element,
-                By.id("frontend-protocol-div"));
-        Assert.assertFalse(innerList.isEmpty());
 
-        return innerList.get(0).getText();
+        TestBenchElement element = $("frontend-protocol").first();
+        DivElement innerList = element.$(DivElement.class)
+                .id("frontend-protocol-div");
+
+        return innerList.getText();
     }
 
 }

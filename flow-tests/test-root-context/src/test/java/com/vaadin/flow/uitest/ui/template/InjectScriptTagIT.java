@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class InjectScriptTagIT extends ChromeBrowserTest {
 
@@ -28,18 +29,16 @@ public class InjectScriptTagIT extends ChromeBrowserTest {
     public void openPage_scriptIsEscaped() {
         open();
 
-        WebElement parent = findElement(
-                By.tagName("inject-script-tag-template"));
+        TestBenchElement parent = $("inject-script-tag-template").first();
 
-        WebElement div = findInShadowRoot(parent, By.id("value-div")).get(0);
+        TestBenchElement div = parent.$(TestBenchElement.class).id("value-div");
         Assert.assertEquals("<!-- <script>", div.getText());
 
         WebElement slot = findElement(By.id("slot-1"));
         Assert.assertEquals("<!-- <script> --><!-- <script></script>",
                 slot.getText());
 
-        WebElement button = findInShadowRoot(parent, By.id("change-value"))
-                .get(0);
+        TestBenchElement button = parent.$(TestBenchElement.class).id("change-value");
         button.click();
 
         Assert.assertEquals("<!-- <SCRIPT>", div.getText());

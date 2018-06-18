@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
  * @author Vaadin Ltd.
@@ -22,13 +22,13 @@ public class ClearListIT extends ChromeBrowserTest {
         checkThatModelHasNoDefaultConstructor();
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
         List<String> initialMessages = getMessages(template);
 
         Assert.assertEquals("Initial page does not contain expected messages",
                 Arrays.asList("1", "2"), initialMessages);
 
-        getInShadowRoot(template, By.id("clearList")).click();
+        template.$(TestBenchElement.class).id("clearList").click();
 
         Assert.assertTrue("Page should not contain elements after we've cleared them",
                 getMessages(template).isEmpty());
@@ -40,8 +40,9 @@ public class ClearListIT extends ChromeBrowserTest {
         Assert.assertTrue("Expect model to have at least one parameter in its single constructor",modelConstructors[0].getParameterCount() > 0);
     }
 
-    private List<String> getMessages(WebElement template) {
-        return findInShadowRoot(template, By.className("msg")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+    private List<String> getMessages(TestBenchElement template) {
+        return template.$(TestBenchElement.class).attribute("class", "msg")
+                .all().stream().map(WebElement::getText)
+                .collect(Collectors.toList());
     }
 }
