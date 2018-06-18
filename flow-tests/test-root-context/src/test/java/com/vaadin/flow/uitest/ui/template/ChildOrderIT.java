@@ -52,7 +52,7 @@ public class ChildOrderIT extends ChromeBrowserTest {
                 return false;
             }
             return true;
-        });
+        }, 60);
     }
 
     @Test
