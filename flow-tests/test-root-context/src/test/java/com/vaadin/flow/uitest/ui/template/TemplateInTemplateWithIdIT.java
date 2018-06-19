@@ -17,10 +17,10 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class TemplateInTemplateWithIdIT extends ChromeBrowserTest {
 
@@ -28,10 +28,10 @@ public class TemplateInTemplateWithIdIT extends ChromeBrowserTest {
     public void childTemplateInstanceHandlesEvent() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement child = getInShadowRoot(template, By.id("child"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        TestBenchElement child = template.$(TestBenchElement.class).id("child");
 
-        WebElement text = getInShadowRoot(child, By.id("text"));
+        WebElement text = child.$(TestBenchElement.class).id("text");
         Assert.assertEquals("@Id injected!", text.getText());
     }
 }
