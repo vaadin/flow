@@ -42,7 +42,7 @@ public class ElementInitOrderIT extends ChromeBrowserTest {
         for (String name : Arrays.asList("init-order-polymer",
                 "init-order-nopolymer")) {
             TestBenchElement element = $(name).first();
-            String status = findInShadowRoot(element, By.id("status")).get(0)
+            String status = element.$(TestBenchElement.class).id("status")
                     .getText();
             Assert.assertEquals(
                     "property = property, attribute = attribute, child count = 1, style = style, class = class",

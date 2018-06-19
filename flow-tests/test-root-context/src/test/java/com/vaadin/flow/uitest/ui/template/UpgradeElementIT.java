@@ -17,11 +17,12 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class UpgradeElementIT extends ChromeBrowserTest {
 
@@ -31,8 +32,8 @@ public class UpgradeElementIT extends ChromeBrowserTest {
 
         findElement(By.id("upgrade")).click();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement input = getInShadowRoot(template, By.id("input"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        WebElement input = template.$(TestBenchElement.class).id("input");
         input.sendKeys("foo");
         input.sendKeys(Keys.ENTER);
         WebElement result = findElement(By.id("text-update"));

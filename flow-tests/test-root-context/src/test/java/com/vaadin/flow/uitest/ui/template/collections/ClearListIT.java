@@ -30,14 +30,19 @@ public class ClearListIT extends ChromeBrowserTest {
 
         template.$(TestBenchElement.class).id("clearList").click();
 
-        Assert.assertTrue("Page should not contain elements after we've cleared them",
+        Assert.assertTrue(
+                "Page should not contain elements after we've cleared them",
                 getMessages(template).isEmpty());
     }
 
     private void checkThatModelHasNoDefaultConstructor() {
-        Constructor<?>[] modelConstructors = ClearListView.Message.class.getConstructors();
-        Assert.assertEquals("Expect model to have one constructor exactly", 1, modelConstructors.length);
-        Assert.assertTrue("Expect model to have at least one parameter in its single constructor",modelConstructors[0].getParameterCount() > 0);
+        Constructor<?>[] modelConstructors = ClearListView.Message.class
+                .getConstructors();
+        Assert.assertEquals("Expect model to have one constructor exactly", 1,
+                modelConstructors.length);
+        Assert.assertTrue(
+                "Expect model to have at least one parameter in its single constructor",
+                modelConstructors[0].getParameterCount() > 0);
     }
 
     private List<String> getMessages(TestBenchElement template) {

@@ -19,11 +19,12 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class PolymerPropertyMutationInObserverIT extends ChromeBrowserTest {
 
@@ -44,8 +45,9 @@ public class PolymerPropertyMutationInObserverIT extends ChromeBrowserTest {
                 "Event old value: initially set value, event value: mutated, current model value: mutated",
                 modelValueDivs.get(1).getText());
 
-        WebElement template = findElement(By.id("template"));
-        getInShadowRoot(template, By.id("input")).sendKeys(Keys.BACK_SPACE);
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        template.$(TestBenchElement.class).id("input")
+                .sendKeys(Keys.BACK_SPACE);
 
         modelValueDivs = findElements(By.className("model-value"));
         Assert.assertEquals("Value changed 4 times in total after backspace", 4,

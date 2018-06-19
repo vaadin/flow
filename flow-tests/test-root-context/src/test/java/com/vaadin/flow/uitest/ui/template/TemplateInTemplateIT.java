@@ -29,15 +29,14 @@ public class TemplateInTemplateIT extends ChromeBrowserTest {
     public void childTemplateInstanceHandlesEvent() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        TestBenchElement child = (TestBenchElement) getInShadowRoot(template,
-                By.id("child"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        TestBenchElement child = template.$(TestBenchElement.class).id("child");
 
         child.getPropertyElement("shadowRoot", "firstElementChild").click();
 
         Assert.assertTrue(isElementPresent(By.id("click-handler")));
 
-        WebElement text = getInShadowRoot(child, By.id("text"));
+        WebElement text = child.$(TestBenchElement.class).id("text");
         Assert.assertEquals("foo", text.getText());
     }
 }
