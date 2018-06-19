@@ -17,11 +17,11 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class AttachExistingDomElementByIdIT extends ChromeBrowserTest {
 
@@ -46,16 +46,19 @@ public class AttachExistingDomElementByIdIT extends ChromeBrowserTest {
         Assert.assertEquals("Text from input Harley!", getLabel(id).getText());
 
         // Reset values to defaults
-        getInShadowRoot(findElement(By.id(id)), By.id("button")).click();
+        $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("button")
+                .click();
 
         Assert.assertEquals("default", getLabel(id).getText());
     }
 
     private WebElement getInput(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("input"));
+        return $(TestBenchElement.class).id(id).$(TestBenchElement.class)
+                .id("input");
     }
 
     private WebElement getLabel(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("label"));
+        return $(TestBenchElement.class).id(id).$(TestBenchElement.class)
+                .id("label");
     }
 }

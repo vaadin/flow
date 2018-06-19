@@ -118,7 +118,8 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         // grand child template is invisible now, again: all its properties have
         // no values
 
-        WebElement grandChildProp = getInShadowRoot(grandChild, By.id("prop"));
+        WebElement grandChildProp = grandChild.$(TestBenchElement.class)
+                .id("prop");
         Assert.assertNotEquals("bar", grandChildFooProp.getText());
         Assert.assertNotEquals("foo", grandChildProp.getText());
 
