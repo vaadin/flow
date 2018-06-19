@@ -46,7 +46,7 @@
         <!-- Project dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow</artifactId>
+            <artifactId>flow-html-components</artifactId>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>

@@ -15,10 +15,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
