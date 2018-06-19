@@ -24,6 +24,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class SubPropertyModelIT extends ChromeBrowserTest {
 
@@ -31,21 +32,21 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
     public void subproperties() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
         Assert.assertEquals("message",
-                getInShadowRoot(template, By.id("msg")).getText());
+                template.$(TestBenchElement.class).id("msg").getText());
 
-        getInShadowRoot(template, By.id("button")).click();
+        template.$(TestBenchElement.class).id("button").click();
 
         Assert.assertEquals("Updated",
-                getInShadowRoot(template, By.id("msg")).getText());
+                template.$(TestBenchElement.class).id("msg").getText());
 
-        getInShadowRoot(template, By.id("sync")).click();
+        template.$(TestBenchElement.class).id("sync").click();
 
         WebElement syncedReport = findElement(By.id("synced-msg"));
         Assert.assertEquals("Set from the client", syncedReport.getText());
 
-        WebElement input = getInShadowRoot(template, By.id("input"));
+        TestBenchElement input = template.$(TestBenchElement.class).id("input");
         input.clear();
         input.sendKeys("foo");
 
@@ -58,11 +59,11 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
                 result.isPresent());
 
         // click message
-        getInShadowRoot(template, By.id("msg")).click();
+        template.$(TestBenchElement.class).id("msg").click();
 
         Assert.assertEquals(
                 "Clicking status message did not get the same modelData as in the message box.",
-                getInShadowRoot(template, By.id("msg")).getText(),
+                template.$(TestBenchElement.class).id("msg").getText(),
                 findElement(By.id("statusClick")).getText());
     }
 }

@@ -17,10 +17,11 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class PolymerDefaultPropertyValueIT extends ChromeBrowserTest {
 
@@ -28,18 +29,18 @@ public class PolymerDefaultPropertyValueIT extends ChromeBrowserTest {
     public void initialModelValues_polymerHasDefaultValues() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement text = getInShadowRoot(template, By.id("text"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        TestBenchElement text = template.$(TestBenchElement.class).id("text");
 
         Assert.assertEquals("foo", text.getText());
 
-        WebElement name = getInShadowRoot(template, By.id("name"));
+        TestBenchElement name = template.$(TestBenchElement.class).id("name");
         Assert.assertEquals("bar", name.getText());
 
-        WebElement msg = getInShadowRoot(template, By.id("message"));
+        TestBenchElement msg = template.$(TestBenchElement.class).id("message");
         Assert.assertEquals("updated-message", msg.getText());
 
-        WebElement email = getInShadowRoot(template, By.id("email"));
+        TestBenchElement email = template.$(TestBenchElement.class).id("email");
         Assert.assertEquals("foo@example.com", email.getText());
 
         findElement(By.id("show-email")).click();

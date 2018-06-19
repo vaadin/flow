@@ -17,10 +17,9 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class PolymerPropertiesIT extends ChromeBrowserTest {
 
@@ -28,11 +27,11 @@ public class PolymerPropertiesIT extends ChromeBrowserTest {
     public void propertyAdd_propertyBecomesAvailable() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
 
-        getInShadowRoot(template, By.id("set-property")).click();
+        template.$(TestBenchElement.class).id("set-property").click();
 
-        WebElement name = getInShadowRoot(template, By.id("name"));
+        TestBenchElement name = template.$(TestBenchElement.class).id("name");
         Assert.assertEquals("foo", name.getText());
     }
 }
