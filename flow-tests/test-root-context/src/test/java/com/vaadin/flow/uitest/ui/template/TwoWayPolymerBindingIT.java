@@ -22,7 +22,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
 
@@ -30,8 +30,8 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
     public void initialModelValueIsPresentAndModelUpdatesNormally() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement input = getInShadowRoot(template, By.id("input"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        WebElement input = template.$(TestBenchElement.class).id("input");
 
         // The initial client-side value should be sent from the client to the
         // model
@@ -46,7 +46,7 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
         Assert.assertEquals("Value: ab", getStatusMessage());
 
         // Reset the model value from the server-side
-        getInShadowRoot(template, By.id("reset")).click();
+        template.$(TestBenchElement.class).id("reset").click();
         Assert.assertEquals("Value:", getStatusMessage());
         Assert.assertEquals("", getValueProperty(input));
 
@@ -60,8 +60,8 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
     }
 
     private String getStatusMessage() {
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
 
-        return getInShadowRoot(template, By.id("status")).getText();
+        return template.$(TestBenchElement.class).id("status").getText();
     }
 }
