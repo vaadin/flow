@@ -17,25 +17,25 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class TemplateHasInjectedSubTemplateIT extends ChromeBrowserTest {
 
     @Test
-    public void injectedSubTemplate_injectedInstanceWorks() throws InterruptedException {
+    public void injectedSubTemplate_injectedInstanceWorks()
+            throws InterruptedException {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement child = getInShadowRoot(template, By.id("child"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        TestBenchElement child = template.$(TestBenchElement.class).id("child");
 
-        WebElement text = getInShadowRoot(child, By.id("text"));
+        TestBenchElement text = child.$(TestBenchElement.class).id("text");
 
         Assert.assertEquals("foo", text.getText());
 
-        getInShadowRoot(template, By.id("button")).click();
+        template.$(TestBenchElement.class).id("button").click();
         waitUntil(driver -> "bar".equals(text.getText()));
     }
 }
