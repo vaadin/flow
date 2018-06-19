@@ -44,6 +44,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.dom.Icon;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
@@ -52,6 +53,7 @@ import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
+import com.vaadin.flow.server.startup.ManifestRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -570,6 +572,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
+        setupPWA(head, context);
         setupCss(head, context);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
@@ -699,6 +702,28 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 head.appendElement("title").appendText(title);
             }
         });
+    }
+
+    private static void setupPWA(Element head, BootstrapContext context) {
+        ManifestRegistry registry = ManifestRegistry.getInstance(
+                ((VaadinServletRequest)context.request).getServletContext());
+        PwaConfiguration config = registry.getPwaConfiguration();
+
+        if (!config.isManifestDisabled()) {
+            head.appendElement("link").attr("rel", "manifest")
+                    .attr("href", config.getManifestPath());
+        }
+
+        for (Icon icon : registry.getHeaderIcons()) {
+            head.appendChild(icon);
+        }
+
+        if (!config.isServiceWorkerDisabled()) {
+            head.appendElement("script").text("if ('serviceWorker' in navigator) {\n"
+                    + "  window.addEventListener('load', function() {\n"
+                    + "    navigator.serviceWorker.register('./sw.js');\n"
+                    + "  });\n" + "}");
+        }
     }
 
     private static void appendWebComponentsPolyfills(Element head,

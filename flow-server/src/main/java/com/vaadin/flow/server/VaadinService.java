@@ -62,6 +62,10 @@ import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.IconHandler;
+import com.vaadin.flow.server.communication.ManifestHandler;
+import com.vaadin.flow.server.communication.OfflineHandler;
+import com.vaadin.flow.server.communication.ServiceWorkerHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
@@ -292,6 +296,10 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
+        handlers.add(new IconHandler());
+        handlers.add(new ServiceWorkerHandler());
+        handlers.add(new ManifestHandler());
+        handlers.add(new OfflineHandler());
 
         return handlers;
     }
