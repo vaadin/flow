@@ -41,7 +41,7 @@ public class AttachExistingDomElementByIdIT extends ChromeBrowserTest {
         Assert.assertEquals(placeholder, input.getAttribute("placeholder"));
 
         input.sendKeys("Harley!");
-        input.sendKeys(Keys.ENTER);
+        input.sendKeys(Keys.TAB);
 
         Assert.assertEquals("Text from input Harley!", getLabel(id).getText());
 
