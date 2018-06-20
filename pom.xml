@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -8,30 +9,12 @@
     <name>Flow</name>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-    
+
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-parent</artifactId>
         <version>2.0.0</version>
     </parent>
-
-    <modules>
-        <module>flow</module>
-        <module>flow-server</module>
-        <module>flow-push</module>
-        <module>flow-data</module>
-        <module>flow-client</module>
-        <module>flow-html-components</module>
-        <module>flow-html-components-testbench</module>
-        <module>flow-theme-integrations</module>
-        <module>flow-test-util</module>
-        <module>flow-tests</module>
-        <module>flow-server-production-mode</module>
-        <module>flow-components-parent</module>
-        <module>flow-maven-plugin</module>
-        <module>flow-test-generic</module>
-        <module>build-tools</module>
-    </modules>
 
     <organization>
         <name>Vaadin Ltd</name>
@@ -419,7 +402,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -484,6 +467,31 @@
     </build>
     <profiles>
         <profile>
+            <id>default</id>
+            <activation>
+                <property>
+                    <name>!release</name>
+                </property>
+            </activation>
+            <modules>
+                <module>flow</module>
+                <module>flow-server</module>
+                <module>flow-push</module>
+                <module>flow-data</module>
+                <module>flow-client</module>
+                <module>flow-html-components</module>
+                <module>flow-html-components-testbench</module>
+                <module>flow-theme-integrations</module>
+                <module>flow-test-util</module>
+                <module>flow-tests</module>
+                <module>flow-server-production-mode</module>
+                <module>flow-components-parent</module>
+                <module>flow-maven-plugin</module>
+                <module>flow-test-generic</module>
+                <module>build-tools</module>
+            </modules>
+        </profile>
+        <profile>
             <id>validation</id>
             <properties>
                 <maven.javadoc.skip>false</maven.javadoc.skip>
@@ -502,14 +510,14 @@
                     <plugins>
                         <plugin>
                             <artifactId>maven-surefire-plugin</artifactId>
-                            <!--TODO tests require some fixing-->
+                            <!--TODO tests require some fixing -->
                             <configuration>
                                 <skipTests>true</skipTests>
                             </configuration>
                         </plugin>
                         <plugin>
                             <artifactId>maven-failsafe-plugin</artifactId>
-                            <!--TODO tests require some fixing-->
+                            <!--TODO tests require some fixing -->
                             <configuration>
                                 <skipTests>true</skipTests>
                             </configuration>
@@ -569,7 +577,12 @@
             </build>
         </profile>
         <profile>
-            <id>release</id>
+            <id>a</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                </property>
+            </activation>
             <modules>
                 <module>flow</module>
                 <module>flow-server</module>
@@ -577,8 +590,6 @@
                 <module>flow-data</module>
                 <module>flow-client</module>
                 <module>flow-html-components</module>
-                <module>flow-test-util</module>
-                <module>flow-tests</module>
                 <module>flow-server-production-mode</module>
                 <module>flow-components-parent</module>
                 <module>build-tools</module>
