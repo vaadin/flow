@@ -21,6 +21,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public abstract class AbstractAttachExistingElementByIdIT
         extends ChromeBrowserTest {
@@ -39,7 +40,8 @@ public abstract class AbstractAttachExistingElementByIdIT
         Assert.assertEquals("Text from input Harley!", getLabel(id).getText());
 
         // Reset values to defaults
-        getInShadowRoot(findElement(By.id(id)), By.id("button")).click();
+        $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("button")
+                .click();
 
         Assert.assertEquals("default", getLabel(id).getText());
     }
