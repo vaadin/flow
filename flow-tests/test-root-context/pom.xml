@@ -92,16 +92,6 @@
                         <goals>
                             <goal>start</goal>
                         </goals>
-                        <configuration>
-                            <systemProperties>
-                                <systemProperty>
-                                    <!-- re-use the test resources already 
-                                        present in es6 folder -->
-                                    <name>vaadin.frontend.url.es5</name>
-                                    <value>context://frontend-es6/</value>
-                                </systemProperty>
-                            </systemProperties>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>stop-jetty</id>
@@ -172,7 +162,9 @@
             <id>productionMode</id>
             <activation>
                 <property>
-                    <name>vaadin.productionMode</name>
+                    <!-- In BrowserStack tests are run on IE11, and transpilation is needed -->
+                    <name>test.use.browserstack</name>
+                    <value>true</value>
                 </property>
             </activation>
 

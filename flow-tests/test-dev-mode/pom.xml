@@ -9,6 +9,10 @@
     </parent>
     <artifactId>flow-test-dev-mode</artifactId>
     <name>Flow tests for dev mode</name>
+    <description>
+        Tests extracted from flow-test-root-context in order to run 
+        true production mode with transpilation in that module.
+    </description>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -25,19 +29,19 @@
             <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
        <dependency>
             <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
             <version>[2.0.0,3)</version>
         </dependency>
-        
+
         <dependency>
           <groupId>org.webjars.bowergithub.webcomponents</groupId>
           <artifactId>webcomponentsjs</artifactId>
