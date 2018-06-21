@@ -26,6 +26,7 @@ import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.parallel.BrowserUtil;
 
 public class WebComponentsIT extends ChromeBrowserTest {
 
@@ -36,6 +37,11 @@ public class WebComponentsIT extends ChromeBrowserTest {
         Assert.assertTrue(driver.findElements(By.tagName("script")).stream()
                 .anyMatch(element -> element.getAttribute("src")
                         .endsWith("webcomponents-loader.js")));
+
+        if (BrowserUtil.isIE(getDesiredCapabilities())) {
+            // Console logs are not available from IE11
+            return;
+        }
 
         LogEntries logs = driver.manage().logs().get("browser");
         if (logs != null) {
