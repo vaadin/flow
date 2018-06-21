@@ -23,6 +23,8 @@
         <module>test-spring</module>
         <module>test-spring-common</module>
         <module>test-spring-boot-contextpath</module>
+        <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
+        <module>dummy-module</module>
     </modules>
 
     <properties>
@@ -247,6 +249,13 @@
                     <configuration>
                         <!-- Default is system -->
                         <excludedScopes>system,test</excludedScopes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <configuration>
+                        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
                     </configuration>
                 </plugin>
             </plugins>
