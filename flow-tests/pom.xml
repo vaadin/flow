@@ -213,7 +213,19 @@
                 <test.excludegroup></test.excludegroup>
             </properties>
         </profile>
-
+        <profile>
+            <id>ie11</id>
+            <activation>
+                <property>
+                    <!-- In BrowserStack tests are run on IE11 -->
+                    <name>test.use.browserstack</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11</test.excludegroup>
+            </properties>
+        </profile>
     </profiles>
 
 </project>
