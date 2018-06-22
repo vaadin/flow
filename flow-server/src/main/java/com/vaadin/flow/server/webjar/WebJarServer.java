@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.server.webjar;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
@@ -96,12 +97,16 @@ public class WebJarServer implements Serializable {
 
         String webJarPath = getWebJarPath(pathInContext);
         if (webJarPath == null) {
+            // Not a request to the frontend folder
             return false;
         }
 
         URL resourceUrl = request.getServletContext().getResource(webJarPath);
         if (resourceUrl == null) {
-            return false;
+            // A request to the frontend folder but the file is not there,
+            // 404 instead of forwarding to the router
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return true;
         }
 
         responseWriter.writeResponseContents(webJarPath, resourceUrl, request,

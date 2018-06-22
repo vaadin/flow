@@ -66,7 +66,7 @@ public class ResponseWriterTest {
         }
     }
 
-    private static class CapturingServletOutputStream
+    public static class CapturingServletOutputStream
             extends ServletOutputStream {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
