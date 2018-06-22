@@ -1,17 +1,23 @@
 package com.vaadin.flow.server;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Supplier;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.mockito.Mock;
@@ -20,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
@@ -112,14 +119,35 @@ public class MockServletServiceSessionSetup {
 
         public void addServletContextResource(String path, String contents) {
             try {
-                URL url = new URL("file://" + path);
+                Supplier<InputStream> streamSupplier = new Supplier<InputStream>() {
+                    @Override
+                    public InputStream get() {
+                        return new ByteArrayInputStream(
+                                contents.getBytes(StandardCharsets.UTF_8));
+                    }
+                };
+                URL url = new URL(null, "file://" + path,
+                        new URLStreamHandler() {
+                            @Override
+                            protected URLConnection openConnection(URL u)
+                                    throws IOException {
+                                return new URLConnection(u) {
+                                    @Override
+                                    public void connect() throws IOException {
+                                    }
+
+                                    @Override
+                                    public InputStream getInputStream()
+                                            throws IOException {
+                                        return streamSupplier.get();
+                                    }
+                                };
+                            }
+                        });
                 Mockito.when(getServletContext().getResource(path))
                         .thenReturn(url);
                 Mockito.when(getServletContext().getResourceAsStream(path))
-                        .thenAnswer(i -> {
-                            return new ByteArrayInputStream(
-                                    contents.getBytes(StandardCharsets.UTF_8));
-                        });
+                        .thenAnswer(i -> streamSupplier.get());
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -135,6 +163,31 @@ public class MockServletServiceSessionSetup {
             Mockito.verify(servlet.getServletContext())
                     .getResourceAsStream(resource);
 
+        }
+    }
+
+    public static class TestVaadinServletResponse
+            extends VaadinServletResponse {
+        private int errorCode;
+
+        private TestVaadinServletResponse(HttpServletResponse response,
+                VaadinServletService vaadinService) {
+            super(response, vaadinService);
+        }
+
+        @Override
+        public void sendError(int errorCode, String message)
+                throws java.io.IOException {
+            this.errorCode = errorCode;
+        }
+
+        @Override
+        public void sendError(int sc) throws IOException {
+            errorCode = sc;
+        }
+
+        public int getErrorCode() {
+            return errorCode;
         }
     }
 
@@ -247,5 +300,14 @@ public class MockServletServiceSessionSetup {
 
     public void setBrowserEs6(boolean browserEs6) {
         Mockito.when(browser.isEs6Supported()).thenReturn(browserEs6);
+    }
+
+    public TestVaadinServletResponse createResponse() throws IOException {
+        HttpServletResponse httpServletResponse = Mockito
+                .mock(HttpServletResponse.class);
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        Mockito.when(httpServletResponse.getOutputStream()).thenReturn(out);
+        return new TestVaadinServletResponse(httpServletResponse, getService());
+
     }
 }
