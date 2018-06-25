@@ -190,5 +190,12 @@
     "Vaadin.ThemableMixin",
     "Vaadin.ControlStateMixin"
   ],
+  "variants": {
+    "lumo": [
+      "small",
+      "align-center",
+      "align-right"
+    ]
+  },
   "description": "`<vaadin-text-field>` is a Polymer 2 element for text field control in forms.\n\n```html\n<vaadin-text-field label=\"First Name\">\n</vaadin-text-field>\n```\n\n### Styling\n\nThe following custom properties are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|-------------\n`--vaadin-text-field-default-width` | Set the default width of the input field | `12em`\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`input-field` | The element that wraps prefix, value and suffix\n`value` | The text value element inside the `input-field` element\n`error-message` | The error message element\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled text field | :host\n`has-value` | Set when the element has a value | :host\n`has-label` | Set when the element has a label | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set to a readonly text field | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

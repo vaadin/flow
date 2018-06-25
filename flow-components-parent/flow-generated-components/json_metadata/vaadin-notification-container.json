@@ -28,5 +28,6 @@
   ],
   "behaviors": [],
   "mixins": [],
+  "variants": {},
   "description": "The container element for all notifications."
 }

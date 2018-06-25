@@ -94,5 +94,6 @@
   ],
   "behaviors": [],
   "mixins": [],
+  "variants": {},
   "description": "Element for internal use only."
 }
