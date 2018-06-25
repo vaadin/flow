@@ -15,6 +15,7 @@
 
     <modules>
         <module>lumo</module>
+        <module>material</module>
     </modules>
 
     <dependencies>
