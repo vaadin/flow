@@ -18,7 +18,7 @@ package com.vaadin.flow.templatemodel;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
-import com.googlecode.gentyref.GenericTypeReflector;
+import com.coekie.gentyref.GenericTypeReflector;
 
 /**
  * Interface for implementing type encodings in template models together with

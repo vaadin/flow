@@ -36,7 +36,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
-import com.googlecode.gentyref.GenericTypeReflector;
+import com.coekie.gentyref.GenericTypeReflector;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.googlecode.gentyref.GenericTypeReflector;
+import com.coekie.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.Node;
