@@ -1,5 +1,14 @@
 package com.vaadin.flow.dom;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import org.jsoup.nodes.Element;
@@ -7,46 +16,113 @@ import org.jsoup.nodes.Element;
 /**
  * Implementation of icon -element.
  *
+ * Creates the href automatically based on
+ * - baseName (the file name with path, as "icons/icon.png"
+ * - width (width of icon)
+ * - height (height of icon)
+ * - (possibly) fileHash (the hashcode of image file)
+ *
+ * The href will be set as:
+ * [basename]-[width]x[height].png{?[filehash]}
+ *
+ * The trailing ?[filehash] will be added if icon cache is not controlled
+ * by service worker: cached = false
+ *
+ * So caching of a icon is left left for browser if it's not cached with
+ * service worker.
+ *
  */
-public class Icon extends Element {
+public class Icon implements Serializable {
     public enum Domain {
         HEADER,
         MANIFEST;
     }
 
-    private int size = 0;
+    private boolean cached = false;
+    private int width = 0;
+    private int height = 0;
+    private long fileHash = 0;
     private String baseName = "icons/icon.png";
     private Domain domain = Domain.HEADER;
+    private boolean hrefOverride = false;
+    private byte[] data;
+
+    private Map<String, String> attributes = new HashMap<>();
+    private String tag = "link";
 
     public Icon() {
-        super("link");
-        attr("type", "image/png");
+        attr("link", "image/png");
         rel("icon");
     }
 
-    /**
-     * Sets the icon size.
-     *
-     * Icon is considered as square, so width and height are the same.
-     *
-     * @param size
-     * @return
-     */
-    public Icon size(int size) {
-        this.size = size;
-        attr("sizes", size + "x" +size);
+    public Icon size(int width, int height) {
+        this.width = width;
+        this.height = height;
+
+        attr("sizes", width + "x" + height);
         setRelativeName();
         return this;
     }
 
-    private void setRelativeName() {
-        int split = baseName.lastIndexOf(".");
-        attr("href", baseName.substring(0,split) + "-" + sizes() +
-                baseName.substring(split));
+    public Element asElement() {
+        Element element = new Element(tag);
+        attributes.entrySet().forEach(entry -> {
+            element.attr(entry.getKey(), entry.getValue());
+        });
+        return element;
     }
 
-    public int size() {
-        return this.size;
+    private Icon attr(String key, String value) {
+        attributes.put(key, value);
+        return this;
+    }
+
+    private String attr(String key) {
+        return attributes.get(key);
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * Should the icon cached viá Service Worker.
+     *
+     * @return
+     */
+    public boolean cached() {
+        return cached;
+    }
+
+    /**
+     * Chained setter for chained.
+     *
+     * @param cached Should the icon cached viá Service Worker
+     * @return
+     */
+    public Icon cached(boolean cached) {
+        this.cached = cached;
+        return this;
+    }
+
+    /**
+     * Sets the href based on icon values.
+     *
+     */
+    private void setRelativeName() {
+        if (!hrefOverride) {
+            int split = baseName.lastIndexOf(".");
+            String link = baseName.substring(0,split) + "-" + sizes() +
+                    baseName.substring(split);
+            if (!cached) {
+                link = link + "?" + fileHash;
+            }
+            attr("href", link);
+        }
     }
 
     /**
@@ -71,6 +147,7 @@ public class Icon extends Element {
      * @return
      */
     public Icon href(String href) {
+        hrefOverride = true;
         attr("href", href.replaceAll("^[\\./]+", ""));
         return this;
     }
@@ -84,24 +161,45 @@ public class Icon extends Element {
     }
 
     /**
-     * Return href with '/' -prefix.
+     * Return href with '/' -prefix and removed possible ?[fileHash]
      *
      * Used in matching, when serving images.
      *
      * @return
      */
     public String relHref() {
-        return "/" + href();
+        String[] splitted = href().split("\\?");
+        return "/" + splitted[0];
     }
 
+    /**'
+     * Gets the cache-string used in Google Workbox caching.
+     *
+     * @return "{ url: '[href]', revision: '[fileHash' }"
+     */
+    public String cache() {
+        return String.format("{ url: '%s', revision: '%s' }", href(),
+                fileHash);
+    }
 
+    /**
+     * Getter for rel-attribute.
+     *
+     * @return
+     */
+    public String rel() {
+        return attr("rel");
+    }
+
+    /**
+     * Chaining setter for rel-attribute.
+     *
+     * @param rel
+     * @return
+     */
     public Icon rel(String rel) {
         attr("rel", rel);
         return this;
-    }
-
-    public String rel() {
-        return attr("rel");
     }
 
     public String type() {
@@ -117,14 +215,19 @@ public class Icon extends Element {
         return this.domain;
     }
 
+    public String media() {
+        return attr("media");
+    }
+
+    public Icon media(String media) {
+        attr("media", media);
+        return this;
+    }
+
     /**
-     * Sets basename of icon.
+     * Chaining setter of basename.
      *
-     * The basename is used in naming the icon href, so that if basename is
-     * 'foo/bar/my-icon.png' and size would be 96, then href will be set as
-     * 'foo/bar/my-icon-96x96.png'
-     *
-     * @param baseName
+     * @param baseName image full name with path, like "icon/icon.png"
      * @return
      */
     public Icon baseName(String baseName) {
@@ -133,21 +236,18 @@ public class Icon extends Element {
         return this;
     }
 
-    @Override public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        if (!super.equals(o))
-            return false;
-        Icon icon = (Icon) o;
-        return size == icon.size;
+    public void setImage(BufferedImage image) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write( image, "png", baos );
+        baos.flush();
+        data = baos.toByteArray();
+        fileHash = Arrays.hashCode(data);
+        baos.close();
     }
 
-    @Override public int hashCode() {
-
-        return Objects.hash(size);
+    public synchronized void write(OutputStream outputStream)
+            throws IOException {
+        outputStream.write(data);
     }
-
 
 }

@@ -5,13 +5,13 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.Manifest;
+import com.vaadin.flow.dom.Icon;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.ManifestRegistry;
+import com.vaadin.flow.server.startup.PWARegistry;
 
 public class ServiceWorkerHandler implements RequestHandler {
 
@@ -20,22 +20,29 @@ public class ServiceWorkerHandler implements RequestHandler {
             VaadinResponse response) throws IOException {
 
         VaadinServletRequest httpRequest = (VaadinServletRequest) request;
-        ManifestRegistry registry = ManifestRegistry.getInstance(
-                httpRequest.getServletContext());
-        boolean swRequest = "/sw.js".equals(httpRequest.getPathInfo());
+        PWARegistry registry = request.getService().getPwaRegistry();
+
+        boolean swRequest = registry.getPwaConfiguration()
+                .relServiceWorkerPath().equals(httpRequest.getPathInfo());
 
         if (!registry.getPwaConfiguration().isServiceWorkerDisabled()
                 && swRequest) {
+            response.setContentType("application/javascript");
             PrintWriter writer = response.getWriter();
-            List<String> precacheFiles = registry.getIcons().stream()
-                    .map(icon -> icon.href()).collect(Collectors.toList());
-            precacheFiles.add(registry.getPwaConfiguration().getOfflinePath());
 
+            // List of icons for precache
+            List<String> precacheFiles = registry.getIcons().stream()
+                    .filter(Icon::cached)
+                    .map(icon -> icon.cache()).collect(Collectors.toList());
+
+            // Add offline page to precache
+            precacheFiles.add(registry.offlinePageCache());
+
+            // Google Workbox precache
             writer.write("importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.2.0/workbox-sw.js');\n\n");
 
             writer.write("workbox.precaching.precacheAndRoute([\n");
-            writer.write(precacheFiles.stream().map(fileName -> "'"
-                    + fileName.replaceAll("'", "\\'") + "'")
+            writer.write(precacheFiles.stream()
                     .collect(Collectors.joining( ",\n" )));
             writer.write("\n]);\n");
 
@@ -54,8 +61,7 @@ public class ServiceWorkerHandler implements RequestHandler {
                             + "  }\n" + "});";
 
             writer.write(offlineFallback);
-
-            response.setContentType("application/javascript");
+            writer.close();
         }
 
         return swRequest;

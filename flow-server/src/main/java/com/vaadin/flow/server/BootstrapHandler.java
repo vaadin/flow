@@ -53,7 +53,7 @@ import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
-import com.vaadin.flow.server.startup.ManifestRegistry;
+import com.vaadin.flow.server.startup.PWARegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -705,9 +705,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void setupPWA(Element head, BootstrapContext context) {
-        ManifestRegistry registry = ManifestRegistry.getInstance(
-                ((VaadinServletRequest)context.request).getServletContext());
+        PWARegistry registry = VaadinService.getCurrent().getPwaRegistry();
+
         PwaConfiguration config = registry.getPwaConfiguration();
+
+        // Describe PWA capability for IOS devices
+        head.appendElement("meta")
+                .attr("name", "apple-mobile-web-app-capable")
+                .attr("content", "yes");
 
         if (!config.isManifestDisabled()) {
             head.appendElement("link").attr("rel", "manifest")
@@ -715,13 +720,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         for (Icon icon : registry.getHeaderIcons()) {
-            head.appendChild(icon);
+            head.appendChild(icon.asElement());
         }
 
         if (!config.isServiceWorkerDisabled()) {
             head.appendElement("script").text("if ('serviceWorker' in navigator) {\n"
                     + "  window.addEventListener('load', function() {\n"
-                    + "    navigator.serviceWorker.register('./sw.js');\n"
+                    + "    navigator.serviceWorker.register('" +
+                    config.getServiceWorkerPath() + "');\n"
                     + "  });\n" + "}");
         }
     }

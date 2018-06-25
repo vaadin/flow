@@ -1,8 +1,10 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
+import java.io.Serializable;
 
-public class PwaConfiguration {
+public class PwaConfiguration implements Serializable {
+    public static final String DEFAULT_VERSION = "1.0";
     public static final String DEFAULT_PATH = "manifest.json";
     public static final String DEFAULT_LOGO = "icons/logo.png";
     public static final String DEFAULT_NAME = "Vaadin Flow Application";
@@ -12,6 +14,7 @@ public class PwaConfiguration {
     public static final String DEFAULT_START_URL = "/";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
 
+    private final String version;
     private final String appName;
     private final String shortName;
     private final String description;
@@ -26,8 +29,9 @@ public class PwaConfiguration {
     private final boolean manifestDisabled;
     private final boolean serviceWorkerDisabled;
 
-    public PwaConfiguration(Manifest manifest, ServletContext servletContext) {
+    public PwaConfiguration(PWA manifest, ServletContext servletContext) {
         if (manifest != null) {
+            this.version = manifest.version();
             this.appName = manifest.name();
             this.shortName = manifest.name();
             this.description = "";
@@ -42,6 +46,7 @@ public class PwaConfiguration {
             this.manifestDisabled = manifest.disableManifest();
             this.serviceWorkerDisabled = manifest.disableServiceWorker();
         } else {
+            this.version = DEFAULT_VERSION;
             this.appName = DEFAULT_NAME;
             this.shortName = DEFAULT_NAME;
             this.description = "";
@@ -53,9 +58,13 @@ public class PwaConfiguration {
             this.display = DEFAULT_DISPLAY;
             this.startUrl = getStartUrl(servletContext);
             this.serviceWorkerPath = "sw.js";
-            this.manifestDisabled = false;
-            this.serviceWorkerDisabled = false;
+            this.manifestDisabled = true;
+            this.serviceWorkerDisabled = true;
         }
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     public String getAppName() {
@@ -136,7 +145,8 @@ public class PwaConfiguration {
     }
 
     private static String getStartUrl(ServletContext context) {
-        return context.getContextPath().isEmpty() ? "/" :
+        return context == null || context.getContextPath() == null ||
+                context.getContextPath().isEmpty() ? "/" :
                 context.getContextPath();
     }
 

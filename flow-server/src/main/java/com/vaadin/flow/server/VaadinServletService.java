@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.communication.PushRequestHandler;
+import com.vaadin.flow.server.startup.PWARegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -46,6 +48,7 @@ public class VaadinServletService extends VaadinService {
      */
     private final VaadinServlet servlet;
     private final ServiceContextUriResolver contextResolver = new ServiceContextUriResolver();
+    private PWARegistry pwaRegistry;
 
     /**
      * Creates an instance connected to the given servlet and using the given
@@ -60,6 +63,7 @@ public class VaadinServletService extends VaadinService {
             DeploymentConfiguration deploymentConfiguration) {
         super(deploymentConfiguration);
         this.servlet = servlet;
+        this.pwaRegistry = null;
     }
 
     /**
@@ -69,6 +73,7 @@ public class VaadinServletService extends VaadinService {
      */
     protected VaadinServletService() {
         servlet = null;
+        pwaRegistry = null;
     }
 
     @Override
@@ -172,6 +177,19 @@ public class VaadinServletService extends VaadinService {
     @Override
     protected RouteRegistry getRouteRegistry() {
         return RouteRegistry.getInstance(getServlet().getServletContext());
+    }
+
+    @Override
+    public PWARegistry getPwaRegistry() {
+        if (pwaRegistry == null) {
+            try {
+                this.pwaRegistry = PWARegistry
+                        .initRegistry(getServlet().getServletContext());
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        return this.pwaRegistry;
     }
 
     @Override

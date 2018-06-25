@@ -1,5 +1,4 @@
 com.vaadin.flow.server.startup.ServletVerifier
-com.vaadin.flow.server.startup.ManifestInitializer
 com.vaadin.flow.server.startup.RouteRegistryInitializer
 com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer
 com.vaadin.flow.server.startup.AnnotationValidator

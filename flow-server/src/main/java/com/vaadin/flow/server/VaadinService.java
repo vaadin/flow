@@ -63,12 +63,13 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.IconHandler;
-import com.vaadin.flow.server.communication.ManifestHandler;
+import com.vaadin.flow.server.communication.PWAHandler;
 import com.vaadin.flow.server.communication.OfflineHandler;
 import com.vaadin.flow.server.communication.ServiceWorkerHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.startup.PWARegistry;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -276,6 +277,8 @@ public abstract class VaadinService implements Serializable {
      */
     protected abstract RouteRegistry getRouteRegistry();
 
+    public abstract PWARegistry getPwaRegistry();
+
     /**
      * Called during initialization to add the request handlers for the service.
      * Note that the returned list will be reversed so the last handler will be
@@ -295,11 +298,11 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
-        handlers.add(new StreamRequestHandler());
-        handlers.add(new IconHandler());
-        handlers.add(new ServiceWorkerHandler());
-        handlers.add(new ManifestHandler());
         handlers.add(new OfflineHandler());
+        handlers.add(new StreamRequestHandler());
+        handlers.add(new ServiceWorkerHandler());
+        handlers.add(new IconHandler());
+        handlers.add(new PWAHandler());
 
         return handlers;
     }

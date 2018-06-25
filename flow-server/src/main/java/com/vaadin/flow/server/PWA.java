@@ -7,11 +7,12 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Manifest {
+public @interface PWA {
+
+    String version() default PwaConfiguration.DEFAULT_VERSION;
 
     /**
-     * I guess this should be just context-path, no editing whatsoever?
-     * Or maybe fall back to context-path if empty?
+     *
      * @return
      */
     String startUrl() default PwaConfiguration.DEFAULT_START_URL;
@@ -19,14 +20,14 @@ public @interface Manifest {
     String offlinePath() default PwaConfiguration.DEFAULT_OFFLINE_PATH;
 
     /**
-     * Sets the manifest.json url
+     * Manifest.json url
      *
      * @return
      */
     String manifestPath() default PwaConfiguration.DEFAULT_PATH;
 
     /**
-     * Sets the path of logo.
+     * Path of logo.
      *
      * If the logo -file is not found, falls back to default logo
      *
@@ -35,11 +36,11 @@ public @interface Manifest {
     String logoPath() default PwaConfiguration.DEFAULT_LOGO;
 
     /**
-     * Sets name of the project.
+     * Name of the project.
      *
      * @return
      */
-    String name() default PwaConfiguration.DEFAULT_NAME;
+    String name();
 
     String themeColor() default PwaConfiguration.DEFAULT_THEME_COLOR;
 

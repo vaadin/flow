@@ -8,15 +8,14 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.ManifestRegistry;
+import com.vaadin.flow.server.startup.PWARegistry;
 
 public class OfflineHandler implements RequestHandler {
     @Override public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
             throws IOException {
 
         VaadinServletRequest httpRequest = (VaadinServletRequest) request;
-        ManifestRegistry registry = ManifestRegistry.getInstance(
-                httpRequest.getServletContext());
+        PWARegistry registry = request.getService().getPwaRegistry();
         PwaConfiguration config = registry.getPwaConfiguration();
 
         if (config.relOfflinePath().equals(httpRequest.getPathInfo())) {

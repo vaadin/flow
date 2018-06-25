@@ -1018,18 +1018,20 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        assertStringEquals("Custom style should have been added to head.",
-                "<script id=\"_theme-header-injection\">\n"
-                        + "function _inlineHeader(tag, content){\n"
-                        + "var customStyle = document.createElement(tag);\n"
-                        + "customStyle.innerHTML= content;\n"
-                        + "var firstScript=document.head.querySelector('script');\n"
-                        + "document.head.insertBefore(customStyle,firstScript);\n"
-                        + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                        + "</script>",
-                allElements.get(14).toString());
+        String expected = "<script id=\"_theme-header-injection\">\n"
+                + "function _inlineHeader(tag, content){\n"
+                + "var customStyle = document.createElement(tag);\n"
+                + "customStyle.innerHTML= content;\n"
+                + "var firstScript=document.head.querySelector('script');\n"
+                + "document.head.insertBefore(customStyle,firstScript);\n"
+                + "}\n"
+                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                + "</script>";
+        // Custom style should have been added to head.
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Element::toString)
+                        .anyMatch(s -> s.equals(expected)));
     }
 
     @Test // 3333
@@ -1052,19 +1054,22 @@ public class BootstrapHandlerTest {
                         .anyMatch(element -> element.equals(
                                 "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
         allElements = page.head().getAllElements();
+
         // Note element 0 is the full head element.
-        assertStringEquals("Custom style should have been added to head.",
-                "<script id=\"_theme-header-injection\">\n"
-                        + "function _inlineHeader(tag, content){\n"
-                        + "var customStyle = document.createElement(tag);\n"
-                        + "customStyle.innerHTML= content;\n"
-                        + "var firstScript=document.head.querySelector('script');\n"
-                        + "document.head.insertBefore(customStyle,firstScript);\n"
-                        + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                        + "</script>",
-                allElements.get(14).toString());
+        String expected = "<script id=\"_theme-header-injection\">\n"
+                + "function _inlineHeader(tag, content){\n"
+                + "var customStyle = document.createElement(tag);\n"
+                + "customStyle.innerHTML= content;\n"
+                + "var firstScript=document.head.querySelector('script');\n"
+                + "document.head.insertBefore(customStyle,firstScript);\n"
+                + "}\n"
+                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                + "</script>";
+        // Custom style should have been added to head.
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Element::toString)
+                        .anyMatch(s -> s.equals(expected)));
     }
 
     @Test // 3333
@@ -1099,19 +1104,20 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        assertStringEquals("Custom style should have been added to head.",
-                "<script id=\"_theme-header-injection\">\n"
-                        + "function _inlineHeader(tag, content){\n"
-                        + "var customStyle = document.createElement(tag);\n"
-                        + "customStyle.innerHTML= content;\n"
-                        + "var firstScript=document.head.querySelector('script');\n"
-                        + "document.head.insertBefore(customStyle,firstScript);\n"
-                        + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                        + "</script>",
-                allElements.get(14).toString());
-
+        String expected = "<script id=\"_theme-header-injection\">\n"
+                + "function _inlineHeader(tag, content){\n"
+                + "var customStyle = document.createElement(tag);\n"
+                + "customStyle.innerHTML= content;\n"
+                + "var firstScript=document.head.querySelector('script');\n"
+                + "document.head.insertBefore(customStyle,firstScript);\n"
+                + "}\n"
+                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                + "</script>";
+        // Custom style should have been added to head.
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Element::toString)
+                        .anyMatch(s -> s.equals(expected)));
     }
 
     @Test
@@ -1124,7 +1130,7 @@ public class BootstrapHandlerTest {
         Element head = page.head();
         Elements metas = head.getElementsByTag("meta");
 
-        Assert.assertEquals(3, metas.size());
+        Assert.assertEquals(4, metas.size());
         Element meta = metas.get(0);
         assertEquals("Content-Type", meta.attr("http-equiv"));
         assertEquals("text/html; charset=utf-8", meta.attr("content"));

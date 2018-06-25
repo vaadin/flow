@@ -4,21 +4,19 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import com.vaadin.flow.dom.Icon;
-import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.Manifest;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.ManifestRegistry;
+import com.vaadin.flow.server.startup.PWARegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-public class ManifestHandler implements RequestHandler {
+public class PWAHandler implements RequestHandler {
 
 
     @Override
@@ -26,11 +24,11 @@ public class ManifestHandler implements RequestHandler {
             VaadinResponse response) throws IOException {
 
         VaadinServletRequest httpRequest = (VaadinServletRequest) request;
-        ManifestRegistry registry = ManifestRegistry.getInstance(
-                httpRequest.getServletContext());
+        PWARegistry registry = request.getService().getPwaRegistry();
         PwaConfiguration config = registry.getPwaConfiguration();
         if (!config.isManifestDisabled() &&
                 config.relManifestPath().equals(httpRequest.getPathInfo())) {
+            response.setContentType("application/json");
             JsonObject manifestData = Json.createObject();
             manifestData.put("name", config.getAppName());
             manifestData.put("short_name", config.getAppName());
@@ -53,7 +51,6 @@ public class ManifestHandler implements RequestHandler {
             PrintWriter writer = response.getWriter();
             writer.write(manifestData.toJson());
             writer.close();
-            response.setContentType("application/json");
             return true;
         }
 
