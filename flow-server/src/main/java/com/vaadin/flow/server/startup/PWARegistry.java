@@ -213,7 +213,7 @@ public class PWARegistry implements Serializable {
                 .collect(Collectors.toList());
         // init header inject of icons
         String iconHead = iconList.stream()
-                .map(icon -> icon.toString())
+                .map(icon -> icon.asElement().toString())
                 .collect(Collectors.joining("\n"));
         // init large image
         Icon largest = iconList.stream()
