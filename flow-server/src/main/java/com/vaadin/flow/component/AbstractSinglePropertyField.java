@@ -21,7 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.coekie.gentyref.GenericTypeReflector;
+import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.function.SerializableBiConsumer;
