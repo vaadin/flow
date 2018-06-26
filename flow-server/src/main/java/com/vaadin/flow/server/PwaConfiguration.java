@@ -2,6 +2,10 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_PATH = "manifest.json";
@@ -24,6 +28,7 @@ public class PwaConfiguration implements Serializable {
     private final String display;
     private final String startUrl;
     private final boolean enabled;
+    private List<String> offlineResources;
 
     public PwaConfiguration(PWA pwa, ServletContext servletContext) {
         if (pwa != null) {
@@ -40,6 +45,7 @@ public class PwaConfiguration implements Serializable {
             this.startUrl = getStartUrl(servletContext);
             this.serviceWorkerPath = "sw.js";
             this.enabled = pwa.enabled();
+            this.offlineResources = Arrays.asList(pwa.offlineResources());
         } else {
             this.appName = DEFAULT_NAME;
             this.shortName = "Flow PWA";
@@ -53,6 +59,7 @@ public class PwaConfiguration implements Serializable {
             this.startUrl = getStartUrl(servletContext);
             this.serviceWorkerPath = "sw.js";
             this.enabled = false;
+            this.offlineResources = Collections.EMPTY_LIST;
         }
     }
 
@@ -108,6 +115,9 @@ public class PwaConfiguration implements Serializable {
         return "/" + serviceWorkerPath;
     }
 
+    public List<String> getOfflineResources() {
+        return offlineResources.stream().collect(Collectors.toList());
+    }
 
     /**
      * Defines the developers’ preferred display mode for the website.

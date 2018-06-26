@@ -98,5 +98,12 @@ public @interface PWA {
      */
     String display() default PwaConfiguration.DEFAULT_DISPLAY;
 
+    /**
+     * Offline resources to be cached with service worker.
+     *
+     * @return
+     */
+    String[] offlineResources() default {};
+
     boolean enabled() default true;
 }

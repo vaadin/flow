@@ -77,7 +77,7 @@ public class PWARegistry implements Serializable {
             manifestJson = initializeManifest().toJson();
 
             // Initialize sw.js
-            serviceWorkerJs = initializeServiceWorker();
+            serviceWorkerJs = initializeServiceWorker(servletContext);
         } else {
             offlineHtml = "";
             manifestJson = "";
@@ -159,7 +159,7 @@ public class PWARegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeServiceWorker() {
+    private String initializeServiceWorker(ServletContext servletContext) {
         StringBuffer buffer = new StringBuffer();
 
         // List of icons for precache
@@ -169,6 +169,14 @@ public class PWARegistry implements Serializable {
 
         // Add offline page to precache
         precacheFiles.add(offlinePageCache());
+
+        // Add user defined resources
+        for (String resource : pwaConfiguration.getOfflineResources()) {
+            precacheFiles.add(
+                    String.format("{ url: '%s', revision: '%s' }",
+                            resource.replaceAll("'", ""),
+                            servletContext.hashCode()));
+        }
 
         // Google Workbox import
         buffer.append("importScripts('https://storage.googleapis.com/"
