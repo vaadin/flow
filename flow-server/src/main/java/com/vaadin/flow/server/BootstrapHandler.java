@@ -709,21 +709,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         PwaConfiguration config = registry.getPwaConfiguration();
 
-        // Describe PWA capability for IOS devices
-        head.appendElement("meta")
-                .attr("name", "apple-mobile-web-app-capable")
-                .attr("content", "yes");
+        if (config.isEnabled()) {
+            // Describe PWA capability for IOS devices
+            head.appendElement("meta")
+                    .attr("name", "apple-mobile-web-app-capable")
+                    .attr("content", "yes");
 
-        if (!config.isManifestDisabled()) {
+            // Add manifest
             head.appendElement("link").attr("rel", "manifest")
                     .attr("href", config.getManifestPath());
-        }
 
-        for (Icon icon : registry.getHeaderIcons()) {
-            head.appendChild(icon.asElement());
-        }
+            // Add icons
+            for (Icon icon : registry.getHeaderIcons()) {
+                head.appendChild(icon.asElement());
+            }
 
-        if (!config.isServiceWorkerDisabled()) {
+            // Add service worker initialization
             head.appendElement("script").text("if ('serviceWorker' in navigator) {\n"
                     + "  window.addEventListener('load', function() {\n"
                     + "    navigator.serviceWorker.register('" +

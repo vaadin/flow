@@ -23,6 +23,10 @@ import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+
 /**
  * Registry for PWA data.
  *
@@ -37,6 +41,8 @@ public class PWARegistry implements Serializable {
     private List<Icon> icons;
     private final String offlineHtml;
     private long offlineHash;
+    private final String manifestJson;
+    private final String serviceWorkerJs;
 
 
     private PWARegistry(PWA pwa, ServletContext servletContext)
@@ -44,55 +50,136 @@ public class PWARegistry implements Serializable {
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
         this.pwaConfiguration = new PwaConfiguration(pwa, servletContext);
-        URL logo = servletContext.getResource(pwaConfiguration.relLogoPath());
-        URL offlinePage = servletContext.getResource(pwaConfiguration
-                .relOfflinePath());
-        icons = new ArrayList<>();
-        // Load base logo from servletcontext if available
-        // fall back to local image if unavailable
-        BufferedImage baseImage = getBaseImage(logo);
 
-        // Pick top-left pixel as fill color if needed for image resizing
-        int bgColor = baseImage.getRGB(0,0);
+        // Build pwa elements only if they are enabled
+        if (this.pwaConfiguration.isEnabled()) {
+            URL logo = servletContext.getResource(pwaConfiguration.relLogoPath());
+            URL offlinePage = servletContext.getResource(pwaConfiguration
+                    .relOfflinePath());
+            icons = new ArrayList<>();
+            // Load base logo from servletcontext if available
+            // fall back to local image if unavailable
+            BufferedImage baseImage = getBaseImage(logo);
 
-        for (Icon icon : getIcons(pwaConfiguration.getLogoPath())) {
-            // New image with wanted size
-            BufferedImage bimage = new BufferedImage(icon.getWidth(),
-                    icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            // Draw the image on to the buffered image
-            Graphics2D bGr = bimage.createGraphics();
+            // Pick top-left pixel as fill color if needed for image resizing
+            int bgColor = baseImage.getRGB(0,0);
 
-            // fill bg with fill-color
-            bGr.setBackground(new Color(bgColor, true));
-            bGr.clearRect(0,0,icon.getWidth(),icon.getHeight());
+            for (Icon icon : getIcons(pwaConfiguration.getLogoPath())) {
+                // New image with wanted size
+                BufferedImage bimage = new BufferedImage(icon.getWidth(),
+                        icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                // Draw the image on to the buffered image
+                Graphics2D bGr = bimage.createGraphics();
 
-            // calculate ratio (bigger ratio) for resize
-            float ratio = (float) baseImage.getWidth() / (float) icon.getWidth() >
-                    (float) baseImage.getHeight() / (float)  icon.getHeight()
-                    ? (float) baseImage.getWidth() / (float) icon.getWidth()
-                    : (float) baseImage.getHeight() / (float) icon.getHeight();
+                // fill bg with fill-color
+                bGr.setBackground(new Color(bgColor, true));
+                bGr.clearRect(0,0,icon.getWidth(),icon.getHeight());
 
-            // Forbid upscaling of image
-            ratio = ratio > 1.0f ? ratio : 1.0f;
+                // calculate ratio (bigger ratio) for resize
+                float ratio = (float) baseImage.getWidth() / (float) icon.getWidth() >
+                        (float) baseImage.getHeight() / (float)  icon.getHeight()
+                        ? (float) baseImage.getWidth() / (float) icon.getWidth()
+                        : (float) baseImage.getHeight() / (float) icon.getHeight();
 
-            // calculate sizes with ratio
-            int newWidth = Math.round (baseImage.getHeight() / ratio);
-            int newHeight = Math.round (baseImage.getWidth() / ratio);
+                // Forbid upscaling of image
+                ratio = ratio > 1.0f ? ratio : 1.0f;
 
-            // draw rescaled img in the center of created image
-            bGr.drawImage(baseImage.getScaledInstance(newWidth, newHeight,
-                    Image.SCALE_SMOOTH), (icon.getWidth() - newWidth) / 2,
-                    (icon.getHeight() - newHeight) / 2, null);
-            bGr.dispose();
+                // calculate sizes with ratio
+                int newWidth = Math.round (baseImage.getHeight() / ratio);
+                int newHeight = Math.round (baseImage.getWidth() / ratio);
 
-            icon.setImage(bimage);
-            // Store byte array and hashcode of image (GeneratedImage)
-            icons.add(icon);
+                // draw rescaled img in the center of created image
+                bGr.drawImage(baseImage.getScaledInstance(newWidth, newHeight,
+                        Image.SCALE_SMOOTH), (icon.getWidth() - newWidth) / 2,
+                        (icon.getHeight() - newHeight) / 2, null);
+                bGr.dispose();
+
+                icon.setImage(bimage);
+                // Store byte array and hashcode of image (GeneratedImage)
+                icons.add(icon);
+            }
+            // Load offline page as string, from servlet context if
+            // available, fall back to default page
+            offlineHtml = getOfflinePage(pwaConfiguration, offlinePage);
+            offlineHash = offlineHtml.hashCode();
+
+            // Initialize manifest.json
+            manifestJson = getManifest().toJson();
+
+            // Initialize sw.js
+            serviceWorkerJs = getServiceWorker();
+        } else {
+            offlineHtml = "";
+            manifestJson = "";
+            serviceWorkerJs = "";
         }
-        // Load offline page as string, from servlet context if
-        // available, fall back to default page
-        offlineHtml = getOfflinePage(pwaConfiguration, offlinePage);
-        offlineHash = offlineHtml.hashCode();
+    }
+
+    /**
+     * Creates manifest.json json object.
+     *
+     * @return
+     */
+    private JsonObject getManifest() {
+        JsonObject manifestData = Json.createObject();
+        manifestData.put("name", pwaConfiguration.getAppName());
+        manifestData.put("short_name", pwaConfiguration.getAppName());
+        manifestData.put("display", pwaConfiguration.getDisplay());
+        manifestData.put("background_color",
+                pwaConfiguration.getBackgroundColor());
+        manifestData.put("theme_color", pwaConfiguration.getThemeColor());
+        manifestData.put("start_url", pwaConfiguration.getStartUrl());
+
+        JsonArray icons = Json.createArray();
+        int iconIndex = 0;
+        for (Icon icon : getManifestIcons()) {
+            JsonObject iconData = Json.createObject();
+            iconData.put("src", icon.href());
+            iconData.put("sizes", icon.sizes());
+            iconData.put("type", icon.type());
+            icons.set(iconIndex++, iconData);
+        }
+        manifestData.put("icons", icons);
+        return manifestData;
+    }
+
+    private String getServiceWorker() {
+        StringBuffer buffer = new StringBuffer();
+
+        // List of icons for precache
+        List<String> precacheFiles = getIcons().stream()
+                .filter(Icon::cached)
+                .map(icon -> icon.cache()).collect(Collectors.toList());
+
+        // Add offline page to precache
+        precacheFiles.add(offlinePageCache());
+
+        // Google Workbox import
+        buffer.append("importScripts('https://storage.googleapis.com/"
+                + "workbox-cdn/releases/3.2.0/workbox-sw.js');\n\n");
+
+        // Precaching
+        buffer.append("workbox.precaching.precacheAndRoute([\n");
+        buffer.append(precacheFiles.stream()
+                .collect(Collectors.joining( ",\n" )));
+        buffer.append("\n]);\n");
+
+        // Offline fallback
+        buffer.append(
+                "self.addEventListener('fetch', function(event) {\n"
+                        + "  var request = event.request;\n"
+                        + "  if (request.mode === 'navigate') {\n"
+                        + "    event.respondWith(\n"
+                        + "      fetch(request)\n"
+                        + "        .catch(function() {\n"
+                        + "          return caches.match('"
+                        +  getPwaConfiguration().getOfflinePath() +  "');\n"
+                        + "        })\n"
+                        + "    );\n"
+                        + "  }\n"
+                        + "});");
+
+        return buffer.toString();
     }
 
     public static PWARegistry initRegistry(ServletContext servletContext)
@@ -179,6 +266,14 @@ public class PWARegistry implements Serializable {
 
     public String getOfflineHtml() {
         return offlineHtml;
+    }
+
+    public String getManifestJson() {
+        return manifestJson;
+    }
+
+    public String getServiceWorkerJs() {
+        return serviceWorkerJs;
     }
 
     public String offlinePageCache() {

@@ -62,10 +62,7 @@ import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
-import com.vaadin.flow.server.communication.IconHandler;
 import com.vaadin.flow.server.communication.PWAHandler;
-import com.vaadin.flow.server.communication.OfflineHandler;
-import com.vaadin.flow.server.communication.ServiceWorkerHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
@@ -277,7 +274,7 @@ public abstract class VaadinService implements Serializable {
      */
     protected abstract RouteRegistry getRouteRegistry();
 
-    public abstract PWARegistry getPwaRegistry();
+    protected abstract PWARegistry getPwaRegistry();
 
     /**
      * Called during initialization to add the request handlers for the service.
@@ -298,12 +295,11 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
-        handlers.add(new OfflineHandler());
         handlers.add(new StreamRequestHandler());
-        handlers.add(new ServiceWorkerHandler());
-        handlers.add(new IconHandler());
-        handlers.add(new PWAHandler());
-
+        PWARegistry pwaRegistry = getPwaRegistry();
+        if (pwaRegistry.getPwaConfiguration().isEnabled()) {
+            handlers.add(new PWAHandler(pwaRegistry));
+        }
         return handlers;
     }
 

@@ -56,8 +56,5 @@ public @interface PWA {
      */
     String display() default PwaConfiguration.DEFAULT_DISPLAY;
 
-    boolean disableServiceWorker() default false;
-
-    boolean disableManifest() default false;
-
+    boolean enabled() default true;
 }

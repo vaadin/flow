@@ -1130,7 +1130,7 @@ public class BootstrapHandlerTest {
         Element head = page.head();
         Elements metas = head.getElementsByTag("meta");
 
-        Assert.assertEquals(4, metas.size());
+        Assert.assertEquals(3, metas.size());
         Element meta = metas.get(0);
         assertEquals("Content-Type", meta.attr("http-equiv"));
         assertEquals("text/html; charset=utf-8", meta.attr("content"));

@@ -1,10 +1,12 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.vaadin.flow.dom.Icon;
-import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -12,46 +14,78 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.PWARegistry;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-
 public class PWAHandler implements RequestHandler {
 
+    private PWARegistry pwaRegistry;
+    private Map<String, RequestHandler> requestHandlerMap;
+
+    public PWAHandler(PWARegistry pwaRegistry) {
+        requestHandlerMap = new HashMap<>();
+        this.pwaRegistry = pwaRegistry;
+
+        if (this.pwaRegistry.getPwaConfiguration().isEnabled()) {
+
+            // Icon handling
+            for (Icon icon : this.pwaRegistry.getIcons()) {
+                requestHandlerMap.put(icon.relHref(),
+                        (session, request, response) -> {
+                            response.setContentType(icon.type());
+                            // Icon is cached with service worker, deny browser caching
+                            if (icon.cached()) {
+                                response.setHeader("Cache-Control",
+                                        "no-cache, must-revalidate");
+                            }
+                            OutputStream out = response.getOutputStream();
+                            icon.write(out);
+                            out.close();
+                            return true;
+                        });
+            }
+            // Offline page handling
+            requestHandlerMap.put(
+                    this.pwaRegistry.getPwaConfiguration().relOfflinePath(),
+                    (session, request, response) -> {
+                        response.setContentType("text/html");
+                        response.getWriter().write(pwaRegistry.getOfflineHtml());
+                        response.getWriter().close();
+                        return true;
+                    });
+
+            // Manifest.json handling
+            requestHandlerMap.put(
+                    this.pwaRegistry.getPwaConfiguration().relManifestPath(),
+                    (session, request, response) -> {
+                        response.setContentType("application/json");
+                        PrintWriter writer = response.getWriter();
+                        writer.write(this.pwaRegistry.getManifestJson());
+                        writer.close();
+                        return true;
+                    });
+
+            // serviceworker.js handling
+            requestHandlerMap.put(
+                    this.pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
+                    (session, request, response) -> {
+                        response.setContentType("application/javascript");
+                        PrintWriter writer = response.getWriter();
+                        writer.write(this.pwaRegistry.getServiceWorkerJs());
+                        writer.close();
+                        return true;
+                    });
+        }
+
+    }
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-
         VaadinServletRequest httpRequest = (VaadinServletRequest) request;
-        PWARegistry registry = request.getService().getPwaRegistry();
-        PwaConfiguration config = registry.getPwaConfiguration();
-        if (!config.isManifestDisabled() &&
-                config.relManifestPath().equals(httpRequest.getPathInfo())) {
-            response.setContentType("application/json");
-            JsonObject manifestData = Json.createObject();
-            manifestData.put("name", config.getAppName());
-            manifestData.put("short_name", config.getAppName());
-            manifestData.put("display", config.getDisplay());
-            manifestData.put("background_color", config.getBackgroundColor());
-            manifestData.put("theme_color", config.getThemeColor());
-            manifestData.put("start_url", config.getStartUrl());
+        String requestUri = httpRequest.getPathInfo();
 
-            JsonArray icons = Json.createArray();
-            int iconIndex = 0;
-            for (Icon icon : registry.getManifestIcons()) {
-                JsonObject iconData = Json.createObject();
-                iconData.put("src", icon.href());
-                iconData.put("sizes", icon.sizes());
-                iconData.put("type", icon.type());
-                icons.set(iconIndex++, iconData);
-            }
-            manifestData.put("icons", icons);
-
-            PrintWriter writer = response.getWriter();
-            writer.write(manifestData.toJson());
-            writer.close();
-            return true;
+        if (pwaRegistry.getPwaConfiguration().isEnabled() &&
+                requestHandlerMap.containsKey(requestUri)) {
+            return requestHandlerMap.get(requestUri)
+                    .handleRequest(session,request,response);
         }
 
         return false;

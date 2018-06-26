@@ -26,25 +26,23 @@ public class PwaConfiguration implements Serializable {
     private final String serviceWorkerPath;
     private final String display;
     private final String startUrl;
-    private final boolean manifestDisabled;
-    private final boolean serviceWorkerDisabled;
+    private final boolean enabled;
 
-    public PwaConfiguration(PWA manifest, ServletContext servletContext) {
-        if (manifest != null) {
-            this.version = manifest.version();
-            this.appName = manifest.name();
-            this.shortName = manifest.name();
+    public PwaConfiguration(PWA pwa, ServletContext servletContext) {
+        if (pwa != null) {
+            this.version = pwa.version();
+            this.appName = pwa.name();
+            this.shortName = pwa.name();
             this.description = "";
-            this.backgroundColor = manifest.backgroundColor();
-            this.themeColor = manifest.themeColor();
-            this.logoPath = checkPath(manifest.logoPath());
-            this.manifestPath = checkPath(manifest.manifestPath());
-            this.offlinePath = checkPath(manifest.offlinePath());
-            this.display = manifest.display();
+            this.backgroundColor = pwa.backgroundColor();
+            this.themeColor = pwa.themeColor();
+            this.logoPath = checkPath(pwa.logoPath());
+            this.manifestPath = checkPath(pwa.manifestPath());
+            this.offlinePath = checkPath(pwa.offlinePath());
+            this.display = pwa.display();
             this.startUrl = getStartUrl(servletContext);
             this.serviceWorkerPath = "sw.js";
-            this.manifestDisabled = manifest.disableManifest();
-            this.serviceWorkerDisabled = manifest.disableServiceWorker();
+            this.enabled = pwa.enabled();
         } else {
             this.version = DEFAULT_VERSION;
             this.appName = DEFAULT_NAME;
@@ -58,8 +56,7 @@ public class PwaConfiguration implements Serializable {
             this.display = DEFAULT_DISPLAY;
             this.startUrl = getStartUrl(servletContext);
             this.serviceWorkerPath = "sw.js";
-            this.manifestDisabled = true;
-            this.serviceWorkerDisabled = true;
+            this.enabled = false;
         }
     }
 
@@ -136,12 +133,8 @@ public class PwaConfiguration implements Serializable {
         return startUrl;
     }
 
-    public boolean isManifestDisabled() {
-        return manifestDisabled;
-    }
-
-    public boolean isServiceWorkerDisabled() {
-        return serviceWorkerDisabled;
+    public boolean isEnabled() {
+        return enabled;
     }
 
     private static String getStartUrl(ServletContext context) {

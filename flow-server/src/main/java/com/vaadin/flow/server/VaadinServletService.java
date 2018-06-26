@@ -180,7 +180,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public PWARegistry getPwaRegistry() {
+    protected PWARegistry getPwaRegistry() {
         if (pwaRegistry == null) {
             try {
                 this.pwaRegistry = PWARegistry
