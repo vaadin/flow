@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import org.jsoup.nodes.Element;
 
@@ -51,7 +50,7 @@ public class Icon implements Serializable {
     private String tag = "link";
 
     public Icon() {
-        attr("link", "image/png");
+        attr("type", "image/png");
         rel("icon");
     }
 
