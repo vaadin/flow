@@ -60,7 +60,7 @@ public class Material implements AbstractTheme {
         default:
             if (!variant.isEmpty()) {
                 LoggerFactory.getLogger(getClass().getName()).warn(
-                        "Material theme variant not recognized: '{0}'. Using no variant.",
+                        "Material theme variant not recognized: '{}'. Using no variant.",
                         variant);
             }
             return Collections.emptyMap();
