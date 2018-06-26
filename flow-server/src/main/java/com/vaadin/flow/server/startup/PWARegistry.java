@@ -123,12 +123,13 @@ public class PWARegistry implements Serializable {
     private JsonObject getManifest() {
         JsonObject manifestData = Json.createObject();
         manifestData.put("name", pwaConfiguration.getAppName());
-        manifestData.put("short_name", pwaConfiguration.getAppName());
+        manifestData.put("short_name", pwaConfiguration.getShortName());
         manifestData.put("display", pwaConfiguration.getDisplay());
         manifestData.put("background_color",
                 pwaConfiguration.getBackgroundColor());
         manifestData.put("theme_color", pwaConfiguration.getThemeColor());
         manifestData.put("start_url", pwaConfiguration.getStartUrl());
+        manifestData.put("scope", pwaConfiguration.getStartUrl());
 
         JsonArray icons = Json.createArray();
         int iconIndex = 0;

@@ -36,11 +36,20 @@ public @interface PWA {
     String logoPath() default PwaConfiguration.DEFAULT_LOGO;
 
     /**
-     * Name of the project.
+     * Name of the application.
      *
      * @return
      */
     String name();
+
+    /**
+     * Short name for application.
+     *
+     * Maximum of 12 characters.
+     *
+     * @return
+     */
+    String shortName();
 
     String themeColor() default PwaConfiguration.DEFAULT_THEME_COLOR;
 

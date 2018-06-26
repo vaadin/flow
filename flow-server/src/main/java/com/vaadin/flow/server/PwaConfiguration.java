@@ -10,7 +10,7 @@ public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_NAME = "Vaadin Flow Application";
     public static final String DEFAULT_THEME_COLOR =  "#ffffff";
     public static final String DEFAULT_BACKGROUND_COLOR = "#ffffff";
-    public static final String DEFAULT_DISPLAY = "standalone";
+    public static final String DEFAULT_DISPLAY = "fullscreen";
     public static final String DEFAULT_START_URL = "/";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
 
@@ -32,7 +32,8 @@ public class PwaConfiguration implements Serializable {
         if (pwa != null) {
             this.version = pwa.version();
             this.appName = pwa.name();
-            this.shortName = pwa.name();
+            this.shortName = pwa.shortName().substring(0,
+                    Math.min(pwa.shortName().length(), 12));
             this.description = "";
             this.backgroundColor = pwa.backgroundColor();
             this.themeColor = pwa.themeColor();
@@ -46,7 +47,7 @@ public class PwaConfiguration implements Serializable {
         } else {
             this.version = DEFAULT_VERSION;
             this.appName = DEFAULT_NAME;
-            this.shortName = DEFAULT_NAME;
+            this.shortName = "Flow PWA";
             this.description = "";
             this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
             this.themeColor = DEFAULT_THEME_COLOR;
@@ -140,7 +141,7 @@ public class PwaConfiguration implements Serializable {
     private static String getStartUrl(ServletContext context) {
         return context == null || context.getContextPath() == null ||
                 context.getContextPath().isEmpty() ? "/" :
-                context.getContextPath();
+                context.getContextPath() + "/";
     }
 
     private static String checkPath(String path) {
