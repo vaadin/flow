@@ -241,6 +241,7 @@ public class Icon implements Serializable {
         baos.flush();
         data = baos.toByteArray();
         fileHash = Arrays.hashCode(data);
+        setRelativeName();
         baos.close();
     }
 
