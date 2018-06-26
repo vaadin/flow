@@ -4,17 +4,14 @@ import javax.servlet.ServletContext;
 import java.io.Serializable;
 
 public class PwaConfiguration implements Serializable {
-    public static final String DEFAULT_VERSION = "1.0";
     public static final String DEFAULT_PATH = "manifest.json";
     public static final String DEFAULT_LOGO = "icons/logo.png";
     public static final String DEFAULT_NAME = "Vaadin Flow Application";
     public static final String DEFAULT_THEME_COLOR =  "#ffffff";
     public static final String DEFAULT_BACKGROUND_COLOR = "#ffffff";
     public static final String DEFAULT_DISPLAY = "fullscreen";
-    public static final String DEFAULT_START_URL = "/";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
 
-    private final String version;
     private final String appName;
     private final String shortName;
     private final String description;
@@ -30,11 +27,10 @@ public class PwaConfiguration implements Serializable {
 
     public PwaConfiguration(PWA pwa, ServletContext servletContext) {
         if (pwa != null) {
-            this.version = pwa.version();
             this.appName = pwa.name();
             this.shortName = pwa.shortName().substring(0,
                     Math.min(pwa.shortName().length(), 12));
-            this.description = "";
+            this.description = pwa.description();
             this.backgroundColor = pwa.backgroundColor();
             this.themeColor = pwa.themeColor();
             this.logoPath = checkPath(pwa.logoPath());
@@ -45,7 +41,6 @@ public class PwaConfiguration implements Serializable {
             this.serviceWorkerPath = "sw.js";
             this.enabled = pwa.enabled();
         } else {
-            this.version = DEFAULT_VERSION;
             this.appName = DEFAULT_NAME;
             this.shortName = "Flow PWA";
             this.description = "";
@@ -59,10 +54,6 @@ public class PwaConfiguration implements Serializable {
             this.serviceWorkerPath = "sw.js";
             this.enabled = false;
         }
-    }
-
-    public String getVersion() {
-        return version;
     }
 
     public String getAppName() {

@@ -34,6 +34,8 @@ import elemental.json.JsonObject;
  * - {@link PwaConfiguration} - basic info
  * - List of {@link Icon}:s - different sizes of icons for header and manifest
  * - Offline page
+ * - Manifest json
+ * - Service worker
  */
 public class PWARegistry implements Serializable {
 
@@ -56,7 +58,6 @@ public class PWARegistry implements Serializable {
             URL logo = servletContext.getResource(pwaConfiguration.relLogoPath());
             URL offlinePage = servletContext.getResource(pwaConfiguration
                     .relOfflinePath());
-            icons = new ArrayList<>();
             // Load base logo from servletcontext if available
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
@@ -64,50 +65,19 @@ public class PWARegistry implements Serializable {
             // Pick top-left pixel as fill color if needed for image resizing
             int bgColor = baseImage.getRGB(0,0);
 
-            for (Icon icon : getIcons(pwaConfiguration.getLogoPath())) {
-                // New image with wanted size
-                BufferedImage bimage = new BufferedImage(icon.getWidth(),
-                        icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
-                // Draw the image on to the buffered image
-                Graphics2D bGr = bimage.createGraphics();
+            // initialize icons
+            icons = initializeIcons(baseImage, bgColor);
 
-                // fill bg with fill-color
-                bGr.setBackground(new Color(bgColor, true));
-                bGr.clearRect(0,0,icon.getWidth(),icon.getHeight());
-
-                // calculate ratio (bigger ratio) for resize
-                float ratio = (float) baseImage.getWidth() / (float) icon.getWidth() >
-                        (float) baseImage.getHeight() / (float)  icon.getHeight()
-                        ? (float) baseImage.getWidth() / (float) icon.getWidth()
-                        : (float) baseImage.getHeight() / (float) icon.getHeight();
-
-                // Forbid upscaling of image
-                ratio = ratio > 1.0f ? ratio : 1.0f;
-
-                // calculate sizes with ratio
-                int newWidth = Math.round (baseImage.getHeight() / ratio);
-                int newHeight = Math.round (baseImage.getWidth() / ratio);
-
-                // draw rescaled img in the center of created image
-                bGr.drawImage(baseImage.getScaledInstance(newWidth, newHeight,
-                        Image.SCALE_SMOOTH), (icon.getWidth() - newWidth) / 2,
-                        (icon.getHeight() - newHeight) / 2, null);
-                bGr.dispose();
-
-                icon.setImage(bimage);
-                // Store byte array and hashcode of image (GeneratedImage)
-                icons.add(icon);
-            }
             // Load offline page as string, from servlet context if
             // available, fall back to default page
-            offlineHtml = getOfflinePage(pwaConfiguration, offlinePage);
+            offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
             offlineHash = offlineHtml.hashCode();
 
             // Initialize manifest.json
-            manifestJson = getManifest().toJson();
+            manifestJson = initializeManifest().toJson();
 
             // Initialize sw.js
-            serviceWorkerJs = getServiceWorker();
+            serviceWorkerJs = initializeServiceWorker();
         } else {
             offlineHtml = "";
             manifestJson = "";
@@ -115,15 +85,59 @@ public class PWARegistry implements Serializable {
         }
     }
 
+    private List<Icon> initializeIcons(BufferedImage baseImage, int bgColor) throws IOException {
+        icons = new ArrayList<>();
+        for (Icon icon : getIconTemplates(pwaConfiguration.getLogoPath())) {
+            // New image with wanted size
+            BufferedImage bimage = new BufferedImage(icon.getWidth(),
+                    icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            // Draw the image on to the buffered image
+            Graphics2D bGr = bimage.createGraphics();
+
+            // fill bg with fill-color
+            bGr.setBackground(new Color(bgColor, true));
+            bGr.clearRect(0,0,icon.getWidth(),icon.getHeight());
+
+            // calculate ratio (bigger ratio) for resize
+            float ratio = (float) baseImage.getWidth() / (float) icon.getWidth() >
+                    (float) baseImage.getHeight() / (float)  icon.getHeight()
+                    ? (float) baseImage.getWidth() / (float) icon.getWidth()
+                    : (float) baseImage.getHeight() / (float) icon.getHeight();
+
+            // Forbid upscaling of image
+            ratio = ratio > 1.0f ? ratio : 1.0f;
+
+            // calculate sizes with ratio
+            int newWidth = Math.round (baseImage.getHeight() / ratio);
+            int newHeight = Math.round (baseImage.getWidth() / ratio);
+
+            // draw rescaled img in the center of created image
+            bGr.drawImage(baseImage.getScaledInstance(newWidth, newHeight,
+                    Image.SCALE_SMOOTH), (icon.getWidth() - newWidth) / 2,
+                    (icon.getHeight() - newHeight) / 2, null);
+            bGr.dispose();
+
+            icon.setImage(bimage);
+            // Store byte array and hashcode of image (GeneratedImage)
+            icons.add(icon);
+        }
+        return icons;
+    }
+
     /**
      * Creates manifest.json json object.
      *
      * @return
      */
-    private JsonObject getManifest() {
+    private JsonObject initializeManifest() {
         JsonObject manifestData = Json.createObject();
+        // Add basic properties
         manifestData.put("name", pwaConfiguration.getAppName());
         manifestData.put("short_name", pwaConfiguration.getShortName());
+        if (!pwaConfiguration.getDescription().isEmpty()) {
+            manifestData.put("description",
+                    pwaConfiguration.getDescription());
+        }
         manifestData.put("display", pwaConfiguration.getDisplay());
         manifestData.put("background_color",
                 pwaConfiguration.getBackgroundColor());
@@ -131,6 +145,7 @@ public class PWARegistry implements Serializable {
         manifestData.put("start_url", pwaConfiguration.getStartUrl());
         manifestData.put("scope", pwaConfiguration.getStartUrl());
 
+        // Add icons
         JsonArray icons = Json.createArray();
         int iconIndex = 0;
         for (Icon icon : getManifestIcons()) {
@@ -144,7 +159,7 @@ public class PWARegistry implements Serializable {
         return manifestData;
     }
 
-    private String getServiceWorker() {
+    private String initializeServiceWorker() {
         StringBuffer buffer = new StringBuffer();
 
         // List of icons for precache
@@ -206,9 +221,9 @@ public class PWARegistry implements Serializable {
         return new PWARegistry(pwa, servletContext);
     }
 
-    private String getOfflinePage(PwaConfiguration config, URL resource)
+    private String initializeOfflinePage(PwaConfiguration config, URL resource)
             throws IOException {
-        // Used only icons which are cached with service worker
+        // Use only icons which are cached with service worker
         List<Icon> iconList = getIcons().stream()
                 .filter(icon -> icon.cached())
                 .collect(Collectors.toList());
@@ -304,7 +319,7 @@ public class PWARegistry implements Serializable {
         return pwaConfiguration;
     }
 
-    private static List<Icon> getIcons(String baseName) {
+    private static List<Icon> getIconTemplates(String baseName) {
         List<Icon> icons = new ArrayList<>();
         // Basic manifest icons for android support
         icons.add(new Icon().size(144, 144)
@@ -313,9 +328,9 @@ public class PWARegistry implements Serializable {
                 .domain(Icon.Domain.MANIFEST).cached(true));
         icons.add(new Icon().size(512, 512)
                 .domain(Icon.Domain.MANIFEST).cached(true));
-        // Favicons
+
+        // Basic icons
         icons.add(new Icon().size(16, 16)
-                .href("favicon.png")
                 .rel("shortcut icon").cached(true));
         icons.add(new Icon().size(32, 32));
         icons.add(new Icon().size(96, 96));
