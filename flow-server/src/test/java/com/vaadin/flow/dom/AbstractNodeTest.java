@@ -24,13 +24,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.coekie.gentyref.GenericTypeReflector;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 public abstract class AbstractNodeTest {

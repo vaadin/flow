@@ -20,7 +20,8 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.stream.Stream;
 
-import com.coekie.gentyref.GenericTypeReflector;
+import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.ReflectTools;

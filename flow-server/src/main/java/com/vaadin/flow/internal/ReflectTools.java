@@ -34,9 +34,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
-import com.coekie.gentyref.GenericTypeReflector;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
