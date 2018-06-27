@@ -116,6 +116,7 @@ public class ComponentGenerator {
 
     private boolean protectedMethods;
     private boolean abstractClass;
+    private ThemeVariantsCollector variantsCollector;
 
     private final JavaDocFormatter javaDocFormatter = new JavaDocFormatter();
 
@@ -275,6 +276,18 @@ public class ComponentGenerator {
     }
 
     /**
+     * Sets the theme variants collector that gets populated with theme
+     * variants data.
+     *
+     * @param variantsCollector the theme variants collector
+     * @return this
+     */
+    public ComponentGenerator withThemeVariantsColletor(ThemeVariantsCollector variantsCollector) {
+        this.variantsCollector = variantsCollector;
+        return this;
+    }
+
+    /**
      * Generate the class according to the set values.
      */
     public void build() {
@@ -361,6 +374,10 @@ public class ComponentGenerator {
      */
     private JavaClassSource generateClassSource(ComponentMetadata metadata,
             String basePackage) {
+        if (variantsCollector != null && !metadata.getVariants().isEmpty()) {
+            variantsCollector.collect(ComponentGeneratorUtils.generateValidJavaClassName(metadata.getTag()), metadata.getVariants());
+        }
+
         String targetPackage = basePackage;
         String baseUrl = metadata.getBaseUrl();
         if (StringUtils.isNotBlank(baseUrl)) {
