@@ -42,6 +42,7 @@ public class DefaultDeploymentConfigurationTest {
         System.setProperty(prop, value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 clazz, new Properties());
+        System.out.println("WWWWWWWWWWWWWWWWWWWW");
         assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -54,11 +55,9 @@ public class DefaultDeploymentConfigurationTest {
                         + '.' + prop,
                 value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties()
-                );
+                DefaultDeploymentConfigurationTest.class, new Properties());
         assertEquals(value, config.getSystemProperty(prop));
     }
-
 
     @Test
     public void booleanValueReadIgnoreTheCase_true() {
@@ -184,17 +183,22 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void bundleIsEnabledInProduction() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+                "true");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
         Assert.assertTrue(config.useCompiledFrontendResources());
     }
 
     @Test
     public void bundleCanBeDisabled() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+                "true");
+        initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
+                "true");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
         Assert.assertFalse(config.useCompiledFrontendResources());
     }
 }

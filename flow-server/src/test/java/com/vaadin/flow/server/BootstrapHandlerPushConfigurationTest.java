@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -36,6 +37,7 @@ import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
+@Ignore
 public class BootstrapHandlerPushConfigurationTest {
 
     private BootstrapHandlerTest.TestUI testUI;
