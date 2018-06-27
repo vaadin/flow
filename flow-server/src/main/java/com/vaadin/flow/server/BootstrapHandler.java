@@ -710,9 +710,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         if (config.isEnabled()) {
             // Describe PWA capability for IOS devices
-            head.appendElement("meta")
+            head.appendElement(META_TAG)
                     .attr("name", "apple-mobile-web-app-capable")
                     .attr("content", "yes");
+
+            // Theme color
+            head.appendElement(META_TAG)
+                    .attr("theme-color", config.getThemeColor());
+            head.appendElement(META_TAG)
+                    .attr("\"apple-mobile-web-app-status-bar-style",
+                            config.getThemeColor());
 
             // Add manifest
             head.appendElement("link").attr("rel", "manifest")
