@@ -24,7 +24,6 @@ import com.vaadin.flow.component.HasComponents;
  * Base class of the representation of a webcomponent for the code generator. It
  * holds all the data needed to generate the Java wrapper class that interacts
  * with the webcomponent at the client side.
- *
  */
 public class ComponentMetadata {
     private String tag;
@@ -298,10 +297,20 @@ public class ComponentMetadata {
         this.mixins = mixins;
     }
 
+    /**
+     * Gets theme variants for the component.
+     *
+     * @return theme variants data for the component
+     */
     public Map<String, List<String>> getVariants() {
         return variants;
     }
 
+    /**
+     * Sets theme variants for the component.
+     *
+     * @param variants theme variants data for the component
+     */
     public void setVariants(Map<String, List<String>> variants) {
         this.variants = variants;
     }
