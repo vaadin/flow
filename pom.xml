@@ -502,17 +502,9 @@
                     <plugins>
                         <plugin>
                             <artifactId>maven-surefire-plugin</artifactId>
-                            <!--TODO tests require some fixing-->
-                            <configuration>
-                                <skipTests>true</skipTests>
-                            </configuration>
                         </plugin>
                         <plugin>
                             <artifactId>maven-failsafe-plugin</artifactId>
-                            <!--TODO tests require some fixing-->
-                            <configuration>
-                                <skipTests>true</skipTests>
-                            </configuration>
                             <dependencies>
                                 <dependency>
                                     <groupId>javax.xml.bind</groupId>
