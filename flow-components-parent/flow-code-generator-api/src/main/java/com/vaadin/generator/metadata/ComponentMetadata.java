@@ -16,6 +16,7 @@
 package com.vaadin.generator.metadata;
 
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.component.HasComponents;
 
@@ -38,6 +39,7 @@ public class ComponentMetadata {
     private List<String> behaviors;
     private List<String> slots;
     private List<String> mixins;
+    private Map<String, List<String>> variants;
 
     /**
      * Gets the name of the ES6 class of the webcomponent, which is used to
@@ -296,4 +298,11 @@ public class ComponentMetadata {
         this.mixins = mixins;
     }
 
+    public Map<String, List<String>> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(Map<String, List<String>> variants) {
+        this.variants = variants;
+    }
 }
