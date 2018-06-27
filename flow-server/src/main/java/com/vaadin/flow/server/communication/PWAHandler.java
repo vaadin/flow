@@ -12,7 +12,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.PWARegistry;
+import com.vaadin.flow.server.PWARegistry;
 
 public class PWAHandler implements RequestHandler {
 

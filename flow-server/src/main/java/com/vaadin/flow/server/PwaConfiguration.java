@@ -7,6 +7,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Class implementation of {@link PWA} annotation.
+ *
+ * Takes {@link PWA} in constructor to fill properties.
+ * Sanitizes the input and falls back to default values if {@link PWA} is
+ * unavailable (null).
+ *
+ */
 public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_PATH = "manifest.json";
     public static final String DEFAULT_LOGO = "icons/logo.png";
@@ -30,7 +38,7 @@ public class PwaConfiguration implements Serializable {
     private final boolean enabled;
     private List<String> offlineResources;
 
-    public PwaConfiguration(PWA pwa, ServletContext servletContext) {
+    protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
         if (pwa != null) {
             this.appName = pwa.name();
             this.shortName = pwa.shortName().substring(0,
@@ -59,62 +67,140 @@ public class PwaConfiguration implements Serializable {
             this.startUrl = getStartUrl(servletContext);
             this.serviceWorkerPath = "sw.js";
             this.enabled = false;
-            this.offlineResources = Collections.EMPTY_LIST;
+            this.offlineResources = Collections.emptyList();
         }
     }
 
+    /**
+     * Application name.
+     *
+     * @return
+     */
     public String getAppName() {
         return appName;
     }
 
+    /**
+     * Application short name.
+     *
+     * Max 12 characters.
+     *
+     * @return
+     */
     public String getShortName() {
         return shortName;
     }
 
+    /**
+     * Application description.
+     *
+     * @return
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Background color of application.
+     *
+     * The background_color property is used on the splash screen when the
+     * application is first launched.
+     * @return
+     */
     public String getBackgroundColor() {
         return backgroundColor;
     }
 
+    /**
+     * Theme color of application.
+     *
+     * The theme color sets the color of the tool bar, and in the task switcher.
+     *
+     * @return
+     */
     public String getThemeColor() {
         return themeColor;
     }
 
+    /**
+     * Path to logo.
+     *
+     * For example "img/my-icon.png"
+     *
+     * @return
+     */
     public String getLogoPath() {
         return logoPath;
     }
 
+    /**
+     * Path to logo with prefix, so request matches.
+     *
+     * @return
+     */
     public String relLogoPath() {
         return "/" + logoPath;
     }
 
+    /**
+     * Path to manifest.json.
+     *
+     * @return
+     */
     public String getManifestPath() {
         return manifestPath;
     }
 
+    /**
+     * Path to manifest with prefix, so request matches.
+     *
+     * @return
+     */
     public String relManifestPath() {
         return "/" + manifestPath;
     }
 
+    /**
+     * Path to static offline html file.
+     *
+     * @return
+     */
     public String getOfflinePath() {
         return offlinePath;
     }
 
+    /**
+     * Path to offline file with prefix, so request matches.
+     *
+     * @return
+     */
     public String relOfflinePath() {
         return "/" + offlinePath;
     }
 
+    /**
+     * Path to service worker.
+     *
+     * @return
+     */
     public String getServiceWorkerPath() {
         return serviceWorkerPath;
     }
 
+    /**
+     * Path to service worker with prefix, so request matches.
+     *
+     * @return
+     */
     public String relServiceWorkerPath() {
         return "/" + serviceWorkerPath;
     }
 
+    /**
+     * List of files to be added to pre cache.
+     *
+     * @return
+     */
     public List<String> getOfflineResources() {
         return offlineResources.stream().collect(Collectors.toList());
     }
@@ -131,10 +217,20 @@ public class PwaConfiguration implements Serializable {
         return display;
     }
 
+    /**
+     * Start url of the PWA application.
+     *
+     * @return
+     */
     public String getStartUrl() {
         return startUrl;
     }
 
+    /**
+     * Is PWA enabled.
+     *
+     * @return
+     */
     public boolean isEnabled() {
         return enabled;
     }

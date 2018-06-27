@@ -32,6 +32,12 @@ import org.jsoup.nodes.Element;
  *
  */
 public class Icon implements Serializable {
+    /**
+     * Where icon belongs to.
+     *
+     * In header or manifest.json.
+     *
+     */
     public enum Domain {
         HEADER,
         MANIFEST;
@@ -54,6 +60,13 @@ public class Icon implements Serializable {
         rel("icon");
     }
 
+    /**
+     * Sets size of icon
+     *
+     * @param width width of icon
+     * @param height height of icon
+     * @return
+     */
     public Icon size(int width, int height) {
         this.width = width;
         this.height = height;
@@ -63,6 +76,11 @@ public class Icon implements Serializable {
         return this;
     }
 
+    /**
+     * Gets an {@link Element} presentation of the icon.
+     *
+     * @return an {@link Element} presentation of the icon
+     */
     public Element asElement() {
         Element element = new Element(tag);
         attributes.entrySet().forEach(entry -> {
@@ -80,18 +98,28 @@ public class Icon implements Serializable {
         return attributes.get(key);
     }
 
+    /**
+     * Width of icon.
+     *
+     * @return Width of icon
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Height of icon.
+     *
+     * @return Height of icon
+     */
     public int getHeight() {
         return height;
     }
 
     /**
-     * Should the icon cached viá Service Worker.
+     * Should the icon be cached viá Service Worker.
      *
-     * @return
+     * @return Should the icon be cached viá Service Worker.
      */
     public boolean cached() {
         return cached;
@@ -135,15 +163,15 @@ public class Icon implements Serializable {
     }
 
     /**
-     * Overrides current href -attribute.
+     * Chaining setter of href -attribute.
      *
      * Href is forced as relative, so all [./] -chars are removed from the
      * start of the href.
      *
      * Href is always set when either size or basename is set.
      *
-     * @param href
-     * @return
+     * @param href href
+     * @return self
      */
     public Icon href(String href) {
         hrefOverride = true;
@@ -152,8 +180,9 @@ public class Icon implements Serializable {
     }
 
     /**
+     * href attribute
      *
-     * @return
+     * @return href attribute
      */
     public String href() {
         return attr("href");
@@ -182,9 +211,9 @@ public class Icon implements Serializable {
     }
 
     /**
-     * Getter for rel-attribute.
+     * Getter for rel attribute.
      *
-     * @return
+     * @return rel attribute
      */
     public String rel() {
         return attr("rel");
@@ -193,31 +222,58 @@ public class Icon implements Serializable {
     /**
      * Chaining setter for rel-attribute.
      *
-     * @param rel
-     * @return
+     * @param rel rel value
+     * @return self
      */
     public Icon rel(String rel) {
         attr("rel", rel);
         return this;
     }
 
+    /**
+     * rel -attribute
+     *
+     * @return rel -attribute
+     */
     public String type() {
         return attr("type");
     }
 
+    /**
+     * Chained setter for domain.
+     *
+     * @param domain Domain
+     * @return self
+     */
     public Icon domain(Domain domain) {
         this.domain = domain;
         return this;
     }
 
+    /**
+     * Domain of icon.
+     *
+     * @return Domain of icon
+     */
     public Domain domain() {
         return this.domain;
     }
 
+    /**
+     * Media attribute.
+     *
+     * @return Media attribute
+     */
     public String media() {
         return attr("media");
     }
 
+    /**
+     * Chained setter for media attribute.
+     *
+     * @param media media
+     * @return self
+     */
     public Icon media(String media) {
         attr("media", media);
         return this;
@@ -227,7 +283,7 @@ public class Icon implements Serializable {
      * Chaining setter of basename.
      *
      * @param baseName image full name with path, like "icon/icon.png"
-     * @return
+     * @return self
      */
     public Icon baseName(String baseName) {
         this.baseName = baseName;
@@ -235,6 +291,12 @@ public class Icon implements Serializable {
         return this;
     }
 
+    /**
+     * Sets the image presenting the icon.
+     *
+     * @param image image in png -format
+     * @throws IOException
+     */
     public void setImage(BufferedImage image) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write( image, "png", baos );
@@ -245,6 +307,12 @@ public class Icon implements Serializable {
         baos.close();
     }
 
+    /**
+     * Writes the image to output stream.
+     *
+     * @param outputStream  output stream
+     * @throws IOException
+     */
     public synchronized void write(OutputStream outputStream)
             throws IOException {
         outputStream.write(data);

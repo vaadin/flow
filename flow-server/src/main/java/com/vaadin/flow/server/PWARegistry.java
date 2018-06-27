@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.startup;
+package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
@@ -19,9 +19,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.dom.Icon;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.server.startup.RouteRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -206,7 +204,7 @@ public class PWARegistry implements Serializable {
         return buffer.toString();
     }
 
-    public static PWARegistry initRegistry(ServletContext servletContext)
+    protected static PWARegistry initRegistry(ServletContext servletContext)
             throws IOException {
         assert servletContext != null;
 

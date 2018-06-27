@@ -53,7 +53,6 @@ import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
-import com.vaadin.flow.server.startup.PWARegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -572,7 +571,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
-        setupPWA(head, context);
+        setupPWA(head);
         setupCss(head, context);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
@@ -704,7 +703,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         });
     }
 
-    private static void setupPWA(Element head, BootstrapContext context) {
+    private static void setupPWA(Element head) {
         PWARegistry registry = VaadinService.getCurrent().getPwaRegistry();
 
         PwaConfiguration config = registry.getPwaConfiguration();
