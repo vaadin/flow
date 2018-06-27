@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -37,7 +36,6 @@ import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
-@Ignore
 public class BootstrapHandlerPushConfigurationTest {
 
     private BootstrapHandlerTest.TestUI testUI;
@@ -113,37 +111,45 @@ public class BootstrapHandlerPushConfigurationTest {
     @Test
     public void uiInitialization_customPushConnectionFactoryIsApplied()
             throws Exception {
-        ClassLoader classLoader = service.getClassLoader();
-        ClassLoader mockClassLoader = mockClassloaderForServiceLoader(
-                classLoader, "PushConnectionFactory_serviceLoader_single.txt");
-        service.setClassLoader(mockClassLoader);
-        try {
-            assertPushConfigurationForComponent(PushDefaultTest.class,
-                    TestPushConnection.class);
-        } finally {
-            service.setClassLoader(classLoader);
+        String version = System.getProperty("java.version");
+        if (version.startsWith("1.8")) {
+            ClassLoader classLoader = service.getClassLoader();
+            ClassLoader mockClassLoader = mockClassloaderForServiceLoader(
+                    classLoader,
+                    "PushConnectionFactory_serviceLoader_single.txt");
+            service.setClassLoader(mockClassLoader);
+            try {
+                assertPushConfigurationForComponent(PushDefaultTest.class,
+                        TestPushConnection.class);
+            } finally {
+                service.setClassLoader(classLoader);
+            }
         }
     }
 
     @Test
     public void uiInitialization_shouldFailIfMultiplePushConnectionFactoryAreAvailable()
             throws Exception {
-        ClassLoader classLoader = service.getClassLoader();
-        ClassLoader mockClassLoader = mockClassloaderForServiceLoader(
-                classLoader,
-                "PushConnectionFactory_serviceLoader_multiple.txt");
+        String version = System.getProperty("java.version");
+        if (version.startsWith("1.8")) {
 
-        service.setClassLoader(mockClassLoader);
-        try {
-            assertPushConfigurationForComponent(PushDefaultTest.class,
-                    TestPushConnection.class);
-            fail("Should fail due to Multiple PushConnectionFactory providers");
-        } catch (BootstrapException ex) {
-            assertThat("Not multiple PushConnectionFactory error",
-                    ex.getMessage(),
-                    containsString(PushConnectionFactory.class.getName()));
-        } finally {
-            service.setClassLoader(classLoader);
+            ClassLoader classLoader = service.getClassLoader();
+            ClassLoader mockClassLoader = mockClassloaderForServiceLoader(
+                    classLoader,
+                    "PushConnectionFactory_serviceLoader_multiple.txt");
+
+            service.setClassLoader(mockClassLoader);
+            try {
+                assertPushConfigurationForComponent(PushDefaultTest.class,
+                        TestPushConnection.class);
+                fail("Should fail due to Multiple PushConnectionFactory providers");
+            } catch (BootstrapException ex) {
+                assertThat("Not multiple PushConnectionFactory error",
+                        ex.getMessage(),
+                        containsString(PushConnectionFactory.class.getName()));
+            } finally {
+                service.setClassLoader(classLoader);
+            }
         }
     }
 
