@@ -193,7 +193,7 @@ public class Icon implements Serializable {
      *
      * Used in matching, when serving images.
      *
-     * @return
+     * @return Return href with '/' -prefix and removed possible ?[fileHash]
      */
     public String relHref() {
         String[] splitted = href().split("\\?");

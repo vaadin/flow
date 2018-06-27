@@ -8,6 +8,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.URL;
@@ -56,7 +57,7 @@ public class PWARegistry implements Serializable {
             URL logo = servletContext.getResource(pwaConfiguration.relLogoPath());
             URL offlinePage = servletContext.getResource(pwaConfiguration
                     .relOfflinePath());
-            // Load base logo from servletcontext if available
+            // Load base logo from servlet context if available
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
 
@@ -144,26 +145,26 @@ public class PWARegistry implements Serializable {
         manifestData.put("scope", pwaConfiguration.getStartUrl());
 
         // Add icons
-        JsonArray icons = Json.createArray();
+        JsonArray iconList = Json.createArray();
         int iconIndex = 0;
         for (Icon icon : getManifestIcons()) {
             JsonObject iconData = Json.createObject();
             iconData.put("src", icon.href());
             iconData.put("sizes", icon.sizes());
             iconData.put("type", icon.type());
-            icons.set(iconIndex++, iconData);
+            iconList.set(iconIndex++, iconData);
         }
-        manifestData.put("icons", icons);
+        manifestData.put("icons", iconList);
         return manifestData;
     }
 
     private String initializeServiceWorker(ServletContext servletContext) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder stringBuilder = new StringBuilder();
 
         // List of icons for precache
         List<String> precacheFiles = getIcons().stream()
                 .filter(Icon::cached)
-                .map(icon -> icon.cache()).collect(Collectors.toList());
+                .map(Icon::cache).collect(Collectors.toList());
 
         // Add offline page to precache
         precacheFiles.add(offlinePageCache());
@@ -177,17 +178,17 @@ public class PWARegistry implements Serializable {
         }
 
         // Google Workbox import
-        buffer.append("importScripts('https://storage.googleapis.com/"
+        stringBuilder.append("importScripts('https://storage.googleapis.com/"
                 + "workbox-cdn/releases/3.2.0/workbox-sw.js');\n\n");
 
         // Precaching
-        buffer.append("workbox.precaching.precacheAndRoute([\n");
-        buffer.append(precacheFiles.stream()
+        stringBuilder.append("workbox.precaching.precacheAndRoute([\n");
+        stringBuilder.append(precacheFiles.stream()
                 .collect(Collectors.joining( ",\n" )));
-        buffer.append("\n]);\n");
+        stringBuilder.append("\n]);\n");
 
         // Offline fallback
-        buffer.append(
+        stringBuilder.append(
                 "self.addEventListener('fetch', function(event) {\n"
                         + "  var request = event.request;\n"
                         + "  if (request.mode === 'navigate') {\n"
@@ -201,7 +202,7 @@ public class PWARegistry implements Serializable {
                         + "  }\n"
                         + "});");
 
-        return buffer.toString();
+        return stringBuilder.toString();
     }
 
     protected static PWARegistry initRegistry(ServletContext servletContext)
@@ -240,7 +241,7 @@ public class PWARegistry implements Serializable {
         // init large image
         Icon largest = iconList.stream()
                 .sorted((icon1, icon2)-> icon2.getWidth() - icon1.getWidth())
-                .findFirst().get();
+                .findFirst().orElse(null);
 
         URLConnection connection;
         if (resource != null) {
@@ -258,15 +259,17 @@ public class PWARegistry implements Serializable {
                 .replaceAll("%%%PROJECT_NAME%%%",config.getAppName())
                 .replaceAll("%%%BACKGROUND_COLOR%%%",
                         config.getBackgroundColor())
-                .replaceAll("%%%LOGO_PATH%%%", largest.href())
+                .replaceAll("%%%LOGO_PATH%%%", largest != null
+                        ? largest.href() : "")
                 .replaceAll("%%%META_ICONS%%%", iconHead);
 
     }
 
     private String getResourceAsString(URLConnection connection) {
         try {
-             BufferedReader bf = new BufferedReader(new InputStreamReader(
-                     connection.getInputStream(), StandardCharsets.UTF_8));
+            InputStream inputSream = connection.getInputStream();
+            BufferedReader bf = new BufferedReader(new InputStreamReader(
+                    inputSream, StandardCharsets.UTF_8));
             StringBuilder builder = new StringBuilder();
             bf.lines().forEach(builder::append);
             connection.getInputStream().close();
@@ -286,32 +289,68 @@ public class PWARegistry implements Serializable {
         return ImageIO.read(logoResource.getInputStream());
     }
 
+    /**
+     * Static offline page as String
+     *
+     * @return contents of offline page
+     */
     public String getOfflineHtml() {
         return offlineHtml;
     }
 
+    /**
+     * manifest.json contents as a String
+     *
+     * @return contents of manifest.json
+     */
     public String getManifestJson() {
         return manifestJson;
     }
 
+    /**
+     * sw.js (service worker javascript) as String
+     *
+     * @return contents of sw.js
+     */
     public String getServiceWorkerJs() {
         return serviceWorkerJs;
     }
 
+    /**
+     * Google Workbox cache resource String of offline page
+     * as "{ url: 'offline.html', revision: '1234567'}
+     *
+     * @return Google Workbox cache resource String of offline page
+     */
     public String offlinePageCache() {
         return String.format("{ url: '%s', revision: '%s' }",
                 pwaConfiguration.getOfflinePath(),
                 offlineHash);
     }
 
+    /**
+     * List of {@link Icon}:s that should be added to header
+     *
+     * @return List of {@link Icon}:s that should be added to header
+     */
     public List<Icon> getHeaderIcons() {
         return getIcons(Icon.Domain.HEADER);
     }
 
+    /**
+     * List of {@link Icon}:s that should be added to manifest.json
+     *
+     * @return List of {@link Icon}:s that should be added to manifest.json
+     */
     public List<Icon> getManifestIcons() {
         return getIcons(Icon.Domain.MANIFEST);
     }
 
+    /**
+     * List of all icons managed by {@link PWARegistry}
+     *
+     * @return List of all icons managed by {@link PWARegistry}
+     */
     public List<Icon> getIcons() {
         return icons.stream().collect(Collectors.toList());
     }
