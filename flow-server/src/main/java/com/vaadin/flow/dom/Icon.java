@@ -61,11 +61,11 @@ public class Icon implements Serializable {
     }
 
     /**
-     * Sets size of icon
+     * Chaining setter for size.
      *
      * @param width width of icon
      * @param height height of icon
-     * @return
+     * @return self
      */
     public Icon size(int width, int height) {
         this.width = width;
@@ -180,7 +180,7 @@ public class Icon implements Serializable {
     }
 
     /**
-     * href attribute
+     * href attribute.
      *
      * @return href attribute
      */
@@ -189,7 +189,7 @@ public class Icon implements Serializable {
     }
 
     /**
-     * Return href with '/' -prefix and removed possible ?[fileHash]
+     * Return href with '/' -prefix and removed possible ?[fileHash].
      *
      * Used in matching, when serving images.
      *
@@ -231,16 +231,16 @@ public class Icon implements Serializable {
     }
 
     /**
-     * rel -attribute
+     * Type attribute.
      *
-     * @return rel -attribute
+     * @return type -attribute
      */
     public String type() {
         return attr("type");
     }
 
     /**
-     * Chained setter for domain.
+     * Chaining setter for domain.
      *
      * @param domain Domain
      * @return self
@@ -269,7 +269,7 @@ public class Icon implements Serializable {
     }
 
     /**
-     * Chained setter for media attribute.
+     * Chaining setter for media attribute.
      *
      * @param media media
      * @return self
