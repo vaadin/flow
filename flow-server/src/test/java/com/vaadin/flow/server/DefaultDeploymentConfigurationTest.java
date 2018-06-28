@@ -42,7 +42,6 @@ public class DefaultDeploymentConfigurationTest {
         System.setProperty(prop, value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 clazz, new Properties());
-        System.out.println("WWWWWWWWWWWWWWWWWWWW");
         assertEquals(value, config.getSystemProperty(prop));
     }
 
