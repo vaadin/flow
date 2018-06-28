@@ -74,7 +74,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Application name.
      *
-     * @return
+     * @return Application name
      */
     public String getAppName() {
         return appName;
@@ -85,7 +85,7 @@ public class PwaConfiguration implements Serializable {
      *
      * Max 12 characters.
      *
-     * @return
+     * @return Application short name
      */
     public String getShortName() {
         return shortName;
@@ -94,7 +94,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Application description.
      *
-     * @return
+     * @return Application description
      */
     public String getDescription() {
         return description;
@@ -105,7 +105,8 @@ public class PwaConfiguration implements Serializable {
      *
      * The background_color property is used on the splash screen when the
      * application is first launched.
-     * @return
+     *
+     * @return Background color of application
      */
     public String getBackgroundColor() {
         return backgroundColor;
@@ -116,7 +117,7 @@ public class PwaConfiguration implements Serializable {
      *
      * The theme color sets the color of the tool bar, and in the task switcher.
      *
-     * @return
+     * @return Theme color of application
      */
     public String getThemeColor() {
         return themeColor;
@@ -127,7 +128,7 @@ public class PwaConfiguration implements Serializable {
      *
      * For example "img/my-icon.png"
      *
-     * @return
+     * @return Path to logo
      */
     public String getLogoPath() {
         return logoPath;
@@ -136,7 +137,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to logo with prefix, so request matches.
      *
-     * @return
+     * @return Path to logo with prefix, so request matches
      */
     public String relLogoPath() {
         return "/" + logoPath;
@@ -145,7 +146,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to manifest.json.
      *
-     * @return
+     * @return Path to manifest.json
      */
     public String getManifestPath() {
         return manifestPath;
@@ -154,7 +155,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to manifest with prefix, so request matches.
      *
-     * @return
+     * @return Path to manifest with prefix, so request matches
      */
     public String relManifestPath() {
         return "/" + manifestPath;
@@ -163,7 +164,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to static offline html file.
      *
-     * @return
+     * @return Path to static offline html file
      */
     public String getOfflinePath() {
         return offlinePath;
@@ -172,7 +173,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to offline file with prefix, so request matches.
      *
-     * @return
+     * @return Path to offline file with prefix, so request matches
      */
     public String relOfflinePath() {
         return "/" + offlinePath;
@@ -181,7 +182,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to service worker.
      *
-     * @return
+     * @return Path to service worker
      */
     public String getServiceWorkerPath() {
         return serviceWorkerPath;
@@ -190,7 +191,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to service worker with prefix, so request matches.
      *
-     * @return
+     * @return Path to service worker with prefix, so request matches
      */
     public String relServiceWorkerPath() {
         return "/" + serviceWorkerPath;
@@ -199,7 +200,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * List of files to be added to pre cache.
      *
-     * @return
+     * @return List of files to be added to pre cache
      */
     public List<String> getOfflineResources() {
         return Collections.unmodifiableList(offlineResources);
@@ -211,7 +212,7 @@ public class PwaConfiguration implements Serializable {
      * Possible values:
      * fullscreen, standalone, minimal-ui, browser
      *
-     * @return
+     * @return display mode
      */
     public String getDisplay() {
         return display;
@@ -220,7 +221,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Start url of the PWA application.
      *
-     * @return
+     * @return Start url of the PWA application
      */
     public String getStartUrl() {
         return startUrl;
@@ -229,7 +230,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Is PWA enabled.
      *
-     * @return
+     * @return Is PWA enabled
      */
     public boolean isEnabled() {
         return enabled;
