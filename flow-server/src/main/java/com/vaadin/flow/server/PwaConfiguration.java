@@ -202,7 +202,7 @@ public class PwaConfiguration implements Serializable {
      * @return
      */
     public List<String> getOfflineResources() {
-        return offlineResources.stream().collect(Collectors.toList());
+        return Collections.unmodifiableList(offlineResources);
     }
 
     /**

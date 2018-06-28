@@ -290,7 +290,7 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * Static offline page as String
+     * Static offline page as String.
      *
      * @return contents of offline page
      */
@@ -299,7 +299,7 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * manifest.json contents as a String
+     * manifest.json contents as a String.
      *
      * @return contents of manifest.json
      */
@@ -308,7 +308,7 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * sw.js (service worker javascript) as String
+     * sw.js (service worker javascript) as String.
      *
      * @return contents of sw.js
      */
@@ -317,8 +317,8 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * Google Workbox cache resource String of offline page
-     * as "{ url: 'offline.html', revision: '1234567'}
+     * Google Workbox cache resource String of offline page.
+     * example:  "{ url: 'offline.html', revision: '1234567'}
      *
      * @return Google Workbox cache resource String of offline page
      */
@@ -329,7 +329,7 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * List of {@link Icon}:s that should be added to header
+     * List of {@link Icon}:s that should be added to header.
      *
      * @return List of {@link Icon}:s that should be added to header
      */
@@ -338,7 +338,7 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * List of {@link Icon}:s that should be added to manifest.json
+     * List of {@link Icon}:s that should be added to manifest.json.
      *
      * @return List of {@link Icon}:s that should be added to manifest.json
      */
@@ -347,7 +347,7 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * List of all icons managed by {@link PWARegistry}
+     * List of all icons managed by {@link PWARegistry}.
      *
      * @return List of all icons managed by {@link PWARegistry}
      */
