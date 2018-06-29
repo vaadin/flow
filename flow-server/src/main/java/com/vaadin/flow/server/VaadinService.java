@@ -296,7 +296,8 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
         PWARegistry pwaRegistry = getPwaRegistry();
-        if (pwaRegistry.getPwaConfiguration().isEnabled()) {
+        if (pwaRegistry != null &&
+                pwaRegistry.getPwaConfiguration().isEnabled()) {
             handlers.add(new PWAHandler(pwaRegistry));
         }
         return handlers;

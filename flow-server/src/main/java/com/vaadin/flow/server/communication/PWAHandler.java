@@ -42,61 +42,73 @@ public class PWAHandler implements RequestHandler {
     private PWARegistry pwaRegistry;
     private Map<String, RequestHandler> requestHandlerMap;
 
+    /**
+     * Creates PwaHandler from {@link PWARegistry}.
+     *
+     * Sets up handling for icons, manifest, service worker and offline page.
+     *
+     * @param pwaRegistry registry for pwa
+     */
     public PWAHandler(PWARegistry pwaRegistry) {
         requestHandlerMap = new HashMap<>();
         this.pwaRegistry = pwaRegistry;
 
-        if (this.pwaRegistry.getPwaConfiguration().isEnabled()) {
+        init();
 
-            // Icon handling
-            for (PWAIcon icon : this.pwaRegistry.getIcons()) {
-                requestHandlerMap.put(icon.getRelHref(),
-                        (session, request, response) -> {
-                            response.setContentType(icon.getType());
-                            // Icon is cached with service worker, deny browser caching
-                            if (icon.cached()) {
-                                response.setHeader("Cache-Control",
-                                        "no-cache, must-revalidate");
-                            }
-                            OutputStream out = response.getOutputStream();
-                            icon.write(out);
-                            out.close();
-                            return true;
-                        });
-            }
-            // Offline page handling
-            requestHandlerMap.put(
-                    this.pwaRegistry.getPwaConfiguration().relOfflinePath(),
-                    (session, request, response) -> {
-                        response.setContentType("text/html");
-                        response.getWriter().write(pwaRegistry.getOfflineHtml());
-                        response.getWriter().close();
-                        return true;
-                    });
+    }
 
-            // Manifest.json handling
-            requestHandlerMap.put(
-                    this.pwaRegistry.getPwaConfiguration().relManifestPath(),
-                    (session, request, response) -> {
-                        response.setContentType("application/json");
-                        PrintWriter writer = response.getWriter();
-                        writer.write(this.pwaRegistry.getManifestJson());
-                        writer.close();
-                        return true;
-                    });
+    private void init() {
+        // Don't init handlers, if not enabled
+        if (!this.pwaRegistry.getPwaConfiguration().isEnabled())
+            return;
 
-            // serviceworker.js handling
-            requestHandlerMap.put(
-                    this.pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
+        // Icon handling
+        for (PWAIcon icon : this.pwaRegistry.getIcons()) {
+            requestHandlerMap.put(icon.getRelHref(),
                     (session, request, response) -> {
-                        response.setContentType("application/javascript");
-                        PrintWriter writer = response.getWriter();
-                        writer.write(this.pwaRegistry.getServiceWorkerJs());
-                        writer.close();
+                        response.setContentType(icon.getType());
+                        // Icon is cached with service worker, deny browser caching
+                        if (icon.cached()) {
+                            response.setHeader("Cache-Control",
+                                    "no-cache, must-revalidate");
+                        }
+                        OutputStream out = response.getOutputStream();
+                        icon.write(out);
+                        out.close();
                         return true;
                     });
         }
+        // Offline page handling
+        requestHandlerMap.put(
+                this.pwaRegistry.getPwaConfiguration().relOfflinePath(),
+                (session, request, response) -> {
+                    response.setContentType("text/html");
+                    response.getWriter().write(pwaRegistry.getOfflineHtml());
+                    response.getWriter().close();
+                    return true;
+                });
 
+        // Manifest.json handling
+        requestHandlerMap.put(
+                this.pwaRegistry.getPwaConfiguration().relManifestPath(),
+                (session, request, response) -> {
+                    response.setContentType("application/json");
+                    PrintWriter writer = response.getWriter();
+                    writer.write(this.pwaRegistry.getManifestJson());
+                    writer.close();
+                    return true;
+                });
+
+        // serviceworker.js handling
+        requestHandlerMap.put(
+                this.pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
+                (session, request, response) -> {
+                    response.setContentType("application/javascript");
+                    PrintWriter writer = response.getWriter();
+                    writer.write(this.pwaRegistry.getServiceWorkerJs());
+                    writer.close();
+                    return true;
+                });
     }
 
     @Override

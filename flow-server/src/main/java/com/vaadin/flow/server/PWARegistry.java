@@ -226,8 +226,11 @@ public class PWARegistry implements Serializable {
         RouteRegistry reg = RouteRegistry.getInstance(servletContext);
 
         // Initialize PWARegistry with found PWA settings
+        PWA pwa  =  reg.getPwaConfigurationClass() != null
+                ? reg.getPwaConfigurationClass().getAnnotation(PWA.class)
+                : null;
         // will fall back to defaults, if no PWA annotation available
-        return new PWARegistry(reg.getPwa(), servletContext);
+        return new PWARegistry(pwa, servletContext);
     }
 
     private String initializeOfflinePage(PwaConfiguration config, URL resource)

@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Class implementation of {@link PWA} annotation.
@@ -35,7 +34,7 @@ public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_LOGO = "icons/logo.png";
     public static final String DEFAULT_NAME = "Vaadin Flow Application";
     public static final String DEFAULT_THEME_COLOR =  "#ffffff";
-    public static final String DEFAULT_BACKGROUND_COLOR = "#ffffff";
+    public static final String DEFAULT_BACKGROUND_COLOR = "#f2f2f2";
     public static final String DEFAULT_DISPLAY = "fullscreen";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
 

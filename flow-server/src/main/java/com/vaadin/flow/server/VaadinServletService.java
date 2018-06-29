@@ -185,7 +185,8 @@ public class VaadinServletService extends VaadinService {
                 this.pwaRegistry = PWARegistry
                         .initRegistry(getServlet().getServletContext());
             } catch (IOException e) {
-                return null;
+                throw new RuntimeException("Unable to initialize PWARegistry",
+                        e);
             }
         }
         return this.pwaRegistry;

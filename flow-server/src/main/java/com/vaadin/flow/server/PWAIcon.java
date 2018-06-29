@@ -108,9 +108,8 @@ public class PWAIcon implements Serializable {
      */
     public Element asElement() {
         Element element = new Element(tag);
-        attributes.entrySet().forEach(entry -> {
-            element.attr(entry.getKey(), entry.getValue());
-        });
+        attributes.entrySet().forEach(entry ->
+            element.attr(entry.getKey(), entry.getValue()));
         return element;
     }
 
@@ -147,7 +146,7 @@ public class PWAIcon implements Serializable {
      */
     private void setRelativeName() {
         if (!hrefOverride) {
-            int split = baseName.lastIndexOf(".");
+            int split = baseName.lastIndexOf('.');
             String link = baseName.substring(0,split) + "-" + getSizes() +
                     baseName.substring(split);
             if (!cached) {
@@ -235,8 +234,8 @@ public class PWAIcon implements Serializable {
     /**
      * Writes the image to output stream.
      *
-     * @param outputStream  output stream
-     * @throws IOException
+     * @param outputStream output stream
+     * @throws IOException possible exception in stream writing
      */
     public synchronized void write(OutputStream outputStream)
             throws IOException {
