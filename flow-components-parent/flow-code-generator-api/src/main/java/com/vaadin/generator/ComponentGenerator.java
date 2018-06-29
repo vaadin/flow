@@ -54,6 +54,7 @@ import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.JsonSerializable;
 import com.vaadin.flow.component.NotSupported;
@@ -632,6 +633,10 @@ public class ComponentGenerator {
         if (!ExclusionRegistry.isInterfaceExcluded(metadata.getTag(),
                 HasStyle.class)) {
             javaClass.addInterface(HasStyle.class);
+        }
+
+        if (!metadata.getVariants().isEmpty()) {
+            javaClass.addInterface(HasTheme.class);
         }
 
         List<String> classBehaviorsAndMixins = new ArrayList<>();
