@@ -484,5 +484,6 @@
   "mixins": [
     "Vaadin.ThemableMixin"
   ],
+  "variants": {},
   "description": "`<vaadin-upload>` is a Polymer 2 element for uploading multiple files with drag and drop support.\n\nExample:\n\n```\n<vaadin-upload></vaadin-upload>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n---|---\n`primary-buttons` | Upload container\n`upload-button` | Upload button\n`drop-label` | Label for drop indicator\n`drop-label-icon` | Icon for drop indicator\n`file-list` | File list container\n\nThe following state attributes are available for styling:\n\nAttribute | Description | Part name\n---|---|---\n`nodrop` | Set when drag and drop is disabled (e. g., on touch devices) | `:host`\n`dragover` | A file is being dragged over the element | `:host`\n`dragover-valid` | A dragged file is valid with `maxFiles` and `accept` criteria | `:host`\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

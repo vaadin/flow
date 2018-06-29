@@ -41,5 +41,6 @@
     "Vaadin.ListMixin",
     "Vaadin.ThemableMixin"
   ],
+  "variants": {},
   "description": "`<vaadin-list-box>` is a Polymer 2 element for menus\n\n```\n  <vaadin-list-box selected=\"2\">\n    <vaadin-item>Item 1</vaadin-item>\n    <vaadin-item>Item 2</vaadin-item>\n    <vaadin-item>Item 3</vaadin-item>\n    <vaadin-item>Item 4</vaadin-item>\n  </vaadin-list-box>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|------------------------\n`items`           | The items container\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

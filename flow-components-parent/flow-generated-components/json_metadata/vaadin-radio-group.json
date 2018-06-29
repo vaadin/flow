@@ -37,5 +37,10 @@
   "mixins": [
     "Vaadin.ThemableMixin"
   ],
+  "variants": {
+    "lumo": [
+      "vertical"
+    ]
+  },
   "description": "`<vaadin-radio-group>` is a Polymer element for grouping vaadin-radio-buttons.\n\n```html\n<vaadin-radio-group>\n  <vaadin-radio-button name=\"foo\">Foo</vaadin-radio-button>\n  <vaadin-radio-button name=\"bar\">Bar</vaadin-radio-button>\n  <vaadin-radio-button name=\"baz\">Baz</vaadin-radio-button>\n</vaadin-radio-group>\n```\n\n### Styling\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio group and its children are disabled. | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }
