@@ -52,6 +52,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -108,6 +109,8 @@ public class RouteRegistry implements Serializable {
             return handledExceptionType;
         }
     }
+
+    private PWA pwaConfiguration;
 
     private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
@@ -680,5 +683,15 @@ public class RouteRegistry implements Serializable {
         }
         return Optional.ofNullable(
                 findThemeForNavigationTarget(navigationTarget, path));
+    }
+
+    public PWA getPwa() {
+        return pwaConfiguration;
+    }
+
+    protected void setPwaClass(Class<?> pwaClass) {
+        if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
+            this.pwaConfiguration = pwaClass.getAnnotation(PWA.class);
+        }
     }
 }

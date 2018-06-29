@@ -223,23 +223,11 @@ public class PWARegistry implements Serializable {
             throws IOException {
         assert servletContext != null;
 
-        PWA pwa = null;
         RouteRegistry reg = RouteRegistry.getInstance(servletContext);
 
-        // Search for PWA annotation from layouts
-        for (RouteData routeData : reg.getRegisteredRoutes()) {
-            Class<?> clazz = routeData.getParentLayout() != null &&
-                    routeData.getParentLayout().isAnnotationPresent(PWA.class)
-                    ? routeData.getParentLayout()
-                    : routeData.getNavigationTarget();
-            if (clazz.isAnnotationPresent(PWA.class)) {
-                pwa = clazz.getAnnotation(PWA.class);
-                break;
-            }
-        }
         // Initialize PWARegistry with found PWA settings
         // will fall back to defaults, if no PWA annotation available
-        return new PWARegistry(pwa, servletContext);
+        return new PWARegistry(reg.getPwa(), servletContext);
     }
 
     private String initializeOfflinePage(PwaConfiguration config, URL resource)

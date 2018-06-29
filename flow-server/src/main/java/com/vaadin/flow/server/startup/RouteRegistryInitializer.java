@@ -47,8 +47,10 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             Set<Class<? extends Component>> routes = validateRouteClasses(
                     classSet.stream());
 
-            RouteRegistry.getInstance(servletContext)
-                    .setNavigationTargets(routes);
+            RouteRegistry routeRegistry = RouteRegistry
+                    .getInstance(servletContext);
+            routeRegistry.setNavigationTargets(routes);
+            routeRegistry.setPwaClass(getPwaClass());
         } catch (InvalidRouteConfigurationException irce) {
             throw new ServletException(
                     "Exception while registering Routes on servlet startup",

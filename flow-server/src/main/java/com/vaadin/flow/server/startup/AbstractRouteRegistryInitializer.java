@@ -35,6 +35,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
 
 /**
@@ -44,6 +45,7 @@ import com.vaadin.flow.server.PageConfigurator;
  *
  */
 public abstract class AbstractRouteRegistryInitializer implements Serializable {
+    private Class<?> pwaClass = null;
 
     /**
      * Validate the potential route classes stream and return them as a set.
@@ -177,6 +179,19 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                                 topParentLayout.getName(), layout.getName()));
             }
         });
+
+        if (topParentLayout != null &&
+                topParentLayout.isAnnotationPresent(PWA.class)) {
+            if (pwaClass == null || pwaClass == topParentLayout) {
+                pwaClass = topParentLayout;
+            } else {
+                throw new InvalidRouteLayoutConfigurationException(String
+                        .format("Only 1 @PWA annotation allowed within "
+                            + "application. Annotation found in %s and %s",
+                                pwaClass.getSimpleName(),
+                                topParentLayout.getSimpleName()));
+            }
+        }
     }
 
     /* Route validator methods for bootstrap annotations */
@@ -250,4 +265,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         });
     }
 
+    protected Class<?> getPwaClass() {
+        return pwaClass;
+    }
 }
