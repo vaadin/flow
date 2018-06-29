@@ -2,8 +2,10 @@ package com.vaadin.generator;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -16,9 +18,8 @@ import org.jboss.forge.roaster.model.Packaged;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaEnumSource;
-import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
-import org.jboss.forge.roaster.model.source.MethodSource;
 
+import com.vaadin.flow.component.HasTheme;
 import com.vaadin.generator.exception.ComponentGenerationException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -73,49 +74,52 @@ class ThemeVariantsCollector {
      * Generates the theme variants classes based on the data collected.
      */
     void generateThemeVariants() {
-        if (variants.isEmpty()) {
-            return;
-        }
-
-        JavaInterfaceSource commonEnumInterface = Roaster
-                .create(JavaInterfaceSource.class).setName("ThemeVariant")
-                .setPackage(basePackage);
-        MethodSource<JavaInterfaceSource> commonMethod = commonEnumInterface
-                .addMethod().setReturnType(String.class).setName("getVariant");
-
-        writeClass(commonEnumInterface);
-
         for (Map.Entry<String, Map<String, List<String>>> themeToVariants : variants
                 .entrySet()) {
 
+            Class<HasTheme.ThemeVariant> themeVariantInterface = HasTheme.ThemeVariant.class;
             JavaClassSource themeClass = Roaster.create(JavaClassSource.class);
+            String themeName = StringUtils.capitalize(themeToVariants.getKey());
             themeClass.setPublic().setPackage(basePackage)
-                    .setName(StringUtils.capitalize(themeToVariants.getKey()));
+                    .setName(themeName + "Variants")
+                    .addImport(themeVariantInterface);
+            themeClass.getJavaDoc().setText(String.format(
+                    "Contains '%s' theme variants for components.", themeName));
 
             for (Map.Entry<String, List<String>> classNameToVariants : themeToVariants
                     .getValue().entrySet()) {
+                String rawName = classNameToVariants.getKey();
+                String componentName = rawName.startsWith("Vaadin")
+                        ? rawName.substring("Vaadin".length())
+                        : rawName;
                 JavaEnumSource classEnum = Roaster.create(JavaEnumSource.class)
-                        .setName(createEnumVariantName(
-                                classNameToVariants.getKey()))
+                        .setName(StringUtils.capitalize(componentName)
+                                + "Variants")
                         .setPackage(basePackage);
+                classEnum.getJavaDoc().setText(String.format(
+                        "Set of variants applicable for '%s' component and '%s' theme.",
+                        componentName, themeName));
+
+                Method requiredMethod = getThemeVariantMethod(
+                        themeVariantInterface);
+                classEnum.addInterface(themeVariantInterface);
 
                 FieldSource<JavaEnumSource> variantField = classEnum.addField()
-                        .setPrivate().setType(String.class).setName("variant")
-                        .setFinal(true);
+                        .setPrivate().setType(requiredMethod.getReturnType())
+                        .setName("variant").setFinal(true);
 
                 classEnum.addMethod().setConstructor(true)
                         .setBody(String.format("this.%s = %s;",
                                 variantField.getName(), variantField.getName()))
-                        .addParameter("String", variantField.getName());
+                        .addParameter(requiredMethod.getReturnType(),
+                                variantField.getName());
 
                 classEnum.addMethod().setPublic()
-                        .setReturnType(commonMethod.getReturnType())
-                        .setName(commonMethod.getName())
+                        .setReturnType(requiredMethod.getReturnType())
+                        .setName(requiredMethod.getName())
                         .setBody(String.format("return %s;",
                                 variantField.getName()))
                         .addAnnotation(Override.class);
-
-                classEnum.addInterface(commonEnumInterface);
 
                 for (String variant : classNameToVariants.getValue()) {
                     classEnum.addEnumConstant(createEnumFieldName(variant))
@@ -129,11 +133,20 @@ class ThemeVariantsCollector {
         }
     }
 
-    private String createEnumVariantName(String componentClassName) {
-        String newName = componentClassName.startsWith("Vaadin")
-                ? componentClassName.substring("Vaadin".length())
-                : componentClassName;
-        return StringUtils.capitalize(newName) + "Variants";
+    private Method getThemeVariantMethod(Class<?> themeVariantInterface) {
+        if (!themeVariantInterface.isInterface()) {
+            throw new IllegalStateException(String.format(
+                    "Expected '%s' to be an interface, but it's not",
+                    themeVariantInterface));
+        }
+        Method[] themeVariantMethods = themeVariantInterface.getMethods();
+        if (themeVariantMethods.length != 1) {
+            throw new IllegalStateException(String.format(
+                    "Expected interface '%s' to have exactly one method, but got: '%s'",
+                    themeVariantInterface,
+                    Arrays.toString(themeVariantMethods)));
+        }
+        return themeVariantMethods[0];
     }
 
     private String createEnumFieldName(String variantName) {
