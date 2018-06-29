@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -6,7 +21,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.flow.dom.Icon;
+import com.vaadin.flow.server.PWAIcon;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -14,6 +29,14 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.PWARegistry;
 
+/**
+ * Handles serving of PWA resources.
+ *
+ * - manifest
+ * - service worker
+ * - offline fallback page
+ * - icons
+ */
 public class PWAHandler implements RequestHandler {
 
     private PWARegistry pwaRegistry;
@@ -26,10 +49,10 @@ public class PWAHandler implements RequestHandler {
         if (this.pwaRegistry.getPwaConfiguration().isEnabled()) {
 
             // Icon handling
-            for (Icon icon : this.pwaRegistry.getIcons()) {
-                requestHandlerMap.put(icon.relHref(),
+            for (PWAIcon icon : this.pwaRegistry.getIcons()) {
+                requestHandlerMap.put(icon.getRelHref(),
                         (session, request, response) -> {
-                            response.setContentType(icon.type());
+                            response.setContentType(icon.getType());
                             // Icon is cached with service worker, deny browser caching
                             if (icon.cached()) {
                                 response.setHeader("Cache-Control",

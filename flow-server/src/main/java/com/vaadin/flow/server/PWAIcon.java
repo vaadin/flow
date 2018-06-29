@@ -1,4 +1,19 @@
-package com.vaadin.flow.dom;
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -13,7 +28,7 @@ import java.util.Map;
 import org.jsoup.nodes.Element;
 
 /**
- * Implementation of icon -element.
+ * Implementation of icons used in PWA resources.
  *
  * Creates the href automatically based on
  * - baseName (the file name with path, as "icons/icon.png"
@@ -31,7 +46,7 @@ import org.jsoup.nodes.Element;
  * service worker.
  *
  */
-public class Icon implements Serializable {
+public class PWAIcon implements Serializable {
     /**
      * Where icon belongs to.
      *
@@ -55,26 +70,36 @@ public class Icon implements Serializable {
     private Map<String, String> attributes = new HashMap<>();
     private String tag = "link";
 
-    public Icon() {
-        attr("type", "image/png");
-        rel("icon");
+    protected PWAIcon(int width, int height, String baseName) {
+        this(width, height, baseName, Domain.HEADER);
     }
 
-    /**
-     * Chaining setter for size.
-     *
-     * @param width width of icon
-     * @param height height of icon
-     * @return self
-     */
-    public Icon size(int width, int height) {
+    protected PWAIcon(int width, int height, String baseName, Domain domain) {
+        this(width, height, baseName, domain, false);
+    }
+
+    protected PWAIcon(int width, int height, String baseName, Domain domain,
+            boolean cached) {
+        this(width, height, baseName, domain, cached, "icon", "");
+    }
+
+    protected PWAIcon(int width, int height, String baseName, Domain domain,
+            boolean cached, String rel, String media) {
+        attributes.put("type", "image/png");
+        attributes.put("rel", "icon");
         this.width = width;
         this.height = height;
-
-        attr("sizes", width + "x" + height);
+        this.baseName = baseName;
+        this.domain = domain;
+        this.cached = cached;
+        attributes.put("rel", rel);
+        if (media != null && !media.isEmpty()) {
+            attributes.put("media", media);
+        }
+        attributes.put("sizes", width + "x" + height);
         setRelativeName();
-        return this;
     }
+
 
     /**
      * Gets an {@link Element} presentation of the icon.
@@ -87,15 +112,6 @@ public class Icon implements Serializable {
             element.attr(entry.getKey(), entry.getValue());
         });
         return element;
-    }
-
-    private Icon attr(String key, String value) {
-        attributes.put(key, value);
-        return this;
-    }
-
-    private String attr(String key) {
-        return attributes.get(key);
     }
 
     /**
@@ -126,29 +142,18 @@ public class Icon implements Serializable {
     }
 
     /**
-     * Chained setter for chained.
-     *
-     * @param cached Should the icon cached viá Service Worker
-     * @return
-     */
-    public Icon cached(boolean cached) {
-        this.cached = cached;
-        return this;
-    }
-
-    /**
      * Sets the href based on icon values.
      *
      */
     private void setRelativeName() {
         if (!hrefOverride) {
             int split = baseName.lastIndexOf(".");
-            String link = baseName.substring(0,split) + "-" + sizes() +
+            String link = baseName.substring(0,split) + "-" + getSizes() +
                     baseName.substring(split);
             if (!cached) {
                 link = link + "?" + fileHash;
             }
-            attr("href", link);
+            attributes.put("href", link);
         }
     }
 
@@ -158,25 +163,8 @@ public class Icon implements Serializable {
      *
      * @return a String as [size]x[size]
      */
-    public String sizes() {
-        return attr("sizes");
-    }
-
-    /**
-     * Chaining setter of href -attribute.
-     *
-     * Href is forced as relative, so all [./] -chars are removed from the
-     * start of the href.
-     *
-     * Href is always set when either size or basename is set.
-     *
-     * @param href href
-     * @return self
-     */
-    public Icon href(String href) {
-        hrefOverride = true;
-        attr("href", href.replaceAll("^[\\./]+", ""));
-        return this;
+    public String getSizes() {
+        return attributes.get("sizes");
     }
 
     /**
@@ -184,8 +172,8 @@ public class Icon implements Serializable {
      *
      * @return href attribute
      */
-    public String href() {
-        return attr("href");
+    public String getHref() {
+        return attributes.get("href");
     }
 
     /**
@@ -195,8 +183,8 @@ public class Icon implements Serializable {
      *
      * @return Return href with '/' -prefix and removed possible ?[fileHash]
      */
-    public String relHref() {
-        String[] splitted = href().split("\\?");
+    public String getRelHref() {
+        String[] splitted = getHref().split("\\?");
         return "/" + splitted[0];
     }
 
@@ -205,29 +193,9 @@ public class Icon implements Serializable {
      *
      * @return "{ url: '[href]', revision: '[fileHash' }"
      */
-    public String cache() {
-        return String.format("{ url: '%s', revision: '%s' }", href(),
+    public String getCacheFormat() {
+        return String.format("{ url: '%s', revision: '%s' }", getHref(),
                 fileHash);
-    }
-
-    /**
-     * Getter for rel attribute.
-     *
-     * @return rel attribute
-     */
-    public String rel() {
-        return attr("rel");
-    }
-
-    /**
-     * Chaining setter for rel-attribute.
-     *
-     * @param rel rel value
-     * @return self
-     */
-    public Icon rel(String rel) {
-        attr("rel", rel);
-        return this;
     }
 
     /**
@@ -235,19 +203,8 @@ public class Icon implements Serializable {
      *
      * @return type -attribute
      */
-    public String type() {
-        return attr("type");
-    }
-
-    /**
-     * Chaining setter for domain.
-     *
-     * @param domain Domain
-     * @return self
-     */
-    public Icon domain(Domain domain) {
-        this.domain = domain;
-        return this;
+    public String getType() {
+        return attributes.get("type");
     }
 
     /**
@@ -255,40 +212,8 @@ public class Icon implements Serializable {
      *
      * @return Domain of icon
      */
-    public Domain domain() {
+    public Domain getDomain() {
         return this.domain;
-    }
-
-    /**
-     * Media attribute.
-     *
-     * @return Media attribute
-     */
-    public String media() {
-        return attr("media");
-    }
-
-    /**
-     * Chaining setter for media attribute.
-     *
-     * @param media media
-     * @return self
-     */
-    public Icon media(String media) {
-        attr("media", media);
-        return this;
-    }
-
-    /**
-     * Chaining setter of basename.
-     *
-     * @param baseName image full name with path, like "icon/icon.png"
-     * @return self
-     */
-    public Icon baseName(String baseName) {
-        this.baseName = baseName;
-        setRelativeName();
-        return this;
     }
 
     /**

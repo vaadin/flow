@@ -44,7 +44,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.dom.Icon;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
@@ -726,7 +725,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .attr("href", config.getManifestPath());
 
             // Add icons
-            for (Icon icon : registry.getHeaderIcons()) {
+            for (PWAIcon icon : registry.getHeaderIcons()) {
                 head.appendChild(icon.asElement());
             }
 

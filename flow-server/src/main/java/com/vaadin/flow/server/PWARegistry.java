@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
@@ -18,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.dom.Icon;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.startup.RouteRegistry;
 
@@ -31,7 +45,7 @@ import elemental.json.JsonObject;
  *
  * Includes:
  * - {@link PwaConfiguration} - basic info
- * - List of {@link Icon}:s - different sizes of icons for header and manifest
+ * - List of {@link PWAIcon}:s - different sizes of icons for header and manifest
  * - Offline page
  * - Manifest json
  * - Service worker
@@ -39,7 +53,7 @@ import elemental.json.JsonObject;
 public class PWARegistry implements Serializable {
 
     private PwaConfiguration pwaConfiguration;
-    private List<Icon> icons;
+    private List<PWAIcon> icons;
     private final String offlineHtml;
     private long offlineHash;
     private final String manifestJson;
@@ -84,9 +98,9 @@ public class PWARegistry implements Serializable {
         }
     }
 
-    private List<Icon> initializeIcons(BufferedImage baseImage, int bgColor) throws IOException {
+    private List<PWAIcon> initializeIcons(BufferedImage baseImage, int bgColor) throws IOException {
         icons = new ArrayList<>();
-        for (Icon icon : getIconTemplates(pwaConfiguration.getLogoPath())) {
+        for (PWAIcon icon : getIconTemplates(pwaConfiguration.getLogoPath())) {
             // New image with wanted size
             BufferedImage bimage = new BufferedImage(icon.getWidth(),
                     icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -147,11 +161,11 @@ public class PWARegistry implements Serializable {
         // Add icons
         JsonArray iconList = Json.createArray();
         int iconIndex = 0;
-        for (Icon icon : getManifestIcons()) {
+        for (PWAIcon icon : getManifestIcons()) {
             JsonObject iconData = Json.createObject();
-            iconData.put("src", icon.href());
-            iconData.put("sizes", icon.sizes());
-            iconData.put("type", icon.type());
+            iconData.put("src", icon.getHref());
+            iconData.put("sizes", icon.getSizes());
+            iconData.put("type", icon.getType());
             iconList.set(iconIndex++, iconData);
         }
         manifestData.put("icons", iconList);
@@ -163,8 +177,8 @@ public class PWARegistry implements Serializable {
 
         // List of icons for precache
         List<String> precacheFiles = getIcons().stream()
-                .filter(Icon::cached)
-                .map(Icon::cache).collect(Collectors.toList());
+                .filter(PWAIcon::cached)
+                .map(PWAIcon::getCacheFormat).collect(Collectors.toList());
 
         // Add offline page to precache
         precacheFiles.add(offlinePageCache());
@@ -231,7 +245,7 @@ public class PWARegistry implements Serializable {
     private String initializeOfflinePage(PwaConfiguration config, URL resource)
             throws IOException {
         // Use only icons which are cached with service worker
-        List<Icon> iconList = getIcons().stream()
+        List<PWAIcon> iconList = getIcons().stream()
                 .filter(icon -> icon.cached())
                 .collect(Collectors.toList());
         // init header inject of icons
@@ -239,7 +253,7 @@ public class PWARegistry implements Serializable {
                 .map(icon -> icon.asElement().toString())
                 .collect(Collectors.joining("\n"));
         // init large image
-        Icon largest = iconList.stream()
+        PWAIcon largest = iconList.stream()
                 .sorted((icon1, icon2)-> icon2.getWidth() - icon1.getWidth())
                 .findFirst().orElse(null);
 
@@ -260,7 +274,7 @@ public class PWARegistry implements Serializable {
                 .replaceAll("%%%BACKGROUND_COLOR%%%",
                         config.getBackgroundColor())
                 .replaceAll("%%%LOGO_PATH%%%", largest != null
-                        ? largest.href() : "")
+                        ? largest.getHref() : "")
                 .replaceAll("%%%META_ICONS%%%", iconHead);
 
     }
@@ -329,21 +343,21 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * List of {@link Icon}:s that should be added to header.
+     * List of {@link PWAIcon}:s that should be added to header.
      *
-     * @return List of {@link Icon}:s that should be added to header
+     * @return List of {@link PWAIcon}:s that should be added to header
      */
-    public List<Icon> getHeaderIcons() {
-        return getIcons(Icon.Domain.HEADER);
+    public List<PWAIcon> getHeaderIcons() {
+        return getIcons(PWAIcon.Domain.HEADER);
     }
 
     /**
-     * List of {@link Icon}:s that should be added to manifest.json.
+     * List of {@link PWAIcon}:s that should be added to manifest.json.
      *
-     * @return List of {@link Icon}:s that should be added to manifest.json
+     * @return List of {@link PWAIcon}:s that should be added to manifest.json
      */
-    public List<Icon> getManifestIcons() {
-        return getIcons(Icon.Domain.MANIFEST);
+    public List<PWAIcon> getManifestIcons() {
+        return getIcons(PWAIcon.Domain.MANIFEST);
     }
 
     /**
@@ -351,66 +365,69 @@ public class PWARegistry implements Serializable {
      *
      * @return List of all icons managed by {@link PWARegistry}
      */
-    public List<Icon> getIcons() {
+    public List<PWAIcon> getIcons() {
         return icons.stream().collect(Collectors.toList());
     }
 
-    private List<Icon> getIcons(Icon.Domain domain) {
+    private List<PWAIcon> getIcons(PWAIcon.Domain domain) {
         return icons.stream().filter(icon ->
-                icon.domain().equals(domain)).collect(Collectors.toList());
+                icon.getDomain().equals(domain)).collect(Collectors.toList());
     }
 
     public PwaConfiguration getPwaConfiguration() {
         return pwaConfiguration;
     }
 
-    private static List<Icon> getIconTemplates(String baseName) {
-        List<Icon> icons = new ArrayList<>();
+    private static List<PWAIcon> getIconTemplates(String baseName) {
+        List<PWAIcon> icons = new ArrayList<>();
         // Basic manifest icons for android support
-        icons.add(new Icon().size(144, 144)
-                .domain(Icon.Domain.MANIFEST).cached(true));
-        icons.add(new Icon().size(192, 192)
-                .domain(Icon.Domain.MANIFEST).cached(true));
-        icons.add(new Icon().size(512, 512)
-                .domain(Icon.Domain.MANIFEST).cached(true));
+        icons.add(new PWAIcon(144, 144, baseName,
+                PWAIcon.Domain.MANIFEST, true));
+        icons.add(new PWAIcon(192, 192, baseName,
+                PWAIcon.Domain.MANIFEST, true));
+        icons.add(new PWAIcon(512, 512, baseName,
+                PWAIcon.Domain.MANIFEST, true));
 
         // Basic icons
-        icons.add(new Icon().size(16, 16)
-                .rel("shortcut icon").cached(true));
-        icons.add(new Icon().size(32, 32));
-        icons.add(new Icon().size(96, 96));
+        icons.add(new PWAIcon(16, 16, baseName,
+                PWAIcon.Domain.HEADER, true, "shortcut icon", ""));
+        icons.add(new PWAIcon(32, 32, baseName));
+        icons.add(new PWAIcon(96, 96, baseName));
 
         // IOS basic icon
-        icons.add(new Icon().size(180, 180)
-                .rel("apple-touch-icon"));
+        icons.add(new PWAIcon(180, 180, baseName,
+                PWAIcon.Domain.HEADER, false,
+                "apple-touch-icon", ""));
 
         // IOS device specific splash screens
         // iPhone X (1125px x 2436px)
-        icons.add(new Icon().size(1125, 2436)
-                .rel("apple-touch-startup-image")
-                .media("(device-width: 375px) and (device-height: 812px) "
+        icons.add(new PWAIcon(1125, 2436, baseName,
+                PWAIcon.Domain.HEADER, false,
+                "apple-touch-startup-image",
+                "(device-width: 375px) and (device-height: 812px) "
                         + "and (-webkit-device-pixel-ratio: 3)"));
+
         // iPhone 8, 7, 6s, 6 (750px x 1334px)
-        icons.add(new Icon().size(750, 1334)
-                .rel("apple-touch-startup-image")
-                .media("(device-width: 375px) and (device-height: 667px) "
+        icons.add(new PWAIcon(750, 1334, baseName,
+                PWAIcon.Domain.HEADER, false,
+                "apple-touch-startup-image",
+                "(device-width: 375px) and (device-height: 667px) "
                         + "and (-webkit-device-pixel-ratio: 2)"));
 
         // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus (1242px x 2208px)
-        icons.add(new Icon().size(1242, 2208)
-                .rel("apple-touch-startup-image")
-                .media("(device-width: 414px) and (device-height: 736px) "
+        icons.add(new PWAIcon(1242, 2208, baseName,
+                PWAIcon.Domain.HEADER, false,
+                "apple-touch-startup-image",
+                "(device-width: 414px) and (device-height: 736px) "
                         + "and (-webkit-device-pixel-ratio: 3)"));
 
         // iPhone 5 (640px x 1136px)
-        icons.add(new Icon().size(640, 1136)
-                .rel("apple-touch-startup-image")
-                .media("(device-width: 320px) and (device-height: 568px) "
-                        + "and (-webkit-device-pixel-ratio: 2)"));
+        icons.add(new PWAIcon(640, 1136, baseName,
+                PWAIcon.Domain.HEADER, false,
+                "apple-touch-startup-image",
+                "(device-width: 320px) and (device-height: 568px) "
+                        + "and (-webkit-device-pixel-ratio: 3)"));
 
-        for (Icon icon : icons) {
-            icon.baseName(baseName);
-        }
         return icons;
     }
 
