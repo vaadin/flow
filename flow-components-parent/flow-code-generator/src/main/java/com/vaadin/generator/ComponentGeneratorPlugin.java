@@ -21,6 +21,7 @@ import java.nio.file.Files;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -30,7 +31,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Maven plugin for the Java code generation based on JSON metadata extracted
  * from webcomponents.
- * 
+ *
  * @see ComponentGenerator
  */
 @Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate")
@@ -98,15 +99,8 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
     @Parameter(property = "generate.abstract.classes", defaultValue = "false")
     private boolean abstractClasses;
 
-    /**
-     * When <code>true</code>, generates a supplementary class with theme
-     * variants based on data from JSON files.
-     */
-    @Parameter(property = "generate.theme.variants", defaultValue = "false")
-    private boolean generateThemeVariants;
-
     @Override
-    public void execute() throws MojoExecutionException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         if (!sourceDir.isDirectory()) {
             getLog().warn(
                     "Directory not readable. Can't generate any Java classes from "
@@ -145,12 +139,6 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
                 .withProtectedMethods(protectedMethods)
                 .withAbstractClass(abstractClasses);
 
-        ThemeVariantsCollector variantsCollector = new ThemeVariantsCollector(
-                targetDir, basePackage + ".variants");
-        if (generateThemeVariants) {
-            generator.withThemeVariantsColletor(variantsCollector);
-        }
-
         for (File file : files) {
             getLog().info("Generating class for " + file.getName() + "...");
             try {
@@ -163,15 +151,10 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
                             e);
                 }
                 getLog().error("Error generating Java source for "
-                        + file.getAbsolutePath()
-                        + ". The property \"failOnError\" is false, skipping file...",
+                                + file.getAbsolutePath()
+                                + ". The property \"failOnError\" is false, skipping file...",
                         e);
             }
-        }
-
-        if (generateThemeVariants) {
-            getLog().info("Generating theme variants...");
-            variantsCollector.generateThemeVariants();
         }
     }
 }

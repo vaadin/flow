@@ -85,7 +85,6 @@
                                     <licenseFile>license_header</licenseFile>
                                     <protectedMethods>true</protectedMethods>
                                     <abstractClasses>true</abstractClasses>
-                                    <generateThemeVariants>true</generateThemeVariants>
                                 </configuration>
                             </execution>
                         </executions>

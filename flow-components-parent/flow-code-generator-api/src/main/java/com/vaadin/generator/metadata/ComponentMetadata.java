@@ -15,6 +15,7 @@
  */
 package com.vaadin.generator.metadata;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +39,7 @@ public class ComponentMetadata {
     private List<String> behaviors;
     private List<String> slots;
     private List<String> mixins;
-    private Map<String, List<String>> variants;
+    private Map<String, List<String>> variants = new HashMap<>();
 
     /**
      * Gets the name of the ES6 class of the webcomponent, which is used to

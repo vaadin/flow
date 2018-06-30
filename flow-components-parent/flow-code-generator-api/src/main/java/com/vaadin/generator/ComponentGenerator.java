@@ -25,12 +25,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -38,9 +41,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.Named;
+import org.jboss.forge.roaster.model.Packaged;
 import org.jboss.forge.roaster.model.Visibility;
+import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
+import org.jboss.forge.roaster.model.source.JavaEnumSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.slf4j.LoggerFactory;
@@ -116,7 +123,6 @@ public class ComponentGenerator {
 
     private boolean protectedMethods;
     private boolean abstractClass;
-    private ThemeVariantsCollector variantsCollector;
 
     private final JavaDocFormatter javaDocFormatter = new JavaDocFormatter();
 
@@ -276,18 +282,6 @@ public class ComponentGenerator {
     }
 
     /**
-     * Sets the theme variants collector that gets populated with theme
-     * variants data.
-     *
-     * @param variantsCollector the theme variants collector
-     * @return this
-     */
-    public ComponentGenerator withThemeVariantsColletor(ThemeVariantsCollector variantsCollector) {
-        this.variantsCollector = variantsCollector;
-        return this;
-    }
-
-    /**
      * Generate the class according to the set values.
      */
     public void build() {
@@ -374,10 +368,6 @@ public class ComponentGenerator {
      */
     private JavaClassSource generateClassSource(ComponentMetadata metadata,
             String basePackage) {
-        if (variantsCollector != null && !metadata.getVariants().isEmpty()) {
-            variantsCollector.collect(ComponentGeneratorUtils.generateValidJavaClassName(metadata.getTag()), metadata.getVariants());
-        }
-
         String targetPackage = basePackage;
         String baseUrl = metadata.getBaseUrl();
         if (StringUtils.isNotBlank(baseUrl)) {
@@ -412,8 +402,9 @@ public class ComponentGenerator {
 
         addClassAnnotations(metadata, javaClass);
         addInterfaces(metadata, javaClass);
+        generateVariants(metadata, javaClass, targetPackage);
 
-        Map<String, MethodSource<JavaClassSource>> propertyToGetterMap = new HashMap<String, MethodSource<JavaClassSource>>();
+        Map<String, MethodSource<JavaClassSource>> propertyToGetterMap = new HashMap<>();
 
         if (metadata.getProperties() != null) {
             generateEventsForPropertiesWithNotify(metadata);
@@ -652,10 +643,6 @@ public class ComponentGenerator {
             javaClass.addInterface(HasStyle.class);
         }
 
-        if (!metadata.getVariants().isEmpty()) {
-            javaClass.addInterface(HasTheme.class);
-        }
-
         List<String> classBehaviorsAndMixins = new ArrayList<>();
         classBehaviorsAndMixins.add(metadata.getTag());
 
@@ -684,6 +671,89 @@ public class ComponentGenerator {
                 javaClass.addInterface(clazz);
             }
         });
+    }
+
+    private void generateVariants(ComponentMetadata metadata,
+            JavaClassSource javaClass, String targetPackage) {
+        if (metadata.getVariants().isEmpty()) {
+            return;
+        }
+
+        javaClass.addInterface(HasTheme.class);
+
+        String rawName = ComponentGeneratorUtils
+                .generateValidJavaClassName(metadata.getTag());
+        String componentName = rawName.startsWith("Vaadin")
+                ? rawName.substring("Vaadin".length())
+                : rawName;
+        JavaEnumSource classEnum = Roaster.create(JavaEnumSource.class)
+                .setName(StringUtils.capitalize(componentName) + "Variants")
+                .setPackage(targetPackage);
+        classEnum.getJavaDoc()
+                .setText(String.format(
+                        "Set of variants applicable for '%s' component",
+                        componentName));
+        FieldSource<JavaEnumSource> variantField = classEnum.addField()
+                .setPrivate().setType(String.class).setName("variant")
+                .setFinal(true);
+
+        classEnum.addMethod().setConstructor(true)
+                .setBody(String.format("this.%s = %s;", variantField.getName(),
+                        variantField.getName()))
+                .addParameter(String.class, variantField.getName());
+
+        MethodSource<JavaEnumSource> getVariantNameMethod = classEnum
+                .addMethod().setPublic().setReturnType(String.class)
+                .setName("getVariantName")
+                .setBody(String.format("return %s;", variantField.getName()));
+        getVariantNameMethod.getJavaDoc().setText("Gets the variant name.")
+                .addTagValue(JAVADOC_RETURN, "variant name");
+
+        for (Map.Entry<String, List<String>> themeNameAndVariants : metadata
+                .getVariants().entrySet()) {
+            for (String variant : themeNameAndVariants.getValue()) {
+                classEnum.addEnumConstant(createEnumFieldName(String.format(
+                        "%s_%s", themeNameAndVariants.getKey(), variant)))
+                        .setConstructorArguments(
+                                String.format("\"%s\"", variant));
+            }
+        }
+
+        String parameterName = "variants";
+        javaClass.addImport(Stream.class);
+        javaClass.addImport(Collectors.class);
+        MethodSource<JavaClassSource> addVariantsMethod = javaClass.addMethod()
+                .setName("addThemeVariants")
+                .setBody(String.format(
+                        "getThemeNames().addAll(Stream.of(%s).map(%s::%s).collect(Collectors.toList()));",
+                        parameterName, classEnum.getName(),
+                        getVariantNameMethod.getName()))
+                .setPublic().setReturnTypeVoid();
+        addVariantsMethod.addParameter(classEnum, parameterName)
+                .setVarArgs(true);
+        addVariantsMethod.getJavaDoc()
+                .setText("Adds theme variants to the component.")
+                .addTagValue(JAVADOC_PARAM, "variants theme variants to add");
+
+        MethodSource<JavaClassSource> removeVariantsMethod = javaClass
+                .addMethod().setName("removeThemeVariants")
+                .setBody(String.format(
+                        "getThemeNames().removeAll(Stream.of(%s).map(%s::%s).collect(Collectors.toList()));",
+                        parameterName, classEnum.getName(),
+                        getVariantNameMethod.getName()))
+                .setPublic().setReturnTypeVoid();
+        removeVariantsMethod.addParameter(classEnum, parameterName)
+                .setVarArgs(true);
+        removeVariantsMethod.getJavaDoc()
+                .setText("Removes theme variants from the component.")
+                .addTagValue(JAVADOC_PARAM, String
+                        .format("%s theme variants to remove", parameterName));
+        writeClass(metadata.getName(), targetPath, classEnum, licenseNote);
+    }
+
+    private String createEnumFieldName(String variantName) {
+        return StringUtils.upperCase(variantName, Locale.ENGLISH)
+                .replaceAll("-", "_");
     }
 
     private void generateGettersAndSetters(ComponentMetadata metadata,
@@ -882,17 +952,21 @@ public class ComponentGenerator {
     public void generateClass(ComponentMetadata metadata, File targetPath,
             String basePackage, String licenseNote) {
 
-        JavaClassSource javaClass = generateClassSource(metadata, basePackage);
-        String source = addLicenseHeaderIfAvailable(javaClass.toString(),
-                licenseNote);
-
-        String fileName = ComponentGeneratorUtils
-                .generateValidJavaClassName(javaClass.getName()) + ".java";
-
         if (!targetPath.isDirectory() && !targetPath.mkdirs()) {
             throw new ComponentGenerationException(
                     "Could not create target directory \"" + targetPath + "\"");
         }
+        writeClass(metadata.getName(), targetPath,
+                generateClassSource(metadata, basePackage), licenseNote);
+    }
+
+    private <T extends Named & Packaged<?>> void writeClass(
+            String componentName, File targetPath, T javaClass,
+            String licenseNote) {
+        String fileName = ComponentGeneratorUtils
+                .generateValidJavaClassName(javaClass.getName()) + ".java";
+        String source = addLicenseHeaderIfAvailable(javaClass.toString(),
+                licenseNote);
         try {
             Files.write(
                     new File(
@@ -904,7 +978,7 @@ public class ComponentGenerator {
             throw new ComponentGenerationException(
                     "Error writing the generated Java source file \"" + fileName
                             + "\" at \"" + targetPath + "\" for component \""
-                            + metadata.getName() + "\"",
+                            + componentName + "\"",
                     ex);
         }
     }

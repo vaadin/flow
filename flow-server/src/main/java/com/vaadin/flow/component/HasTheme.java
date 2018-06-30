@@ -16,8 +16,6 @@
 package com.vaadin.flow.component;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
@@ -134,39 +132,5 @@ public interface HasTheme extends HasElement {
      */
     default void removeThemeNames(String... themeNames) {
         getThemeNames().removeAll(Arrays.asList(themeNames));
-    }
-
-    /**
-     * Adds theme variants to the component.
-     *
-     * @param variants
-     *            theme variants to add
-     */
-    default void addThemeVariants(ThemeVariant... variants) {
-        getThemeNames().addAll(Stream.of(variants).map(ThemeVariant::getVariant)
-                .collect(Collectors.toList()));
-    }
-
-    /**
-     * Removes theme variants from the component.
-     * 
-     * @param variants
-     *            theme variants to remove
-     */
-    default void removeThemeVariants(ThemeVariant... variants) {
-        getThemeNames().removeAll(Stream.of(variants)
-                .map(ThemeVariant::getVariant).collect(Collectors.toList()));
-    }
-
-    /**
-     * A predefined variant that is supported by the theme.
-     */
-    interface ThemeVariant {
-        /**
-         * Gets the html variant name.
-         *
-         * @return html variant name
-         */
-        String getVariant();
     }
 }
