@@ -24,9 +24,9 @@ import com.vaadin.flow.component.NotSupported;
 import elemental.json.JsonArray;
 import com.vaadin.flow.component.Component;
 
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
         "WebComponent: Vaadin.InfiniteScrollerElement#UNKNOWN",
-        "Flow#1.0-SNAPSHOT" })
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-infinite-scroller")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-infinite-scroller.html")
 public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
@@ -296,7 +296,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Target path to unlink.
      */
     @NotSupported
-    protected void unlinkPaths(JsonObject path) {
+    protected void unlinkPaths(String path) {
     }
 
     /**
@@ -319,7 +319,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Target path to unlink.
      */
     @NotSupported
-    protected void unlinkPaths(String path) {
+    protected void unlinkPaths(JsonObject path) {
     }
 
     /**
@@ -586,7 +586,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void pop(JsonObject path) {
+    protected void pop(String path) {
     }
 
     /**
@@ -613,7 +613,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void pop(String path) {
+    protected void pop(JsonObject path) {
     }
 
     /**
@@ -710,7 +710,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void shift(JsonObject path) {
+    protected void shift(String path) {
     }
 
     /**
@@ -737,7 +737,7 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      *            Path to array.
      */
     @NotSupported
-    protected void shift(String path) {
+    protected void shift(JsonObject path) {
     }
 
     /**

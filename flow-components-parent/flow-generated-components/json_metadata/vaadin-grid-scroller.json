@@ -1,0 +1,36 @@
+{
+  "name": "GridScrollerElement",
+  "tag": "vaadin-grid-scroller",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-scroller.html",
+  "version": "UNKNOWN",
+  "properties": [
+    {
+      "name": "size",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": ""
+    }
+  ],
+  "methods": [
+    {
+      "name": "clearSelection",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "updateViewportBoundaries",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [],
+  "variants": {},
+  "description": "This Element is used internally by vaadin-grid."
+}

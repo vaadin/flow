@@ -1,0 +1,47 @@
+{
+  "name": "Vaadin.GridFilterElement",
+  "tag": "vaadin-grid-filter",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-filter.html",
+  "version": "5.0.4",
+  "properties": [
+    {
+      "name": "path",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "JS Path of the property in the item used for filtering the data.\n             "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Current filter value.\n             ",
+      "notify": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "focus",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [
+    {
+      "name": "value-changed",
+      "description": "Fired when the `value` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [
+    "filter"
+  ],
+  "behaviors": [],
+  "mixins": [],
+  "variants": {},
+  "description": "`<vaadin-grid-filter>` is a helper element for the `<vaadin-grid>` that provides out-of-the-box UI controls,\nand handlers for filtering the grid data.\n\n#### Example:\n```html\n<vaadin-grid-column>\n  <template class=\"header\">\n    <vaadin-grid-filter path=\"name.first\"></vaadin-grid-filter>\n  </template>\n  <template>[[item.name.first]]</template>\n</vaadin-grid-column>\n```"
+}
