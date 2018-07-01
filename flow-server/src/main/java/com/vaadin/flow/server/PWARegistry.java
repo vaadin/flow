@@ -58,6 +58,12 @@ public class PWARegistry implements Serializable {
     private final String manifestJson;
     private final String serviceWorkerJs;
 
+    private static final String APPLE_STARTUP_IMAGE =
+            "apple-touch-startup-image";
+    private static final String APPLE_IMAGE_MEDIA =
+            "(device-width: %dpx) and (device-height: %dpx) "
+                    + "and (-webkit-device-pixel-ratio: %d)";
+
 
     private PWARegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
@@ -393,30 +399,26 @@ public class PWARegistry implements Serializable {
         // iPhone X (1125px x 2436px)
         icons.add(new PWAIcon(1125, 2436, baseName,
                 PWAIcon.Domain.HEADER, false,
-                "apple-touch-startup-image",
-                "(device-width: 375px) and (device-height: 812px) "
-                        + "and (-webkit-device-pixel-ratio: 3)"));
+                APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 375, 812, 3)));
 
         // iPhone 8, 7, 6s, 6 (750px x 1334px)
         icons.add(new PWAIcon(750, 1334, baseName,
                 PWAIcon.Domain.HEADER, false,
-                "apple-touch-startup-image",
-                "(device-width: 375px) and (device-height: 667px) "
-                        + "and (-webkit-device-pixel-ratio: 2)"));
+                APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 375, 667, 2)));
 
         // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus (1242px x 2208px)
         icons.add(new PWAIcon(1242, 2208, baseName,
                 PWAIcon.Domain.HEADER, false,
-                "apple-touch-startup-image",
-                "(device-width: 414px) and (device-height: 736px) "
-                        + "and (-webkit-device-pixel-ratio: 3)"));
+                APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 414, 763, 3)));
 
         // iPhone 5 (640px x 1136px)
         icons.add(new PWAIcon(640, 1136, baseName,
                 PWAIcon.Domain.HEADER, false,
-                "apple-touch-startup-image",
-                "(device-width: 320px) and (device-height: 568px) "
-                        + "and (-webkit-device-pixel-ratio: 3)"));
+                APPLE_STARTUP_IMAGE,
+                String.format(APPLE_IMAGE_MEDIA, 320, 568, 2)));
 
         return icons;
     }
