@@ -242,7 +242,7 @@ public class PWARegistry implements Serializable {
             throws IOException {
         // Use only icons which are cached with service worker
         List<PWAIcon> iconList = getIcons().stream()
-                .filter(icon -> icon.cached())
+                .filter(PWAIcon::cached)
                 .collect(Collectors.toList());
         // init header inject of icons
         String iconHead = iconList.stream()
@@ -276,17 +276,24 @@ public class PWARegistry implements Serializable {
     }
 
     private String getResourceAsString(URLConnection connection) {
+        StringBuilder builder = new StringBuilder();
         try {
             InputStream inputSream = connection.getInputStream();
             BufferedReader bf = new BufferedReader(new InputStreamReader(
                     inputSream, StandardCharsets.UTF_8));
-            StringBuilder builder = new StringBuilder();
             bf.lines().forEach(builder::append);
-            connection.getInputStream().close();
-            return builder.toString();
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
+        } finally {
+            try {
+                if (connection.getInputStream() != null) {
+                    connection.getInputStream().close();
+                }
+            } catch (IOException ex) {
+                // ignore, for significant exception already handled
+            }
         }
+        return builder.toString();
     }
 
 
