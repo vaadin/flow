@@ -276,24 +276,15 @@ public class PWARegistry implements Serializable {
     }
 
     private String getResourceAsString(URLConnection connection) {
-        StringBuilder builder = new StringBuilder();
-        try {
-            InputStream inputSream = connection.getInputStream();
-            BufferedReader bf = new BufferedReader(new InputStreamReader(
-                    inputSream, StandardCharsets.UTF_8));
+        try (InputStream stream = connection.getInputStream();
+             BufferedReader bf = new BufferedReader(new InputStreamReader(
+                     stream, StandardCharsets.UTF_8))) {
+            StringBuilder builder = new StringBuilder();
             bf.lines().forEach(builder::append);
+            return builder.toString();
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
-        } finally {
-            try {
-                if (connection.getInputStream() != null) {
-                    connection.getInputStream().close();
-                }
-            } catch (IOException ex) {
-                // ignore, for significant exception already handled
-            }
         }
-        return builder.toString();
     }
 
 
