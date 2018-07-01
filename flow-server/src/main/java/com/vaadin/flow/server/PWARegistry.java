@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.startup.RouteRegistry;
 
 import elemental.json.Json;
