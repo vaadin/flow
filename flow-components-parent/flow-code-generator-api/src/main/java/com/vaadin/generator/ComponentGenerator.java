@@ -402,7 +402,7 @@ public class ComponentGenerator {
 
         addClassAnnotations(metadata, javaClass);
         addInterfaces(metadata, javaClass);
-        generateVariants(metadata, javaClass, targetPackage);
+        generateThemeVariants(metadata, javaClass, targetPackage);
 
         Map<String, MethodSource<JavaClassSource>> propertyToGetterMap = new HashMap<>();
 
@@ -673,7 +673,7 @@ public class ComponentGenerator {
         });
     }
 
-    private void generateVariants(ComponentMetadata metadata,
+    private void generateThemeVariants(ComponentMetadata metadata,
             JavaClassSource javaClass, String targetPackage) {
         if (metadata.getVariants().isEmpty()) {
             return;
@@ -687,12 +687,12 @@ public class ComponentGenerator {
                 ? rawName.substring("Vaadin".length())
                 : rawName;
         JavaEnumSource classEnum = Roaster.create(JavaEnumSource.class)
-                .setName(StringUtils.capitalize(componentName) + "Variants")
+                .setName(StringUtils.capitalize(componentName) + "Variant")
                 .setPackage(targetPackage);
         classEnum.getJavaDoc()
                 .setText(String.format(
-                        "Set of variants applicable for '%s' component",
-                        componentName));
+                        "Set of theme variants applicable for '%s' component.",
+                        metadata.getTag()));
         FieldSource<JavaEnumSource> variantField = classEnum.addField()
                 .setPrivate().setType(String.class).setName("variant")
                 .setFinal(true);
@@ -700,7 +700,8 @@ public class ComponentGenerator {
         classEnum.addMethod().setConstructor(true)
                 .setBody(String.format("this.%s = %s;", variantField.getName(),
                         variantField.getName()))
-                .addParameter(String.class, variantField.getName());
+                .addParameter(String.class.getSimpleName(),
+                        variantField.getName());
 
         MethodSource<JavaEnumSource> getVariantNameMethod = classEnum
                 .addMethod().setPublic().setReturnType(String.class)
@@ -729,11 +730,12 @@ public class ComponentGenerator {
                         parameterName, classEnum.getName(),
                         getVariantNameMethod.getName()))
                 .setPublic().setReturnTypeVoid();
-        addVariantsMethod.addParameter(classEnum, parameterName)
+        addVariantsMethod.addParameter(classEnum.getName(), parameterName)
                 .setVarArgs(true);
         addVariantsMethod.getJavaDoc()
                 .setText("Adds theme variants to the component.")
-                .addTagValue(JAVADOC_PARAM, "variants theme variants to add");
+                .addTagValue(JAVADOC_PARAM, String
+                        .format("%s theme variants to add", parameterName));
 
         MethodSource<JavaClassSource> removeVariantsMethod = javaClass
                 .addMethod().setName("removeThemeVariants")
@@ -742,7 +744,7 @@ public class ComponentGenerator {
                         parameterName, classEnum.getName(),
                         getVariantNameMethod.getName()))
                 .setPublic().setReturnTypeVoid();
-        removeVariantsMethod.addParameter(classEnum, parameterName)
+        removeVariantsMethod.addParameter(classEnum.getName(), parameterName)
                 .setVarArgs(true);
         removeVariantsMethod.getJavaDoc()
                 .setText("Removes theme variants from the component.")
