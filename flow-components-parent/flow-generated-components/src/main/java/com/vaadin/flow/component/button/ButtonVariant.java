@@ -16,7 +16,7 @@
 package com.vaadin.flow.component.button;
 
 /**
- * Set of theme variants applicable for 'vaadin-button' component.
+ * Set of theme variants applicable for {@code vaadin-button} component.
  */
 public enum ButtonVariant {
     LUMO_SMALL("small"), LUMO_LARGE("large"), LUMO_TERTIARY(

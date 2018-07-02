@@ -16,7 +16,7 @@
 package com.vaadin.flow.component.tabs;
 
 /**
- * Set of theme variants applicable for 'vaadin-tab' component.
+ * Set of theme variants applicable for {@code vaadin-tab} component.
  */
 public enum TabVariant {
     LUMO_ICON_ON_TOP("icon-on-top");

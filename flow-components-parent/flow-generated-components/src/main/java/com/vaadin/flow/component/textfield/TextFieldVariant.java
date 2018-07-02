@@ -16,7 +16,7 @@
 package com.vaadin.flow.component.textfield;
 
 /**
- * Set of theme variants applicable for 'vaadin-text-field' component.
+ * Set of theme variants applicable for {@code vaadin-text-field} component.
  */
 public enum TextFieldVariant {
     LUMO_SMALL("small"), LUMO_ALIGN_CENTER("align-center"), LUMO_ALIGN_RIGHT(

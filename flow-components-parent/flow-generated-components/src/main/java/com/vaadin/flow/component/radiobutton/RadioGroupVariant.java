@@ -16,7 +16,7 @@
 package com.vaadin.flow.component.radiobutton;
 
 /**
- * Set of theme variants applicable for 'vaadin-radio-group' component.
+ * Set of theme variants applicable for {@code vaadin-radio-group} component.
  */
 public enum RadioGroupVariant {
     LUMO_VERTICAL("vertical");

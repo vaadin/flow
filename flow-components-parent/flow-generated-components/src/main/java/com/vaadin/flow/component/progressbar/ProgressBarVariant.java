@@ -16,7 +16,7 @@
 package com.vaadin.flow.component.progressbar;
 
 /**
- * Set of theme variants applicable for 'vaadin-progress-bar' component.
+ * Set of theme variants applicable for {@code vaadin-progress-bar} component.
  */
 public enum ProgressBarVariant {
     LUMO_CONTRAST("contrast"), LUMO_ERROR("error"), LUMO_SUCCESS("success");

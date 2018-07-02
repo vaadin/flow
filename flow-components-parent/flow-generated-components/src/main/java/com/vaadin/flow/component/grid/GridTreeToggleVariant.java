@@ -16,7 +16,8 @@
 package com.vaadin.flow.component.grid;
 
 /**
- * Set of theme variants applicable for 'vaadin-grid-tree-toggle' component.
+ * Set of theme variants applicable for {@code vaadin-grid-tree-toggle}
+ * component.
  */
 public enum GridTreeToggleVariant {
     LUMO_CONNECTORS("connectors");

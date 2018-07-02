@@ -16,7 +16,8 @@
 package com.vaadin.flow.component.orderedlayout;
 
 /**
- * Set of theme variants applicable for 'vaadin-vertical-layout' component.
+ * Set of theme variants applicable for {@code vaadin-vertical-layout}
+ * component.
  */
 public enum VerticalLayoutVariant {
     LUMO_SPACING_XS("spacing-xs"), LUMO_SPACING_S("spacing-s"), LUMO_SPACING(

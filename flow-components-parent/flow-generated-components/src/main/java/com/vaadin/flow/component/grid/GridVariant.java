@@ -16,7 +16,7 @@
 package com.vaadin.flow.component.grid;
 
 /**
- * Set of theme variants applicable for 'vaadin-grid' component.
+ * Set of theme variants applicable for {@code vaadin-grid} component.
  */
 public enum GridVariant {
     LUMO_COLUMN_BORDERS("column-borders"), LUMO_ROW_STRIPES(

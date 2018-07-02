@@ -16,7 +16,7 @@
 package com.vaadin.flow.component.tabs;
 
 /**
- * Set of theme variants applicable for 'vaadin-tabs' component.
+ * Set of theme variants applicable for {@code vaadin-tabs} component.
  */
 public enum TabsVariant {
     LUMO_SMALL("small"), LUMO_MINIMAL("minimal"), LUMO_HIDE_SCROLL_BUTTONS(

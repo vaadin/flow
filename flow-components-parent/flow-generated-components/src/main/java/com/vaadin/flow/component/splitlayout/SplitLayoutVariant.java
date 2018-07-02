@@ -16,7 +16,7 @@
 package com.vaadin.flow.component.splitlayout;
 
 /**
- * Set of theme variants applicable for 'vaadin-split-layout' component.
+ * Set of theme variants applicable for {@code vaadin-split-layout} component.
  */
 public enum SplitLayoutVariant {
     LUMO_SMALL("small"), LUMO_MINIMAL("minimal");
