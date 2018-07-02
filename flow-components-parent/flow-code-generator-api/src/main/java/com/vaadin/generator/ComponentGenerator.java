@@ -691,7 +691,7 @@ public class ComponentGenerator {
                 .setPackage(targetPackage);
         classEnum.getJavaDoc()
                 .setText(String.format(
-                        "Set of theme variants applicable for '%s' component.",
+                        "Set of theme variants applicable for {@code %s} component.",
                         metadata.getTag()));
         FieldSource<JavaEnumSource> variantField = classEnum.addField()
                 .setPrivate().setType(String.class).setName("variant")
