@@ -82,10 +82,9 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.radiobutton.RadioGroupVariants... variants) {
+    public void addThemeVariants(RadioGroupVariant... variants) {
         getThemeNames().addAll(
-                Stream.of(variants).map(RadioGroupVariants::getVariantName)
+                Stream.of(variants).map(RadioGroupVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 
@@ -95,10 +94,9 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.radiobutton.RadioGroupVariants... variants) {
+    public void removeThemeVariants(RadioGroupVariant... variants) {
         getThemeNames().removeAll(
-                Stream.of(variants).map(RadioGroupVariants::getVariantName)
+                Stream.of(variants).map(RadioGroupVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 

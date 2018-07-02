@@ -113,10 +113,9 @@ public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.button.ButtonVariants... variants) {
+    public void addThemeVariants(ButtonVariant... variants) {
         getThemeNames()
-                .addAll(Stream.of(variants).map(ButtonVariants::getVariantName)
+                .addAll(Stream.of(variants).map(ButtonVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 
@@ -126,10 +125,9 @@ public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.button.ButtonVariants... variants) {
+    public void removeThemeVariants(ButtonVariant... variants) {
         getThemeNames().removeAll(
-                Stream.of(variants).map(ButtonVariants::getVariantName)
+                Stream.of(variants).map(ButtonVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 

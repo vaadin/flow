@@ -13,17 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.radiobutton;
+package com.vaadin.flow.component.tabs;
 
 /**
- * Set of variants applicable for 'RadioGroup' component
+ * Set of theme variants applicable for 'vaadin-tabs' component.
  */
-public enum RadioGroupVariants {
-    LUMO_VERTICAL("vertical");
+public enum TabsVariant {
+    LUMO_SMALL("small"), LUMO_MINIMAL("minimal"), LUMO_HIDE_SCROLL_BUTTONS(
+            "hide-scroll-buttons"), LUMO_EQUAL_WIDTH_TABS("equal-width-tabs");
 
     private final String variant;
 
-    RadioGroupVariants(java.lang.String variant) {
+    TabsVariant(String variant) {
         this.variant = variant;
     }
 

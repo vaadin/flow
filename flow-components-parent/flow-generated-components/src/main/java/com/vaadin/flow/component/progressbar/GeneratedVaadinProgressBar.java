@@ -111,10 +111,9 @@ public abstract class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgre
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.progressbar.ProgressBarVariants... variants) {
+    public void addThemeVariants(ProgressBarVariant... variants) {
         getThemeNames().addAll(
-                Stream.of(variants).map(ProgressBarVariants::getVariantName)
+                Stream.of(variants).map(ProgressBarVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 
@@ -124,10 +123,9 @@ public abstract class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgre
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.progressbar.ProgressBarVariants... variants) {
+    public void removeThemeVariants(ProgressBarVariant... variants) {
         getThemeNames().removeAll(
-                Stream.of(variants).map(ProgressBarVariants::getVariantName)
+                Stream.of(variants).map(ProgressBarVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 

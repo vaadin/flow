@@ -16,16 +16,16 @@
 package com.vaadin.flow.component.orderedlayout;
 
 /**
- * Set of variants applicable for 'HorizontalLayout' component
+ * Set of theme variants applicable for 'vaadin-horizontal-layout' component.
  */
-public enum HorizontalLayoutVariants {
+public enum HorizontalLayoutVariant {
     LUMO_SPACING_XS("spacing-xs"), LUMO_SPACING_S("spacing-s"), LUMO_SPACING(
             "spacing"), LUMO_SPACING_L(
                     "spacing-l"), LUMO_SPACING_XL("spacing-xl");
 
     private final String variant;
 
-    HorizontalLayoutVariants(java.lang.String variant) {
+    HorizontalLayoutVariant(String variant) {
         this.variant = variant;
     }
 

@@ -13,19 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.orderedlayout;
+package com.vaadin.flow.component.radiobutton;
 
 /**
- * Set of variants applicable for 'VerticalLayout' component
+ * Set of theme variants applicable for 'vaadin-radio-group' component.
  */
-public enum VerticalLayoutVariants {
-    LUMO_SPACING_XS("spacing-xs"), LUMO_SPACING_S("spacing-s"), LUMO_SPACING(
-            "spacing"), LUMO_SPACING_L(
-                    "spacing-l"), LUMO_SPACING_XL("spacing-xl");
+public enum RadioGroupVariant {
+    LUMO_VERTICAL("vertical");
 
     private final String variant;
 
-    VerticalLayoutVariants(java.lang.String variant) {
+    RadioGroupVariant(String variant) {
         this.variant = variant;
     }
 

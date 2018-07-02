@@ -13,18 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.tabs;
+package com.vaadin.flow.component.progressbar;
 
 /**
- * Set of variants applicable for 'Tabs' component
+ * Set of theme variants applicable for 'vaadin-progress-bar' component.
  */
-public enum TabsVariants {
-    LUMO_SMALL("small"), LUMO_MINIMAL("minimal"), LUMO_HIDE_SCROLL_BUTTONS(
-            "hide-scroll-buttons"), LUMO_EQUAL_WIDTH_TABS("equal-width-tabs");
+public enum ProgressBarVariant {
+    LUMO_CONTRAST("contrast"), LUMO_ERROR("error"), LUMO_SUCCESS("success");
 
     private final String variant;
 
-    TabsVariants(java.lang.String variant) {
+    ProgressBarVariant(String variant) {
         this.variant = variant;
     }
 

@@ -13,21 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.button;
+package com.vaadin.flow.component.grid;
 
 /**
- * Set of variants applicable for 'Button' component
+ * Set of theme variants applicable for 'vaadin-grid-tree-toggle' component.
  */
-public enum ButtonVariants {
-    LUMO_SMALL("small"), LUMO_LARGE("large"), LUMO_TERTIARY(
-            "tertiary"), LUMO_TERTIARY_INLINE(
-                    "tertiary-inline"), LUMO_PRIMARY("primary"), LUMO_SUCCESS(
-                            "success"), LUMO_ERROR("error"), LUMO_CONTRAST(
-                                    "contrast"), LUMO_ICON("icon");
+public enum GridTreeToggleVariant {
+    LUMO_CONNECTORS("connectors");
 
     private final String variant;
 
-    ButtonVariants(java.lang.String variant) {
+    GridTreeToggleVariant(String variant) {
         this.variant = variant;
     }
 

@@ -303,11 +303,9 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.grid.GridVariants... variants) {
-        getThemeNames()
-                .addAll(Stream.of(variants).map(GridVariants::getVariantName)
-                        .collect(Collectors.toList()));
+    public void addThemeVariants(GridVariant... variants) {
+        getThemeNames().addAll(Stream.of(variants)
+                .map(GridVariant::getVariantName).collect(Collectors.toList()));
     }
 
     /**
@@ -316,11 +314,9 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.grid.GridVariants... variants) {
-        getThemeNames()
-                .removeAll(Stream.of(variants).map(GridVariants::getVariantName)
-                        .collect(Collectors.toList()));
+    public void removeThemeVariants(GridVariant... variants) {
+        getThemeNames().removeAll(Stream.of(variants)
+                .map(GridVariant::getVariantName).collect(Collectors.toList()));
     }
 
     /**

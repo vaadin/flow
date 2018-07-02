@@ -121,10 +121,9 @@ public abstract class GeneratedVaadinGridTreeToggle<R extends GeneratedVaadinGri
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.grid.GridTreeToggleVariants... variants) {
+    public void addThemeVariants(GridTreeToggleVariant... variants) {
         getThemeNames().addAll(
-                Stream.of(variants).map(GridTreeToggleVariants::getVariantName)
+                Stream.of(variants).map(GridTreeToggleVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 
@@ -134,10 +133,9 @@ public abstract class GeneratedVaadinGridTreeToggle<R extends GeneratedVaadinGri
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.grid.GridTreeToggleVariants... variants) {
+    public void removeThemeVariants(GridTreeToggleVariant... variants) {
         getThemeNames().removeAll(
-                Stream.of(variants).map(GridTreeToggleVariants::getVariantName)
+                Stream.of(variants).map(GridTreeToggleVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 

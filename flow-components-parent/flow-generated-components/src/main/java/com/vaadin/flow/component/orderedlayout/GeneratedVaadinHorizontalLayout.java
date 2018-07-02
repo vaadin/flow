@@ -79,11 +79,10 @@ public abstract class GeneratedVaadinHorizontalLayout<R extends GeneratedVaadinH
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.orderedlayout.HorizontalLayoutVariants... variants) {
-        getThemeNames().addAll(Stream.of(variants)
-                .map(HorizontalLayoutVariants::getVariantName)
-                .collect(Collectors.toList()));
+    public void addThemeVariants(HorizontalLayoutVariant... variants) {
+        getThemeNames().addAll(
+                Stream.of(variants).map(HorizontalLayoutVariant::getVariantName)
+                        .collect(Collectors.toList()));
     }
 
     /**
@@ -92,10 +91,9 @@ public abstract class GeneratedVaadinHorizontalLayout<R extends GeneratedVaadinH
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.orderedlayout.HorizontalLayoutVariants... variants) {
-        getThemeNames().removeAll(Stream.of(variants)
-                .map(HorizontalLayoutVariants::getVariantName)
-                .collect(Collectors.toList()));
+    public void removeThemeVariants(HorizontalLayoutVariant... variants) {
+        getThemeNames().removeAll(
+                Stream.of(variants).map(HorizontalLayoutVariant::getVariantName)
+                        .collect(Collectors.toList()));
     }
 }

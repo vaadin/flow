@@ -13,18 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.textfield;
+package com.vaadin.flow.component.orderedlayout;
 
 /**
- * Set of variants applicable for 'TextField' component
+ * Set of theme variants applicable for 'vaadin-vertical-layout' component.
  */
-public enum TextFieldVariants {
-    LUMO_SMALL("small"), LUMO_ALIGN_CENTER("align-center"), LUMO_ALIGN_RIGHT(
-            "align-right");
+public enum VerticalLayoutVariant {
+    LUMO_SPACING_XS("spacing-xs"), LUMO_SPACING_S("spacing-s"), LUMO_SPACING(
+            "spacing"), LUMO_SPACING_L(
+                    "spacing-l"), LUMO_SPACING_XL("spacing-xl");
 
     private final String variant;
 
-    TextFieldVariants(java.lang.String variant) {
+    VerticalLayoutVariant(String variant) {
         this.variant = variant;
     }
 

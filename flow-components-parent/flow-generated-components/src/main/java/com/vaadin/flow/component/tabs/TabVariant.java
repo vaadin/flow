@@ -13,17 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.splitlayout;
+package com.vaadin.flow.component.tabs;
 
 /**
- * Set of variants applicable for 'SplitLayout' component
+ * Set of theme variants applicable for 'vaadin-tab' component.
  */
-public enum SplitLayoutVariants {
-    LUMO_SMALL("small"), LUMO_MINIMAL("minimal");
+public enum TabVariant {
+    LUMO_ICON_ON_TOP("icon-on-top");
 
     private final String variant;
 
-    SplitLayoutVariants(java.lang.String variant) {
+    TabVariant(String variant) {
         this.variant = variant;
     }
 

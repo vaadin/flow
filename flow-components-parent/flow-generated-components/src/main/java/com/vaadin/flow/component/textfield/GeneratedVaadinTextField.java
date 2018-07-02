@@ -162,10 +162,9 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.textfield.TextFieldVariants... variants) {
+    public void addThemeVariants(TextFieldVariant... variants) {
         getThemeNames().addAll(
-                Stream.of(variants).map(TextFieldVariants::getVariantName)
+                Stream.of(variants).map(TextFieldVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 
@@ -175,10 +174,9 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.textfield.TextFieldVariants... variants) {
+    public void removeThemeVariants(TextFieldVariant... variants) {
         getThemeNames().removeAll(
-                Stream.of(variants).map(TextFieldVariants::getVariantName)
+                Stream.of(variants).map(TextFieldVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 

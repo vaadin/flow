@@ -200,10 +200,9 @@ public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitL
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.splitlayout.SplitLayoutVariants... variants) {
+    public void addThemeVariants(SplitLayoutVariant... variants) {
         getThemeNames().addAll(
-                Stream.of(variants).map(SplitLayoutVariants::getVariantName)
+                Stream.of(variants).map(SplitLayoutVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 
@@ -213,10 +212,9 @@ public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitL
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.splitlayout.SplitLayoutVariants... variants) {
+    public void removeThemeVariants(SplitLayoutVariant... variants) {
         getThemeNames().removeAll(
-                Stream.of(variants).map(SplitLayoutVariants::getVariantName)
+                Stream.of(variants).map(SplitLayoutVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 

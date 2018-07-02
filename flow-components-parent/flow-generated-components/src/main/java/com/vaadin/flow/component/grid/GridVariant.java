@@ -16,14 +16,16 @@
 package com.vaadin.flow.component.grid;
 
 /**
- * Set of variants applicable for 'GridTreeToggle' component
+ * Set of theme variants applicable for 'vaadin-grid' component.
  */
-public enum GridTreeToggleVariants {
-    LUMO_CONNECTORS("connectors");
+public enum GridVariant {
+    LUMO_COLUMN_BORDERS("column-borders"), LUMO_ROW_STRIPES(
+            "row-stripes"), LUMO_COMPACT(
+                    "compact"), LUMO_WRAP_CELL_CONTENT("wrap-cell-content");
 
     private final String variant;
 
-    GridTreeToggleVariants(java.lang.String variant) {
+    GridVariant(String variant) {
         this.variant = variant;
     }
 

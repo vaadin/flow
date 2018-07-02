@@ -13,17 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.progressbar;
+package com.vaadin.flow.component.splitlayout;
 
 /**
- * Set of variants applicable for 'ProgressBar' component
+ * Set of theme variants applicable for 'vaadin-split-layout' component.
  */
-public enum ProgressBarVariants {
-    LUMO_CONTRAST("contrast"), LUMO_ERROR("error"), LUMO_SUCCESS("success");
+public enum SplitLayoutVariant {
+    LUMO_SMALL("small"), LUMO_MINIMAL("minimal");
 
     private final String variant;
 
-    ProgressBarVariants(java.lang.String variant) {
+    SplitLayoutVariant(String variant) {
         this.variant = variant;
     }
 

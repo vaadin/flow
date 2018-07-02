@@ -13,17 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.tabs;
+package com.vaadin.flow.component.textfield;
 
 /**
- * Set of variants applicable for 'Tab' component
+ * Set of theme variants applicable for 'vaadin-text-field' component.
  */
-public enum TabVariants {
-    LUMO_ICON_ON_TOP("icon-on-top");
+public enum TextFieldVariant {
+    LUMO_SMALL("small"), LUMO_ALIGN_CENTER("align-center"), LUMO_ALIGN_RIGHT(
+            "align-right");
 
     private final String variant;
 
-    TabVariants(java.lang.String variant) {
+    TextFieldVariant(String variant) {
         this.variant = variant;
     }
 

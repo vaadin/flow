@@ -101,10 +101,9 @@ public abstract class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.tabs.TabVariants... variants) {
+    public void addThemeVariants(TabVariant... variants) {
         getThemeNames().addAll(Stream.of(variants)
-                .map(TabVariants::getVariantName).collect(Collectors.toList()));
+                .map(TabVariant::getVariantName).collect(Collectors.toList()));
     }
 
     /**
@@ -113,10 +112,9 @@ public abstract class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.tabs.TabVariants... variants) {
+    public void removeThemeVariants(TabVariant... variants) {
         getThemeNames().removeAll(Stream.of(variants)
-                .map(TabVariants::getVariantName).collect(Collectors.toList()));
+                .map(TabVariant::getVariantName).collect(Collectors.toList()));
     }
 
     /**

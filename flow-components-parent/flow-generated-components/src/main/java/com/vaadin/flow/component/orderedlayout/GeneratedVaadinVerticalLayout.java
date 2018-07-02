@@ -79,10 +79,9 @@ public abstract class GeneratedVaadinVerticalLayout<R extends GeneratedVaadinVer
      * @param variants
      *            theme variants to add
      */
-    public void addThemeVariants(
-            com.vaadin.flow.component.orderedlayout.VerticalLayoutVariants... variants) {
+    public void addThemeVariants(VerticalLayoutVariant... variants) {
         getThemeNames().addAll(
-                Stream.of(variants).map(VerticalLayoutVariants::getVariantName)
+                Stream.of(variants).map(VerticalLayoutVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 
@@ -92,10 +91,9 @@ public abstract class GeneratedVaadinVerticalLayout<R extends GeneratedVaadinVer
      * @param variants
      *            theme variants to remove
      */
-    public void removeThemeVariants(
-            com.vaadin.flow.component.orderedlayout.VerticalLayoutVariants... variants) {
+    public void removeThemeVariants(VerticalLayoutVariant... variants) {
         getThemeNames().removeAll(
-                Stream.of(variants).map(VerticalLayoutVariants::getVariantName)
+                Stream.of(variants).map(VerticalLayoutVariant::getVariantName)
                         .collect(Collectors.toList()));
     }
 }
