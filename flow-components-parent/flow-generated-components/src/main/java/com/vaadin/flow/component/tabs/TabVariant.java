@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.component.tabs;
 
+import javax.annotation.Generated;
+
 /**
  * Set of theme variants applicable for {@code vaadin-tab} component.
  */
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.TabElement#2.0.0", "Flow#1.1-SNAPSHOT" })
 public enum TabVariant {
     LUMO_ICON_ON_TOP("icon-on-top");
 

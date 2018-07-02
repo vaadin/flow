@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.component.progressbar;
 
+import javax.annotation.Generated;
+
 /**
  * Set of theme variants applicable for {@code vaadin-progress-bar} component.
  */
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.ProgressBarElement#1.0.0", "Flow#1.1-SNAPSHOT" })
 public enum ProgressBarVariant {
     LUMO_CONTRAST("contrast"), LUMO_ERROR("error"), LUMO_SUCCESS("success");
 

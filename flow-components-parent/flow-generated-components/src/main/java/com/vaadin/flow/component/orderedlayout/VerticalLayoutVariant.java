@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow.component.orderedlayout;
 
+import javax.annotation.Generated;
+
 /**
  * Set of theme variants applicable for {@code vaadin-vertical-layout}
  * component.
  */
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.VerticalLayoutElement#1.0.2",
+        "Flow#1.1-SNAPSHOT" })
 public enum VerticalLayoutVariant {
     LUMO_SPACING_XS("spacing-xs"), LUMO_SPACING_S("spacing-s"), LUMO_SPACING(
             "spacing"), LUMO_SPACING_L(

@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow.component.grid;
 
+import javax.annotation.Generated;
+
 /**
  * Set of theme variants applicable for {@code vaadin-grid-tree-toggle}
  * component.
  */
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.GridTreeToggleElement#5.0.4",
+        "Flow#1.1-SNAPSHOT" })
 public enum GridTreeToggleVariant {
     LUMO_CONNECTORS("connectors");
 
