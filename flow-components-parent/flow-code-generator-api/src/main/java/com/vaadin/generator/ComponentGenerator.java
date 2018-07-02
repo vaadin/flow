@@ -44,6 +44,7 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Named;
 import org.jboss.forge.roaster.model.Packaged;
 import org.jboss.forge.roaster.model.Visibility;
+import org.jboss.forge.roaster.model.source.AnnotationTargetSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
@@ -689,10 +690,12 @@ public class ComponentGenerator {
         JavaEnumSource classEnum = Roaster.create(JavaEnumSource.class)
                 .setName(StringUtils.capitalize(componentName) + "Variant")
                 .setPackage(targetPackage);
-        classEnum.getJavaDoc()
-                .setText(String.format(
-                        "Set of theme variants applicable for {@code %s} component.",
-                        metadata.getTag()));
+
+        addGeneratedAnnotation(metadata, classEnum);
+
+        classEnum.getJavaDoc().setText(String.format(
+                "Set of theme variants applicable for {@code %s} component.",
+                metadata.getTag()));
         FieldSource<JavaEnumSource> variantField = classEnum.addField()
                 .setPrivate().setType(String.class).setName("variant")
                 .setFinal(true);
@@ -907,21 +910,7 @@ public class ComponentGenerator {
     private void addClassAnnotations(ComponentMetadata metadata,
             JavaClassSource javaClass) {
 
-        Properties properties = getProperties("version.prop");
-        String generator = String.format("Generator: %s#%s",
-                ComponentGenerator.class.getName(),
-                properties.getProperty("generator.version"));
-        String webComponent = String.format("WebComponent: %s#%s",
-                metadata.getName(), metadata.getVersion());
-
-        String flow = String.format("Flow#%s",
-                properties.getProperty("flow.version"));
-
-        String[] generatedValue = new String[] { generator, webComponent,
-                flow };
-
-        javaClass.addAnnotation(Generated.class)
-                .setStringArrayValue(generatedValue);
+        addGeneratedAnnotation(metadata, javaClass);
 
         javaClass.addAnnotation(Tag.class).setStringValue(metadata.getTag());
 
@@ -932,6 +921,24 @@ public class ComponentGenerator {
         String htmlImport = String.format("frontend://%s%s", frontendDirectory,
                 importPath);
         javaClass.addAnnotation(HtmlImport.class).setStringValue(htmlImport);
+    }
+
+    private void addGeneratedAnnotation(ComponentMetadata metadata,
+            AnnotationTargetSource javaClass) {
+        Properties properties = getProperties("version.prop");
+        String generator = String.format("Generator: %s#%s",
+                ComponentGenerator.class.getName(),
+                properties.getProperty("generator.version"));
+        String webComponent = String.format("WebComponent: %s#%s",
+                metadata.getName(), metadata.getVersion());
+
+        String flow = String.format("Flow#%s",
+                properties.getProperty("flow.version"));
+
+        String[] generatedValue = { generator, webComponent, flow };
+
+        javaClass.addAnnotation(Generated.class)
+                .setStringArrayValue(generatedValue);
     }
 
     /**
