@@ -10,9 +10,6 @@
     <artifactId>flow-push</artifactId>
     <name>Flow Push</name>
     <packaging>jar</packaging>
-    <properties>
-        <atmosphere.runtime.version>2.4.24.vaadin1</atmosphere.runtime.version>
-    </properties>
 
     <dependencies>
         <!-- Atmosphere -->

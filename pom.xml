@@ -102,6 +102,14 @@
         <node.version>v8.11.1</node.version>
         <npm.version>6.1.0</npm.version>
         
+        <!-- Used in OSGi manifests -->
+        <javax.validation.version>1.0.0.GA</javax.validation.version>
+        <jsoup.version>1.11.2</jsoup.version>
+        <!-- Note that this should be kept in sync with the class Constants -->
+        <atmosphere.runtime.version>2.4.24.vaadin1</atmosphere.runtime.version>
+        
+        <!-- OSGi -->
+        <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
         <bnd.version>3.3.0</bnd.version>
 
         <maven.test.skip>false</maven.test.skip>

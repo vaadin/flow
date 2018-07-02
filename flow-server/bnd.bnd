@@ -1,0 +1,13 @@
+Bundle-SymbolicName: ${project.groupId}.flow.server
+Bundle-Name: Vaadin Flow Server
+Bundle-Version: ${osgi.bundle.version}
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Import-Package: org.atmosphere*;resolution:=optional;version='${atmosphere.runtime.version}',\
+  com.vaadin*;version='[${osgi.bundle.version},${osgi.bundle.version}]',\
+  *
+Export-Package: !com.vaadin.flow.dom.impl*,\
+    !com.vaadin.flow.internal*,\
+    !com.vaadin.flow.router.internal*,\
+    !com.vaadin.flow.shared*,\
+    com.vaadin.flow*;-noimport:=true
