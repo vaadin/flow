@@ -661,6 +661,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "right: 1em;" //
                 + "border: 1px solid black;" //
                 + "padding: 1em;" //
+                + "z-index: 10000;" //
                 + "}");
 
         // Basic system error dialog style just to make it visible and outside
