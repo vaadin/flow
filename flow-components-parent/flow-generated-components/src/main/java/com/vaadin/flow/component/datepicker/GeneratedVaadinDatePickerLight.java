@@ -84,9 +84,9 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
         "WebComponent: Vaadin.DatePickerLightElement#3.0.1",
-        "Flow#1.0-SNAPSHOT" })
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-light.html")
 public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R, T>, T>

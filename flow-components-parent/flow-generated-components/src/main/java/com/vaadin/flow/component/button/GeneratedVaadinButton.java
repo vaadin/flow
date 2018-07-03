@@ -22,6 +22,9 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasTheme;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 
@@ -96,13 +99,37 @@ import com.vaadin.flow.dom.Element;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.ButtonElement#2.0.1", "Flow#1.0-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.ButtonElement#2.0.1", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/src/vaadin-button.html")
 public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
         extends Component
-        implements HasStyle, ClickNotifier<R>, HasText, Focusable<R> {
+        implements HasStyle, ClickNotifier<R>, HasText, Focusable<R>, HasTheme {
+
+    /**
+     * Adds theme variants to the component.
+     * 
+     * @param variants
+     *            theme variants to add
+     */
+    public void addThemeVariants(ButtonVariant... variants) {
+        getThemeNames()
+                .addAll(Stream.of(variants).map(ButtonVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
+
+    /**
+     * Removes theme variants from the component.
+     * 
+     * @param variants
+     *            theme variants to remove
+     */
+    public void removeThemeVariants(ButtonVariant... variants) {
+        getThemeNames().removeAll(
+                Stream.of(variants).map(ButtonVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
 
     /**
      * <p>

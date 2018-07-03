@@ -80,9 +80,9 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * &lt;/paper-input&gt; &lt;/vaadin-combo-box-light&gt;
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
         "WebComponent: Vaadin.ComboBoxLightElement#4.0.1",
-        "Flow#1.0-SNAPSHOT" })
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-light.html")
 public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R, T>, T>
