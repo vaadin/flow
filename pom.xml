@@ -109,6 +109,7 @@
         <atmosphere.runtime.version>2.4.24.vaadin1</atmosphere.runtime.version>
 
         <!-- OSGi -->
+        <!-- Note: the parserVersion value is set by build-helper-maven-plugin  -->
         <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
         <bnd.version>3.3.0</bnd.version>
 
