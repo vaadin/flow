@@ -4,7 +4,6 @@ Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
 Import-Package: org.atmosphere*;resolution:=optional;version='${atmosphere.runtime.version}',\
-  com.vaadin*;version='[${osgi.bundle.version},${osgi.bundle.version}]',\
   *
 Export-Package: !com.vaadin.flow.dom.impl*,\
     !com.vaadin.flow.internal*,\
