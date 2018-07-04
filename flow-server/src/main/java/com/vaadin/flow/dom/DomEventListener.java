@@ -21,6 +21,7 @@ import java.io.Serializable;
  * Server-side listener for client-side DOM events.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface DomEventListener extends Serializable {

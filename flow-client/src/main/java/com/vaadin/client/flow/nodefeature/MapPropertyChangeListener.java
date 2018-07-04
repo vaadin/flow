@@ -19,6 +19,7 @@ package com.vaadin.client.flow.nodefeature;
  * Listener notified when the value of a {@link MapProperty} changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface MapPropertyChangeListener {

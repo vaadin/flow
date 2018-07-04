@@ -22,6 +22,7 @@ import java.util.HashMap;
  * The {@link Attributes} class represents a set of attributes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class Attributes implements Serializable {

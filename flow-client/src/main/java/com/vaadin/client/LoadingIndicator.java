@@ -31,7 +31,7 @@ import elemental.dom.Element;
  * timeouts specified using the set*StateDelay methods occur.
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public class LoadingIndicator {
 
@@ -209,7 +209,6 @@ public class LoadingIndicator {
      * Triggers displaying of this loading indicator unless it's already visible
      * or scheduled to be shown after a delay.
      *
-     * @since 7.4
      */
     public void ensureTriggered() {
         if (!isVisible() && !firstTimer.isRunning()) {

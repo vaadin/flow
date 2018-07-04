@@ -26,6 +26,7 @@ import com.vaadin.client.flow.collection.JsArray;
  * JsInterop wrapper for interacting with the JavaScript Function type.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @JsType(isNative = true, name = "Function", namespace = JsPackage.GLOBAL)
 @SuppressWarnings("unusable-by-js")

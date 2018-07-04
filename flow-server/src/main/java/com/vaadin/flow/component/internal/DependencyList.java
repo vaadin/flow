@@ -36,6 +36,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * Tracks previously sent URLs and doesn't send them again.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DependencyList implements Serializable {
 

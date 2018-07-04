@@ -27,6 +27,7 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;dl&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.DL)
 public class DescriptionList extends HtmlContainer implements ClickNotifier {
@@ -35,6 +36,7 @@ public class DescriptionList extends HtmlContainer implements ClickNotifier {
      * Component representing a <code>&lt;dt&gt;</code> element.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     @Tag(Tag.DT)
     public static class Term extends HtmlContainer implements ClickNotifier {
@@ -72,6 +74,7 @@ public class DescriptionList extends HtmlContainer implements ClickNotifier {
      * Component representing a <code>&lt;dd&gt;</code> element.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     @Tag(Tag.DD)
     public static class Description extends HtmlContainer

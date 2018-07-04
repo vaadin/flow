@@ -86,7 +86,8 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * Unless otherwise specified, {@code Binder} method arguments cannot be null.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <BEAN>
  *            the bean type

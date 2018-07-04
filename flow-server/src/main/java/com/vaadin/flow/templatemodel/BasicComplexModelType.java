@@ -38,6 +38,7 @@ import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
  *            the (basic) Java type used by this model type
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
         implements ComplexModelType<T> {

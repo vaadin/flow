@@ -35,7 +35,7 @@ import com.vaadin.flow.function.SerializableBiPredicate;
  * @see BeanValidationBinder#setRequiredConfigurator(RequiredFieldConfigurator)
  *
  * @author Vaadin Ltd
- * @since 8.0
+ * @since 1.0
  *
  */
 public interface RequiredFieldConfigurator

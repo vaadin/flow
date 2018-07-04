@@ -44,6 +44,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * collecting html import dependencies.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class HtmlDependencyParser implements Serializable {

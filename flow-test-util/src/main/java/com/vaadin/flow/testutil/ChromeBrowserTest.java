@@ -42,6 +42,7 @@ import com.vaadin.testbench.parallel.Browser;
  *
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @Category(ChromeTests.class)

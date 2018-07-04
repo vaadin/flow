@@ -33,6 +33,7 @@ import elemental.json.Json;
  * map describes the event types for which event date is present.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PolymerEventListenerMap extends NodeMap {
     /*

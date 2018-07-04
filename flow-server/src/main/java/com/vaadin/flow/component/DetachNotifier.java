@@ -23,6 +23,7 @@ import com.vaadin.flow.shared.Registration;
  * Mixin interface for components that support adding detach listeners.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface DetachNotifier extends Serializable {
 

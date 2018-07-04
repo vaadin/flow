@@ -45,6 +45,7 @@ import elemental.json.JsonArray;
  * inject elements by id).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class TemplateInitializer {

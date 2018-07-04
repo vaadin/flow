@@ -21,6 +21,7 @@ import org.junit.Test;
 /**
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ServerMessageHandlerTest {
 

@@ -28,6 +28,7 @@ import com.vaadin.flow.server.StreamResource;
  * Component representing a <code>&lt;img&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.IMG)
 public class Image extends HtmlContainer {

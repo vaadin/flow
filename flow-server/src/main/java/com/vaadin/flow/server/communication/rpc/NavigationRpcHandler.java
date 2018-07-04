@@ -33,6 +33,7 @@ import elemental.json.JsonValue;
  *
  * @see JsonConstants#RPC_TYPE_NAVIGATION
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class NavigationRpcHandler implements RpcInvocationHandler {

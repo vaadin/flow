@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
  * Utility class for common {@link MessageDigest} operations.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MessageDigestUtil {
 

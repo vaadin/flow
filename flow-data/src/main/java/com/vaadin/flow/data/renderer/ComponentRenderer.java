@@ -37,7 +37,8 @@ import com.vaadin.flow.function.ValueProvider;
  * for components that uses {@code <template>}, and
  * {@link #createComponent(Object)} for components that use light-dom.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <COMPONENT>
  *            the type of the output component

@@ -33,6 +33,7 @@ import com.vaadin.generator.metadata.ComponentType;
  * for ComponentFunctionData.
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class FunctionParameterVariantCombinator {
 

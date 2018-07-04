@@ -19,6 +19,7 @@ package com.vaadin.flow.data.binder;
  * Represents the error levels displayed on components.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public enum ErrorLevel {
 

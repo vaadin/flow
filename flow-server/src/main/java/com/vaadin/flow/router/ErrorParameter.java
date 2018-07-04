@@ -21,7 +21,8 @@ import java.io.Serializable;
  * Navigation error parameter class containing thrown exception and possibly a
  * custom message.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  * @param <T>
  *            the type of the error parameter
  */

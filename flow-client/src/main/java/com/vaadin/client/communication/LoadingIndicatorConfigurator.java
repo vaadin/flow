@@ -29,6 +29,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
  * configures the loading indicator accordingly.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class LoadingIndicatorConfigurator {
 

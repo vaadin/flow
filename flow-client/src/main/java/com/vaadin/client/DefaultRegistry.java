@@ -35,6 +35,7 @@ import com.vaadin.client.flow.StateTree;
  * A registry implementation used by {@link ApplicationConnection}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DefaultRegistry extends Registry {
 

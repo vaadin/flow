@@ -35,7 +35,8 @@ import elemental.json.JsonObject;
 /**
  * Helper class for reading the contents of a bundle configuration file.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class BundleConfigurationReader {
     private final JsonObject bundleConfigurationJson;

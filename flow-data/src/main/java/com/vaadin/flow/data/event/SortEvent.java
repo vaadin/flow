@@ -36,6 +36,7 @@ import com.vaadin.flow.shared.Registration;
  *            the type of the sorting information
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class SortEvent<T extends Component, S extends SortOrder<?>>
         extends ComponentEvent<T> {

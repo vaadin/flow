@@ -36,7 +36,8 @@ import org.apache.commons.io.IOUtils;
 /**
  * Shared code for managing contents of jar files.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class JarContentsManager {
     private static final String JAR_PATH_SEPARATOR = "/";

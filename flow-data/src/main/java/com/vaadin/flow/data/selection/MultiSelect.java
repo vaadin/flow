@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * Multi selection component which allows to select and deselect multiple items.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <C>
  *            the selection component type

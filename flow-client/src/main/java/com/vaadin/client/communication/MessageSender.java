@@ -31,8 +31,8 @@ import elemental.json.JsonValue;
  * Internally uses {@link XhrConnection} and/or {@link PushConnection} for
  * delivering messages, depending on the application configuration.
  *
- * @since 7.6
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MessageSender {
 

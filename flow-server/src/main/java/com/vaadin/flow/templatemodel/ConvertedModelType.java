@@ -28,6 +28,7 @@ import elemental.json.JsonValue;
  * type conversions on together with a {@link ModelEncoder}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <A>
  *            application type of the converter used by this class

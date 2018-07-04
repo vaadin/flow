@@ -31,7 +31,8 @@ import com.vaadin.flow.shared.Registration;
  * Models the selection logic of a {@code Listing} component. Determines how
  * items can be selected and deselected.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the type of the items to select

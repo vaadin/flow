@@ -30,6 +30,7 @@ import com.vaadin.client.flow.collection.jre.JreJsWeakMap;
  * alternative JRE implementations.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @SuppressWarnings("deprecation")
 public class JsCollections {

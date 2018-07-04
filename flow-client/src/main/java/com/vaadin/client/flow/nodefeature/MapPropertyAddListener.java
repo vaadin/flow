@@ -19,6 +19,7 @@ package com.vaadin.client.flow.nodefeature;
  * Listener notified when a property is added to a {@link NodeMap}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface MapPropertyAddListener {

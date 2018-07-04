@@ -30,7 +30,7 @@ import java.io.Serializable;
  * @see VaadinService#addSessionInitListener(SessionInitListener)
  *
  * @author Vaadin Ltd
- * @since 7.0.0
+ * @since 1.0
  */
 public interface SessionInitListener extends Serializable {
     /**

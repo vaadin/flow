@@ -21,6 +21,7 @@ import com.vaadin.flow.component.internal.CompositionEvent;
  * The event when a composition is ended.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @DomEvent("compositionend")
 public class CompositionEndEvent extends CompositionEvent {

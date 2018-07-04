@@ -37,6 +37,7 @@ import elemental.events.EventRemover;
  * @see Computation
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Reactive {
 

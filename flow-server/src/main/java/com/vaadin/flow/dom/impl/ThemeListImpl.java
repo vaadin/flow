@@ -33,7 +33,8 @@ import com.vaadin.flow.dom.ThemeList;
  * is reflected in the corresponding element attribute name,
  * {@link ThemeListImpl#THEME_ATTRIBUTE_NAME}.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ThemeListImpl implements ThemeList, Serializable {
     public static final String THEME_ATTRIBUTE_NAME = "theme";

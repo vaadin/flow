@@ -34,7 +34,8 @@ import elemental.json.JsonObject;
  * a simple value in the UI, such as {@link NumberRenderer} and
  * {@link LocalDateRenderer}.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <SOURCE>
  *            the type of the item used inside the renderer

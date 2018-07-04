@@ -35,6 +35,7 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
  * Event handling utilities.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class EventUtil {
 

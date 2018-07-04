@@ -37,6 +37,7 @@ import com.vaadin.client.flow.collection.JsMap;
  * be looked up based on their class.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Registry {
 

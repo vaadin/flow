@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
  * part of the configuration changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ReconnectDialogConfiguration {
 

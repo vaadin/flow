@@ -22,7 +22,8 @@ import com.vaadin.flow.component.Component;
 /**
  * A builder class for constructing new {@link NavigationState} instances.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class NavigationStateBuilder {
 

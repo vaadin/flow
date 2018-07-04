@@ -23,7 +23,8 @@ import elemental.json.JsonObject;
  * A data generator for {@link DataCommunicator}. Used to inject custom data to
  * data items sent to the client for extension purposes.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the data type

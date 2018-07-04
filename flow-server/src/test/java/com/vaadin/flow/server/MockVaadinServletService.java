@@ -30,6 +30,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 /**
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MockVaadinServletService extends VaadinServletService {
 

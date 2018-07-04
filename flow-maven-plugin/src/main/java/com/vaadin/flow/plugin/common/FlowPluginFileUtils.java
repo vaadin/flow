@@ -28,7 +28,8 @@ import org.apache.commons.io.FileUtils;
 /**
  * Util methods for files manipulation.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public final class FlowPluginFileUtils {
     private FlowPluginFileUtils() {

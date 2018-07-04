@@ -22,6 +22,7 @@ import com.vaadin.flow.internal.StateNode;
  * Map for storing configuration for the loading indicator.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class LoadingIndicatorConfigurationMap extends NodeMap
         implements LoadingIndicatorConfiguration {

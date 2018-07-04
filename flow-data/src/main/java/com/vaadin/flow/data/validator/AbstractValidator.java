@@ -26,8 +26,8 @@ import com.vaadin.flow.function.SerializableFunction;
  *
  * @param <T>
  *            The value type
- * @author Vaadin Ltd.
- * @since 8.0
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public abstract class AbstractValidator<T> implements Validator<T> {
 

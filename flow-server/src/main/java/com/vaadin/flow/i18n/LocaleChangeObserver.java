@@ -22,6 +22,7 @@ import java.io.Serializable;
  * informed when the UI locale is changed and on attach.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface LocaleChangeObserver extends Serializable {

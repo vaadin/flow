@@ -32,6 +32,7 @@ import elemental.util.Timer;
  * tracks a sequence of similar events.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Debouncer {
 

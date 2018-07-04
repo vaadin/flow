@@ -45,9 +45,9 @@ import com.vaadin.flow.internal.BeanUtil;
  * project classpath when using bean validation. Specification versions 1.0 and
  * 1.1 are supported.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
- * @since 8.0
  */
 public class BeanValidator implements Validator<Object> {
 

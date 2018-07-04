@@ -22,9 +22,9 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * An abstract base class for DeploymentConfiguration implementations. This
  * class provides default implementation for common config properties.
  *
- * @since 7.4
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class AbstractDeploymentConfiguration
         implements DeploymentConfiguration {

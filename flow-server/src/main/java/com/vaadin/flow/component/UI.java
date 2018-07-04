@@ -83,7 +83,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  *
  * @see #init(VaadinRequest)
  *
- * @since 7.0
  */
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
@@ -356,7 +355,6 @@ public class UI extends Component
      * later point in time.</li>
      * </ul>
      *
-     * @since 7.1
      *
      * @param command
      *            the command which accesses the UI
@@ -433,7 +431,6 @@ public class UI extends Component
      * @see VaadinSession#access(Command)
      * @see VaadinSession#lock()
      *
-     * @since 7.1
      *
      * @param command
      *            the command which accesses the UI
@@ -535,7 +532,6 @@ public class UI extends Component
      *
      * @see #getPushConfiguration()
      *
-     * @since 7.1
      */
     public void push() {
         VaadinSession session = getSession();
@@ -574,7 +570,6 @@ public class UI extends Component
      * configure the push channel at the same time (in the same request) it is
      * enabled.
      *
-     * @since 7.1
      * @return The instance used for push configuration
      */
     public PushConfiguration getPushConfiguration() {
@@ -584,7 +579,6 @@ public class UI extends Component
     /**
      * Retrieves the object used for configuring the reconnect dialog.
      *
-     * @since 7.6
      * @return The instance used for reconnect dialog configuration
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {

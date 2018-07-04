@@ -34,6 +34,7 @@ import com.vaadin.flow.data.converter.Converter;
  * {@link RequiredFieldConfigurator} interface.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class RequiredFieldConfiguratorUtil {
     private RequiredFieldConfiguratorUtil() {

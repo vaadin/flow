@@ -21,6 +21,7 @@ import com.vaadin.flow.internal.StateNode;
  * A complex model type (represents either a list or a bean).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the proxy type used by this type

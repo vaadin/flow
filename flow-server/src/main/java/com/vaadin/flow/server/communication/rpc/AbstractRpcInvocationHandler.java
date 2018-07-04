@@ -30,6 +30,7 @@ import elemental.json.JsonObject;
  * Abstract invocation handler implementation with common methods.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class AbstractRpcInvocationHandler

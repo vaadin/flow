@@ -28,6 +28,7 @@ import com.vaadin.flow.server.Command;
  *            the event source type
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentEvent<T extends Component> extends EventObject {
 

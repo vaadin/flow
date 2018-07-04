@@ -28,6 +28,7 @@ import com.vaadin.flow.shared.Registration;
  *            {@link ClickEvent#getSource()}
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ClickNotifier<T extends Component> extends Serializable {
     /**

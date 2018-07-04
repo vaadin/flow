@@ -38,6 +38,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * Acts as the GWT entry point.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Bootstrapper implements EntryPoint {
 

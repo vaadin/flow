@@ -33,6 +33,7 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
  * composition essence of the provider.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class AbstractNodeStateProvider

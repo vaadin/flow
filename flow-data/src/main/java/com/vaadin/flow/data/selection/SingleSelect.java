@@ -23,6 +23,7 @@ import com.vaadin.flow.component.HasValueAndElement;
  * Single selection component whose selection is treated as a value.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <C>
  *            the selection component type

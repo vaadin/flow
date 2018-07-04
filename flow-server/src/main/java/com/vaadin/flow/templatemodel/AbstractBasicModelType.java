@@ -36,6 +36,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the (basic) Java type used by this model type
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class AbstractBasicModelType<T> implements ModelType {

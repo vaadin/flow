@@ -21,7 +21,8 @@ import java.io.Serializable;
  * A generic interface for field components and other user interface objects
  * that have a user-editable value that should be validated.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <V>
  *            the value type

@@ -21,6 +21,7 @@ import com.vaadin.flow.component.HasValue.ValueChangeEvent;
  * A component that has a value.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <E>
  *            the value change event type
  * @param <V>

@@ -25,6 +25,7 @@ import com.vaadin.flow.component.ComponentEvent;
  * Abstract class for composition events.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class CompositionEvent extends ComponentEvent<Component> {
 

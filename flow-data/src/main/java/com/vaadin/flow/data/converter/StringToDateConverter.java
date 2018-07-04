@@ -35,7 +35,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * </p>
  *
  * @author Vaadin Ltd
- * @since 8.0
+ * @since 1.0
  */
 public class StringToDateConverter implements Converter<String, Date> {
 

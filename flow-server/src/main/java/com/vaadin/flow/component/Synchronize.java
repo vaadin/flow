@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
  * unless it has been specified using {@link #property()}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Documented
 @Retention(RUNTIME)

@@ -26,6 +26,7 @@ import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
  * polling accordingly.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PollConfigurator {
 

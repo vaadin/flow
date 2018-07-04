@@ -27,6 +27,7 @@ import com.vaadin.flow.shared.ui.Transport;
  * Map for storing the push configuration for a UI.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PushConfigurationMap extends NodeMap implements PushConfiguration {
     // Implements PushConfiguration to get javadocs...
@@ -35,6 +36,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
      * Map for storing push parameters.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     public static class PushConfigurationParametersMap extends NodeMap {
 

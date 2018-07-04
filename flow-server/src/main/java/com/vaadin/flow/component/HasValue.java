@@ -32,7 +32,8 @@ import com.vaadin.flow.shared.Registration;
  *            the type of the value change event fired by this instance
  * @param <V>
  *            the value type
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public interface HasValue<E extends ValueChangeEvent<V>, V> extends Serializable {
 

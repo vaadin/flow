@@ -27,6 +27,7 @@ import elemental.events.PopStateEvent;
  * Handles <code>popstate</code> events and sends them to the server.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PopStateHandler {
 

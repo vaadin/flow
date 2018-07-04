@@ -28,6 +28,7 @@ import elemental.json.JsonValue;
  * @see JsonCodec#decodeAs(JsonValue, Class)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class DefaultRpcDecoder implements RpcDecoder {

@@ -29,6 +29,7 @@ import com.vaadin.flow.function.ValueProvider;
  * configuring sorting and filtering.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            data type

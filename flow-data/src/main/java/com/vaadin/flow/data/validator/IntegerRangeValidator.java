@@ -20,8 +20,8 @@ import java.util.Comparator;
 /**
  * Validator for validating that an {@link Integer} is inside a given range.
  *
- * @author Vaadin Ltd.
- * @since 8.0
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @SuppressWarnings("serial")
 public class IntegerRangeValidator extends RangeValidator<Integer> {

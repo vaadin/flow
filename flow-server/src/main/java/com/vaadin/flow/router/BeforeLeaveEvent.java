@@ -23,6 +23,7 @@ import com.vaadin.flow.component.UI;
  * Event created before navigation happens.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class BeforeLeaveEvent extends BeforeEvent {
 
@@ -31,7 +32,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
     /**
      * The action to resume a postponed {@link BeforeEnterEvent}.
      *
-     * @author Vaadin Ltd.
+     * @author Vaadin Ltd
+ * @since 1.0.
      */
     public class ContinueNavigationAction implements Serializable {
 

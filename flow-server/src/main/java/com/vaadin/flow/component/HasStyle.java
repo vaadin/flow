@@ -26,6 +26,7 @@ import com.vaadin.flow.dom.Style;
  * Represents {@link Component} which has class attribute and inline styles.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface HasStyle extends HasElement {

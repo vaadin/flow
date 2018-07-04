@@ -24,6 +24,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * @param <T>
  *            item type
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface ItemLabelGenerator<T> extends SerializableFunction<T, String> {

@@ -33,6 +33,7 @@ import com.vaadin.flow.component.EventData;
  * information, refer to {@link EventData}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })

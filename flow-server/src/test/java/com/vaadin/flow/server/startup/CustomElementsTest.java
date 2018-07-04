@@ -37,7 +37,8 @@ import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class CustomElementsTest {
     private CustomElements customElements;

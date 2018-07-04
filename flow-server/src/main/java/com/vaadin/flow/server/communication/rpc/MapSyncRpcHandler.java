@@ -40,6 +40,7 @@ import elemental.json.JsonObject;
  * @see JsonConstants#RPC_TYPE_MAP_SYNC
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {

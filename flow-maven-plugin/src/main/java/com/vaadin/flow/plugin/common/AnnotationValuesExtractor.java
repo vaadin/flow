@@ -26,7 +26,8 @@ import java.util.stream.Stream;
 /**
  * Collects annotation values from all classes or jars specified.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class AnnotationValuesExtractor extends ClassPathIntrospector {
 

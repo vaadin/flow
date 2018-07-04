@@ -30,6 +30,7 @@ import com.vaadin.flow.shared.util.UniqueSerializable;
  * the key returned by {@link #getKey()} on the client.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the type of the stored value
  */

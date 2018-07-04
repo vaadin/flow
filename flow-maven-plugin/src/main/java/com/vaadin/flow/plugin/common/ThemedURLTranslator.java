@@ -40,7 +40,8 @@ import com.vaadin.flow.theme.Theme;
 /**
  * Translates the URLs according to the theme discovered in the project.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ThemedURLTranslator extends ClassPathIntrospector {
 

@@ -26,6 +26,7 @@ import elemental.dom.Element;
  * attach existing client side element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class ExistingElementMap {

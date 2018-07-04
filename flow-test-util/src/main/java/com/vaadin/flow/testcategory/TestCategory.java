@@ -20,7 +20,8 @@ import java.io.Serializable;
 /**
  * Base for classes and interfaces used as a JUnit test category
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public interface TestCategory extends Serializable {
 

@@ -34,6 +34,7 @@ import jsinterop.annotations.JsType;
  * {@link DomApi#wrap(elemental.dom.Node)} should be used
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @JsType(isNative = true)
 public interface DomElement extends DomNode {

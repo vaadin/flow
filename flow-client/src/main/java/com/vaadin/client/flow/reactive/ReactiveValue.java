@@ -27,6 +27,7 @@ import elemental.events.EventRemover;
  * the current computation.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ReactiveValue {
     /**

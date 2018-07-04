@@ -45,6 +45,7 @@ import com.vaadin.flow.internal.change.NodeChange;
  * provide a type safe API while ensuring the list is {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the type of the items in the list
  */

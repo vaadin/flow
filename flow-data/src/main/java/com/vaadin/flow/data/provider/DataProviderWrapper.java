@@ -25,7 +25,8 @@ import com.vaadin.flow.shared.Registration;
  * query. Used to create a suitable {@link Query} for the underlying data
  * provider with correct filters and sorting.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            data provider data type

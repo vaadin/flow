@@ -23,6 +23,7 @@ import com.vaadin.flow.component.PropertyDescriptors;
  * Defines setters and getters for a "max" property with a default of 100.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface HasMax extends HasElement {
 

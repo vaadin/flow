@@ -25,7 +25,8 @@ import java.lang.annotation.Target;
  * Annotation used by tests that extend {@link AbstractComponentIT} to setup the
  * path to be tested.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

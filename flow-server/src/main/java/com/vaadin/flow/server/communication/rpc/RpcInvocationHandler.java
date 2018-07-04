@@ -30,6 +30,7 @@ import elemental.json.JsonObject;
  * method.
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface RpcInvocationHandler extends Serializable {

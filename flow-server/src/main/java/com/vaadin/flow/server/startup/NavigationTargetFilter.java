@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Component;
  * in the jar file containing the implementation class.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface NavigationTargetFilter extends Serializable {
     /**

@@ -24,7 +24,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @Route("com.vaadin.flow.uitest.ui.InternalErrorView")
 public class InternalErrorView extends AbstractDivView {

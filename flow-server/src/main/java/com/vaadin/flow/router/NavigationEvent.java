@@ -23,6 +23,7 @@ import com.vaadin.flow.component.UI;
  * Event object with data related to navigation.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class NavigationEvent extends EventObject {
     private final Location location;

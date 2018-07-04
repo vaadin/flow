@@ -29,6 +29,7 @@ import elemental.json.JsonObject;
  * Represents an html import, stylesheet or JavaScript to include on the page.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Dependency implements Serializable {
 

@@ -38,6 +38,7 @@ import elemental.json.JsonObject;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class GwtPropertyElementBinderTest

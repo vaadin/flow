@@ -31,7 +31,8 @@ import com.vaadin.flow.function.ValueProvider;
  * Class used internally by components that support {@link TemplateRenderer}. It
  * contains helper methods to register events triggered by rendered templates.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  */
 public class RendererUtil {

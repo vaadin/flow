@@ -31,6 +31,7 @@ import com.vaadin.flow.function.SerializableEventListener;
  * been set.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @see BinderValidationStatus
  * @see Binder#validate()
@@ -39,7 +40,6 @@ import com.vaadin.flow.function.SerializableEventListener;
  * @param <BEAN>
  *            the bean type of binder
  *
- * @since 8.0
  */
 @FunctionalInterface
 public interface BinderValidationStatusHandler<BEAN>

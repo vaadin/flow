@@ -22,7 +22,8 @@ import javax.servlet.http.HttpServletResponseWrapper;
 /**
  * Wrapper for {@link HttpServletResponse}.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @see VaadinResponse
  * @see VaadinServletRequest

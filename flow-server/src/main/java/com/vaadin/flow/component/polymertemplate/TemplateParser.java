@@ -29,6 +29,7 @@ import com.vaadin.flow.server.VaadinService;
  * @see DefaultTemplateParser
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @FunctionalInterface
@@ -41,6 +42,7 @@ public interface TemplateParser {
      * and its content as an {@link Element} instance.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      *
      */
     class TemplateData {

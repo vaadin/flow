@@ -40,8 +40,8 @@ import com.vaadin.flow.function.ValueProvider;
  * @see Binder#addStatusChangeListener(StatusChangeListener)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
- * @since 8.0
  */
 public class StatusChangeEvent extends EventObject {
 

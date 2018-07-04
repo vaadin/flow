@@ -28,6 +28,7 @@ import com.vaadin.flow.component.KeyModifier;
  * Abstract class for keyboard events.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class KeyboardEvent extends ComponentEvent<Component> {
 

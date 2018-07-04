@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.StateNode;
  *            Component type for setComponent(T component)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class AbstractServerHandlers<T>
         extends SerializableNodeList<String> {

@@ -29,7 +29,8 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Shared code to use in the unit tests.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public final class TestUtils {
     private TestUtils() {

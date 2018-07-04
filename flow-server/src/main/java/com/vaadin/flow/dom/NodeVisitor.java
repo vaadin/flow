@@ -21,6 +21,7 @@ package com.vaadin.flow.dom;
  * @see Node #accept(NodeVisitor, boolean)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface NodeVisitor {
@@ -29,6 +30,7 @@ public interface NodeVisitor {
      * The type of the element.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      *
      */
     enum ElementType {

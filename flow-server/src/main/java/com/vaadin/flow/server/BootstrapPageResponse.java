@@ -27,6 +27,7 @@ import com.vaadin.flow.shared.VaadinUriResolver;
  * headers that will be included in the corresponding HTTP response.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class BootstrapPageResponse {
 

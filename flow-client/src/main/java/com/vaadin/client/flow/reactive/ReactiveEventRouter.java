@@ -28,6 +28,7 @@ import elemental.events.EventRemover;
  * {@link Reactive#addEventCollector(ReactiveValueChangeListener)}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <L>
  *            the listener type of this router
  * @param <E>

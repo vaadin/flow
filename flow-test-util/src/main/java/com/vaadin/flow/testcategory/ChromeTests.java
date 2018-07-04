@@ -21,6 +21,7 @@ package com.vaadin.flow.testcategory;
  * from the build when needed.
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface ChromeTests extends TestCategory {

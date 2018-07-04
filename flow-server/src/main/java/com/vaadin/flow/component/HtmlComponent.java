@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.Element;
  * element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class HtmlComponent extends Component implements HasSize, HasStyle {
     private static final PropertyDescriptor<String, Optional<String>> titleDescriptor = PropertyDescriptors

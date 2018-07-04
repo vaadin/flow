@@ -26,6 +26,7 @@ import com.vaadin.flow.internal.StateNode;
  * sent directly. It allows to use basic types in lists.
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class BasicTypeValue extends NodeValue<Serializable> {

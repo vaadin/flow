@@ -32,6 +32,7 @@ import java.util.stream.Stream;
  * the initial HTML of the application.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ServiceInitEvent extends EventObject {
 

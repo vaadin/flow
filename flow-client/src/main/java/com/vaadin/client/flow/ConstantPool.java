@@ -26,6 +26,7 @@ import elemental.json.JsonValue;
  * Map of constant values received from the server.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ConstantPool {
     private JsMap<String, JsonValue> constants = JsCollections.map();

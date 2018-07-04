@@ -41,9 +41,9 @@ import com.vaadin.flow.function.SerializablePredicate;
  * };
  * </pre>
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
- * @since 8.0
  *
  * @param <T>
  *            the type of the value to validate

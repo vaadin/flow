@@ -23,8 +23,8 @@ import elemental.json.JsonObject;
  * XhrConnectionError provides detail about an error which occurred during an
  * XHR request to the server.
  *
- * @since 7.6
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class XhrConnectionError {
 

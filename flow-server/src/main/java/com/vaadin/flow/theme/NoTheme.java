@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
  * Defines that the class shouldn't log for missing theme.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

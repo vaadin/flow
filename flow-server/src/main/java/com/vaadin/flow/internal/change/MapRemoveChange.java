@@ -26,6 +26,7 @@ import elemental.json.JsonObject;
  * Change describing a value removed from a map.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MapRemoveChange extends NodeFeatureChange {
 

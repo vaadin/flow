@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
  * framework and is not intended to be directly used by application developers.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class FutureAccess extends FutureTask<Void> {
     private final VaadinSession session;

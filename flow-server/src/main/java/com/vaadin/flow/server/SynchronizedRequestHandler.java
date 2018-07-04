@@ -24,7 +24,7 @@ import java.io.IOException;
  * is called and unlocked after it has completed.
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public abstract class SynchronizedRequestHandler implements RequestHandler {
 
@@ -74,7 +74,6 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      * with the session locked.
      *
-     * @since 7.2
      * @param request
      *            the request to handle
      * @return <code>true</code> if the request handling should continue once

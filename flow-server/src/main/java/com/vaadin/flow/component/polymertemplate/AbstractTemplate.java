@@ -26,7 +26,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.StateNode;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <M>
  *            a model class that will be used for template data propagation

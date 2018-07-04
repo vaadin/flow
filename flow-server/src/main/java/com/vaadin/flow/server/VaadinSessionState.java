@@ -21,6 +21,7 @@ import com.vaadin.flow.component.UI;
  * The lifecycle state of a VaadinSession.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public enum VaadinSessionState {
     /**

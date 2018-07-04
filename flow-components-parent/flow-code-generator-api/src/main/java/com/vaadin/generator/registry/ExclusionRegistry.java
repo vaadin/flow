@@ -29,6 +29,7 @@ import com.vaadin.flow.component.HasStyle;
  * events or methods are not generated.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class ExclusionRegistry {

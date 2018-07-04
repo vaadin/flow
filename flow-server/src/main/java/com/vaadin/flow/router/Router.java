@@ -48,7 +48,8 @@ import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
  * The router takes care of serving content when the user navigates within a
  * site or an application.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @see Route
  */

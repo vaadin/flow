@@ -35,6 +35,7 @@ import elemental.json.JsonValue;
  * (like {@link Integer}, {@link Double}, {@link Long}, etc.)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class StringToNumberDecoder implements RpcDecoder {

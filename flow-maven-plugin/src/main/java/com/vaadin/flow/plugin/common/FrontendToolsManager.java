@@ -56,7 +56,8 @@ import com.google.common.collect.ImmutableMap;
  * <a href="https://github.com/nodejs/node">node</a> are used to get and launch
  * the tools required.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class FrontendToolsManager {
     private static final Logger LOGGER = LoggerFactory

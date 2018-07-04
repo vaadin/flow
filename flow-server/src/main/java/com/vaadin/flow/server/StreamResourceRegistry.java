@@ -28,6 +28,7 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
  * Registry for {@link StreamResource} instances.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class StreamResourceRegistry implements Serializable {
 

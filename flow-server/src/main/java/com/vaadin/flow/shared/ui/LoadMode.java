@@ -34,7 +34,8 @@ import com.vaadin.flow.component.dependency.StyleSheet;
  * <li>{@link com.vaadin.flow.component.page.Page#addHtmlImport(String, LoadMode)}
  * </ul>
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public enum LoadMode {
     /*

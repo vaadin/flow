@@ -30,7 +30,8 @@ import com.vaadin.flow.component.HasValue;
  *
  * @see AbstractSinglePropertyField#setSynchronizedEvent(String)
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public interface HasValueChangeMode extends Serializable {
 

@@ -34,6 +34,7 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * {@link Class#newInstance()} and {@link ServiceLoader}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DefaultInstantiator implements Instantiator {
     private VaadinService service;

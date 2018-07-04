@@ -40,6 +40,7 @@ import com.vaadin.flow.shared.Registration;
  * The state tree that is synchronized with the client-side.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class StateTree implements NodeOwner {
 

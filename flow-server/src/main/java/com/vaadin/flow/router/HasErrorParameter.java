@@ -25,6 +25,7 @@ import java.io.Serializable;
  *            type Exception type handled
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface HasErrorParameter<T extends Exception> extends Serializable {

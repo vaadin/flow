@@ -19,6 +19,7 @@ package com.vaadin.client.flow.reactive;
  * Event fired when a computation is invalidated.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class InvalidateEvent {
     private Computation source;

@@ -21,6 +21,7 @@ import com.vaadin.flow.component.internal.KeyboardEvent;
  * The event when a key is released.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @DomEvent("keyup")
 public class KeyUpEvent extends KeyboardEvent {

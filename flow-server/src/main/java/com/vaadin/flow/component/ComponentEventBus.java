@@ -47,6 +47,7 @@ import elemental.json.JsonValue;
  * constructor, as defined in {@link DomEvent}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentEventBus implements Serializable {
 

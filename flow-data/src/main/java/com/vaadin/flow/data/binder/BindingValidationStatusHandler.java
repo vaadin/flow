@@ -26,11 +26,11 @@ import com.vaadin.flow.function.SerializableEventListener;
  * handling.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @see BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)
  * @see BindingValidationStatus
  *
- * @since 8.0
  *
  */
 @FunctionalInterface

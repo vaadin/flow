@@ -27,6 +27,7 @@ import elemental.json.JsonValue;
  * into different features of related data.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class NodeFeature {
 

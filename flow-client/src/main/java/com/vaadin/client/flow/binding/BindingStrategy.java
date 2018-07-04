@@ -32,6 +32,7 @@ import elemental.dom.Node;
  *            a DOM node type which strategy is applicable for
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface BindingStrategy<T extends Node> {

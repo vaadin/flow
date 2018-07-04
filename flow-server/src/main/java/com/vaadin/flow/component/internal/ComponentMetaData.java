@@ -44,6 +44,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * Immutable meta data related to a component class.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentMetaData {
 

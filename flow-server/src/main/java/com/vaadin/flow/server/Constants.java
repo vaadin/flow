@@ -22,7 +22,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 /**
  * Constants used by the server side framework.
  *
- * @since 6.2
  *
  */
 public final class Constants implements Serializable {

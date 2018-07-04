@@ -22,6 +22,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * Helpers to create {@link Element} instances.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ElementFactory {
 

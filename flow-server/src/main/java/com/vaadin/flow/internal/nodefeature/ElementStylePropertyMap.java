@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.StateNode;
  * Map for element style values.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ElementStylePropertyMap extends AbstractPropertyMap {
 

@@ -40,6 +40,7 @@ import elemental.json.JsonObject;
  * A representation of a server object able to send notifications to the server.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class ServerEventObject extends JavaScriptObject {
     private static final String NODE_ID = "nodeId";

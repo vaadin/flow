@@ -31,6 +31,7 @@ import com.vaadin.flow.server.Version;
  * https://github.com/vaadin/vaadin-usage-statistics.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class UsageStatistics {
     /**

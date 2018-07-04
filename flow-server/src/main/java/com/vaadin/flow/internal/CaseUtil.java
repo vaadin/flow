@@ -21,6 +21,7 @@ import java.util.Locale;
  * Utilities related to various case operations.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class CaseUtil {
 

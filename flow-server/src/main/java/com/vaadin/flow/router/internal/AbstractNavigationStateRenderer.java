@@ -52,6 +52,7 @@ import com.vaadin.flow.router.RouterLayout;
  * Base class for navigation handlers that target a navigation state.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class AbstractNavigationStateRenderer
         implements NavigationHandler {

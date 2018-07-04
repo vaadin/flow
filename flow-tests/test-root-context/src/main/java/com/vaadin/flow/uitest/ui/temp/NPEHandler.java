@@ -24,6 +24,7 @@ import com.vaadin.flow.router.HasErrorParameter;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class NPEHandler extends Div

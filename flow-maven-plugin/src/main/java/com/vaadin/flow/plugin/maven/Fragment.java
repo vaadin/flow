@@ -22,7 +22,8 @@ import java.util.Set;
 /**
  * Intended to be used by Maven  to specify fragments.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class Fragment {
     private String name;

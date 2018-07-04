@@ -23,6 +23,7 @@ import java.util.UUID;
  * in either to the client (dynamic data) or from the client (file upload).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class AbstractStreamResource implements Serializable {
 

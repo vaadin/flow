@@ -54,7 +54,8 @@ import elemental.json.impl.JreJsonArray;
 import net.jcip.annotations.NotThreadSafe;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @NotThreadSafe
 public class PolymerServerEventHandlersTest extends HasCurrentService {

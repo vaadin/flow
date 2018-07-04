@@ -76,6 +76,7 @@ import com.vaadin.flow.router.RouterLayout;
  * @see Route
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

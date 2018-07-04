@@ -23,6 +23,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class TimingInfoReportedIT extends ChromeBrowserTest {

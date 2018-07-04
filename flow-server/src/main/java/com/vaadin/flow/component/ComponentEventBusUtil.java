@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.ReflectionCache;
  * Static helpers and caching functionality for {@link ComponentEventBus}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentEventBusUtil {
 

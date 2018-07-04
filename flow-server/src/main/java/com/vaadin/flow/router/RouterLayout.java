@@ -24,6 +24,7 @@ import java.util.Objects;
  * components via the {@link Route#layout()} parameter.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface RouterLayout extends HasElement {
 

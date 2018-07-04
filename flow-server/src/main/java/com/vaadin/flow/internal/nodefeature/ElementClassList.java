@@ -22,6 +22,7 @@ import com.vaadin.flow.internal.StateNode;
  * Handles CSS class names for an element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ElementClassList extends SerializableNodeList<String> {
 

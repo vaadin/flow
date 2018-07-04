@@ -41,6 +41,7 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
  * class <code>B</code> are loaded when class <code>A</code> is used.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Documented
 @Retention(RUNTIME)

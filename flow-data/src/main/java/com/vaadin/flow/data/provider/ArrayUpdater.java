@@ -24,6 +24,7 @@ import elemental.json.JsonValue;
  * Array update strategy aware class.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface ArrayUpdater extends Serializable {

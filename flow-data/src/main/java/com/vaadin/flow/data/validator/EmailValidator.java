@@ -20,8 +20,8 @@ package com.vaadin.flow.data.validator;
  * complete according to RFC 822 but handles the vast majority of valid e-mail
  * addresses correctly.
  *
- * @author Vaadin Ltd.
- * @since 8.0
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @SuppressWarnings("serial")
 public class EmailValidator extends RegexpValidator {

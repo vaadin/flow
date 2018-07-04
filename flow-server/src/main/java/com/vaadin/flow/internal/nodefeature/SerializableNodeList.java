@@ -28,6 +28,7 @@ import com.vaadin.flow.internal.StateNode;
  * @param <T>
  *            the type of Serializable objects this list contains
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class SerializableNodeList<T extends Serializable>
         extends NodeList<T> {

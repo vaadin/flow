@@ -27,6 +27,7 @@ import elemental.dom.Node;
  * enabling them to delegate the creation of any child nodes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface BinderContext {

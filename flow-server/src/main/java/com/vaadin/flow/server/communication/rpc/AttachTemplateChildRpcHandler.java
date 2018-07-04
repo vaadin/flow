@@ -39,6 +39,7 @@ import elemental.json.JsonValue;
  * @see JsonConstants#RPC_ATTACH_ID
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class AttachTemplateChildRpcHandler
         extends AbstractRpcInvocationHandler {

@@ -24,7 +24,8 @@ import com.vaadin.flow.component.Component;
  * A listener for listening for selection changes from a multiselection
  * component.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <C>
  *            the selection component type

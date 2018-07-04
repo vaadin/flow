@@ -21,6 +21,7 @@ import java.io.Serializable;
  * A registration object for removing an event listener added to a source.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface Registration extends Serializable {

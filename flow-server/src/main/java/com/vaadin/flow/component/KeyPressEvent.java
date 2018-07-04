@@ -21,6 +21,7 @@ import com.vaadin.flow.component.internal.KeyboardEvent;
  * The event when a key is pressed.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @DomEvent("keypress")
 public class KeyPressEvent extends KeyboardEvent {

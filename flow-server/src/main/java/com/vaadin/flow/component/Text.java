@@ -21,6 +21,7 @@ import com.vaadin.flow.dom.Element;
  * A component which encapsulates the given text in a text node.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Text extends Component implements HasText {
 

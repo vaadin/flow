@@ -26,6 +26,7 @@ import jsinterop.annotations.JsType;
  * {@link JsCollections#map()} to create an appropriate instance.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <K>
  *            the key type
  * @param <V>

@@ -34,6 +34,7 @@ import java.util.ServiceLoader;
  * also provide other ways of discovering listeners.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface VaadinServiceInitListener extends EventListener, Serializable {

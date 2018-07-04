@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;h2&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.H2)
 public class H2 extends HtmlContainer implements ClickNotifier {

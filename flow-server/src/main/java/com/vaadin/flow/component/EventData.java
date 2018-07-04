@@ -40,6 +40,7 @@ import com.vaadin.flow.dom.DomListenerRegistration;
  * @see DomEvent
  * @see DomListenerRegistration#addEventData(String)
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })

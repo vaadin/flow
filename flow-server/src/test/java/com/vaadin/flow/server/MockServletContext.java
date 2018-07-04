@@ -39,6 +39,7 @@ import javax.servlet.descriptor.JspConfigDescriptor;
 /**
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MockServletContext implements ServletContext {
 

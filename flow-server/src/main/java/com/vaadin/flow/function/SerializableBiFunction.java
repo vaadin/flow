@@ -24,6 +24,7 @@ import java.util.function.Function;
  *
  * @see Function
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the type of the first function parameter

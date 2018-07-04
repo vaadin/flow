@@ -22,6 +22,7 @@ import com.vaadin.flow.internal.StateNode;
  * Map of basic element information.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ShadowRootData extends NodeValue<StateNode> {
 

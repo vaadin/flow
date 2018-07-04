@@ -44,7 +44,6 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * Vaadin and should not be used by application developers. Subject to change at
  * any time.
  *
- * @since 6.2
  */
 public class ReflectTools implements Serializable {
 
@@ -223,7 +222,6 @@ public class ReflectTools implements Serializable {
      * @param type
      *            the primitive type to convert
      * @return the corresponding boxed type
-     * @since 7.4
      */
     public static Class<?> convertPrimitiveType(Class<?> type) {
         // Gets the return type from get method

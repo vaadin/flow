@@ -32,7 +32,8 @@ import com.vaadin.testbench.TestBenchElement;
  * the server nodes and also the client nodes that the server doesn't know
  * about.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ClearNodeChildrenIT extends ChromeBrowserTest {
 

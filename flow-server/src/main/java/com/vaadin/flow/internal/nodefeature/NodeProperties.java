@@ -18,7 +18,8 @@ package com.vaadin.flow.internal.nodefeature;
 /**
  * Various node properties' ids.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public final class NodeProperties {
 

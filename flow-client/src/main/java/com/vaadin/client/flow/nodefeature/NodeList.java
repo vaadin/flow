@@ -45,6 +45,7 @@ import elemental.json.JsonValue;
  * immutable or reactive values of their own.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class NodeList extends NodeFeature implements ReactiveValue {
 

@@ -43,6 +43,7 @@ import com.vaadin.flow.internal.ReflectTools;
  * element to the {@link Element} tree.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the type of the content
  */

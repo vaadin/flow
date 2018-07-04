@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;nav&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.NAV)
 public class Nav extends HtmlContainer implements ClickNotifier {

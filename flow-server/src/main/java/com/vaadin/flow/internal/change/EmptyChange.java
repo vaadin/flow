@@ -27,6 +27,7 @@ import elemental.json.JsonObject;
  * feature information even though its data is empty).
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class EmptyChange extends NodeFeatureChange {

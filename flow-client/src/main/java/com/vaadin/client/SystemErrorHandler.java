@@ -31,6 +31,7 @@ import elemental.events.KeyboardEvent.KeyCode;
  * Class handling system errors in the application.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class SystemErrorHandler {
 

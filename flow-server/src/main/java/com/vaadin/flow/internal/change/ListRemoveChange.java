@@ -27,6 +27,7 @@ import elemental.json.JsonObject;
  * Change describing a remove operation in a {@link NodeList list} node feature.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the type of the items in the node list

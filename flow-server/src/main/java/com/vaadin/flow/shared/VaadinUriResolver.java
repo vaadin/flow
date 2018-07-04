@@ -25,8 +25,8 @@ import java.io.Serializable;
  * Concrete implementations of this class should implement {@link Serializable}
  * in case a reference to an object of this class is stored on the server side.
  *
- * @since 7.4
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class VaadinUriResolver implements Serializable{
 

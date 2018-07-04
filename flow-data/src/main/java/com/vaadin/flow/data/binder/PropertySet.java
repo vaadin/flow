@@ -24,8 +24,8 @@ import java.util.stream.Stream;
  * property names instead of setter and getter callbacks.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
- * @since 8.0
  *
  * @param <T>
  *            the type for which the properties are defined

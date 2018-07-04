@@ -27,8 +27,8 @@ import elemental.json.JsonValue;
  * Manages the queue of server invocations (RPC) which are waiting to be sent to
  * the server.
  *
- * @since 7.6
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ServerRpcQueue {
 

@@ -26,7 +26,8 @@ import com.vaadin.flow.dom.Element;
  * lifecycle of components, according to what items are requested or destroyed.
  * 
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the data type

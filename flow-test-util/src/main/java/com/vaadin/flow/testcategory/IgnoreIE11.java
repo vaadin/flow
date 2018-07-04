@@ -21,6 +21,7 @@ package com.vaadin.flow.testcategory;
  * the build when running with IE11.
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface IgnoreIE11 extends TestCategory {

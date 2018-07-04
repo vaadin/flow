@@ -51,6 +51,7 @@ import com.vaadin.flow.shared.JsonConstants;
  * of most requests to that.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
@@ -157,7 +158,6 @@ public class VaadinServlet extends HttpServlet {
      * @return the current Vaadin servlet instance if available, otherwise
      *         <code>null</code>
      *
-     * @since 7.0
      */
     public static VaadinServlet getCurrent() {
         VaadinService vaadinService = CurrentInstance.get(VaadinService.class);
@@ -392,7 +392,6 @@ public class VaadinServlet extends HttpServlet {
      * <p>
      * For http://myhost.com/foo;a=1/bar;b=1 this method will return ;b=1
      *
-     * @since 7.2
      * @param uri
      *            a URI
      * @return the last path parameter of the uri including the semicolon or an

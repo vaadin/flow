@@ -38,6 +38,7 @@ import java.lang.annotation.Target;
  * @see Include
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

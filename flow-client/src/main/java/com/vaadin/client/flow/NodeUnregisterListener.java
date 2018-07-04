@@ -19,6 +19,7 @@ package com.vaadin.client.flow;
  * A listener that will be notified when a state node is unregistered.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface NodeUnregisterListener {

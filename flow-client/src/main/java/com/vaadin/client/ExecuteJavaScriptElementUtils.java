@@ -36,6 +36,7 @@ import elemental.dom.Node;
  * @see ExecuteJavaScriptProcessor
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public final class ExecuteJavaScriptElementUtils {

@@ -77,6 +77,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * framework.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class UIInternals implements Serializable {
 

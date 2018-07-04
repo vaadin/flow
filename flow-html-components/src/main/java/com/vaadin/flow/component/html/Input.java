@@ -29,6 +29,7 @@ import com.vaadin.flow.component.Tag;
  * Component representing an <code>&lt;input&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.INPUT)
 public class Input extends AbstractSinglePropertyField<Input, String>

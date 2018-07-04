@@ -29,7 +29,8 @@ import java.io.Serializable;
  * service or file system). If UI is changed as a side effect of writing to the
  * output stream, developer must handle synchronization manually.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public interface StreamVariable extends Serializable {
 

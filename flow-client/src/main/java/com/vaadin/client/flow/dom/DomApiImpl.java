@@ -21,6 +21,7 @@ import elemental.dom.Node;
  * A DOM API abstraction layer to be used via {@link DomApi#wrap(Node)}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface DomApiImpl {

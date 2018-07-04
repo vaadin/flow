@@ -44,7 +44,6 @@ import com.vaadin.flow.server.VaadinSession;
  * @see VaadinSession#addRequestHandler(RequestHandler)
  * @see RequestHandler
  *
- * @since 7.1
  */
 public class SessionRequestHandler implements RequestHandler {
 

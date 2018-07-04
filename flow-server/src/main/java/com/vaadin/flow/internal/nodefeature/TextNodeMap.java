@@ -21,6 +21,7 @@ import com.vaadin.flow.internal.StateNode;
  * Map holding the data of a text node.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class TextNodeMap extends NodeValue<String> {
 

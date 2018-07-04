@@ -21,7 +21,8 @@ import java.io.Serializable;
 /**
  * A component that supports input validation.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public interface HasValidation extends Serializable {
 

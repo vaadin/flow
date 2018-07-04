@@ -31,6 +31,7 @@ import com.vaadin.flow.shared.JsonConstants;
  * @see DomEvent#getPhase()
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public enum DebouncePhase {
     /**

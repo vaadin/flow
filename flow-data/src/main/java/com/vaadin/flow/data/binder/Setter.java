@@ -30,8 +30,8 @@ import com.vaadin.flow.component.HasValue;
  * @param <FIELDVALUE>
  *            the field value type to be written to the bean
  *
- * @since 8.0
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @FunctionalInterface

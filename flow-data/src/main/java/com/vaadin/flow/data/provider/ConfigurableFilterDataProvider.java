@@ -20,6 +20,7 @@ package com.vaadin.flow.data.provider;
  * applied to all queries.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the data provider item type

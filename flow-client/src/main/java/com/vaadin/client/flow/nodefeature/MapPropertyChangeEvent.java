@@ -21,6 +21,7 @@ import com.vaadin.client.flow.reactive.ReactiveValueChangeEvent;
  * Event fired when the value of a map property changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MapPropertyChangeEvent extends ReactiveValueChangeEvent {
 

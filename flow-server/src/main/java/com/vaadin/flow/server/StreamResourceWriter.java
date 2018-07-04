@@ -25,6 +25,7 @@ import java.io.Serializable;
  * {@link #accept(OutputStream, VaadinSession)} method.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @FunctionalInterface

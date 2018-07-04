@@ -35,6 +35,7 @@ import com.vaadin.flow.demo.SourceCodeExample.SourceType;
  * Utility class for obtaining {@link SourceCodeExample}s for classes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class SourceContentResolver {
 

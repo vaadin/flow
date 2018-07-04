@@ -40,7 +40,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * garbage collected.
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public class HeartbeatHandler extends SynchronizedRequestHandler
         implements SessionExpiredHandler {

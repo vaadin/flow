@@ -28,6 +28,7 @@ import com.vaadin.flow.component.ComponentEvent;
  * types.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class EventDataCache implements Serializable {
 

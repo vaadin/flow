@@ -63,6 +63,7 @@ import elemental.json.JsonArray;
  * @see Id
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {

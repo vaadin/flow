@@ -28,6 +28,7 @@ import com.vaadin.client.flow.collection.JsSet;
  *
  * @deprecated Should only be used for testing.
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <V>
  *            the value type
  */

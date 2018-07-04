@@ -29,6 +29,7 @@ import elemental.json.JsonObject;
  * Change describing a changed value in a map feature.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MapPutChange extends NodeFeatureChange {
 

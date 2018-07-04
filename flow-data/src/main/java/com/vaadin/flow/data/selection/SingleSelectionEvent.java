@@ -25,7 +25,8 @@ import com.vaadin.flow.component.Component;
 /**
  * Fired when the selection changes in a listing component.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <C>
  *            the selection component type

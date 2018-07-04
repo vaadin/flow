@@ -44,6 +44,7 @@ package com.vaadin.flow.component;
  *
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface HasEnabled extends HasElement {

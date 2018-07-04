@@ -26,7 +26,8 @@ import com.vaadin.flow.data.provider.DataProvider;
  * A listing component should implement either this interface or
  * {@link HasFilterableDataProvider}, but not both.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the item data type

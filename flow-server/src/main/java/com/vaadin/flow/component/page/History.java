@@ -33,6 +33,7 @@ import elemental.json.JsonValue;
  * browser.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class History implements Serializable {
 

@@ -24,6 +24,7 @@ import com.vaadin.flow.shared.Registration;
  * their root elements.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface KeyNotifier extends Serializable {
 

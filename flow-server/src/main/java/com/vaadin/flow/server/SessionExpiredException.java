@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
  * Exception indicating that the session has expired.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class SessionExpiredException extends Exception {
 

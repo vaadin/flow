@@ -28,8 +28,8 @@ import elemental.json.JsonObject;
  * push connections in a way it sees fit. The default implementation is
  * {@link DefaultConnectionStateHandler}.
  *
- * @since 7.6
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ConnectionStateHandler {
 

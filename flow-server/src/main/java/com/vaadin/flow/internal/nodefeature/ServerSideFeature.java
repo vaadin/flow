@@ -25,6 +25,7 @@ import com.vaadin.flow.internal.change.NodeChange;
  * feature does not produce any node changes and it can't contain child nodes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class ServerSideFeature extends NodeFeature {
 

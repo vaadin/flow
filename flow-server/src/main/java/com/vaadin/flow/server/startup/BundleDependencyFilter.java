@@ -36,7 +36,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * Filter for serving bundles instead of single dependencies basing on the
  * bundling information.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class BundleDependencyFilter implements DependencyFilter {
     private final String mainBundlePath;

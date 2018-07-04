@@ -29,6 +29,7 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurati
  * A registry of node features that are available based on type.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class NodeFeatureRegistry {
     private static int nextNodeFeatureId = 0;

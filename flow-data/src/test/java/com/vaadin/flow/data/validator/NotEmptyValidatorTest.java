@@ -23,6 +23,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class NotEmptyValidatorTest {

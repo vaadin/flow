@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.Registration;
  * state node.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ElementStateProvider extends Serializable {
 

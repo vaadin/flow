@@ -23,7 +23,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * {@link HasValueChangeMode}. Depending on the mode used, the component's
  * {@code value} is synced differently from the client to the server.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public enum ValueChangeMode {
     /**

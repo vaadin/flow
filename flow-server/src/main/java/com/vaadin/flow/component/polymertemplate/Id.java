@@ -74,6 +74,7 @@ import com.vaadin.flow.dom.Element;
  * element's hierarchy in the same way as for a regular element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

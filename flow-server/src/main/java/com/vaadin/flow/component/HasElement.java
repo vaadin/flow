@@ -23,6 +23,7 @@ import com.vaadin.flow.dom.Element;
  * Marker interface for any class which is based on an {@link Element}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface HasElement extends Serializable {

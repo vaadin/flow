@@ -31,7 +31,8 @@ import com.vaadin.flow.component.HasElement;
  * any position with {@link #addComponents(Object, Component...)} or
  * {@link #prependComponents(Object, Component...)}.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  * 
  * @param <T>
  *            the type of the displayed items
@@ -42,7 +43,8 @@ public interface HasItemsAndComponents<T> extends HasComponents, HasItems<T> {
      * Interface for components that are used inside an
      * {@link HasItemsAndComponents} for representing a single item.
      * 
-     * @author Vaadin Ltd.
+     * @author Vaadin Ltd
+ * @since 1.0.
      * 
      * @param <T>
      *            the type of the displayed item

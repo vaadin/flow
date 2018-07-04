@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
  * Provides information about the current version of the framework.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Version implements Serializable {
     /**

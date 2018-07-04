@@ -21,6 +21,7 @@ import java.io.Serializable;
  * A generic command interface meant to be used for passing lambdas around.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface Command extends Serializable {

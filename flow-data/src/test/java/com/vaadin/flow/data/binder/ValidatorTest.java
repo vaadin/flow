@@ -25,6 +25,7 @@ import com.vaadin.flow.data.validator.ValidatorTestBase;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class ValidatorTest extends ValidatorTestBase {

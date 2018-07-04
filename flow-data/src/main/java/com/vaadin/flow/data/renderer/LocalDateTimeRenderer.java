@@ -26,7 +26,8 @@ import com.vaadin.flow.function.ValueProvider;
  * 
  * A template renderer for presenting {@code LocalDateTime} objects.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  * 
  * @param <SOURCE>
  *            the type of the input item, from which the {@link LocalDateTime}

@@ -21,6 +21,7 @@ import com.vaadin.flow.component.UI;
  * Event created before navigation happens.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class BeforeEnterEvent extends BeforeEvent {
 

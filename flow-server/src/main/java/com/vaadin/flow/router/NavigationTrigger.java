@@ -25,6 +25,7 @@ import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
  * @see HistoryStateChangeEvent#getTrigger()
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public enum NavigationTrigger {
     /**

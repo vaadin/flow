@@ -26,7 +26,6 @@ import com.vaadin.flow.shared.Registration;
  * send {@link PollEvent PollEvents} whenever the client sends a periodic poll
  * message to the client, to check for asynchronous server-side modifications.
  *
- * @since 7.2
  * @see UI#setPollInterval(int)
  */
 public interface PollNotifier extends Serializable {

@@ -31,8 +31,8 @@ import com.vaadin.flow.shared.ui.Transport;
 /**
  * Provides method for configuring the push channel.
  *
- * @since 7.1
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface PushConfiguration extends Serializable {
 
@@ -112,7 +112,6 @@ public interface PushConfiguration extends Serializable {
      * This method provides low level access to push parameters and is typically
      * not needed for normal application development.
      *
-     * @since 7.1
      * @param parameter
      *            The parameter name
      * @return The parameter value or null if not set
@@ -122,7 +121,6 @@ public interface PushConfiguration extends Serializable {
     /**
      * Returns the parameters which have been defined.
      *
-     * @since 7.1
      * @return A collection of parameter names
      */
     Collection<String> getParameterNames();
@@ -133,7 +131,6 @@ public interface PushConfiguration extends Serializable {
      * This method provides low level access to push parameters and is typically
      * not needed for normal application development.
      *
-     * @since 7.1
      * @param parameter
      *            The parameter name
      * @param value
@@ -147,7 +144,6 @@ public interface PushConfiguration extends Serializable {
      * This is only used when overriding the URL to use. Setting this to null
      * (the default) will use the default URL.
      *
-     * @since 7.6
      * @param pushUrl
      *            The push URL to use
      */
@@ -159,7 +155,6 @@ public interface PushConfiguration extends Serializable {
      * This is only used when overriding the URL to use. Returns null (the
      * default) when the default URL is used.
      *
-     * @since 7.6
      * @return the URL to use for push requests, or null to use to default
      */
     String getPushUrl();
@@ -178,6 +173,7 @@ public interface PushConfiguration extends Serializable {
  * The one and only implementation of {@link PushConfiguration}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;

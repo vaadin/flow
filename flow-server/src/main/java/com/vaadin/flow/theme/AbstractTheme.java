@@ -24,6 +24,7 @@ import java.util.Map;
  * Abstract theme definition class for defining theme variables when in use.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface AbstractTheme extends Serializable {
 

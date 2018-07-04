@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.StateNode;
  * properties in a map.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class AbstractPropertyMap extends NodeMap {
 

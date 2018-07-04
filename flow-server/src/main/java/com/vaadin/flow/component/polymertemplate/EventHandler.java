@@ -30,6 +30,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
  *
  * @see EventData
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -32,6 +32,7 @@ import java.io.Serializable;
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class StreamResourceHandler implements Serializable {

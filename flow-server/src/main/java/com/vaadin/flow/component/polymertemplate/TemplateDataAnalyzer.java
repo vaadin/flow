@@ -48,6 +48,7 @@ import elemental.json.JsonArray;
  * initializer using provided template class and a parser.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 class TemplateDataAnalyzer {
@@ -75,6 +76,7 @@ class TemplateDataAnalyzer {
      * Three argument consumer.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      *
      */
     @FunctionalInterface

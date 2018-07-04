@@ -22,6 +22,7 @@ import java.util.function.Function;
  * A {@link Function} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the type of the input to the function
  * @param <R>

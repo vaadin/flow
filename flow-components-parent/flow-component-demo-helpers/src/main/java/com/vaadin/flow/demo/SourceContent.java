@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.Element;
  * <a href="http://prismjs.com/">prism</a>
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @StyleSheet("src/css/sources.css")
 public class SourceContent extends Div {

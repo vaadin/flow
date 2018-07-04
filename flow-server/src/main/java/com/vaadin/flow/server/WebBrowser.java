@@ -28,7 +28,8 @@ import com.vaadin.flow.shared.BrowserDetails;
  * Provides information such as browser name and version, screen resolution and
  * IP address.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class WebBrowser implements Serializable {
 
@@ -137,7 +138,6 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Edge.
      *
-     * @since 7.5.3
      * @return true if the user is using Edge, false if the user is not using
      *         Edge or if no information on the browser is present
      */
@@ -262,7 +262,6 @@ public class WebBrowser implements Serializable {
      * @return true if the user is using Windows Phone, false if the user is not
      *         using Windows Phone or if no information on the browser is
      *         present
-     * @since 7.3.2
      */
     public boolean isWindowsPhone() {
         return browserDetails.isWindowsPhone();
@@ -293,7 +292,6 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on IPhone false if the user is not using IPhone or if
      *         no information on the browser is present
-     * @since 7.3.3
      */
     public boolean isIPhone() {
         return browserDetails.isIPhone();
@@ -304,7 +302,6 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information on the browser is present
-     * @since 7.3.3
      */
     public boolean isIPad() {
         return browserDetails.isIPad();

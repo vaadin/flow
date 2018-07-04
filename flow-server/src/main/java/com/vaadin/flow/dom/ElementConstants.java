@@ -19,6 +19,7 @@ package com.vaadin.flow.dom;
  * Constants for common element attribute, property, style names.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ElementConstants {
 

@@ -23,8 +23,8 @@ import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 /**
  * Provides methods for configuring the reconnect dialog.
  *
- * @since 7.6
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ReconnectDialogConfiguration extends Serializable {
     /**

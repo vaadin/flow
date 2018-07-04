@@ -23,6 +23,7 @@ import com.vaadin.flow.dom.DebouncePhase;
  * @see DomEvent
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public @interface DebounceSettings {
     /**

@@ -23,6 +23,7 @@ import java.util.List;
  * Class containing the constraints for filtering nested properties.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PropertyFilterDefinition
         implements Serializable {

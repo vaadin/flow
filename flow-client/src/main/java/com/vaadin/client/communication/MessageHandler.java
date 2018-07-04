@@ -49,8 +49,8 @@ import elemental.json.JsonObject;
  * from the server (state changes, RPCs and other updates) and ensuring that the
  * connectors are updated accordingly.
  *
- * @since 7.6
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MessageHandler {
 
@@ -701,7 +701,6 @@ public class MessageHandler {
      *
      * If the given string is not wrapped as expected, returns null
      *
-     * @since 7.6
      * @param jsonWithWrapping
      *            the JSON received from the server
      * @return an unwrapped JSON string or null if the given string was not

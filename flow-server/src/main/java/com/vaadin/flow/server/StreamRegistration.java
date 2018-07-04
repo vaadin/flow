@@ -27,6 +27,7 @@ import java.net.URI;
  * Also allows resource unregistering.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface StreamRegistration extends Serializable {

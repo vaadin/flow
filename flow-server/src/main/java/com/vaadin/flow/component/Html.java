@@ -45,6 +45,7 @@ import com.vaadin.flow.dom.Element;
  * instance to encapsulate another fragment.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Html extends Component {
 

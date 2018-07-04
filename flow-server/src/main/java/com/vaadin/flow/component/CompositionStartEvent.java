@@ -21,6 +21,7 @@ import com.vaadin.flow.component.internal.CompositionEvent;
  * The event when a composition is started.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @DomEvent("compositionstart")
 public class CompositionStartEvent extends CompositionEvent {

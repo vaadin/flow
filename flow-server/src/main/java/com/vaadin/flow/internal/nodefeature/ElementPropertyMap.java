@@ -43,6 +43,7 @@ import com.vaadin.flow.templatemodel.AllowClientUpdates;
  * Map for element property values.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ElementPropertyMap extends AbstractPropertyMap {
 

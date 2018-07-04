@@ -33,6 +33,7 @@ import org.eclipse.jetty.webapp.WebInfConfiguration;
  * be extended for additional configuration.
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentDemoServer {
 

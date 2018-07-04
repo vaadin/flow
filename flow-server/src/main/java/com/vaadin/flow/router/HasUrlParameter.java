@@ -21,7 +21,8 @@ import java.io.Serializable;
  * Interface for defining url parameters for navigation targets for use in
  * routing.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            type parameter type

@@ -21,6 +21,7 @@ import com.vaadin.flow.server.startup.RouteRegistry;
  * Route registry with a public constructor for testing purposes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class TestRouteRegistry extends RouteRegistry {
     /**

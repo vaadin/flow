@@ -26,7 +26,8 @@ import com.vaadin.flow.component.Component;
  * This is a generic listener for both type of selections, single and
  * multiselect.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the type of the selected item

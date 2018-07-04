@@ -35,6 +35,7 @@ import elemental.json.JsonValue;
  * A client-side representation of a server-side state node.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class StateNode {
     private final StateTree tree;

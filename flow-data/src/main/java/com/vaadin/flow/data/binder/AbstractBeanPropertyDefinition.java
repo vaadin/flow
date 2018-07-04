@@ -24,6 +24,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * Abstract base class for PropertyDefinition implementations for beans.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the type of the property set

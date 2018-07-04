@@ -42,6 +42,7 @@ import elemental.json.JsonValue;
  * </ul>
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class JsonCodec {
     /**
