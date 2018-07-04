@@ -37,7 +37,8 @@ import com.vaadin.flow.internal.JsonSerializer;
  * The default renderer only supports template based rendering. For component
  * support, check {@link ComponentRenderer}.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <SOURCE>
  *            the type of the input object used inside the template

@@ -30,6 +30,7 @@ import jsinterop.annotations.JsType;
  * Use {@link JsCollections#array()} to create an appropriate instance.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the type of the array items
  */

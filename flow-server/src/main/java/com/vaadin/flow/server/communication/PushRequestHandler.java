@@ -54,6 +54,7 @@ import com.vaadin.flow.shared.communication.PushConstants;
  * {@link PushHandler}
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PushRequestHandler
         implements RequestHandler, SessionExpiredHandler {

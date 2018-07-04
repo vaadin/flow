@@ -22,6 +22,7 @@ import com.vaadin.flow.internal.StateNode;
  * Map for storing the reconnect dialog configuration for a UI.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ReconnectDialogConfigurationMap extends NodeMap
         implements ReconnectDialogConfiguration {

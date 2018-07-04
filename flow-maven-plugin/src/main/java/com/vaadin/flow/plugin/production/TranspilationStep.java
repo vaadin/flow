@@ -30,7 +30,8 @@ import com.vaadin.flow.plugin.common.FrontendToolsManager;
  * Note: this class is intended to be independent from Maven dependencies so
  * that it can be reused in Gradle plugin in future.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class TranspilationStep {
     private final FrontendToolsManager frontendToolsManager;

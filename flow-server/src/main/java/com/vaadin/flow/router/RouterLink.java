@@ -37,6 +37,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * up-to-date when the component is attached to a UI.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.A)
 public class RouterLink extends Component

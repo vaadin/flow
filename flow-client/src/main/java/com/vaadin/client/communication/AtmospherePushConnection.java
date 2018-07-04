@@ -37,6 +37,7 @@ import elemental.json.JsonObject;
  * handling the communication channel.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class AtmospherePushConnection implements PushConnection {
 

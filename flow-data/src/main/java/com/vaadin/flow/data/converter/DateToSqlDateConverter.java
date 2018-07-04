@@ -28,6 +28,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * {@link java.sql.Date}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DateToSqlDateConverter implements Converter<Date, java.sql.Date> {
 

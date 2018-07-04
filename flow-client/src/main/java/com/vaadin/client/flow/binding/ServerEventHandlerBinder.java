@@ -29,6 +29,7 @@ import elemental.events.EventRemover;
  * Binds and updates server object able to send notifications to the server.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ServerEventHandlerBinder {
 

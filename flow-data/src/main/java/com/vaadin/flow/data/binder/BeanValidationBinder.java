@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.BeanUtil;
  * implementation is present on the classpath.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @see Binder
  * @see BeanValidator
  * @see HasValue

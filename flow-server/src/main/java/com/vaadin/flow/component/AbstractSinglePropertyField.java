@@ -36,6 +36,7 @@ import elemental.json.JsonValue;
  * Abstract field that is based on a single element property.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <C>
  *            the source type for value change events
  * @param <T>

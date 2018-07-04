@@ -51,6 +51,7 @@ import com.vaadin.flow.shared.JsonConstants;
  * of most requests to that.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;

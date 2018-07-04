@@ -26,7 +26,8 @@ import com.vaadin.flow.internal.AnnotationReader;
 /**
  * Class containing all relevant information related to a valid navigation.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class NavigationState implements Serializable {
 

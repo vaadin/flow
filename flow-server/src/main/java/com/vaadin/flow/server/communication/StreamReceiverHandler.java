@@ -55,6 +55,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class StreamReceiverHandler implements Serializable {

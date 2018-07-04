@@ -30,7 +30,8 @@ import elemental.json.JsonObject;
  * It is used by components that need to add and remove DataGenerators
  * dynamically, or that support multiple layers of data generation.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the data type of the underlying DataGenerators

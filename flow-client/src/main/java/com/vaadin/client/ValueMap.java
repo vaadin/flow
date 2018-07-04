@@ -22,6 +22,7 @@ import com.vaadin.client.flow.collection.JsArray;
  * Old abstraction for a UIDL JSON message.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class ValueMap extends JavaScriptObject {
     /**

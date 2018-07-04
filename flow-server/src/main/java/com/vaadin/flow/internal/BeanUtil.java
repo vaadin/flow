@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
  *
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class BeanUtil implements Serializable {
     // Prevent instantiation of util class

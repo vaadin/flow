@@ -22,6 +22,7 @@ import jsinterop.annotations.JsType;
  * JsInterop bridge to the JavaScript <code>Object</code> type.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @JsType(isNative = true, name = "Object", namespace = JsPackage.GLOBAL)
 public class JsObject {

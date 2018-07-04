@@ -21,6 +21,7 @@ import java.io.Serializable;
  * Provides method for configuring the loading indicator.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface LoadingIndicatorConfiguration extends Serializable {
     /**

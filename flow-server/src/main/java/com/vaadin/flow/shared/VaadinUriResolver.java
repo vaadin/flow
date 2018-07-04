@@ -26,6 +26,7 @@ import java.io.Serializable;
  * in case a reference to an object of this class is stored on the server side.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class VaadinUriResolver implements Serializable{
 

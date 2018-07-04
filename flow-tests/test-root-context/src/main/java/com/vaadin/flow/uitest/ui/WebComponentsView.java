@@ -21,6 +21,7 @@ import com.vaadin.flow.router.Route;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @Route("com.vaadin.flow.uitest.ui.WebComponentsView")

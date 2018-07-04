@@ -22,6 +22,7 @@ import java.util.Locale;
  * Misc internal utility methods used by both the server and the client package.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class SharedUtil implements Serializable {
 

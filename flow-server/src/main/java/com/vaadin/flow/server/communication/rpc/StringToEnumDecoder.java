@@ -27,6 +27,7 @@ import elemental.json.JsonValue;
  * {@link JsonString} and any {@link Enum} sublcass
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class StringToEnumDecoder implements RpcDecoder {

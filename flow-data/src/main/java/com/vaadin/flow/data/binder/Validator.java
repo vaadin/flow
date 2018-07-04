@@ -41,7 +41,8 @@ import com.vaadin.flow.function.SerializablePredicate;
  * };
  * </pre>
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  *
  * @param <T>

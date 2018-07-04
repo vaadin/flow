@@ -23,6 +23,7 @@ package com.vaadin.flow.internal;
  * checks.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class NullOwner implements NodeOwner {
 

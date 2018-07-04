@@ -47,6 +47,7 @@ import elemental.json.JsonValue;
  * associated with the keys are currently not used.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ElementListenerMap extends NodeMap {
     /**

@@ -45,6 +45,7 @@ import elemental.html.StyleElement;
  * while still controlling in which order e.g. scripts are executed.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ResourceLoader {
     private class StyleSheetLoadListener implements ResourceLoadListener {

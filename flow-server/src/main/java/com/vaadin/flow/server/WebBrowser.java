@@ -28,7 +28,8 @@ import com.vaadin.flow.shared.BrowserDetails;
  * Provides information such as browser name and version, screen resolution and
  * IP address.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class WebBrowser implements Serializable {
 

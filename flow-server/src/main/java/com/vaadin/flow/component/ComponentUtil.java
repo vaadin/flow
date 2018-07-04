@@ -46,6 +46,7 @@ import com.vaadin.flow.shared.Registration;
  * Utility methods for {@link Component}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentUtil {
 

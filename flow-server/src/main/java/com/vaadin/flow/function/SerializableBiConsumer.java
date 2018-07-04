@@ -28,6 +28,7 @@ import java.util.function.BiConsumer;
  *            the type of the second argument to the operation
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @see BiConsumer
  */
 public interface SerializableBiConsumer<T, U>

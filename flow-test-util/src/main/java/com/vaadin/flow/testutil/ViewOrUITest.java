@@ -33,6 +33,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * {@code UI}).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ViewOrUITest extends AbstractTestBenchTest {
 

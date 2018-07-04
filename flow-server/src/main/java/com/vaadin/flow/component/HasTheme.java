@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.ThemeList;
  * Represents {@link Component} which has theme attribute.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface HasTheme extends HasElement {

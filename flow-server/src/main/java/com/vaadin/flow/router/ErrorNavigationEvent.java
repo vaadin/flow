@@ -21,6 +21,7 @@ import com.vaadin.flow.component.UI;
  * Event object with data related to error navigation.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ErrorNavigationEvent extends NavigationEvent {
 

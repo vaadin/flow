@@ -29,6 +29,7 @@ import java.util.stream.IntStream;
  * the end.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class Range implements Serializable {
     private final int start;

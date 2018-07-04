@@ -23,6 +23,7 @@ import java.io.Serializable;
  * owner. The owner keeps track of metadata for its nodes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface NodeOwner extends Serializable {
 

@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
  * Defines files to inline into the initial page.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

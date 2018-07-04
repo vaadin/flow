@@ -28,6 +28,7 @@ import jsinterop.annotations.JsType;
  * Contains methods for checking whether polymer-micro.html has been loaded.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PolymerDomApiImpl implements DomApiImpl {
 

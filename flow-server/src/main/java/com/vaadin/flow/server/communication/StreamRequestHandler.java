@@ -40,6 +40,7 @@ import com.vaadin.flow.server.VaadinSession;
  * registered in {@link VaadinSession}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class StreamRequestHandler implements RequestHandler {
 

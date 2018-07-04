@@ -26,7 +26,8 @@ import org.openqa.selenium.By;
 /**
  * This test is intended to check that templates work as Polymer elements even if they're lazy loaded.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class LazyWidgetIT extends ChromeBrowserTest {
 

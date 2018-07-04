@@ -27,6 +27,7 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;ol&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.OL)
 public class OrderedList extends HtmlContainer implements ClickNotifier {

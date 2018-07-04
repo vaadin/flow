@@ -31,6 +31,7 @@ import java.util.EventListener;
  * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface BootstrapListener extends EventListener, Serializable {

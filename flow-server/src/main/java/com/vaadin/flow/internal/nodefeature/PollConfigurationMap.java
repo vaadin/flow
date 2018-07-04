@@ -22,6 +22,7 @@ import com.vaadin.flow.internal.StateNode;
  * A node map for storing configuration for polling.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PollConfigurationMap extends NodeMap {
 

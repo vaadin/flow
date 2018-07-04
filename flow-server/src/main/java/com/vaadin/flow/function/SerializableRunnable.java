@@ -21,6 +21,7 @@ import java.io.Serializable;
  * A {@link Runnable} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface SerializableRunnable extends Runnable, Serializable {

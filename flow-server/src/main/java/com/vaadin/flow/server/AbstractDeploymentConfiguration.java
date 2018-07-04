@@ -24,6 +24,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  *
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class AbstractDeploymentConfiguration
         implements DeploymentConfiguration {

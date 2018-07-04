@@ -24,6 +24,7 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MockVaadinSession extends VaadinSession {
     /*

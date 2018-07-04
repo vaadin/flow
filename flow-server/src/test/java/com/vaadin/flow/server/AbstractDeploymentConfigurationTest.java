@@ -33,6 +33,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * Test for {@link AbstractDeploymentConfiguration}
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class AbstractDeploymentConfigurationTest {
 

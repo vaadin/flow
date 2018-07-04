@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;aside&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.ASIDE)
 public class Aside extends HtmlContainer implements ClickNotifier {

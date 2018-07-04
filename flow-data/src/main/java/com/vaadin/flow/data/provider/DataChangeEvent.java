@@ -24,6 +24,7 @@ import java.util.Objects;
  * @see DataProviderListener
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the data type

@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.StateNode;
  * the client side.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class ClientCallableHandlers extends AbstractServerHandlers<Component> {

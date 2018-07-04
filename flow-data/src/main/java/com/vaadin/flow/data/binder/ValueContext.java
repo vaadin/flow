@@ -28,7 +28,8 @@ import com.vaadin.flow.component.UI;
  * Value context for {@code Converter}s. Contains relevant information for
  * converting values.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ValueContext implements Serializable {
 

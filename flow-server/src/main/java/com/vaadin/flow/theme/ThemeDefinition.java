@@ -23,7 +23,8 @@ import com.vaadin.flow.component.UI;
 /**
  * Holds all the settings needed to properly set a Theme in the application.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  * @see Theme
  * @see UI#getThemeFor(Class, String)
  *

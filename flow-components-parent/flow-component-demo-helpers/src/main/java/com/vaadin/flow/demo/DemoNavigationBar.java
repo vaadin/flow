@@ -28,6 +28,7 @@ import com.vaadin.flow.dom.Element;
  * anchors acts like "tabs" in the UI.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag("nav")
 public class DemoNavigationBar extends HtmlContainer {

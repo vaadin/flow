@@ -29,7 +29,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 /**
  * Tests for handling internal errors and session expiration
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class InternalErrorIT extends ChromeBrowserTest {
 

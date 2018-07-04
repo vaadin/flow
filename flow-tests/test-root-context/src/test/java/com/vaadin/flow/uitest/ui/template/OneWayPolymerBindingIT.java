@@ -27,7 +27,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.openqa.selenium.By;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class OneWayPolymerBindingIT extends ChromeBrowserTest {
 

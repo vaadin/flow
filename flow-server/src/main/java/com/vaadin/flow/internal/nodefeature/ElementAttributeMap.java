@@ -37,6 +37,7 @@ import com.vaadin.flow.shared.Registration;
  * Map for element attribute values.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ElementAttributeMap extends NodeMap {
 

@@ -33,6 +33,7 @@ import elemental.json.JsonValue;
  * received value and required type if it's applicable.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface RpcDecoder extends Serializable {

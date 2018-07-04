@@ -27,7 +27,8 @@ import org.openqa.selenium.Point;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class MultipleAnchorsIT extends ChromeBrowserTest {
 

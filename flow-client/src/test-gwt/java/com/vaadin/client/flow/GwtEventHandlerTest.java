@@ -41,6 +41,7 @@ import elemental.json.JsonObject;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class GwtEventHandlerTest extends ClientEngineTestBase {

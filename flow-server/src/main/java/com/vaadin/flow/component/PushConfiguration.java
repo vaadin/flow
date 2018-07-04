@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.ui.Transport;
  * Provides method for configuring the push channel.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface PushConfiguration extends Serializable {
 
@@ -172,6 +173,7 @@ public interface PushConfiguration extends Serializable {
  * The one and only implementation of {@link PushConfiguration}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;

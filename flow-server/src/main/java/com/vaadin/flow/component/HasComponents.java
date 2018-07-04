@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.Element;
  * components should be added to some other element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface HasComponents extends HasElement, HasEnabled {
     /**

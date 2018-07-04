@@ -54,6 +54,7 @@ import elemental.json.JsonValue;
  * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class PublishedServerEventHandlerRpcHandler

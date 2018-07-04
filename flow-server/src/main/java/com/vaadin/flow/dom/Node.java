@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
  * Contains methods for updating and querying hierarchical structure.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <N>
  *            The narrowed type of the node

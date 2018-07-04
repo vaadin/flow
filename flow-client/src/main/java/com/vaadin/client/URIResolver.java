@@ -24,6 +24,7 @@ import elemental.client.Browser;
  * Client side URL resolver for vaadin protocols.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class URIResolver extends VaadinUriResolver {
     private transient Registry registry;

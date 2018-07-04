@@ -27,6 +27,7 @@ import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
  * JRE implementation of {@link JsArray}, should only be used for testing.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            item type
  * @deprecated Only to be used for testing

@@ -22,6 +22,7 @@ import java.util.EventListener;
  * Generic listener for component events.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            component event type

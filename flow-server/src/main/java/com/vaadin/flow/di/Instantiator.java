@@ -45,6 +45,7 @@ import com.vaadin.flow.server.communication.UidlWriter;
  * {@link VaadinService#createInstantiator}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface Instantiator extends Serializable {
     /**

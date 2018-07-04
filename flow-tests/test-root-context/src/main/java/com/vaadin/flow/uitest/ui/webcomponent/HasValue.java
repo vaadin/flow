@@ -23,6 +23,7 @@ import com.vaadin.flow.component.PropertyDescriptors;
  * Defines setters and getters for a "value" property with a default of 0.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface HasValue extends HasElement {
 

@@ -28,7 +28,8 @@ import com.vaadin.flow.component.HasValue;
  * Fired when the selection changes in a listing component that supports
  * multiple item selection.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <C>
  *            the selection component type

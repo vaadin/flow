@@ -21,6 +21,7 @@ import elemental.json.JsonValue;
  * Helpers for replicating JavaScript semantics in Java.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class JavaScriptSemantics {
     private JavaScriptSemantics() {

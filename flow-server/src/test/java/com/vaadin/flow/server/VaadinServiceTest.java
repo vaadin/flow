@@ -48,6 +48,7 @@ import net.jcip.annotations.NotThreadSafe;
 /**
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @NotThreadSafe
 public class VaadinServiceTest {

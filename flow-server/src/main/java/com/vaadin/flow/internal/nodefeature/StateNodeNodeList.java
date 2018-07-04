@@ -26,6 +26,7 @@ import com.vaadin.flow.internal.StateNode;
  * A list which contains {@link StateNode}s.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class StateNodeNodeList extends NodeList<StateNode> {
 

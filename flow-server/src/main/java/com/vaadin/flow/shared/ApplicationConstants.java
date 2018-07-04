@@ -23,6 +23,7 @@ import com.vaadin.flow.component.internal.UIInternals;
  * A utility class providing static constants. Mostly for internal use.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ApplicationConstants implements Serializable {
 

@@ -32,6 +32,7 @@ import java.lang.annotation.Target;
  * @see ModelEncoder
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

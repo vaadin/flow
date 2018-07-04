@@ -27,6 +27,7 @@ import elemental.events.EventRemover;
  * The default implementation of the reconnect dialog
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DefaultReconnectDialog implements ReconnectDialog {
 

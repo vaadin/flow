@@ -35,6 +35,7 @@ import com.vaadin.flow.shared.Registration;
  *            filter type
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {

@@ -19,6 +19,7 @@ package com.vaadin.flow.data.provider;
  * Describes sorting direction.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public enum SortDirection {
 

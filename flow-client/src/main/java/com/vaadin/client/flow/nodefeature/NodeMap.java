@@ -43,6 +43,7 @@ import elemental.json.JsonValue;
  * a property changes since the property is a reactive values of its own.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class NodeMap extends NodeFeature implements ReactiveValue {
     private final JsMap<String, MapProperty> properties = JsCollections.map();

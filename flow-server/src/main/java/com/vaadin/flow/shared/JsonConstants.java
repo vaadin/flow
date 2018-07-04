@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.DebouncePhase;
  * A utility class providing constants for JSON related features.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class JsonConstants implements Serializable {
 

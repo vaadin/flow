@@ -29,6 +29,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * accessing third party properties not explicitly supported by this class.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface DeploymentConfiguration extends Serializable {
 

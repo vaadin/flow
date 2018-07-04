@@ -25,6 +25,7 @@ import java.util.function.Consumer;
  * @see Node#attachExistingElement(String, Element, ChildElementConsumer)
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @FunctionalInterface

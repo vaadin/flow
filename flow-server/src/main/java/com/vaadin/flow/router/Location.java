@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
  * lacking e.g. the hostname that can also be present in URLs.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";

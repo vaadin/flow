@@ -38,6 +38,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
  * any client side default value.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @see StateTree#sendNodePropertySyncToServer(MapProperty)
  *
  */

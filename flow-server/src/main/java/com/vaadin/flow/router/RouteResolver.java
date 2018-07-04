@@ -23,7 +23,8 @@ import com.vaadin.flow.router.internal.ResolveRequest;
  * Callback interface for resolving {@link ResolveRequest}s to new
  * {@link NavigationState}s.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @FunctionalInterface
 public interface RouteResolver extends Serializable {

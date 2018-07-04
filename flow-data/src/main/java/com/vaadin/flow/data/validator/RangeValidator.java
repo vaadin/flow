@@ -26,7 +26,8 @@ import com.vaadin.flow.data.binder.ValueContext;
  *
  * @param <T>
  *            the type to validate
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class RangeValidator<T> extends AbstractValidator<T> {
 

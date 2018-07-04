@@ -30,7 +30,8 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ReadOnlyHasValueTest {
     private static final String SAY_SOMETHING = "Say something";

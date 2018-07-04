@@ -22,6 +22,7 @@ import com.vaadin.flow.router.Route;
  * Navigation target for which a servlet should automatically be registered.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Route("")
 public class NavigationTarget extends Div {

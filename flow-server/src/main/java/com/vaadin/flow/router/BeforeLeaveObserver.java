@@ -26,6 +26,7 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
  * target or to postpone the navigation (to for instance get user input).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface BeforeLeaveObserver extends BeforeLeaveHandler {

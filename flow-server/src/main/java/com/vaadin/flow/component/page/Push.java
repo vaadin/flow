@@ -33,7 +33,8 @@ import com.vaadin.flow.shared.ui.Transport;
  *
  * @see PushMode
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

@@ -21,7 +21,8 @@ import java.util.Comparator;
 /**
  * Validator for validating that an {@link BigInteger} is inside a given range.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @SuppressWarnings("serial")
 public class BigIntegerRangeValidator extends RangeValidator<BigInteger> {

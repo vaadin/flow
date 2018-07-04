@@ -37,6 +37,7 @@ import java.util.function.Predicate;
  * </ul>
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface TemplateModel extends Serializable {
 

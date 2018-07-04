@@ -22,7 +22,8 @@ package com.vaadin.flow.function;
  * a getter, or to create a composite value based on the fields of the source
  * object.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <SOURCE>
  *            the type of the object used to provide the value

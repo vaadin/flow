@@ -40,6 +40,7 @@ import com.vaadin.flow.shared.Registration;
  * applicable for text nodes throw {@link UnsupportedOperationException}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class AbstractTextElementStateProvider
         implements ElementStateProvider {

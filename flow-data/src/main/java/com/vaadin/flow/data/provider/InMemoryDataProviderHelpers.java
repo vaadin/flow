@@ -33,6 +33,7 @@ import com.vaadin.flow.function.ValueProvider;
  * This class is intended primarily for internal use.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class InMemoryDataProviderHelpers {
 

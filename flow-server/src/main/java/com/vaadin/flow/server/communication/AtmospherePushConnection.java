@@ -42,6 +42,7 @@ import elemental.json.JsonObject;
  * that is by default included in Vaadin.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class AtmospherePushConnection implements PushConnection {
 

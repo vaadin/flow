@@ -28,6 +28,7 @@ import elemental.dom.Node;
  * loaded.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DomApi {
 

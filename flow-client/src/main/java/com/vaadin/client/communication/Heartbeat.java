@@ -27,6 +27,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * Handles sending of heartbeats to the server and reacting to the response
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Heartbeat {
 

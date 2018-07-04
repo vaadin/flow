@@ -37,7 +37,8 @@ import com.vaadin.flow.server.startup.RouteRegistry;
 /**
  * Default implementation of the {@link RouteResolver} interface.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class DefaultRouteResolver implements RouteResolver {
 

@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
  * {@link MessageSender}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PushConfiguration {
 

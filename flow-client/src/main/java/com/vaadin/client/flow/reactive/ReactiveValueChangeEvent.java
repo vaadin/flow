@@ -19,6 +19,7 @@ package com.vaadin.client.flow.reactive;
  * Event fired when a reactive value has changed.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class ReactiveValueChangeEvent {
 

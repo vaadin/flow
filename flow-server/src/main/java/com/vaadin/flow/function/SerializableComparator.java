@@ -31,6 +31,7 @@ import java.util.Comparator;
  * serialized.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the type of objects that may be compared by this comparator
  */

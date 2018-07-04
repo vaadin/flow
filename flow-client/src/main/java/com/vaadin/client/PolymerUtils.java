@@ -45,7 +45,8 @@ import elemental.json.JsonValue;
  * Utils class, intended to ease working with Polymer related code on a client
  * side.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public final class PolymerUtils {
 

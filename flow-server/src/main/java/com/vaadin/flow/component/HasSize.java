@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.ElementConstants;
  * {@link Element#getStyle()}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface HasSize extends HasElement {
 

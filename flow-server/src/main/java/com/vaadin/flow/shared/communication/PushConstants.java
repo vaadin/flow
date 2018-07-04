@@ -21,6 +21,7 @@ import java.io.Serializable;
  * Shared constants used by push.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PushConstants implements Serializable {
 

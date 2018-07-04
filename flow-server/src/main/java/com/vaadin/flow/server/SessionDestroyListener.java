@@ -25,6 +25,7 @@ import java.io.Serializable;
  * @see VaadinService#addSessionDestroyListener(SessionDestroyListener)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface SessionDestroyListener extends Serializable {
     /**

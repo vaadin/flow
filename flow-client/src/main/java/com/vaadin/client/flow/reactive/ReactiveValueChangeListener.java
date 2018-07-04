@@ -21,6 +21,7 @@ package com.vaadin.client.flow.reactive;
  * @see ReactiveValue#addReactiveValueChangeListener(ReactiveValueChangeListener)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface ReactiveValueChangeListener {

@@ -20,6 +20,7 @@ package com.vaadin.flow.server;
  * FutureAccess.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ErrorHandlingCommand extends Command {
 

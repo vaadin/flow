@@ -40,6 +40,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * Base class for all the Views that demo some component.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.DIV)
 @Theme(Lumo.class)

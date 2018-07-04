@@ -36,6 +36,7 @@ import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class Jsr303Test {

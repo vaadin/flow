@@ -30,7 +30,8 @@ import org.commonmark.renderer.html.HtmlRenderer;
 /**
  * A class that is used to format javadocs for the generated component classes.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 class JavaDocFormatter {
     private static final String JAVA_DOC_CODE_SECTION = "{@code $1}";

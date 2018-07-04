@@ -29,6 +29,7 @@ import com.vaadin.flow.server.StreamResource;
  * using the current {@link ServletContext}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface ContentTypeResolver extends

@@ -29,6 +29,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * <code>Date</code>.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class LocalDateToDateConverter implements Converter<LocalDate, Date> {
 

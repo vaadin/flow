@@ -21,6 +21,7 @@ import com.vaadin.flow.internal.ReflectionCache;
  * Describes the model type of a template class.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the template model type used by this descriptor
  */

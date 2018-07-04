@@ -50,6 +50,7 @@ import elemental.json.JsonException;
  * correct {@link UI}/ {@link AtmospherePushConnection}
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PushHandler {
 

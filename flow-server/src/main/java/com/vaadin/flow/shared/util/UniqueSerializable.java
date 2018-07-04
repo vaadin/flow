@@ -24,6 +24,7 @@ import java.io.Serializable;
  * an anonymous inner class. Otherwise each instance will not be unique.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class UniqueSerializable implements Serializable {

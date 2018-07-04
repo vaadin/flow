@@ -47,6 +47,7 @@ import elemental.json.JsonValue;
  * A model type corresponding to a Java bean type.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the proxy type used by this bean type
  */

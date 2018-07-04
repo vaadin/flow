@@ -23,6 +23,7 @@ import java.util.function.Predicate;
  * A {@link Predicate} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the type of the input to the predicate

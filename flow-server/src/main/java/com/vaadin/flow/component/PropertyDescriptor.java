@@ -30,6 +30,7 @@ import com.vaadin.flow.dom.Element;
  * descriptor instances.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <S>
  *            the type used when setting the property value
  * @param <G>

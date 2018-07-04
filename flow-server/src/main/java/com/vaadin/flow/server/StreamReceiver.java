@@ -25,6 +25,7 @@ import com.vaadin.flow.internal.StateNode;
  * method returns an object which may be used to get resource URI.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class StreamReceiver extends AbstractStreamResource {

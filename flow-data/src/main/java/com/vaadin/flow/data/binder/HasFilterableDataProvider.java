@@ -25,7 +25,8 @@ import com.vaadin.flow.function.SerializableFunction;
  * A listing component should implement either this interface or
  * {@link HasDataProvider}, but not both.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the item data type

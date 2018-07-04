@@ -22,6 +22,7 @@ import java.security.PrivilegedAction;
  * Utility class used by {@link VaadinService#setDefaultClassLoader()}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 class VaadinServiceClassLoaderUtil {
 

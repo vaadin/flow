@@ -31,7 +31,8 @@ import elemental.json.JsonObject;
  * This class is used internally by listing components that support
  * ComponentRenderers.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the date type

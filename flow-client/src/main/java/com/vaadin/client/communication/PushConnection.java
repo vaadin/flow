@@ -27,6 +27,7 @@ import elemental.json.JsonObject;
  * to a UIDL request).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface PushConnection {
 

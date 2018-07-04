@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
  * default {@link Component} constructor.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

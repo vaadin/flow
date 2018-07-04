@@ -56,6 +56,7 @@ import elemental.json.impl.JsonUtil;
  * Handles a client-to-server message containing serialized RPC invocations.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ServerRpcHandler implements Serializable {
 
@@ -72,6 +73,7 @@ public class ServerRpcHandler implements Serializable {
      * side.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     public static class RpcRequest implements Serializable {
 
@@ -200,6 +202,7 @@ public class ServerRpcHandler implements Serializable {
      * the expected one.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     public static class InvalidUIDLSecurityKeyException
             extends GeneralSecurityException {

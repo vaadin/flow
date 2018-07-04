@@ -29,6 +29,7 @@ import elemental.json.JsonObject;
  * Base class describing a change to a state node.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class NodeChange implements Serializable {
     private final StateNode node;

@@ -28,7 +28,8 @@ import java.util.stream.Stream;
 /**
  * Holds query parameters information.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class QueryParameters implements Serializable {
     private static final String PARAMETER_VALUES_SEPARATOR = "=";

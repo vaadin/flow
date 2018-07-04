@@ -24,6 +24,7 @@ import java.util.Optional;
  * booleans.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class BasicModelType extends AbstractBasicModelType {
 

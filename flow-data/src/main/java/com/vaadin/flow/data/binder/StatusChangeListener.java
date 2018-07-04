@@ -21,6 +21,7 @@ import com.vaadin.flow.function.SerializableEventListener;
  * Listener interface for status change events from binder.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  *
  * @see StatusChangeEvent

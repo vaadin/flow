@@ -28,6 +28,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
  * @see Encode
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <D>
  *            the decoded type

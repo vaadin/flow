@@ -57,6 +57,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * data.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 

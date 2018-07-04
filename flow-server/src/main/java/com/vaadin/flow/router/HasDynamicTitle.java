@@ -25,7 +25,8 @@ import java.io.Serializable;
  * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
  * and have a {@link PageTitle} annotation.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @FunctionalInterface
 public interface HasDynamicTitle extends Serializable {

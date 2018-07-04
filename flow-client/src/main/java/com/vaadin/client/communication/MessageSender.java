@@ -32,6 +32,7 @@ import elemental.json.JsonValue;
  * delivering messages, depending on the application configuration.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MessageSender {
 

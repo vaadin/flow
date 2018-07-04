@@ -21,7 +21,8 @@ import java.util.Comparator;
 /**
  * Validator for validating that a {@link LocalDate} is inside a given range.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class DateRangeValidator extends RangeValidator<LocalDate> {
 

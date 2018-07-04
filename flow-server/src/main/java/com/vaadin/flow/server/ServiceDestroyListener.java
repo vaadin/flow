@@ -25,6 +25,7 @@ import java.io.Serializable;
  * @see VaadinService#addServiceDestroyListener(ServiceDestroyListener)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ServiceDestroyListener extends Serializable {
     /**

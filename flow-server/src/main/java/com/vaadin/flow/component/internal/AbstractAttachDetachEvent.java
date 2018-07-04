@@ -26,6 +26,7 @@ import com.vaadin.flow.server.VaadinSession;
  * Internal helper for {@link AttachEvent} and {@link DetachEvent}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class AbstractAttachDetachEvent
         extends ComponentEvent<Component> {

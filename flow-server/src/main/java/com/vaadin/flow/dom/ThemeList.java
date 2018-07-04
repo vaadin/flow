@@ -22,6 +22,7 @@ import java.util.Set;
  * Representation of the theme names for an {@link Element}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ThemeList extends Set<String>, Serializable {
 

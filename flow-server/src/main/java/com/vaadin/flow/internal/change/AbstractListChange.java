@@ -24,6 +24,7 @@ import com.vaadin.flow.internal.nodefeature.NodeList;
  * feature.
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the type of the items in the node list

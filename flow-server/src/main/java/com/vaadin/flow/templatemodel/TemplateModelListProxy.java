@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
  * as the data source.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the type of items in the list
  */

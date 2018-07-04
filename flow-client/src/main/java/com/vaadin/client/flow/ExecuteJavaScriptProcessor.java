@@ -38,6 +38,7 @@ import elemental.json.JsonValue;
  * client.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ExecuteJavaScriptProcessor {
 

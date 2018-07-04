@@ -27,6 +27,7 @@ import com.vaadin.flow.component.Component;
  * item is required).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the data type of the selection model
  * @param <C>

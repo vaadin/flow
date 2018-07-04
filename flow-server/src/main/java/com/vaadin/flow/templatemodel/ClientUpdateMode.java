@@ -21,6 +21,7 @@ package com.vaadin.flow.templatemodel;
  * @see AllowClientUpdates
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public enum ClientUpdateMode {
     /**

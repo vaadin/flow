@@ -23,6 +23,7 @@ import java.util.EventObject;
  * being destroyed.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ServiceDestroyEvent extends EventObject {
 

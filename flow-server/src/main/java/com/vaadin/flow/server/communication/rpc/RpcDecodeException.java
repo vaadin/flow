@@ -25,6 +25,7 @@ package com.vaadin.flow.server.communication.rpc;
  * {@link Integer}).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class RpcDecodeException extends Exception {

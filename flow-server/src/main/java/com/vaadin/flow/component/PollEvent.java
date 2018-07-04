@@ -20,6 +20,7 @@ package com.vaadin.flow.component;
  * updates.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @DomEvent(PollEvent.DOM_EVENT_NAME)
 public class PollEvent extends ComponentEvent<UI> {

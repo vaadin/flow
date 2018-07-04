@@ -33,6 +33,7 @@ import com.vaadin.flow.internal.StateNode;
  * Methods which are published as event-handlers on the client side.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class PolymerServerEventHandlers

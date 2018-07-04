@@ -26,6 +26,7 @@ import com.vaadin.flow.router.Router;
  * application.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class InternalRedirectHandler implements NavigationHandler {
     private final Location target;

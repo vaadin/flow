@@ -28,6 +28,7 @@ import com.vaadin.flow.internal.change.NodeChange;
  * state node.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class NodeFeature implements Serializable {
     private final StateNode node;

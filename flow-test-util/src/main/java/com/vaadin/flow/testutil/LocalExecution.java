@@ -35,6 +35,7 @@ import com.vaadin.testbench.parallel.Browser;
  *
  * @see RunLocally
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @Target(ElementType.TYPE)

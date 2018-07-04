@@ -20,6 +20,7 @@ package com.vaadin.flow.component;
  * element that can contain child components or text.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class HtmlContainer extends HtmlComponent
         implements HasComponents, HasText {

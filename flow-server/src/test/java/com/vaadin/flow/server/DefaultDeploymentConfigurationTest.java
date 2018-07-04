@@ -30,6 +30,7 @@ import org.junit.Test;
  * Tests for {@link DefaultDeploymentConfiguration}
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DefaultDeploymentConfigurationTest {
     @Test

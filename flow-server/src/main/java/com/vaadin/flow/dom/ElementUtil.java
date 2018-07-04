@@ -30,6 +30,7 @@ import com.vaadin.flow.component.Composite;
  * Provides utility methods for {@link Element}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ElementUtil {
 

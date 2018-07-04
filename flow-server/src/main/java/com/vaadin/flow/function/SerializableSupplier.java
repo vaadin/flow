@@ -23,6 +23,7 @@ import java.util.function.Supplier;
  *
  * @see Supplier
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the type of the input to the function
  */

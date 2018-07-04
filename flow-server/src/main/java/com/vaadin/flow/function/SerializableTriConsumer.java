@@ -28,6 +28,7 @@ import java.io.Serializable;
  *            the type of the third argument to the operation
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface SerializableTriConsumer<T, U, V> extends Serializable {

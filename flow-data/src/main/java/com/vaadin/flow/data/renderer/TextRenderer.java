@@ -23,7 +23,8 @@ import com.vaadin.flow.dom.Element;
  * A renderer that renders each item as a text using provided
  * {@link ItemLabelGenerator}.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <ITEM>
  *            the type of the input object that can be used by the rendered

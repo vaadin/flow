@@ -49,6 +49,7 @@ import com.vaadin.flow.dom.Element;
  * @see Element#addEventListener(String, com.vaadin.flow.dom.DomEventListener,
  *      String...)
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

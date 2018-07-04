@@ -28,6 +28,7 @@ import com.vaadin.flow.dom.Element;
  * Factory methods for creating {@link PropertyDescriptor} instances.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class PropertyDescriptors {
 

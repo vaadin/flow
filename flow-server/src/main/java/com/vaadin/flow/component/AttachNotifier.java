@@ -23,6 +23,7 @@ import com.vaadin.flow.shared.Registration;
  * Mixin interface for components that support adding attach listeners.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface AttachNotifier extends Serializable {
 

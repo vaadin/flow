@@ -21,6 +21,7 @@ import com.vaadin.flow.component.internal.CompositionEvent;
  * The event when a composition is updated.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @DomEvent("compositionupdate")
 public class CompositionUpdateEvent extends CompositionEvent {

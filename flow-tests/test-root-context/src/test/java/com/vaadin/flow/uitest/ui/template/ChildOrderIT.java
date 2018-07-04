@@ -30,7 +30,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * Tests to validate the ordering of server-side nodes when added alongside
  * client-side nodes.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ChildOrderIT extends ChromeBrowserTest {
 

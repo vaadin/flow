@@ -37,6 +37,7 @@ import com.vaadin.flow.shared.util.UniqueSerializable;
  * A state node feature that structures data as a map.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class NodeMap extends NodeFeature {
     private static final Serializable REMOVED_MARKER = new UniqueSerializable() {

@@ -28,7 +28,8 @@ import com.vaadin.flow.function.ValueProvider;
  * @param <V>
  *            the type of mapped objects
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class KeyMapper<V> implements DataKeyMapper<V> {
 

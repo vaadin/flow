@@ -28,6 +28,7 @@ import java.lang.annotation.Target;
  * <code>width=device-width, initial-scale=1.0</code> is used.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

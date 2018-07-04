@@ -42,7 +42,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * Provides necessary data for {@link FrontendToolsManager} to process project
  * frontend files.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class FrontendDataProvider {
 

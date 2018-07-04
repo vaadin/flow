@@ -49,6 +49,7 @@ import elemental.json.JsonObject;
  * linked to a specific history index.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ScrollPositionHandler {
 

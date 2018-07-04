@@ -45,7 +45,8 @@ import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ResponseWriterTest {
     private ServletContext servletContext;

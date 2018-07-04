@@ -24,6 +24,7 @@ import elemental.json.JsonObject;
  * XHR request to the server.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class XhrConnectionError {
 

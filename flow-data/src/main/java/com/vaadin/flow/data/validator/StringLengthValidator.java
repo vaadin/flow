@@ -22,7 +22,8 @@ import com.vaadin.flow.data.binder.ValueContext;
 /**
  * Verifies that the length of a string is within the given range.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @SuppressWarnings("serial")
 public class StringLengthValidator extends AbstractValidator<String> {

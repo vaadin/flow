@@ -28,6 +28,7 @@ import com.vaadin.flow.shared.Registration;
  * {@link Composite} for detailed information.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <C>
  *            the type of the content component
  * @param <S>

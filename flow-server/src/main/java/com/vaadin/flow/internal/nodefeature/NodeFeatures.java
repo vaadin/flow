@@ -22,6 +22,7 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurati
  * client.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class NodeFeatures {
     /**

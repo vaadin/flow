@@ -68,6 +68,7 @@ import jsinterop.annotations.JsFunction;
  * Binding strategy for a simple (not template) {@link Element} node.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {

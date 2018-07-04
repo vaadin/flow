@@ -22,7 +22,8 @@ import com.vaadin.flow.plugin.common.ArtifactData;
 /**
  * Wrapper around {@link ArtifactData} that holds information about a package located in the corresponding WebJar.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class WebJarPackage {
     private final ArtifactData webJar;

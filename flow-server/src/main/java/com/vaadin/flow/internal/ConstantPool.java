@@ -27,6 +27,7 @@ import elemental.json.JsonObject;
  * the client.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ConstantPool implements Serializable {
 

@@ -20,7 +20,8 @@ import java.util.Comparator;
 /**
  * Validator for validating that a {@link Float} is inside a given range.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @SuppressWarnings("serial")
 public class FloatRangeValidator extends RangeValidator<Float> {

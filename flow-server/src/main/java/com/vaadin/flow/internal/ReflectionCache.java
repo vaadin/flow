@@ -30,6 +30,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * finite number of classes for which reflection results are used.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <C>
  *            the class types that are used as the cache keys
  * @param <T>

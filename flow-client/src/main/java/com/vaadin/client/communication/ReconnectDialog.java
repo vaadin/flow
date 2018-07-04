@@ -19,6 +19,7 @@ package com.vaadin.client.communication;
  * Interface which must be implemented by the reconnect dialog.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ReconnectDialog {
 

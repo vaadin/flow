@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
  * The default implementation of {@link ErrorHandler}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DefaultErrorHandler implements ErrorHandler {
     @Override

@@ -32,6 +32,7 @@ import elemental.json.JsonValue;
  * {@link ModelDescriptor#get(Class)}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ModelType extends Serializable {
     /**

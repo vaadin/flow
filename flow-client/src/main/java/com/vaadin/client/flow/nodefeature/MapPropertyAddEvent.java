@@ -21,6 +21,7 @@ import com.vaadin.client.flow.reactive.ReactiveValueChangeEvent;
  * Event fired when a property is added to a {@link NodeMap}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MapPropertyAddEvent extends ReactiveValueChangeEvent {
 

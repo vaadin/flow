@@ -23,6 +23,7 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;ul&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.UL)
 public class UnorderedList extends HtmlContainer implements ClickNotifier {

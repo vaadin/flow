@@ -36,6 +36,7 @@ import elemental.html.AnchorElement;
  * Events are sent to server for handling.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class RouterLinkHandler {
 

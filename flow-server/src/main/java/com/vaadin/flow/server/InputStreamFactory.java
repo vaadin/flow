@@ -26,6 +26,7 @@ import java.io.Serializable;
  * resource.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @FunctionalInterface

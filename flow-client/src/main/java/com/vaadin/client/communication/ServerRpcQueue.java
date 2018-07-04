@@ -28,6 +28,7 @@ import elemental.json.JsonValue;
  * the server.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ServerRpcQueue {
 

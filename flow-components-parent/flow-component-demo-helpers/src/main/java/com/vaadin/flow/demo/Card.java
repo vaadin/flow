@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.ElementFactory;
  * Card to hold components for DemoViews
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @StyleSheet("src/css/component-card.css")
 public class Card extends Div {

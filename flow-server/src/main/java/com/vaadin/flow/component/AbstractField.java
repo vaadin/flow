@@ -55,6 +55,7 @@ import com.vaadin.flow.shared.Registration;
  * component.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <C>
  *            the source type for value change events
  * @param <T>
@@ -68,6 +69,7 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
      * Value change event fired by components.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      * @param <C>
      *            the source component type
      * @param <V>

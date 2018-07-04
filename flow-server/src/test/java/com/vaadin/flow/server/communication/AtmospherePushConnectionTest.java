@@ -31,6 +31,7 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class AtmospherePushConnectionTest {
     @Test

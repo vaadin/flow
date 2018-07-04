@@ -29,6 +29,7 @@ import elemental.events.EventRemover;
  * "recomputation" when it is created.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class Computation implements ReactiveValueChangeListener {
 

@@ -39,6 +39,7 @@ import com.google.gwt.core.client.JsArray;
  * your .gwt.xml file.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Profiler {
 
@@ -52,6 +53,7 @@ public class Profiler {
      * Class to include using deferred binding to enable the profiling.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     public static class EnabledProfiler extends Profiler {
 
@@ -67,6 +69,7 @@ public class Profiler {
      * <b>Warning!</b> This interface is most likely to change in the future
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     public interface ProfilerResultConsumer {
         void addProfilerData(Node rootNode, List<Node> totals);

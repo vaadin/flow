@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.nodefeature.TextNodeMap;
  * a state node.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class BasicTextElementStateProvider
         extends AbstractTextElementStateProvider {

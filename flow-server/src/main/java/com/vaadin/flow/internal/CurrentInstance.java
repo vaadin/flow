@@ -49,6 +49,7 @@ import com.vaadin.flow.server.VaadinSession;
  * </p>
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class CurrentInstance implements Serializable {
     private static final Object NULL_OBJECT = new Object();

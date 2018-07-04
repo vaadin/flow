@@ -21,6 +21,7 @@ import java.util.function.Predicate;
  * Property name filter that supports composition for resolving sub properties.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class PropertyFilter implements Predicate<String> {
     private final String prefix;

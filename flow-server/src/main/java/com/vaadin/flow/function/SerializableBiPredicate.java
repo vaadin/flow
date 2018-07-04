@@ -22,6 +22,7 @@ import java.util.function.BiPredicate;
  * A {@link BiPredicate} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the type of the first input to the predicate

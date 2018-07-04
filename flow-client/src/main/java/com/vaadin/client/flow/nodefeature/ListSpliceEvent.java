@@ -22,6 +22,7 @@ import com.vaadin.client.flow.reactive.ReactiveValueChangeEvent;
  * Event fired when the structure of a {@link NodeList} changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ListSpliceEvent extends ReactiveValueChangeEvent {
 

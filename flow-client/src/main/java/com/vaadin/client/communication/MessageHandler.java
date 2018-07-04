@@ -50,6 +50,7 @@ import elemental.json.JsonObject;
  * connectors are updated accordingly.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MessageHandler {
 

@@ -31,6 +31,7 @@ import com.vaadin.flow.server.VaadinSession;
  * everything related to it will be locked.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface NavigationHandler extends Serializable {

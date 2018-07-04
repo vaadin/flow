@@ -53,6 +53,7 @@ import com.vaadin.flow.component.HasValue;
  * </pre>
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)

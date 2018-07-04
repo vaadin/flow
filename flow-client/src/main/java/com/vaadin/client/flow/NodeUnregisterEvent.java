@@ -19,6 +19,7 @@ package com.vaadin.client.flow;
  * Event fired when a state node is unregistered.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class NodeUnregisterEvent {
     private StateNode node;

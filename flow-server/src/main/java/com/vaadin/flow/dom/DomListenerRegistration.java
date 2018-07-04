@@ -24,6 +24,7 @@ import com.vaadin.flow.shared.Registration;
  * @see Element#addEventListener(String, DomEventListener)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface DomListenerRegistration extends Registration {
     /**

@@ -36,6 +36,7 @@ import com.vaadin.flow.internal.CurrentInstance;
  * HttpServletReqest.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface VaadinRequest {
     /**

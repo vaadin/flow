@@ -41,6 +41,7 @@ import elemental.json.JsonObject;
  * user
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 

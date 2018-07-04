@@ -41,6 +41,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * alone static file server.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class StaticFileServer implements Serializable {
     private final ResponseWriter responseWriter = new ResponseWriter();

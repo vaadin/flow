@@ -38,6 +38,7 @@ import com.vaadin.flow.server.VaadinServlet;
  * </ul>
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @WebListener
 public class ServletDeployer implements ServletContextListener {

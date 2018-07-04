@@ -24,6 +24,7 @@ import com.vaadin.flow.component.UI;
  * Event object with data related to locale change.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class LocaleChangeEvent extends EventObject {
 

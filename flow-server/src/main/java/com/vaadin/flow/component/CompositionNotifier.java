@@ -27,6 +27,7 @@ import com.vaadin.flow.shared.Registration;
  * "https://developer.mozilla.org/docs/Web/API/CompositionEvent">CompositionEvent</a>
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface CompositionNotifier extends Serializable {
 

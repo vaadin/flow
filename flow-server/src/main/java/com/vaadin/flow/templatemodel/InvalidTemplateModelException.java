@@ -19,6 +19,7 @@ package com.vaadin.flow.templatemodel;
  * Exception thrown when encountering an invalid type in a template model.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class InvalidTemplateModelException extends RuntimeException {
     /**

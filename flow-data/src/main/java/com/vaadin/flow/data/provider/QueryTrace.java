@@ -23,6 +23,7 @@ import java.util.List;
  * calls.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 class QueryTrace<T, F> extends Query<T, F> {

@@ -19,6 +19,7 @@ package com.vaadin.client.flow.nodefeature;
  * Listener notified when the structure of a node list changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface ListSpliceListener {

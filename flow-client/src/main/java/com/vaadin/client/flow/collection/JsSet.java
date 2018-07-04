@@ -27,6 +27,7 @@ import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
  * {@link JsCollections#set()} to create an appropriate instance.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <V>
  *            the value type
  */

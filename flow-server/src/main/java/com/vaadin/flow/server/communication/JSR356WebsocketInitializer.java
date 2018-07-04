@@ -46,6 +46,7 @@ import com.vaadin.flow.server.VaadinServlet;
  * 356 websockets either.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @WebListener
 public class JSR356WebsocketInitializer implements ServletContextListener {

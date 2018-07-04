@@ -25,6 +25,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * A converter that converts from {@link Long} to {@link Date} and back.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DateToLongConverter implements Converter<Date, Long> {
 

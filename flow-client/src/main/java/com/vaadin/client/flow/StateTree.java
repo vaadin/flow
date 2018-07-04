@@ -33,6 +33,7 @@ import elemental.json.JsonObject;
  * A client-side representation of a server-side state tree.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class StateTree {
     // Double instead of Integer since GWT 2.8 doesn't box doubles

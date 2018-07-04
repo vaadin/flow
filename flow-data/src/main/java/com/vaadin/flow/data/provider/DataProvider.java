@@ -42,7 +42,8 @@ import com.vaadin.flow.shared.Registration;
  * methods in this interface. For custom backends such as SQL, EntityManager,
  * REST APIs or SpringData, use a {@link BackEndDataProvider} or its subclass.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            data type

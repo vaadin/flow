@@ -32,6 +32,7 @@ import org.reflections.util.ConfigurationBuilder;
  * Abstract class which allows to find classes in the project classpath.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class ClassPathIntrospector {

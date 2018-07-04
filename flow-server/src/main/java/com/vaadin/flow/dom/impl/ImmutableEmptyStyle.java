@@ -23,6 +23,7 @@ import com.vaadin.flow.dom.Style;
  * A style implementation which is empty and immutable.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ImmutableEmptyStyle implements Style {
 

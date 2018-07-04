@@ -23,6 +23,7 @@ package com.vaadin.flow.component;
  * event in the DOM API.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @DomEvent("input")
 public class InputEvent extends ComponentEvent<Component> {

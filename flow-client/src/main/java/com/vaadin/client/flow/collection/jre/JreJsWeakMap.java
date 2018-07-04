@@ -28,6 +28,7 @@ import com.vaadin.client.flow.collection.JsWeakMap;
  *
  * @deprecated Should only be used for testing.
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <K>
  *            the key type
  * @param <V>

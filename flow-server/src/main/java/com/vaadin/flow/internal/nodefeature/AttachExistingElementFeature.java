@@ -32,6 +32,7 @@ import com.vaadin.flow.internal.StateNode;
  * received.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class AttachExistingElementFeature extends ServerSideFeature {

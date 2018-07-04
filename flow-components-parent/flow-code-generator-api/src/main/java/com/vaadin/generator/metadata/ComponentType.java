@@ -19,6 +19,7 @@ package com.vaadin.generator.metadata;
  * Marker interface for component types.
  * 
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ComponentType {
 

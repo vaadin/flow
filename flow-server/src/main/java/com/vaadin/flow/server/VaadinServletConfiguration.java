@@ -36,6 +36,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * annotation take precedence over values defined in this annotation.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -45,6 +46,7 @@ public @interface VaadinServletConfiguration {
      * {@link VaadinServletConfiguration}.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)

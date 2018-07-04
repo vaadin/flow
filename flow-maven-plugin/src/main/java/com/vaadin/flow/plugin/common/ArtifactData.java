@@ -22,7 +22,8 @@ import java.util.Objects;
 /**
  * All information required to properly unpack the jar.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public final class ArtifactData {
     private final File fileOrDirectory;

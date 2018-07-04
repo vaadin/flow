@@ -22,6 +22,7 @@ import java.io.IOException;
  * messages to the user.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface SessionExpiredHandler extends RequestHandler {
 

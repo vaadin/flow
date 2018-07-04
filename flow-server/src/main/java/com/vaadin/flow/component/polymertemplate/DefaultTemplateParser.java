@@ -56,6 +56,7 @@ import com.vaadin.flow.shared.ui.Dependency.Type;
  * @see TemplateParser
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public final class DefaultTemplateParser implements TemplateParser {

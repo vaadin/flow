@@ -32,7 +32,8 @@ import com.vaadin.flow.data.converter.Converter;
 /**
  * A base class for {@code Binder} unit tests.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  */
 public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>

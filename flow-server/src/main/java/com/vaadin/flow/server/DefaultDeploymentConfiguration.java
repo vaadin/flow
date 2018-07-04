@@ -31,6 +31,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * class for resolving system properties and a set of init parameters.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DefaultDeploymentConfiguration
         extends AbstractDeploymentConfiguration {

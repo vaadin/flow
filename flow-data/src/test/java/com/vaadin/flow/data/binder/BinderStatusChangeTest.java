@@ -28,6 +28,7 @@ import com.vaadin.flow.tests.data.bean.Person;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class BinderStatusChangeTest

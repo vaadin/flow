@@ -35,6 +35,7 @@ import java.lang.annotation.Target;
  * @see ClientUpdateMode
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

@@ -35,6 +35,7 @@ import com.vaadin.flow.data.binder.Binder.BindingBuilder;
  * to register a handler for field level validation status changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <TARGET>
  *            the target data type of the binding for which the validation

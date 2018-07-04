@@ -26,6 +26,7 @@ import java.util.function.Consumer;
  *            the type of the first argument to the operation
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 @FunctionalInterface

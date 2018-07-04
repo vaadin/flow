@@ -24,6 +24,7 @@ import com.vaadin.flow.component.PollEvent;
  * Handles polling the server with a given interval.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Poller {
 

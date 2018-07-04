@@ -42,6 +42,7 @@ import com.vaadin.flow.data.binder.Binder.BindingBuilder;
  * @see HasValue#setRequiredIndicatorVisible(boolean)
  * @see BindingBuilder#asRequired(com.vaadin.flow.data.ErrorMessageProvider)
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class NotEmptyValidator<T> implements Validator<T> {

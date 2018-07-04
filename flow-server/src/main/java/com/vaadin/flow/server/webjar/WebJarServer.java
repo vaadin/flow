@@ -37,7 +37,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * production mode. There is a way to override this behavior by setting
  * {@link Constants#DISABLE_WEBJARS} param.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class WebJarServer implements Serializable {
     private final ResponseWriter responseWriter = new ResponseWriter();

@@ -27,6 +27,7 @@ import com.vaadin.flow.server.VaadinService;
  * populated.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class HasCurrentService {
     // Store the service to prevent it from being garbage collected while the

@@ -29,6 +29,7 @@ import elemental.dom.Node;
  * This is the only public API class for external use.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public final class Binder {

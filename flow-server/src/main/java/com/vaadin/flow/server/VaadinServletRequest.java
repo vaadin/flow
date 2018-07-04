@@ -23,7 +23,8 @@ import javax.servlet.http.HttpSession;
 /**
  * Wrapper for {@link HttpServletRequest}.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @see VaadinRequest
  * @see VaadinServletResponse

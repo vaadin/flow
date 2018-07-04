@@ -21,7 +21,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @Route("com.vaadin.flow.uitest.ui.RequestParametersHistoryView")
 public class RequestParametersHistoryView extends AbstractDivView {

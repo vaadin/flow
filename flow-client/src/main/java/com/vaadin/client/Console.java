@@ -26,6 +26,7 @@ import elemental.client.Browser;
  * production mode is enabled.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class Console {
     private static boolean shouldLogToBrowserConsole;

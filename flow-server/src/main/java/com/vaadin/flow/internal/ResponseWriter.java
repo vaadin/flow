@@ -34,7 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * The class that handles writing the response data into the response.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;

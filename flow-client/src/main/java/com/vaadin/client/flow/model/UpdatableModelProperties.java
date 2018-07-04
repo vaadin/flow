@@ -32,6 +32,7 @@ import com.vaadin.client.flow.collection.JsSet;
  * {@link SimpleElementBindingStrategy}).
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class UpdatableModelProperties {

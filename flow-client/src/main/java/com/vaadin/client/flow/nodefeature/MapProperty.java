@@ -31,6 +31,7 @@ import elemental.events.EventRemover;
  * A property in a node map.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MapProperty implements ReactiveValue {
     private final String name;

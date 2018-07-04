@@ -39,7 +39,8 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import net.jcip.annotations.NotThreadSafe;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @NotThreadSafe
 public class TemplateInitializerTest {

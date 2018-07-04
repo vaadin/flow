@@ -32,7 +32,8 @@ import java.util.stream.Collectors;
 /**
  * Locates chromedriver binary in the project and sets its valu
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 final class ChromeDriverLocator {
     private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";

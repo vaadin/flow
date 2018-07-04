@@ -44,7 +44,8 @@ import elemental.json.JsonObject;
 /**
  * An initializer for a bundle filter.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class BundleFilterInitializer implements VaadinServiceInitListener {
     static final String MAIN_BUNDLE_NAME_PREFIX = "vaadin-flow-bundle";

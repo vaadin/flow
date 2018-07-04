@@ -52,6 +52,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @see StateTree
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class StateNode implements Serializable {
     /**

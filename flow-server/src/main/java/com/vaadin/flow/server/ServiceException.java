@@ -20,6 +20,7 @@ package com.vaadin.flow.server;
  * Thrown for problems which occur in the {@link VaadinService} layer.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ServiceException extends Exception {
 

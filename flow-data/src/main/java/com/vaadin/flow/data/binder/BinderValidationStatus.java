@@ -38,6 +38,7 @@ import com.vaadin.flow.function.SerializablePredicate;
  * form level validation status changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <BEAN>
  *            the bean type of the binder

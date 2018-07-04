@@ -22,6 +22,7 @@ import java.io.Serializable;
  * {@link DataProvider}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the data type

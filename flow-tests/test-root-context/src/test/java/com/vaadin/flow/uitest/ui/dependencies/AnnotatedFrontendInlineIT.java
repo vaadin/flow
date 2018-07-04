@@ -22,6 +22,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
  *
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class AnnotatedFrontendInlineIT extends AbstractFrontendInlineIT {

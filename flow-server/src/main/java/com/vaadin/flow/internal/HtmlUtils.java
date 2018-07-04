@@ -21,6 +21,7 @@ import org.jsoup.nodes.TextNode;
  * Helpers for HTML related aspects.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public final class HtmlUtils {

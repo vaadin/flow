@@ -28,6 +28,7 @@ import com.vaadin.flow.server.StreamResource;
  * Component representing an <code>&lt;a&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.A)
 public class Anchor extends HtmlContainer {

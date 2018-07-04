@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * connected to.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Page implements Serializable {
 

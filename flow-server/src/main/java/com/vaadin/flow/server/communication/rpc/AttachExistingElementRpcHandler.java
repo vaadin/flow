@@ -36,6 +36,7 @@ import elemental.json.JsonObject;
  * @see JsonConstants#RPC_ATTACH_INDEX
  * @see JsonConstants#RPC_ATTACH_TAG_NAME
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 

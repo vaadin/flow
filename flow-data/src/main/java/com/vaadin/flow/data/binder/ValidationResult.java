@@ -28,6 +28,7 @@ import java.util.Optional;
  * respectively.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface ValidationResult extends Serializable {
@@ -36,6 +37,7 @@ public interface ValidationResult extends Serializable {
      * Simple validation result implementation.
      * 
      * @author Vaadin Ltd
+ * @since 1.0
      *
      */
     class SimpleValidationResult implements ValidationResult {

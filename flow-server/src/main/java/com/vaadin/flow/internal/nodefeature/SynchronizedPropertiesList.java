@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.StateNode;
  * List of synchronized properties for an element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class SynchronizedPropertiesList extends SerializableNodeList<String> {
 

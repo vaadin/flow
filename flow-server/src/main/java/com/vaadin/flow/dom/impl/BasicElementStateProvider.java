@@ -69,6 +69,7 @@ import elemental.json.JsonValue;
  * an implementation detail which can change.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class BasicElementStateProvider extends AbstractNodeStateProvider {
 

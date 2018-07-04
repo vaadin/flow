@@ -27,6 +27,7 @@ import com.vaadin.flow.component.HasEnabled;
  * @see HasEnabled#isEnabled()
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public enum DisabledUpdateMode {

@@ -35,6 +35,7 @@ import com.vaadin.flow.shared.Registration;
  * not in {@link AbstractCompositeField}, or vice versa.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <C>
  *            the value change source type
  * @param <T>

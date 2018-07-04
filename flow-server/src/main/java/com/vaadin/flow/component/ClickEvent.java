@@ -19,6 +19,7 @@ package com.vaadin.flow.component;
  * Event fired when a component is clicked.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <C>
  *            The source component type

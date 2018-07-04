@@ -21,7 +21,8 @@ import java.io.Serializable;
  * Class that parses the user agent string from the browser and provides
  * information about the browser.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class BrowserDetails implements Serializable {
     private static final String CHROME = " chrome/";

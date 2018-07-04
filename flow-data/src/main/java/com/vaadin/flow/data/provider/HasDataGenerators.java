@@ -23,7 +23,8 @@ import com.vaadin.flow.shared.Registration;
  * Interface that defines the contract of adding and removing multiple
  * {@link DataGenerator}s to a given object.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the data type of the {@link DataGenerator}s.

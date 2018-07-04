@@ -30,6 +30,7 @@ import java.util.EventObject;
  * @see SessionInitListener#sessionInit(SessionInitEvent)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class SessionInitEvent extends EventObject {
 

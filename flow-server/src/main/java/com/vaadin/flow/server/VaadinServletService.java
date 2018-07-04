@@ -38,6 +38,7 @@ import com.vaadin.flow.theme.AbstractTheme;
  * A service implementation connected to a {@link VaadinServlet}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class VaadinServletService extends VaadinService {
 

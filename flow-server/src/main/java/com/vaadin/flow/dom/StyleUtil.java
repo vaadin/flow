@@ -21,6 +21,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * Utility methods for {@link Style}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class StyleUtil {
 

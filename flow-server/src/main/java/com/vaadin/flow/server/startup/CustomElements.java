@@ -34,7 +34,8 @@ import com.vaadin.flow.component.Tag;
  * name({@link Tag} annotation name value) relation to
  * all unique classes with corresponding annotation.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 class CustomElements implements Serializable {
     private final Map<String, Set<Class<? extends Component>>> elements = new HashMap<>();

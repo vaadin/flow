@@ -33,6 +33,7 @@ import elemental.json.JsonObject;
  * Handles loading of dependencies (stylesheets and scripts) in the application.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DependencyLoader {
     private static final JsArray<Command> callbacks = JsCollections.array();

@@ -33,6 +33,7 @@ import elemental.json.JsonValue;
  * structure will be encoded as the same id.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ConstantPoolKey implements Serializable {
     // Only stored until delivered to the client

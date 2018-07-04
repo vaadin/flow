@@ -21,6 +21,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Utilities related to various encoding schemes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class EncodeUtil {
 

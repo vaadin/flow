@@ -24,7 +24,8 @@ import com.vaadin.flow.component.UI;
  * {@link UI#beforeClientResponse(com.vaadin.flow.component.Component, com.vaadin.flow.function.SerializableConsumer)}
  * is invoked.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  */
 public class ExecutionContext implements Serializable {

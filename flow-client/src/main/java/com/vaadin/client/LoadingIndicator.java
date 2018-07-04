@@ -31,6 +31,7 @@ import elemental.dom.Element;
  * timeouts specified using the set*StateDelay methods occur.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class LoadingIndicator {
 

@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
  * @see Element#attachShadow()
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class ShadowRoot extends Node<ShadowRoot> {

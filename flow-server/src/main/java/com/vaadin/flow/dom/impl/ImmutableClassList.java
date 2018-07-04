@@ -28,6 +28,7 @@ import com.vaadin.flow.dom.ClassList;
  * A class list implementation which is immutable.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ImmutableClassList extends AbstractSet<String>
         implements ClassList, Serializable {

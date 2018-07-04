@@ -82,7 +82,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * An abstraction of the underlying technology, e.g. servlets, for handling
  * browser requests.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public abstract class VaadinService implements Serializable {
 

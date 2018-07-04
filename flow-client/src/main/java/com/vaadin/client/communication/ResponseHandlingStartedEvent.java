@@ -22,6 +22,7 @@ import com.google.web.bindery.event.shared.Event;
  * Event fired when handling of a response starts.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ResponseHandlingStartedEvent
         extends Event<ResponseHandlingStartedEvent.Handler> {

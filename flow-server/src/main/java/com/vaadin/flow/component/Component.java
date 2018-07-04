@@ -45,6 +45,7 @@ import com.vaadin.flow.shared.Registration;
  * parent). The root element cannot be changed once it has been set.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class Component
         implements HasElement, AttachNotifier, DetachNotifier {

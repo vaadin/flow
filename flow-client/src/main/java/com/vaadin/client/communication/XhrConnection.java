@@ -36,6 +36,7 @@ import elemental.json.JsonObject;
  * to send messages to that end point.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class XhrConnection {
 

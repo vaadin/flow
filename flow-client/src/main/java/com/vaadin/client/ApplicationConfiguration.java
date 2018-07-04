@@ -24,6 +24,7 @@ import com.vaadin.client.bootstrap.ErrorMessage;
  * values during construction.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ApplicationConfiguration {
     private String applicationId;

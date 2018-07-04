@@ -31,6 +31,7 @@ import elemental.json.JsonObject;
  * 
  * @see JsonConstants#RPC_EVENT_TYPE
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class EventRpcHandler extends AbstractRpcInvocationHandler {

@@ -29,6 +29,7 @@ import elemental.json.JsonObject;
  * {@link DefaultConnectionStateHandler}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ConnectionStateHandler {
 

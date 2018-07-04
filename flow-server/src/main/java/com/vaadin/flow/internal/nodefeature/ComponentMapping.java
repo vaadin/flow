@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.StateNode;
  * A server side only node feature for mapping a node to a component.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentMapping extends ServerSideFeature {
 
