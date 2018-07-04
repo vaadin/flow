@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility class for Java Beans information access.
  *
- * @since 7.4
  *
  * @author Vaadin Ltd
  */

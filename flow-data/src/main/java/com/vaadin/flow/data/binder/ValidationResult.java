@@ -28,7 +28,6 @@ import java.util.Optional;
  * respectively.
  *
  * @author Vaadin Ltd
- * @since 8.0
  *
  */
 public interface ValidationResult extends Serializable {
@@ -92,7 +91,6 @@ public interface ValidationResult extends Serializable {
          * @return optional error level; error level is present for validation
          *         results that have not passed validation
          * 
-         * @since 8.2
          */
         Optional<ErrorLevel> getErrorLevel();
 

@@ -45,7 +45,6 @@ import elemental.html.StyleElement;
  * while still controlling in which order e.g. scripts are executed.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
  */
 public class ResourceLoader {
     private class StyleSheetLoadListener implements ResourceLoadListener {
@@ -291,7 +290,6 @@ public class ResourceLoader {
      *            What mode the script.async attribute should be set to
      * @param defer
      *            What mode the script.defer attribute should be set to
-     * @since 7.2.4
      */
     public void loadScript(final String scriptUrl,
             final ResourceLoadListener resourceLoadListener, boolean async,
@@ -471,7 +469,6 @@ public class ResourceLoader {
      * script tag. The listener is called whenever loading is complete or an
      * error occurred.
      *
-     * @since 7.3
      * @param element
      *            the element to attach a listener to
      * @param listener

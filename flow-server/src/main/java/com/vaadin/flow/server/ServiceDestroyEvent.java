@@ -22,7 +22,6 @@ import java.util.EventObject;
  * Event fired to {@link ServiceDestroyListener} when a {@link VaadinService} is
  * being destroyed.
  *
- * @since 7.2
  * @author Vaadin Ltd
  */
 public class ServiceDestroyEvent extends EventObject {

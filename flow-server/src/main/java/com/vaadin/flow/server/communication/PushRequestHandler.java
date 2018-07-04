@@ -54,7 +54,6 @@ import com.vaadin.flow.shared.communication.PushConstants;
  * {@link PushHandler}
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public class PushRequestHandler
         implements RequestHandler, SessionExpiredHandler {
@@ -121,7 +120,6 @@ public class PushRequestHandler
      * customize the {@link PushHandler}, e.g. to dynamically decide the suspend
      * timeout.
      *
-     * @since 7.6
      * @param service
      *            the vaadin service
      * @return the push handler to use for this service
@@ -155,7 +153,6 @@ public class PushRequestHandler
     /**
      * Initializes Atmosphere for the given ServletConfiguration
      *
-     * @since 7.5.0
      * @param vaadinServletConfig
      *            The servlet configuration for the servlet which should have
      *            Atmosphere support

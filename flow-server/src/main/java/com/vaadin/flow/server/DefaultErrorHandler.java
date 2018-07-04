@@ -39,7 +39,6 @@ public class DefaultErrorHandler implements ErrorHandler {
      * users (~developers using Vaadin). This method tries to choose the
      * relevant one to be reported.
      *
-     * @since 7.2
      * @param t
      *            a throwable passed to ErrorHandler
      * @return the throwable that is relevant for Vaadin users

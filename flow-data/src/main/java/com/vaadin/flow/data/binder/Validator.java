@@ -43,7 +43,6 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  * @author Vaadin Ltd.
  *
- * @since 8.0
  *
  * @param <T>
  *            the type of the value to validate

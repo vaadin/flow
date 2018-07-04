@@ -23,7 +23,6 @@ package com.vaadin.flow.function;
  * object.
  *
  * @author Vaadin Ltd.
- * @since 8.0
  *
  * @param <SOURCE>
  *            the type of the object used to provide the value

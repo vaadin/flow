@@ -31,7 +31,6 @@ import com.vaadin.flow.shared.communication.PushMode;
  * class for resolving system properties and a set of init parameters.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
  */
 public class DefaultDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
@@ -68,7 +67,6 @@ public class DefaultDeploymentConfiguration
     /**
      * Default value for {@link #isSyncIdCheckEnabled()} = {@value} .
      *
-     * @since 7.3
      */
     public static final boolean DEFAULT_SYNC_ID_CHECK = true;
 

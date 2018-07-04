@@ -25,7 +25,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * @see DeploymentConfiguration#getPushMode()
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public enum PushMode {
     /**

@@ -19,7 +19,6 @@ package com.vaadin.flow.component;
  * Exception thrown if the UI has been detached when it should not be.
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public class UIDetachedException extends RuntimeException {
 

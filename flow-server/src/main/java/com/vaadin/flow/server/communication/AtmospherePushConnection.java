@@ -42,7 +42,6 @@ import elemental.json.JsonObject;
  * that is by default included in Vaadin.
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public class AtmospherePushConnection implements PushConnection {
 
@@ -266,7 +265,6 @@ public class AtmospherePushConnection implements PushConnection {
      *
      * @param resource
      *            the resource to associate this connection with
-     * @since 7.2
      */
     public void connect(AtmosphereResource resource) {
 
@@ -351,7 +349,6 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Called when the connection to the client has been lost.
      *
-     * @since 7.4.1
      */
     public void connectionLost() {
         resource = null;
@@ -400,7 +397,6 @@ public class AtmospherePushConnection implements PushConnection {
      * Internal method used for reconfiguring loggers to show all Atmosphere log
      * messages in the console.
      *
-     * @since 7.6
      */
     public static void enableAtmosphereDebugLogging() {
         getLogger()

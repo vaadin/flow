@@ -47,7 +47,6 @@ import com.vaadin.flow.internal.BeanUtil;
  *
  * @author Vaadin Ltd.
  *
- * @since 8.0
  */
 public class BeanValidator implements Validator<Object> {
 

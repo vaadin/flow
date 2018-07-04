@@ -27,7 +27,6 @@ import elemental.json.JsonObject;
  * to a UIDL request).
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public interface PushConnection {
 
@@ -86,7 +85,6 @@ public interface PushConnection {
      * Returns a human readable string representation of the transport type used
      * to communicate with the server.
      *
-     * @since 7.1
      * @return A human readable string representation of the transport type
      */
     String getTransportType();
@@ -99,7 +97,6 @@ public interface PushConnection {
      * A bidirectional push connection must be able to reliably inform about its
      * connection state.
      *
-     * @since 7.6
      * @return true if the push connection should be used for messages in both
      *         directions, false if it should only be used for server to client
      *         messages

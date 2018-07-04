@@ -35,7 +35,6 @@ import com.vaadin.flow.function.SerializableFunction;
  * @param <MODEL>
  *            The model type.
  * @author Vaadin Ltd.
- * @since 8.0
  */
 public interface Converter<PRESENTATION, MODEL> extends Serializable {
 

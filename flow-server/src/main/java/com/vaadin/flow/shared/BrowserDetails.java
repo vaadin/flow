@@ -22,7 +22,6 @@ import java.io.Serializable;
  * information about the browser.
  *
  * @author Vaadin Ltd.
- * @since 6.3
  */
 public class BrowserDetails implements Serializable {
     private static final String CHROME = " chrome/";
@@ -404,7 +403,6 @@ public class BrowserDetails implements Serializable {
     /**
      * Tests if the browser is using the Trident engine.
      *
-     * @since 7.1.7
      * @return true if it is Trident, false otherwise
      */
     public boolean isTrident() {
@@ -460,7 +458,6 @@ public class BrowserDetails implements Serializable {
     /**
      * Tests if the browser is Edge.
      *
-     * @since 7.5.3
      * @return true if it is Edge, false otherwise
      */
     public boolean isEdge() {
@@ -515,7 +512,6 @@ public class BrowserDetails implements Serializable {
      * Tests if the browser is run on Windows Phone.
      *
      * @return true if run on Windows Phone, false otherwise
-     * @since 7.3.2
      */
     public boolean isWindowsPhone() {
         return isWindowsPhone;
@@ -561,7 +557,6 @@ public class BrowserDetails implements Serializable {
      * Tests if the browser is run on iPhone.
      *
      * @return true if run on iPhone, false otherwise
-     * @since 7.3.3
      */
     public boolean isIPhone() {
         return isIPhone;
@@ -580,7 +575,6 @@ public class BrowserDetails implements Serializable {
      * Tests if the browser is run on iPad.
      *
      * @return true if run on iPad, false otherwise
-     * @since 7.3.3
      */
     public boolean isIPad() {
         return isIPad;

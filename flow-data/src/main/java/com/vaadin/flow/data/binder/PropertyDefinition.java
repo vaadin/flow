@@ -24,7 +24,6 @@ import com.vaadin.flow.function.ValueProvider;
  * A property from a {@link PropertySet}.
  *
  * @author Vaadin Ltd
- * @since 8.0
  *
  * @param <T>
  *            the type of the property set

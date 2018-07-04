@@ -71,7 +71,6 @@ import elemental.json.JsonValue;
  * type information among others.
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public class UidlWriter implements Serializable {
     private static final String COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE = "Could not read url %s contents";

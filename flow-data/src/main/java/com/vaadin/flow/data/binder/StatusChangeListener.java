@@ -22,7 +22,6 @@ import com.vaadin.flow.function.SerializableEventListener;
  *
  * @author Vaadin Ltd
  *
- * @since 8.0
  *
  * @see StatusChangeEvent
  * @see Binder#addStatusChangeListener(StatusChangeListener)

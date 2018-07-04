@@ -37,7 +37,6 @@ import elemental.json.JsonObject;
  * handling the communication channel.
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public class AtmospherePushConnection implements PushConnection {
 
@@ -312,7 +311,6 @@ public class AtmospherePushConnection implements PushConnection {
      * @param response
      *            the response
      *
-     * @since 7.2
      */
     protected void onConnect(AtmosphereResponse response) {
         transport = response.getTransport();

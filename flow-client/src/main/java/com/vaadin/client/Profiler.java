@@ -39,7 +39,6 @@ import com.google.gwt.core.client.JsArray;
  * your .gwt.xml file.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
  */
 public class Profiler {
 
@@ -53,7 +52,6 @@ public class Profiler {
      * Class to include using deferred binding to enable the profiling.
      *
      * @author Vaadin Ltd
-     * @since 7.0.0
      */
     public static class EnabledProfiler extends Profiler {
 
@@ -68,7 +66,6 @@ public class Profiler {
      * <p>
      * <b>Warning!</b> This interface is most likely to change in the future
      *
-     * @since 7.1
      * @author Vaadin Ltd
      */
     public interface ProfilerResultConsumer {
@@ -382,7 +379,6 @@ public class Profiler {
      * 
      * @return the relative time in milliseconds
      *
-     * @since 7.6
      */
     public static double getRelativeTimeMillis() {
         return relativeTimeSupplier.getRelativeTime();
@@ -429,7 +425,6 @@ public class Profiler {
      * been included in the HTML page and that would leak memory unless removed.
      * </p>
      *
-     * @since 7.0.2
      */
     public static void initialize() {
         if (hasHighPrecisionTime()) {
@@ -661,7 +656,6 @@ public class Profiler {
      * <b>Warning!</b> This is internal API and should not be used by
      * applications or add-ons.
      *
-     * @since 7.1.4
      * @param profilerResultConsumer
      *            the consumer that gets profiler data
      */

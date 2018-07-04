@@ -27,7 +27,6 @@ import com.vaadin.flow.data.binder.ValueContext;
  * information) is lost when converting from {@link java.util.Date} to
  * {@link java.sql.Date}.
  *
- * @since 8.0
  * @author Vaadin Ltd
  */
 public class DateToSqlDateConverter implements Converter<Date, java.sql.Date> {

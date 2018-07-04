@@ -29,7 +29,6 @@ import com.vaadin.flow.component.UI;
  * converting values.
  *
  * @author Vaadin Ltd.
- * @since 8.0
  */
 public class ValueContext implements Serializable {
 
@@ -85,7 +84,6 @@ public class ValueContext implements Serializable {
      *            The component related to current value. Can be null.
      * @param hasValue
      *            The value source related to current value. Can be null.
-     * @since 8.1
      */
     public ValueContext(Component component, HasValue<?, ?> hasValue) {
         Objects.requireNonNull(component,
@@ -105,7 +103,6 @@ public class ValueContext implements Serializable {
      * @param hasValue
      *            The value source related to current value. Can be
      *            {@code null}.
-     * @since 8.1
      */
     public ValueContext(Component component, HasValue<?, ?> hasValue,
             Locale locale) {
@@ -151,7 +148,6 @@ public class ValueContext implements Serializable {
      * HasValue might be not available.
      *
      * @return the optional of {@code HasValue}
-     * @since 8.1
      */
     @SuppressWarnings("unused")
     public Optional<HasValue<?, ?>> getHasValue() {

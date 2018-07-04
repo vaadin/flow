@@ -28,7 +28,6 @@ import elemental.json.JsonObject;
  * Serializes miscellaneous metadata to JSON.
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public class MetadataWriter implements Serializable {
 

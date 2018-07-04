@@ -30,7 +30,6 @@ import com.vaadin.flow.function.SerializableEventListener;
  * @see BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)
  * @see BindingValidationStatus
  *
- * @since 8.0
  *
  */
 @FunctionalInterface

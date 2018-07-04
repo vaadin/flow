@@ -28,7 +28,6 @@ import com.vaadin.flow.data.binder.ValueContext;
  * For the Java regular expression syntax, see {@link java.util.regex.Pattern}.
  *
  * @author Vaadin Ltd.
- * @since 8.0
  */
 @SuppressWarnings("serial")
 public class RegexpValidator extends AbstractValidator<String> {

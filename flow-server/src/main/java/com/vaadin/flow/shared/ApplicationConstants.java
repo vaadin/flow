@@ -83,14 +83,12 @@ public class ApplicationConstants implements Serializable {
     /**
      * The name of the parameter used to transmit RPC invocations
      *
-     * @since 7.2
      */
     public static final String RPC_INVOCATIONS = "rpc";
 
     /**
      * The name of the parameter used to transmit the CSRF token
      *
-     * @since 7.2
      */
     public static final String CSRF_TOKEN = "csrfToken";
 
@@ -100,7 +98,6 @@ public class ApplicationConstants implements Serializable {
      * framework ignore the sync id.
      *
      * @see UIInternals#getServerSyncId()
-     * @since 7.2
      */
     public static final String SERVER_SYNC_ID = "syncId";
 
@@ -108,7 +105,6 @@ public class ApplicationConstants implements Serializable {
      * The name of the parameter used to transmit the id of the client to server
      * messages.
      *
-     * @since 7.6
      */
     public static final String CLIENT_TO_SERVER_ID = "clientId";
 

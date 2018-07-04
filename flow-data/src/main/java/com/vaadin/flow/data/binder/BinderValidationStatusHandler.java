@@ -39,7 +39,6 @@ import com.vaadin.flow.function.SerializableEventListener;
  * @param <BEAN>
  *            the bean type of binder
  *
- * @since 8.0
  */
 @FunctionalInterface
 public interface BinderValidationStatusHandler<BEAN>

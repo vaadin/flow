@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
  * Defines the interface to handle exceptions thrown during the execution of a
  * FutureAccess.
  *
- * @since 7.1.8
  * @author Vaadin Ltd
  */
 public interface ErrorHandlingCommand extends Command {
@@ -27,7 +26,6 @@ public interface ErrorHandlingCommand extends Command {
     /**
      * Handles exceptions thrown during the execution of a FutureAccess.
      *
-     * @since 7.1.8
      * @param exception
      *            the thrown exception.
      */

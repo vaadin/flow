@@ -21,7 +21,6 @@ import java.util.EventListener;
 /**
  * Event listener interface that is serializable.
  *
- * @since 8.0
  * @author Vaadin Ltd
  */
 public interface SerializableEventListener extends EventListener, Serializable {

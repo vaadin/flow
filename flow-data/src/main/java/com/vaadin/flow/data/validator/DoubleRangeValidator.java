@@ -21,7 +21,6 @@ import java.util.Comparator;
  * Validator for validating that a {@link Double} is inside a given range.
  *
  * @author Vaadin Ltd.
- * @since 8.0
  */
 @SuppressWarnings("serial")
 public class DoubleRangeValidator extends RangeValidator<Double> {

@@ -19,7 +19,6 @@ package com.vaadin.flow.component;
  * An event that is fired whenever a client polls the server for asynchronous UI
  * updates.
  *
- * @since 7.2
  * @author Vaadin Ltd
  */
 @DomEvent(PollEvent.DOM_EVENT_NAME)

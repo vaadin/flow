@@ -47,7 +47,6 @@ import com.vaadin.flow.function.SerializablePredicate;
  * @see Binder#validate()
  * @see BindingValidationStatus
  *
- * @since 8.0
  */
 public class BinderValidationStatus<BEAN> implements Serializable {
 

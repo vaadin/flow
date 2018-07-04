@@ -35,7 +35,6 @@ import elemental.json.JsonObject;
  * Provides a connection to the UIDL request handler on the server and knows how
  * to send messages to that end point.
  *
- * @since 7.6
  * @author Vaadin Ltd
  */
 public class XhrConnection {

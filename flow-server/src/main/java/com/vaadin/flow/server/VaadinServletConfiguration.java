@@ -35,7 +35,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * params defined in <code>web.xml</code> or the <code>@WebServlet</code>
  * annotation take precedence over values defined in this annotation.
  *
- * @since 7.1
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -45,7 +44,6 @@ public @interface VaadinServletConfiguration {
      * Defines the init parameter name for methods in
      * {@link VaadinServletConfiguration}.
      *
-     * @since 7.1
      * @author Vaadin Ltd
      */
     @Retention(RetentionPolicy.RUNTIME)

@@ -23,7 +23,6 @@ import java.util.Comparator;
  * range.
  *
  * @author Vaadin Ltd.
- * @since 8.0
  */
 public class DateTimeRangeValidator extends RangeValidator<LocalDateTime> {
 

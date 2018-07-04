@@ -21,7 +21,6 @@ package com.vaadin.flow.data.validator;
  * addresses correctly.
  *
  * @author Vaadin Ltd.
- * @since 8.0
  */
 @SuppressWarnings("serial")
 public class EmailValidator extends RegexpValidator {

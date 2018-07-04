@@ -21,7 +21,6 @@ import java.util.Comparator;
  * Validator for validating that an {@link Long} is inside a given range.
  *
  * @author Vaadin Ltd.
- * @since 8.0
  */
 @SuppressWarnings("serial")
 public class LongRangeValidator extends RangeValidator<Long> {

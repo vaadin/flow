@@ -32,7 +32,6 @@ import com.vaadin.flow.data.binder.ValueContext;
  * </p>
  *
  * @author Vaadin Ltd
- * @since 8.0
  */
 public class StringToIntegerConverter
         extends AbstractStringToNumberConverter<Integer> {

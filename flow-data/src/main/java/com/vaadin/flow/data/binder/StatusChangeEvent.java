@@ -41,7 +41,6 @@ import com.vaadin.flow.function.ValueProvider;
  *
  * @author Vaadin Ltd
  *
- * @since 8.0
  */
 public class StatusChangeEvent extends EventObject {
 

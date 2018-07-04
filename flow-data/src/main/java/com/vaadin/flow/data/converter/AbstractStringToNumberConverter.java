@@ -37,7 +37,6 @@ import com.vaadin.flow.data.binder.ValueContext;
  *            the converter number type
  *
  * @author Vaadin Ltd
- * @since 8.0
  */
 public abstract class AbstractStringToNumberConverter<T extends Number>
         implements Converter<String, T> {

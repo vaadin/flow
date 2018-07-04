@@ -43,7 +43,6 @@ public class WidgetUtil {
      * Redirects the browser to the given url or refreshes the page if url is
      * null
      *
-     * @since 7.6
      * @param url
      *            The url to redirect to or null to refresh
      */

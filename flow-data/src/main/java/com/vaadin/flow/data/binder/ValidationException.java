@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
  * @see Binder#writeBeanIfValid(Object)
  *
  * @author Vaadin Ltd
- * @since 8.0
  *
  */
 public class ValidationException extends Exception {

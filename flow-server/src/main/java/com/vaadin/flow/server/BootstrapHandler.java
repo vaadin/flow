@@ -81,7 +81,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * initial GET request.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"

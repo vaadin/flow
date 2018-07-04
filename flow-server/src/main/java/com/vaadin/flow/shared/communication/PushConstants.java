@@ -20,7 +20,6 @@ import java.io.Serializable;
 /**
  * Shared constants used by push.
  *
- * @since 7.1
  * @author Vaadin Ltd
  */
 public class PushConstants implements Serializable {

@@ -30,7 +30,6 @@ import com.vaadin.flow.component.UI;
  * This interface is an internal API, only meant to be used by the framework.
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public interface PushConnection extends Serializable {
 

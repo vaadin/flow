@@ -40,7 +40,6 @@ import elemental.json.JsonObject;
  * Handles permanent errors by showing a critical system notification to the
  * user
  *
- * @since 7.6
  * @author Vaadin Ltd
  */
 public class DefaultConnectionStateHandler implements ConnectionStateHandler {

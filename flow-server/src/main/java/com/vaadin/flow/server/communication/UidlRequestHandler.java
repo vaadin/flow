@@ -49,7 +49,6 @@ import elemental.json.JsonObject;
  * client.
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public class UidlRequestHandler extends SynchronizedRequestHandler
         implements SessionExpiredHandler {

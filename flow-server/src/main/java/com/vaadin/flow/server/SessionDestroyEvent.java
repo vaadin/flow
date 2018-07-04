@@ -24,7 +24,6 @@ import java.util.EventObject;
  * @see SessionDestroyListener#sessionDestroy(SessionDestroyEvent)
  *
  * @author Vaadin Ltd
- * @since 7.0.0
  */
 public class SessionDestroyEvent extends EventObject {
 

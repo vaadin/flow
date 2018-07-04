@@ -21,7 +21,6 @@ import com.vaadin.flow.function.SerializableFunction;
  * Provider interface for generating localizable error messages using
  * {@link ValueContext}.
  *
- * @since 8.0
  * @author Vaadin Ltd.
  */
 @FunctionalInterface

@@ -56,7 +56,6 @@ import elemental.json.impl.JsonUtil;
  * Handles a client-to-server message containing serialized RPC invocations.
  *
  * @author Vaadin Ltd
- * @since 7.1
  */
 public class ServerRpcHandler implements Serializable {
 
@@ -72,7 +71,6 @@ public class ServerRpcHandler implements Serializable {
      * A data transfer object representing an RPC request sent by the client
      * side.
      *
-     * @since 7.2
      * @author Vaadin Ltd
      */
     public static class RpcRequest implements Serializable {
@@ -173,7 +171,6 @@ public class ServerRpcHandler implements Serializable {
         /**
          * Gets the id of the client to server message
          *
-         * @since 7.6
          * @return the server message id
          */
         public int getClientToServerId() {

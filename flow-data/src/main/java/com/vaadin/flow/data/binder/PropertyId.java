@@ -52,7 +52,6 @@ import com.vaadin.flow.component.HasValue;
  * }
  * </pre>
  *
- * @since 8.0
  * @author Vaadin Ltd
  */
 @Target({ ElementType.FIELD })
