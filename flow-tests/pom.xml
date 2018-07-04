@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>test-pwa</module>
         <module>test-resources</module>
         <module>test-root-context</module>
         <module>test-root-ui-context</module>
