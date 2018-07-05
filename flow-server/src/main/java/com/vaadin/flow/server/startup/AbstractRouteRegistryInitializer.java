@@ -42,6 +42,7 @@ import com.vaadin.flow.server.PageConfigurator;
  * Common validation methods for route registry initializer.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class AbstractRouteRegistryInitializer implements Serializable {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,7 @@ import elemental.json.JsonValue;
  * Change describing an add operation in a {@link NodeList list} node feature.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <T>
  *            the type of the items in the node list

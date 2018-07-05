@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,6 +38,7 @@ import com.vaadin.flow.function.SerializablePredicate;
  * form level validation status changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <BEAN>
  *            the bean type of the binder
@@ -47,7 +48,6 @@ import com.vaadin.flow.function.SerializablePredicate;
  * @see Binder#validate()
  * @see BindingValidationStatus
  *
- * @since 8.0
  */
 public class BinderValidationStatus<BEAN> implements Serializable {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Element;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,6 +25,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -40,7 +42,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
@@ -53,7 +54,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         private boolean isInvoked;
 
-        ComponentWithMethod() {
+        public ComponentWithMethod() {
             super((clazz, tag, service) -> new TemplateData("",
                     new Element("a")));
         }
@@ -189,6 +190,14 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         }
     }
 
+    public static class CompositeOfComponentWithMethod
+            extends Composite<ComponentWithMethod> {
+    }
+
+    public static class CompositeOfComposite
+            extends Composite<CompositeOfComponentWithMethod> {
+    }
+
     @Before
     public void setUp() {
         Assert.assertNull(System.getSecurityManager());
@@ -213,6 +222,26 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         ComponentWithMethod component = new ComponentWithMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", Json.createArray());
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    @Test
+    public void methodIsInvokedOnCompositeContent() {
+        CompositeOfComponentWithMethod composite = new CompositeOfComponentWithMethod();
+        ComponentWithMethod component = composite.getContent();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
+                composite.getClass(), "method", Json.createArray());
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    @Test
+    public void methodIsInvokectOnCompositeOfComposite() {
+        CompositeOfComposite composite = new CompositeOfComposite();
+        ComponentWithMethod component = composite.getContent().getContent();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
+                composite.getClass(), "method", Json.createArray());
 
         Assert.assertTrue(component.isInvoked);
     }

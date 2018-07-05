@@ -1,0 +1,59 @@
+{
+  "name": "Vaadin.GridColumnGroupElement",
+  "tag": "vaadin-grid-column-group",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-column-group.html",
+  "version": "5.0.4",
+  "properties": [
+    {
+      "name": "resizable",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When set to true, the column is user-resizable."
+    },
+    {
+      "name": "frozen",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true, the column is frozen. When a column inside of a column group is frozen,\nall of the sibling columns inside the group will get frozen also.\n         "
+    },
+    {
+      "name": "hidden",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When set to true, the cells for this column are hidden.\n         "
+    },
+    {
+      "name": "flexGrow",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Flex grow ratio for the column group as the sum of the ratios of its child columns.\n             ",
+      "readOnly": true
+    },
+    {
+      "name": "width",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Width of the column group as the sum of the widths of its child columns.\n             ",
+      "readOnly": true
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.Grid.ColumnBaseMixin"
+  ],
+  "variants": {},
+  "description": "A `<vaadin-grid-column-group>` is used to make groups of columns in `<vaadin-grid>` and\nto configure additional headers and footers.\n\nGroups can be nested to create complex header and footer configurations.\n\nThe `class` attribute is used to differentiate header and footer templates.\n\n#### Example:\n```html\n<vaadin-grid-column-group resizable>\n <template class=\"header\">Name</template>\n\n <vaadin-grid-column>\n   <template class=\"header\">First</template>\n   <template>[[item.name.first]]</template>\n </vaadin-grid-column>\n <vaadin-grid-column>\n   <template class=\"header\">Last</template>\n   <template>[[item.name.last]]</template>\n </vaadin-grid-column>\n</vaadin-grid-column-group>\n```"
+}

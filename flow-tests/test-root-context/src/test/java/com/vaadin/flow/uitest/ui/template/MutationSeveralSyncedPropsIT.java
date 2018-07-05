@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class MutationSeveralSyncedPropsIT extends ChromeBrowserTest {
 
@@ -28,10 +29,10 @@ public class MutationSeveralSyncedPropsIT extends ChromeBrowserTest {
     public void twoSynchronizedPropertiesSimultensousUpdate_bothAreUpdated() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
 
-        WebElement name = getInShadowRoot(template, By.id("name"));
-        WebElement msg = getInShadowRoot(template, By.id("msg"));
+        WebElement name = template.$(TestBenchElement.class).id("name");
+        WebElement msg = template.$(TestBenchElement.class).id("msg");
 
         Assert.assertEquals("foo", name.getText());
         Assert.assertEquals("msg", msg.getText());

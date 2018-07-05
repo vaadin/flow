@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ package com.vaadin.flow.dom;
  * @see Node #accept(NodeVisitor, boolean)
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public interface NodeVisitor {
@@ -29,6 +30,7 @@ public interface NodeVisitor {
      * The type of the element.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      *
      */
     enum ElementType {

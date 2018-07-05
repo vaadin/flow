@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,8 +21,8 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.SynchronizedPropertyView", layout = ViewTestLayout.class)
 public class SynchronizedPropertyView extends AbstractDivView {
@@ -47,6 +47,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
 
     @Override
     protected void onShow() {
+        valueAsNumberShimForIE11();
         addSimpleSync();
         addSyncWithInitialValue();
         addSyncOnKeyup();
@@ -119,6 +120,26 @@ public class SynchronizedPropertyView extends AbstractDivView {
 
         getElement().appendChild(multiSync);
         add(valueLabel, valueAsNumberLabel);
+    }
+
+    /**
+     * Fixes the broken behavior of valueAsNumber property on IE11, used in
+     * {@link #addSyncMultipleProperties()}
+     */
+    private void valueAsNumberShimForIE11() {
+        getPage().executeJavaScript(
+        //@formatter:off
+        "var input = document.createElement('input');"
+      + "input.setAttribute('type', 'number');"
+      + "input.setAttribute('value', '123');"
+
+        // This is true only on IE11, and is fixed below:
+      + "if (input.value != input.valueAsNumber) {"
+      + "    Object.defineProperty(Object.getPrototypeOf(input), 'valueAsNumber', {"
+      + "        get: function () { return parseInt(this.value, 10); }"
+      + "    });"
+      + "}");
+        //@formatter:on
     }
 
 }

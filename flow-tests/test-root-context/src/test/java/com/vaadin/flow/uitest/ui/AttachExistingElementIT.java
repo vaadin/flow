@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.component.html.testbench.LabelElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class AttachExistingElementIT extends ChromeBrowserTest {
@@ -49,15 +51,13 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
             if (child.equals(label)) {
                 labelIsFoundAsChild = true;
                 WebElement attachButton = children.get(i + 1);
-                Assert.assertEquals(
-                        "The first inserted component after "
-                                + "attached label has wrong index on the client side",
+                Assert.assertEquals("The first inserted component after "
+                        + "attached label has wrong index on the client side",
                         "attach-populated-label",
                         attachButton.getAttribute("id"));
                 removeButton = children.get(i + 2);
-                Assert.assertEquals(
-                        "The second inserted component after "
-                                + "attached label has wrong index on the client side",
+                Assert.assertEquals("The second inserted component after "
+                        + "attached label has wrong index on the client side",
                         "remove-self", removeButton.getAttribute("id"));
                 break;
             }
@@ -84,9 +84,9 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
         // attach a child in the shadow root of the div
 
         findElement(By.id("attach-label-inshadow")).click();
-        WebElement labelInShadow = getInShadowRoot(
-                findElement(By.id("element-with-shadow")),
-                By.id("label-in-shadow"));
+        LabelElement labelInShadow = $(DivElement.class)
+                .id("element-with-shadow").$(LabelElement.class)
+                .id("label-in-shadow");
         Assert.assertEquals("label",
                 labelInShadow.getTagName().toLowerCase(Locale.ENGLISH));
 

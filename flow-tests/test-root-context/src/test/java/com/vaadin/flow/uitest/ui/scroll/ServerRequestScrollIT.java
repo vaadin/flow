@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
 
 public class ServerRequestScrollIT extends ChromeBrowserTest {
 
@@ -28,8 +28,8 @@ public class ServerRequestScrollIT extends ChromeBrowserTest {
     public void scrollPositionIsTheSameAfterServerRequest() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement button = getInShadowRoot(template, By.id("send-request"));
+        WebElement button = $("server-request").id("template")
+                .$(NativeButtonElement.class).first();
 
         int y = button.getLocation().getY();
 

@@ -3,10 +3,10 @@ package com.vaadin.flow.uitest.ui.template;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class PropertiesUpdatedBeforeChangeEventsIT extends ChromeBrowserTest {
 
@@ -37,9 +37,7 @@ public class PropertiesUpdatedBeforeChangeEventsIT extends ChromeBrowserTest {
     }
 
     private WebElement getElementById(String id) {
-        return getInShadowRoot(
-                findElement(
-                        By.tagName("properties-updated-before-change-events")),
-                By.id(id));
+        return $("properties-updated-before-change-events").first()
+                .$(TestBenchElement.class).id(id);
     }
 }

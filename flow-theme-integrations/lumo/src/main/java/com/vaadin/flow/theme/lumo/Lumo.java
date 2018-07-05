@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -71,7 +71,7 @@ public class Lumo implements AbstractTheme {
             break;
         default:
             LoggerFactory.getLogger(Lumo.class.getName()).warn(
-                    "Lumo theme variant not recognized: '{0}'. Using no variant.",
+                    "Lumo theme variant not recognized: '{}'. Using no variant.",
                     variant);
         }
         return attributes;

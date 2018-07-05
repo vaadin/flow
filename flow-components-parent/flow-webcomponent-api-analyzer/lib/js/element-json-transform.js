@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -101,12 +101,13 @@ const isOptional = (type) => {
 };
 
 module.exports = class ElementJsonTransform extends Transform {
-  constructor(versionReader, mixinCollector) {
+  constructor(versionReader, mixinCollector, variantsData) {
     const options = {};
     options.objectMode = true;
     super(options);
     this.versionReader = versionReader;
     this.mixinCollector = mixinCollector;
+    this.variantsData = variantsData;
     this.elementClassToProcessedResult = new Map();
   }
 
@@ -121,7 +122,8 @@ module.exports = class ElementJsonTransform extends Transform {
    * "properties": [ ... ],
    * "functions": [ ... ],
    * "events" : [ ... ],
-   * "behaviors": ["focusable", "clickable", "resizable"]
+   * "behaviors": ["focusable", "clickable", "resizable"],
+   * "variants": { themeName : [ ... ], ... },
    * "description": "This is my component",
    * }
    *
@@ -152,6 +154,7 @@ module.exports = class ElementJsonTransform extends Transform {
       "slots": this.slotsToJsonArray(element.slots),
       "behaviors": this.mixinCollector.getFlattenedBehaviorHierarchy(resultingName),
       "mixins": this.mixinCollector.getFlattenedMixinHierarchy(resultingName),
+      "variants": this.variantsData[elementTagName] || {},
       "description": element.jsdoc ? element.jsdoc.description : "Missing documentation!"
     };
 

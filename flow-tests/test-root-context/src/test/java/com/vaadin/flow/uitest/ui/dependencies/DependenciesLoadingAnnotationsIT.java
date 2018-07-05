@@ -33,7 +33,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * dependency loading functionality (hence reusing all methods and constants),
  * but using {@link com.vaadin.flow.component.page.Page} api to add dependencies.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  * @see DependenciesLoadingBaseView
  * @see DependenciesLoadingAnnotationsView
  * @see DependenciesLoadingPageApiView

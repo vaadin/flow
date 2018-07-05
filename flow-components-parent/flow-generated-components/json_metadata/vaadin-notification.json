@@ -54,5 +54,6 @@
   "slots": [],
   "behaviors": [],
   "mixins": [],
+  "variants": {},
   "description": "`<vaadin-notification>` is a Polymer 2 element providing accessible and customizable notifications (toasts).\n\n```\n<vaadin-notification>\n  <template>\n    Your work has been saved\n  </template>\n</vaadin-notification>\n```"
 }

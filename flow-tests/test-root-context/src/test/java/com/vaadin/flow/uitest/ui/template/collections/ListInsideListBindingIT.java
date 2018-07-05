@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
  * Normal tests with @Before are not implemented because each @Test starts new
@@ -35,17 +35,18 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
         int initialSize = 4;
         open();
 
-        WebElement template = findElement(By.id("template"));
-
+        TestBenchElement template = $(TestBenchElement.class).id("template");
         checkMessagesRemoval(template, initialSize);
-        getInShadowRoot(template, By.id("reset")).click();
+        template.$(TestBenchElement.class).id("reset").click();
         checkAllElementsUpdated(template, initialSize);
     }
 
-    private void checkMessagesRemoval(WebElement template, int initialSize) {
+    private void checkMessagesRemoval(TestBenchElement template,
+            int initialSize) {
         for (int i = 0; i < initialSize; i++) {
-            List<WebElement> currentMessages = findInShadowRoot(template,
-                    By.className("submsg"));
+            List<TestBenchElement> currentMessages = template
+                    .$(TestBenchElement.class).attribute("class", "submsg")
+                    .all();
             Assert.assertEquals("Wrong amount of nested messages",
                     initialSize - i, currentMessages.size());
 
@@ -53,18 +54,19 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
             String messageToRemoveText = messageToRemove.getText();
             messageToRemove.click();
 
-            String removedMessageLabelText = getInShadowRoot(template,
-                    By.id("removedMessage")).getText();
+            String removedMessageLabelText = template.$(TestBenchElement.class)
+                    .id("removedMessage").getText();
             Assert.assertEquals("Expected removed message text to appear",
                     "Removed message: " + messageToRemoveText,
                     removedMessageLabelText);
         }
     }
 
-    private void checkAllElementsUpdated(WebElement template, int initialSize) {
-        getInShadowRoot(template, By.id("updateAllElements")).click();
-        List<WebElement> msgs = findInShadowRoot(template,
-                By.className("submsg"));
+    private void checkAllElementsUpdated(TestBenchElement template,
+            int initialSize) {
+        template.$(TestBenchElement.class).id("updateAllElements").click();
+        List<TestBenchElement> msgs = template.$(TestBenchElement.class)
+                .attribute("class", "submsg").all();
         Assert.assertEquals("Wrong amount of nested messages", initialSize,
                 msgs.size());
         msgs.forEach(msg -> Assert.assertEquals("Message was not updated",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,7 @@ import org.junit.Test;
  * Tests for {@link DefaultDeploymentConfiguration}
  *
  * @author Vaadin Ltd
- * @since 7.2
+ * @since 1.0
  */
 public class DefaultDeploymentConfigurationTest {
     @Test
@@ -54,11 +54,9 @@ public class DefaultDeploymentConfigurationTest {
                         + '.' + prop,
                 value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties()
-                );
+                DefaultDeploymentConfigurationTest.class, new Properties());
         assertEquals(value, config.getSystemProperty(prop));
     }
-
 
     @Test
     public void booleanValueReadIgnoreTheCase_true() {
@@ -184,17 +182,22 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void bundleIsEnabledInProduction() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+                "true");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
         Assert.assertTrue(config.useCompiledFrontendResources());
     }
 
     @Test
     public void bundleCanBeDisabled() {
         Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(initParameters);
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+                "true");
+        initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
+                "true");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
         Assert.assertFalse(config.useCompiledFrontendResources());
     }
 }

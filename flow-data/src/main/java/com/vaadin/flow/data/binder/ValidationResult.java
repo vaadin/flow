@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,7 @@ import java.util.Optional;
  * respectively.
  *
  * @author Vaadin Ltd
- * @since 8.0
+ * @since 1.0
  *
  */
 public interface ValidationResult extends Serializable {
@@ -37,6 +37,7 @@ public interface ValidationResult extends Serializable {
      * Simple validation result implementation.
      * 
      * @author Vaadin Ltd
+ * @since 1.0
      *
      */
     class SimpleValidationResult implements ValidationResult {
@@ -92,7 +93,6 @@ public interface ValidationResult extends Serializable {
          * @return optional error level; error level is present for validation
          *         results that have not passed validation
          * 
-         * @since 8.2
          */
         Optional<ErrorLevel> getErrorLevel();
 

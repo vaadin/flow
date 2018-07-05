@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-server</artifactId>
     <name>Flow Server</name>
@@ -94,9 +94,9 @@
 
         <!-- Small reflection library -->
         <dependency>
-            <groupId>com.googlecode.gentyref</groupId>
+            <groupId>com.vaadin.external</groupId>
             <artifactId>gentyref</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.0.vaadin1</version>
         </dependency>
 
         <!-- TESTING DEPENDENCIES -->

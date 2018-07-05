@@ -64,5 +64,6 @@
     "Vaadin.ThemableMixin",
     "Polymer.GestureEventListeners"
   ],
+  "variants": {},
   "description": "`<vaadin-radio-button>` is a Polymer element for radio buttons.\n\n```html\n<vaadin-radio-button value=\"foo\">Foo</vaadin-radio-button>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|----------------\n`radio`           | The radio button element\n`label`           | The label content element\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio button is disabled. | :host\n`focus-ring` | Set when the radio button is focused using the keyboard. | :host\n`focused`    | Set when the radio button is focused. | :host\n`checked`    | Set when the radio button is checked. | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

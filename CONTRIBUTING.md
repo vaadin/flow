@@ -4,6 +4,9 @@
 
 # Summary
 
+All fixes should always target the `master` branch. We will pick the bugfixes 
+to correct branches from the `master`.
+
 We like quality patches that solve problems. A quality patch follows good coding practices - it’s easy to read and understand. For more complicated fixes or features, the change should be broken down into several smaller easy to understand patches. Most of this is really just what we consider to be common sense and best development practices.
 
 In other words: 
@@ -144,5 +147,7 @@ You should receive comments within a week or so; if that does not happen, make s
 All our projects accept contributions as GitHub pull requests. The first time you create a pull request, you will be asked to electronically sign a contribution agreement.
 
 https://yangsu.github.io/pull-request-tutorial/ has instructions on how to create a pull request.
+
+Please note that PR should target the `master` branch. 
 
 **Remember to check the "Allow edits from maintainers" so we can rebase the PR or make small changes if necessary**.

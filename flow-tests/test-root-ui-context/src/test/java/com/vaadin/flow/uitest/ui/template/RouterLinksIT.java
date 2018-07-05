@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class RouterLinksIT extends ChromeBrowserTest {
 
@@ -31,26 +33,27 @@ public class RouterLinksIT extends ChromeBrowserTest {
         open();
 
         String originalUrl = getDriver().getCurrentUrl();
-        WebElement textInput = getInShadowRoot(findElement(By.id("template")),
-                By.id("input"));
+        WebElement textInput = $(TestBenchElement.class).id("template")
+                .$(TestBenchElement.class).id("input");
 
         Assert.assertTrue("Input was not empty",
                 textInput.getAttribute("value").isEmpty());
         textInput.sendKeys(TEXT_INPUT);
         Assert.assertEquals("Input was missing contents", TEXT_INPUT,
                 textInput.getAttribute("value"));
-        WebElement link = getInShadowRoot(findElement(By.id("template")),
-                By.linkText("Navigate"));
+        List<TestBenchElement> links = $(TestBenchElement.class).id("template")
+                .$("a").all();
+        WebElement link = links.stream()
+                .filter(lnk -> lnk.getText().equals("Navigate")).findFirst()
+                .get();
 
-        Assert.assertEquals("Navigate", link.getText());
-
-        getCommandExecutor().executeScript("return arguments[0].click()",
-                link);
+        getCommandExecutor().executeScript("return arguments[0].click()", link);
 
         // Original url should end with UI and the navigation link Template
         Assert.assertNotEquals(originalUrl, getDriver().getCurrentUrl());
 
-        textInput = getInShadowRoot(findElement(By.id("template")), By.id("input"));
+        textInput = $(TestBenchElement.class).id("template")
+                .$(TestBenchElement.class).id("input");
 
         Assert.assertEquals("Input didn't keep content through navigation",
                 TEXT_INPUT, textInput.getAttribute("value"));

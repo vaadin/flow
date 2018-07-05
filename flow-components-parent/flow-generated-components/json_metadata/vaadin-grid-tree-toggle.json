@@ -1,0 +1,54 @@
+{
+  "name": "Vaadin.GridTreeToggleElement",
+  "tag": "vaadin-grid-tree-toggle",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-tree-toggle.html",
+  "version": "5.0.4",
+  "properties": [
+    {
+      "name": "level",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Current level of the tree represented with a horizontal offset\nof the toggle button.\n           "
+    },
+    {
+      "name": "leaf",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Hides the toggle icon and disables toggling a tree sublevel.\n           "
+    },
+    {
+      "name": "expanded",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Sublevel toggle state.\n           ",
+      "notify": true
+    }
+  ],
+  "methods": [],
+  "events": [
+    {
+      "name": "expanded-changed",
+      "description": "Fired when the `expanded` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [
+    ""
+  ],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ThemableMixin"
+  ],
+  "variants": {
+    "lumo": [
+      "connectors"
+    ]
+  },
+  "description": "`<vaadin-grid-tree-toggle>` is a helper element for the `<vaadin-grid>`\nthat provides toggle and level display functionality for the item tree.\n\n#### Example:\n```html\n<vaadin-grid-column>\n  <template class=\"header\">Package name</template>\n  <template>\n    <vaadin-grid-tree-toggle\n        leaf=\"[[!item.hasChildren]]\"\n        expanded=\"{{expanded}}\"\n        level=\"[[level]]\">\n      [[item.name]]\n    </vaadin-grid-tree-toggle>\n  </template>\n</vaadin-grid-column>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n---|---\n`toggle` | The tree toggle icon\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n---|---|---\n`expanded` | When present, the toggle is expanded | :host\n`leaf` | When present, the toggle is not expandable, i. e., the current item is a leaf | :host\n\nThe following custom CSS properties are available on\nthe `<vaadin-grid-tree-toggle>` element:\n\nCustom CSS property | Description | Default\n---|---|---\n`--vaadin-grid-tree-toggle-level-offset` | Visual offset step for each tree sublevel | `1em`"
+}

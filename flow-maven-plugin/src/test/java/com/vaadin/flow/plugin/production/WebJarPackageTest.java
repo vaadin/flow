@@ -14,7 +14,8 @@ import com.vaadin.flow.plugin.common.ArtifactData;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class WebJarPackageTest {
     @Rule

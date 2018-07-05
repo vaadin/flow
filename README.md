@@ -13,6 +13,10 @@ Flow EAP discussion in Gitter IM at https://gitter.im/vaadin-flow/Lobby
 
 Instructions on how to set up a working environment for developing the Flow project follow below.
 
+This branch is Vaadin 11 (Flow version 1.1). See other branches for other framework versions:
+* master branch is Vaadin 11 (Flow version 1.1)
+* 1.0 branch is Vaadin 10 (Flow version 1.0)
+
 Setting up Eclipse to Develop Flow
 =========
 

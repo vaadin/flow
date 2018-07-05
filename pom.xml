@@ -7,7 +7,13 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
+    
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-parent</artifactId>
+        <version>2.0.0</version>
+    </parent>
 
     <modules>
         <module>flow</module>
@@ -87,13 +93,13 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
-        <testbench.version>6.0.0.rc1</testbench.version>
+        <testbench.version>6.0.0</testbench.version>
         <jetty.version>9.4.11.v20180605</jetty.version>
 
         <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
-        <node.version>v7.10.1</node.version>
-        <npm.version>5.3.0</npm.version>
+        <node.version>v8.11.1</node.version>
+        <npm.version>6.1.0</npm.version>
 
         <maven.test.skip>false</maven.test.skip>
     </properties>
@@ -172,6 +178,17 @@
                 <groupId>javax.portlet</groupId>
                 <artifactId>portlet-api</artifactId>
                 <version>2.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.webjars.bowergithub.webcomponents</groupId>
+                <artifactId>webcomponentsjs</artifactId>
+                <version>1.2.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bowergithub.polymer</groupId>
+                <artifactId>polymer</artifactId>
+                <version>2.6.0</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -496,17 +513,9 @@
                     <plugins>
                         <plugin>
                             <artifactId>maven-surefire-plugin</artifactId>
-                            <!--TODO tests require some fixing-->
-                            <configuration>
-                                <skipTests>true</skipTests>
-                            </configuration>
                         </plugin>
                         <plugin>
                             <artifactId>maven-failsafe-plugin</artifactId>
-                            <!--TODO tests require some fixing-->
-                            <configuration>
-                                <skipTests>true</skipTests>
-                            </configuration>
                             <dependencies>
                                 <dependency>
                                     <groupId>javax.xml.bind</groupId>
@@ -563,7 +572,7 @@
             </build>
         </profile>
         <profile>
-            <id>prerelease</id>
+            <id>release</id>
             <modules>
                 <module>flow</module>
                 <module>flow-server</module>
@@ -577,25 +586,6 @@
                 <module>flow-components-parent</module>
                 <module>build-tools</module>
             </modules>
-            <properties>
-                <staging.server.id>vaadin-prerelease-staging</staging.server.id>
-                <!-- staging.server.url is set by the build environment profile -->
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <nexusUrl>${staging.server.url}</nexusUrl>
-                            <serverId>${staging.server.id}</serverId>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
-
 </project>
