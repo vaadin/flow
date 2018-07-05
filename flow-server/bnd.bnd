@@ -8,5 +8,4 @@ Import-Package: org.atmosphere*;resolution:=optional;version='${atmosphere.runti
 Export-Package: !com.vaadin.flow.dom.impl*,\
     !com.vaadin.flow.internal*,\
     !com.vaadin.flow.router.internal*,\
-    !com.vaadin.flow.shared*,\
     com.vaadin.flow*;-noimport:=true
