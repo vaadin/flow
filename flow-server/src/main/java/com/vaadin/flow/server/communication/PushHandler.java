@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -50,7 +50,7 @@ import elemental.json.JsonException;
  * correct {@link UI}/ {@link AtmospherePushConnection}
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public class PushHandler {
 
@@ -160,7 +160,6 @@ public class PushHandler {
     /**
      * Suspends the given resource
      *
-     * @since 7.6
      * @param resource
      *            the resource to suspend
      */
@@ -473,7 +472,6 @@ public class PushHandler {
     /**
      * Called when a new push connection is requested to be opened by the client
      *
-     * @since 7.5.0
      * @param resource
      *            The related atmosphere resources
      */
@@ -484,7 +482,6 @@ public class PushHandler {
     /**
      * Called when a message is received through the push connection
      *
-     * @since 7.5.0
      * @param resource
      *            The related atmosphere resources
      */
@@ -500,7 +497,6 @@ public class PushHandler {
      * timeout to a value smaller than the proxy timeout so that the server is
      * aware of a reconnect taking place.
      *
-     * @since 7.6
      * @param longPollingSuspendTimeout
      *            the timeout to use for suspended AtmosphereResources
      */
@@ -511,7 +507,6 @@ public class PushHandler {
     /**
      * Gets the timeout used for suspend calls when using long polling.
      *
-     * @since 7.6
      * @return the timeout to use for suspended AtmosphereResources
      */
     public int getLongPollingSuspendTimeout() {

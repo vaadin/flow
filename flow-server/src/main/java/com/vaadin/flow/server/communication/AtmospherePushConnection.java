@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,7 +42,7 @@ import elemental.json.JsonObject;
  * that is by default included in Vaadin.
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public class AtmospherePushConnection implements PushConnection {
 
@@ -266,7 +266,6 @@ public class AtmospherePushConnection implements PushConnection {
      *
      * @param resource
      *            the resource to associate this connection with
-     * @since 7.2
      */
     public void connect(AtmosphereResource resource) {
 
@@ -351,7 +350,6 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Called when the connection to the client has been lost.
      *
-     * @since 7.4.1
      */
     public void connectionLost() {
         resource = null;
@@ -400,7 +398,6 @@ public class AtmospherePushConnection implements PushConnection {
      * Internal method used for reconfiguring loggers to show all Atmosphere log
      * messages in the console.
      *
-     * @since 7.6
      */
     public static void enableAtmosphereDebugLogging() {
         getLogger()

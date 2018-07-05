@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,7 +49,7 @@ import com.vaadin.flow.server.VaadinSession;
  * </p>
  *
  * @author Vaadin Ltd
- * @since 7.0.0
+ * @since 1.0
  */
 public class CurrentInstance implements Serializable {
     private static final Object NULL_OBJECT = new Object();
@@ -192,7 +192,6 @@ public class CurrentInstance implements Serializable {
      * Restores the given instances to the given values. Note that this should
      * only be used internally to restore Vaadin classes.
      *
-     * @since 7.1
      *
      * @param old
      *            A Class -&lt; CurrentInstance map to set as current instances
@@ -270,7 +269,6 @@ public class CurrentInstance implements Serializable {
      * defined values can be restored by passing the returned map to
      * {@link #restoreInstances(Map)}.
      *
-     * @since 7.1
      *
      * @param ui
      *            The UI
@@ -288,7 +286,6 @@ public class CurrentInstance implements Serializable {
      * classes. The previously defined values can be restored by passing the
      * returned map to {@link #restoreInstances(Map)}.
      *
-     * @since 7.1
      *
      * @param session
      *            The VaadinSession

@@ -6,6 +6,7 @@ package com.vaadin.flow.testcategory;
  * default to speed up testing.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ContainerTests {
 
