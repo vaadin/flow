@@ -28,7 +28,8 @@ import com.vaadin.flow.plugin.common.FrontendDataProvider;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class TranspilationStepTest {
     @Rule

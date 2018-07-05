@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility class for Java Beans information access.
  *
- * @since 7.4
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public final class BeanUtil implements Serializable {
     // Prevent instantiation of util class

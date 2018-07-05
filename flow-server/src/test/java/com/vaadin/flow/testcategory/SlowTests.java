@@ -6,6 +6,7 @@ package com.vaadin.flow.testcategory;
  * test suite.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface SlowTests {
 

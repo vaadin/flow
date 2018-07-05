@@ -6,7 +6,8 @@ package com.vaadin.flow.uitest.ui.dependencies;
  * {@link DependenciesLoadingAnnotationsIT}, but this test opens a different
  * page to test, that's why the class exists and needed.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  * @see DependenciesLoadingAnnotationsIT
  */
 public class DependenciesLoadingPageApiIT

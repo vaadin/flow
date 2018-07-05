@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,8 @@ import org.commonmark.renderer.html.HtmlRenderer;
 /**
  * A class that is used to format javadocs for the generated component classes.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 class JavaDocFormatter {
     private static final String JAVA_DOC_CODE_SECTION = "{@code $1}";

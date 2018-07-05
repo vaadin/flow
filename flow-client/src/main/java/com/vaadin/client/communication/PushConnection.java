@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,7 +27,7 @@ import elemental.json.JsonObject;
  * to a UIDL request).
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public interface PushConnection {
 
@@ -86,7 +86,6 @@ public interface PushConnection {
      * Returns a human readable string representation of the transport type used
      * to communicate with the server.
      *
-     * @since 7.1
      * @return A human readable string representation of the transport type
      */
     String getTransportType();
@@ -99,7 +98,6 @@ public interface PushConnection {
      * A bidirectional push connection must be able to reliably inform about its
      * connection state.
      *
-     * @since 7.6
      * @return true if the push connection should be used for messages in both
      *         directions, false if it should only be used for server to client
      *         messages
