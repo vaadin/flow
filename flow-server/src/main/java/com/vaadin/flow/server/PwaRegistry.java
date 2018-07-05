@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -43,45 +44,45 @@ import elemental.json.JsonObject;
  * Registry for PWA data.
  *
  * Includes:
- * - {@link PwaConfiguration} - basic info
- * - List of {@link PWAIcon}:s - different sizes of icons for header and manifest
- * - Offline page
- * - Manifest json
- * - Service worker
+ * <ul>
+ * <li>{@link PwaConfiguration} - basic info
+ * <li>List of {@link PwaIcon}:s - different sizes of icons for header and
+ * manifest
+ * <li>Offline page
+ * <li>Manifest json
+ * <li>Service worker
+ * </ul>
  */
-public class PWARegistry implements Serializable {
+public class PwaRegistry implements Serializable {
+    private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
+    private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
+            + "and (-webkit-device-pixel-ratio: %d)";
 
-    private PwaConfiguration pwaConfiguration;
-    private List<PWAIcon> icons;
+    private final PwaConfiguration pwaConfiguration;
     private final String offlineHtml;
-    private long offlineHash;
     private final String manifestJson;
     private final String serviceWorkerJs;
+    private long offlineHash;
+    private List<PwaIcon> icons;
 
-    private static final String APPLE_STARTUP_IMAGE =
-            "apple-touch-startup-image";
-    private static final String APPLE_IMAGE_MEDIA =
-            "(device-width: %dpx) and (device-height: %dpx) "
-                    + "and (-webkit-device-pixel-ratio: %d)";
-
-
-    private PWARegistry(PWA pwa, ServletContext servletContext)
+    private PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        this.pwaConfiguration = new PwaConfiguration(pwa, servletContext);
+        pwaConfiguration = new PwaConfiguration(pwa, servletContext);
 
         // Build pwa elements only if they are enabled
-        if (this.pwaConfiguration.isEnabled()) {
-            URL logo = servletContext.getResource(pwaConfiguration.relLogoPath());
-            URL offlinePage = servletContext.getResource(pwaConfiguration
-                    .relOfflinePath());
+        if (pwaConfiguration.isEnabled()) {
+            URL logo = servletContext
+                    .getResource(pwaConfiguration.relLogoPath());
+            URL offlinePage = servletContext
+                    .getResource(pwaConfiguration.relOfflinePath());
             // Load base logo from servlet context if available
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
 
             // Pick top-left pixel as fill color if needed for image resizing
-            int bgColor = baseImage.getRGB(0,0);
+            int bgColor = baseImage.getRGB(0, 0);
 
             // initialize icons
             icons = initializeIcons(baseImage, bgColor);
@@ -103,9 +104,10 @@ public class PWARegistry implements Serializable {
         }
     }
 
-    private List<PWAIcon> initializeIcons(BufferedImage baseImage, int bgColor) throws IOException {
+    private List<PwaIcon> initializeIcons(BufferedImage baseImage,
+            int bgColor) {
         icons = new ArrayList<>();
-        for (PWAIcon icon : getIconTemplates(pwaConfiguration.getLogoPath())) {
+        for (PwaIcon icon : getIconTemplates(pwaConfiguration.getLogoPath())) {
             // New image with wanted size
             BufferedImage bimage = new BufferedImage(icon.getWidth(),
                     icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -114,24 +116,29 @@ public class PWARegistry implements Serializable {
 
             // fill bg with fill-color
             bGr.setBackground(new Color(bgColor, true));
-            bGr.clearRect(0,0,icon.getWidth(),icon.getHeight());
+            bGr.clearRect(0, 0, icon.getWidth(), icon.getHeight());
 
             // calculate ratio (bigger ratio) for resize
-            float ratio = (float) baseImage.getWidth() / (float) icon.getWidth() >
-                    (float) baseImage.getHeight() / (float)  icon.getHeight()
-                    ? (float) baseImage.getWidth() / (float) icon.getWidth()
-                    : (float) baseImage.getHeight() / (float) icon.getHeight();
+            float ratio = (float) baseImage.getWidth()
+                    / (float) icon.getWidth() > (float) baseImage.getHeight()
+                            / (float) icon.getHeight()
+                                    ? (float) baseImage.getWidth()
+                                            / (float) icon.getWidth()
+                                    : (float) baseImage.getHeight()
+                                            / (float) icon.getHeight();
 
             // Forbid upscaling of image
             ratio = ratio > 1.0f ? ratio : 1.0f;
 
             // calculate sizes with ratio
-            int newWidth = Math.round (baseImage.getHeight() / ratio);
-            int newHeight = Math.round (baseImage.getWidth() / ratio);
+            int newWidth = Math.round(baseImage.getHeight() / ratio);
+            int newHeight = Math.round(baseImage.getWidth() / ratio);
 
             // draw rescaled img in the center of created image
-            bGr.drawImage(baseImage.getScaledInstance(newWidth, newHeight,
-                    Image.SCALE_SMOOTH), (icon.getWidth() - newWidth) / 2,
+            bGr.drawImage(
+                    baseImage.getScaledInstance(newWidth, newHeight,
+                            Image.SCALE_SMOOTH),
+                    (icon.getWidth() - newWidth) / 2,
                     (icon.getHeight() - newHeight) / 2, null);
             bGr.dispose();
 
@@ -145,7 +152,7 @@ public class PWARegistry implements Serializable {
     /**
      * Creates manifest.json json object.
      *
-     * @return
+     * @return manifest.json contents json object
      */
     private JsonObject initializeManifest() {
         JsonObject manifestData = Json.createObject();
@@ -153,8 +160,7 @@ public class PWARegistry implements Serializable {
         manifestData.put("name", pwaConfiguration.getAppName());
         manifestData.put("short_name", pwaConfiguration.getShortName());
         if (!pwaConfiguration.getDescription().isEmpty()) {
-            manifestData.put("description",
-                    pwaConfiguration.getDescription());
+            manifestData.put("description", pwaConfiguration.getDescription());
         }
         manifestData.put("display", pwaConfiguration.getDisplay());
         manifestData.put("background_color",
@@ -166,7 +172,7 @@ public class PWARegistry implements Serializable {
         // Add icons
         JsonArray iconList = Json.createArray();
         int iconIndex = 0;
-        for (PWAIcon icon : getManifestIcons()) {
+        for (PwaIcon icon : getManifestIcons()) {
             JsonObject iconData = Json.createObject();
             iconData.put("src", icon.getHref());
             iconData.put("sizes", icon.getSizes());
@@ -181,19 +187,17 @@ public class PWARegistry implements Serializable {
         StringBuilder stringBuilder = new StringBuilder();
 
         // List of icons for precache
-        List<String> precacheFiles = getIcons().stream()
-                .filter(PWAIcon::cached)
-                .map(PWAIcon::getCacheFormat).collect(Collectors.toList());
+        List<String> filesToCahe = getIcons().stream()
+                .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
+                .collect(Collectors.toList());
 
         // Add offline page to precache
-        precacheFiles.add(offlinePageCache());
+        filesToCahe.add(offlinePageCache());
 
         // Add user defined resources
         for (String resource : pwaConfiguration.getOfflineResources()) {
-            precacheFiles.add(
-                    String.format("{ url: '%s', revision: '%s' }",
-                            resource.replaceAll("'", ""),
-                            servletContext.hashCode()));
+            filesToCahe.add(String.format("{ url: '%s', revision: '%s' }",
+                    resource.replaceAll("'", ""), servletContext.hashCode()));
         }
 
         // Google Workbox import
@@ -202,98 +206,94 @@ public class PWARegistry implements Serializable {
 
         // Precaching
         stringBuilder.append("workbox.precaching.precacheAndRoute([\n");
-        stringBuilder.append(precacheFiles.stream()
-                .collect(Collectors.joining( ",\n" )));
+        stringBuilder.append(
+                filesToCahe.stream().collect(Collectors.joining(",\n")));
         stringBuilder.append("\n]);\n");
 
         // Offline fallback
-        stringBuilder.append(
-                "self.addEventListener('fetch', function(event) {\n"
+        stringBuilder
+                .append("self.addEventListener('fetch', function(event) {\n"
                         + "  var request = event.request;\n"
                         + "  if (request.mode === 'navigate') {\n"
-                        + "    event.respondWith(\n"
-                        + "      fetch(request)\n"
+                        + "    event.respondWith(\n" + "      fetch(request)\n"
                         + "        .catch(function() {\n"
                         + "          return caches.match('"
-                        +  getPwaConfiguration().getOfflinePath() +  "');\n"
-                        + "        })\n"
-                        + "    );\n"
-                        + "  }\n"
-                        + "});");
+                        + getPwaConfiguration().getOfflinePath() + "');\n"
+                        + "        })\n" + "    );\n" + "  }\n" + "});");
 
         return stringBuilder.toString();
     }
 
-    protected static PWARegistry initRegistry(ServletContext servletContext)
-            throws IOException {
+    protected static PwaRegistry initRegistry(ServletContext servletContext) {
         assert servletContext != null;
 
         RouteRegistry reg = RouteRegistry.getInstance(servletContext);
 
-        // Initialize PWARegistry with found PWA settings
-        PWA pwa  =  reg.getPwaConfigurationClass() != null
+        // Initialize PwaRegistry with found PWA settings
+        PWA pwa = reg.getPwaConfigurationClass() != null
                 ? reg.getPwaConfigurationClass().getAnnotation(PWA.class)
                 : null;
         // will fall back to defaults, if no PWA annotation available
-        return new PWARegistry(pwa, servletContext);
+        try {
+            return new PwaRegistry(pwa, servletContext);
+        } catch (IOException ioe) {
+            throw new UncheckedIOException(
+                    "Failed to initialize the PWA registry", ioe);
+        }
     }
 
     private String initializeOfflinePage(PwaConfiguration config, URL resource)
             throws IOException {
         // Use only icons which are cached with service worker
-        List<PWAIcon> iconList = getIcons().stream()
-                .filter(PWAIcon::cached)
-                .collect(Collectors.toList());
+        List<PwaIcon> iconList = getIcons().stream()
+                .filter(PwaIcon::shouldBeCached).collect(Collectors.toList());
         // init header inject of icons
         String iconHead = iconList.stream()
                 .map(icon -> icon.asElement().toString())
                 .collect(Collectors.joining("\n"));
         // init large image
-        PWAIcon largest = iconList.stream()
-                .sorted((icon1, icon2)-> icon2.getWidth() - icon1.getWidth())
-                .findFirst().orElse(null);
+        PwaIcon largest = iconList.stream()
+                .min((icon1, icon2) -> icon2.getWidth() - icon1.getWidth())
+                .orElse(null);
 
         URLConnection connection;
         if (resource != null) {
             connection = resource.openConnection();
         } else {
             connection = BootstrapHandler.class
-                    .getResource("default-offline-page.html")
-                    .openConnection();
+                    .getResource("default-offline-page.html").openConnection();
         }
         // Get offline page from servlet context
         // Fall back to local default file if unavailable
-        String offlinePage = getResourceAsString(connection);
+        String offlinePage = getOfflinePageFromContext(connection);
         // Replace template variables with values
-        return offlinePage
-                .replaceAll("%%%PROJECT_NAME%%%",config.getAppName())
+        return offlinePage.replaceAll("%%%PROJECT_NAME%%%", config.getAppName())
                 .replaceAll("%%%BACKGROUND_COLOR%%%",
                         config.getBackgroundColor())
-                .replaceAll("%%%LOGO_PATH%%%", largest != null
-                        ? largest.getHref() : "")
+                .replaceAll("%%%LOGO_PATH%%%",
+                        largest != null ? largest.getHref() : "")
                 .replaceAll("%%%META_ICONS%%%", iconHead);
 
     }
 
-    private String getResourceAsString(URLConnection connection) {
+    private String getOfflinePageFromContext(URLConnection connection) {
         try (InputStream stream = connection.getInputStream();
-             BufferedReader bf = new BufferedReader(new InputStreamReader(
-                     stream, StandardCharsets.UTF_8))) {
+                BufferedReader bf = new BufferedReader(new InputStreamReader(
+                        stream, StandardCharsets.UTF_8))) {
             StringBuilder builder = new StringBuilder();
             bf.lines().forEach(builder::append);
             return builder.toString();
         } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
+            throw new UncheckedIOException(
+                    "Failed to retrieve offline page from the servlet context",
+                    e);
         }
     }
 
-
-    private BufferedImage getBaseImage(URL logo)
-            throws IOException {
-        URLConnection logoResource = logo != null ?
-                logo.openConnection() :
-                BootstrapHandler.class
-                        .getResource("default-logo.png").openConnection();
+    private BufferedImage getBaseImage(URL logo) throws IOException {
+        URLConnection logoResource = logo != null ? logo.openConnection()
+                : BootstrapHandler.class.getResource("default-logo.png")
+                        .openConnection();
         return ImageIO.read(logoResource.getInputStream());
     }
 
@@ -325,96 +325,90 @@ public class PWARegistry implements Serializable {
     }
 
     /**
-     * Google Workbox cache resource String of offline page.
-     * example:  "{ url: 'offline.html', revision: '1234567'}
+     * Google Workbox cache resource String of offline page. example:
+     * {@code {url: 'offline.html', revision: '1234567'}}
      *
      * @return Google Workbox cache resource String of offline page
      */
     public String offlinePageCache() {
         return String.format("{ url: '%s', revision: '%s' }",
-                pwaConfiguration.getOfflinePath(),
-                offlineHash);
+                pwaConfiguration.getOfflinePath(), offlineHash);
     }
 
     /**
-     * List of {@link PWAIcon}:s that should be added to header.
+     * List of {@link PwaIcon}:s that should be added to header.
      *
-     * @return List of {@link PWAIcon}:s that should be added to header
+     * @return List of {@link PwaIcon}:s that should be added to header
      */
-    public List<PWAIcon> getHeaderIcons() {
-        return getIcons(PWAIcon.Domain.HEADER);
+    public List<PwaIcon> getHeaderIcons() {
+        return getIcons(PwaIcon.Domain.HEADER);
     }
 
     /**
-     * List of {@link PWAIcon}:s that should be added to manifest.json.
+     * List of {@link PwaIcon}:s that should be added to manifest.json.
      *
-     * @return List of {@link PWAIcon}:s that should be added to manifest.json
+     * @return List of {@link PwaIcon}:s that should be added to manifest.json
      */
-    public List<PWAIcon> getManifestIcons() {
-        return getIcons(PWAIcon.Domain.MANIFEST);
+    public List<PwaIcon> getManifestIcons() {
+        return getIcons(PwaIcon.Domain.MANIFEST);
     }
 
     /**
-     * List of all icons managed by {@link PWARegistry}.
+     * List of all icons managed by {@link PwaRegistry}.
      *
-     * @return List of all icons managed by {@link PWARegistry}
+     * @return List of all icons managed by {@link PwaRegistry}
      */
-    public List<PWAIcon> getIcons() {
-        return icons.stream().collect(Collectors.toList());
+    public List<PwaIcon> getIcons() {
+        return new ArrayList<>(icons);
     }
 
-    private List<PWAIcon> getIcons(PWAIcon.Domain domain) {
-        return icons.stream().filter(icon ->
-                icon.getDomain().equals(domain)).collect(Collectors.toList());
+    private List<PwaIcon> getIcons(PwaIcon.Domain domain) {
+        return icons.stream().filter(icon -> icon.getDomain().equals(domain))
+                .collect(Collectors.toList());
     }
 
     public PwaConfiguration getPwaConfiguration() {
         return pwaConfiguration;
     }
 
-    private static List<PWAIcon> getIconTemplates(String baseName) {
-        List<PWAIcon> icons = new ArrayList<>();
+    private static List<PwaIcon> getIconTemplates(String baseName) {
+        List<PwaIcon> icons = new ArrayList<>();
         // Basic manifest icons for android support
-        icons.add(new PWAIcon(144, 144, baseName,
-                PWAIcon.Domain.MANIFEST, true));
-        icons.add(new PWAIcon(192, 192, baseName,
-                PWAIcon.Domain.MANIFEST, true));
-        icons.add(new PWAIcon(512, 512, baseName,
-                PWAIcon.Domain.MANIFEST, true));
+        icons.add(
+                new PwaIcon(144, 144, baseName, PwaIcon.Domain.MANIFEST, true));
+        icons.add(
+                new PwaIcon(192, 192, baseName, PwaIcon.Domain.MANIFEST, true));
+        icons.add(
+                new PwaIcon(512, 512, baseName, PwaIcon.Domain.MANIFEST, true));
 
         // Basic icons
-        icons.add(new PWAIcon(16, 16, baseName,
-                PWAIcon.Domain.HEADER, true, "shortcut icon", ""));
-        icons.add(new PWAIcon(32, 32, baseName));
-        icons.add(new PWAIcon(96, 96, baseName));
+        icons.add(new PwaIcon(16, 16, baseName, PwaIcon.Domain.HEADER, true,
+                "shortcut icon", ""));
+        icons.add(new PwaIcon(32, 32, baseName));
+        icons.add(new PwaIcon(96, 96, baseName));
 
         // IOS basic icon
-        icons.add(new PWAIcon(180, 180, baseName,
-                PWAIcon.Domain.HEADER, false,
+        icons.add(new PwaIcon(180, 180, baseName, PwaIcon.Domain.HEADER, false,
                 "apple-touch-icon", ""));
 
         // IOS device specific splash screens
         // iPhone X (1125px x 2436px)
-        icons.add(new PWAIcon(1125, 2436, baseName,
-                PWAIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE,
+        icons.add(new PwaIcon(1125, 2436, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE,
                 String.format(APPLE_IMAGE_MEDIA, 375, 812, 3)));
 
         // iPhone 8, 7, 6s, 6 (750px x 1334px)
-        icons.add(new PWAIcon(750, 1334, baseName,
-                PWAIcon.Domain.HEADER, false,
+        icons.add(new PwaIcon(750, 1334, baseName, PwaIcon.Domain.HEADER, false,
                 APPLE_STARTUP_IMAGE,
                 String.format(APPLE_IMAGE_MEDIA, 375, 667, 2)));
 
         // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus (1242px x 2208px)
-        icons.add(new PWAIcon(1242, 2208, baseName,
-                PWAIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE,
+        icons.add(new PwaIcon(1242, 2208, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE,
                 String.format(APPLE_IMAGE_MEDIA, 414, 763, 3)));
 
         // iPhone 5 (640px x 1136px)
-        icons.add(new PWAIcon(640, 1136, baseName,
-                PWAIcon.Domain.HEADER, false,
+        icons.add(new PwaIcon(640, 1136, baseName, PwaIcon.Domain.HEADER, false,
                 APPLE_STARTUP_IMAGE,
                 String.format(APPLE_IMAGE_MEDIA, 320, 568, 2)));
 

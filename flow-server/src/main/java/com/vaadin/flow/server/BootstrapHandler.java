@@ -74,7 +74,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -94,7 +93,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
-    static final String SCRIPT_TAG = "script";
+    private static final String SCRIPT_TAG = "script";
 
     /**
      * Location of client nocache file, relative to the context root.
@@ -570,7 +569,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
-        setupPWA(head);
+        setupPwa(head);
         setupCss(head, context);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
@@ -703,40 +702,44 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         });
     }
 
-    private static void setupPWA(Element head) {
-        PWARegistry registry = VaadinService.getCurrent().getPwaRegistry();
+    private static void setupPwa(Element head) {
+        VaadinService vaadinService = VaadinService.getCurrent();
+        if (vaadinService == null) {
+            return;
+        }
 
+        PwaRegistry registry = vaadinService.getPwaRegistry();
         PwaConfiguration config = registry.getPwaConfiguration();
 
         if (config.isEnabled()) {
-            // Describe PWA capability for IOS devices
+            // Describe PWA capability for iOS devices
             head.appendElement(META_TAG)
                     .attr("name", "apple-mobile-web-app-capable")
                     .attr(CONTENT_ATTRIBUTE, "yes");
 
             // Theme color
-            head.appendElement(META_TAG)
-                    .attr("name", "theme-color")
+            head.appendElement(META_TAG).attr("name", "theme-color")
                     .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
             head.appendElement(META_TAG)
                     .attr("name", "apple-mobile-web-app-status-bar-style")
                     .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
 
             // Add manifest
-            head.appendElement("link").attr("rel", "manifest")
-                    .attr("href", config.getManifestPath());
+            head.appendElement("link").attr("rel", "manifest").attr("href",
+                    config.getManifestPath());
 
             // Add icons
-            for (PWAIcon icon : registry.getHeaderIcons()) {
+            for (PwaIcon icon : registry.getHeaderIcons()) {
                 head.appendChild(icon.asElement());
             }
 
             // Add service worker initialization
-            head.appendElement(SCRIPT_TAG).text("if ('serviceWorker' in navigator) {\n"
-                    + "  window.addEventListener('load', function() {\n"
-                    + "    navigator.serviceWorker.register('" +
-                    config.getServiceWorkerPath() + "');\n"
-                    + "  });\n" + "}");
+            head.appendElement(SCRIPT_TAG)
+                    .text("if ('serviceWorker' in navigator) {\n"
+                            + "  window.addEventListener('load', function() {\n"
+                            + "    navigator.serviceWorker.register('"
+                            + config.getServiceWorkerPath() + "');\n"
+                            + "  });\n" + "}");
         }
     }
 

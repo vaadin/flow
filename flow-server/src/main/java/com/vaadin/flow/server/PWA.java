@@ -23,133 +23,134 @@ import java.lang.annotation.Target;
 /**
  * Defines application PWA properties.
  *
- * Annotation required in order activate automatic pwa injecting.
+ * Annotation activates automatic
+ * <a href="https://developer.mozilla.org/en-US/Apps/Progressive">PWA</a>
+ * injecting.
+ * <p>
+ * Only one annotation for application is supported. Annotation must be placed
+ * to master layout.
  *
- * Only 1 annotation for application is supported.
+ * Application annotated the annotation will add following capabilities to Flow
+ * application:
  *
- * Annotation must be placed to master layout.
+ * <ul>
+ * <li>handle manifest.json
+ * <li>handle sw.js (service worker), which will enable simple offline fallback
+ * and file caching
+ * <li>handle default (static) offline html page
+ * <li>handle different versions (sizes) of the given logo
+ * <li>inject needed tags to the app's page header
+ * </ul>
  *
- * Application annotated with enabled PWA will add following capabilities
- * to flow application:
+ * Any of the handled resources can be explicitly overridden with static file in
+ * public resources. For example, if {@literal manifest.json} is available in
+ * webapp root folder it will be served instead of generated
+ * {@literal manifest.json}. Same applies for service worker and generated
+ * icons.
  *
- * - handle manifest.json
- * - handle sw.js (service worker),
- *     which will handle simple offline fallback and file caching
- * - handle default (static) offline html page
- * - handle different versions (sizes) of given logo
- * - inject needed tags to header
- *
- * Any of the handled resources can be explicitly overridden with static
- * file in public resources.
- *
- * For example, if "manifest.json" is available in webapp root folder it
- * will be served instead of generated manifest.json. Same applies for
- * service worker and generated icons.
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/Apps/Progressive">https://developer.mozilla.org/en-US/Apps/Progressive</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface PWA {
 
     /**
-     * Path to static offline html file.
+     * Path to the static offline html file.
      *
-     * Defaults to (relative) "offline.html"
-     * with default configuration that is webapp/offline.html
+     * Defaults to (relative) {@literal offline.html} with default configuration
+     * that is {@literal webapp/offline.html}
      *
-     * If offline file is not found, falls back to default offline page
+     * If offline file is not found, falls back to default offline page.
      *
-     * @return Path to static offline html file
+     * @return path to the static offline html file
      */
     String offlinePath() default PwaConfiguration.DEFAULT_OFFLINE_PATH;
 
     /**
-     * Path to manifest file.
+     * Path to the manifest file.
      *
-     * Defaults to (relative) "manifest.json"
-     * with default configuration that is webapp/manifest.json
+     * Defaults to (relative) {@literal manifest.json} with default
+     * configuration that is {@literal webapp/manifest.json}
      *
-     * @return Path to manifest file
+     * @return path to the manifest file
      */
     String manifestPath() default PwaConfiguration.DEFAULT_PATH;
 
     /**
-     * Path to logo.
+     * Path to the application logo file.
      *
-     * Defaults to (relative) "icons/logo.png"
+     * Defaults to (relative) {@literal icons/logo.png} with default
+     * configuration that is {@literal webapp/manifest.json}
      *
-     * with default configuration that is webapp/manifest.json
+     * If the specified logo file is not found, the default one will be used.
+     * The file is also used to create different sizes of logo.
      *
-     * If the logo -file is not found, falls back to default logo.
-     *
-     * Logo is also used to create different sizes of logo.
-     *
-     * @return path to logo
+     * @return path to the application logo file
      */
     String logoPath() default PwaConfiguration.DEFAULT_LOGO;
 
     /**
      * Name of the application.
      *
-     * @return Name of the application
+     * @return name of the application
      */
     String name();
 
     /**
-     * Short name for application.
+     * Short name for the application. Maximum of 12 characters.
      *
-     * Maximum of 12 characters.
-     *
-     * @return Short name for application
+     * @return short name for the application
      */
     String shortName();
 
     /**
-     * Description of application.
+     * Description of the application.
      *
-     * @return Description of application
+     * @return description of the application
      */
     String description() default "";
 
     /**
-     * Theme color of application.
+     * Theme color of the application.
      *
-     * The theme color sets the color of the tool bar, and in the task switcher.
+     * The theme color sets the color of the application's tool bar and
+     * application's color in the task switcher.
      *
-     * @return Theme color of application
+     * @return theme color of the application
      */
     String themeColor() default PwaConfiguration.DEFAULT_THEME_COLOR;
 
     /**
-     * Background color of application.
+     * Background color of the application.
      *
-     * The background_color property is used on the splash screen when the
+     * The background color property is used on the splash screen when the
      * application is first launched.
      *
-     * @return Background color of application
+     * @return Background color of the application
      */
     String backgroundColor() default PwaConfiguration.DEFAULT_BACKGROUND_COLOR;
 
     /**
      * Defines the developers’ preferred display mode for the website.
      *
-     * Possible values:
-     * fullscreen, standalone, minimal-ui, browser
+     * Possible values: fullscreen, standalone, minimal-ui, browser
      *
      * @return display mode of application
      */
     String display() default PwaConfiguration.DEFAULT_DISPLAY;
 
     /**
-     * Offline resources to be cached with service worker.
+     * Offline resources to be cached using the service worker.
      *
-     * @return Offline resources to be cached
+     * @return offline resources to be cached
      */
     String[] offlineResources() default {};
 
     /**
      * Is PWA injecting enabled.
      *
-     * @return Is PWA injecting enabled
+     * @return is PWA injecting enabled
      */
     boolean enabled() default true;
 }
