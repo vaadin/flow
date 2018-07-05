@@ -8,7 +8,8 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
  * This class provides test base for IT test that check dependencies being
  * loaded correctly.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class DependenciesLoadingBaseView extends AbstractDivView {
     static final String PRELOADED_DIV_ID = "preloadedDiv";

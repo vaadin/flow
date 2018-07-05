@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import java.util.Locale;
  * Misc internal utility methods used by both the server and the client package.
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public class SharedUtil implements Serializable {
 
@@ -41,7 +41,6 @@ public class SharedUtil implements Serializable {
      * Splits a camelCaseString into an array of words with the casing
      * preserved.
      *
-     * @since 7.4
      * @param camelCaseString
      *            The input string in camelCase format
      * @return An array with one entry per word in the input string
@@ -86,7 +85,6 @@ public class SharedUtil implements Serializable {
      * {@literal AwesomeURLFactory} becomes {@literal Awesome URL Factory}
      * {@literal SomeUriAction} becomes {@literal Some Uri Action}
      *
-     * @since 7.4
      * @param camelCaseString
      *            The input string in camelCase format
      * @return A human friendly version of the input
@@ -103,7 +101,6 @@ public class SharedUtil implements Serializable {
      * Joins the words in the input array together into a single string by
      * inserting the separator string between each word.
      *
-     * @since 7.4
      * @param parts
      *            The array of words
      * @param separator
@@ -123,7 +120,6 @@ public class SharedUtil implements Serializable {
      * Capitalizes the first character in the given string in a way suitable for
      * use in code (methods, properties etc)
      *
-     * @since 7.4
      * @param string
      *            The string to capitalize
      * @return The capitalized string
@@ -167,7 +163,6 @@ public class SharedUtil implements Serializable {
      * properties by only considering the last part, e.g. "address.streetName"
      * is equal to "streetName" for this method.
      *
-     * @since 7.4
      * @param propertyId
      *            The propertyId to format
      * @return A human friendly version of the property id
@@ -268,7 +263,6 @@ public class SharedUtil implements Serializable {
      * {@literal foo} becomes {@literal foo} {@literal foo-bar} becomes
      * {@literal fooBar} {@literal foo--bar} becomes {@literal fooBar}
      *
-     * @since 7.5
      * @param dashSeparated
      *            The dash separated string to convert
      * @return a camelCase version of the input string

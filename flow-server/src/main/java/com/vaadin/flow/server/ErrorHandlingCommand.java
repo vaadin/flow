@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,15 +19,14 @@ package com.vaadin.flow.server;
  * Defines the interface to handle exceptions thrown during the execution of a
  * FutureAccess.
  *
- * @since 7.1.8
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface ErrorHandlingCommand extends Command {
 
     /**
      * Handles exceptions thrown during the execution of a FutureAccess.
      *
-     * @since 7.1.8
      * @param exception
      *            the thrown exception.
      */

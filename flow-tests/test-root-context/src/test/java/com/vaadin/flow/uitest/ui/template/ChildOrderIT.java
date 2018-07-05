@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,7 +31,8 @@ import com.vaadin.testbench.TestBenchElement;
  * Tests to validate the ordering of server-side nodes when added alongside
  * client-side nodes.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ChildOrderIT extends ChromeBrowserTest {
 

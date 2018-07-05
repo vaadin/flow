@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,8 @@ package com.vaadin.flow.shared.ui;
 /**
  * Transport modes for Push
  *
- * @since 7.1
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public enum Transport {
     /**
@@ -30,7 +30,6 @@ public enum Transport {
     /**
      * Websocket for server to client, XHR for client to server.
      *
-     * @since 7.6
      */
     WEBSOCKET_XHR("websocket-xhr"),
     /**
@@ -62,7 +61,6 @@ public enum Transport {
      *            {@link #getIdentifier()}
      * @return the transport identified by the identifier or {@code null} if no
      *         matching transport was found
-     * @since 7.3.10
      */
     public static Transport getByIdentifier(String identifier) {
         for (Transport t : values()) {

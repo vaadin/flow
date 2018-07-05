@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,7 @@ import com.vaadin.flow.data.binder.Binder.BindingBuilder;
  * to register a handler for field level validation status changes.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <TARGET>
  *            the target data type of the binding for which the validation
@@ -46,7 +47,6 @@ import com.vaadin.flow.data.binder.Binder.BindingBuilder;
  * @see BindingValidationStatusHandler
  * @see BinderValidationStatus
  *
- * @since 8.0
  */
 public class BindingValidationStatus<TARGET> implements Serializable {
 
@@ -88,7 +88,6 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      * @param source
      *            field whose status has changed, not {@code null}
      * 
-     * @since 8.2
      */
     public BindingValidationStatus(Result<TARGET> result,
             Binding<?, TARGET> source) {
@@ -180,7 +179,6 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      *
      * @return list of validation results
      *
-     * @since 8.2
      */
     public List<ValidationResult> getValidationResults() {
         return Collections.unmodifiableList(results);

@@ -24,6 +24,7 @@ import java.util.Optional;
  * separated strings.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <T>
  *            the item type
  */

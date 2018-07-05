@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,7 +31,8 @@ import com.vaadin.flow.component.HasElement;
  * any position with {@link #addComponents(Object, Component...)} or
  * {@link #prependComponents(Object, Component...)}.
  * 
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  * 
  * @param <T>
  *            the type of the displayed items
@@ -42,7 +43,8 @@ public interface HasItemsAndComponents<T> extends HasComponents, HasItems<T> {
      * Interface for components that are used inside an
      * {@link HasItemsAndComponents} for representing a single item.
      * 
-     * @author Vaadin Ltd.
+     * @author Vaadin Ltd
+ * @since 1.0.
      * 
      * @param <T>
      *            the type of the displayed item

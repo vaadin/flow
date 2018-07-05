@@ -9,7 +9,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * See {@link DependenciesLoadingAnnotationsView} for more details about the
  * test.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  * @see DependenciesLoadingAnnotationsView
  */
 @Route("com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingPageApiView")

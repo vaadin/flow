@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,8 +35,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * params defined in <code>web.xml</code> or the <code>@WebServlet</code>
  * annotation take precedence over values defined in this annotation.
  *
- * @since 7.1
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -45,8 +45,8 @@ public @interface VaadinServletConfiguration {
      * Defines the init parameter name for methods in
      * {@link VaadinServletConfiguration}.
      *
-     * @since 7.1
      * @author Vaadin Ltd
+ * @since 1.0
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)

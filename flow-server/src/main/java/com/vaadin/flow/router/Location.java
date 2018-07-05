@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
  * lacking e.g. the hostname that can also be present in URLs.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";
