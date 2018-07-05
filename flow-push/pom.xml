@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -10,9 +11,6 @@
     <artifactId>flow-push</artifactId>
     <name>Flow Push</name>
     <packaging>jar</packaging>
-    <properties>
-        <atmosphere.runtime.version>2.4.24.vaadin1</atmosphere.runtime.version>
-    </properties>
 
     <dependencies>
         <!-- Atmosphere -->
@@ -39,7 +37,8 @@
                             <target>
                                 <property name="vaadinPush.js"
                                     location="${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push/vaadinPush.js" />
-                                <property name="vaadinPush-min.js"
+                                <property
+                                    name="vaadinPush-min.js"
                                     location="${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push/vaadinPush-min.js" />
 
                                 <!-- Gzipped versions -->
@@ -51,6 +50,19 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <index>false</index>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
