@@ -715,7 +715,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             // Theme color
             head.appendElement(META_TAG)
-                    .attr("theme-color", config.getThemeColor());
+                    .attr("name", "theme-color")
+                    .attr("content", config.getThemeColor());
             head.appendElement(META_TAG)
                     .attr("apple-mobile-web-app-status-bar-style",
                             config.getThemeColor());
