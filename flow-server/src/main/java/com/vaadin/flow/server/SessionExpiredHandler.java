@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,8 +21,8 @@ import java.io.IOException;
  * A specialized RequestHandler which is capable of sending session expiration
  * messages to the user.
  *
- * @since 7.1
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface SessionExpiredHandler extends RequestHandler {
 
@@ -40,7 +40,6 @@ public interface SessionExpiredHandler extends RequestHandler {
      *         handlers should be called, otherwise false
      * @throws IOException
      *             If an IO error occurred
-     * @since 7.1
      */
     boolean handleSessionExpired(VaadinRequest request, VaadinResponse response)
             throws IOException;

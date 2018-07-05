@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.io.Serializable;
  * A {@link Runnable} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @FunctionalInterface
 public interface SerializableRunnable extends Runnable, Serializable {

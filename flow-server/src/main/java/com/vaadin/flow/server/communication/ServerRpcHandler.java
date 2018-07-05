@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,7 +56,7 @@ import elemental.json.impl.JsonUtil;
  * Handles a client-to-server message containing serialized RPC invocations.
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public class ServerRpcHandler implements Serializable {
 
@@ -72,8 +72,8 @@ public class ServerRpcHandler implements Serializable {
      * A data transfer object representing an RPC request sent by the client
      * side.
      *
-     * @since 7.2
      * @author Vaadin Ltd
+ * @since 1.0
      */
     public static class RpcRequest implements Serializable {
 
@@ -173,7 +173,6 @@ public class ServerRpcHandler implements Serializable {
         /**
          * Gets the id of the client to server message
          *
-         * @since 7.6
          * @return the server message id
          */
         public int getClientToServerId() {
@@ -203,6 +202,7 @@ public class ServerRpcHandler implements Serializable {
      * the expected one.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      */
     public static class InvalidUIDLSecurityKeyException
             extends GeneralSecurityException {

@@ -26,7 +26,8 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     private static final String MODEL_PROPERTY_NAME = "model";
