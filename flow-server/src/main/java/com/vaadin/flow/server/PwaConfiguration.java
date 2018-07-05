@@ -35,7 +35,7 @@ public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_NAME = "Vaadin Flow Application";
     public static final String DEFAULT_THEME_COLOR =  "#ffffff";
     public static final String DEFAULT_BACKGROUND_COLOR = "#f2f2f2";
-    public static final String DEFAULT_DISPLAY = "fullscreen";
+    public static final String DEFAULT_DISPLAY = "standalone";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
 
     private final String appName;
