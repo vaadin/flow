@@ -22,18 +22,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class implementation of {@link PWA} annotation.
+ * Class that holds the configuration from the {@link PWA} annotation.
  *
- * Takes {@link PWA} in constructor to fill properties.
- * Sanitizes the input and falls back to default values if {@link PWA} is
- * unavailable (null).
- *
+ * Takes {@link PWA} in constructor to fill properties. Sanitizes the input and
+ * falls back to default values if {@link PWA} is unavailable ({@code null}).
  */
 public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_PATH = "manifest.json";
     public static final String DEFAULT_LOGO = "icons/logo.png";
     public static final String DEFAULT_NAME = "Vaadin Flow Application";
-    public static final String DEFAULT_THEME_COLOR =  "#ffffff";
+    public static final String DEFAULT_THEME_COLOR = "#ffffff";
     public static final String DEFAULT_BACKGROUND_COLOR = "#f2f2f2";
     public static final String DEFAULT_DISPLAY = "standalone";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
@@ -50,117 +48,128 @@ public class PwaConfiguration implements Serializable {
     private final String display;
     private final String startUrl;
     private final boolean enabled;
-    private List<String> offlineResources;
+    private final List<String> offlineResources;
 
     protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
         if (pwa != null) {
-            this.appName = pwa.name();
-            this.shortName = pwa.shortName().substring(0,
+            appName = pwa.name();
+            shortName = pwa.shortName().substring(0,
                     Math.min(pwa.shortName().length(), 12));
-            this.description = pwa.description();
-            this.backgroundColor = pwa.backgroundColor();
-            this.themeColor = pwa.themeColor();
-            this.logoPath = checkPath(pwa.logoPath());
-            this.manifestPath = checkPath(pwa.manifestPath());
-            this.offlinePath = checkPath(pwa.offlinePath());
-            this.display = pwa.display();
-            this.startUrl = getStartUrl(servletContext);
-            this.serviceWorkerPath = "sw.js";
-            this.enabled = pwa.enabled();
-            this.offlineResources = Arrays.asList(pwa.offlineResources());
+            description = pwa.description();
+            backgroundColor = pwa.backgroundColor();
+            themeColor = pwa.themeColor();
+            logoPath = checkPath(pwa.logoPath());
+            manifestPath = checkPath(pwa.manifestPath());
+            offlinePath = checkPath(pwa.offlinePath());
+            display = pwa.display();
+            startUrl = getStartUrl(servletContext);
+            serviceWorkerPath = "sw.js";
+            enabled = pwa.enabled();
+            offlineResources = Arrays.asList(pwa.offlineResources());
         } else {
-            this.appName = DEFAULT_NAME;
-            this.shortName = "Flow PWA";
-            this.description = "";
-            this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
-            this.themeColor = DEFAULT_THEME_COLOR;
-            this.logoPath = DEFAULT_LOGO;
-            this.manifestPath = DEFAULT_PATH;
-            this.offlinePath = DEFAULT_OFFLINE_PATH;
-            this.display = DEFAULT_DISPLAY;
-            this.startUrl = getStartUrl(servletContext);
-            this.serviceWorkerPath = "sw.js";
-            this.enabled = false;
-            this.offlineResources = Collections.emptyList();
+            appName = DEFAULT_NAME;
+            shortName = "Flow PWA";
+            description = "";
+            backgroundColor = DEFAULT_BACKGROUND_COLOR;
+            themeColor = DEFAULT_THEME_COLOR;
+            logoPath = DEFAULT_LOGO;
+            manifestPath = DEFAULT_PATH;
+            offlinePath = DEFAULT_OFFLINE_PATH;
+            display = DEFAULT_DISPLAY;
+            startUrl = getStartUrl(servletContext);
+            serviceWorkerPath = "sw.js";
+            enabled = false;
+            offlineResources = Collections.emptyList();
         }
     }
 
+    private static String getStartUrl(ServletContext context) {
+        return context == null || context.getContextPath() == null
+                || context.getContextPath().isEmpty() ? "/"
+                        : context.getContextPath() + "/";
+    }
+
+    private static String checkPath(String path) {
+        return path.replaceAll("^[./]+", "");
+    }
+
     /**
-     * Application name.
+     * Gets the application name.
      *
-     * @return Application name
+     * @return application name
      */
     public String getAppName() {
         return appName;
     }
 
     /**
-     * Application short name.
+     * Gets the application short name.
      *
      * Max 12 characters.
      *
-     * @return Application short name
+     * @return application short name
      */
     public String getShortName() {
         return shortName;
     }
 
     /**
-     * Application description.
+     * Gets the application description.
      *
-     * @return Application description
+     * @return application description
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * Background color of application.
+     * Gets the background color of the application.
      *
-     * The background_color property is used on the splash screen when the
+     * The background color property is used on the splash screen when the
      * application is first launched.
      *
-     * @return Background color of application
+     * @return background color of the application
      */
     public String getBackgroundColor() {
         return backgroundColor;
     }
 
     /**
-     * Theme color of application.
+     * Gets the theme color of the application.
      *
-     * The theme color sets the color of the tool bar, and in the task switcher.
+     * The theme color sets the color of the application's tool bar and
+     * application's color in the task switcher.
      *
-     * @return Theme color of application
+     * @return theme color of the application
      */
     public String getThemeColor() {
         return themeColor;
     }
 
     /**
-     * Path to logo.
+     * Gets the path to the application logo file.
      *
-     * For example "img/my-icon.png"
+     * Example: {@literal img/my-icon.png}
      *
-     * @return Path to logo
+     * @return path to the application logo file
      */
     public String getLogoPath() {
         return logoPath;
     }
 
     /**
-     * Path to logo with prefix, so request matches.
+     * Gets the ath to logo with prefix, so request matches.
      *
-     * @return Path to logo with prefix, so request matches
+     * @return path to logo with prefix, so request matches
      */
     public String relLogoPath() {
         return "/" + logoPath;
     }
 
     /**
-     * Path to manifest.json.
+     * Gets the path to the manifest.json.
      *
-     * @return Path to manifest.json
+     * @return path to the manifest.json
      */
     public String getManifestPath() {
         return manifestPath;
@@ -169,7 +178,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to manifest with prefix, so request matches.
      *
-     * @return Path to manifest with prefix, so request matches
+     * @return path to manifest with prefix, so request matches
      */
     public String relManifestPath() {
         return "/" + manifestPath;
@@ -178,7 +187,7 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to static offline html file.
      *
-     * @return Path to static offline html file
+     * @return path to static offline html file
      */
     public String getOfflinePath() {
         return offlinePath;
@@ -187,44 +196,43 @@ public class PwaConfiguration implements Serializable {
     /**
      * Path to offline file with prefix, so request matches.
      *
-     * @return Path to offline file with prefix, so request matches
+     * @return path to offline file with prefix, so request matches
      */
     public String relOfflinePath() {
         return "/" + offlinePath;
     }
 
     /**
-     * Path to service worker.
+     * Gets the path to the service worker.
      *
-     * @return Path to service worker
+     * @return path to service worker
      */
     public String getServiceWorkerPath() {
         return serviceWorkerPath;
     }
 
     /**
-     * Path to service worker with prefix, so request matches.
+     * Gets the path to service worker with prefix, so request matches.
      *
-     * @return Path to service worker with prefix, so request matches
+     * @return path to service worker with prefix, so request matches
      */
     public String relServiceWorkerPath() {
         return "/" + serviceWorkerPath;
     }
 
     /**
-     * List of files to be added to pre cache.
+     * Gets the list of files to be added to pre cache.
      *
-     * @return List of files to be added to pre cache
+     * @return list of files to be added to pre cache
      */
     public List<String> getOfflineResources() {
         return Collections.unmodifiableList(offlineResources);
     }
 
     /**
-     * Defines the developers’ preferred display mode for the website.
+     * Gets the the developers’ preferred display mode for the website.
      *
-     * Possible values:
-     * fullscreen, standalone, minimal-ui, browser
+     * Possible values: fullscreen, standalone, minimal-ui, browser
      *
      * @return display mode
      */
@@ -233,9 +241,9 @@ public class PwaConfiguration implements Serializable {
     }
 
     /**
-     * Start url of the PWA application.
+     * Gets the start url of the PWA application.
      *
-     * @return Start url of the PWA application
+     * @return start url of the PWA application
      */
     public String getStartUrl() {
         return startUrl;
@@ -244,21 +252,9 @@ public class PwaConfiguration implements Serializable {
     /**
      * Is PWA enabled.
      *
-     * @return Is PWA enabled
+     * @return is PWA enabled
      */
     public boolean isEnabled() {
         return enabled;
     }
-
-    private static String getStartUrl(ServletContext context) {
-        return context == null || context.getContextPath() == null ||
-                context.getContextPath().isEmpty() ? "/" :
-                context.getContextPath() + "/";
-    }
-
-    private static String checkPath(String path) {
-        return path.replaceAll("^[\\./]+", "");
-    }
-
-
 }

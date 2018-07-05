@@ -19,7 +19,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 
-
 @PWA(name = ParentLayout.PWA_NAME,
         shortName = ParentLayout.PWA_SHORT_NAME,
         themeColor = ParentLayout.THEME_COLOR,
@@ -30,9 +29,6 @@ public class ParentLayout extends Div implements RouterLayout {
     static final String PWA_NAME = "PWA test name";
     static final String PWA_SHORT_NAME = "PWA";
 
-
     public ParentLayout() {
     }
-
-
 }

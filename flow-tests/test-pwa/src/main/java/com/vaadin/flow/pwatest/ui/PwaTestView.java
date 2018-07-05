@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,22 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.flow.pwatest.ui;
 
-/**
- * Exception thrown when {@link PWARegistry} initialization fails.
- *
- */
-public class PWAInitializationException extends RuntimeException {
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
 
-    /**
-     * Constructs {@link PWAInitializationException} with message and underlying
-     * cause.
-     *
-     * @param message the detail message.
-     * @param cause underlying cause of exception.
-     */
-    public PWAInitializationException(String message, Throwable cause) {
-        super(message, cause);
-    }
+@Route(value = "", layout = ParentLayout.class)
+public class PwaTestView extends Div {
 }

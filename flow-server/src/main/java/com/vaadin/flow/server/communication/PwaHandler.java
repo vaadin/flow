@@ -21,92 +21,95 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.flow.server.PWAIcon;
+import com.vaadin.flow.server.PwaIcon;
+import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.PWARegistry;
 
 /**
  * Handles serving of PWA resources.
  *
- * - manifest
- * - service worker
- * - offline fallback page
- * - icons
+ * Resources include:
+ * <ul>
+ * <li>manifest
+ * <li>service worker
+ * <li>offline fallback page
+ * <li>icons
+ * </ul>
  */
-public class PWAHandler implements RequestHandler {
-
-    private PWARegistry pwaRegistry;
-    private Map<String, RequestHandler> requestHandlerMap;
+public class PwaHandler implements RequestHandler {
+    private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
+    private final PwaRegistry pwaRegistry;
 
     /**
-     * Creates PwaHandler from {@link PWARegistry}.
+     * Creates PwaHandler from {@link PwaRegistry}.
      *
      * Sets up handling for icons, manifest, service worker and offline page.
      *
-     * @param pwaRegistry registry for pwa
+     * @param pwaRegistry
+     *            registry for PWA
      */
-    public PWAHandler(PWARegistry pwaRegistry) {
-        requestHandlerMap = new HashMap<>();
+    public PwaHandler(PwaRegistry pwaRegistry) {
         this.pwaRegistry = pwaRegistry;
-
         init();
-
     }
 
     private void init() {
         // Don't init handlers, if not enabled
-        if (!this.pwaRegistry.getPwaConfiguration().isEnabled())
+        if (!pwaRegistry.getPwaConfiguration().isEnabled()) {
             return;
+        }
 
         // Icon handling
-        for (PWAIcon icon : this.pwaRegistry.getIcons()) {
+        for (PwaIcon icon : pwaRegistry.getIcons()) {
             requestHandlerMap.put(icon.getRelHref(),
                     (session, request, response) -> {
                         response.setContentType(icon.getType());
-                        // Icon is cached with service worker, deny browser caching
-                        if (icon.cached()) {
+                        // Icon is cached with service worker, deny browser
+                        // caching
+                        if (icon.shouldBeCached()) {
                             response.setHeader("Cache-Control",
                                     "no-cache, must-revalidate");
                         }
-                        OutputStream out = response.getOutputStream();
-                        icon.write(out);
-                        out.close();
+                        try (OutputStream out = response.getOutputStream()) {
+                            icon.write(out);
+                        }
                         return true;
                     });
         }
         // Offline page handling
         requestHandlerMap.put(
-                this.pwaRegistry.getPwaConfiguration().relOfflinePath(),
+                pwaRegistry.getPwaConfiguration().relOfflinePath(),
                 (session, request, response) -> {
                     response.setContentType("text/html");
-                    response.getWriter().write(pwaRegistry.getOfflineHtml());
-                    response.getWriter().close();
+                    try (PrintWriter writer = response.getWriter()) {
+                        writer.write(pwaRegistry.getOfflineHtml());
+                    }
                     return true;
                 });
 
         // Manifest.json handling
         requestHandlerMap.put(
-                this.pwaRegistry.getPwaConfiguration().relManifestPath(),
+                pwaRegistry.getPwaConfiguration().relManifestPath(),
                 (session, request, response) -> {
                     response.setContentType("application/json");
-                    PrintWriter writer = response.getWriter();
-                    writer.write(this.pwaRegistry.getManifestJson());
-                    writer.close();
+                    try (PrintWriter writer = response.getWriter()) {
+                        writer.write(pwaRegistry.getManifestJson());
+                    }
                     return true;
                 });
 
         // serviceworker.js handling
         requestHandlerMap.put(
-                this.pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
+                pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
                 (session, request, response) -> {
                     response.setContentType("application/javascript");
-                    PrintWriter writer = response.getWriter();
-                    writer.write(this.pwaRegistry.getServiceWorkerJs());
-                    writer.close();
+                    try (PrintWriter writer = response.getWriter()) {
+                        writer.write(pwaRegistry.getServiceWorkerJs());
+                    }
                     return true;
                 });
     }
@@ -117,15 +120,13 @@ public class PWAHandler implements RequestHandler {
         VaadinServletRequest httpRequest = (VaadinServletRequest) request;
         String requestUri = httpRequest.getPathInfo();
 
-        if (pwaRegistry.getPwaConfiguration().isEnabled() &&
-                requestHandlerMap.containsKey(requestUri)) {
-            return requestHandlerMap.get(requestUri)
-                    .handleRequest(session,request,response);
+        if (pwaRegistry.getPwaConfiguration().isEnabled()
+                && requestHandlerMap.containsKey(requestUri)) {
+            return requestHandlerMap.get(requestUri).handleRequest(session,
+                    request, response);
         }
 
         return false;
     }
-
-
 
 }

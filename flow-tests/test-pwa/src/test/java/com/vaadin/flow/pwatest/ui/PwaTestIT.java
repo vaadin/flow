@@ -36,54 +36,53 @@ import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class PWATestIT extends ChromeBrowserTest {
+public class PwaTestIT extends ChromeBrowserTest {
 
     @Test
-    public void testPWAResources() throws IOException, JSONException {
+    public void testPwaResources() throws IOException, JSONException {
         open();
 
         WebElement head = findElement(By.tagName("head"));
 
         // test mobile capable
-        Assert.assertEquals(1,
-                head.findElements(By.name("apple-mobile-web-app-capable"))
-                .size());
+        Assert.assertEquals(1, head
+                .findElements(By.name("apple-mobile-web-app-capable")).size());
 
         // test theme color
-        Assert.assertEquals(1, head
-                .findElements(By.xpath("//meta[@name='theme-color'][@content='"
-                        + ParentLayout.THEME_COLOR+ "']")).size());
+        Assert.assertEquals(
+                1, head
+                        .findElements(By
+                                .xpath("//meta[@name='theme-color'][@content='"
+                                        + ParentLayout.THEME_COLOR + "']"))
+                        .size());
 
         // test theme color for apple mobile
-        Assert.assertEquals(1, head
-                .findElements(By.xpath(
-                        "//meta[@name='apple-mobile-web-app-status-bar-style']"
-                                + "[@content='"+ParentLayout.THEME_COLOR+"']"))
+        Assert.assertEquals(1, head.findElements(
+                By.xpath("//meta[@name='apple-mobile-web-app-status-bar-style']"
+                        + "[@content='" + ParentLayout.THEME_COLOR + "']"))
                 .size());
         // icons test
-        checkIcons(head.findElements(By.xpath(
-                "//link[@rel='shortcut icon']")),1);
+        checkIcons(head.findElements(By.xpath("//link[@rel='shortcut icon']")),
+                1);
+
+        checkIcons(head.findElements(
+                By.xpath("//link[@rel='icon'][@sizes][@href]")), 2);
+
+        checkIcons(head.findElements(
+                By.xpath("//link[@rel='apple-touch-icon'][@sizes][@href]")), 1);
 
         checkIcons(head.findElements(By.xpath(
-                "//link[@rel='icon'][@sizes][@href]")),2);
-
-        checkIcons(head.findElements(By.xpath(
-                "//link[@rel='apple-touch-icon'][@sizes][@href]")),1);
-
-        checkIcons(head.findElements(By.xpath(
-                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")),4);
+                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")), 4);
 
         // test web manifest
         List<WebElement> elements = head
                 .findElements(By.xpath("//link[@rel='manifest'][@href]"));
         Assert.assertEquals(1, elements.size());
         String href = elements.get(0).getAttribute("href");
-        Assert.assertTrue(href + " didn't respond with resource",
-                exists(href));
+        Assert.assertTrue(href + " didn't respond with resource", exists(href));
         // Verify user values in manifest.json
         JSONObject manifest = readJsonFromUrl(href);
-        Assert.assertEquals(ParentLayout.PWA_NAME,
-                manifest.getString("name"));
+        Assert.assertEquals(ParentLayout.PWA_NAME, manifest.getString("name"));
         Assert.assertEquals(ParentLayout.PWA_SHORT_NAME,
                 manifest.getString("short_name"));
         Assert.assertEquals(ParentLayout.BG_COLOR,
@@ -94,7 +93,7 @@ public class PWATestIT extends ChromeBrowserTest {
         // test service worker initialization
         elements = head.findElements(By.tagName("script")).stream()
                 .filter(webElement -> webElement.getAttribute("innerHTML")
-                .startsWith("if ('serviceWorker' in navigator)"))
+                        .startsWith("if ('serviceWorker' in navigator)"))
                 .collect(Collectors.toList());
         Assert.assertEquals(1, elements.size());
 
@@ -109,17 +108,17 @@ public class PWATestIT extends ChromeBrowserTest {
                 ? matcher.group(1)
                 : getRootURL() + "/" + matcher.group(1);
 
-        Assert.assertTrue("Service worker not served at: "
-                        + serviceWorkerUrl, exists(serviceWorkerUrl));
+        Assert.assertTrue("Service worker not served at: " + serviceWorkerUrl,
+                exists(serviceWorkerUrl));
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
         // find precache resources from service worker
-        pattern = Pattern.compile("\\{ url: '([^']+)', revision: '[^']+' \\}");
+        pattern = Pattern.compile("\\{ url: '([^']+)', revision: '[^']+' }");
         matcher = pattern.matcher(serviceWorkerJS);
         // Test that all precache resources are available
-        while(matcher.find()) {
-            Assert.assertTrue(matcher.group(1)
-                            + " didn't respond with resource",
+        while (matcher.find()) {
+            Assert.assertTrue(
+                    matcher.group(1) + " didn't respond with resource",
                     exists(matcher.group(1)));
         }
     }
@@ -129,30 +128,28 @@ public class PWATestIT extends ChromeBrowserTest {
         for (WebElement element : icons) {
             String href = element.getAttribute("href");
             Assert.assertTrue(href + " didn't respond with resource",
-                   exists(href));
+                    exists(href));
         }
     }
 
-    private boolean exists(String URLName){
+    private boolean exists(String URLName) {
         URLName = URLName.startsWith("http") ? URLName
                 : getRootURL() + "/" + URLName;
         try {
             HttpURLConnection.setFollowRedirects(false);
-            HttpURLConnection con =
-                    (HttpURLConnection) new URL(URLName).openConnection();
+            HttpURLConnection con = (HttpURLConnection) new URL(URLName)
+                    .openConnection();
             con.setInstanceFollowRedirects(false);
             con.setRequestMethod("HEAD");
             return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
 
     private static String readStringFromUrl(String url) throws IOException {
-        InputStream is = new URL(url).openStream();
-        try {
+        try (InputStream is = new URL(url).openStream()) {
             BufferedReader rd = new BufferedReader(
                     new InputStreamReader(is, Charset.forName("UTF-8")));
             StringBuilder sb = new StringBuilder();
@@ -161,10 +158,7 @@ public class PWATestIT extends ChromeBrowserTest {
                 sb.append((char) cp);
             }
             return sb.toString();
-        } finally {
-            is.close();
         }
-
     }
 
     private static JSONObject readJsonFromUrl(String url)
