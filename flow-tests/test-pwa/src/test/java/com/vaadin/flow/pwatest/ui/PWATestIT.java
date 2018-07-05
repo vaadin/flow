@@ -51,14 +51,15 @@ public class PWATestIT extends ChromeBrowserTest {
 
         // test theme color
         Assert.assertEquals(1, head
-                .findElements(By.xpath("//meta[@theme-color='"
+                .findElements(By.xpath("//meta[@name='theme-color'][@content='"
                         + ParentLayout.THEME_COLOR+ "']")).size());
 
         // test theme color for apple mobile
         Assert.assertEquals(1, head
                 .findElements(By.xpath(
-                        "//meta[@apple-mobile-web-app-status-bar-style='"
-                        + ParentLayout.THEME_COLOR + "']")).size());
+                        "//meta[@name='apple-mobile-web-app-status-bar-style']"
+                                + "[@content='"+ParentLayout.THEME_COLOR+"']"))
+                .size());
         // icons test
         checkIcons(head.findElements(By.xpath(
                 "//link[@rel='shortcut icon']")),1);
