@@ -93,6 +93,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
+    static final String SCRIPT_TAG = "script";
 
     /**
      * Location of client nocache file, relative to the context root.
@@ -462,7 +463,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }).collect(Collectors.joining("\n"));
 
         if (!registerScript.isEmpty()) {
-            document.body().appendElement("script").text(registerScript);
+            document.body().appendElement(SCRIPT_TAG).text(registerScript);
         }
     }
 
@@ -731,7 +732,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             // Add service worker initialization
-            head.appendElement("script").text("if ('serviceWorker' in navigator) {\n"
+            head.appendElement(SCRIPT_TAG).text("if ('serviceWorker' in navigator) {\n"
                     + "  window.addEventListener('load', function() {\n"
                     + "    navigator.serviceWorker.register('" +
                     config.getServiceWorkerPath() + "');\n"
@@ -789,7 +790,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static Element createJavaScriptElement(String sourceUrl,
             boolean defer) {
-        Element jsElement = new Element(Tag.valueOf("script"), "")
+        Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                 .attr("type", "text/javascript").attr(DEFER_ATTRIBUTE, defer);
         if (sourceUrl != null) {
             jsElement = jsElement.attr("src", sourceUrl);
