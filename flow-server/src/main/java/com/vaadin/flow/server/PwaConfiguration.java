@@ -51,6 +51,7 @@ public class PwaConfiguration implements Serializable {
     private final List<String> offlineResources;
 
     protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
+        serviceWorkerPath = "sw.js";
         if (pwa != null) {
             appName = pwa.name();
             shortName = pwa.shortName().substring(0,
@@ -63,7 +64,6 @@ public class PwaConfiguration implements Serializable {
             offlinePath = checkPath(pwa.offlinePath());
             display = pwa.display();
             startUrl = getStartUrl(servletContext);
-            serviceWorkerPath = "sw.js";
             enabled = true;
             offlineResources = Arrays.asList(pwa.offlineResources());
         } else {
@@ -77,7 +77,6 @@ public class PwaConfiguration implements Serializable {
             offlinePath = DEFAULT_OFFLINE_PATH;
             display = DEFAULT_DISPLAY;
             startUrl = getStartUrl(servletContext);
-            serviceWorkerPath = "sw.js";
             enabled = false;
             offlineResources = Collections.emptyList();
         }
