@@ -63,7 +63,8 @@ public class PwaRegistry implements Serializable {
     private final String manifestJson;
     private final String serviceWorkerJs;
 
-public static String WORKBOX_FOLDER = "workbox/";    private long offlineHash;
+    public static final String WORKBOX_FOLDER = "workbox/";
+    private long offlineHash;
     private List<PwaIcon> icons;
 
     private PwaRegistry(PWA pwa, ServletContext servletContext)
