@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class PolymerModelPropertiesIT extends ChromeBrowserTest {
 
@@ -35,8 +36,8 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
         Assert.assertEquals("Property value:foo, model value: foo",
                 initial.getText());
 
-        WebElement template = findElement(By.id("template"));
-        WebElement input = getInShadowRoot(template, By.id("input"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        TestBenchElement input = template.$(TestBenchElement.class).id("input");
         input.clear();
         input.sendKeys("x" + Keys.TAB);
 

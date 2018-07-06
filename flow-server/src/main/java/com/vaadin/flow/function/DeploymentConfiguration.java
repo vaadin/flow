@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * accessing third party properties not explicitly supported by this class.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
+ * @since 1.0
  */
 public interface DeploymentConfiguration extends Serializable {
 
@@ -59,7 +59,6 @@ public interface DeploymentConfiguration extends Serializable {
      * gracefully handle situations when the client sends a message to a
      * connector that has recently been removed on the server.
      *
-     * @since 7.3
      * @return <code>true</code> if sync id checking is enabled;
      *         <code>false</code> otherwise
      */
@@ -94,7 +93,6 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @see WrappedSession#getMaxInactiveInterval()
      *
-     * @since 7.0.0
      *
      * @return True if UIs and sessions receiving only heartbeat requests are
      *         eventually closed; false if heartbeat requests extend UI and
@@ -214,7 +212,6 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return UI class name
      *
-     * @since 7.4
      */
     String getUIClassName();
 
@@ -222,7 +219,6 @@ public interface DeploymentConfiguration extends Serializable {
      * Gets class loader configuration option value.
      *
      * @return the configured class loader name
-     * @since 7.4
      */
     String getClassLoaderName();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,7 @@ import java.io.IOException;
  * is called and unlocked after it has completed.
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public abstract class SynchronizedRequestHandler implements RequestHandler {
 
@@ -74,7 +74,6 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * {@link #synchronizedHandleRequest(VaadinSession, VaadinRequest, VaadinResponse)}
      * with the session locked.
      *
-     * @since 7.2
      * @param request
      *            the request to handle
      * @return <code>true</code> if the request handling should continue once

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -81,9 +81,9 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
         "WebComponent: Vaadin.PasswordFieldElement#2.0.1",
-        "Flow#1.0-SNAPSHOT" })
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
 public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R, T>, T>

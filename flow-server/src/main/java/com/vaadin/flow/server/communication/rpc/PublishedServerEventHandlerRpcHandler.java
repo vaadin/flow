@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -54,6 +55,7 @@ import elemental.json.JsonValue;
  * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public class PublishedServerEventHandlerRpcHandler
@@ -123,6 +125,23 @@ public class PublishedServerEventHandlerRpcHandler
     static void invokeMethod(Component instance, Class<?> clazz,
             String methodName, JsonArray args) {
         assert instance != null;
+        Optional<Method> method = findMethod(instance, clazz, methodName);
+        if (method.isPresent()) {
+            invokeMethod(instance, method.get(), args);
+        } else if (instance instanceof Composite) {
+            Component compositeContent = ((Composite<?>) instance).getContent();
+            invokeMethod(compositeContent, compositeContent.getClass(),
+                    methodName, args);
+        } else {
+            String msg = String.format("Neither class '%s' "
+                    + "nor its super classes declare event handler method '%s'",
+                    instance.getClass().getName(), methodName);
+            throw new IllegalStateException(msg);
+        }
+    }
+
+    private static Optional<Method> findMethod(Component instance,
+            Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
                 .filter(method -> method.isAnnotationPresent(EventHandler.class)
@@ -134,14 +153,11 @@ public class PublishedServerEventHandlerRpcHandler
                     instance.getClass().getName(), methodName);
             throw new IllegalStateException(msg);
         } else if (methods.size() == 1) {
-            invokeMethod(instance, methods.get(0), args);
+            return Optional.of(methods.get(0));
         } else if (!Component.class.equals(clazz)) {
-            invokeMethod(instance, clazz.getSuperclass(), methodName, args);
+            return findMethod(instance, clazz.getSuperclass(), methodName);
         } else {
-            String msg = String.format("Neither class '%s' "
-                    + "nor its super classes declare event handler method '%s'",
-                    instance.getClass().getName(), methodName);
-            throw new IllegalStateException(msg);
+            return Optional.empty();
         }
     }
 

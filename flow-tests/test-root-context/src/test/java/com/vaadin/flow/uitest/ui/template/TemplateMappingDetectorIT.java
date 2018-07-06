@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,10 +17,9 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class TemplateMappingDetectorIT extends ChromeBrowserTest {
 
@@ -28,8 +27,7 @@ public class TemplateMappingDetectorIT extends ChromeBrowserTest {
     public void regularTemplate_mappedComponentsAreMarkedAsSuch() {
         open();
 
-        WebElement container = findElement(
-                By.tagName("template-mapping-detector"));
+        TestBenchElement container = $("template-mapping-detector").first();
         assertMappedComponentsAreMarkedProperly(container, false);
     }
 
@@ -37,10 +35,11 @@ public class TemplateMappingDetectorIT extends ChromeBrowserTest {
     public void templateInTemplate_mappedComponentsAreMarkedAsSuch() {
         open();
 
-        WebElement parentTemplate = findElement(
-                By.tagName("template-mapping-detector-parent"));
-        WebElement container = findInShadowRoot(parentTemplate,
-                By.id("detector")).get(0);
+        TestBenchElement parentTemplate = $("template-mapping-detector-parent")
+                .first();
+        TestBenchElement container = parentTemplate.$(TestBenchElement.class)
+                .id("detector");
+
         assertMappedComponentsAreMarkedProperly(container, true);
     }
 
@@ -48,29 +47,33 @@ public class TemplateMappingDetectorIT extends ChromeBrowserTest {
     public void composite_mappedComponentsAreMarkedAsSuch() {
         open();
 
-        WebElement container = findElement(By.id("composite"));
+        TestBenchElement container = $(TestBenchElement.class).id("composite");
         assertMappedComponentsAreMarkedProperly(container, false);
     }
 
-    private void assertMappedComponentsAreMarkedProperly(WebElement container,
+    private void assertMappedComponentsAreMarkedProperly(
+            TestBenchElement container,
             boolean templateInTemplate) {
-        WebElement mappedComponent = findInShadowRoot(container,
-                By.id("detector1")).get(0);
+        TestBenchElement mappedComponent = container.$(TestBenchElement.class)
+                .id("detector1");
         Assert.assertEquals("Template mapped: true", mappedComponent.getText());
 
-        WebElement standaloneComponent = findInShadowRoot(container,
-                By.id("detector2")).get(0);
+        TestBenchElement standaloneComponent = container
+                .$(TestBenchElement.class).id("detector2");
+
         Assert.assertEquals("Template mapped: false",
                 standaloneComponent.getText());
 
-        WebElement standaloneComposite = findInShadowRoot(container,
-                By.id("detector3")).get(0);
+        TestBenchElement standaloneComposite = container
+                .$(TestBenchElement.class).id("detector3");
+
         Assert.assertEquals(
                 "Composite template mapped: false Template mapped: false",
                 standaloneComposite.getText());
 
-        WebElement theTemplateItself = findInShadowRoot(container,
-                By.id("detector4")).get(0);
+        TestBenchElement theTemplateItself = container.$(TestBenchElement.class)
+                .id("detector4");
+
         Assert.assertEquals("The template itself: " + templateInTemplate,
                 theTemplateItself.getText());
     }

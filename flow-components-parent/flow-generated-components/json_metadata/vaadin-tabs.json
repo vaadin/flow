@@ -49,5 +49,13 @@
     "Vaadin.ListMixin",
     "Vaadin.ThemableMixin"
   ],
+  "variants": {
+    "lumo": [
+      "small",
+      "minimal",
+      "hide-scroll-buttons",
+      "equal-width-tabs"
+    ]
+  },
   "description": "`<vaadin-tabs>` is a Polymer 2 element for easy switching between different view\n\n```\n  <vaadin-tabs selected=\"4\">\n    <vaadin-tab>Page 1</vaadin-tab>\n    <vaadin-tab>Page 2</vaadin-tab>\n    <vaadin-tab>Page 3</vaadin-tab>\n    <vaadin-tab>Page 4</vaadin-tab>\n  </vaadin-tabs>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|--------------------------------------\n`back-button`     | Button for moving the scroll back\n`tabs`            | The tabs container\n`forward-button`  | Button for moving the scroll forward\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`orientation` | Tabs disposition, valid values are `horizontal` and `vertical`. | :host\n`overflow` | It's set to `start`, `end`, none or both. | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

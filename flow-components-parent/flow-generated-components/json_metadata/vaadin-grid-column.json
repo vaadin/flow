@@ -1,0 +1,57 @@
+{
+  "name": "Vaadin.GridColumnElement",
+  "tag": "vaadin-grid-column",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-column.html",
+  "version": "5.0.4",
+  "properties": [
+    {
+      "name": "resizable",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When set to true, the column is user-resizable."
+    },
+    {
+      "name": "frozen",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true, the column is frozen. When a column inside of a column group is frozen,\nall of the sibling columns inside the group will get frozen also.\n         "
+    },
+    {
+      "name": "hidden",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When set to true, the cells for this column are hidden.\n         "
+    },
+    {
+      "name": "width",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Width of the cells for this column.\n           "
+    },
+    {
+      "name": "flexGrow",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Flex grow ratio for the cell widths. When set to 0, cell width is fixed.\n           "
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.Grid.ColumnBaseMixin"
+  ],
+  "variants": {},
+  "description": "A `<vaadin-grid-column>` is used to configure how a column in `<vaadin-grid>`\nshould look like by using HTML templates.\nA column can have a template for each of the three table sections: header, body and footer.\n\nThe `class` attribute is used to differentiate header and footer templates from the body template.\n\n#### Example:\n```html\n<vaadin-grid-column>\n  <template class=\"header\">I'm in the header</template>\n  <template>I'm in the body</template>\n  <template class=\"footer\">I'm in the footer</template>\n</vaadin-grid-column>\n```"
+}

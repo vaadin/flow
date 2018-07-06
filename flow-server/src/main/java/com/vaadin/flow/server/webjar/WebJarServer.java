@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.server.webjar;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
@@ -37,7 +38,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * production mode. There is a way to override this behavior by setting
  * {@link Constants#DISABLE_WEBJARS} param.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class WebJarServer implements Serializable {
     private final ResponseWriter responseWriter = new ResponseWriter();
@@ -96,12 +98,16 @@ public class WebJarServer implements Serializable {
 
         String webJarPath = getWebJarPath(pathInContext);
         if (webJarPath == null) {
+            // Not a request to the frontend folder
             return false;
         }
 
         URL resourceUrl = request.getServletContext().getResource(webJarPath);
         if (resourceUrl == null) {
-            return false;
+            // A request to the frontend folder but the file is not there,
+            // 404 instead of forwarding to the router
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return true;
         }
 
         responseWriter.writeResponseContents(webJarPath, resourceUrl, request,

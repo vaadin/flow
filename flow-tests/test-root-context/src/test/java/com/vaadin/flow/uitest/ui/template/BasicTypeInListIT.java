@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,20 +19,19 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public class BasicTypeInListIT extends ChromeBrowserTest {
 
     @Test
     public void basicTypeInModeList() {
         open();
-
-        WebElement template = findElement(By.id("template"));
-        List<WebElement> items = findInShadowRoot(template,
-                By.className("item"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        List<TestBenchElement> items = template.$(TestBenchElement.class)
+                .attribute("class", "item").all();
 
         Assert.assertEquals(2, items.size());
         Assert.assertEquals("foo", items.get(0).getText());
@@ -40,14 +39,16 @@ public class BasicTypeInListIT extends ChromeBrowserTest {
 
         findElement(By.id("add")).click();
 
-        items = findInShadowRoot(template, By.className("item"));
+        items = template.$(TestBenchElement.class)
+                .attribute("class", "item").all();
 
         Assert.assertEquals(3, items.size());
         Assert.assertEquals("newItem", items.get(2).getText());
 
         findElement(By.id("remove")).click();
 
-        items = findInShadowRoot(template, By.className("item"));
+        items = template.$(TestBenchElement.class).attribute("class", "item")
+                .all();
 
         Assert.assertEquals(2, items.size());
         Assert.assertEquals("bar", items.get(0).getText());

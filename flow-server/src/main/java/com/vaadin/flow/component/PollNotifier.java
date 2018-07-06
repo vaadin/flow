@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,6 @@ import com.vaadin.flow.shared.Registration;
  * send {@link PollEvent PollEvents} whenever the client sends a periodic poll
  * message to the client, to check for asynchronous server-side modifications.
  *
- * @since 7.2
  * @see UI#setPollInterval(int)
  */
 public interface PollNotifier extends Serializable {

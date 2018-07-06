@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,7 +31,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Maven plugin for the Java code generation based on JSON metadata extracted
  * from webcomponents.
- * 
+ *
  * @see ComponentGenerator
  */
 @Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate")
@@ -151,8 +151,8 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
                             e);
                 }
                 getLog().error("Error generating Java source for "
-                        + file.getAbsolutePath()
-                        + ". The property \"failOnError\" is false, skipping file...",
+                                + file.getAbsolutePath()
+                                + ". The property \"failOnError\" is false, skipping file...",
                         e);
             }
         }

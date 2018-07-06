@@ -60,5 +60,6 @@
   "mixins": [
     "Vaadin.ThemableMixin"
   ],
+  "variants": {},
   "description": "The default element used for items in the vaadin-combo-box.\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n---|---\n`content` | The element that wraps the item label or template content\n\nThe following state attributes are exposed for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`selected` | Set when the item is selected | :host\n`focused` | Set when the item is focused | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

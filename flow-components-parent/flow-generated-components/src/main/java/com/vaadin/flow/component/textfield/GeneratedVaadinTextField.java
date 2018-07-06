@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasTheme;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.DomEvent;
@@ -145,13 +148,37 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.0.1", "Flow#1.0-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.TextFieldElement#2.0.1", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-field.html")
 public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R, T>, T>
         extends AbstractSinglePropertyField<R, T>
-        implements HasStyle, Focusable<R> {
+        implements HasStyle, Focusable<R>, HasTheme {
+
+    /**
+     * Adds theme variants to the component.
+     * 
+     * @param variants
+     *            theme variants to add
+     */
+    public void addThemeVariants(TextFieldVariant... variants) {
+        getThemeNames().addAll(
+                Stream.of(variants).map(TextFieldVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
+
+    /**
+     * Removes theme variants from the component.
+     * 
+     * @param variants
+     *            theme variants to remove
+     */
+    public void removeThemeVariants(TextFieldVariant... variants) {
+        getThemeNames().removeAll(
+                Stream.of(variants).map(TextFieldVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
 
     /**
      * <p>

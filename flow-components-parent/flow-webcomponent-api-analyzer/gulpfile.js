@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@
 
 const gulp = require('gulp');
 const fs = require('fs-extra');
+const path = require('path');
 const globalVar = require('./lib/js/global-variables');
 const ElementFilter = require('./lib/js/element-filter');
 const VersionReader = require('./lib/js/version-transform');
@@ -24,8 +25,11 @@ const MixinCollector = require('./lib/js/mixin-collector');
 const AnalyzerTransform = require('./lib/js/analyzer-transform');
 const ElementJsonTransform = require('./lib/js/element-json-transform');
 const gulpIgnore = require('gulp-ignore');
+const through = require('through2');
 
-gulp.task('generate', function() {
+const variantsData = {};
+
+gulp.task('prepare', cb => {
   if (!fs.existsSync(globalVar.bowerSrcDir) || fs.readdirSync(globalVar.bowerSrcDir).length === 0) {
     console.error(`Source directory ${globalVar.bowerSrcDir} does not exists or empty`);
     process.exit(1)
@@ -33,7 +37,48 @@ gulp.task('generate', function() {
 
   console.log(`Cleaning output directory ${globalVar.targetDir}`);
   fs.removeSync(globalVar.targetDir);
+  cb();
+});
 
+gulp.task('gather-variants-data', ['prepare'], () => {
+  console.log(`Gathering variants data from ${globalVar.bowerSrcDir}`);
+
+  const themeFilesExtension = '.html';
+  const themeNameRegex = /theme\/([^\/]+)\//;
+  const variantsRegex = /:host\(\[theme~=["|']([^'"]+)["|']/ig;
+
+  return gulp.src([`${globalVar.bowerSrcDir}/*/theme/**/*${themeFilesExtension}`])
+    .pipe(through.obj((file, enc, cb) => {
+      try {
+        const themeName = (file.path.match(themeNameRegex) || [])[1];
+        if (!themeName) {
+          return cb(new Error(`Failed to find a theme for path '${file.path}'`));
+        }
+
+        const variants = new Set();
+
+        let matches;
+        while ((matches = variantsRegex.exec(file.contents.toString(enc)))) {
+          const newVariant = matches[1];
+          if (newVariant) {
+            variants.add(newVariant);
+          }
+        }
+
+        if (variants.size) {
+          const componentName = path.basename(file.path, themeFilesExtension);
+          const componentThemes = (variantsData[componentName] || (variantsData[componentName] = {}));
+          (componentThemes[themeName] || (componentThemes[themeName] = [])).push(...variants);
+        }
+        return cb();
+      } catch (e) {
+        console.error(`Failed to read the file '${file.path}', reason: '${e.stack}'`);
+        throw e;
+      }
+    }))
+});
+
+gulp.task('generate', ['gather-variants-data'], () => {
   console.log(`Running generate task, for resources from: ${globalVar.bowerSrcDir}`);
   // the element filter reads the bower.json file and parses the dependencies
   const elementFilter = new ElementFilter();
@@ -53,14 +98,12 @@ gulp.task('generate', function() {
     "!" + globalVar.bowerSrcDir + "web-animations-js/*",
     // Not useful in gwt and also has spurious event names
     "!" + globalVar.bowerSrcDir + "iron-jsonp-library/*",
-    ])
+  ])
     .pipe(gulpIgnore.include(file => elementFilter.acceptFile(file))) // ignores files not directly mentioned in the dependencies
     .pipe(versionReader) // Reads the versions of the elements
     .pipe(new AnalyzerTransform(elementFilter, mixinCollector)) // transforms out PolymerElements
-    .pipe(new ElementJsonTransform(versionReader, mixinCollector)) // transforms out json files
+    .pipe(new ElementJsonTransform(versionReader, mixinCollector, variantsData)) // transforms out json files
     .pipe(gulp.dest('.'));
 });
 
-gulp.task('default', function() {
-  gulp.start('generate');
-});
+gulp.task('default', ['generate']);

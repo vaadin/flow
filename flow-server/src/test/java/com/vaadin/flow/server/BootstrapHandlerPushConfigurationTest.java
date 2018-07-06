@@ -14,8 +14,10 @@ import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -111,6 +113,9 @@ public class BootstrapHandlerPushConfigurationTest {
     @Test
     public void uiInitialization_customPushConnectionFactoryIsApplied()
             throws Exception {
+        String version = System.getProperty("java.version");
+        Assume.assumeThat(version, CoreMatchers.startsWith("1.8"));
+
         ClassLoader classLoader = service.getClassLoader();
         ClassLoader mockClassLoader = mockClassloaderForServiceLoader(
                 classLoader, "PushConnectionFactory_serviceLoader_single.txt");
@@ -126,6 +131,9 @@ public class BootstrapHandlerPushConfigurationTest {
     @Test
     public void uiInitialization_shouldFailIfMultiplePushConnectionFactoryAreAvailable()
             throws Exception {
+        String version = System.getProperty("java.version");
+        Assume.assumeThat(version, CoreMatchers.startsWith("1.8"));
+
         ClassLoader classLoader = service.getClassLoader();
         ClassLoader mockClassLoader = mockClassloaderForServiceLoader(
                 classLoader,

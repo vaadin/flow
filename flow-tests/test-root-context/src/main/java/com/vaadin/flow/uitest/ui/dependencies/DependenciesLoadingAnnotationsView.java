@@ -9,7 +9,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
 /**
  * See corresponding IT for more details.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @Route("com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsView")
 @JavaScript(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.js", loadMode = LoadMode.INLINE)

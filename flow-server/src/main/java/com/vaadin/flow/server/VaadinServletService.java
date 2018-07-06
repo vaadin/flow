@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,6 +38,7 @@ import com.vaadin.flow.theme.AbstractTheme;
  * A service implementation connected to a {@link VaadinServlet}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class VaadinServletService extends VaadinService {
 
@@ -47,7 +47,7 @@ public class VaadinServletService extends VaadinService {
      */
     private final VaadinServlet servlet;
     private final ServiceContextUriResolver contextResolver = new ServiceContextUriResolver();
-    private PWARegistry pwaRegistry;
+    private PwaRegistry pwaRegistry;
 
     /**
      * Creates an instance connected to the given servlet and using the given
@@ -179,17 +179,12 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    protected PWARegistry getPwaRegistry() {
+    protected PwaRegistry getPwaRegistry() {
         if (pwaRegistry == null) {
-            try {
-                this.pwaRegistry = PWARegistry
-                        .initRegistry(getServlet().getServletContext());
-            } catch (IOException e) {
-                throw new PWAInitializationException(
-                        "Unable to initialize PWARegistry", e);
-            }
+            pwaRegistry = PwaRegistry
+                    .initRegistry(getServlet().getServletContext());
         }
-        return this.pwaRegistry;
+        return pwaRegistry;
     }
 
     @Override
