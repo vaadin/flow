@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Objects;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -74,5 +76,41 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void removeAll() {
         getElement().removeAllChildren();
+    }
+
+    /**
+     * Adds the given component as child of this component at the specific
+     * index.
+     * 
+     * @param index
+     *            the index, where the component will be added. If {@code index}
+     *            < 0, the component will be added as the first child of this
+     *            component; if {@code index} is greater than the current
+     *            children number this component has, the component will be
+     *            added as the last child.
+     * @param component
+     *            the component to add, value should not be null
+     */
+    default void addComponentAtIndex(int index, Component component) {
+        Objects.requireNonNull(component, "Component should not be null");
+        int indexCheck;
+        if (index < 0) {
+            indexCheck = 0;
+        } else if (index > getElement().getChildCount()) {
+            indexCheck = getElement().getChildCount();
+        } else {
+            indexCheck = index;
+        }
+        getElement().insertChild(indexCheck, component.getElement());
+    }
+
+    /**
+     * Adds the given component as the first child of this component.
+     * 
+     * @param component
+     *            the component to add, value should not be null
+     */
+    default void addComponentAsFirst(Component component) {
+        addComponentAtIndex(0, component);
     }
 }
