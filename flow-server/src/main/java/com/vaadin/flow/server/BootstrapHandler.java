@@ -569,7 +569,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
-        setupPwa(head);
+        setupPwa(head, context);
         setupCss(head, context);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
@@ -702,8 +702,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         });
     }
 
-    private static void setupPwa(Element head) {
-        VaadinService vaadinService = VaadinService.getCurrent();
+    private static void setupPwa(Element head, BootstrapContext context) {
+        VaadinService vaadinService = context.getSession().getService();
         if (vaadinService == null) {
             return;
         }
