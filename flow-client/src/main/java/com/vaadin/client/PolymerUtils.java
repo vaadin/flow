@@ -145,16 +145,18 @@ public final class PolymerUtils {
                         node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
                                 .getProperty(NodeProperties.VALUE));
             }
-            assert feature != null : "Don't know how to convert node without map or list features";
 
-            JsonValue convert = feature.convert(PolymerUtils::createModelTree);
-            if (convert instanceof JsonObject
-                    && !((JsonObject) convert).hasKey("nodeId")) {
+            if (feature != null) {
+                JsonValue convert = feature.convert(PolymerUtils::createModelTree);
+                if (convert instanceof JsonObject
+                        && !((JsonObject) convert).hasKey("nodeId")) {
 
-                ((JsonObject) convert).put("nodeId", node.getId());
-                registerChangeHandlers(node, feature, convert);
+                    ((JsonObject) convert).put("nodeId", node.getId());
+                    registerChangeHandlers(node, feature, convert);
+                }
+                return convert;
             }
-            return convert;
+            return null;
         } else if (object instanceof MapProperty) {
             MapProperty property = (MapProperty) object;
             if (property.getMap().getId() == NodeFeatures.BASIC_TYPE_VALUE) {
