@@ -41,7 +41,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the components to add
      */
     default void add(Component... components) {
-        assert components != null;
+        Objects.requireNonNull(components, "Components should not be null");
         for (Component component : components) {
             assert component != null;
             getElement().appendChild(component.getElement());
@@ -57,6 +57,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             if any of the components is not a child of this component
      */
     default void remove(Component... components) {
+        Objects.requireNonNull(components, "Components should not be null");
         for (Component component : components) {
             assert component != null;
             if (getElement().equals(component.getElement().getParent())) {
