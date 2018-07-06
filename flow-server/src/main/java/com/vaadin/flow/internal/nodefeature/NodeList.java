@@ -480,4 +480,10 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
     }
 
+    @Override
+    public void onDetach() {
+        if (isPopulated && values == null) {
+            isPopulated = false;
+        }
+    }
 }
