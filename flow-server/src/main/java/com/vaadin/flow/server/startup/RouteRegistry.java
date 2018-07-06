@@ -109,7 +109,7 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private Class<?> pwaConfigurationClass;
+    private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
 
     private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
@@ -685,12 +685,12 @@ public class RouteRegistry implements Serializable {
     }
 
     public Class<?> getPwaConfigurationClass() {
-        return pwaConfigurationClass;
+        return this.pwaConfigurationClass.get();
     }
 
     protected void setPwaClass(Class<?> pwaClass) {
         if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
-            pwaConfigurationClass = pwaClass;
+            this.pwaConfigurationClass.set(pwaClass);
         }
     }
 }
