@@ -179,7 +179,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    protected PwaRegistry getPwaRegistry() {
+    protected synchronized PwaRegistry getPwaRegistry() {
         if (pwaRegistry == null) {
             pwaRegistry = PwaRegistry
                     .initRegistry(getServlet().getServletContext());
