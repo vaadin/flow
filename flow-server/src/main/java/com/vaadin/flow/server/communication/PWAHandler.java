@@ -15,12 +15,20 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.PWAIcon;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -117,15 +125,54 @@ public class PWAHandler implements RequestHandler {
         VaadinServletRequest httpRequest = (VaadinServletRequest) request;
         String requestUri = httpRequest.getPathInfo();
 
-        if (pwaRegistry.getPwaConfiguration().isEnabled() &&
-                requestHandlerMap.containsKey(requestUri)) {
-            return requestHandlerMap.get(requestUri)
-                    .handleRequest(session,request,response);
-        }
+        if (pwaRegistry.getPwaConfiguration().isEnabled()) {
+            if (requestHandlerMap.containsKey(requestUri)) {
+                return requestHandlerMap.get(requestUri)
+                        .handleRequest(session,request,response);
+            } else if (requestUri.startsWith("/"+PWARegistry.WORKBOX_FOLDER)) {
 
+                // allow only files under workbox_folder
+                String resourceName = PWARegistry.WORKBOX_FOLDER + requestUri
+                        // remove the extra '/'
+                        .substring(PWARegistry.WORKBOX_FOLDER.length() + 1)
+                        .replaceAll("/", "");
+                return handleWorkboxResource(resourceName, response);
+            }
+
+        }
         return false;
     }
 
+    private boolean handleWorkboxResource(String fileName,
+            VaadinResponse response) {
+        try (InputStream stream = BootstrapHandler.class
+                .getResourceAsStream(fileName);
+             InputStreamReader reader = new InputStreamReader(
+                     stream, StandardCharsets.UTF_8);) {
+            PrintWriter writer = response.getWriter();
+            if (fileName.endsWith(".js")) {
+                response.setContentType("application/javascript");
+            } else {
+                response.setContentType("text/plain");
+            }
 
+            final char[] buffer = new char[1024];
+            int n;
+            while ((n = reader.read(buffer)) != -1) {
+                writer.write(buffer, 0, n);
+            }
+            return true;
+        } catch (NullPointerException e) {
+            getLogger().debug("Workbox file '{}' does not exist", fileName);
+            return false;
+        } catch (IOException e) {
+            getLogger().warn("Error while reading workbox file '{}'", fileName);
+            return false;
+        }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(PWAHandler.class);
+    }
 
 }

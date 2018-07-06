@@ -58,6 +58,8 @@ public class PWARegistry implements Serializable {
     private final String manifestJson;
     private final String serviceWorkerJs;
 
+    public static String WORKBOX_FOLDER = "workbox/";
+
     private static final String APPLE_STARTUP_IMAGE =
             "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA =
@@ -196,9 +198,15 @@ public class PWARegistry implements Serializable {
                             servletContext.hashCode()));
         }
 
+        String workBoxAbsolutePath = servletContext.getContextPath() + "/"
+                + WORKBOX_FOLDER;
         // Google Workbox import
-        stringBuilder.append("importScripts('https://storage.googleapis.com/"
-                + "workbox-cdn/releases/3.2.0/workbox-sw.js');\n\n");
+        stringBuilder.append("importScripts('" + workBoxAbsolutePath
+                + "workbox-sw.js');\n\n");
+
+        stringBuilder.append("workbox.setConfig({\n"
+                + "  modulePathPrefix: '" + workBoxAbsolutePath
+                + "'\n" + "});\n");
 
         // Precaching
         stringBuilder.append("workbox.precaching.precacheAndRoute([\n");
