@@ -87,8 +87,8 @@ public interface HasComponents extends HasElement, HasEnabled {
      * 
      * @param index
      *            the index, where the component will be added. If {@code index}
-     *            < 0, the component will be added as the first child of this
-     *            component; if {@code index} is greater than the current
+     *            is negative, the component will be added as the first child of
+     *            this component; if {@code index} is greater than the current
      *            children number this component has, the component will be
      *            added as the last child.
      * @param component
