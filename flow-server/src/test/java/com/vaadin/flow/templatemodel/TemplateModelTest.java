@@ -28,7 +28,11 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.server.VaadinService;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TemplateModelTest extends HasCurrentService {
 
@@ -554,7 +558,7 @@ public class TemplateModelTest extends HasCurrentService {
         TemplateModel modelProxy = emptyModelTemplate.getModel();
         TemplateModel modelProxy2 = emptyModelTemplate.getModel();
 
-        Assert.assertTrue(modelProxy == modelProxy2);
+        assertTrue(modelProxy == modelProxy2);
 
         modelProxy2 = new EmptyModelTemplate().getModel();
         Assert.assertNotSame(modelProxy, modelProxy2);
@@ -648,8 +652,8 @@ public class TemplateModelTest extends HasCurrentService {
 
         model.setBooleanPrimitive(true);
 
-        Assert.assertTrue(model.getBooleanPrimitive());
-        Assert.assertTrue(model.isBooleanPrimitive());
+        assertTrue(model.getBooleanPrimitive());
+        assertTrue(model.isBooleanPrimitive());
     }
 
     @Test
@@ -1064,11 +1068,11 @@ public class TemplateModelTest extends HasCurrentService {
 
         ElementPropertyMap modelMap = getModelMap(template, "bean");
         Set<String> mapKeys = getKeys(modelMap);
-        Assert.assertTrue("Model should contain included 'doubleValue'",
+        assertTrue("Model should contain included 'doubleValue'",
                 mapKeys.remove("doubleValue"));
-        Assert.assertTrue("Model should contain included 'booleanObject'",
+        assertTrue("Model should contain included 'booleanObject'",
                 mapKeys.remove("booleanObject"));
-        Assert.assertTrue("model should be empty but contains: " + mapKeys,
+        assertTrue("model should be empty but contains: " + mapKeys,
                 mapKeys.isEmpty());
     }
 
@@ -1093,13 +1097,13 @@ public class TemplateModelTest extends HasCurrentService {
                 .map(method -> ReflectTools.getPropertyName(method))
                 .forEach(propertyName -> {
                     if (!excluded.contains(propertyName)) {
-                        Assert.assertTrue(
+                        assertTrue(
                                 "Model should contain the property '"
                                         + propertyName + "'",
                                 mapKeys.remove(propertyName));
                     }
                 });
-        Assert.assertTrue("model should be empty but contains: " + mapKeys,
+        assertTrue("model should be empty but contains: " + mapKeys,
                 mapKeys.isEmpty());
     }
 
@@ -1108,7 +1112,7 @@ public class TemplateModelTest extends HasCurrentService {
         TemplateWithExcludeAndIncludeImpl template = new TemplateWithExcludeAndIncludeImpl();
         template.getModel().setBean(new Bean(123));
         ElementPropertyMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasProperty("booleanObject"));
+        assertTrue(modelMap.hasProperty("booleanObject"));
         Assert.assertEquals(1, modelMap.getPropertyNames().count());
     }
 
@@ -1117,7 +1121,7 @@ public class TemplateModelTest extends HasCurrentService {
         TemplateWithExcludeAndIncludeSubclass template = new TemplateWithExcludeAndIncludeSubclass();
         template.getModel().setBean(new Bean(123));
         ElementPropertyMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasProperty("booleanObject"));
+        assertTrue(modelMap.hasProperty("booleanObject"));
         Assert.assertEquals(1, modelMap.getPropertyNames().count());
     }
 
@@ -1126,7 +1130,7 @@ public class TemplateModelTest extends HasCurrentService {
         TemplateWithExcludeAndIncludeSubclassOverrides template = new TemplateWithExcludeAndIncludeSubclassOverrides();
         template.getModel().setBean(new Bean(123));
         ElementPropertyMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasProperty("doubleValue"));
+        assertTrue(modelMap.hasProperty("doubleValue"));
         Assert.assertEquals(1, modelMap.getPropertyNames().count());
     }
 
@@ -1141,7 +1145,7 @@ public class TemplateModelTest extends HasCurrentService {
 
         Assert.assertNotNull(
                 template.getModel().getBeanContainingBeans().getBean1());
-        Assert.assertTrue(getModelMap(template, "beanContainingBeans.bean1")
+        assertTrue(getModelMap(template, "beanContainingBeans.bean1")
                 .hasProperty("booleanValue"));
         // bean1.booleanObject is excluded
         Assert.assertFalse(getModelMap(template, "beanContainingBeans.bean1")
@@ -1173,7 +1177,7 @@ public class TemplateModelTest extends HasCurrentService {
         ElementPropertyMap bean1Map = getModelMap(template,
                 "beanContainingBeans.bean1");
         Set<String> bean1Keys = getKeys(bean1Map);
-        Assert.assertTrue(bean1Keys.contains("booleanObject"));
+        assertTrue(bean1Keys.contains("booleanObject"));
         Assert.assertEquals(1, bean1Keys.size());
     }
 
@@ -1200,7 +1204,7 @@ public class TemplateModelTest extends HasCurrentService {
                 .getModel(modelList.get(0));
         Set<String> propertiesInMap = bean1.getPropertyNames()
                 .collect(Collectors.toSet());
-        Assert.assertTrue("Bean in model should have an 'intValue' property",
+        assertTrue("Bean in model should have an 'intValue' property",
                 propertiesInMap.remove("intValue"));
         Assert.assertEquals(
                 "All other properties should have been filtered out", 0,
@@ -1261,12 +1265,12 @@ public class TemplateModelTest extends HasCurrentService {
 
         Set<String> container1Bean1Properties = getKeys(
                 container1Map.resolveModelMap("bean1"));
-        Assert.assertTrue(container1Bean1Properties.remove("intValue"));
+        assertTrue(container1Bean1Properties.remove("intValue"));
         Assert.assertEquals(0, container1Bean1Properties.size());
 
         Set<String> container1Bean2Properties = getKeys(
                 container1Map.resolveModelMap("bean2"));
-        Assert.assertTrue(container1Bean2Properties.remove("booleanValue"));
+        assertTrue(container1Bean2Properties.remove("booleanValue"));
         Assert.assertEquals(0, container1Bean2Properties.size());
 
         Set<String> container2Bean1Properties = getKeys(
@@ -1276,7 +1280,7 @@ public class TemplateModelTest extends HasCurrentService {
 
         Set<String> container2Bean2Properties = getKeys(
                 container2Map.resolveModelMap("bean2"));
-        Assert.assertTrue(container2Bean2Properties.remove("booleanValue"));
+        assertTrue(container2Bean2Properties.remove("booleanValue"));
         Assert.assertEquals(0, container2Bean2Properties.size());
     }
 
@@ -1312,7 +1316,7 @@ public class TemplateModelTest extends HasCurrentService {
         StateNode node = (StateNode) bean;
         Serializable subBean = node.getFeature(ElementPropertyMap.class)
                 .getProperty("bean");
-        Assert.assertTrue(subBean instanceof StateNode);
+        assertTrue(subBean instanceof StateNode);
 
         // Now check properties via API
         Assert.assertNotNull(template.getModel().getBean().getBean());
@@ -1338,7 +1342,7 @@ public class TemplateModelTest extends HasCurrentService {
         Assert.assertNotNull(bean);
 
         StateNode node = (StateNode) bean;
-        Assert.assertTrue(node.hasFeature(ModelList.class));
+        assertTrue(node.hasFeature(ModelList.class));
 
         // Now check properties via API
         List<Bean> list = template.getModel().getBeans();
@@ -1404,6 +1408,44 @@ public class TemplateModelTest extends HasCurrentService {
         new EmptyDivTemplate<BeanWithExcludedInvalidAccessorsInSubBean>() {
 
         };
+    }
+
+    @Test
+    public void emptyModelListShouldBeRepopulatedAfterDetach() {
+        TemplateWithIncludeOnList template = new TemplateWithIncludeOnList();
+        assertTrue("Template should have its list empty",
+                template.getModel().getBeans().isEmpty());
+        NodeList<?> nodeList = getModelList(template, "beans");
+
+        List<NodeChange> changesAfterAttach = collectChanges(nodeList);
+        assertEquals(
+                "Expect empty model list to create a single change after attach",
+                1, changesAfterAttach.size());
+
+        assertTrue(
+                "After the empty model list is attached and created a change, no more changes are created",
+                collectChanges(nodeList).isEmpty());
+
+        nodeList.onDetach();
+        List<NodeChange> changesAfterDetach = collectChanges(nodeList);
+        assertEquals(
+                "Expect empty model list to create a single change after detach",
+                1, changesAfterDetach.size());
+
+        assertTrue(
+                "Changes to empty list after attach and detach should be the same",
+                changesAfterDetach.get(0).toJson(null)
+                        .jsEquals(changesAfterAttach.get(0).toJson(null)));
+
+        assertTrue(
+                "After the empty model list is detached and created a change, no more changes are created",
+                collectChanges(nodeList).isEmpty());
+    }
+
+    private List<NodeChange> collectChanges(NodeList<?> nodeList) {
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.collectChanges(changes::add);
+        return changes;
     }
 
     private static Set<String> getKeys(ElementPropertyMap map) {
