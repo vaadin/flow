@@ -54,9 +54,8 @@ public class PwaIcon implements Serializable {
     private final int width;
     private final int height;
     private long fileHash;
-    private String baseName = "icons/icon.png";
-    private Domain domain = Domain.HEADER;
-    private boolean hrefOverride = false;
+    private String baseName;
+    private Domain domain;
     private byte[] data;
 
     private final Map<String, String> attributes = new HashMap<>();
@@ -132,15 +131,13 @@ public class PwaIcon implements Serializable {
     }
 
     private void setRelativeName() {
-        if (!hrefOverride) {
-            int split = baseName.lastIndexOf('.');
-            String link = baseName.substring(0, split) + "-" + getSizes()
-                    + baseName.substring(split);
-            if (!shouldBeCached) {
-                link = link + "?" + fileHash;
-            }
-            attributes.put("href", link);
+        int split = baseName.lastIndexOf('.');
+        String link = baseName.substring(0, split) + "-" + getSizes()
+                + baseName.substring(split);
+        if (!shouldBeCached) {
+            link = link + "?" + fileHash;
         }
+        attributes.put("href", link);
     }
 
     /**
@@ -225,7 +222,7 @@ public class PwaIcon implements Serializable {
      * @param outputStream
      *            output stream to write the icon image to
      */
-    public synchronized void write(OutputStream outputStream) {
+    public void write(OutputStream outputStream) {
         try {
             outputStream.write(data);
         } catch (IOException ioe) {
