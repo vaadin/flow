@@ -147,10 +147,4 @@ public @interface PWA {
      */
     String[] offlineResources() default {};
 
-    /**
-     * Is PWA injecting enabled.
-     *
-     * @return is PWA injecting enabled
-     */
-    boolean enabled() default true;
 }

@@ -64,7 +64,7 @@ public class PwaConfiguration implements Serializable {
             display = pwa.display();
             startUrl = getStartUrl(servletContext);
             serviceWorkerPath = "sw.js";
-            enabled = pwa.enabled();
+            enabled = true;
             offlineResources = Arrays.asList(pwa.offlineResources());
         } else {
             appName = DEFAULT_NAME;
