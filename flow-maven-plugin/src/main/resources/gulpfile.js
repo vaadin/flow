@@ -83,22 +83,19 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                 if (bundle) {
                     console.log('Will bundle frontend files.');
                     processedStream = processedStream.pipe(buildBundler);
+                    if (hash) {
+                      console.log('Will hash bundle file names.');
+                      processedStream = processedStream
+                        .pipe(tap(file => {
+                          const bundleSet = buildBundler.manifest.bundles;
+                          const bundle = bundleSet.get(file.relative);
+                          bundleSet.delete(file.relative);
+                          file.path = file.path.replace(/(\.\w+)$/, '-' + hasha(file.contents).slice(0, 15) + '.cache$1');
+                          bundleSet.set(file.relative, bundle);
+                        }));
+                    }
                 } else {
                     processedStream = processedStream.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
-                }
-
-                if (hash) {
-                    console.log('Will hash bundle file names.');
-                    processedStream = processedStream
-                    .pipe(tap(file => {
-                      const bundleSet = buildBundler.manifest.bundles;
-                      const bundle = bundleSet.get(file.relative);
-                      if (bundle) {
-                        bundleSet.delete(file.relative);
-                        file.path = file.path.replace(/(\.\w+)$/, '-' + hasha(file.contents).slice(0, 15) + '.cache$1');
-                        bundleSet.set(file.relative, bundle);
-                      }
-                    }));
                 }
 
                 const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
