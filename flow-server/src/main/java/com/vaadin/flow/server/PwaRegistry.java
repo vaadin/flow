@@ -57,15 +57,14 @@ public class PwaRegistry implements Serializable {
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
-
-    private final PwaConfiguration pwaConfiguration;
-    private final String offlineHtml;
-    private final String manifestJson;
-    private final String serviceWorkerJs;
-
     public static final String WORKBOX_FOLDER = "workbox/";
+
+    private String offlineHtml = "";
+    private String manifestJson = "";
+    private String serviceWorkerJs = "";
     private long offlineHash;
-    private List<PwaIcon> icons;
+    private List<PwaIcon> icons = new ArrayList<>();
+    private final PwaConfiguration pwaConfiguration;
 
     private PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
@@ -99,56 +98,55 @@ public class PwaRegistry implements Serializable {
 
             // Initialize sw.js
             serviceWorkerJs = initializeServiceWorker(servletContext);
-        } else {
-            offlineHtml = "";
-            manifestJson = "";
-            serviceWorkerJs = "";
         }
     }
 
     private List<PwaIcon> initializeIcons(BufferedImage baseImage,
             int bgColor) {
-        icons = new ArrayList<>();
         for (PwaIcon icon : getIconTemplates(pwaConfiguration.getLogoPath())) {
             // New image with wanted size
-            BufferedImage bimage = new BufferedImage(icon.getWidth(),
-                    icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            // Draw the image on to the buffered image
-            Graphics2D bGr = bimage.createGraphics();
-
-            // fill bg with fill-color
-            bGr.setBackground(new Color(bgColor, true));
-            bGr.clearRect(0, 0, icon.getWidth(), icon.getHeight());
-
-            // calculate ratio (bigger ratio) for resize
-            float ratio = (float) baseImage.getWidth()
-                    / (float) icon.getWidth() > (float) baseImage.getHeight()
-                            / (float) icon.getHeight()
-                                    ? (float) baseImage.getWidth()
-                                            / (float) icon.getWidth()
-                                    : (float) baseImage.getHeight()
-                                            / (float) icon.getHeight();
-
-            // Forbid upscaling of image
-            ratio = ratio > 1.0f ? ratio : 1.0f;
-
-            // calculate sizes with ratio
-            int newWidth = Math.round(baseImage.getHeight() / ratio);
-            int newHeight = Math.round(baseImage.getWidth() / ratio);
-
-            // draw rescaled img in the center of created image
-            bGr.drawImage(
-                    baseImage.getScaledInstance(newWidth, newHeight,
-                            Image.SCALE_SMOOTH),
-                    (icon.getWidth() - newWidth) / 2,
-                    (icon.getHeight() - newHeight) / 2, null);
-            bGr.dispose();
-
-            icon.setImage(bimage);
+            icon.setImage(drawIconImage(baseImage, bgColor, icon));
             // Store byte array and hashcode of image (GeneratedImage)
             icons.add(icon);
         }
         return icons;
+    }
+
+    private BufferedImage drawIconImage(BufferedImage baseImage, int bgColor,
+            PwaIcon icon) {
+        BufferedImage bimage = new BufferedImage(icon.getWidth(),
+                icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        // Draw the image on to the buffered image
+        Graphics2D graphics = bimage.createGraphics();
+
+        // fill bg with fill-color
+        graphics.setBackground(new Color(bgColor, true));
+        graphics.clearRect(0, 0, icon.getWidth(), icon.getHeight());
+
+        // calculate ratio (bigger ratio) for resize
+        float ratio = (float) baseImage.getWidth()
+                / (float) icon.getWidth() > (float) baseImage.getHeight()
+                        / (float) icon.getHeight()
+                                ? (float) baseImage.getWidth()
+                                        / (float) icon.getWidth()
+                                : (float) baseImage.getHeight()
+                                        / (float) icon.getHeight();
+
+        // Forbid upscaling of image
+        ratio = ratio > 1.0f ? ratio : 1.0f;
+
+        // calculate sizes with ratio
+        int newWidth = Math.round(baseImage.getHeight() / ratio);
+        int newHeight = Math.round(baseImage.getWidth() / ratio);
+
+        // draw rescaled img in the center of created image
+        graphics.drawImage(
+                baseImage.getScaledInstance(newWidth, newHeight,
+                        Image.SCALE_SMOOTH),
+                (icon.getWidth() - newWidth) / 2,
+                (icon.getHeight() - newHeight) / 2, null);
+        graphics.dispose();
+        return bimage;
     }
 
     /**
@@ -208,31 +206,29 @@ public class PwaRegistry implements Serializable {
         stringBuilder.append("importScripts('" + workBoxAbsolutePath
                 + "workbox-sw.js');\n\n");
 
-        stringBuilder.append("workbox.setConfig({\n"
-                + "  modulePathPrefix: '" + workBoxAbsolutePath
-                + "'\n" + "});\n");
+        stringBuilder.append("workbox.setConfig({\n" + "  modulePathPrefix: '"
+                + workBoxAbsolutePath + "'\n" + "});\n");
 
         // Precaching
         stringBuilder.append("workbox.precaching.precacheAndRoute([\n");
-        stringBuilder.append(
-                filesToCahe.stream().collect(Collectors.joining(",\n")));
+        stringBuilder.append(String.join(",\n", filesToCahe));
         stringBuilder.append("\n]);\n");
 
         // Offline fallback
-        stringBuilder
-                .append("self.addEventListener('fetch', function(event) {\n"
+        stringBuilder.append(String.format(
+                "self.addEventListener('fetch', function(event) {\n"
                         + "  var request = event.request;\n"
                         + "  if (request.mode === 'navigate') {\n"
-                        + "    event.respondWith(\n" + "      fetch(request)\n"
+                        + "    event.respondWith(\n      fetch(request)\n"
                         + "        .catch(function() {\n"
-                        + "          return caches.match('"
-                        + getPwaConfiguration().getOfflinePath() + "');\n"
-                        + "        })\n" + "    );\n" + "  }\n" + "});");
+                        + "          return caches.match('%s');\n"
+                        + "        })\n    );\n  }\n });",
+                getPwaConfiguration().getOfflinePath()));
 
         return stringBuilder.toString();
     }
 
-    protected static PwaRegistry initRegistry(ServletContext servletContext) {
+    static PwaRegistry getRegistry(ServletContext servletContext) {
         assert servletContext != null;
 
         RouteRegistry reg = RouteRegistry.getInstance(servletContext);
@@ -275,12 +271,12 @@ public class PwaRegistry implements Serializable {
         // Fall back to local default file if unavailable
         String offlinePage = getOfflinePageFromContext(connection);
         // Replace template variables with values
-        return offlinePage.replaceAll("%%%PROJECT_NAME%%%", config.getAppName())
-                .replaceAll("%%%BACKGROUND_COLOR%%%",
+        return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
+                .replace("%%%BACKGROUND_COLOR%%%",
                         config.getBackgroundColor())
-                .replaceAll("%%%LOGO_PATH%%%",
+                .replace("%%%LOGO_PATH%%%",
                         largest != null ? largest.getHref() : "")
-                .replaceAll("%%%META_ICONS%%%", iconHead);
+                .replace("%%%META_ICONS%%%", iconHead);
 
     }
 

@@ -61,20 +61,20 @@ public class PwaIcon implements Serializable {
     private final Map<String, String> attributes = new HashMap<>();
     private String tag = "link";
 
-    protected PwaIcon(int width, int height, String baseName) {
+    PwaIcon(int width, int height, String baseName) {
         this(width, height, baseName, Domain.HEADER);
     }
 
-    protected PwaIcon(int width, int height, String baseName, Domain domain) {
+    PwaIcon(int width, int height, String baseName, Domain domain) {
         this(width, height, baseName, domain, false);
     }
 
-    protected PwaIcon(int width, int height, String baseName, Domain domain,
+    PwaIcon(int width, int height, String baseName, Domain domain,
             boolean shouldBeCached) {
         this(width, height, baseName, domain, shouldBeCached, "icon", "");
     }
 
-    protected PwaIcon(int width, int height, String baseName, Domain domain,
+    PwaIcon(int width, int height, String baseName, Domain domain,
             boolean shouldBeCached, String rel, String media) {
         this.width = width;
         this.height = height;

@@ -47,7 +47,7 @@ public class VaadinServletService extends VaadinService {
      */
     private final VaadinServlet servlet;
     private final ServiceContextUriResolver contextResolver = new ServiceContextUriResolver();
-    private PwaRegistry pwaRegistry;
+    private final PwaRegistry pwaRegistry;
 
     /**
      * Creates an instance connected to the given servlet and using the given
@@ -72,7 +72,7 @@ public class VaadinServletService extends VaadinService {
      */
     protected VaadinServletService() {
         servlet = null;
-        pwaRegistry = null;
+        pwaRegistry = PwaRegistry.getRegistry(getServlet().getServletContext());
     }
 
     @Override
@@ -169,7 +169,7 @@ public class VaadinServletService extends VaadinService {
         return appId;
     }
 
-    private static final Logger getLogger() {
+    private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinServletService.class.getName());
     }
 
@@ -179,11 +179,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    protected synchronized PwaRegistry getPwaRegistry() {
-        if (pwaRegistry == null) {
-            pwaRegistry = PwaRegistry
-                    .initRegistry(getServlet().getServletContext());
-        }
+    protected PwaRegistry getPwaRegistry() {
         return pwaRegistry;
     }
 
