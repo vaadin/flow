@@ -41,6 +41,9 @@ public class ClientResourcesUtils {
         try {
             Class.forName("org.osgi.framework.FrameworkUtil");
             Bundle bundle = FrameworkUtil.getBundle(ClientResources.class);
+            if (bundle == null) {
+                return getDefaultService(null);
+            }
             BundleContext context = bundle.getBundleContext();
 
             ServiceReference<ClientResources> reference = context
