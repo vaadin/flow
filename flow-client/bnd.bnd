@@ -4,5 +4,5 @@ Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
 Bundle-Activator: com.vaadin.flow.osgi.Activator
-Import-Package: !*, com.vaadin.flow.client, org.osgi.framework
+Import-Package: !*, com.vaadin.flow.client, org.osgi.framework, org.osgi.service.http
 Export-Package: !*

@@ -17,8 +17,15 @@ package com.vaadin.flow.osgi;
 
 import java.util.Hashtable;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.http.HttpService;
+import org.osgi.service.http.NamespaceException;
 
 import com.vaadin.flow.client.ClientResources;
 
@@ -31,18 +38,44 @@ import com.vaadin.flow.client.ClientResources;
  * @author Vaadin Ltd
  *
  */
-public class Activator implements BundleActivator {
+public class Activator implements BundleActivator, ServiceListener {
 
     @Override
     public void start(BundleContext context) throws Exception {
         context.registerService(ClientResources.class,
                 new OsgiClientResources(), new Hashtable<String, String>());
+        registerClientResources(null);
     }
 
     @Override
     public void stop(BundleContext arg0) throws Exception {
         // Does nothing since the framework will automatically unregister any
         // registered services.
+    }
+
+    @Override
+    public void serviceChanged(ServiceEvent event) {
+        if (event.getType() == ServiceEvent.REGISTERED) {
+            registerClientResources(event.getServiceReference());
+        }
+    }
+
+    private void registerClientResources(ServiceReference<?> serviceReference) {
+        Bundle bundle = FrameworkUtil.getBundle(Activator.class);
+        ServiceReference<HttpService> reference = bundle.getBundleContext()
+                .getServiceReference(HttpService.class);
+        if (reference != null && (serviceReference == null
+                || serviceReference.equals(reference))) {
+            HttpService service = bundle.getBundleContext()
+                    .getService(reference);
+            try {
+                service.registerResources("/VAADIN/static/client",
+                        "META-INF/resources/VAADIN/static/client", null);
+            } catch (NamespaceException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
     }
 
 }
