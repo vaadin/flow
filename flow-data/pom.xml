@@ -13,6 +13,7 @@
     <packaging>jar</packaging>
 
     <properties>
+        <javax.validation.version>2.0.0.Final</javax.validation.version>
     </properties>
     <dependencies>
 
@@ -24,7 +25,7 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>2.0.0.Final</version>
+            <version>${javax.validation.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -86,6 +87,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <index>false</index>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

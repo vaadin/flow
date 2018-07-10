@@ -1,0 +1,81 @@
+{
+  "name": "Vaadin.ContextMenuElement",
+  "tag": "vaadin-context-menu",
+  "baseUrl": "vaadin-context-menu/src/vaadin-context-menu.html",
+  "version": "4.0.1",
+  "properties": [
+    {
+      "name": "selector",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "CSS selector that can be used to target any child element\nof the context menu to listen for `openOn` events.\n             "
+    },
+    {
+      "name": "opened",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the overlay is currently displayed.\n             ",
+      "readOnly": true,
+      "notify": true
+    },
+    {
+      "name": "openOn",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Event name to listen for opening the context menu.\n             "
+    },
+    {
+      "name": "listenOn",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The target element that's listened to for context menu opening events.\nBy default the vaadin-context-menu listens to the target's `vaadin-contextmenu`\nevents."
+    },
+    {
+      "name": "closeOn",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Event name to listen for closing the context menu.\n             "
+    }
+  ],
+  "methods": [
+    {
+      "name": "close",
+      "description": "Closes the overlay.\n         ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "open",
+      "description": "Opens the overlay.",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [
+    {
+      "name": "opened-changed",
+      "description": "Fired when the `opened` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [
+    ""
+  ],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ElementMixin",
+    "Polymer.GestureEventListeners"
+  ],
+  "variants": {},
+  "description": "```html\n<vaadin-context-menu>\n  <template>\n    <vaadin-list-box>\n      <vaadin-item>First menu item</vaadin-item>\n      <vaadin-item>Second menu item</vaadin-item>\n    </vaadin-list-box>\n  </template>\n</vaadin-context-menu>\n```\n\n### “vaadin-contextmenu” Gesture Event\n\n`vaadin-contextmenu` is a gesture event (a custom event fired by Polymer),\nwhich is dispatched after either `contextmenu` and long touch events.\nThis enables support for both mouse and touch environments in a uniform way.\n\n`<vaadin-context-menu>` opens the menu overlay on the `vaadin-contextmenu`\nevent by default.\n\n### Menu Listener\n\nBy default, the `<vaadin-context-menu>` element listens for the menu opening\nevent on itself. In order to have a context menu on your content, wrap\nyour content with the `<vaadin-context-menu>` element, and add a template\nelement with a menu. Example:\n\n```html\n<vaadin-context-menu>\n  <template>\n    <vaadin-list-box>\n      <vaadin-item>First menu item</vaadin-item>\n      <vaadin-item>Second menu item</vaadin-item>\n    </vaadin-list-box>\n  </template>\n\n  <p>This paragraph has the context menu provided in the above template.</p>\n  <p>Another paragraph with the context menu.</p>\n</vaadin-context-menu>\n```\n\nIn case if you do not want to wrap the page content, you can listen for\nevents on an element outside the `<vaadin-context-menu>` by setting the\n`listenOn` property:\n\n```html\n<vaadin-context-menu id=\"customListener\">\n  <template>\n    <vaadin-list-box>\n      ...\n    </vaadin-list-box>\n  </template>\n</vaadin-context-menu>\n\n<div id=\"menuListener\">The element that listens for the context menu.</div>\n\n&lt;script&gt;\n  const contextMenu = document.querySelector('vaadin-context-menu#customListener');\n  contextMenu.listenOn = document.querySelector('#menuListener');\n&lt;/script&gt;\n```\n\n### Filtering Menu Targets\n\nBy default, the listener element and all its descendants open the context\nmenu. You can filter the menu targets to a smaller set of elements inside\nthe listener element by setting the `selector` property.\n\nIn the following example, only the elements matching `.has-menu` will open the context menu:\n\n```html\n<vaadin-context-menu selector=\".has-menu\">\n  <template>\n    <vaadin-list-box>\n      ...\n    </vaadin-list-box>\n  </template>\n\n  <p class=\"has-menu\">This paragraph opens the context menu</p>\n  <p>This paragraph does not open the context menu</p>\n</vaadin-context-menu>\n```\n\n### Menu Context\n\nYou can bind to the following properties in the menu template:\n\n- `target` is the menu opening event target, which is the element that\nthe user has called the context menu for\n- `detail` is the menu opening event detail\n\nIn the following example, the menu item text is composed with the contents\nof the element that opened the menu:\n\n```html\n<vaadin-context-menu selector=\"li\">\n  <template>\n    <vaadin-list-box>\n      <vaadin-item>The menu target: [[target.textContent]]</vaadin-item>\n    </vaadin-list-box>\n  </template>\n\n  <ul>\n    <li>Foo</li>\n    <li>Bar</li>\n    <li>Baz</li>\n  </ul>\n</vaadin-context-menu>\n```\n\n### Styling\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+}
