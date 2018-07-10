@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.GenericServlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
@@ -47,7 +48,6 @@ public class VaadinServletService extends VaadinService {
      */
     private final VaadinServlet servlet;
     private final ServiceContextUriResolver contextResolver = new ServiceContextUriResolver();
-    private final PwaRegistry pwaRegistry;
 
     /**
      * Creates an instance connected to the given servlet and using the given
@@ -62,7 +62,6 @@ public class VaadinServletService extends VaadinService {
             DeploymentConfiguration deploymentConfiguration) {
         super(deploymentConfiguration);
         this.servlet = servlet;
-        this.pwaRegistry = null;
     }
 
     /**
@@ -72,7 +71,6 @@ public class VaadinServletService extends VaadinService {
      */
     protected VaadinServletService() {
         servlet = null;
-        pwaRegistry = PwaRegistry.getRegistry(getServlet().getServletContext());
     }
 
     @Override
@@ -180,7 +178,9 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected PwaRegistry getPwaRegistry() {
-        return pwaRegistry;
+        return Optional.ofNullable(getServlet())
+                .map(GenericServlet::getServletContext)
+                .map(PwaRegistry::getRegistry).orElse(null);
     }
 
     @Override

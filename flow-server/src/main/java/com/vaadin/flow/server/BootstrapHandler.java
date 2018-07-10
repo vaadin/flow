@@ -709,6 +709,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         PwaRegistry registry = vaadinService.getPwaRegistry();
+        if (registry == null) {
+            return;
+        }
+
         PwaConfiguration config = registry.getPwaConfiguration();
 
         if (config.isEnabled()) {
