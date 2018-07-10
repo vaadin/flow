@@ -16,6 +16,7 @@
 package com.vaadin.flow.client;
 
 import java.io.InputStream;
+import java.io.Serializable;
 
 /**
  * Service which allows to get reosurces from the client side module.
@@ -31,7 +32,7 @@ import java.io.InputStream;
  * @author Vaadin Ltd
  *
  */
-public interface ClientResources {
+public interface ClientResources extends Serializable {
 
     InputStream getResource(String path);
 }
