@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,6 +14,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
@@ -23,6 +35,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -44,18 +57,9 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import static org.hamcrest.Matchers.is;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -1480,6 +1484,67 @@ public class BootstrapHandlerTest {
                 secondInit.getUI(), uiReference.get());
     }
 
+    @Route("")
+    @Tag(Tag.DIV)
+    @Meta(name = "apple-mobile-web-app-capable", content = "yes")
+    @Meta(name = "apple-mobile-web-app-status-bar-style", content = "black")
+    public static class MetaAnnotations extends Component {
+    }
+
+    @Test
+    public void addMultiMetaTagViaMetaAnnotation_MetaSizeCorrect_ContentCorrect()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MetaAnnotations.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Element head = page.head();
+        Elements metas = head.getElementsByTag("meta");
+
+        Assert.assertEquals(5, metas.size());
+        Element meta = metas.get(0);
+        assertEquals("Content-Type", meta.attr("http-equiv"));
+        assertEquals("text/html; charset=utf-8", meta.attr("content"));
+
+        meta = metas.get(1);
+        assertEquals("X-UA-Compatible", meta.attr("http-equiv"));
+        assertEquals("IE=edge", meta.attr("content"));
+
+        meta = metas.get(2);
+        assertEquals(BootstrapHandler.VIEWPORT, meta.attr("name"));
+        assertEquals(Viewport.DEFAULT,
+                meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+
+        meta = metas.get(3);
+        assertEquals("apple-mobile-web-app-status-bar-style",
+                meta.attr("name"));
+        assertEquals("black",
+                meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+
+        meta = metas.get(4);
+        assertEquals("apple-mobile-web-app-capable", meta.attr("name"));
+        assertEquals("yes",
+                meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Meta(name = "", content = "yes")
+    public static class MetaAnnotationsContainsNull extends Component {
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void AnnotationContainsNullValue_ExceptionThrown()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MetaAnnotationsContainsNull.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+    }
+
     private void assertStringEquals(String message, String expected,
                                     String actual) {
         Assert.assertThat(message,
@@ -1573,18 +1638,25 @@ public class BootstrapHandlerTest {
 
     @Test
     public void testUIConfiguration_usingPageSettings() throws Exception {
-        Assert.assertTrue("By default loading indicator is themed", testUI.getLoadingIndicatorConfiguration().isApplyDefaultTheme());
+        Assert.assertTrue("By default loading indicator is themed", testUI
+                .getLoadingIndicatorConfiguration().isApplyDefaultTheme());
 
-        initUI(testUI, createVaadinRequest(), Collections.singleton(InitialPageConfiguratorRoute.class));
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorRoute.class));
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
-        Assert.assertFalse("Default indicator theme is not themed anymore", testUI.getLoadingIndicatorConfiguration().isApplyDefaultTheme());
+        Assert.assertFalse("Default indicator theme is not themed anymore",
+                testUI.getLoadingIndicatorConfiguration()
+                        .isApplyDefaultTheme());
 
-        Assert.assertEquals(InitialPageConfiguratorRoute.SECOND_DELAY, testUI.getLoadingIndicatorConfiguration().getSecondDelay());
+        Assert.assertEquals(InitialPageConfiguratorRoute.SECOND_DELAY,
+                testUI.getLoadingIndicatorConfiguration().getSecondDelay());
 
-        Assert.assertEquals(PushMode.MANUAL, testUI.getPushConfiguration().getPushMode());
+        Assert.assertEquals(PushMode.MANUAL,
+                testUI.getPushConfiguration().getPushMode());
 
-        Assert.assertTrue(testUI.getReconnectDialogConfiguration().isDialogModal());
+        Assert.assertTrue(
+                testUI.getReconnectDialogConfiguration().isDialogModal());
     }
 }

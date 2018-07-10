@@ -694,6 +694,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .attr(CONTENT_ATTRIBUTE, BootstrapUtils
                         .getViewportContent(context).orElse(Viewport.DEFAULT));
 
+        if (!BootstrapUtils.getMetaTargets(context).isEmpty()) {
+            BootstrapUtils.getMetaTargets(context).forEach((name,content)->head.appendElement(META_TAG)
+                    .attr("name",name).attr(CONTENT_ATTRIBUTE,content));
+        }
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
                 head.appendElement("title").appendText(title);
