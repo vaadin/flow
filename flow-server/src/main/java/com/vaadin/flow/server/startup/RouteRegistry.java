@@ -685,12 +685,12 @@ public class RouteRegistry implements Serializable {
     }
 
     public Class<?> getPwaConfigurationClass() {
-        return this.pwaConfigurationClass.get();
+        return pwaConfigurationClass.get();
     }
 
     protected void setPwaClass(Class<?> pwaClass) {
         if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
-            this.pwaConfigurationClass.set(pwaClass);
+            pwaConfigurationClass.set(pwaClass);
         }
     }
 }

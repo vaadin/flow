@@ -165,10 +165,10 @@ public class PwaHandler implements RequestHandler {
             }
             return true;
         } catch (NullPointerException e) {
-            getLogger().debug("Workbox file '{}' does not exist", fileName);
+            getLogger().debug("Workbox file '{}' does not exist", fileName, e);
             return false;
         } catch (IOException e) {
-            getLogger().warn("Error while reading workbox file '{}'", fileName);
+            getLogger().warn("Error while reading workbox file '{}'", fileName, e);
             return false;
         }
     }
