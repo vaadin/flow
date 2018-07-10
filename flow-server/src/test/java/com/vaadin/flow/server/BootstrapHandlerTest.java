@@ -1550,7 +1550,7 @@ public class BootstrapHandlerTest {
     public static class MetaAnnotationsWithoutRoute extends Component {
     }
 
-    @Test
+    @Test(expected = InvalidRouteConfigurationException.class)
     public void AnnotationsWithoutRoute_ExceptionThrown()
             throws InvalidRouteConfigurationException {
         initUI(testUI, createVaadinRequest(),
