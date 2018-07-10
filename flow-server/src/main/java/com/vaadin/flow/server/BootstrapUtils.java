@@ -140,7 +140,7 @@ class BootstrapUtils {
         }
         if (illegalValue) {
             throw new IllegalStateException(
-                    "Meta tag contains illegal value on name or content attribute.");
+                    "Meta tags added via Meta annotation contain null value on name or content attribute.");
         }
         return map;
     }

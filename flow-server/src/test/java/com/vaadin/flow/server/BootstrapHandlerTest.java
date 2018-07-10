@@ -1545,6 +1545,21 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, testUI));
     }
 
+    @Tag(Tag.DIV)
+    @Meta(name = "apple-mobile-web-app-capable", content = "yes")
+    public static class MetaAnnotationsWithoutRoute extends Component {
+    }
+
+    @Test
+    public void AnnotationsWithoutRoute_ExceptionThrown()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MetaAnnotationsWithoutRoute.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+    }
+
     private void assertStringEquals(String message, String expected,
                                     String actual) {
         Assert.assertThat(message,

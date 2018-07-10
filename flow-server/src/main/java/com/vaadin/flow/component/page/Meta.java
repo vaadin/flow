@@ -24,8 +24,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines a custom tag and its content that will be added to the HTML of the
- * host page of a UI class.
+ * Defines a meta tag with customized name and content that will be added to the
+ * HTML of the host page of a UI class.
  *
  * @author Vaadin Ltd
  * @since 1.1
