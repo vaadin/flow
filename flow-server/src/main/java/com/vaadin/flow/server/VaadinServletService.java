@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.GenericServlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
@@ -166,13 +167,20 @@ public class VaadinServletService extends VaadinService {
         return appId;
     }
 
-    private static final Logger getLogger() {
+    private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinServletService.class.getName());
     }
 
     @Override
     protected RouteRegistry getRouteRegistry() {
         return RouteRegistry.getInstance(getServlet().getServletContext());
+    }
+
+    @Override
+    protected PwaRegistry getPwaRegistry() {
+        return Optional.ofNullable(getServlet())
+                .map(GenericServlet::getServletContext)
+                .map(PwaRegistry::getRegistry).orElse(null);
     }
 
     @Override

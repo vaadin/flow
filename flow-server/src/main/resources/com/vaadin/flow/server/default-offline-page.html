@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <base href=".">
+    <title>%%%PROJECT_NAME%%%</title>
+    %%%META_ICONS%%%
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <style>
+        .page {
+            font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            font-size: 1rem;
+            line-height: 1.625;
+            font-weight: 300;
+            -webkit-font-smoothing: antialiased;
+            color: hsla(214, 96%, 96%, 0.9);
+            background: hsl(214, 35%, 21%);
+            word-break: break-word;
+            padding: 0;
+            margin: 0;
+        }
+        .offline {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 0 24px;
+            min-height: 100vh;
+        }
+
+        .offline .content {
+            width: 100%;
+            max-width: 50em;
+            margin: 0 auto;
+        }
+
+        .offline .content .title {
+            background: url('%%%LOGO_PATH%%%') no-repeat;
+            background-position-x: center;
+            background-position-y: bottom;
+            background-size: 4rem 4rem;
+            display: table;
+            width: 100%;
+            box-sizing: border-box;
+            padding-bottom: 4rem;
+            text-align: center;
+        }
+
+        .offline .content .title h1 {
+            position: relative;
+            display: inline-block;
+            margin-top: 2rem;
+            margin-bottom: 0.75em;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: hsl(214, 100%, 98%);
+
+        }
+
+        .offline .content .title h1::after {
+            position: absolute;
+            width: 100%;
+            height: 0.3rem;
+            content: '';
+            background: hsl(214, 100%, 98%);
+            top: -2rem;
+            left: 0;
+        }
+
+        .offline .content .message {
+            flex: 1;
+            box-sizing: border-box;
+            height: 100%;
+        }
+
+        .offline .content .message h2 {
+            text-align: center;
+            font-size: 1.75rem;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+            color: hsl(214, 100%, 98%);
+        }
+
+        .offline .content .message p {
+            margin-top: 0.5em;
+            margin-bottom: 0.75em;
+        }
+
+        @media (min-width: 800px) {
+            .offline {
+                padding: 0 48px;
+            }
+
+            .offline .content .title {
+                background-position-x: right;
+                background-position-y: top;
+                background-size: 5rem 5rem;
+                width: 100%;
+                box-sizing: border-box;
+                padding-bottom: 0;
+                padding-right: 7rem;
+                text-align: left;
+            }
+
+            .offline .content .title h1,
+            .offline .content .message h2 {
+                text-align: left;
+            }
+
+            .offline .content .message {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body class="page">
+<div id="offline" class="offline">
+    <div class="content">
+        <header class="title">
+            <h1>%%%PROJECT_NAME%%%</h1>
+        </header>
+        <section class="message">
+            <h2>You are offline</h2>
+            <p>%%%PROJECT_NAME%%% requires an internet connection to work. You do not seem to have access to the server right now. Check your internet connection and try reloading the page to use the application.</p>
+        </section>
+    </div>
+</div>
+<script>
+    window.addEventListener('online', function () {
+        window.location.reload();
+    });
+</script>
+</body>
+</html>
