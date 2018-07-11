@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,12 +17,14 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -120,8 +122,9 @@ public class XhrConnection {
             // for(;;);["+ realJson +"]"
             String responseText = xhr.getResponseText();
 
-            ValueMap json = MessageHandler.parseWrappedJson(responseText);
-            if (json == null) {
+            JsArray<ValueMap> array = MessageHandler
+                    .parseWrappedJson(responseText);
+            if (array.isEmpty()) {
                 // Invalid string (not wrapped as expected or can't parse)
                 registry.getConnectionStateHandler().xhrInvalidContent(
                         new XhrConnectionError(xhr, payload, null));
@@ -130,7 +133,8 @@ public class XhrConnection {
 
             registry.getConnectionStateHandler().xhrOk();
             Console.log("Received xhr message: " + responseText);
-            registry.getMessageHandler().handleMessage(json);
+            array.forEach(
+                    json -> registry.getMessageHandler().handleMessage(json));
         }
 
         /**

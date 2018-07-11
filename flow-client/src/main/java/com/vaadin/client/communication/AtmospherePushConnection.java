@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
@@ -26,6 +27,7 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -45,27 +47,27 @@ public class AtmospherePushConnection implements PushConnection {
      * Represents the connection state of a push connection.
      */
     protected enum State {
-        /**
-         * Opening request has been sent, but still waiting for confirmation.
-         */
-        CONNECT_PENDING,
+    /**
+     * Opening request has been sent, but still waiting for confirmation.
+     */
+    CONNECT_PENDING,
 
-        /**
-         * Connection is open and ready to use.
-         */
-        CONNECTED,
+    /**
+     * Connection is open and ready to use.
+     */
+    CONNECTED,
 
-        /**
-         * Connection was disconnected while the connection was pending. Wait
-         * for the connection to get established before closing it. No new
-         * messages are accepted, but pending messages will still be delivered.
-         */
-        DISCONNECT_PENDING,
+    /**
+     * Connection was disconnected while the connection was pending. Wait for
+     * the connection to get established before closing it. No new messages are
+     * accepted, but pending messages will still be delivered.
+     */
+    DISCONNECT_PENDING,
 
-        /**
-         * Connection has been disconnected and should not be used any more.
-         */
-        DISCONNECTED;
+    /**
+     * Connection has been disconnected and should not be used any more.
+     */
+    DISCONNECTED;
     }
 
     /**
@@ -369,15 +371,16 @@ public class AtmospherePushConnection implements PushConnection {
      */
     protected void onMessage(AtmosphereResponse response) {
         String message = response.getResponseBody();
-        ValueMap json = MessageHandler.parseWrappedJson(message);
-        if (json == null) {
+        JsArray<ValueMap> array = MessageHandler.parseWrappedJson(message);
+        if (array.isEmpty()) {
             // Invalid string (not wrapped as expected)
             getConnectionStateHandler().pushInvalidContent(this, message);
             return;
         } else {
             Console.log("Received push (" + getTransportType() + ") message: "
                     + message);
-            registry.getMessageHandler().handleMessage(json);
+            array.forEach(
+                    json -> registry.getMessageHandler().handleMessage(json));
         }
     }
 
