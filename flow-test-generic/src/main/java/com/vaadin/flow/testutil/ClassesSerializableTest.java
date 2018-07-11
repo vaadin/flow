@@ -319,7 +319,7 @@ public abstract class ClassesSerializableTest {
             // (also in synthetic classes)
             Stream.of(cls.getDeclaredFields())
                     .filter(field -> isFunctionalType(field.getGenericType()))
-                    .filter(field -> !isStatic(field.getModifiers()))
+                    .filter(field -> !Modifier.isStatic(field.getModifiers()))
                     .forEach(nonSerializableFunctionFields::add);
 
             // skip annotations and synthetic classes
