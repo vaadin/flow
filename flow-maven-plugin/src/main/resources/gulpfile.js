@@ -84,18 +84,22 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     console.log('Will bundle frontend files.');
                     processedStream = processedStream.pipe(buildBundler);
                     if (hash) {
-                      console.log('Will hash bundle file names.');
-                      processedStream = processedStream
-                        .pipe(tap(file => {
-                          const bundleSet = buildBundler.manifest.bundles;
-                          const bundle = bundleSet.get(file.relative);
-                          bundleSet.delete(file.relative);
-                          file.path = file.path.replace(/(\.\w+)$/, '-' + hasha(file.contents).slice(0, 15) + '.cache$1');
-                          bundleSet.set(file.relative, bundle);
-                        }));
+                        console.log('Will hash bundle file names.');
+                        processedStream = processedStream
+                            .pipe(tap(file => {
+                                const bundleSet = buildBundler.manifest.bundles;
+                                const bundleFile = bundleSet.get(file.relative);
+                                if (bundleFile) {
+                                    bundleSet.delete(file.relative);
+                                    file.path = file.path.replace(/(\.\w+)$/, '-' + hasha(file.contents).slice(0, 15) + '.cache$1');
+                                    bundleSet.set(file.relative, bundleFile);
+                                }
+                            }));
                     }
                 } else {
-                    processedStream = processedStream.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
+                    processedStream = processedStream.pipe(gulpIgnore.exclude(file => {
+                        return file.path === shellFile
+                    }));
                 }
 
                 const nonSourceUserFilesStream = gulp.src([`${es6SourceDirectory}/**/*`, `!${es6SourceDirectory}/**/*.{html,css,js}`]);
