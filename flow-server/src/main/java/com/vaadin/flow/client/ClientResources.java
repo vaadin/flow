@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 /**
- * Service which allows to get reosurces from the client side module.
+ * Service which allows to get resources from the client side module.
  * <p>
  * {@link DefaultClientResources} is used if we are in plain Java environment
  * where resources may be gotten via the {@code Class::getResourceAsStream()}
@@ -40,8 +40,8 @@ public interface ClientResources extends Serializable {
      *
      * @param path
      *            the resource path
-     * @return the content of the resource as InutStream or null if there is no
-     *         resource with the {@code path}
+     * @return the content of the resource as InputStream or {@code null} if
+     *         there is no resource with the {@code path}
      */
     InputStream getResource(String path);
 }
