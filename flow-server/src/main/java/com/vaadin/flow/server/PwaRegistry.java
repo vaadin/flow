@@ -203,11 +203,12 @@ public class PwaRegistry implements Serializable {
         String workBoxAbsolutePath = servletContext.getContextPath() + "/"
                 + WORKBOX_FOLDER;
         // Google Workbox import
-        stringBuilder.append("importScripts('" + workBoxAbsolutePath
-                + "workbox-sw.js');\n\n");
+        stringBuilder.append("importScripts('").append(workBoxAbsolutePath)
+                .append("workbox-sw.js');\n\n");
 
-        stringBuilder.append("workbox.setConfig({\n" + "  modulePathPrefix: '"
-                + workBoxAbsolutePath + "'\n" + "});\n");
+        stringBuilder.append("workbox.setConfig({\n")
+                .append("  modulePathPrefix: '").append(workBoxAbsolutePath)
+                .append("'\n").append("});\n");
 
         // Precaching
         stringBuilder.append("workbox.precaching.precacheAndRoute([\n");
@@ -215,15 +216,15 @@ public class PwaRegistry implements Serializable {
         stringBuilder.append("\n]);\n");
 
         // Offline fallback
-        stringBuilder.append(String.format(
-                "self.addEventListener('fetch', function(event) {\n"
-                        + "  var request = event.request;\n"
-                        + "  if (request.mode === 'navigate') {\n"
-                        + "    event.respondWith(\n      fetch(request)\n"
-                        + "        .catch(function() {\n"
-                        + "          return caches.match('%s');\n"
-                        + "        })\n    );\n  }\n });",
-                getPwaConfiguration().getOfflinePath()));
+        stringBuilder
+                .append("self.addEventListener('fetch', function(event) {\n")
+                .append("  var request = event.request;\n")
+                .append("  if (request.mode === 'navigate') {\n")
+                .append("    event.respondWith(\n      fetch(request)\n")
+                .append("        .catch(function() {\n")
+                .append(String.format("          return caches.match('%s');%n",
+                        getPwaConfiguration().getOfflinePath()))
+                .append("        })\n    );\n  }\n });");
 
         return stringBuilder.toString();
     }
@@ -272,8 +273,7 @@ public class PwaRegistry implements Serializable {
         String offlinePage = getOfflinePageFromContext(connection);
         // Replace template variables with values
         return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
-                .replace("%%%BACKGROUND_COLOR%%%",
-                        config.getBackgroundColor())
+                .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
                         largest != null ? largest.getHref() : "")
                 .replace("%%%META_ICONS%%%", iconHead);
