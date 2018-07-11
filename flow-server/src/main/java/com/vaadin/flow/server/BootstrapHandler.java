@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -49,6 +51,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.client.ClientResourcesUtils;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
@@ -74,7 +77,9 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -921,10 +926,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /*
          * The < symbol is escaped to prevent two problems:
-         * 
+         *
          * 1 - The browser interprets </script> as end of script no matter if it
          * is inside a string
-         * 
+         *
          * 2 - Scripts can be injected with <!-- <script>, that can cause
          * unexpected behavior or complete crash of the app
          */
@@ -1199,7 +1204,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .isProductionMode();
 
         boolean resolveNow = !productionMode || clientEngineFile == null;
-        if (resolveNow && BootstrapHandler.class.getResource(
+        if (resolveNow && ClientResourcesUtils.getResource(
                 "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
             return context.getUriResolver().resolveVaadinUri(
                     "context://" + CLIENT_ENGINE_NOCACHE_FILE);
@@ -1272,7 +1277,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static String readClientEngine() {
         // read client engine file name
-        try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
+        try (InputStream prop = ClientResourcesUtils.getResource(
                 "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
                         + "/compile.properties")) {
             // null when running SDM or tests
