@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,7 +32,16 @@ import java.io.Serializable;
  * @author Vaadin Ltd
  *
  */
+@FunctionalInterface
 public interface ClientResources extends Serializable {
 
+    /**
+     * Get content of the resource in the client-side module.
+     *
+     * @param path
+     *            the resource path
+     * @return the content of the resource as InutStream or null if there is no
+     *         resource with the {@code path}
+     */
     InputStream getResource(String path);
 }
