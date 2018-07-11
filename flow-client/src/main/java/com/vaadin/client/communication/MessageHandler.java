@@ -18,6 +18,7 @@ package com.vaadin.client.communication;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
@@ -743,21 +744,66 @@ public class MessageHandler {
         }
     }
 
+    /**
+     * Splits a message in the format
+     * <p>
+     * {@code
+     * for(;;);["+ realJson1 +"]"for(;;);["+realJson2 +"]"...
+     * }
+     * <p>
+     * into an array of single messages.
+     * 
+     * @param wrappedJsonText
+     *            the original message
+     * @return an array of individual messages. It returns an empty array if the
+     *         original message cannot be parsed
+     */
+    // package protected for testing purposes
+    static JsArray<String> splitMultipleMessages(String wrappedJsonText) {
+        JsArray<String> array = JsCollections.array();
+        if (wrappedJsonText == null) {
+            return array;
+        }
+
+        int idx = wrappedJsonText.indexOf(JSON_COMMUNICATION_PREFIX);
+        while (idx >= 0 && idx < wrappedJsonText.length()) {
+            int next = wrappedJsonText.indexOf(JSON_COMMUNICATION_PREFIX,
+                    idx + JSON_COMMUNICATION_PREFIX.length());
+            if (next < 0) {
+                next = wrappedJsonText.length();
+            }
+            array.push(wrappedJsonText.substring(idx, next));
+            idx = next;
+        }
+
+        return array;
+    }
+
     private static native ValueMap parseJSONResponse(String jsonText)
     /*-{
        return JSON.parse(jsonText);
     }-*/;
 
     /**
-     * Parse the given wrapped JSON, received from the server, to a ValueMap.
+     * Parse the given wrapped JSON, received from the server, to an array of
+     * ValueMaps.
      *
      * @param wrappedJsonText
      *            the json, wrapped as done by the server
-     * @return a ValueMap, or null if the wrapping was incorrect or json could
-     *         not be parsed
+     * @return an array with all the parsed ValueMaps inside. An empty array is
+     *         returned if the wrapping was incorrect or the json could not be
+     *         parsed
      */
-    public static ValueMap parseWrappedJson(String wrappedJsonText) {
-        return parseJson(stripJSONWrapping(wrappedJsonText));
+    public static JsArray<ValueMap> parseWrappedJson(String wrappedJsonText) {
+        JsArray<ValueMap> array = JsCollections.array();
+        JsArray<String> messages = splitMultipleMessages(wrappedJsonText);
+        messages.forEach(message -> {
+            ValueMap value = parseJson(stripJSONWrapping(message));
+            if (value != null) {
+                array.push(value);
+            }
+        });
+        return array;
     }
 
     private static final native double getFetchStartTime()
