@@ -43,8 +43,6 @@ import elemental.json.JsonObject;
 
 /**
  * Copies specified artifacts' contents to the output folder.
- * <p>
- * Note: this class is intended to be independent from Maven dependencies so that it can be reused in Gradle plugin in future.
  *
  * @author Vaadin Ltd
  * @since 1.0.
