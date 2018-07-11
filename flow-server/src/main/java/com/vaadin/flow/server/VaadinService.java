@@ -262,6 +262,12 @@ public abstract class VaadinService implements Serializable {
                 .collect(Collectors.toList());
 
         router = new Router(getRouteRegistry());
+        if (!getDeploymentConfiguration().isProductionMode()) {
+            Logger logger = getLogger();
+            logger.debug("The application has the following routes: ");
+            router.getRoutes().stream().map(Object::toString)
+                    .forEach(logger::debug);
+        }
         initialized = true;
     }
 
@@ -295,8 +301,8 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
         PwaRegistry pwaRegistry = getPwaRegistry();
-        if (pwaRegistry != null &&
-                pwaRegistry.getPwaConfiguration().isEnabled()) {
+        if (pwaRegistry != null
+                && pwaRegistry.getPwaConfiguration().isEnabled()) {
             handlers.add(new PwaHandler(pwaRegistry));
         }
         return handlers;
