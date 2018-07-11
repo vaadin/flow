@@ -78,6 +78,9 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
  * initial GET request.
@@ -95,6 +98,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
+    private static final String SCRIPT_TAG = "script";
 
     /**
      * Location of client nocache file, relative to the context root.
@@ -462,7 +466,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }).collect(Collectors.joining("\n"));
 
         if (!registerScript.isEmpty()) {
-            document.body().appendElement("script").text(registerScript);
+            document.body().appendElement(SCRIPT_TAG).text(registerScript);
         }
     }
 
@@ -570,6 +574,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
+        setupPwa(head, context);
         setupCss(head, context);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
@@ -695,11 +700,60 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .attr(CONTENT_ATTRIBUTE, BootstrapUtils
                         .getViewportContent(context).orElse(Viewport.DEFAULT));
 
+        if (!BootstrapUtils.getMetaTargets(context).isEmpty()) {
+            BootstrapUtils.getMetaTargets(context).forEach((name,content)->head.appendElement(META_TAG)
+                    .attr("name",name).attr(CONTENT_ATTRIBUTE,content));
+        }
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
                 head.appendElement("title").appendText(title);
             }
         });
+    }
+
+    private static void setupPwa(Element head, BootstrapContext context) {
+        VaadinService vaadinService = context.getSession().getService();
+        if (vaadinService == null) {
+            return;
+        }
+
+        PwaRegistry registry = vaadinService.getPwaRegistry();
+        if (registry == null) {
+            return;
+        }
+
+        PwaConfiguration config = registry.getPwaConfiguration();
+
+        if (config.isEnabled()) {
+            // Describe PWA capability for iOS devices
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-capable")
+                    .attr(CONTENT_ATTRIBUTE, "yes");
+
+            // Theme color
+            head.appendElement(META_TAG).attr("name", "theme-color")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-status-bar-style")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+
+            // Add manifest
+            head.appendElement("link").attr("rel", "manifest").attr("href",
+                    config.getManifestPath());
+
+            // Add icons
+            for (PwaIcon icon : registry.getHeaderIcons()) {
+                head.appendChild(icon.asElement());
+            }
+
+            // Add service worker initialization
+            head.appendElement(SCRIPT_TAG)
+                    .text("if ('serviceWorker' in navigator) {\n"
+                            + "  window.addEventListener('load', function() {\n"
+                            + "    navigator.serviceWorker.register('"
+                            + config.getServiceWorkerPath() + "');\n"
+                            + "  });\n" + "}");
+        }
     }
 
     private static void appendWebComponentsPolyfills(Element head,
@@ -752,7 +806,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static Element createJavaScriptElement(String sourceUrl,
             boolean defer) {
-        Element jsElement = new Element(Tag.valueOf("script"), "")
+        Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                 .attr("type", "text/javascript").attr(DEFER_ATTRIBUTE, defer);
         if (sourceUrl != null) {
             jsElement = jsElement.attr("src", sourceUrl);

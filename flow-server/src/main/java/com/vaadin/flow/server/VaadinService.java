@@ -62,6 +62,7 @@ import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
@@ -271,6 +272,8 @@ public abstract class VaadinService implements Serializable {
      */
     protected abstract RouteRegistry getRouteRegistry();
 
+    protected abstract PwaRegistry getPwaRegistry();
+
     /**
      * Called during initialization to add the request handlers for the service.
      * Note that the returned list will be reversed so the last handler will be
@@ -291,7 +294,11 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
-
+        PwaRegistry pwaRegistry = getPwaRegistry();
+        if (pwaRegistry != null &&
+                pwaRegistry.getPwaConfiguration().isEnabled()) {
+            handlers.add(new PwaHandler(pwaRegistry));
+        }
         return handlers;
     }
 
