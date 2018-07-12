@@ -292,7 +292,13 @@ public abstract class ClassesSerializableTest {
 
         List<Class<?>> nonSerializableClasses = new ArrayList<>();
         for (String className : classes) {
-            Class<?> cls = Class.forName(className);
+            Class<?> cls;
+            try {
+                cls = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                logger.debug("Ignoring class '{}' since it's not found.", className);
+                continue;
+            }
             // Don't add classes that have a @Ignore annotation on the class
             if (isTestClass(cls)) {
                 continue;
