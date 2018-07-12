@@ -45,10 +45,11 @@ public class Activator implements BundleActivator, ServiceListener {
         context.registerService(ClientResources.class,
                 new OsgiClientResources(), new Hashtable<String, String>());
         registerClientResources(null);
+        context.addServiceListener(this);
     }
 
     @Override
-    public void stop(BundleContext arg0) throws Exception {
+    public void stop(BundleContext context) throws Exception {
         // Does nothing since the framework will automatically unregister any
         // registered services.
     }
@@ -70,7 +71,7 @@ public class Activator implements BundleActivator, ServiceListener {
                     .getService(reference);
             try {
                 service.registerResources("/VAADIN/static/client",
-                        "META-INF/resources/VAADIN/static/client", null);
+                        "/META-INF/resources/VAADIN/static/client", null);
             } catch (NamespaceException e) {
                 throw new IllegalStateException(e);
             }
