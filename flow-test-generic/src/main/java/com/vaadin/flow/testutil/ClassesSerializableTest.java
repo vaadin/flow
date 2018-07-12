@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.testutil;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -48,12 +45,16 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.reflect.Modifier.isStatic;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 /**
  * A superclass for serialization testing. The test scans all the classpath and
  * tries to serialize every single class (except ones from whitelist) in the
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link #getJarPattern()}
+ * {@link  #getJarPattern()}
  */
 
 public abstract class ClassesSerializableTest {
@@ -65,12 +66,11 @@ public abstract class ClassesSerializableTest {
         return Stream.of(
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
-                ".*\\.slf4j\\..*", ".*\\.testbench\\..*", ".*\\.testutil\\..*",
-                ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$", // Various
-                                                                          // utils
-                                                                          // with
-                                                                          // inner
-                                                                          // classes
+                ".*\\.slf4j\\..*",
+                ".*\\.testbench\\..*",
+                ".*\\.testutil\\..*",
+                ".*\\.demo\\..*",
+                "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$", //Various utils with inner classes
 
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
                 "com\\.vaadin\\.flow\\.dom\\.ElementConstants",
@@ -114,12 +114,8 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.VaadinRequest",
                 "com\\.vaadin\\.flow\\.router\\.RouteNotFoundError\\$LazyInit",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer\\$.*",
-                "com\\.vaadin\\.flow\\.component\\.HtmlComponent", // De-facto
-                                                                   // abstract
-                                                                   // class
-                "com\\.vaadin\\.flow\\.component\\.HtmlContainer", // De-facto
-                                                                   // abstract
-                                                                   // class
+                "com\\.vaadin\\.flow\\.component\\.HtmlComponent",// De-facto abstract class
+                "com\\.vaadin\\.flow\\.component\\.HtmlContainer",// De-facto abstract class
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateParser(\\$.*)?",
                 "com\\.vaadin\\.flow\\.dom\\.impl\\.ThemeListImpl\\$ThemeListIterator",
@@ -135,8 +131,9 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
 
-                // Various test classes
-                ".*\\.test(s)?\\..*", ".*Test.*",
+                //Various test classes
+                ".*\\.test(s)?\\..*",
+                ".*Test.*",
                 "com\\.vaadin\\.flow\\.server\\.MockVaadinServletService",
                 "com\\.vaadin\\.flow\\.server\\.MockServletServiceSessionSetup",
                 "com\\.vaadin\\.flow\\.server\\.MockServletConfig",
@@ -150,16 +147,14 @@ public abstract class ClassesSerializableTest {
     /**
      * Performs actual serialization/deserialization
      *
-     * @param <T>
-     *            the type of the instance
-     * @param instance
-     *            the instance
+     * @param <T> the type of the instance
+     * @param instance the instance
      * @return the copy of the source object
-     * @throws Throwable
-     *             if something goes wrong.
+     * @throws Throwable if something goes wrong.
      */
-    @SuppressWarnings({ "UnusedReturnValue", "WeakerAccess" })
-    public <T> T serializeAndDeserialize(T instance) throws Throwable {
+    @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
+    public <T> T serializeAndDeserialize(T instance)
+            throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(instance);
@@ -176,7 +171,6 @@ public abstract class ClassesSerializableTest {
     /**
      * The method is called right after a class instantiation and might be
      * overriden by subclasses to reset thread local values (ex. current UI).
-     *
      * @see #setupThreadLocals
      */
     @SuppressWarnings("WeakerAccess")
@@ -184,10 +178,9 @@ public abstract class ClassesSerializableTest {
     }
 
     /**
-     * The method is called right a class instantiation and might be overriden
-     * by subclasses to install some necessary thread local values (ex. current
-     * UI).
-     *
+     * The method is called right a class instantiation
+     * and might be overriden by subclasses to install some necessary thread
+     * local values (ex. current UI).
      * @see #resetThreadLocals
      */
     @SuppressWarnings("WeakerAccess")
@@ -227,11 +220,9 @@ public abstract class ClassesSerializableTest {
      * Lists class names (based on .class files) in a directory (a package path
      * root).
      *
-     * @param parentPackage
-     *            parent package name or null at root of hierarchy, used by
-     *            recursion
-     * @param parent
-     *            File representing the directory to scan
+     * @param parentPackage parent package name or null at root of hierarchy, used by
+     *                      recursion
+     * @param parent        File representing the directory to scan
      * @return collection of fully qualified class names in the directory
      */
     private static Collection<String> findClassesInDirectory(
@@ -285,16 +276,14 @@ public abstract class ClassesSerializableTest {
      * Tests that all the relevant classes and interfaces under
      * {@link #getBasePackages} implement Serializable.
      *
-     * @throws Throwable
-     *             serialization goes wrong
+     * @throws Throwable serialization goes wrong
      */
     @Test
     public void classesSerializable() throws Throwable {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 
         List<String> classes = new ArrayList<>();
-        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile).collect(Collectors.toList());
         for (String location : rawClasspathEntries) {
             classes.addAll(findServerClasses(location, excludes));
         }
@@ -307,7 +296,7 @@ public abstract class ClassesSerializableTest {
             try {
                 cls = Class.forName(className);
             } catch (ClassNotFoundException e) {
-                logger.debug("Ignoring {} since it's not found", className);
+                logger.debug("Ignoring class '{}' since it's not found.", className);
                 continue;
             }
             // Don't add classes that have a @Ignore annotation on the class
@@ -319,7 +308,7 @@ public abstract class ClassesSerializableTest {
             // (also in synthetic classes)
             Stream.of(cls.getDeclaredFields())
                     .filter(field -> isFunctionalType(field.getGenericType()))
-                    .filter(field -> !Modifier.isStatic(field.getModifiers()))
+                    .filter(field -> !isStatic(field.getModifiers()))
                     .forEach(nonSerializableFunctionFields::add);
 
             // skip annotations and synthetic classes
@@ -427,8 +416,8 @@ public abstract class ClassesSerializableTest {
      * Only classes under {@link #getBasePackages} are considered, and those
      * matching {@link #getExcludedPatterns()} are filtered out.
      */
-    private List<String> findServerClasses(String classpathEntry,
-            Collection<Pattern> excludes) throws IOException {
+    private List<String> findServerClasses(String classpathEntry, Collection<Pattern> excludes)
+            throws IOException {
         Collection<String> classes;
 
         File file = new File(classpathEntry);
@@ -441,18 +430,15 @@ public abstract class ClassesSerializableTest {
             return Collections.emptyList();
         }
         return classes.stream()
-                .filter(className -> getBasePackages().anyMatch(
-                        basePackage -> className.startsWith(basePackage + ".")))
-                .filter(className -> excludes.stream()
-                        .noneMatch(p -> p.matcher(className).matches()))
+                .filter(className -> getBasePackages().anyMatch(basePackage -> className.startsWith(basePackage + ".")))
+                .filter(className -> excludes.stream().noneMatch(p -> p.matcher(className).matches()))
                 .collect(Collectors.toList());
     }
 
     /**
      * Lists class names (based on .class files) in a JAR file.
      *
-     * @param file
-     *            a valid JAR file
+     * @param file a valid JAR file
      * @return collection of fully qualified class names in the JAR
      */
     private Collection<String> findClassesInJar(File file) throws IOException {
