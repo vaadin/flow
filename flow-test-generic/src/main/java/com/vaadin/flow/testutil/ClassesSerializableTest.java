@@ -45,9 +45,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.lang.reflect.Modifier.isStatic;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
+import static java.lang.reflect.Modifier.isStatic;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -295,7 +296,7 @@ public abstract class ClassesSerializableTest {
             Class<?> cls;
             try {
                 cls = Class.forName(className);
-            } catch (ClassNotFoundException e) {
+            } catch (NoClassDefFoundError | ClassNotFoundException e) {
                 logger.debug("Ignoring class '{}' since it's not found.", className);
                 continue;
             }
