@@ -178,4 +178,14 @@ public class RouteData implements Comparable<RouteData>, Serializable {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "RouteData{" +
+                "parentLayout=" + parentLayout +
+                ", url='" + url + '\'' +
+                ", parameters=" + parameters +
+                ", navigationTarget=" + navigationTarget +
+                ", routeAliases=" + routeAliases +
+                '}';
+    }
 }
