@@ -22,13 +22,11 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
+
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 
 /**
  * Transpiles artifacts in the specified directory.
- * <p>
- * Note: this class is intended to be independent from Maven dependencies so
- * that it can be reused in Gradle plugin in future.
  *
  * @author Vaadin Ltd
  * @since 1.0.
