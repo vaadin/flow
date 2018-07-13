@@ -2,7 +2,7 @@
   "name": "Vaadin.GridElement",
   "tag": "vaadin-grid",
   "baseUrl": "vaadin-grid/src/vaadin-grid.html",
-  "version": "5.0.4",
+  "version": "5.1.0-alpha3",
   "properties": [
     {
       "name": "pageSize",
@@ -108,6 +108,12 @@
     }
   ],
   "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
     {
       "name": "getItemId",
       "description": "Returns a value that identifies the item. Uses `itemIdPath` if available.\nCan be customized by overriding.\n     ",

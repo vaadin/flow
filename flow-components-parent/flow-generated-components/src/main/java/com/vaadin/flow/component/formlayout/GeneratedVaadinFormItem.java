@@ -16,11 +16,12 @@
 package com.vaadin.flow.component.formlayout;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -164,11 +165,16 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.FormItemElement#2.0.1", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.FormItemElement#2.1.0-alpha4",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-item.html")
 public abstract class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
         extends Component implements HasStyle, ClickNotifier<R> {
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
+    }
 
     /**
      * Adds the given components as children of this component at the slot

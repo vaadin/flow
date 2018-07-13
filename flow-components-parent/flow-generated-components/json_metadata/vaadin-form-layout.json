@@ -2,7 +2,7 @@
   "name": "Vaadin.FormLayoutElement",
   "tag": "vaadin-form-layout",
   "baseUrl": "vaadin-form-layout/src/vaadin-form-layout.html",
-  "version": "2.0.1",
+  "version": "2.1.0-alpha4",
   "properties": [
     {
       "name": "responsiveSteps",
@@ -14,12 +14,6 @@
     }
   ],
   "methods": [
-    {
-      "name": "connectedCallback",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
     {
       "name": "updateStyles",
       "description": "Set custom CSS property values and update the layout.\n         ",
@@ -33,6 +27,12 @@
           "description": "Missing documentation!"
         }
       ],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": [],
       "returns": "UNDEFINED"
     }
   ],

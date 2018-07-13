@@ -2,9 +2,16 @@
   "name": "Vaadin.VerticalLayoutElement",
   "tag": "vaadin-vertical-layout",
   "baseUrl": "vaadin-ordered-layout/src/vaadin-vertical-layout.html",
-  "version": "1.0.2",
+  "version": "1.1.0-alpha3",
   "properties": [],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [],
   "slots": [
     ""
@@ -15,6 +22,13 @@
   ],
   "variants": {
     "lumo": [
+      "spacing-xs",
+      "spacing-s",
+      "spacing",
+      "spacing-l",
+      "spacing-xl"
+    ],
+    "material": [
       "spacing-xs",
       "spacing-s",
       "spacing",

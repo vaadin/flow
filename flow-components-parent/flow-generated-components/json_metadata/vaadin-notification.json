@@ -2,7 +2,7 @@
   "name": "Vaadin.NotificationElement",
   "tag": "vaadin-notification",
   "baseUrl": "vaadin-notification/src/vaadin-notification.html",
-  "version": "1.0.0",
+  "version": "1.1.0-alpha3",
   "properties": [
     {
       "name": "duration",

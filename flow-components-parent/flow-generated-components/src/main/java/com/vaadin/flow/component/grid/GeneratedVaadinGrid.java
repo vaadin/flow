@@ -16,20 +16,22 @@
 package com.vaadin.flow.component.grid;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HasTheme;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
-import elemental.json.JsonObject;
-import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonArray;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasTheme;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -291,7 +293,7 @@ grid.size = 200; // The total number of items
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridElement#5.0.4", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.GridElement#5.1.0-alpha3", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid.html")
 public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
@@ -754,6 +756,10 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      */
     protected void setHeightByRows(boolean heightByRows) {
         getElement().setProperty("heightByRows", heightByRows);
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 
     /**

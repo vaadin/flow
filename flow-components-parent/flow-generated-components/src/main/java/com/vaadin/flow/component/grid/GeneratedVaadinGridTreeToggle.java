@@ -16,17 +16,18 @@
 package com.vaadin.flow.component.grid;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HasTheme;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
-import com.vaadin.flow.component.Synchronize;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasTheme;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.Component;
 
 /**
  * <p>
@@ -108,7 +109,7 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridTreeToggleElement#5.0.4",
+        "WebComponent: Vaadin.GridTreeToggleElement#5.1.0-alpha3",
         "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-grid-tree-toggle")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-tree-toggle.html")
@@ -236,6 +237,10 @@ public abstract class GeneratedVaadinGridTreeToggle<R extends GeneratedVaadinGri
      */
     protected void setExpanded(boolean expanded) {
         getElement().setProperty("expanded", expanded);
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 
     public static class ExpandedChangeEvent<R extends GeneratedVaadinGridTreeToggle<R>>

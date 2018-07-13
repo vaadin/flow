@@ -2,7 +2,7 @@
   "name": "Vaadin.ContextMenuElement",
   "tag": "vaadin-context-menu",
   "baseUrl": "vaadin-context-menu/src/vaadin-context-menu.html",
-  "version": "4.0.1",
+  "version": "4.1.0-alpha4",
   "properties": [
     {
       "name": "selector",

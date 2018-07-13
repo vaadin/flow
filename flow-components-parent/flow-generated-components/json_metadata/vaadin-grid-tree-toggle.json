@@ -2,7 +2,7 @@
   "name": "Vaadin.GridTreeToggleElement",
   "tag": "vaadin-grid-tree-toggle",
   "baseUrl": "vaadin-grid/src/vaadin-grid-tree-toggle.html",
-  "version": "5.0.4",
+  "version": "5.1.0-alpha3",
   "properties": [
     {
       "name": "level",
@@ -30,7 +30,14 @@
       "notify": true
     }
   ],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [
     {
       "name": "expanded-changed",

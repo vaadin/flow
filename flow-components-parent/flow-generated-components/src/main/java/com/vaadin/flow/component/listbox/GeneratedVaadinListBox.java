@@ -16,10 +16,11 @@
 package com.vaadin.flow.component.listbox;
 
 import javax.annotation.Generated;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Component;
 
 /**
  * <p>
@@ -61,7 +62,8 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ListBoxElement#1.0.2", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.ListBoxElement#1.1.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-list-box")
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
 public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>>
@@ -69,5 +71,9 @@ public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>
 
     protected void focus() {
         getElement().callFunction("focus");
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 }

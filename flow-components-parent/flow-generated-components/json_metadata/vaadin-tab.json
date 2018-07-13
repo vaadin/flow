@@ -2,7 +2,7 @@
   "name": "Vaadin.TabElement",
   "tag": "vaadin-tab",
   "baseUrl": "vaadin-tabs/src/vaadin-tab.html",
-  "version": "2.0.0",
+  "version": "2.1.0-alpha3",
   "properties": [
     {
       "name": "value",
@@ -29,7 +29,14 @@
       "description": "If true, the item is in selected state.\n         "
     }
   ],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [],
   "slots": [
     ""

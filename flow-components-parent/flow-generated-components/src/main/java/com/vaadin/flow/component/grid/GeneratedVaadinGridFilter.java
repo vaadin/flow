@@ -16,14 +16,15 @@
 package com.vaadin.flow.component.grid;
 
 import javax.annotation.Generated;
+
+import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableBiFunction;
-import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * <p>
@@ -44,7 +45,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridFilterElement#5.0.4", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.GridFilterElement#5.1.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-grid-filter")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-filter.html")
 public abstract class GeneratedVaadinGridFilter<R extends GeneratedVaadinGridFilter<R, T>, T>

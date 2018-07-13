@@ -16,24 +16,25 @@
 package com.vaadin.flow.component.combobox;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonArray;
-import com.vaadin.flow.component.NotSupported;
-import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.DomEvent;
+
+import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableBiFunction;
-import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonArray;
 
 /**
  * <p>
@@ -224,7 +225,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxElement#4.0.1", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.ComboBoxElement#4.1.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box.html")
 public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R, T>, T>
@@ -833,6 +835,10 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     protected void checkValidity() {
         getElement().callFunction("checkValidity");
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("custom-value-set")

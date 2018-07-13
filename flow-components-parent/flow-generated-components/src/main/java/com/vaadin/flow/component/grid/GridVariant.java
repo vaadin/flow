@@ -21,7 +21,7 @@ import javax.annotation.Generated;
  * Set of theme variants applicable for {@code vaadin-grid} component.
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridElement#5.0.4", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.GridElement#5.1.0-alpha3", "Flow#1.1-SNAPSHOT" })
 public enum GridVariant {
     LUMO_COLUMN_BORDERS("column-borders"), LUMO_ROW_STRIPES(
             "row-stripes"), LUMO_COMPACT(

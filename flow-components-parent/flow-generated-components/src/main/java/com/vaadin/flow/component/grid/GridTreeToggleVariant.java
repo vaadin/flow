@@ -22,7 +22,7 @@ import javax.annotation.Generated;
  * component.
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridTreeToggleElement#5.0.4",
+        "WebComponent: Vaadin.GridTreeToggleElement#5.1.0-alpha3",
         "Flow#1.1-SNAPSHOT" })
 public enum GridTreeToggleVariant {
     LUMO_CONNECTORS("connectors");

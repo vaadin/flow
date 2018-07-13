@@ -1,7 +1,7 @@
 {
   "name": "Vaadin.ContextMenuOverlayElement",
   "tag": "vaadin-context-menu-overlay",
-  "baseUrl": "vaadin-context-menu/src/vaadin-context-menu.html",
+  "baseUrl": "vaadin-context-menu/src/vaadin-context-menu-overlay.html",
   "version": "UNKNOWN",
   "properties": [
     {

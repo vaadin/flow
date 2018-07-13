@@ -66,6 +66,12 @@
   ],
   "methods": [
     {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
       "name": "close",
       "description": "",
       "parameters": [
