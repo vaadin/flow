@@ -16,24 +16,25 @@
 package com.vaadin.flow.component.textfield;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.HasTheme;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
-import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.NotSupported;
-import com.vaadin.flow.component.DomEvent;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasTheme;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableBiFunction;
-import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * <p>
@@ -46,6 +47,18 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * <p>
  * &lt;vaadin-text-field label=&quot;First Name&quot;&gt;
  * &lt;/vaadin-text-field&gt;
+ * </p>
+ * <h3>Prefixes and suffixes</h3>
+ * <p>
+ * These are child elements of a {@code <vaadin-text-field>} that are displayed
+ * inline with the input, before or after. In order for an element to be
+ * considered as a prefix, it must have the slot attribute set to {@code prefix}
+ * (and similarly for {@code suffix}).
+ * </p>
+ * <p>
+ * &lt;vaadin-text-field label=&quot;Email address&quot;&gt; &lt;div
+ * slot=&quot;prefix&quot;&gt;Sent to:&lt;/div&gt; &lt;div
+ * slot=&quot;suffix&quot;&gt;@vaadin.com&lt;/div&gt; &lt;/vaadin-text-area&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -149,7 +162,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.0.1", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.TextFieldElement#2.1.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-field.html")
 public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R, T>, T>
@@ -826,6 +840,10 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      */
     @NotSupported
     protected void validate() {
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("change")

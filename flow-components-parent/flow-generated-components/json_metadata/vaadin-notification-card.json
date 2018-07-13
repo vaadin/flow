@@ -4,7 +4,14 @@
   "baseUrl": "vaadin-notification/src/vaadin-notification.html",
   "version": "UNKNOWN",
   "properties": [],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [],
   "slots": [
     ""

@@ -46,6 +46,7 @@ gulp.task('gather-variants-data', ['prepare'], () => {
   const themeFilesExtension = '.html';
   const themeNameRegex = /theme\/([^\/]+)\//;
   const variantsRegex = /:host\(\[theme~=["|']([^'"]+)["|']/ig;
+  const themeRegex = /theme-for="([^"]+)"/;
 
   return gulp.src([`${globalVar.bowerSrcDir}/*/theme/**/*${themeFilesExtension}`])
     .pipe(through.obj((file, enc, cb) => {
@@ -58,7 +59,8 @@ gulp.task('gather-variants-data', ['prepare'], () => {
         const variants = new Set();
 
         let matches;
-        while ((matches = variantsRegex.exec(file.contents.toString(enc)))) {
+        const fileContents = file.contents.toString(enc);
+        while ((matches = variantsRegex.exec(fileContents))) {
           const newVariant = matches[1];
           if (newVariant) {
             variants.add(newVariant);
@@ -66,7 +68,7 @@ gulp.task('gather-variants-data', ['prepare'], () => {
         }
 
         if (variants.size) {
-          const componentName = path.basename(file.path, themeFilesExtension);
+          const componentName = (fileContents.match(themeRegex) || [])[1] || path.basename(file.path, themeFilesExtension);
           const componentThemes = (variantsData[componentName] || (variantsData[componentName] = {}));
           (componentThemes[themeName] || (componentThemes[themeName] = [])).push(...variants);
         }

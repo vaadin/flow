@@ -16,12 +16,12 @@
 package com.vaadin.flow.component.textfield;
 
 import javax.annotation.Generated;
+
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * <p>
@@ -82,7 +82,7 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#2.0.1",
+        "WebComponent: Vaadin.PasswordFieldElement#2.1.0-alpha3",
         "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")

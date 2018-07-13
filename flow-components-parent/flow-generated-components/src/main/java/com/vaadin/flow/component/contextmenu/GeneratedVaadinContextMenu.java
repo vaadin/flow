@@ -16,16 +16,18 @@
 package com.vaadin.flow.component.contextmenu;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
+
 import com.vaadin.flow.component.ClickNotifier;
-import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonObject;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.Component;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -136,7 +138,8 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ContextMenuElement#4.0.1", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.ContextMenuElement#4.1.0-alpha4",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-context-menu")
 @HtmlImport("frontend://bower_components/vaadin-context-menu/src/vaadin-context-menu.html")
 public abstract class GeneratedVaadinContextMenu<R extends GeneratedVaadinContextMenu<R>>

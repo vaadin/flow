@@ -16,13 +16,14 @@
 package com.vaadin.flow.component.orderedlayout;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasTheme;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 
 /**
  * <p>
@@ -66,7 +67,7 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.VerticalLayoutElement#1.0.2",
+        "WebComponent: Vaadin.VerticalLayoutElement#1.1.0-alpha3",
         "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-vertical-layout")
 @HtmlImport("frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html")
@@ -95,5 +96,9 @@ public abstract class GeneratedVaadinVerticalLayout<R extends GeneratedVaadinVer
         getThemeNames().removeAll(
                 Stream.of(variants).map(VerticalLayoutVariant::getVariantName)
                         .collect(Collectors.toList()));
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 }

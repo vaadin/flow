@@ -22,12 +22,17 @@ import javax.annotation.Generated;
  * component.
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.HorizontalLayoutElement#1.0.2",
+        "WebComponent: Vaadin.HorizontalLayoutElement#1.1.0-alpha3",
         "Flow#1.1-SNAPSHOT" })
 public enum HorizontalLayoutVariant {
     LUMO_SPACING_XS("spacing-xs"), LUMO_SPACING_S("spacing-s"), LUMO_SPACING(
-            "spacing"), LUMO_SPACING_L(
-                    "spacing-l"), LUMO_SPACING_XL("spacing-xl");
+            "spacing"), LUMO_SPACING_L("spacing-l"), LUMO_SPACING_XL(
+                    "spacing-xl"), MATERIAL_SPACING_XS(
+                            "spacing-xs"), MATERIAL_SPACING_S(
+                                    "spacing-s"), MATERIAL_SPACING(
+                                            "spacing"), MATERIAL_SPACING_L(
+                                                    "spacing-l"), MATERIAL_SPACING_XL(
+                                                            "spacing-xl");
 
     private final String variant;
 

@@ -2,7 +2,7 @@
   "name": "Vaadin.DatePickerLightElement",
   "tag": "vaadin-date-picker-light",
   "baseUrl": "vaadin-date-picker/src/vaadin-date-picker-light.html",
-  "version": "3.0.1",
+  "version": "3.2.0-alpha4",
   "properties": [
     {
       "name": "value",
@@ -97,6 +97,12 @@
   ],
   "methods": [
     {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
       "name": "open",
       "description": "Opens the dropdown.\n     ",
       "parameters": [],
@@ -139,7 +145,13 @@
       "returns": "BOOLEAN"
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "name": "change",
+      "description": "change",
+      "properties": []
+    }
+  ],
   "slots": [
     ""
   ],

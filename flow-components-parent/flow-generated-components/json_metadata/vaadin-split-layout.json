@@ -2,7 +2,7 @@
   "name": "Vaadin.SplitLayoutElement",
   "tag": "vaadin-split-layout",
   "baseUrl": "vaadin-split-layout/src/vaadin-split-layout.html",
-  "version": "4.0.1",
+  "version": "4.1.0-alpha3",
   "properties": [
     {
       "name": "orientation",
@@ -13,7 +13,14 @@
       "description": "The split layout's orientation. Possible values are: `horizontal|vertical`.\n             "
     }
   ],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [
     {
       "name": "iron-resize",

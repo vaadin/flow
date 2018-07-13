@@ -2,9 +2,16 @@
   "name": "Vaadin.FormItemElement",
   "tag": "vaadin-form-item",
   "baseUrl": "vaadin-form-layout/src/vaadin-form-item.html",
-  "version": "2.0.1",
+  "version": "2.1.0-alpha4",
   "properties": [],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [],
   "slots": [
     "label",

@@ -21,9 +21,10 @@ import javax.annotation.Generated;
  * Set of theme variants applicable for {@code vaadin-radio-group} component.
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.RadioGroupElement#1.0.1", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.RadioGroupElement#1.1.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 public enum RadioGroupVariant {
-    LUMO_VERTICAL("vertical");
+    LUMO_VERTICAL("vertical"), MATERIAL_VERTICAL("vertical");
 
     private final String variant;
 

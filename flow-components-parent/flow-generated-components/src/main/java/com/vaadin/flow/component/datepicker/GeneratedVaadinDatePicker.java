@@ -16,21 +16,24 @@
 package com.vaadin.flow.component.datepicker;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Focusable;
-import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonObject;
-import com.vaadin.flow.component.NotSupported;
+
+import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableBiFunction;
-import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -237,7 +240,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.DatePickerElement#3.0.1", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.DatePickerElement#3.2.0-alpha4",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
 public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R, T>, T>
@@ -920,6 +924,10 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
         getElement().setProperty("invalid", invalid);
     }
 
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
+    }
+
     /**
      * <p>
      * Description copied from corresponding location in WebComponent:
@@ -985,6 +993,28 @@ public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePic
      */
     @NotSupported
     protected void checkValidity(String value) {
+    }
+
+    @DomEvent("change")
+    public static class ChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>
+            extends ComponentEvent<R> {
+        public ChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code change} events fired by the webcomponent.
+     *
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addChangeListener(
+            ComponentEventListener<ChangeEvent<R>> listener) {
+        return addListener(ChangeEvent.class,
+                (ComponentEventListener) listener);
     }
 
     public static class InvalidChangeEvent<R extends GeneratedVaadinDatePicker<R, ?>>

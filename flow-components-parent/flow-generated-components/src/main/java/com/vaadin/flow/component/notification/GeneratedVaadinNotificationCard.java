@@ -16,10 +16,11 @@
 package com.vaadin.flow.component.notification;
 
 import javax.annotation.Generated;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Component;
 
 /**
  * <p>
@@ -61,4 +62,8 @@ import com.vaadin.flow.component.Component;
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotificationCard<R extends GeneratedVaadinNotificationCard<R>>
         extends Component implements HasStyle {
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
+    }
 }
