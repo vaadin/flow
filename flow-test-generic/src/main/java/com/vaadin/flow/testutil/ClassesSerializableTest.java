@@ -131,6 +131,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
+                "com\\.vaadin\\.flow\\.osgi\\.Activator",
 
                 //Various test classes
                 ".*\\.test(s)?\\..*",
@@ -293,13 +294,7 @@ public abstract class ClassesSerializableTest {
 
         List<Class<?>> nonSerializableClasses = new ArrayList<>();
         for (String className : classes) {
-            Class<?> cls;
-            try {
-                cls = Class.forName(className);
-            } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                logger.debug("Ignoring class '{}' since it's not found.", className);
-                continue;
-            }
+            Class<?> cls = Class.forName(className);
             // Don't add classes that have a @Ignore annotation on the class
             if (isTestClass(cls)) {
                 continue;
