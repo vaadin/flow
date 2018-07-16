@@ -215,72 +215,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Aliases one data path as another, such that path notifications from one
-     * are routed to the other.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param to
-     *            Target path to link.
-     * @param from
-     *            Source path to link.
-     */
-    @NotSupported
-    protected void linkPaths(JsonObject to, String from) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Aliases one data path as another, such that path notifications from one
-     * are routed to the other.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param to
-     *            Target path to link.
-     * @param from
-     *            Source path to link.
-     */
-    @NotSupported
-    protected void linkPaths(String to, JsonObject from) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Aliases one data path as another, such that path notifications from one
-     * are routed to the other.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param to
-     *            Target path to link.
-     * @param from
-     *            Source path to link.
-     */
-    @NotSupported
-    protected void linkPaths(String to, String from) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Removes a data path alias previously established with {@code _linkPaths}.
      * </p>
      * <p>
@@ -297,29 +231,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      */
     @NotSupported
     protected void unlinkPaths(JsonObject path) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Removes a data path alias previously established with {@code _linkPaths}.
-     * </p>
-     * <p>
-     * Note, the path to unlink should be the target ({@code to}) used when
-     * linking the paths.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param path
-     *            Target path to unlink.
-     */
-    @NotSupported
-    protected void unlinkPaths(String path) {
     }
 
     /**
@@ -405,38 +316,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Convenience method for reading a value from a path.
-     * </p>
-     * <p>
-     * Note, if any part in the path is undefined, this method returns
-     * {@code undefined} (this method does not throw when dereferencing
-     * undefined paths).
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param path
-     *            Path to the value to read. The path may be specified as a
-     *            string (e.g. `foo.bar.baz`) or an array of path parts (e.g.
-     *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-     *            supported; string-based path parts must* be separated by dots.
-     *            Note that when dereferencing array indices, the index may be
-     *            used as a dotted part directly (e.g. `users.12.name` or
-     *            `['users', 12, 'name']`).
-     * @param root
-     *            Root object from which the path is evaluated.
-     */
-    @NotSupported
-    protected void get(String path, JsonObject root) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Convenience method for setting a value to a path and notifying any
      * elements bound to the same path.
      * </p>
@@ -473,42 +352,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Convenience method for setting a value to a path and notifying any
-     * elements bound to the same path.
-     * </p>
-     * <p>
-     * Note, if any part in the path except for the last is undefined, this
-     * method does nothing (this method does not throw when dereferencing
-     * undefined paths).
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param path
-     *            Path to the value to write. The path may be specified as a
-     *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
-     *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-     *            supported; string-based path parts must* be separated by dots.
-     *            Note that when dereferencing array indices, the index may be
-     *            used as a dotted part directly (e.g. `'users.12.name'` or
-     *            `['users', 12, 'name']`).
-     * @param value
-     *            Value to set at the specified path.
-     * @param root
-     *            Root object from which the path is evaluated. When specified,
-     *            no notification will occur.
-     */
-    @NotSupported
-    protected void set(String path, JsonObject value, JsonObject root) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Adds items onto the end of the array at the path specified.
      * </p>
      * <p>
@@ -538,35 +381,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Adds items onto the end of the array at the path specified.
-     * </p>
-     * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.push}.
-     * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>double</code>. Functions with return types different than void are
-     * not supported at this moment.
-     * 
-     * @param path
-     *            Path to array.
-     * @param _Items
-     *            Missing documentation!
-     */
-    @NotSupported
-    protected void push(String path, JsonObject _Items) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Removes an item from the end of array at the path specified.
      * </p>
      * <p>
@@ -587,33 +401,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      */
     @NotSupported
     protected void pop(JsonObject path) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Removes an item from the end of array at the path specified.
-     * </p>
-     * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.pop}.
-     * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param path
-     *            Path to array.
-     */
-    @NotSupported
-    protected void pop(String path) {
     }
 
     /**
@@ -656,41 +443,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Starting from the start index specified, removes 0 or more items from the
-     * array and inserts 0 or more new items in their place.
-     * </p>
-     * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.splice}.
-     * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonArray</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param path
-     *            Path to array.
-     * @param start
-     *            Index from which to start removing/inserting.
-     * @param deleteCount
-     *            Number of items to remove.
-     * @param _Items
-     *            Missing documentation!
-     */
-    @NotSupported
-    protected void splice(String path, double start, double deleteCount,
-            JsonObject _Items) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Removes an item from the beginning of array at the path specified.
      * </p>
      * <p>
@@ -711,33 +463,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      */
     @NotSupported
     protected void shift(JsonObject path) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Removes an item from the beginning of array at the path specified.
-     * </p>
-     * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.pop}.
-     * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>elemental.json.JsonObject</code>. Functions with return types
-     * different than void are not supported at this moment.
-     * 
-     * @param path
-     *            Path to array.
-     */
-    @NotSupported
-    protected void shift(String path) {
     }
 
     /**
@@ -767,35 +492,6 @@ public abstract class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinI
      */
     @NotSupported
     protected void unshift(JsonObject path, JsonObject _Items) {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Adds items onto the beginning of the array at the path specified.
-     * </p>
-     * <p>
-     * The arguments after {@code path} and return value match that of
-     * {@code Array.prototype.push}.
-     * </p>
-     * <p>
-     * This method notifies other paths to the same array that a splice occurred
-     * to the array.
-     * </p>
-     * <p>
-     * This function is not supported by Flow because it returns a
-     * <code>double</code>. Functions with return types different than void are
-     * not supported at this moment.
-     * 
-     * @param path
-     *            Path to array.
-     * @param _Items
-     *            Missing documentation!
-     */
-    @NotSupported
-    protected void unshift(String path, JsonObject _Items) {
     }
 
     /**

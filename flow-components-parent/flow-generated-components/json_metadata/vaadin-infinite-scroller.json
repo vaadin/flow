@@ -117,7 +117,7 @@
         {
           "name": "to",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -127,7 +127,7 @@
         {
           "name": "from",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -144,7 +144,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -184,7 +184,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -209,7 +209,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -242,7 +242,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -267,7 +267,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -284,7 +284,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -325,7 +325,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],
@@ -342,7 +342,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
+            "OBJECT",
             "OBJECT",
             "OBJECT"
           ],

@@ -16,12 +16,12 @@
 package com.vaadin.flow.component.textfield;
 
 import javax.annotation.Generated;
-
-import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableBiFunction;
 
 /**
  * <p>
