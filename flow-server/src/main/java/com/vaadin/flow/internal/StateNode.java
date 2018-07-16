@@ -378,25 +378,6 @@ public class StateNode implements Serializable {
             return;
         }
         if (isInactive()) {
-            if (!isInactiveSelf) {
-                /*
-                 * We are here if: the node itself is not inactive but it has
-                 * some ascendant which is inactive.
-                 *
-                 * In this case we send only some subset of changes (not from
-                 * all the features). But we should send changes for all
-                 * remaining features. Normally it automatically happens if the
-                 * node becomes "visible". But if it was visible with some
-                 * invisible parent then only the parent becomes dirty (when
-                 * it's set visible) and this child will never participate in
-                 * collection of changes since it's not marked as dirty.
-                 *
-                 * So here such node (which is active itself but its ascendant
-                 * is inactive) we mark as dirty again to be able to collect its
-                 * changes later on when its ascendant becomes active.
-                 */
-                getOwner().markAsDirty(this);
-            }
             if (isInitialChanges) {
                 // send only required (reported) features updates
                 Stream<NodeFeature> initialFeatures = Stream
@@ -712,7 +693,33 @@ public class StateNode implements Serializable {
     }
 
     private void setInactive(boolean inactive) {
-        isInactiveSelf = inactive;
+        if (isInactiveSelf != inactive) {
+            isInactiveSelf = inactive;
+
+            visitNodeTree(child -> {
+                if (!this.equals(child) && !child.isInactiveSelf) {
+                    /*
+                     * We are here if: the child node itself is not inactive but
+                     * it has some ascendant which is inactive.
+                     *
+                     * In this case we send only some subset of changes (not
+                     * from all the features). But we should send changes for
+                     * all remaining features. Normally it automatically happens
+                     * if the node becomes "visible". But if it was visible with
+                     * some invisible parent then only the parent becomes dirty
+                     * (when it's set visible) and this child will never
+                     * participate in collection of changes since it's not
+                     * marked as dirty.
+                     *
+                     * So here such node (which is active itself but its
+                     * ascendant is inactive) we mark as dirty again to be able
+                     * to collect its changes later on when its ascendant
+                     * becomes active.
+                     */
+                    child.markAsDirty();
+                }
+            });
+        }
     }
 
     /**
