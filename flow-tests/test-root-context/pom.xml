@@ -21,8 +21,8 @@
             <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
-         <dependency>
+
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-common</artifactId>
             <version>${project.version}</version>
@@ -102,6 +102,28 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <targetPath>META-INF/resources</targetPath>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
@@ -161,7 +183,8 @@
             <id>productionMode</id>
             <activation>
                 <property>
-                    <!-- In BrowserStack tests are run on IE11, and transpilation is needed -->
+                    <!-- In BrowserStack tests are run on IE11, and transpilation 
+                        is needed -->
                     <name>test.use.browserstack</name>
                     <value>true</value>
                 </property>
