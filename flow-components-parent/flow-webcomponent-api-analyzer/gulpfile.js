@@ -23,10 +23,8 @@ const VersionReader = require('./lib/js/version-transform');
 const MixinCollector = require('./lib/js/mixin-collector');
 const AnalyzerTransform = require('./lib/js/analyzer-transform');
 const ElementJsonTransform = require('./lib/js/element-json-transform');
+const VariantsTransform = require('./lib/js/variants-transform');
 const gulpIgnore = require('gulp-ignore');
-const cheerio = require('gulp-cheerio');
-
-const variantsData = {};
 
 gulp.task('prepare', cb => {
   if (!fs.existsSync(globalVar.bowerSrcDir) || fs.readdirSync(globalVar.bowerSrcDir).length === 0) {
@@ -39,97 +37,11 @@ gulp.task('prepare', cb => {
   cb();
 });
 
+const variantsData = {};
 gulp.task('gather-variants-data', ['prepare'], () => {
-  function extractVariants(text) {
-    const variantsRegex = /\[theme~=["|']([^'"]+)["|']/ig;
-    const variants = new Set();
-
-    let matches;
-    while ((matches = variantsRegex.exec(text))) {
-      const newVariant = matches[1];
-      if (newVariant) {
-        variants.add(newVariant);
-      }
-    }
-    return variants;
-  }
-
-  const modulesData = {};
-  const themeToTagToModuleId = {};
-
   return gulp.src('/Users/someonetoignore/Work/components/*/theme/*/vaadin-*-styles.html')
-    .pipe(cheerio(($, styleFile, cb) => {
-      $('dom-module').each((_, domModuleElement) => {
-        const themeName = (styleFile.path.match(/theme\/([^\/]+)\//) || [])[1];
-        if (!themeName) {
-          return cb(new Error(`Failed to find a theme for path '${styleFile.path}'`));
-        }
-
-        const themeModules = modulesData[themeName] || (modulesData[themeName] = {});
-        const moduleId = domModuleElement.attribs['id'];
-        if (themeModules[moduleId]) {
-          throw new Error(`Have found multiple 'dom-module' element declarations with the same id: '${moduleId}'. File with the second declaration: '${styleFile.path}'`);
-        }
-
-        const domModuleSelector = $(domModuleElement);
-        const variants = extractVariants(domModuleSelector.text());
-        const dependencies = domModuleSelector
-          .find('style[include]')
-          .map((i, styleElement) => {
-            const includeAttributeValue = styleElement.attribs['include'];
-            if (includeAttributeValue) {
-              return includeAttributeValue.split(' ');
-            }
-          })
-          .get();
-        const componentTag = domModuleElement.attribs['theme-for'];
-        if (componentTag) {
-          const tagToModuleId = themeToTagToModuleId[themeName] || (themeToTagToModuleId[themeName] = {});
-          tagToModuleId[componentTag] = moduleId;
-          if (variants.size || dependencies.length) {
-            const componentThemes = (variantsData[componentTag] || (variantsData[componentTag] = {}));
-            const componentVariants = (componentThemes[themeName] || (componentThemes[themeName] = new Set()));
-            if (variants.size) {
-              variants.forEach(variant => componentVariants.add(variant));
-            }
-          }
-        }
-        themeModules[moduleId] = {dependencies, variants, componentTag};
-      });
-      cb();
-    }))
-    .on('finish', () => {
-      for (const componentTag in variantsData) {
-        const componentThemes = variantsData[componentTag];
-        for (const themeName in componentThemes) {
-          const themeModules = modulesData[themeName];
-          const moduleId = themeToTagToModuleId[themeName][componentTag];
-          const variantsToFill = componentThemes[themeName];
-          fillVariants(variantsToFill, themeModules, (themeModules[moduleId] || {}).dependencies);
-          if (!variantsToFill.size) {
-            delete componentThemes[themeName];
-          } else {
-            componentThemes[themeName] = [...variantsToFill];
-          }
-        }
-        if (!Object.keys(componentThemes).length) {
-          delete variantsData[componentTag];
-        }
-      }
-    });
+    .pipe(new VariantsTransform(variantsData));
 });
-
-function fillVariants(variantsToFill, modules, dependencies) {
-  if (dependencies && dependencies.length) {
-    for (const dependency of dependencies) {
-      const dependencyData = modules[dependency];
-      if (dependencyData) {
-        (dependencyData.variants || []).forEach(variant => variantsToFill.add(variant));
-        fillVariants(variantsToFill, modules, dependencyData.dependencies);
-      }
-    }
-  }
-}
 
 gulp.task('generate', ['gather-variants-data'], () => {
   console.log(`Running generate task, for resources from: ${globalVar.bowerSrcDir}`);
