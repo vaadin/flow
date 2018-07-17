@@ -41,7 +41,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     private final boolean metaKey;
 
     /**
-     * Creates a new change event.
+     * Creates a new click event.
      *
      * @param source
      *            the component that fired the event
