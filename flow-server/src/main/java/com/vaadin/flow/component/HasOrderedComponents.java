@@ -121,7 +121,7 @@ public interface HasOrderedComponents<T extends Component>
     default Component getComponentAt(int index) {
         if (index < 0) {
             throw new IllegalArgumentException(
-                    "The 'index' argument should be greater than 0. It was: "
+                    "The 'index' argument should be greater than or equal to 0. It was: "
                             + index);
         }
         return ((T) this).getChildren().sequential().skip(index).findFirst()
