@@ -17,17 +17,14 @@
 
 const gulp = require('gulp');
 const fs = require('fs-extra');
-const path = require('path');
 const globalVar = require('./lib/js/global-variables');
 const ElementFilter = require('./lib/js/element-filter');
 const VersionReader = require('./lib/js/version-transform');
 const MixinCollector = require('./lib/js/mixin-collector');
 const AnalyzerTransform = require('./lib/js/analyzer-transform');
 const ElementJsonTransform = require('./lib/js/element-json-transform');
+const VariantsTransform = require('./lib/js/variants-transform');
 const gulpIgnore = require('gulp-ignore');
-const through = require('through2');
-
-const variantsData = {};
 
 gulp.task('prepare', cb => {
   if (!fs.existsSync(globalVar.bowerSrcDir) || fs.readdirSync(globalVar.bowerSrcDir).length === 0) {
@@ -40,44 +37,10 @@ gulp.task('prepare', cb => {
   cb();
 });
 
+const variantsData = {};
 gulp.task('gather-variants-data', ['prepare'], () => {
-  console.log(`Gathering variants data from ${globalVar.bowerSrcDir}`);
-
-  const themeFilesExtension = '.html';
-  const themeNameRegex = /theme\/([^\/]+)\//;
-  const variantsRegex = /:host\(\[theme~=["|']([^'"]+)["|']/ig;
-  const themeRegex = /theme-for="([^"]+)"/;
-
-  return gulp.src([`${globalVar.bowerSrcDir}/*/theme/**/*${themeFilesExtension}`])
-    .pipe(through.obj((file, enc, cb) => {
-      try {
-        const themeName = (file.path.match(themeNameRegex) || [])[1];
-        if (!themeName) {
-          return cb(new Error(`Failed to find a theme for path '${file.path}'`));
-        }
-
-        const variants = new Set();
-
-        let matches;
-        const fileContents = file.contents.toString(enc);
-        while ((matches = variantsRegex.exec(fileContents))) {
-          const newVariant = matches[1];
-          if (newVariant) {
-            variants.add(newVariant);
-          }
-        }
-
-        if (variants.size) {
-          const componentName = (fileContents.match(themeRegex) || [])[1] || path.basename(file.path, themeFilesExtension);
-          const componentThemes = (variantsData[componentName] || (variantsData[componentName] = {}));
-          (componentThemes[themeName] || (componentThemes[themeName] = [])).push(...variants);
-        }
-        return cb();
-      } catch (e) {
-        console.error(`Failed to read the file '${file.path}', reason: '${e.stack}'`);
-        throw e;
-      }
-    }))
+  return gulp.src('/Users/someonetoignore/Work/components/*/theme/*/vaadin-*-styles.html')
+    .pipe(new VariantsTransform(variantsData));
 });
 
 gulp.task('generate', ['gather-variants-data'], () => {

@@ -225,7 +225,7 @@
           "name": "detail.value",
           "type": [
             "OBJECT",
-            "STRING"
+            "OBJECT"
           ],
           "objectType": [],
           "description": "the selected item. Type is the same as the type of `items`."

@@ -15,7 +15,7 @@
     {
       "name": "item",
       "type": [
-        "STRING",
+        "OBJECT",
         "OBJECT"
       ],
       "objectType": [],

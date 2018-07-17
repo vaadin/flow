@@ -16,13 +16,11 @@
 package com.vaadin.flow.component.combobox;
 
 import javax.annotation.Generated;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-
+import com.vaadin.flow.component.HasStyle;
 import elemental.json.JsonObject;
+import com.vaadin.flow.component.Component;
 
 /**
  * <p>
@@ -130,23 +128,8 @@ public abstract class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinCombo
      * 
      * @return the {@code item} property from the webcomponent
      */
-    protected JsonObject getItemObjectJsonObject() {
+    protected JsonObject getItemJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("item");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The item to render
-     * </p>
-     * 
-     * @param item
-     *            the String value to set
-     */
-    protected void setItem(String item) {
-        getElement().setProperty("item", item == null ? "" : item);
     }
 
     /**
