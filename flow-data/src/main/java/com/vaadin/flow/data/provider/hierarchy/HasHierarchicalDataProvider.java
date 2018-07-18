@@ -80,12 +80,12 @@ public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
      *
      * <pre>
      * <code>
-     * Collection<Person> grandParents = getGrandParents();
-     * HasHierarchicalDataProvider<Person> treeGrid = new TreeGrid<>();
+     * Collection&lt;Person&gt; grandParents = getGrandParents();
+     * HasHierarchicalDataProvider&lt;Person&gt; treeGrid = new TreeGrid&lt;&gt;();
      * treeGrid.setItems(grandParents, Person::getChildren);
      * ...
      *
-     * TreeData<Person> data = treeGrid.getTreeData();
+     * TreeData&lt;Person&gt; data = treeGrid.getTreeData();
      * </code>
      * </pre>
      * <p>
@@ -124,12 +124,12 @@ public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
      *
      * <pre>
      * <code>
-     * Stream<Person> grandParents = getGrandParents();
-     * HasHierarchicalDataProvider<Person> treeGrid = new TreeGrid<>();
+     * Stream&lt;Person&gt; grandParents = getGrandParents();
+     * HasHierarchicalDataProvider&lt;Person&gt; treeGrid = new TreeGrid&lt;&gt;();
      * treeGrid.setItems(grandParents, Person::getChildren);
      * ...
      *
-     * TreeData<Person> data = treeGrid.getTreeData();
+     * TreeData&lt;Person&gt; data = treeGrid.getTreeData();
      * </code>
      * </pre>
      * <p>
@@ -166,11 +166,11 @@ public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
      *
      * <pre>
      * <code>
-     * HasHierarchicalDataProvider<String> treeGrid = new TreeGrid<>();
+     * HasHierarchicalDataProvider&lt;String&gt; treeGrid = new TreeGrid&lt;&gt;();
      * treeGrid.setItems(Arrays.asList("a","b"));
      * ...
      *
-     * TreeData<String> data = treeGrid.getTreeData();
+     * TreeData&lt;String&gt; data = treeGrid.getTreeData();
      * </code>
      * </pre>
      * <p>
@@ -202,11 +202,11 @@ public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
      *
      * <pre>
      * <code>
-     * HasHierarchicalDataProvider<String> treeGrid = new TreeGrid<>();
+     * HasHierarchicalDataProvider&lt;String&gt; treeGrid = new TreeGrid&lt;&gt;();
      * treeGrid.setItems(Stream.of("a","b"));
      * ...
      *
-     * TreeData<String> data = treeGrid.getTreeData();
+     * TreeData&lt;String&gt; data = treeGrid.getTreeData();
      * </code>
      * </pre>
      * <p>
@@ -237,11 +237,11 @@ public interface HasHierarchicalDataProvider<T> extends HasDataProvider<T> {
      *
      * <pre>
      * <code>
-     * TreeGrid<String> treeGrid = new TreeGrid<>();
+     * TreeGrid&lt;String&gt; treeGrid = new TreeGrid&lt;&gt;();
      * treeGrid.setItems("a","b");
      * ...
      *
-     * TreeData<String> data = treeGrid.getTreeData();
+     * TreeData&lt;String&gt; data = treeGrid.getTreeData();
      * </code>
      * </pre>
      * <p>

@@ -39,8 +39,6 @@ import elemental.json.JsonValue;
  *
  * @param <T>
  *            the type of the bean to be serialized to the client
- * 
- * @see Grid#addDataGenerator(DataGenerator)
  */
 public class BeanDataGenerator<T> implements DataGenerator<T> {
 

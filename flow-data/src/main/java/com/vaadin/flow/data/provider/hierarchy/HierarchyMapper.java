@@ -336,8 +336,6 @@ public class HierarchyMapper<T, F> implements Serializable {
      * Gets a stream of root items from the back-end and filter the wanted
      * results from the list.
      *
-     * @param parent
-     *            the parent item for the fetch
      * @param range
      *            the requested item range
      * @return the stream of items

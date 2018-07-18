@@ -101,7 +101,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            data updater strategy
      * @param stateNode
      *            the state node used to communicate for
-     * @param uniqueKeyProvider
+     * @param uniqueKeyProviderSupplier
      *            Unique key provider for a row. If null, then using Grid's
      *            default key generator.
      */
