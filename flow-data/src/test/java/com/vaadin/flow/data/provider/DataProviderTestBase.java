@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.data.provider;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,15 +24,31 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.provider.Query;
-import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.function.SerializablePredicate;
+
+import static org.junit.Assert.assertTrue;
 
 public abstract class DataProviderTestBase<D extends DataProvider<StrBean, SerializablePredicate<StrBean>>> {
 
+    protected static class CountingListener implements DataProviderListener {
+
+        private int counter = 0;
+
+        @Override
+        public void onDataChange(DataChangeEvent event) {
+            ++counter;
+        }
+
+        public int getCounter() {
+            return counter;
+        }
+    }
+
     protected final SerializablePredicate<StrBean> fooFilter = s -> s.getValue()
             .equals("Foo");
+
+    protected final SerializablePredicate<StrBean> gt5Filter = bean -> bean
+            .getRandomNumber() > 5;
 
     protected D dataProvider;
     protected List<StrBean> data = StrBean.generateRandomBeans(100);
