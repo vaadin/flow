@@ -38,10 +38,14 @@ public class ViewClassLocator {
     private final LinkedHashMap<String, Class<? extends Component>> views = new LinkedHashMap<>();
     private final ClassLoader classLoader;
 
+    public ViewClassLocator() {
+        classLoader = null;
+    }
+
     public ViewClassLocator(ClassLoader classLoader) {
         this.classLoader = classLoader;
         URL url = classLoader.getResource(".");
-        if ("file".equals(url.getProtocol())) {
+        if (url != null && "file".equals(url.getProtocol())) {
             File testFolder;
             try {
                 testFolder = new File(url.toURI());
@@ -61,9 +65,9 @@ public class ViewClassLocator {
                         "Unable to scan classpath to find views", exception);
             }
         } else {
-            throw new RuntimeException(
-                    "Could not find 'com' package using a file:// URL. Got URL: "
-                            + url);
+            getLogger().warn(
+                    "Could not find 'com' package using a file:// URL. Got URL: {}",
+                    url);
         }
     }
 

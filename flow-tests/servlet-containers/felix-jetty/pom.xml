@@ -11,7 +11,7 @@
 
     <artifactId>flow-test-felix-jetty-server</artifactId>
     <name>Flow Felix with Jetty Test</name>
-    <packaging>bundle</packaging>
+    <packaging>pom</packaging>
 
     <properties>
         <felix.version>6.0.0</felix.version>
@@ -22,6 +22,14 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-root-context</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <classifier>ui</classifier>
+        </dependency>
+
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
@@ -157,12 +165,7 @@
                 <extensions>true</extensions>
                 <version>3.3.0</version>
                 <configuration>
-                    <instructions>
-                        <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
-                        <Bundle-Activator>com.vaadin.flow.osgi.Activator</Bundle-Activator>
-                        <Export-Package>!*</Export-Package>
-                        <Web-ContextPath>/</Web-ContextPath>
-                    </instructions>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
 
@@ -204,7 +207,8 @@
                             <includeScope>compile</includeScope>
                             <outputDirectory>${project.build.directory}/${felix.home}/bundle</outputDirectory>
                             <overWriteIfNewer>true</overWriteIfNewer>
-                            <excludeGroupIds>com.google.code.findbugs</excludeGroupIds>
+                            <excludeGroupIds>com.google.code.findbugs,
+                                org.seleniumhq.selenium</excludeGroupIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -225,7 +229,7 @@
                             <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
                             <workingDirectory>${project.build.directory}/${felix.home}</workingDirectory>
                             <commandlineArgs>-Djetty.home=${basedir}/jettyhome
-                                -Dgosh.args="--nointeractive -s -c lb"
+                                -Dgosh.args="--nointeractive -s"
                                 -jar bin/felix.jar</commandlineArgs>
                         </configuration>
                     </execution>

@@ -81,7 +81,6 @@ public class Activator implements BundleActivator, ServiceListener {
                 file = file.substring(0, file.length() - 1);
             }
             String path = file.substring(prefixLength);
-            System.out.println("xxxxxxx " + path + ", " + file);
             service.registerResources(path, file, null);
         }
     }

@@ -16,11 +16,12 @@
 package com.vaadin.flow.osgi;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.startup.AnnotationValidator;
 
@@ -28,10 +29,7 @@ import com.vaadin.flow.server.startup.AnnotationValidator;
  * @author Vaadin Ltd
  *
  */
-public class WebAppServletContextGrabber
-        implements ServletContainerInitializer {
-
-    private static AtomicReference<ServletContext> context = new AtomicReference<ServletContext>();
+public class JettyOsgiInitializer implements ServletContainerInitializer {
 
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx)
@@ -40,11 +38,12 @@ public class WebAppServletContextGrabber
         // bundle
         AnnotationValidator validator = new AnnotationValidator();
 
-        context.set(ctx);
-    }
-
-    public static ServletContext getWebAppServetContext() {
-        return context.get();
+        try {
+            OSGiHttpServiceRegistration.registerHttpService(ctx);
+        } catch (NoClassDefFoundError error) {
+            LoggerFactory.getLogger(OSGiHttpServiceRegistration.class)
+                    .trace(error.getMessage(), error);
+        }
     }
 
 }

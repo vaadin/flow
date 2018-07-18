@@ -73,6 +73,20 @@
             <groupId>org.webjars.bowergithub.webcomponents</groupId>
             <artifactId>webcomponentsjs</artifactId>
         </dependency>
+        
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.compendium</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -114,15 +128,48 @@
                         </goals>
                         <configuration>
                             <resources>
+                                <!--  Copy resource files into META-INF/resources
+                                so that they becomes discoverable via HTTP 
+                                (there is an HttpService which registers them).
+                                But this is not enough since servlet context should
+                                also be able to find those resources and return 
+                                their content. Registering them for HTTP doesn't solve this.
+                                So there is one more resources registration below
+                                which makes them available for ServletContext.
+                                Technically only one of those registration should be needed.
+                                Needs to be fixed later on.-->
                                 <resource>
                                     <directory>src/main/webapp</directory>
                                     <targetPath>META-INF/resources</targetPath>
+                                </resource>
+                                <!--  This should not be needed but servlet 
+                                    context doesn't find template files without this: 
+                                    files are copied into the root and they become available 
+                                    by their direct path-->
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <targetPath></targetPath>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${maven.war.plugin.version}</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Implementation-Title>${project.name}
+                                </Implementation-Title>
+                                <Implementation-Version>${project.version}
+                                </Implementation-Version>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -148,6 +195,12 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
+                            <!-- tests-common classes is included into this jar. 
+                            Another option is to have it as a separate bundle.
+                            And later on may be we need a test which does it. -->
+                            <!-- excludes>
+                                <exclude>**/servlet/*</exclude>
+                            </excludes-->
                             <classifier>ui</classifier>
                         </configuration>
                     </execution>

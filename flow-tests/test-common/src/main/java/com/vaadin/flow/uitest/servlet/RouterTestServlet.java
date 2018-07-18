@@ -1,7 +1,8 @@
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.annotation.WebServlet;
 import java.util.stream.Stream;
+
+import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
