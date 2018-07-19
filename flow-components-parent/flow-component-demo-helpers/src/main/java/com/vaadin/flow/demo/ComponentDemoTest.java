@@ -105,6 +105,7 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
                 previousButtonText, updatedButtonText);
 
         boolean shouldAddTheme = previousButtonText.startsWith("Add");
+        String[] variant = updatedButtonText.split("'");
         if (shouldAddTheme) {
             Assert.assertTrue(
                     "When a theme variant got added, toggle button text should start with 'Remove' word",
@@ -115,6 +116,11 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
             Assert.assertTrue(
                     "When a theme variant got added, component 'theme' attribute should contain all previous theme variants",
                     updatedThemes.containsAll(previousThemes));
+
+            Assert.assertTrue(
+                    "The selected theme variant:" + variant[1]
+                            + " should be added to the component 'theme' attribute.",
+                    updatedThemes.contains(variant[1]));
         } else {
             Assert.assertTrue(
                     "When a theme variant got removed, toggle button text should start with 'Add' word",
@@ -125,6 +131,10 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
             Assert.assertTrue(
                     "When a theme variant got removed, previous theme variants should contain all theme variants from component 'theme' attribute",
                     previousThemes.containsAll(updatedThemes));
+            Assert.assertFalse(
+                    "The selected theme variant:" + variant[1]
+                            + " should be removed from the component 'theme' attribute.",
+                    updatedThemes.contains(variant[1]));
         }
     }
 
