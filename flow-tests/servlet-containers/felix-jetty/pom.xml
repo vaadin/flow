@@ -11,7 +11,7 @@
 
     <artifactId>flow-test-felix-jetty-server</artifactId>
     <name>Flow Felix with Jetty Test</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <felix.version>6.0.0</felix.version>
@@ -28,6 +28,14 @@
             <version>${project.version}</version>
             <type>jar</type>
             <classifier>ui</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-root-context</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -230,10 +238,29 @@
                             <workingDirectory>${project.build.directory}/${felix.home}</workingDirectory>
                             <commandlineArgs>-Djetty.home=${basedir}/jettyhome
                                 -Dgosh.args="--nointeractive -s"
-                                -jar bin/felix.jar</commandlineArgs>
+                                -jar
+                                bin/felix.jar</commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <dependenciesToScan>
+                        <dependency>${project.groupId}:flow-test-root-context</dependency>
+                    </dependenciesToScan>
+                </configuration>
             </plugin>
         </plugins>
     </build>
