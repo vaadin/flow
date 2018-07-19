@@ -107,6 +107,11 @@ public class ViewClassLocator {
                         // InlineTemplate or similar
                     }
                 }
+            } catch (NoClassDefFoundError error) {
+                getLogger().warn(
+                        "Unable to load class {} because of hierarchy inconsistency. "
+                                + "Probably OSGi class which is not intended to be loaded",
+                        className);
             } catch (Exception e) {
                 getLogger().warn("Unable to load class {}", className);
             }
