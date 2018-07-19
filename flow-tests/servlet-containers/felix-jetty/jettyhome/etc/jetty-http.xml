@@ -32,7 +32,7 @@
           </Array>
         </Arg>
         <Set name="host"><Property name="jetty.http.host" /></Set>
-        <Set name="port"><Property name="jetty.http.port" default="8080" /></Set>
+        <Set name="port"><Property name="jetty.http.port" default="8888" /></Set>
         <Set name="idleTimeout"><Property name="jetty.http.idleTimeout" default="30000"/></Set>
       </New>
     </Arg>

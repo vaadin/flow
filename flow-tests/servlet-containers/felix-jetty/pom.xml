@@ -18,6 +18,7 @@
         <felix.distribution>http://central.maven.org/maven2/org/apache/felix/org.apache.felix.main.distribution/${felix.version}/org.apache.felix.main.distribution-${felix.version}.zip</felix.distribution>
         <felix.home>felix-framework-${felix.version}</felix.home>
         <jetty.version>9.4.11.v20180605</jetty.version>
+        <test.excludegroup>com.vaadin.flow.testcategory.IgnoreOSGi</test.excludegroup>
     </properties>
 
 
@@ -37,7 +38,7 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
-
+        
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
@@ -168,10 +169,9 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <version>3.3.0</version>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>${bnd.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -250,6 +250,16 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>test-wait-http</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <test>WaitHttpIT</test>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
@@ -257,6 +267,9 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <excludes>
+                        <exclude>**/WaitHttpIT.java</exclude>
+                    </excludes>
                     <dependenciesToScan>
                         <dependency>${project.groupId}:flow-test-root-context</dependency>
                     </dependenciesToScan>
@@ -264,4 +277,6 @@
             </plugin>
         </plugins>
     </build>
+
+
 </project>

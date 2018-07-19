@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.wait;
 
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -23,20 +25,33 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class WaitHttpIT extends ChromeBrowserTest {
 
-    @Test
-    public void waitForHttp() {
-        getDriver().manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS);
-        waitViewUrl(5);
+    @Override
+    public void checkIfServerAvailable() {
     }
 
-    private void waitViewUrl(int count) {
+    @Override
+    public void setup() {
+
+    }
+
+    @Test
+    public void waitForHttp()
+            throws MalformedURLException, InterruptedException {
+        waitViewUrl(60);
+    }
+
+    private void waitViewUrl(int count)
+            throws MalformedURLException, InterruptedException {
+        String viewUrl = getRootURL() + "/view";
         if (count == 0) {
             throw new IllegalStateException(
-                    "URL '" + getRootURL() + "/view' is not avialable");
+                    "URL '" + viewUrl + "' is not avialable");
         }
+        URL url = new URL(viewUrl);
         try {
-            getDriver().get(getRootURL() + "/view");
-        } catch (IllegalStateException exception) {
+            url.openConnection();
+        } catch (IOException exception) {
+            Thread.sleep(1000);
             waitViewUrl(count - 1);
         }
     }
