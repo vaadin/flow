@@ -264,6 +264,22 @@ public class ComponentEventBusTest {
     }
 
     @Test
+    public void domEvent_addListenerWithDomListenerConsumer() {
+        TestComponent component = new TestComponent();
+        EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
+        component.getEventBus().addListener(MappedToDomEvent.class,
+                eventTracker, domRegistration -> domRegistration.debounce(200));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nonDomEvent_addListenerWithDomListenerConsumer_throws() {
+        TestComponent component = new TestComponent();
+        EventTracker<ServerEvent> eventTracker = new EventTracker<>();
+        component.getEventBus().addListener(ServerEvent.class, eventTracker,
+                domRegistration -> domRegistration.debounce(200));
+    }
+
+    @Test
     public void multipleEventsForSameDomEvent_removeListener() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
