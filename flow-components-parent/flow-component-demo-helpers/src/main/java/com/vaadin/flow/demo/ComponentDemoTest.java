@@ -56,13 +56,32 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
     }
 
     /**
-     * Verifies variants functionality for the current layout.
+     * Verifies variants functionality for the current layout with default implementation.
      * 
      * The test will fail if a specific variant demo is not added first with
      * {@link DemoView#addVariantsDemo(Supplier, BiConsumer, BiConsumer, Function, Enum[])}
      * method.
      */
     protected void verifyThemeVariantsBeingToggled() {
+        verifyThemeVariantsBeingToggled(defaultProducer);
+    }
+
+    /**
+     * With current design, the theme variant can be obtained from the button
+     * attached to the demo
+     */
+    private Function<WebElement, String> defaultProducer = (
+            WebElement button) -> {
+        String[] variant = button.getText().split("'");
+        return variant[1];
+    };
+
+    /**
+     * Verifies variants functionality for the current layout with customized
+     * implementation.
+     */
+    protected void verifyThemeVariantsBeingToggled(
+            Function<WebElement, String> variantProducer) {
         List<WebElement> toggleThemeButtons = layout
                 .findElement(By.id(VARIANT_TOGGLE_BUTTONS_DIV_ID))
                 .findElements(By.tagName("button"));
@@ -70,17 +89,19 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
                 "Expected at least one toggle theme button in 'buttonDiv', but got none",
                 toggleThemeButtons.isEmpty());
         toggleThemeButtons.forEach(button -> toggleVariantAndCheck(
-                layout.findElement(By.id(COMPONENT_WITH_VARIANTS_ID)), button));
+                layout.findElement(By.id(COMPONENT_WITH_VARIANTS_ID)), button,
+                variantProducer));
     }
 
     private void toggleVariantAndCheck(WebElement component,
-            WebElement button) {
+            WebElement button, Function<WebElement, String> variantProducer) {
         List<String> initialButtonThemes = getComponentThemes(component);
         String initialButtonText = button.getText();
 
         button.click();
         verifyThemeIsToggled(getComponentThemes(component), button.getText(),
-                initialButtonThemes, initialButtonText);
+                initialButtonThemes, initialButtonText,
+                variantProducer.apply(button));
 
         button.click();
         Assert.assertEquals(
@@ -100,12 +121,12 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
 
     private void verifyThemeIsToggled(List<String> updatedThemes,
             String updatedButtonText, List<String> previousThemes,
-            String previousButtonText) {
+            String previousButtonText,
+            String variantName) {
         Assert.assertNotEquals("Button should change its text after toggling",
                 previousButtonText, updatedButtonText);
 
         boolean shouldAddTheme = previousButtonText.startsWith("Add");
-        String[] variant = updatedButtonText.split("'");
         if (shouldAddTheme) {
             Assert.assertTrue(
                     "When a theme variant got added, toggle button text should start with 'Remove' word",
@@ -118,9 +139,10 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
                     updatedThemes.containsAll(previousThemes));
 
             Assert.assertTrue(
-                    "The selected theme variant:" + variant[1]
+                    "The selected theme variant:"
+                            + variantName
                             + " should be added to the component 'theme' attribute.",
-                    updatedThemes.contains(variant[1]));
+                    updatedThemes.contains(variantName));
         } else {
             Assert.assertTrue(
                     "When a theme variant got removed, toggle button text should start with 'Add' word",
@@ -132,9 +154,9 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
                     "When a theme variant got removed, previous theme variants should contain all theme variants from component 'theme' attribute",
                     previousThemes.containsAll(updatedThemes));
             Assert.assertFalse(
-                    "The selected theme variant:" + variant[1]
+                    "The selected theme variant:" + variantName
                             + " should be removed from the component 'theme' attribute.",
-                    updatedThemes.contains(variant[1]));
+                    updatedThemes.contains(variantName));
         }
     }
 
