@@ -55,6 +55,8 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
         }
     }
 
+    private Function<WebElement, String> DEFAULT_VARIANT_PRODUCER = new DefaultProducer();
+
     @Override
     protected int getDeploymentPort() {
         return 9998;
@@ -83,11 +85,6 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
         verifyThemeVariantsBeingToggled(DEFAULT_VARIANT_PRODUCER);
     }
 
-    /**
-     * With current design, the theme variant can be obtained from the button
-     * attached to the demo
-     */
-    private Function<WebElement, String> DEFAULT_VARIANT_PRODUCER = new DefaultProducer();
 
     /**
      * Verifies variants functionality for the current layout with customized
