@@ -62,7 +62,7 @@ public class DataCommunicator<T> implements Serializable {
     private final SerializableConsumer<JsonArray> dataUpdater;
     private final StateNode stateNode;
 
-    private final KeyMapper<T> keyMapper = new KeyMapper<>();
+    private DataKeyMapper<T> keyMapper = new KeyMapper<>();
 
     // The range of items that the client wants to have
     private Range requestedRange = Range.between(0, 0);
@@ -270,6 +270,18 @@ public class DataCommunicator<T> implements Serializable {
      */
     public DataKeyMapper<T> getKeyMapper() {
         return keyMapper;
+    }
+
+    /**
+     * Sets the {@link DataKeyMapper} used in this {@link DataCommunicator}. Key
+     * mapper can be used to map keys sent to the client-side back to their
+     * respective data objects.
+     * 
+     * @param keyMapper
+     *            the keyMapper
+     */
+    protected void setKeyMapper(DataKeyMapper<T> keyMapper) {
+        this.keyMapper = keyMapper;
     }
 
     /**
