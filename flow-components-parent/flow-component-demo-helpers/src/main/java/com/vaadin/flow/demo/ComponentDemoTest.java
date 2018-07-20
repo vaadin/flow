@@ -74,8 +74,8 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
     }
 
     /**
-     * Verifies variants functionality for the current layout with the
-     * implementation of {@link DefaultProducer}.
+     * Verifies variants functionality for the current layout with using the
+     * {@link DefaultProducer}.
      * <p>
      * The test will fail if a specific variant demo is not added first with
      * {@link DemoView#addVariantsDemo(Supplier, BiConsumer, BiConsumer, Function, Enum[])}
@@ -85,10 +85,9 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
         verifyThemeVariantsBeingToggled(DEFAULT_VARIANT_PRODUCER);
     }
 
-
     /**
      * Verifies variants functionality for the current layout with customized
-     * implementation.
+     * variant producer implementation.
      */
     protected void verifyThemeVariantsBeingToggled(
             Function<WebElement, String> variantProducer) {
