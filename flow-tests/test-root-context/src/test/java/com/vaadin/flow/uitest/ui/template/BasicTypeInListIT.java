@@ -19,11 +19,14 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class BasicTypeInListIT extends ChromeBrowserTest {
 
     @Test
@@ -39,8 +42,8 @@ public class BasicTypeInListIT extends ChromeBrowserTest {
 
         findElement(By.id("add")).click();
 
-        items = template.$(TestBenchElement.class)
-                .attribute("class", "item").all();
+        items = template.$(TestBenchElement.class).attribute("class", "item")
+                .all();
 
         Assert.assertEquals(3, items.size());
         Assert.assertEquals("newItem", items.get(2).getText());

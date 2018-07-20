@@ -18,13 +18,16 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.List;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class BeanInListingIT extends ChromeBrowserTest {
 
     private static final class SelectedCondition
@@ -70,8 +73,8 @@ public class BeanInListingIT extends ChromeBrowserTest {
     private void assertSelectionValue(String className, WebElement selected,
             String item) {
         TestBenchElement template = $(TestBenchElement.class).id("template");
-        List<TestBenchElement> items = template
-                .$(TestBenchElement.class).attribute("class", className).all();
+        List<TestBenchElement> items = template.$(TestBenchElement.class)
+                .attribute("class", className).all();
         items.stream().filter(itemElement -> itemElement.getText().equals(item))
                 .findFirst().get().click();
 

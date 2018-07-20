@@ -17,12 +17,15 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class InjectScriptTagIT extends ChromeBrowserTest {
 
     @Test
@@ -38,7 +41,8 @@ public class InjectScriptTagIT extends ChromeBrowserTest {
         Assert.assertEquals("<!-- <script> --><!-- <script></script>",
                 slot.getText());
 
-        TestBenchElement button = parent.$(TestBenchElement.class).id("change-value");
+        TestBenchElement button = parent.$(TestBenchElement.class)
+                .id("change-value");
         button.click();
 
         Assert.assertEquals("<!-- <SCRIPT>", div.getText());

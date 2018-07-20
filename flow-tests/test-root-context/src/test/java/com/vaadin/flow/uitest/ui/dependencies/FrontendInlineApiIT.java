@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import org.junit.experimental.categories.Category;
+
+import com.vaadin.flow.testcategory.IgnoreOSGi;
+
 /**
  * The test for {@link FrontendInlineApiView}.
  * <p>
@@ -25,6 +29,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
  * @since 1.0
  *
  */
+@Category(IgnoreOSGi.class)
 public class FrontendInlineApiIT extends AbstractFrontendInlineIT {
 
 }

@@ -19,12 +19,15 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class PolymerPropertyChangeEventIT extends ChromeBrowserTest {
 
     @Test
@@ -32,14 +35,12 @@ public class PolymerPropertyChangeEventIT extends ChromeBrowserTest {
         open();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
-        template.$(TestBenchElement.class).id("input")
-                .sendKeys("foo");
+        template.$(TestBenchElement.class).id("input").sendKeys("foo");
 
         List<WebElement> changeEvents = findElements(
                 By.className("change-event"));
-        Assert.assertTrue(
-                "Expected property change event is not fired. "
-                        + "Element with expected old and new value is not found",
+        Assert.assertTrue("Expected property change event is not fired. "
+                + "Element with expected old and new value is not found",
                 changeEvents.stream().anyMatch(
                         event -> "New property value: 'foo', old property value: 'fo'"
                                 .equals(event.getText())));

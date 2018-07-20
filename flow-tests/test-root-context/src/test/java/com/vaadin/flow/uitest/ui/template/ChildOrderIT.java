@@ -21,19 +21,22 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 /**
  * Tests to validate the ordering of server-side nodes when added alongside
  * client-side nodes.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */
+@Category(IgnoreOSGi.class)
 public class ChildOrderIT extends ChromeBrowserTest {
 
     private TestBenchElement root;

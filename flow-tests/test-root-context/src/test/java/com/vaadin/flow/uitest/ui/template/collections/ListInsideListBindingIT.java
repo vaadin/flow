@@ -19,8 +19,10 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -28,6 +30,7 @@ import com.vaadin.testbench.TestBenchElement;
  * Normal tests with @Before are not implemented because each @Test starts new
  * Chrome process.
  */
+@Category(IgnoreOSGi.class)
 public class ListInsideListBindingIT extends ChromeBrowserTest {
 
     @Test
