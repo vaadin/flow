@@ -24,15 +24,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.data.provider.ArrayUpdater;
-import com.vaadin.flow.data.provider.ArrayUpdater.Update;
-import com.vaadin.flow.data.provider.CommunicationController;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.KeyMapper;
 import com.vaadin.flow.data.provider.QuerySortOrder;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -57,13 +55,13 @@ import elemental.json.JsonValue;
  */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
-    private final ArrayUpdater arrayUpdater;
+    private final HierarchicalArrayUpdater arrayUpdater;
     private final StateNode stateNode;
     private HierarchyMapper<T, ?> mapper;
     private DataGenerator<T> dataGenerator;
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
 
-    private final Map<String, CommunicationController<T>> dataControllers = new HashMap<>();
+    private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
 
     private KeyMapper<T> uniqueKeyMapper = new KeyMapper<T>() {
 
@@ -104,7 +102,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            default key generator.
      */
     public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
-            ArrayUpdater arrayUpdater,
+            HierarchicalArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
             SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier) {
         super(dataGenerator, arrayUpdater, dataUpdater, stateNode);
@@ -125,14 +123,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                         uniqueKeyProviderSupplier.get().apply(parent)));
     }
 
-    private void requestFlush(Update update) {
+    private void requestFlush(HierarchicalUpdate update) {
         SerializableConsumer<ExecutionContext> flushRequest = context -> update
                 .commit();
         stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
                 .beforeClientResponse(stateNode, flushRequest));
     }
 
-    private void requestFlush(CommunicationController<T> update) {
+    private void requestFlush(HierarchicalCommunicationController<T> update) {
         SerializableConsumer<ExecutionContext> flushRequest = context -> update
                 .flush();
         stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
@@ -150,10 +148,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         if (!dataControllers.isEmpty()) {
             dataControllers.values()
-                    .forEach(CommunicationController::unregisterPassivatedKeys);
+                    .forEach(HierarchicalCommunicationController::unregisterPassivatedKeys);
             dataControllers.clear();
 
-            Update update = arrayUpdater
+            HierarchicalUpdate update = arrayUpdater
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
             requestFlush(update);
@@ -170,9 +168,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     public void setParentRequestedRange(int start, int length, T parentItem) {
         String parentKey = uniqueKeyProviderSupplier.get().apply(parentItem);
 
-        CommunicationController<T> controller = dataControllers.computeIfAbsent(
+        HierarchicalCommunicationController<T> controller = dataControllers.computeIfAbsent(
                 parentKey,
-                key -> new CommunicationController<>(parentKey, getKeyMapper(),
+                key -> new HierarchicalCommunicationController<>(parentKey, getKeyMapper(),
                         mapper, dataGenerator,
                         size -> arrayUpdater.startUpdate(getDataProviderSize()),
                         (pkey, range) -> mapper.fetchChildItems(
@@ -323,7 +321,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         items.forEach(item -> {
             if (mapper.collapse(item)) {
                 collapsedItems.add(item);
-                CommunicationController<T> controller = dataControllers
+                HierarchicalCommunicationController<T> controller = dataControllers
                         .remove(getKeyMapper().key(item));
                 if (controller != null) {
                     controller.unregisterPassivatedKeys();
@@ -331,7 +329,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
         });
         if (syncClient && !collapsedItems.isEmpty()) {
-            Update update = arrayUpdater
+            HierarchicalUpdate update = arrayUpdater
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.collapseItems",
                     collapsedItems.stream()
@@ -392,7 +390,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
         });
         if (syncClient && !expandedItems.isEmpty()) {
-            Update update = arrayUpdater
+            HierarchicalUpdate update = arrayUpdater
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.expandItems",
                     expandedItems.stream()

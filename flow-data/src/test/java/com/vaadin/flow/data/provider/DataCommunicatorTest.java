@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.data.provider;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -89,27 +88,6 @@ public class DataCommunicatorTest {
             @Override
             public void commit(int updateId) {
                 lastUpdateId = updateId;
-            }
-
-            @Override
-            public void clear(int start, int length, String parentKey) {
-            }
-
-            @Override
-            public void set(int start, List<JsonValue> items,
-                    String parentKey) {
-            }
-
-            @Override
-            public void commit(int updateId, String parentKey, int levelSize) {
-            }
-
-            @Override
-            public void commit() {
-            }
-
-            @Override
-            public void enqueue(String name, Serializable... arguments) {
             }
         };
 
