@@ -25,9 +25,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
-import com.vaadin.flow.data.provider.ArrayUpdater;
-import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -51,7 +50,7 @@ public class HierarchicalCommunicatorTest {
     private final int pageSize = 50;
     private StateNode stateNode;
 
-    private class UpdateQueue implements Update {
+    private class UpdateQueue implements HierarchicalUpdate {
         @Override
         public void clear(int start, int length) {
         }
@@ -69,13 +68,11 @@ public class HierarchicalCommunicatorTest {
         }
 
         @Override
-        public void set(int start, List<JsonValue> items,
-                String parentKey) {
+        public void set(int start, List<JsonValue> items, String parentKey) {
         }
 
         @Override
-        public void clear(int start, int length,
-                String parentKey) {
+        public void clear(int start, int length, String parentKey) {
         }
 
         @Override
@@ -87,9 +84,9 @@ public class HierarchicalCommunicatorTest {
         }
     }
 
-    private final ArrayUpdater arrayUpdater = new ArrayUpdater() {
+    private final HierarchicalArrayUpdater arrayUpdater = new HierarchicalArrayUpdater() {
         @Override
-        public Update startUpdate(int sizeChange) {
+        public HierarchicalUpdate startUpdate(int sizeChange) {
             return new UpdateQueue();
         }
 
@@ -97,7 +94,7 @@ public class HierarchicalCommunicatorTest {
         public void initialize() {
         }
     };
-    
+
     @Before
     public void setUp() {
         ui = Mockito.mock(UI.class);
@@ -113,10 +110,9 @@ public class HierarchicalCommunicatorTest {
         dataProvider = new TreeDataProvider<>(treeData);
         stateNode = Mockito.mock(StateNode.class);
         communicator = new HierarchicalDataCommunicator<>(
-                Mockito.mock(CompositeDataGenerator.class),
-                arrayUpdater, json -> {
-                },
-                stateNode, () -> null);
+                Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
+                json -> {
+                }, stateNode, () -> null);
         communicator.setDataProvider(dataProvider, null);
     }
 
@@ -151,7 +147,7 @@ public class HierarchicalCommunicatorTest {
         } else {
             dataProvider.refreshItem(item);
         }
-        
+
         ArgumentCaptor<SerializableConsumer> attachCaptor = ArgumentCaptor
                 .forClass(SerializableConsumer.class);
         Mockito.verify(stateNode, Mockito.times(4))
@@ -160,8 +156,7 @@ public class HierarchicalCommunicatorTest {
         attachCaptor.getAllValues().forEach(consumer -> consumer.accept(ui));
 
         Mockito.verify(stateTree, Mockito.times(4))
-                .beforeClientResponse(Mockito.any(),
-                Mockito.any());
+                .beforeClientResponse(Mockito.any(), Mockito.any());
     }
 
     @Test

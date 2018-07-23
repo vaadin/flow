@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License. 
  */
-package com.vaadin.flow.data.provider;
+package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,7 +27,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
-import com.vaadin.flow.data.provider.hierarchy.HierarchyMapper;
+import com.vaadin.flow.data.provider.DataGenerator;
+import com.vaadin.flow.data.provider.DataKeyMapper;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.Range;
@@ -37,16 +39,16 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * CommunicationController controls all Grid's communication to client.
+ * HierarchicalCommunicationController controls all the communication to client.
  * 
  * @param <T>
  *            the target bean type
  */
-public class CommunicationController<T> implements Serializable {
+public class HierarchicalCommunicationController<T> implements Serializable {
 
     private final DataKeyMapper<T> keyMapper;
     private final DataGenerator<T> dataGenerator;
-    private final SerializableFunction<Integer, Update> startUpdate;
+    private final SerializableFunction<Integer, HierarchicalUpdate> startUpdate;
     private final HierarchyMapper<T, ?> mapper;
     private final SerializableBiFunction<String, Range, Stream<T>> fetchItems;
 
@@ -94,9 +96,10 @@ public class CommunicationController<T> implements Serializable {
      *            Function for fetching items for target parent and specified
      *            range
      */
-    public CommunicationController(String parentKey, DataKeyMapper<T> keyMapper,
-            HierarchyMapper<T, ?> mapper, DataGenerator<T> dataGenerator,
-            SerializableFunction<Integer, Update> startUpdate,
+    public HierarchicalCommunicationController(String parentKey,
+            DataKeyMapper<T> keyMapper, HierarchyMapper<T, ?> mapper,
+            DataGenerator<T> dataGenerator,
+            SerializableFunction<Integer, HierarchicalUpdate> startUpdate,
             SerializableBiFunction<String, Range, Stream<T>> fetchItems) {
         this.parentKey = parentKey;
         this.keyMapper = keyMapper;
@@ -127,7 +130,7 @@ public class CommunicationController<T> implements Serializable {
         activeStart = effectiveRequested.getStart();
 
         // Phase 2: Collect changes to send
-        Update update = startUpdate.apply(assumedSize);
+        HierarchicalUpdate update = startUpdate.apply(assumedSize);
         boolean updated = collectChangesToSend(previousActive,
                 effectiveRequested, update);
 
@@ -154,7 +157,7 @@ public class CommunicationController<T> implements Serializable {
     }
 
     private boolean collectChangesToSend(final Range previousActive,
-            final Range effectiveRequested, Update update) {
+            final Range effectiveRequested, HierarchicalUpdate update) {
         boolean updated = false;
         if (assumeEmptyClient || resendEntireRange) {
             if (!assumeEmptyClient) {
@@ -191,7 +194,7 @@ public class CommunicationController<T> implements Serializable {
         return updated;
     }
 
-    private void set(Range effectiveRequested, Update update) {
+    private void set(Range effectiveRequested, HierarchicalUpdate update) {
         if (effectiveRequested.isEmpty() || activeKeyOrder.isEmpty()
                 || effectiveRequested.getStart() >= assumedSize) {
             return;
@@ -205,7 +208,7 @@ public class CommunicationController<T> implements Serializable {
         }
     }
 
-    private void clear(int start, int length, Update update) {
+    private void clear(int start, int length, HierarchicalUpdate update) {
         if (length == 0 || start >= assumedSize) {
             return;
         }
@@ -264,7 +267,8 @@ public class CommunicationController<T> implements Serializable {
     }
 
     private void passivateInactiveKeys(Set<String> oldActive,
-            List<String> newActiveKeyOrder, Update update, boolean updated) {
+            List<String> newActiveKeyOrder, HierarchicalUpdate update,
+            boolean updated) {
         /*
          * We cannot immediately unregister keys that we have asked the client
          * to remove, since the client might send a message using that key
