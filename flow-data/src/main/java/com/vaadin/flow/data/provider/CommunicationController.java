@@ -38,12 +38,6 @@ import elemental.json.JsonValue;
 
 /**
  * CommunicationController controls all Grid's communication to client.
- * <p>
- * TODO move this class to 'flow-data' module first. Then get rid of the
- * {@link Update} in this class by replacing {@link Update#set(int, List)},
- * {@link Update#clear(int, int)} and {@link Update#commit(int)} methods with
- * {@link Update#set(int, List, String)}, {@link Update#clear(int, int, String)}
- * and {@link Update#commit(int, String, int)}.
  * 
  * @param <T>
  *            the target bean type
@@ -100,10 +94,8 @@ public class CommunicationController<T> implements Serializable {
      *            Function for fetching items for target parent and specified
      *            range
      */
-    public CommunicationController(String parentKey,
-            DataKeyMapper<T> keyMapper,
-            HierarchyMapper<T, ?> mapper,
-            DataGenerator<T> dataGenerator,
+    public CommunicationController(String parentKey, DataKeyMapper<T> keyMapper,
+            HierarchyMapper<T, ?> mapper, DataGenerator<T> dataGenerator,
             SerializableFunction<Integer, Update> startUpdate,
             SerializableBiFunction<String, Range, Stream<T>> fetchItems) {
         this.parentKey = parentKey;
@@ -209,8 +201,7 @@ public class CommunicationController<T> implements Serializable {
                     getJsonItems(effectiveRequested));
         } else {
             update.set(effectiveRequested.getStart(),
-                    getJsonItems(effectiveRequested),
-                    parentKey);
+                    getJsonItems(effectiveRequested), parentKey);
         }
     }
 
@@ -259,7 +250,7 @@ public class CommunicationController<T> implements Serializable {
 
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
-        
+
         fetchItems.apply(parentKey, range).forEach(bean -> {
             boolean mapperHasKey = keyMapper.has(bean);
             String key = keyMapper.key(bean);
@@ -273,8 +264,7 @@ public class CommunicationController<T> implements Serializable {
     }
 
     private void passivateInactiveKeys(Set<String> oldActive,
-            List<String> newActiveKeyOrder, Update update,
-            boolean updated) {
+            List<String> newActiveKeyOrder, Update update, boolean updated) {
         /*
          * We cannot immediately unregister keys that we have asked the client
          * to remove, since the client might send a message using that key
@@ -283,8 +273,8 @@ public class CommunicationController<T> implements Serializable {
          */
         if (updated) {
             int updateId = nextUpdateId++;
-            
-            if(parentKey == null) {
+
+            if (parentKey == null) {
                 update.commit(updateId);
             } else {
                 update.commit(updateId, parentKey, assumedSize);
