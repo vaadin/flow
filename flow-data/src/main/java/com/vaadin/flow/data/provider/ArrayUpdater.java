@@ -58,7 +58,9 @@ public interface ArrayUpdater extends Serializable {
          * @param parentKey
          *            Parent item key that cleared range affects
          */
-        void clear(int start, int length, String parentKey);
+        default void clear(int start, int length, String parentKey) {
+            clear(start, length);
+        }
 
         /**
          * Sets the {@code items} at the {@code start} position.
@@ -80,7 +82,9 @@ public interface ArrayUpdater extends Serializable {
          * @param parentKey
          *            Parent item key where given items belongs to
          */
-        void set(int start, List<JsonValue> items, String parentKey);
+        default void set(int start, List<JsonValue> items, String parentKey) {
+            set(start, items);
+        }
 
         /**
          * Commits changes for the given {@code updateId}.
@@ -102,13 +106,16 @@ public interface ArrayUpdater extends Serializable {
          *            Total number of direct child items for the given parent
          *            key
          */
-        void commit(int updateId, String parentKey, int levelSize);
+        default void commit(int updateId, String parentKey, int levelSize) {
+            commit(updateId);
+        }
 
         /**
          * Commits enqueued function calls added via
          * {@link #enqueue(String, Serializable...)}.
          */
-        void commit();
+        default void commit() {
+        }
 
         /**
          * Enqueue function call with the given arguments.
@@ -122,7 +129,8 @@ public interface ArrayUpdater extends Serializable {
          *            supported by the communication mechanism, as defined by
          *            {@link JsonCodec}
          */
-        void enqueue(String name, Serializable... arguments);
+        default void enqueue(String name, Serializable... arguments) {
+        }
     }
 
     /**
