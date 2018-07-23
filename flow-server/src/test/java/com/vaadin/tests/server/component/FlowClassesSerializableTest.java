@@ -26,11 +26,12 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
      */
     @Test
     public void htmlComponentAndHtmlContainer() throws Throwable {
-        Component[] components = {new HtmlComponent("dummy-tag"),
-                new HtmlContainer("dummy-tag")};
+        Component[] components = { new HtmlComponent("dummy-tag"),
+                new HtmlContainer("dummy-tag") };
         for (Component component : components) {
             Component componentCopy = serializeAndDeserialize(component);
-            assertEquals(component.getElement().getTag(), componentCopy.getElement().getTag());
+            assertEquals(component.getElement().getTag(),
+                    componentCopy.getElement().getTag());
             assertNotSame(component.getElement(), componentCopy.getElement());
         }
     }
@@ -51,7 +52,12 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
                     element.getNode(), "upload", new MyStreamVariable());
             element.setAttribute("target", streamReceiver);
             serializeAndDeserialize(element);
-            assertTrue("Basic smoke test with ", element.getAttribute("target").length() > 10);
+            assertTrue("Basic smoke test with ",
+                    element.getAttribute("target").length() > 10);
+
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw e;
         } finally {
             UI.setCurrent(null);
         }
