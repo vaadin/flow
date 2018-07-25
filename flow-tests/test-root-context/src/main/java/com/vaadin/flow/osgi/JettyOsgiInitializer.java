@@ -35,7 +35,10 @@ public class JettyOsgiInitializer implements ServletContainerInitializer {
     public void onStartup(Set<Class<?>> c, ServletContext ctx)
             throws ServletException {
         // One more freaking hack to make ServiceLoader see classes inside Flow
-        // bundle
+        // bundle. Without this any ServletContainerInitializer listed in the
+        // javax.servlet.ServletContainerInitializer file ( which is read by
+        // Java ServiceLoader)
+        // can't be instantiated by OSGi for some unknown reason.
         AnnotationValidator validator = new AnnotationValidator();
 
         try {

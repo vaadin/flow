@@ -195,9 +195,16 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <!-- tests-common classes is included into this jar. 
+                            <!-- 
+                            Class from the "test-common" module are included into 
+                            the resulting "root-context" jar.
+                            As a result we don't need "test-common" as a dependency.  
                             Another option is to have it as a separate bundle.
-                            And later on may be we need a test which does it. -->
+                            And later on may be we need a test which does it. 
+                            The lines below allows to exclude "test-common" module 
+                            classes from the "root-context" jar.
+                            I don't really know why jar plugin puts classes from 
+                            "test-common" module to the "root-context" jar.-->
                             <!-- excludes>
                                 <exclude>**/servlet/*</exclude>
                             </excludes-->

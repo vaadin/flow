@@ -44,8 +44,6 @@ public class OsgiHttpService implements HttpService {
 
     @Override
     public void unregister(String alias) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
