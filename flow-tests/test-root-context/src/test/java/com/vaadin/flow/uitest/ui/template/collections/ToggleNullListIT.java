@@ -1,13 +1,16 @@
 package com.vaadin.flow.uitest.ui.template.collections;
 
+import static org.junit.Assert.assertFalse;
+
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-import static org.junit.Assert.assertFalse;
-
+@Category(IgnoreOSGi.class)
 public class ToggleNullListIT extends ChromeBrowserTest {
 
     @Test

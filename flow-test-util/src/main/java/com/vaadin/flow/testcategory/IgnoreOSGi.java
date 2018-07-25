@@ -13,14 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.servlet;
+package com.vaadin.flow.testcategory;
 
-import javax.servlet.annotation.WebServlet;
-
-import com.vaadin.flow.server.VaadinServletConfiguration;
-
-@WebServlet(asyncSupported = true, urlPatterns = { "/view-production/*" })
-@VaadinServletConfiguration(productionMode = true)
-public class ProductionModeViewTestServlet extends ViewTestServlet {
+/**
+ * Tests that should not be run inside OSGi container should be annotated with @
+ * {@code Category(IgnoreOSGi.class)} so they can be optionally excluded from
+ * the build.
+ *
+ * @author Vaadin Ltd
+ * @since 1.0
+ *
+ */
+public interface IgnoreOSGi extends TestCategory {
 
 }

@@ -13,26 +13,44 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.servlet;
+package com.vaadin.flow.osgi;
 
-import java.io.IOException;
+import java.net.URL;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.flow.server.VaadinServlet;
+import org.osgi.framework.Bundle;
+import org.osgi.service.http.HttpContext;
 
-@WebServlet("/frontend/*")
-public class WebJarsServlet extends VaadinServlet {
+/**
+ * @author Vaadin Ltd
+ *
+ */
+public class HttpContextImpl implements HttpContext {
+    private Bundle bundle;
+
+    public HttpContextImpl(Bundle bundle) {
+        this.bundle = bundle;
+    }
+
     @Override
-    protected void service(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
-        // Only serve static and webjar requests, don't delegate anything to
-        // VaadinService
-        if (!serveStaticOrWebJarRequest(request, response)) {
-            response.sendError(404);
+    public String getMimeType(String name) {
+        return null;
+    }
+
+    @Override
+    public URL getResource(String name) {
+        if (name.startsWith("/")) {
+            name = name.substring(1);
         }
+
+        return bundle.getResource(name);
+    }
+
+    @Override
+    public boolean handleSecurity(HttpServletRequest req,
+            HttpServletResponse res) {
+        return true;
     }
 }

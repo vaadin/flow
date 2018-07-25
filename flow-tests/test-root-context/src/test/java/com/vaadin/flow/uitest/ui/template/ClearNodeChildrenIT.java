@@ -21,9 +21,11 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -31,10 +33,11 @@ import com.vaadin.testbench.TestBenchElement;
  * Tests for validating the {@code removeAll()} feature, that should clear all
  * the server nodes and also the client nodes that the server doesn't know
  * about.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */
+@Category(IgnoreOSGi.class)
 public class ClearNodeChildrenIT extends ChromeBrowserTest {
 
     private TestBenchElement root;
@@ -71,7 +74,8 @@ public class ClearNodeChildrenIT extends ChromeBrowserTest {
         List<WebElement> divs = container.findElements(By.tagName("div"));
         Assert.assertEquals(2, divs.size());
 
-        TestBenchElement button = root.$(TestBenchElement.class).id(buttonToClick);
+        TestBenchElement button = root.$(TestBenchElement.class)
+                .id(buttonToClick);
         String oldTtext = message.getText();
         button.click();
         waitForMessageToChange(oldTtext);

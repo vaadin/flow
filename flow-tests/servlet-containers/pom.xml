@@ -90,6 +90,12 @@
             </modules>
         </profile>
         <profile>
+            <id>felix-jetty</id>
+            <modules>
+                <module>felix-jetty</module>
+            </modules>
+        </profile>
+        <profile>
             <id>local-run</id>
             <activation>
                 <property>

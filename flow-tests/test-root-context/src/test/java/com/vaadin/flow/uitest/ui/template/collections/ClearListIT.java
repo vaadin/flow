@@ -7,8 +7,10 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -16,6 +18,7 @@ import com.vaadin.testbench.TestBenchElement;
  * @author Vaadin Ltd
  * @since 1.0.
  */
+@Category(IgnoreOSGi.class)
 public class ClearListIT extends ChromeBrowserTest {
 
     @Test

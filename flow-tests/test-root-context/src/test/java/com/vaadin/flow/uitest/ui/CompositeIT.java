@@ -17,10 +17,12 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -49,6 +51,7 @@ public class CompositeIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Category(IgnoreOSGi.class)
     public void htmlImportOfContentLoaded() {
         open();
         waitForElementPresent(By.id(CompositeView.COMPOSITE_PAPER_SLIDER));

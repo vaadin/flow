@@ -19,11 +19,14 @@ import static org.hamcrest.CoreMatchers.is;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+@Category(IgnoreOSGi.class)
 public class PaperSliderIT extends ChromeBrowserTest {
 
     @Test
@@ -41,14 +44,13 @@ public class PaperSliderIT extends ChromeBrowserTest {
 
         assertSliderValue(paperSlider, initialValue);
 
-        changeSliderValueViaApi(eventField, paperSlider,
-                initialValue + 1);
+        changeSliderValueViaApi(eventField, paperSlider, initialValue + 1);
         changeSliderValueViaButton(eventField, paperSlider,
                 PaperSliderView.UPDATED_VALUE);
     }
 
     private void changeSliderValueViaApi(WebElement eventField,
-                                         WebElement paperSlider, int expectedValue) {
+            WebElement paperSlider, int expectedValue) {
         executeScript("arguments[0].increment()", paperSlider);
         assertSliderValue(paperSlider, expectedValue);
         assertEventFieldValue(eventField, expectedValue);
