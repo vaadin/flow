@@ -348,7 +348,11 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     private static class TemplateWithoutTagAnnotation
-            extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<TemplateModel> {
+        public TemplateWithoutTagAnnotation() {
+            super(new TestTemplateParser(tag -> "<dom-module id='" + tag
+                    + "'><template></template></dom-module>"));
+        }
     }
 
     @Tag(TAG)
@@ -416,6 +420,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         public AnotherTemplateInitialization(TemplateParser parser) {
             super(parser);
         }
+
     }
 
     @SuppressWarnings("serial")
@@ -520,9 +525,11 @@ public class PolymerTemplateTest extends HasCurrentService {
         });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void noAnnotationTemplate() {
-        new TemplateWithoutTagAnnotation();
+        TemplateWithoutTagAnnotation tpl = new TemplateWithoutTagAnnotation();
+        assertEquals("template-without-tag-annotation",
+                tpl.getElement().getTag());
     }
 
     @Test(expected = IllegalStateException.class)

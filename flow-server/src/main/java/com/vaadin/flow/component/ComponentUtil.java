@@ -35,12 +35,14 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableTriConsumer;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Utility methods for {@link Component}.
@@ -550,6 +552,35 @@ public class ComponentUtil {
     public static <T> T getData(Component component, Class<T> type) {
         return getData(component,
                 (attributes, ignore) -> attributes.getAttribute(type), type);
+    }
+
+    /**
+     * Resolves the tag name to use for the given component class.
+     *
+     * @param clazz
+     *            the component class
+     * @return the tag name for the component
+     */
+    public static String resolveTagName(Class<? extends Component> clazz) {
+        Optional<String> tagNameAnnotation = AnnotationReader
+                .getAnnotationFor(clazz, Tag.class).map(Tag::value);
+        if (tagNameAnnotation.isPresent()) {
+            String tagName = tagNameAnnotation.get();
+            if (tagName.isEmpty()) {
+                throw new IllegalStateException("@" + Tag.class.getSimpleName()
+                        + " value cannot be empty.");
+            }
+            return tagName;
+        } else {
+            String tagName = SharedUtil
+                    .camelCaseToDashSeparated(clazz.getSimpleName());
+            if (tagName.startsWith("-")) {
+                return tagName.substring(1);
+            } else {
+                return tagName;
+            }
+        }
+
     }
 
 }
