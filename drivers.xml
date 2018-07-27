@@ -16,7 +16,7 @@
             <version id="2.40">
                 <bitrate sixtyfourbit="true">
                     <filelocation>https://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip</filelocation>
-                    <hash>c7c95b83f05bc6ec89669cc542de47b62da6db4b</hash>
+                    <hash>f1fba3c21f39570beff90ccec63450118339de2a</hash>
                     <hashtype>sha1</hashtype>
                 </bitrate>
             </version>
