@@ -44,7 +44,7 @@ public interface HasComponents extends HasElement, HasEnabled {
         Objects.requireNonNull(components, "Components should not be null");
         for (Component component : components) {
             Objects.requireNonNull(component,
-                    "Component to remove cannot be null");
+                    "Component to add cannot be null");
             getElement().appendChild(component.getElement());
         }
     }
