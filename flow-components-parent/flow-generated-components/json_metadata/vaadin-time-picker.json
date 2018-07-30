@@ -1,0 +1,157 @@
+{
+  "name": "Vaadin.TimePickerElement",
+  "tag": "vaadin-time-picker",
+  "baseUrl": "vaadin-time-picker/src/vaadin-time-picker.html",
+  "version": "1.0.0-beta1",
+  "properties": [
+    {
+      "name": "autofocus",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specify that this control should have input focus when the page loads.\n         "
+    },
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to disable this input.\n             "
+    },
+    {
+      "name": "name",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of this element.\n             "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The time value for this element.\n\nSupported time formats are in ISO 8601:\n- `hh:mm` (default)\n- `hh:mm:ss`\n- `hh:mm:ss.fff`\n             ",
+      "notify": true
+    },
+    {
+      "name": "label",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The label for this element.\n             "
+    },
+    {
+      "name": "required",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to mark the input as required.\n             "
+    },
+    {
+      "name": "preventInvalidInput",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to prevent the user from entering invalid input.\n             "
+    },
+    {
+      "name": "pattern",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "A pattern to validate the `input` with.\n             "
+    },
+    {
+      "name": "errorMessage",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The error message to display when the input is invalid.\n             "
+    },
+    {
+      "name": "placeholder",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "A placeholder string in addition to the label.\n             "
+    },
+    {
+      "name": "readonly",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to prevent user picking a date or typing in the input.\n             "
+    },
+    {
+      "name": "invalid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true if the value is invalid.\n             ",
+      "notify": true
+    },
+    {
+      "name": "step",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Specifies the number of valid intervals in a day or in an hour used for\nconfiguring the items displayed in the selection box.\n\nIt also configures the precission of the value string. By default\nthe component formats values as `hh:mm` but setting a step value\nlower than one minute or one second, format resolution changes to\n`hh:mm:ss` and `hh:mm:ss.fff` respectively.\n\nUnit must be set in seconds, and for correctly configuring intervals\nin the dropdown, it need to evenly divide a day or an hour.\n             "
+    },
+    {
+      "name": "i18n",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The object used to localize this component.\nTo change the default localization, replace the entire\n_i18n_ object or just the property you want to modify.\n\nThe object has the following JSON structure:\n\n                {\n                  // A function to format given `Object` as\n                  // time string. Object is in the format `{ hours: ..., minutes: ..., seconds: ..., milliseconds: ... }`\n                  formatTime: (time) => {\n                    // returns a string representation of the given\n                    // object in `hh` / 'hh:mm' / 'hh:mm:ss' / 'hh:mm:ss.fff' - formats\n                  },\n\n                  // A function to parse the given text to an `Object` in the format\n                  // `{ hours: ..., minutes: ..., seconds: ..., milliseconds: ... }`.\n                  // Must properly parse (at least) text\n                  // formatted by `formatTime`.\n                  parseTime: text => {\n                    // Parses a string in object/string that can be formatted by`formatTime`.\n                  }\n\n                  // Translation of the time selector icon button title.\n                  selector: 'Time selector',\n                }\n              "
+    }
+  ],
+  "methods": [
+    {
+      "name": "validate",
+      "description": "Returns true if `value` is valid, and sets the `invalid` flag appropriately.",
+      "parameters": [],
+      "returns": "BOOLEAN"
+    },
+    {
+      "name": "checkValidity",
+      "description": "Returns true if the current input value satisfies all constraints (if any)\n\nYou can override the `checkValidity` method for custom validations.\n         ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [
+    {
+      "name": "value-changed",
+      "description": "Fired when the `value` property changes.",
+      "properties": []
+    },
+    {
+      "name": "invalid-changed",
+      "description": "Fired when the `invalid` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ElementMixin",
+    "Vaadin.ControlStateMixin",
+    "Vaadin.ThemableMixin"
+  ],
+  "variants": {},
+  "description": "`<vaadin-time-picker>` is a Web Component providing a time-selection field.\n\n```html\n<vaadin-time-picker></vaadin-time-picker>\n```\n```js\ntimePicker.value = '14:30';\n```\n\nWhen the selected `value` is changed, a `value-changed` event is triggered."
+}
