@@ -41,6 +41,7 @@
     "vaadin-split-layout": "4.1.0-alpha3",
     "vaadin-tabs": "2.1.0-alpha3",
     "vaadin-text-field": "2.1.0-alpha3",
-    "vaadin-upload": "4.2.0-alpha3"
+    "vaadin-upload": "4.2.0-alpha3",
+    "vaadin-time-picker": "1.0.0-beta1"
   }
 }
