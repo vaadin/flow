@@ -24,6 +24,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
+import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -61,7 +62,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
-
 import jsinterop.annotations.JsFunction;
 
 /**
@@ -284,9 +284,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private native void hookUpPolymerElement(StateNode node, Element element)
     /*-{
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
-    
+
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
@@ -295,16 +295,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
-    
+
+
         var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
-    
+
         var originalReady = element.ready;
-    
+
         element.ready = function (){
             originalReady.apply(this, arguments);
             @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
-    
+
             // The  _propertiesChanged method which is replaced above for the element
             // doesn't do anything for items in dom-repeat.
             // Instead it's called with some meaningful info for the <code>dom-repeat</code> element.
@@ -313,7 +313,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // which changes this method for any dom-repeat instance.
             var replaceDomRepeatPropertyChange = function(){
                 var domRepeat = element.root.querySelector('dom-repeat');
-    
+
                 if ( domRepeat ){
                  // If the <code>dom-repeat</code> element is in the DOM then
                  // this method should not be executed anymore. The logic below will replace
@@ -327,12 +327,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 // if dom-repeat is found => replace _propertiesChanged method in the prototype and mark it as replaced.
                 if ( !domRepeat.constructor.prototype.$propChangedModified){
                     domRepeat.constructor.prototype.$propChangedModified = true;
-    
+
                     var changed = domRepeat.constructor.prototype._propertiesChanged;
-    
+
                     domRepeat.constructor.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){
                         changed.apply(this, arguments);
-    
+
                         var props = Object.getOwnPropertyNames(changedProps);
                         var items = "items.";
                         for(i=0; i<props.length; i++){
@@ -352,7 +352,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                     if( currentPropsItem && currentPropsItem.nodeId ){
                                         var nodeId = currentPropsItem.nodeId;
                                         var value = currentPropsItem[propertyName];
-    
+
                                         // this is an attempt to find the template element
                                         // which is not available as a context in the protype method
                                         var host = this.__dataHost;
@@ -363,7 +363,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                         while( !host.localName || host.__dataHost ){
                                             host = host.__dataHost;
                                         }
-    
+
                                         $entry(function () {
                                             @SimpleElementBindingStrategy::handleListItemPropertyChange(*)(nodeId, host, propertyName, value, tree);
                                         })();
@@ -374,7 +374,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     };
                 }
             };
-    
+
             // dom-repeat doesn't have to be in DOM even if template has it
             //  such situation happens if there is dom-if e.g. which evaluates to <code>false</code> initially.
             // in this case dom-repeat is not yet in the DOM tree until dom-if becomes <code>true</code>
@@ -389,7 +389,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
             }
         }
-    
+
     }-*/;
 
     private static void handleListItemPropertyChange(double nodeId,
@@ -846,6 +846,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
+        InitialPropertiesHandler initialPropertiesHandler = node.getTree()
+                .getRegistry().getInitialPropertiesHandler();
+
         assert context.htmlNode instanceof Element : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
             String id = object.getString(NodeProperties.PAYLOAD);
@@ -864,6 +867,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     .getDomElementById(context.htmlNode, id);
             if (verifyAttachedElement(existingElement, node, id, address,
                     context)) {
+                if (!reactivePhase) {
+                    initialPropertiesHandler.nodeRegistered(node);
+                    initialPropertiesHandler.flushPropertyUpdates();
+                }
                 node.setDomNode(existingElement);
                 context.binderContext.createAndBind(node);
             }
@@ -886,6 +893,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             if (verifyAttachedElement(customElement, node, null, address,
                     context)) {
+                if (!reactivePhase) {
+                    initialPropertiesHandler.nodeRegistered(node);
+                    initialPropertiesHandler.flushPropertyUpdates();
+                }
                 node.setDomNode(customElement);
                 context.binderContext.createAndBind(node);
             }
