@@ -378,9 +378,11 @@ public class MessageHandler {
 
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
                 // Invoke JS only after all tree changes have been
-                // propagated and in the very end of the browser event loop
-                Reactive.addPostFlushListener(() -> Scheduler.get()
-                        .scheduleFinally(() -> registry
+                // propagated and after post flush listeners added during
+                // message processing (so add one more post flush listener which
+                // is called after all added post listeners).
+                Reactive.addPostFlushListener(
+                        () -> Reactive.addPostFlushListener(() -> registry
                                 .getExecuteJavaScriptProcessor()
                                 .execute(json.getArray(
                                         JsonConstants.UIDL_KEY_EXECUTE))));
