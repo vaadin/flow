@@ -176,7 +176,7 @@ public class FrontendDataProvider {
     protected ThemedURLTranslator getTranslator(File es6SourceDirectory,
             ClassPathIntrospector introspector) {
         return new ThemedURLTranslator(
-                url -> new File(es6SourceDirectory, removeFlowPrefixes(url)),
+                url -> new File(es6SourceDirectory, removeFrontendPrefix(url)),
                 introspector);
     }
 
@@ -247,7 +247,8 @@ public class FrontendDataProvider {
                         .applyTheme(htmlImportUrls));
 
         return annotationValues.values().stream().flatMap(Collection::stream)
-                .map(this::removeFlowPrefixes)
+                .filter(this::canBeResolvedInFrontendDirectory)
+                .map(this::removeFrontendPrefix)
                 .map(annotationImport -> getFileFromSourceDirectory(
                         es6SourceDirectory, annotationImport))
                 .filter(fileInSourceDirectory -> !fragmentFiles
@@ -255,10 +256,13 @@ public class FrontendDataProvider {
                 .collect(Collectors.toSet());
     }
 
-    private String removeFlowPrefixes(String url) {
-        return url.replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")
-                .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX, "")
-                .replace(ApplicationConstants.BASE_PROTOCOL_PREFIX, "");
+    private boolean canBeResolvedInFrontendDirectory(String url) {
+        return url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
+                || !url.contains("://");
+    }
+
+    private String removeFrontendPrefix(String url) {
+        return url.replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX, "");
     }
 
     private String createFragmentFile(File targetDirectory, String fragmentName,
