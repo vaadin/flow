@@ -67,7 +67,7 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     @Override
     public void execute() {
         List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
-                .filter(artifact -> artifact.getType().equals("jar"))
+                .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(artifact -> new ArtifactData(artifact.getFile(),
                         artifact.getArtifactId(), artifact.getVersion()))
                 .collect(Collectors.toList());
