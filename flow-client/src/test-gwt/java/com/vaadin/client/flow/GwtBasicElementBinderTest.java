@@ -64,7 +64,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         titleProperty = properties.getProperty("title");
         idAttribute = attributes.getProperty("id");
 
-        nextId = node.getId() + 1;
+        nextId = node.getId() + 2;
 
         element = Browser.getDocument().createElement("div");
     }
@@ -246,6 +246,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private StateNode createChildNode(String id, String tag) {
         StateNode childNode = new StateNode(nextId++, node.getTree());
+        node.getTree().registerNode(childNode);
 
         childNode.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeProperties.TAG).setValue(tag);
@@ -1278,6 +1279,10 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         String childId = "childElement";
         StateNode childNode = createChildNode(childId, element.getTagName());
 
+        NodeMap properties = childNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty fooProperty = properties.getProperty("foo");
+        fooProperty.setValue("bar");
+
         Binder.bind(node, element);
 
         addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
@@ -1326,6 +1331,10 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         String tag = element.getTagName();
         StateNode childNode = createChildNode(childId, tag);
 
+        NodeMap properties = childNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty fooProperty = properties.getProperty("foo");
+        fooProperty.setValue("bar");
+
         addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
                 Json.create(childId));
 
@@ -1352,9 +1361,20 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Element addressedElement = createAndAppendElementToShadowRoot(
                 shadowRoot, childId, tag);
 
+        // add flush listener which register the property to revert its initial
+        // value back if it has been changed during binding "from the client
+        // side" and do update the property emulating client side update
+        // The property value should be reverted back in the end
+        Reactive.addFlushListener(() -> {
+            tree.getRegistry().getInitialPropertiesHandler()
+                    .handlePropertyUpdate(fooProperty);
+            fooProperty.setValue("baz");
+        });
+
         PolymerUtils.fireReadyEvent(element);
 
-        Reactive.flush();
+        // the property value should be the same as initially
+        assertEquals("bar", fooProperty.getValue());
 
         expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
                 "Child node should have all features from list "
@@ -1380,6 +1400,10 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     public void testBindVirtualChild_withDeferredElementInShadowRoot_byIndicesPath() {
         String childId = "childElement";
         StateNode childNode = createChildNode(childId, element.getTagName());
+
+        NodeMap properties = childNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty fooProperty = properties.getProperty("foo");
+        fooProperty.setValue("bar");
 
         WidgetUtil.setJsProperty(element, "ready", NativeFunction.create(""));
 
@@ -1411,9 +1435,20 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Element addressedElement = createAndAppendElementToShadowRoot(
                 shadowRoot, childId, element.getTagName());
 
+        // add flush listener which register the property to revert its initial
+        // value back if it has been changed during binding "from the client
+        // side" and do update the property emulating client side update
+        // The property value should be reverted back in the end
+        Reactive.addFlushListener(() -> {
+            tree.getRegistry().getInitialPropertiesHandler()
+                    .handlePropertyUpdate(fooProperty);
+            fooProperty.setValue("baz");
+        });
+
         PolymerUtils.fireReadyEvent(element);
 
-        Reactive.flush();
+        // the property value should be the same as initially
+        assertEquals("bar", fooProperty.getValue());
 
         expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
                 "Child node should have all features from list "
