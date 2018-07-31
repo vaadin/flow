@@ -257,8 +257,8 @@ public class FrontendDataProvider {
     }
 
     private boolean canBeResolvedInFrontendDirectory(String url) {
-        return !url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                && !url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX);
+        return url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
+                || !url.contains("://");
     }
 
     private String removeFrontendPrefix(String url) {

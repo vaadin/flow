@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -354,29 +355,10 @@ public class FrontendDataProviderTest {
         when(annotationValuesExtractorMock.extractAnnotationValues(
                 ImmutableMap.of(StyleSheet.class, ThemedURLTranslator.VALUE,
                         JavaScript.class, ThemedURLTranslator.VALUE)))
-                                .thenReturn(new HashMap<>(ImmutableMap.of(
-                                        JavaScript.class,
-                                        ImmutableSet.of(
-                                                "context://shouldBeIgnored.js",
-                                                "base://shouldBeIgnored.js",
-                                                "frontend://"
-                                                        + expectedFiles.get(0),
-                                                expectedFiles.get(1)),
-                                        StyleSheet.class,
-                                        ImmutableSet.of(
-                                                "context://shouldBeIgnored.css",
-                                                "base://shouldBeIgnored.css",
-                                                "frontend://"
-                                                        + expectedFiles.get(2),
-                                                expectedFiles.get(3)))));
+                                .thenReturn(getCssAndJsImports(expectedFiles));
         when(annotationValuesExtractorMock.extractAnnotationValues(Collections
                 .singletonMap(HtmlImport.class, ThemedURLTranslator.VALUE)))
-                        .thenReturn(ImmutableMap.of(HtmlImport.class,
-                                ImmutableSet.of(
-                                        "context://shouldBeIgnored.html",
-                                        "base://shouldBeIgnored.html",
-                                        "frontend://" + expectedFiles.get(4),
-                                        expectedFiles.get(5))));
+                        .thenReturn(getHtmlImports(expectedFiles));
 
         FrontendDataProvider dataProvider = new TestFrontendDataProvider(false,
                 false, sourceDirectory, annotationValuesExtractorMock, null,
@@ -398,6 +380,25 @@ public class FrontendDataProviderTest {
                     shellFileContents.stream()
                             .anyMatch(line -> line.contains(expectedFile)));
         }
+    }
+
+    private ImmutableMap<Class<? extends Annotation>, Set<String>> getHtmlImports(
+            List<String> expectedFiles) {
+        return ImmutableMap.of(HtmlImport.class, ImmutableSet.of(
+                "context://shouldBeIgnored.html", "base://shouldBeIgnored.html",
+                "frontend://" + expectedFiles.get(4), expectedFiles.get(5)));
+    }
+
+    private HashMap<Class<? extends Annotation>, Set<String>> getCssAndJsImports(
+            List<String> expectedFiles) {
+        return new HashMap<>(ImmutableMap.of(JavaScript.class, ImmutableSet.of(
+                "context://shouldBeIgnored.js", "base://shouldBeIgnored.js",
+                "frontend://" + expectedFiles.get(0), expectedFiles.get(1)),
+                StyleSheet.class,
+                ImmutableSet.of("context://shouldBeIgnored.css",
+                        "base://shouldBeIgnored.css",
+                        "frontend://" + expectedFiles.get(2),
+                        expectedFiles.get(3))));
     }
 
     private void findAndVerifyFragment(Collection<String> outputFragmentNames,
