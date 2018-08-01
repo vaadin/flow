@@ -378,10 +378,14 @@ public class MessageHandler {
 
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
                 // Invoke JS only after all tree changes have been
-                // propagated
+                // propagated and after post flush listeners added during
+                // message processing (so add one more post flush listener which
+                // is called after all added post listeners).
                 Reactive.addPostFlushListener(
-                        () -> registry.getExecuteJavaScriptProcessor().execute(
-                                json.getArray(JsonConstants.UIDL_KEY_EXECUTE)));
+                        () -> Reactive.addPostFlushListener(() -> registry
+                                .getExecuteJavaScriptProcessor()
+                                .execute(json.getArray(
+                                        JsonConstants.UIDL_KEY_EXECUTE))));
             }
 
             Console.log("handleUIDLMessage: "
