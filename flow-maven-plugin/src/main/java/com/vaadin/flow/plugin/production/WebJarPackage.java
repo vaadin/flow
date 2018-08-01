@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.production;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.flow.plugin.common.ArtifactData;
 
@@ -86,33 +87,46 @@ public class WebJarPackage {
      * @return package with as less issues as possible
      * @throws IllegalArgumentException when packages have different names or versions
      */
-    public static WebJarPackage selectCorrectPackage(WebJarPackage package1, WebJarPackage package2) {
+    public static WebJarPackage selectCorrectPackage(WebJarPackage package1,
+            WebJarPackage package2) {
         if (!Objects.equals(package1.packageName, package2.packageName)) {
             throw new IllegalArgumentException(String.format(
-                    "Cannot process packages with different names: '%s' and '%s'", package1.packageName, package2.packageName));
+                    "Cannot process packages with different names: '%s' and '%s'",
+                    package1.packageName, package2.packageName));
         }
 
-        String normalizedVersion1 = normalizeVersion(package1.webJar.getVersion());
-        String normalizedVersion2 = normalizeVersion(package2.webJar.getVersion());
+        String normalizedVersion1 = normalizeVersion(
+                package1.webJar.getVersion());
+        String normalizedVersion2 = normalizeVersion(
+                package2.webJar.getVersion());
         if (Objects.equals(normalizedVersion1, normalizedVersion2)) {
-            return selectAppropriatePackage(package1, package2, normalizedVersion1);
+            return selectTopmostPackage(package1, package2).orElseGet(
+                    () -> tryToSelectPackageWithNormalizedVersion(package1,
+                            package2, normalizedVersion1));
         }
         throw new IllegalArgumentException(String.format(
-                "Two webJars have same name and different versions: '%s' and '%s', there should be no version differences", package1.webJar, package2.webJar));
+                "Two webJars have same name and different versions: '%s' and '%s', there should be no version differences",
+                package1.webJar, package2.webJar));
     }
-
-    private static WebJarPackage selectAppropriatePackage(
-            WebJarPackage package1, WebJarPackage package2,
-            String normalizedVersion1) {
+    
+    private static Optional<WebJarPackage> selectTopmostPackage(
+            WebJarPackage package1, WebJarPackage package2) {
         String path1 = package1.getPathToPackage();
         String path2 = package2.getPathToPackage();
+
         if (!Objects.equals(path1, path2)) {
             if (path1.startsWith(path2)) {
-                return package2;
+                return Optional.of(package2);
             } else if (path2.startsWith(path1)) {
-                return package1;
+                return Optional.of(package1);
             }
         }
+        return Optional.empty();
+    }
+
+    private static WebJarPackage tryToSelectPackageWithNormalizedVersion(
+            WebJarPackage package1, WebJarPackage package2,
+            String normalizedVersion1) {
         return Objects.equals(normalizedVersion1, package1.webJar.getVersion())
                 ? package1
                 : package2;
