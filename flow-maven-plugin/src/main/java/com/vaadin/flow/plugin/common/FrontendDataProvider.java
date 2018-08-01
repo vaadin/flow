@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableMap;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -214,8 +215,14 @@ public class FrontendDataProvider {
         File fragmentFile = new File(es6SourceDirectory, fragmentImportPath);
         if (!fragmentFile.isFile()) {
             throw new IllegalArgumentException(String.format(
-                    "The fragment file path '%s' was resolved to '%s', which either does not exist or not a file.",
-                    fragmentImportPath, fragmentFile));
+                    "An import that ends with '%s' cannot be resolved: the corresponding file '%s' was not found.\n"
+                            + "Double check the corresponding import and verify the following:\n"
+                            + "* the import string is correct\n"
+                            + "* the file imported is either present in '%s' directory of the project or in one of the project WebJar dependencies or in one of the regular jar dependencies\n"
+                            + "* if the file is present in one of the regular jar dependencies, it should be located in `%s` directory in the jar",
+                    fragmentImportPath, fragmentFile,
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
+                    ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH));
         }
         return fragmentFile;
     }
