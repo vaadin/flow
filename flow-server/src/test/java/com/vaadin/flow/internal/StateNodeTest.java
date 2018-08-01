@@ -659,13 +659,8 @@ public class StateNodeTest {
 
     private void assertCollectChanges_initiallyInactive(StateNode stateNode,
             ElementPropertyMap properties, Consumer<Boolean> activityUpdater) {
-
-        properties.setProperty("foo", "bar");
-
-        TestStateTree tree = (TestStateTree) stateNode.getOwner();
-        tree.dirtyNodes.clear();
-
         ElementData visibility = stateNode.getFeature(ElementData.class);
+
         activityUpdater.accept(false);
 
         // activity updater may modify visibility of the node itself or its
@@ -673,18 +668,22 @@ public class StateNodeTest {
         // node is visible or not
         boolean visibilityChanged = !visibility.isVisible();
 
+        properties.setProperty("foo", "bar");
+
+        TestStateTree tree = (TestStateTree) stateNode.getOwner();
+
+        tree.dirtyNodes.clear();
+
         List<NodeChange> changes = new ArrayList<>();
         stateNode.collectChanges(changes::add);
 
         if (visibilityChanged) {
-            Assert.assertEquals(1, tree.dirtyNodes.size());
-            Assert.assertThat(tree.dirtyNodes, CoreMatchers.hasItem(stateNode));
+            Assert.assertEquals(0, tree.dirtyNodes.size());
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
-            Assert.assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> Assert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(node)));
+            Assert.assertEquals(1, tree.dirtyNodes.size());
+            tree.dirtyNodes.contains(stateNode);
         }
 
         Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
@@ -699,6 +698,7 @@ public class StateNodeTest {
                 .filter(chang -> chang.getKey().equals("tag")).findFirst();
         Assert.assertTrue("No tag change found", tagFound.isPresent());
         MapPutChange tagChange = tagFound.get();
+
 
         MapPutChange change = (MapPutChange) changes.get(1);
         if (visibilityChanged) {
@@ -784,9 +784,6 @@ public class StateNodeTest {
 
         changes.clear();
 
-        TestStateTree tree = (TestStateTree) stateNode.getOwner();
-        tree.dirtyNodes.clear();
-
         // now make the node inactive via the VisibiltyData
 
         activityUpdater.accept(false);
@@ -795,6 +792,9 @@ public class StateNodeTest {
         // VisibiltyData, but don't loose changes for other features
 
         properties.setProperty("foo", "baz");
+
+        TestStateTree tree = (TestStateTree) stateNode.getOwner();
+        tree.dirtyNodes.clear();
 
         stateNode.collectChanges(changes::add);
 
@@ -808,8 +808,7 @@ public class StateNodeTest {
 
         MapPutChange change;
         if (visibilityChanged) {
-            Assert.assertEquals(1, tree.dirtyNodes.size());
-            Assert.assertThat(tree.dirtyNodes, CoreMatchers.hasItem(stateNode));
+            Assert.assertEquals(0, tree.dirtyNodes.size());
             Assert.assertThat(changes.get(0),
                     CoreMatchers.instanceOf(MapPutChange.class));
             change = (MapPutChange) changes.get(0);
@@ -817,9 +816,8 @@ public class StateNodeTest {
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
-            Assert.assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> Assert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(node)));
+            Assert.assertEquals(1, tree.dirtyNodes.size());
+            tree.dirtyNodes.contains(stateNode);
         }
 
         changes.clear();
@@ -843,8 +841,7 @@ public class StateNodeTest {
                     .equals(change.getFeature()) ? change
                             : (MapPutChange) changes.get(1);
             propertyChange = change.equals(visibilityChange)
-                    ? (MapPutChange) changes.get(1)
-                    : change;
+                    ? (MapPutChange) changes.get(1) : change;
         } else {
             propertyChange = change;
         }
