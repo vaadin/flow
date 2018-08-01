@@ -74,8 +74,8 @@
     }
     
     _clear() {
-      while (this.hasChildNodes()) {
-        this.removeChild(this.lastChild);
+      while (this.firstChild) {
+        this.removeChild(this.firstChild);
       }
     }
 
