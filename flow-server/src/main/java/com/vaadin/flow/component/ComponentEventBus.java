@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.dom.DebouncePhase;
@@ -55,17 +54,22 @@ import elemental.json.JsonValue;
 public class ComponentEventBus implements Serializable {
 
     /**
-     * Map that contains all the active listeners of one event-type as the keys,
-     * and their corresponding DOM listener registrations as the values (or null
-     * if the event-type is not annotated with {@link DomEvent}).
+     * Pairs a component-level listener for its DOM listener registration, if
+     * the event-type is annotated with {@link DomEvent}.
      */
-    @SuppressWarnings("serial")
-    private static class ComponentEventData extends
-            LinkedHashMap<ComponentEventListener<? extends ComponentEvent<?>>, DomListenerRegistration> {
+    private static class ListenerWrapper<T extends ComponentEvent<?>>
+            implements Serializable {
+        private ComponentEventListener<T> listener;
+        private DomListenerRegistration domRegistration;
+
+        public ListenerWrapper(ComponentEventListener<T> listener) {
+            this.listener = listener;
+        }
+
     }
 
     // Package private to enable testing only
-    HashMap<Class<? extends ComponentEvent<?>>, ComponentEventData> componentEventData = new HashMap<>();
+    HashMap<Class<? extends ComponentEvent<?>>, ArrayList<ListenerWrapper<?>>> componentEventData = new HashMap<>();
 
     private Component component;
 
@@ -93,14 +97,7 @@ public class ComponentEventBus implements Serializable {
      */
     public <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener) {
-        DomListenerRegistration domEventRemover = addDomTriggerIfNeeded(
-                eventType, listener);
-
-        componentEventData
-                .computeIfAbsent(eventType, t -> new ComponentEventData())
-                .put(listener, domEventRemover);
-
-        return () -> removeListener(eventType, listener);
+        return addListenerInternal(eventType, listener, null);
     }
 
     /**
@@ -133,21 +130,31 @@ public class ComponentEventBus implements Serializable {
             Consumer<DomListenerRegistration> domListenerConsumer) {
         Objects.requireNonNull(domListenerConsumer,
                 "DOM listener consumer cannot be null");
+        return addListenerInternal(eventType, listener, domListenerConsumer);
+    }
 
-        Registration registration = addListener(eventType, listener);
+    private <T extends ComponentEvent<?>> Registration addListenerInternal(
+            Class<T> eventType, ComponentEventListener<T> listener,
+            Consumer<DomListenerRegistration> domListenerConsumer) {
 
-        DomListenerRegistration domListenerRegistration = componentEventData
-                .get(eventType).get(listener);
+        ListenerWrapper<T> wrapper = new ListenerWrapper<>(listener);
 
-        if (domListenerRegistration == null) {
-            throw new IllegalArgumentException(String.format(
-                    "This method can be used only for DOM events. The given event type %s is not annotated with %s.",
-                    eventType.getSimpleName(), DomEvent.class.getSimpleName()));
+        boolean isDomEvent = addDomTriggerIfNeeded(eventType, wrapper);
+
+        if (domListenerConsumer != null) {
+            if (!isDomEvent) {
+                throw new IllegalArgumentException(String.format(
+                        "DomListenerConsumer can be used only for DOM events. The given event type %s is not annotated with %s.",
+                        eventType.getSimpleName(),
+                        DomEvent.class.getSimpleName()));
+            }
+            domListenerConsumer.accept(wrapper.domRegistration);
         }
 
-        domListenerConsumer.accept(domListenerRegistration);
+        componentEventData.computeIfAbsent(eventType, t -> new ArrayList<>())
+                .add(wrapper);
 
-        return registration;
+        return () -> removeListener(eventType, wrapper);
     }
 
     /**
@@ -179,21 +186,22 @@ public class ComponentEventBus implements Serializable {
         if (!hasListener(eventType)) {
             return;
         }
-        Set<ComponentEventListener<? extends ComponentEvent<?>>> listeners = componentEventData
-                .get(event.getClass()).keySet();
-        for (ComponentEventListener listener : new ArrayList<>(listeners)) {
-            fireEventForListener(event, listener);
+
+        // Copy the list to avoid ConcurrentModificationException
+        for (ListenerWrapper wrapper : new ArrayList<>(
+                componentEventData.get(event.getClass()))) {
+            fireEventForListener(event, wrapper);
         }
     }
 
     @SuppressWarnings("unchecked")
     private <T extends ComponentEvent<?>> void fireEventForListener(T event,
-            ComponentEventListener<T> listener) {
+            ListenerWrapper<T> wrapper) {
         Class<T> eventType = (Class<T>) event.getClass();
         event.setUnregisterListenerCommand(() -> {
-            removeListener(eventType, listener);
+            removeListener(eventType, wrapper);
         });
-        listener.onComponentEvent(event);
+        wrapper.listener.onComponentEvent(event);
         event.setUnregisterListenerCommand(null);
     }
 
@@ -203,39 +211,36 @@ public class ComponentEventBus implements Serializable {
      *
      * @param eventType
      *            the type of event
-     * @param listener
+     * @param wrapper
      *            the listener that is being registered
-     * @return the registration for the added DOM listener, or {@code null} if
-     *         the event is not a DOM event.
+     * @return {@code true} if a DOM-trigger was added (the event is annotated
+     *         with {@link DomEvent}), {@code false} otherwise.
      */
-    private <T extends ComponentEvent<?>> DomListenerRegistration addDomTriggerIfNeeded(
-            Class<T> eventType, ComponentEventListener<T> listener) {
-        DomListenerRegistration domEventRemover = AnnotationReader
+    private <T extends ComponentEvent<?>> boolean addDomTriggerIfNeeded(
+            Class<T> eventType, ListenerWrapper<T> wrapper) {
+        return AnnotationReader
                 .getAnnotationFor(eventType,
                         com.vaadin.flow.component.DomEvent.class)
-                .map(annotation -> addDomTrigger(eventType, annotation,
-                        listener))
-                .orElse(null);
-        return domEventRemover;
+                .map(annotation -> {
+                    addDomTrigger(eventType, annotation, wrapper);
+                    return true;
+                }).orElse(false);
     }
 
     /**
      * Adds a DOM listener of the given type for the given component event and
      * annotation.
-     * <p>
-     * Assumes that no listener exists.
      *
      * @param eventType
      *            the component event type
      * @param annotation
      *            annotation with event configuration
-     * @param listener
+     * @param wrapper
      *            the listener that is being registered
-     * @return the registration for the added DOM listener
      */
-    private <T extends ComponentEvent<?>> DomListenerRegistration addDomTrigger(
-            Class<T> eventType, com.vaadin.flow.component.DomEvent annotation,
-            ComponentEventListener<T> listener) {
+    private <T extends ComponentEvent<?>> void addDomTrigger(Class<T> eventType,
+            com.vaadin.flow.component.DomEvent annotation,
+            ListenerWrapper<T> wrapper) {
         assert eventType != null;
         assert annotation != null;
 
@@ -255,7 +260,10 @@ public class ComponentEventBus implements Serializable {
         // Register DOM event handler
         DomListenerRegistration registration = element.addEventListener(
                 domEventType,
-                event -> handleDomEvent(eventType, event, listener));
+                event -> handleDomEvent(eventType, event, wrapper));
+
+        wrapper.domRegistration = registration;
+
         registration.setDisabledUpdateMode(mode);
 
         LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
@@ -278,8 +286,6 @@ public class ComponentEventBus implements Serializable {
 
             registration.debounce(debounceTimeout, phases[0], rest);
         }
-
-        return registration;
     }
 
     /**
@@ -318,28 +324,31 @@ public class ComponentEventBus implements Serializable {
      *
      * @param eventType
      *            the component event type
-     * @param listener
+     * @param wrapper
      *            the listener to remove
      */
     private <T extends ComponentEvent<?>> void removeListener(
-            Class<T> eventType, ComponentEventListener<T> listener) {
+            Class<T> eventType, ListenerWrapper<T> wrapper) {
         assert eventType != null;
-        assert listener != null;
+        assert wrapper != null;
+        assert wrapper.listener != null;
 
-        ComponentEventData eventData = componentEventData.get(eventType);
+        ArrayList<ListenerWrapper<?>> eventData = componentEventData
+                .get(eventType);
         if (eventData == null) {
             throw new IllegalArgumentException(
                     "No listener of the given type is registered");
         }
 
-        if (!eventData.containsKey(listener)) {
+        if (!eventData.contains(wrapper)) {
             throw new IllegalArgumentException(
                     "The given listener is not registered");
         }
 
-        Registration domEventRemover = eventData.remove(listener);
-        if (domEventRemover != null) {
-            domEventRemover.remove();
+        eventData.remove(wrapper);
+
+        if (wrapper.domRegistration != null) {
+            wrapper.domRegistration.remove();
         }
 
         if (eventData.isEmpty()) {
@@ -355,15 +364,14 @@ public class ComponentEventBus implements Serializable {
      *            the component event type which should be fired
      * @param domEvent
      *            the DOM event
-     * @param listener
+     * @param wrapper
      *            the component event listener to call when the DOM event is
      *            fired
      */
     private <T extends ComponentEvent<?>> void handleDomEvent(
-            Class<T> eventType, DomEvent domEvent,
-            ComponentEventListener<T> listener) {
+            Class<T> eventType, DomEvent domEvent, ListenerWrapper<T> wrapper) {
         T event = createEventForDomEvent(eventType, domEvent, component);
-        fireEventForListener(event, listener);
+        fireEventForListener(event, wrapper);
     }
 
     /**

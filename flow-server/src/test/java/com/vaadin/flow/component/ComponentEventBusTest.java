@@ -279,6 +279,45 @@ public class ComponentEventBusTest {
                 domRegistration -> domRegistration.debounce(200));
     }
 
+    private int calls = 0;
+
+    @Test
+    public void domEvent_addSameListenerTwice() {
+        TestComponent component = new TestComponent();
+
+        ComponentEventListener<MappedToDomEvent> listener = e -> calls++;
+
+        Registration reg1 = component.addListener(MappedToDomEvent.class,
+                listener);
+        Registration reg2 = component.addListener(MappedToDomEvent.class,
+                listener);
+
+        Assert.assertEquals(1,
+                component.getEventBus().componentEventData.size());
+        Assert.assertEquals(2, component.getEventBus().componentEventData
+                .get(MappedToDomEvent.class).size());
+
+        fireDomEvent(component, "dom-event", Json.createObject());
+        Assert.assertEquals(2, calls);
+
+        reg1.remove();
+        Assert.assertEquals(1,
+                component.getEventBus().componentEventData.size());
+        Assert.assertEquals(1, component.getEventBus().componentEventData
+                .get(MappedToDomEvent.class).size());
+
+        fireDomEvent(component, "dom-event", Json.createObject());
+
+        Assert.assertEquals(3, calls);
+
+        reg2.remove();
+        Assert.assertEquals(0,
+                component.getEventBus().componentEventData.size());
+
+        fireDomEvent(component, "dom-event", Json.createObject());
+        Assert.assertEquals(3, calls);
+    }
+
     @Test
     public void multipleEventsForSameDomEvent_removeListener() {
         TestComponent component = new TestComponent();
