@@ -84,7 +84,7 @@ public class WebJarPackage {
      * @param package1 first package data
      * @param package2 second package data
      * @return package with as less issues as possible
-     * @throws IllegalArgumentException when packages have different names of versions
+     * @throws IllegalArgumentException when packages have different names or versions
      */
     public static WebJarPackage selectCorrectPackage(WebJarPackage package1, WebJarPackage package2) {
         if (!Objects.equals(package1.packageName, package2.packageName)) {
@@ -95,10 +95,27 @@ public class WebJarPackage {
         String normalizedVersion1 = normalizeVersion(package1.webJar.getVersion());
         String normalizedVersion2 = normalizeVersion(package2.webJar.getVersion());
         if (Objects.equals(normalizedVersion1, normalizedVersion2)) {
-            return Objects.equals(normalizedVersion1, package1.webJar.getVersion()) ? package1 : package2;
+            return selectAppropriatePackage(package1, package2, normalizedVersion1);
         }
         throw new IllegalArgumentException(String.format(
                 "Two webJars have same name and different versions: '%s' and '%s', there should be no version differences", package1.webJar, package2.webJar));
+    }
+
+    private static WebJarPackage selectAppropriatePackage(
+            WebJarPackage package1, WebJarPackage package2,
+            String normalizedVersion1) {
+        String path1 = package1.getPathToPackage();
+        String path2 = package2.getPathToPackage();
+        if (!Objects.equals(path1, path2)) {
+            if (path1.startsWith(path2)) {
+                return package2;
+            } else if (path2.startsWith(path1)) {
+                return package1;
+            }
+        }
+        return Objects.equals(normalizedVersion1, package1.webJar.getVersion())
+                ? package1
+                : package2;
     }
 
     private static String normalizeVersion(String version) {
