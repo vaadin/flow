@@ -138,8 +138,8 @@ public class ExclusionRegistryTest {
         Assert.assertTrue(ExclusionRegistry.isTagExcluded("some-tag"));
         Assert.assertFalse(ExclusionRegistry.isTagExcluded("some-other-tag"));
     }
-    
-    @Test (expected = NullPointerException.class)
+
+    @Test(expected = NullPointerException.class)
     public void excludeTagWithNullValue() {
         ExclusionRegistry.excludeTag(null);
     }

@@ -64,7 +64,8 @@ public class ExclusionRegistry {
 
         // this is a workaround
         // current generator generates wrong file for this element
-        // separate ticket will be created for the actual bug
+        // https://github.com/vaadin/flow/issues/4477
+        // https://github.com/vaadin/flow/issues/4479
         excludeTag("vaadin-time-picker-text-field");
         // Polymer lifecycle callbacks
         excludeMethod(null, "connectedCallback");
@@ -99,7 +100,6 @@ public class ExclusionRegistry {
      */
     public static boolean isTagExcluded(String elementTag) {
         return TAG_EXCLUSION_REGISTRY.contains(elementTag);
-        
     }
 
     private static void put(String elementTag, String name,
