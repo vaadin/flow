@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
@@ -47,6 +48,8 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.tests.util.TestUtil;
 
+import elemental.json.JsonObject;
+
 public class StateTreeTest {
     private StateTree tree = new StateTree(new UI().getInternals(),
             ElementChildrenList.class);
@@ -69,6 +72,23 @@ public class StateTreeTest {
         @Override
         public boolean isAttached() {
             return attached;
+        }
+    }
+
+    public static class CollectableNode extends StateNode {
+
+        public CollectableNode() {
+            super(ElementData.class, ElementChildrenList.class);
+        }
+
+        @Override
+        public void collectChanges(Consumer<NodeChange> collector) {
+            collector.accept(new NodeChange(this) {
+                @Override
+                protected void populateJson(JsonObject json,
+                        ConstantPool constantPool) {
+                }
+            });
         }
     }
 
@@ -502,6 +522,35 @@ public class StateTreeTest {
 
         Mockito.verify(node1).updateActiveState();
         Mockito.verify(node2).updateActiveState();
+    }
+
+    @Test
+    public void collectChanges_parentIsInactive_childrenAreCollected() {
+        StateNode node1 = new CollectableNode();
+        StateNode node2 = new CollectableNode();
+        StateNode node3 = new CollectableNode();
+
+        node1.setTree(tree);
+        node2.setTree(tree);
+        node3.setTree(tree);
+
+        node1.getFeature(ElementChildrenList.class).add(0, node2);
+        node2.getFeature(ElementChildrenList.class).add(0, node3);
+
+        // cleanup the current dirty nodes
+        tree.collectChanges(node -> {
+        });
+
+        node1.getFeature(ElementData.class).setVisible(false);
+
+        List<StateNode> collectedNodes = new ArrayList<>(3);
+
+        tree.collectChanges(change -> collectedNodes.add(change.getNode()));
+
+        Assert.assertEquals(3, collectedNodes.size());
+        Assert.assertTrue(collectedNodes.contains(node1));
+        Assert.assertTrue(collectedNodes.contains(node2));
+        Assert.assertTrue(collectedNodes.contains(node3));
     }
 
 }
