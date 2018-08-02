@@ -79,7 +79,8 @@ public class StateTree implements NodeOwner {
      * @see StateTree#beforeClientResponse(StateNode, SerializableConsumer)
      * @see StateTree#runExecutionsBeforeClientResponse()
      */
-    public static final class BeforeClientResponseEntry implements Serializable {
+    public static final class BeforeClientResponseEntry
+            implements Serializable {
         private static final Comparator<BeforeClientResponseEntry> COMPARING_INDEX = Comparator
                 .comparingInt(BeforeClientResponseEntry::getIndex);
 
@@ -235,13 +236,20 @@ public class StateTree implements NodeOwner {
      *            a consumer accepting node changes
      */
     public void collectChanges(Consumer<NodeChange> collector) {
-        Set<StateNode> dirtyNodesSet = collectDirtyNodes();
+        Set<StateNode> allDirtyNodes = new LinkedHashSet<>();
+        boolean evaluateNewDirtyNodes = true;
 
-        dirtyNodesSet.forEach(StateNode::updateActiveState);
+        // The updateActiveState method can create new dirty nodes, so they need
+        // to be collected as well
+        while (evaluateNewDirtyNodes) {
+            Set<StateNode> dirtyNodesSet = collectDirtyNodes();
+            dirtyNodesSet.forEach(StateNode::updateActiveState);
+            evaluateNewDirtyNodes = allDirtyNodes.addAll(dirtyNodesSet);
+        }
 
         // TODO fire preCollect events
 
-        dirtyNodesSet.forEach(node -> node.collectChanges(collector));
+        allDirtyNodes.forEach(node -> node.collectChanges(collector));
     }
 
     @Override
