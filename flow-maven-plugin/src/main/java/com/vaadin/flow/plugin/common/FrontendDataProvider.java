@@ -32,6 +32,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -46,6 +48,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0.
  */
 public class FrontendDataProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrontendDataProvider.class);
 
     private final boolean shouldBundle;
     private final boolean shouldMinify;
@@ -257,8 +260,15 @@ public class FrontendDataProvider {
     }
 
     private boolean canBeResolvedInFrontendDirectory(String url) {
-        return url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
-                || !url.contains("://");
+        boolean canBeResolved = url
+                .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
+                || !(url.startsWith("/") || url.contains("://"));
+        if (!canBeResolved) {
+            LOGGER.debug(
+                    "Import '{}' will not be processed by the plugin: only imports with '{}' protocol or relative urls with no protocol are eligible for processing",
+                    url, ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        }
+        return canBeResolved;
     }
 
     private String removeFrontendPrefix(String url) {

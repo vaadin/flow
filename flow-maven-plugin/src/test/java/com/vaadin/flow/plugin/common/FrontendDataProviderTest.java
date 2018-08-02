@@ -385,17 +385,20 @@ public class FrontendDataProviderTest {
     private ImmutableMap<Class<? extends Annotation>, Set<String>> getHtmlImports(
             List<String> expectedFiles) {
         return ImmutableMap.of(HtmlImport.class, ImmutableSet.of(
-                "context://shouldBeIgnored.html", "base://shouldBeIgnored.html",
+                "/shouldBeIgnored.html", "context://shouldBeIgnored.html",
+                "base://shouldBeIgnored.html",
                 "frontend://" + expectedFiles.get(4), expectedFiles.get(5)));
     }
 
     private HashMap<Class<? extends Annotation>, Set<String>> getCssAndJsImports(
             List<String> expectedFiles) {
         return new HashMap<>(ImmutableMap.of(JavaScript.class, ImmutableSet.of(
-                "context://shouldBeIgnored.js", "base://shouldBeIgnored.js",
+                "/shouldBeIgnored.js", "context://shouldBeIgnored.js",
+                "base://shouldBeIgnored.js",
                 "frontend://" + expectedFiles.get(0), expectedFiles.get(1)),
                 StyleSheet.class,
-                ImmutableSet.of("context://shouldBeIgnored.css",
+                ImmutableSet.of("/shouldBeIgnored.css",
+                        "context://shouldBeIgnored.css",
                         "base://shouldBeIgnored.css",
                         "frontend://" + expectedFiles.get(2),
                         expectedFiles.get(3))));
