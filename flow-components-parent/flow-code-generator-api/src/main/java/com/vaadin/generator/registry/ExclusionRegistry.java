@@ -62,6 +62,9 @@ public class ExclusionRegistry {
         excludeInterface("vaadin-dialog", HasStyle.class);
         excludeInterface("vaadin-notification", HasStyle.class);
 
+        // this is a workaround
+        // current generator generates wrong file for this element
+        // separate ticket will be created for the actual bug
         excludeTag("vaadin-time-picker-text-field");
         // Polymer lifecycle callbacks
         excludeMethod(null, "connectedCallback");
