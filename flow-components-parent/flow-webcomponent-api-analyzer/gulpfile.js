@@ -39,7 +39,7 @@ gulp.task('prepare', cb => {
 
 const variantsData = {};
 gulp.task('gather-variants-data', ['prepare'], () => {
-  return gulp.src('/Users/someonetoignore/Work/components/*/theme/*/vaadin-*-styles.html')
+  return gulp.src([globalVar.bowerSrcDir + "/*/theme/*/vaadin-*-styles.html"])
     .pipe(new VariantsTransform(variantsData));
 });
 

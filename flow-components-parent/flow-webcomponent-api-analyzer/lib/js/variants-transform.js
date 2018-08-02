@@ -85,8 +85,13 @@ module.exports = class VariantsTransform extends Transform {
    */
   _transform(styleFile, enc, cb) {
     const $ = cheerio.load(styleFile.contents.toString(enc));
+
     $('dom-module').each((_, domModuleElement) => {
-      const themeName = (styleFile.path.match(/theme\/([^\/]+)\//) || [])[1];
+      // for every line that has theme word, followed by either backward or forward slash, 
+      // then any sequence of non-slash symbols, ending with either forward or backward slash 
+      // match the sequence of non-slash symbols
+      const themeName = (styleFile.path.match(/theme[\/|\\]([^\/\\]+)[\/|\\]/) || [])[1];
+
       if (!themeName) {
         return cb(new Error(`Failed to find a theme for path '${styleFile.path}'`));
       }
