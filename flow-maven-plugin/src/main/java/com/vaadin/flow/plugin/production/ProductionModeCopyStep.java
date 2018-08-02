@@ -48,10 +48,11 @@ import elemental.json.JsonObject;
  * @since 1.0.
  */
 public class ProductionModeCopyStep {
+    public static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
+
     static final String WEB_JAR_FILES_BASE = "META-INF/resources/webjars/";
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductionModeCopyStep.class);
-    private static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
     private static final String BOWER_JSON_FILE_NAME = "bower.json";
     private static final String BOWER_COMPONENTS_DIRECTORY_NAME = "bower_components";
 
