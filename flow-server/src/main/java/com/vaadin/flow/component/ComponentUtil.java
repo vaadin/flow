@@ -31,6 +31,8 @@ import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.SynchronizedPropertyInfo;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableTriConsumer;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -331,6 +333,41 @@ public class ComponentUtil {
             Component component, Class<T> eventType,
             ComponentEventListener<T> listener) {
         return component.addListener(eventType, listener);
+    }
+
+    /**
+     * Adds a listener for an event of the given type to the {@code component},
+     * and customizes the corresponding DOM event listener with the given
+     * consumer. This allows overriding eg. the debounce settings defined in the
+     * {@link DomEvent} annotation.
+     * <p>
+     * Note that customizing the DOM event listener works only for event types
+     * which are annotated with {@link DomEvent}. Use
+     * {@link #addListener(Component, Class, ComponentEventListener)} for other
+     * listeners, or if you don't need to customize the DOM listener.
+     *
+     * @param <T>
+     *            the event type
+     * @param component
+     *            the component to add the {@code listener}
+     * @param eventType
+     *            the event type for which to call the listener, must be
+     *            annotated with {@link DomEvent}
+     * @param listener
+     *            the listener to call when the event occurs, not {@code null}
+     * @param domListenerConsumer
+     *            a consumer to customize the behavior of the DOM event
+     *            listener, not {@code null}
+     * @return a handle that can be used for removing the listener
+     * @throws IllegalArgumentException
+     *             if the event type is not annotated with {@link DomEvent}
+     */
+    public <T extends ComponentEvent<?>> Registration addListener(
+            Component component, Class<T> eventType,
+            ComponentEventListener<T> listener,
+            Consumer<DomListenerRegistration> domListenerConsumer) {
+        return component.getEventBus().addListener(eventType, listener,
+                domListenerConsumer);
     }
 
     /**
