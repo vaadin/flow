@@ -340,12 +340,10 @@ public class ComponentEventBus implements Serializable {
                     "No listener of the given type is registered");
         }
 
-        if (!eventData.contains(wrapper)) {
+        if (!eventData.remove(wrapper)) {
             throw new IllegalArgumentException(
                     "The given listener is not registered");
         }
-
-        eventData.remove(wrapper);
 
         if (wrapper.domRegistration != null) {
             wrapper.domRegistration.remove();
