@@ -132,4 +132,16 @@ public class ExclusionRegistryTest {
                 .isInterfaceExcluded("some-other-tag", HasStyle.class));
     }
 
+    @Test
+    public void excludeTag() {
+        ExclusionRegistry.excludeTag("some-tag");
+        Assert.assertTrue(ExclusionRegistry.isTagExcluded("some-tag"));
+        Assert.assertFalse(ExclusionRegistry.isTagExcluded("some-other-tag"));
+    }
+    
+    @Test (expected = NullPointerException.class)
+    public void excludeTagWithNullValue() {
+        ExclusionRegistry.excludeTag(null);
+    }
+
 }

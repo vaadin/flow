@@ -16,6 +16,7 @@
 package com.vaadin.generator;
 
 import javax.annotation.Generated;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,9 +36,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
@@ -53,6 +51,9 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -87,6 +88,7 @@ import com.vaadin.generator.registry.ExclusionRegistry;
 import com.vaadin.generator.registry.PropertyNameRemapRegistry;
 
 import elemental.json.JsonObject;
+
 import static com.vaadin.generator.registry.ValuePropertyRegistry.valueName;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -369,6 +371,7 @@ public class ComponentGenerator {
      */
     private JavaClassSource generateClassSource(ComponentMetadata metadata,
             String basePackage) {
+
         String targetPackage = basePackage;
         String baseUrl = metadata.getBaseUrl();
         if (StringUtils.isNotBlank(baseUrl)) {
@@ -965,8 +968,10 @@ public class ComponentGenerator {
             throw new ComponentGenerationException(
                     "Could not create target directory \"" + targetPath + "\"");
         }
-        writeClass(metadata.getName(), targetPath,
-                generateClassSource(metadata, basePackage), licenseNote);
+        if (!ExclusionRegistry.isTagExcluded(metadata.getTag())) {
+            writeClass(metadata.getName(), targetPath,
+                    generateClassSource(metadata, basePackage), licenseNote);
+        }
     }
 
     private <T extends Named & Packaged<?>> void writeClass(

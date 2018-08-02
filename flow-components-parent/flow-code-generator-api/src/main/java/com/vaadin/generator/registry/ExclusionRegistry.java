@@ -39,6 +39,7 @@ public class ExclusionRegistry {
     private static final Map<String, Set<String>> METHOD_EXCLUSION_REGISTRY = new HashMap<>();
     private static final Map<String, Set<String>> BEHAVIOR_EXCLUSION_REGISTRY = new HashMap<>();
     private static final Map<String, Set<String>> INTERFACE_EXCLUSION_REGISTRY = new HashMap<>();
+    private static final Set<String> TAG_EXCLUSION_REGISTRY = new HashSet<>();
 
     static {
         excludeProperty("vaadin-combo-box", "value");
@@ -61,6 +62,7 @@ public class ExclusionRegistry {
         excludeInterface("vaadin-dialog", HasStyle.class);
         excludeInterface("vaadin-notification", HasStyle.class);
 
+        excludeTag("vaadin-time-picker-text-field");
         // Polymer lifecycle callbacks
         excludeMethod(null, "connectedCallback");
         excludeMethod(null, "disconnectedCallback");
@@ -68,6 +70,33 @@ public class ExclusionRegistry {
     }
 
     private ExclusionRegistry() {
+    }
+
+    /**
+     * Excludes the element generation denoted by its tag.
+     * 
+     * @param elementTag
+     *            the tag of the element, which is going to be skipped
+     *            generation.
+     */
+    public static void excludeTag(String elementTag) {
+        Objects.requireNonNull(elementTag, "elementTag cannot be null");
+        if (!TAG_EXCLUSION_REGISTRY.contains(elementTag)) {
+            TAG_EXCLUSION_REGISTRY.add(elementTag);
+        }
+    }
+
+    /**
+     * Gets whether an Element should be excluded or not from the generation.
+     * 
+     * @param elementTag
+     *            the tag of the element
+     * @return <code>true</code> if the element should be excluded,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isTagExcluded(String elementTag) {
+        return TAG_EXCLUSION_REGISTRY.contains(elementTag);
+        
     }
 
     private static void put(String elementTag, String name,
