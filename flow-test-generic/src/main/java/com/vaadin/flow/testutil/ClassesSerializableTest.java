@@ -146,6 +146,11 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?");
     }
 
+    protected boolean isTestClassPath(String classPath) {
+        File file = new File(classPath);
+        return "test-classes".equals(file.getName());
+    }
+
     /**
      * Performs actual serialization/deserialization
      *
@@ -287,7 +292,9 @@ public abstract class ClassesSerializableTest {
         List<String> classes = new ArrayList<>();
         List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile).collect(Collectors.toList());
         for (String location : rawClasspathEntries) {
-            classes.addAll(findServerClasses(location, excludes));
+            if (!isTestClassPath(location)) {
+                classes.addAll(findServerClasses(location, excludes));
+            }
         }
 
         ArrayList<Field> nonSerializableFunctionFields = new ArrayList<>();
