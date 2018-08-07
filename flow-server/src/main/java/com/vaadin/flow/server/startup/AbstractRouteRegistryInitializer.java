@@ -115,6 +115,9 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     private void validateRouteImplementation(Class<?> route,
             Class<?> implementation) {
         Route annotation = route.getAnnotation(Route.class);
+        if (route.isAnnotationPresent(PWA.class)) {
+            setPwaClass(route);
+        }
         if (!UI.class.equals(annotation.layout())) {
             if (implementation.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
@@ -184,15 +187,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
         if (topParentLayout != null
                 && topParentLayout.isAnnotationPresent(PWA.class)) {
-            if (pwaClass == null || pwaClass == topParentLayout) {
-                pwaClass = topParentLayout;
-            } else {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("Expected only one '%s' annotation that is placed on the main layout of the application. Got multiple annotations in '%s' and '%s'",
-                                PWA.class.getSimpleName(),
-                                pwaClass.getSimpleName(),
-                                topParentLayout.getSimpleName()));
-            }
+            setPwaClass(topParentLayout);
         }
     }
 
@@ -270,6 +265,18 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                                 topParentLayout.getName(), layout.getName()));
             }
         });
+    }
+
+    private void setPwaClass(Class<?> pwaClassCandidate) {
+        if (pwaClass == null || pwaClass == pwaClassCandidate) {
+            pwaClass = pwaClassCandidate;
+        } else {
+            throw new InvalidRouteLayoutConfigurationException(String
+                    .format("Expected only one '%s' annotation that is placed on the main layout of the application. Got multiple annotations in '%s' and '%s'",
+                            PWA.class.getSimpleName(),
+                            pwaClass.getSimpleName(),
+                            pwaClassCandidate.getSimpleName()));
+        }
     }
 
     protected Class<?> getPwaClass() {
