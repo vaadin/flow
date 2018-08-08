@@ -115,9 +115,6 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     private void validateRouteImplementation(Class<?> route,
             Class<?> implementation) {
         Route annotation = route.getAnnotation(Route.class);
-        if (route.isAnnotationPresent(PWA.class)) {
-            setPwaClass(route);
-        }
         if (!UI.class.equals(annotation.layout())) {
             if (implementation.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
@@ -185,10 +182,6 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             }
         });
 
-        if (topParentLayout != null
-                && topParentLayout.isAnnotationPresent(PWA.class)) {
-            setPwaClass(topParentLayout);
-        }
     }
 
     /* Route validator methods for bootstrap annotations */
@@ -267,8 +260,38 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         });
     }
 
-    private void setPwaClass(Class<?> pwaClassCandidate) {
-        if (pwaClass == null || pwaClass == pwaClassCandidate) {
+    /**
+     * Validate PWA annotations of the potential route classes stream, search
+     * for properly annotated PWA class and return it, or null if none existing.
+     *
+     * @param routeClasses
+     *            potential route classes
+     * @return a PWA -annotated class, or null if none exist.
+     */
+    @SuppressWarnings("unchecked")
+    protected Class<?> validatePwaClass(Stream<Class<?>> routeClasses) {
+        pwaClass = null;
+        routeClasses.forEach(route -> {
+            // test route pwa annotation
+            testPwa(route);
+
+            Route routeAnnotation = route.getAnnotation(Route.class);
+            if (!UI.class.equals(routeAnnotation.layout())) {
+                Class<? extends RouterLayout> topParentLayout = RouterUtil
+                        .getTopParentLayout(route,
+                                Router.resolve(route, routeAnnotation));
+                // test top parent layout pwa annotation
+                testPwa(topParentLayout);
+            }
+        });
+        return pwaClass;
+    }
+
+    private void testPwa(Class<?> pwaClassCandidate) {
+        if (pwaClassCandidate == null ||
+                !pwaClassCandidate.isAnnotationPresent(PWA.class)) {
+            return;
+        } else if (pwaClass == null || pwaClass == pwaClassCandidate) {
             pwaClass = pwaClassCandidate;
         } else {
             throw new InvalidRouteLayoutConfigurationException(String
@@ -279,7 +302,4 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         }
     }
 
-    protected Class<?> getPwaClass() {
-        return pwaClass;
-    }
 }
