@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.LI)
-public class ListItem extends HtmlContainer implements ClickNotifier {
+public class ListItem extends HtmlContainer implements ClickNotifier<ListItem> {
 
     /**
      * Creates a new empty list item.

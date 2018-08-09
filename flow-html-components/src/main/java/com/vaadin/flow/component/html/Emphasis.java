@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.EM)
-public class Emphasis extends HtmlContainer implements ClickNotifier {
+public class Emphasis extends HtmlContainer implements ClickNotifier<Emphasis> {
 
     /**
      * Creates a new empty emphasis.

@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.ASIDE)
-public class Aside extends HtmlContainer implements ClickNotifier {
+public class Aside extends HtmlContainer implements ClickNotifier<Aside> {
 
     /**
      * Creates a new empty aside.

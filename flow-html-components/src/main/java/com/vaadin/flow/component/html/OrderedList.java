@@ -30,7 +30,8 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.OL)
-public class OrderedList extends HtmlContainer implements ClickNotifier {
+public class OrderedList extends HtmlContainer
+        implements ClickNotifier<OrderedList> {
 
     /**
      * Defines the numbering type of the list items.
@@ -87,7 +88,7 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
     /**
      * Creates a new empty ordered list with the specified
      * {@link NumberingType}.
-     * 
+     *
      * @param type
      *            the numbering type of the list items
      */

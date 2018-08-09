@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.FOOTER)
-public class Footer extends HtmlContainer implements ClickNotifier {
+public class Footer extends HtmlContainer implements ClickNotifier<Footer> {
 
     /**
      * Creates a new empty footer.
