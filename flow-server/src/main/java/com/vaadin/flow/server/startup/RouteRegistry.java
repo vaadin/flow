@@ -684,11 +684,26 @@ public class RouteRegistry implements Serializable {
                 findThemeForNavigationTarget(navigationTarget, path));
     }
 
+    /**
+     * Gets pwa configuration class.
+     *
+     * @return a class that has PWA-annotation.
+     */
     public Class<?> getPwaConfigurationClass() {
         return pwaConfigurationClass.get();
     }
 
-    protected void setPwaClass(Class<?> pwaClass) {
+    /**
+     * Sets pwa configuration class.
+     *
+     * Should be set along with setNavigationTargets, for scanning of proper
+     * pwa configuration class is done along route scanning.
+     * See {@link AbstractRouteRegistryInitializer}.
+     *
+     * @param pwaClass a class that has PWA -annotation, that's to be used in
+     *                 service initialization.
+     */
+    public void setPwaConfigurationClass(Class<?> pwaClass) {
         if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
             pwaConfigurationClass.set(pwaClass);
         }

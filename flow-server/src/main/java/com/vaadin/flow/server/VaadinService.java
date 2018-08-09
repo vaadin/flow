@@ -16,9 +16,8 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +46,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +63,6 @@ import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
@@ -77,7 +79,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -294,7 +295,6 @@ public abstract class VaadinService implements Serializable {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = new ArrayList<>();
-        handlers.add(new FaviconHandler());
         handlers.add(new SessionRequestHandler());
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
@@ -1322,8 +1322,7 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval()
-                : -1;
+                ? session.getSession().getMaxInactiveInterval() : -1;
     }
 
     /**
