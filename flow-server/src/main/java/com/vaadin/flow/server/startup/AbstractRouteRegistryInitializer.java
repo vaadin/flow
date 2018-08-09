@@ -182,18 +182,6 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             }
         });
 
-        if (topParentLayout != null
-                && topParentLayout.isAnnotationPresent(PWA.class)) {
-            if (pwaClass == null || pwaClass == topParentLayout) {
-                pwaClass = topParentLayout;
-            } else {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("Expected only one '%s' annotation that is placed on the main layout of the application. Got multiple annotations in '%s' and '%s'",
-                                PWA.class.getSimpleName(),
-                                pwaClass.getSimpleName(),
-                                topParentLayout.getSimpleName()));
-            }
-        }
     }
 
     /* Route validator methods for bootstrap annotations */
@@ -272,7 +260,46 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         });
     }
 
-    protected Class<?> getPwaClass() {
+    /**
+     * Validate PWA annotations of the potential route classes stream, search
+     * for properly annotated PWA class and return it, or null if none existing.
+     *
+     * @param routeClasses
+     *            potential route classes
+     * @return a PWA -annotated class, or null if none exist.
+     */
+    @SuppressWarnings("unchecked")
+    protected Class<?> validatePwaClass(Stream<Class<?>> routeClasses) {
+        pwaClass = null;
+        routeClasses.forEach(route -> {
+            // check and validate route pwa annotation
+            validatePwa(route);
+
+            Route routeAnnotation = route.getAnnotation(Route.class);
+            if (!UI.class.equals(routeAnnotation.layout())) {
+                Class<? extends RouterLayout> topParentLayout = RouterUtil
+                        .getTopParentLayout(route,
+                                Router.resolve(route, routeAnnotation));
+                // check and validate top parent layout pwa annotation
+                validatePwa(topParentLayout);
+            }
+        });
         return pwaClass;
     }
+
+    private void validatePwa(Class<?> pwaClassCandidate) {
+        if (pwaClassCandidate == null ||
+                !pwaClassCandidate.isAnnotationPresent(PWA.class)) {
+            return;
+        } else if (pwaClass == null || pwaClass == pwaClassCandidate) {
+            pwaClass = pwaClassCandidate;
+        } else {
+            throw new InvalidRouteLayoutConfigurationException(String
+                    .format("Expected only one '%s' annotation that is placed on the main layout of the application. Got multiple annotations in '%s' and '%s'",
+                            PWA.class.getSimpleName(),
+                            pwaClass.getSimpleName(),
+                            pwaClassCandidate.getSimpleName()));
+        }
+    }
+
 }
