@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.H5)
-public class H5 extends HtmlContainer implements ClickNotifier {
+public class H5 extends HtmlContainer implements ClickNotifier<H5> {
 
     /**
      * Creates a new empty heading.

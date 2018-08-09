@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.ARTICLE)
-public class Article extends HtmlContainer implements ClickNotifier {
+public class Article extends HtmlContainer implements ClickNotifier<Article> {
 
     /**
      * Creates a new empty article.

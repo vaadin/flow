@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.SPAN)
-public class Span extends HtmlContainer implements ClickNotifier {
+public class Span extends HtmlContainer implements ClickNotifier<Span> {
 
     /**
      * Creates a new empty span.
