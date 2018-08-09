@@ -22,7 +22,7 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Interface that defines the contract of adding and removing multiple
  * {@link DataGenerator}s to a given object.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -44,9 +44,13 @@ public interface HasDataGenerators<T> extends Serializable {
     /**
      * Removes the given data generator.
      *
+     * @deprecated Use the registration returned from
+     *             {@link #addDataGenerator(DataGenerator)} instead.
+     *
      * @param generator
      *            the data generator to remove
      */
+    @Deprecated
     void removeDataGenerator(DataGenerator<T> generator);
 
 }
