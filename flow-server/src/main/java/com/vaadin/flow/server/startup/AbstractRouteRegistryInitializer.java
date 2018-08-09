@@ -272,22 +272,22 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     protected Class<?> validatePwaClass(Stream<Class<?>> routeClasses) {
         pwaClass = null;
         routeClasses.forEach(route -> {
-            // test route pwa annotation
-            testPwa(route);
+            // check and validate route pwa annotation
+            validatePwa(route);
 
             Route routeAnnotation = route.getAnnotation(Route.class);
             if (!UI.class.equals(routeAnnotation.layout())) {
                 Class<? extends RouterLayout> topParentLayout = RouterUtil
                         .getTopParentLayout(route,
                                 Router.resolve(route, routeAnnotation));
-                // test top parent layout pwa annotation
-                testPwa(topParentLayout);
+                // check and validate top parent layout pwa annotation
+                validatePwa(topParentLayout);
             }
         });
         return pwaClass;
     }
 
-    private void testPwa(Class<?> pwaClassCandidate) {
+    private void validatePwa(Class<?> pwaClassCandidate) {
         if (pwaClassCandidate == null ||
                 !pwaClassCandidate.isAnnotationPresent(PWA.class)) {
             return;
