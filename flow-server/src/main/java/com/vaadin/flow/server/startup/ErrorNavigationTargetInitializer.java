@@ -43,6 +43,8 @@ public class ErrorNavigationTargetInitializer
             classSet = new HashSet<>();
         }
         Set<Class<? extends Component>> routes = classSet.stream()
+                // Liberty 18 also includes the interface itself in the set...
+                .filter(clazz -> clazz != HasErrorParameter.class)
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
 
