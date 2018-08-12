@@ -86,11 +86,16 @@ public class VaadinServletContextInitializer
             }
 
             try {
-                Set<Class<? extends Component>> navigationTargets = validateRouteClasses(
+                List<Class<?>> routeClasses =
                         findByAnnotation(getRoutePackages(), Route.class,
-                                RouteAlias.class));
+                                RouteAlias.class).collect(Collectors.toList());
+
+                Set<Class<? extends Component>> navigationTargets =
+                        validateRouteClasses(routeClasses.stream());
 
                 registry.setNavigationTargets(navigationTargets);
+                registry.setPwaConfigurationClass(
+                        validatePwaClass(routeClasses.stream()));
             } catch (InvalidRouteConfigurationException e) {
                 throw new IllegalStateException(e);
             }
