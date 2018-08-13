@@ -35,6 +35,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -92,20 +93,20 @@ public class SpringBootAutoConfiguration {
     }
 
     /**
-     * Creates a {@link ServletRegistrationBean} instance for a dispatcher
+     * Creates a {@link DispatcherServletRegistrationBean} instance for a dispatcher
      * servlet in case Vaadin servlet is mapped to the root.
      * <p>
      * This is needed for correct servlet path (and path info) values available
      * in Vaadin servlet because it works via forwarding controller which is not
      * properly mapped without this registration.
      *
-     * @return a custom ServletRegistrationBean instance for dispatcher servlet
+     * @return a custom DispatcherServletRegistrationBean instance for dispatcher servlet
      */
     @Bean
     @Conditional(RootMappedCondition.class)
-    public ServletRegistrationBean<DispatcherServlet> dispatcherServletRegistration() {
+    public DispatcherServletRegistrationBean dispatcherServletRegistration() {
         DispatcherServlet servlet = context.getBean(DispatcherServlet.class);
-        ServletRegistrationBean<DispatcherServlet> registration = new ServletRegistrationBean<>(
+        DispatcherServletRegistrationBean registration = new DispatcherServletRegistrationBean(
                 servlet, "/*");
         registration.setName("dispatcher");
         return registration;
