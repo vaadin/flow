@@ -21,6 +21,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -35,7 +37,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -47,7 +48,8 @@ import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegis
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
-@Import(VaadinServletConfiguration.class)
+@Import({ VaadinServletConfiguration.class,
+        DispatcherServletRegistrationBeanConfig.class })
 public class SpringBootAutoConfiguration {
 
     @Autowired
@@ -93,20 +95,28 @@ public class SpringBootAutoConfiguration {
     }
 
     /**
-     * Creates a {@link DispatcherServletRegistrationBean} instance for a dispatcher
-     * servlet in case Vaadin servlet is mapped to the root.
+     * Creates a {@link DispatcherServletRegistrationBean} instance for a
+     * dispatcher servlet in case Vaadin servlet is mapped to the root.
      * <p>
      * This is needed for correct servlet path (and path info) values available
      * in Vaadin servlet because it works via forwarding controller which is not
      * properly mapped without this registration.
+     * <p>
+     * In the modern versions of Spring Boot this is done via extra
+     * {@link DispatcherServletRegistrationBeanConfig} configuration because
+     * {@link DispatcherServletRegistrationBean} bean should be used instead of
+     * {@code ServletRegistrationBean<DispatcherServlet>}. So this method works
+     * only if there is no {@link DispatcherServletRegistrationBean} class.
      *
-     * @return a custom DispatcherServletRegistrationBean instance for dispatcher servlet
+     * @return a custom DispatcherServletRegistrationBean instance for
+     *         dispatcher servlet
      */
     @Bean
     @Conditional(RootMappedCondition.class)
-    public DispatcherServletRegistrationBean dispatcherServletRegistration() {
+    @ConditionalOnMissingClass("org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean")
+    public ServletRegistrationBean<DispatcherServlet> dispatcherServletRegistration() {
         DispatcherServlet servlet = context.getBean(DispatcherServlet.class);
-        DispatcherServletRegistrationBean registration = new DispatcherServletRegistrationBean(
+        ServletRegistrationBean<DispatcherServlet> registration = new ServletRegistrationBean<>(
                 servlet, "/*");
         registration.setName("dispatcher");
         return registration;
