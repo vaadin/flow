@@ -229,21 +229,51 @@ public class PwaRegistry implements Serializable {
         return stringBuilder.toString();
     }
 
-    static PwaRegistry getRegistry(ServletContext servletContext) {
+    /**
+     * Gets the pwa registry for the given servlet context. If the servlet
+     * context has no pwa registry, a new instance is created and assigned to
+     * the context.
+     *
+     * @param servletContext
+     *            the servlet context for which to get a route registry, not
+     *            <code>null</code>
+     *
+     * @return a registry instance for the given servlet context, not
+     *         <code>null</code>
+     */
+    public static PwaRegistry getInstance(ServletContext servletContext) {
         assert servletContext != null;
 
-        RouteRegistry reg = RouteRegistry.getInstance(servletContext);
+        Object attribute;
+        synchronized (servletContext) {
+            attribute = servletContext
+                    .getAttribute(PwaRegistry.class.getName());
 
-        // Initialize PwaRegistry with found PWA settings
-        PWA pwa = reg.getPwaConfigurationClass() != null
-                ? reg.getPwaConfigurationClass().getAnnotation(PWA.class)
-                : null;
-        // will fall back to defaults, if no PWA annotation available
-        try {
-            return new PwaRegistry(pwa, servletContext);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException(
-                    "Failed to initialize the PWA registry", ioe);
+            if (attribute == null) {
+                RouteRegistry reg = RouteRegistry.getInstance(servletContext);
+
+                // Initialize PwaRegistry with found PWA settings
+                PWA pwa = reg.getPwaConfigurationClass() != null
+                        ? reg.getPwaConfigurationClass().getAnnotation(PWA.class)
+                        : null;
+                // will fall back to defaults, if no PWA annotation available
+                try {
+                    attribute = new PwaRegistry(pwa, servletContext);
+                    servletContext.setAttribute(PwaRegistry.class.getName(),
+                            attribute);
+                } catch (IOException ioe) {
+                    throw new UncheckedIOException(
+                            "Failed to initialize the PWA registry", ioe);
+                }
+
+            }
+        }
+
+        if (attribute instanceof PwaRegistry) {
+            return (PwaRegistry) attribute;
+        } else {
+            throw new IllegalStateException(
+                    "Unknown servlet context attribute value: " + attribute);
         }
     }
 

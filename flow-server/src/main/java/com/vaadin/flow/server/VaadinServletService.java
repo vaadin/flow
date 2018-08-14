@@ -183,7 +183,7 @@ public class VaadinServletService extends VaadinService {
     protected PwaRegistry getPwaRegistry() {
         return Optional.ofNullable(getServlet())
                 .map(GenericServlet::getServletContext)
-                .map(PwaRegistry::getRegistry).orElse(null);
+                .map(PwaRegistry::getInstance).orElse(null);
     }
 
     @Override
