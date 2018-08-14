@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,8 +29,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class VaadinConfigurationProperties {
 
     /**
-     * The base URL mapping of the Vaadin servlet. By default, the mapping
-     * {@code /*} is used.
+     * Base URL mapping of the Vaadin servlet.
      */
     private String urlMapping = "/*";
 
