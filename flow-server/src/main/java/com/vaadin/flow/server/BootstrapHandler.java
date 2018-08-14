@@ -440,6 +440,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             exportUsageStatistics(document);
         }
 
+        setupPwa(document, context);
+
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
                 context.getResponse(), document, context.getUI(),
@@ -574,7 +576,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
-        setupPwa(head, context);
         setupCss(head, context);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
@@ -711,7 +712,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         });
     }
 
-    private static void setupPwa(Element head, BootstrapContext context) {
+    private static void setupPwa(Document document, BootstrapContext context) {
         VaadinService vaadinService = context.getSession().getService();
         if (vaadinService == null) {
             return;
@@ -725,6 +726,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         PwaConfiguration config = registry.getPwaConfiguration();
 
         if (config.isEnabled()) {
+            // Add header injections
+            Element head = document.head();
+
             // Describe PWA capability for iOS devices
             head.appendElement(META_TAG)
                     .attr("name", "apple-mobile-web-app-capable")
@@ -753,6 +757,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             + "    navigator.serviceWorker.register('"
                             + config.getServiceWorkerPath() + "');\n"
                             + "  });\n" + "}");
+
+            // add body injections
+            if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
+                // PWA Install prompt html/js
+                document.body().append(registry.getInstallPrompt());
+            }
         }
     }
 
