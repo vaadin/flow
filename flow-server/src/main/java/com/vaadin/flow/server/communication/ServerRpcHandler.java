@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.rpc.AttachExistingElementRpcHandler;
@@ -73,7 +74,7 @@ public class ServerRpcHandler implements Serializable {
      * side.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     public static class RpcRequest implements Serializable {
 
@@ -202,7 +203,7 @@ public class ServerRpcHandler implements Serializable {
      * the expected one.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     public static class InvalidUIDLSecurityKeyException
             extends GeneralSecurityException {
@@ -374,10 +375,14 @@ public class ServerRpcHandler implements Serializable {
             throw new IllegalArgumentException(
                     "Unsupported event type: " + type);
         }
-        Optional<Runnable> handle = handler.handle(ui, invocationJson);
-        assert !handle.isPresent() : "RPC handler "
-                + handler.getClass().getName()
-                + " returned a Runnable even though it shouldn't";
+        try {
+            Optional<Runnable> handle = handler.handle(ui, invocationJson);
+            assert !handle.isPresent() : "RPC handler "
+                    + handler.getClass().getName()
+                    + " returned a Runnable even though it shouldn't";
+        } catch (Exception e) {
+            ui.getSession().getErrorHandler().error(new ErrorEvent(e));
+        }
     }
 
     protected String getMessage(Reader reader) throws IOException {
