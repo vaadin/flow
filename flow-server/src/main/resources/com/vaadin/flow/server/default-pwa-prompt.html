@@ -7,22 +7,20 @@
     </div>
 </div>
 <script type="application/javascript">
-    let deferredPrompt;
-    let pwaIPUI;
     window.addEventListener('load', function() {
-        pwaIPUI = document.getElementById("pwa-ip");
+        window.Vaadin.Flow.pwaIPUI = document.getElementById("pwa-ip");
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            deferredPrompt = e;
-            pwaIPUI.style.display = "block";
+            window.Vaadin.Flow.deferredPrompt = e;
+            window.Vaadin.Flow.pwaIPUI.style.display = "block";
         });
-        document.getElementById("pwa-closeip").addEventListener("click", function() {pwaIPUI.style.display = "none";});
+        document.getElementById("pwa-closeip").addEventListener("click", function() {window.Vaadin.Flow.pwaIPUI.style.display = "none";});
         document.getElementById("pwa-promptip").addEventListener("click", function() {
-            pwaIPUI.style.display = 'none';
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice
+            window.Vaadin.Flow.pwaIPUI.style.display = 'none';
+            window.Vaadin.Flow.deferredPrompt.prompt();
+            window.Vaadin.Flow.deferredPrompt.userChoice
                 .then((choiceResult) => {
-                    deferredPrompt = null;
+                    window.Vaadin.Flow.deferredPrompt = null;
                 });
         });
     });

@@ -44,7 +44,7 @@ import org.jsoup.nodes.Element;
  */
 public class PwaIcon implements Serializable {
     /**
-     * Place where icon belongs to (header or manifest.json).
+     * Place where icon belongs to (header or manifest.webmanifest).
      */
     public enum Domain {
         HEADER, MANIFEST

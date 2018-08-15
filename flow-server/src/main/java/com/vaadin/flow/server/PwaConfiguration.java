@@ -28,8 +28,8 @@ import java.util.List;
  * falls back to default values if {@link PWA} is unavailable ({@code null}).
  */
 public class PwaConfiguration implements Serializable {
-    public static final String DEFAULT_PATH = "manifest.json";
-    public static final String DEFAULT_LOGO = "icons/logo.png";
+    public static final String DEFAULT_PATH = "manifest.webmanifest";
+    public static final String DEFAULT_ICON = "icons/icon.png";
     public static final String DEFAULT_NAME = "Vaadin Flow Application";
     public static final String DEFAULT_THEME_COLOR = "#ffffff";
     public static final String DEFAULT_BACKGROUND_COLOR = "#f2f2f2";
@@ -41,7 +41,7 @@ public class PwaConfiguration implements Serializable {
     private final String description;
     private final String backgroundColor;
     private final String themeColor;
-    private final String logoPath;
+    private final String iconPath;
     private final String manifestPath;
     private final String offlinePath;
     private final String serviceWorkerPath;
@@ -60,7 +60,7 @@ public class PwaConfiguration implements Serializable {
             description = pwa.description();
             backgroundColor = pwa.backgroundColor();
             themeColor = pwa.themeColor();
-            logoPath = checkPath(pwa.logoPath());
+            iconPath = checkPath(pwa.iconPath());
             manifestPath = checkPath(pwa.manifestPath());
             offlinePath = checkPath(pwa.offlinePath());
             display = pwa.display();
@@ -74,7 +74,7 @@ public class PwaConfiguration implements Serializable {
             description = "";
             backgroundColor = DEFAULT_BACKGROUND_COLOR;
             themeColor = DEFAULT_THEME_COLOR;
-            logoPath = DEFAULT_LOGO;
+            iconPath = DEFAULT_ICON;
             manifestPath = DEFAULT_PATH;
             offlinePath = DEFAULT_OFFLINE_PATH;
             display = DEFAULT_DISPLAY;
@@ -149,29 +149,29 @@ public class PwaConfiguration implements Serializable {
     }
 
     /**
-     * Gets the path to the application logo file.
-     *
+     * Gets the path to the application icon file.
+     * <p>
      * Example: {@literal img/my-icon.png}
      *
-     * @return path to the application logo file
+     * @return path to the application icon file
      */
-    public String getLogoPath() {
-        return logoPath;
+    public String getIconPath() {
+        return iconPath;
     }
 
     /**
-     * Gets the ath to logo with prefix, so request matches.
+     * Gets the ath to icon with prefix, so request matches.
      *
-     * @return path to logo with prefix, so request matches
+     * @return path to icon with prefix, so request matches
      */
-    public String relLogoPath() {
-        return "/" + logoPath;
+    public String relIconPath() {
+        return "/" + iconPath;
     }
 
     /**
-     * Gets the path to the manifest.json.
+     * Gets the path to the manifest.webmanifest.
      *
-     * @return path to the manifest.json
+     * @return path to the manifest.webmanifest
      */
     public String getManifestPath() {
         return manifestPath;

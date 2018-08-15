@@ -80,7 +80,7 @@ public class PwaTestIT extends ChromeBrowserTest {
         Assert.assertEquals(1, elements.size());
         String href = elements.get(0).getAttribute("href");
         Assert.assertTrue(href + " didn't respond with resource", exists(href));
-        // Verify user values in manifest.json
+        // Verify user values in manifest.webmanifest
         JSONObject manifest = readJsonFromUrl(href);
         Assert.assertEquals(ParentLayout.PWA_NAME, manifest.getString("name"));
         Assert.assertEquals(ParentLayout.PWA_SHORT_NAME,

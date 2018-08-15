@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * application:
  *
  * <ul>
- * <li>handle manifest.json
+ * <li>handle manifest.webmanifest
  * <li>handle sw.js (service worker), which will enable simple offline fallback
  * and file caching
  * <li>handle default (static) offline html page
@@ -43,9 +43,9 @@ import java.lang.annotation.Target;
  * </ul>
  *
  * Any of the handled resources can be explicitly overridden with static file in
- * public resources. For example, if {@literal manifest.json} is available in
+ * public resources. For example, if {@literal manifest.webmanifest} is available in
  * webapp root folder it will be served instead of generated
- * {@literal manifest.json}. Same applies for service worker and generated
+ * {@literal manifest.webmanifest}. Same applies for service worker and generated
  * icons.
  *
  * @see <a href=
@@ -70,25 +70,25 @@ public @interface PWA {
     /**
      * Path to the manifest file.
      *
-     * Defaults to (relative) {@literal manifest.json} with default
-     * configuration that is {@literal webapp/manifest.json}
+     * Defaults to (relative) {@literal manifest.webmanifest} with default
+     * configuration that is {@literal webapp/manifest.webmanifest}
      *
      * @return path to the manifest file
      */
     String manifestPath() default PwaConfiguration.DEFAULT_PATH;
 
     /**
-     * Path to the application logo file.
+     * Path to the application icon file.
+     * <p>
+     * Defaults to (relative) {@literal icons/icon.png} with default
+     * configuration that is {@literal webapp/manifest.webmanifest}
+     * <p>
+     * If the specified icon file is not found, the default one will be used.
+     * The file is also used to create different sizes of icon.
      *
-     * Defaults to (relative) {@literal icons/logo.png} with default
-     * configuration that is {@literal webapp/manifest.json}
-     *
-     * If the specified logo file is not found, the default one will be used.
-     * The file is also used to create different sizes of logo.
-     *
-     * @return path to the application logo file
+     * @return path to the application icon file
      */
-    String logoPath() default PwaConfiguration.DEFAULT_LOGO;
+    String iconPath() default PwaConfiguration.DEFAULT_ICON;
 
     /**
      * Name of the application.
