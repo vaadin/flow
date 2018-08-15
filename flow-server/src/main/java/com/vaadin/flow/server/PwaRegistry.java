@@ -322,7 +322,7 @@ public class PwaRegistry implements Serializable {
         return BootstrapHandler.readResource("default-pwa-prompt.html")
                 .replace("%%%ADD_HOME_SCREEN%%%", "Add to home screen")
                 .replace("%%%LOGO_PATH%%%",
-                        largest != null ? largest.getHref() : "")
+                        largest == null ? "" : largest.getHref())
                 .replace("%%%PROJECT_NAME%%%", pwaConfiguration.getAppName());
     }
 

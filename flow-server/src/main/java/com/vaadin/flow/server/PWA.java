@@ -150,7 +150,7 @@ public @interface PWA {
     /**
      * If enabled, server will inject default pwa -install prompt html and js
      * in bootstrap page.
-     *
+     * <p>
      * Will capture beforeinstallprompt -event and show install prompt as
      * required from Chrome 68 upwards.
      *

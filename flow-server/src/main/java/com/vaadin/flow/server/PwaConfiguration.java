@@ -262,7 +262,7 @@ public class PwaConfiguration implements Serializable {
 
     /**
      * Is install prompt resources injection enabled.
-     *
+     * <p>
      * If enabled, server will inject required html and js to bootstrap page.
      *
      * @return is install prompt resources injection enabled
