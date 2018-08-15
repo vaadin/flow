@@ -1,0 +1,29 @@
+<div id="pwa-ip" style="display: none;position: fixed;bottom: 0;width: 100%;background: var(--lumo-primary-color);color: var(--lumo-primary-contrast-color);z-index: 1000;padding: 2em 0;">
+    <div style="display: grid;grid-template-columns: 80px auto 80px;justify-content: space-between;width: 100%;max-width: 964px;margin: auto;">
+        <div style="background-image: url(%%%LOGO_PATH%%%); background-size: cover; width: 72px; height: 72px;"></div>
+        <h2 style="margin: 0; align-self: center; color: var(--lumo-primary-contrast-color);">%%%PROJECT_NAME%%%</h2>
+        <iron-icon id="pwa-closeip" icon="vaadin:close" style="justify-self: end; align-self: center;cursor: pointer;"></iron-icon>
+        <vaadin-button id="pwa-promptip" tabindex="0" role="button" style="background-color: rgba(0,0,0,0.2);grid-column-start: 2;cursor: pointer;" theme="primary"><iron-icon icon="vaadin:mobile" slot="suffix"></iron-icon>%%%ADD_HOME_SCREEN%%%</vaadin-button>
+    </div>
+</div>
+<script type="application/javascript">
+    let deferredPrompt;
+    let pwaIPUI;
+    window.addEventListener('load', function() {
+        pwaIPUI = document.getElementById("pwa-ip");
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaIPUI.style.display = "block";
+        });
+        document.getElementById("pwa-closeip").addEventListener("click", function() {pwaIPUI.style.display = "none";});
+        document.getElementById("pwa-promptip").addEventListener("click", function() {
+            pwaIPUI.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice
+                .then((choiceResult) => {
+                    deferredPrompt = null;
+                });
+        });
+    });
+</script>

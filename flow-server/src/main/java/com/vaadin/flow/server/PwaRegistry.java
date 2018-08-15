@@ -62,6 +62,7 @@ public class PwaRegistry implements Serializable {
     private String offlineHtml = "";
     private String manifestJson = "";
     private String serviceWorkerJs = "";
+    private String installPrompt = "";
     private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
@@ -98,6 +99,9 @@ public class PwaRegistry implements Serializable {
 
             // Initialize sw.js
             serviceWorkerJs = initializeServiceWorker(servletContext);
+
+            // Initialize service worker install prompt html/js
+            installPrompt = initializeInstallPrompt(pwaConfiguration);
         }
     }
 
@@ -310,6 +314,18 @@ public class PwaRegistry implements Serializable {
 
     }
 
+    private String initializeInstallPrompt(PwaConfiguration pwaConfiguration) {
+        PwaIcon largest = getIcons().stream()
+                .filter(PwaIcon::shouldBeCached)
+                .min((icon1, icon2) -> icon2.getWidth() - icon1.getWidth())
+                .orElse(null);
+        return BootstrapHandler.readResource("default-pwa-prompt.html")
+                .replace("%%%ADD_HOME_SCREEN%%%", "Add to home screen")
+                .replace("%%%LOGO_PATH%%%",
+                        largest == null ? "" : largest.getHref())
+                .replace("%%%PROJECT_NAME%%%", pwaConfiguration.getAppName());
+    }
+
     private String getOfflinePageFromContext(URLConnection connection) {
         try (InputStream stream = connection.getInputStream();
                 BufferedReader bf = new BufferedReader(new InputStreamReader(
@@ -367,6 +383,15 @@ public class PwaRegistry implements Serializable {
     public String offlinePageCache() {
         return String.format("{ url: '%s', revision: '%s' }",
                 pwaConfiguration.getOfflinePath(), offlineHash);
+    }
+
+    /**
+     * Html and js needed for pwa install prompt as a plain string.
+     *
+     * @return Html and js needed for pwa install prompt
+     */
+    public String getInstallPrompt() {
+        return installPrompt;
     }
 
     /**
