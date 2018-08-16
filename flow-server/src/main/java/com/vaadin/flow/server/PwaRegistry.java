@@ -57,7 +57,8 @@ public class PwaRegistry implements Serializable {
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
-    public static final String WORKBOX_FOLDER = "workbox/";
+    public static final String WORKBOX_FOLDER = "VAADIN/resources/workbox/";
+    private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
     private String offlineHtml = "";
     private String manifestJson = "";
@@ -76,7 +77,7 @@ public class PwaRegistry implements Serializable {
         // Build pwa elements only if they are enabled
         if (pwaConfiguration.isEnabled()) {
             URL logo = servletContext
-                    .getResource(pwaConfiguration.relLogoPath());
+                    .getResource(pwaConfiguration.relIconPath());
             URL offlinePage = servletContext
                     .getResource(pwaConfiguration.relOfflinePath());
             // Load base logo from servlet context if available
@@ -94,7 +95,7 @@ public class PwaRegistry implements Serializable {
             offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
             offlineHash = offlineHtml.hashCode();
 
-            // Initialize manifest.json
+            // Initialize manifest.webmanifest
             manifestJson = initializeManifest().toJson();
 
             // Initialize sw.js
@@ -107,7 +108,7 @@ public class PwaRegistry implements Serializable {
 
     private List<PwaIcon> initializeIcons(BufferedImage baseImage,
             int bgColor) {
-        for (PwaIcon icon : getIconTemplates(pwaConfiguration.getLogoPath())) {
+        for (PwaIcon icon : getIconTemplates(pwaConfiguration.getIconPath())) {
             // New image with wanted size
             icon.setImage(drawIconImage(baseImage, bgColor, icon));
             // Store byte array and hashcode of image (GeneratedImage)
@@ -154,9 +155,9 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
-     * Creates manifest.json json object.
+     * Creates manifest.webmanifest json object.
      *
-     * @return manifest.json contents json object
+     * @return manifest.webmanifest contents json object
      */
     private JsonObject initializeManifest() {
         JsonObject manifestData = Json.createObject();
@@ -197,10 +198,12 @@ public class PwaRegistry implements Serializable {
 
         // Add offline page to precache
         filesToCahe.add(offlinePageCache());
+        // Add manifest to precache
+        filesToCahe.add(manifestCache());
 
         // Add user defined resources
         for (String resource : pwaConfiguration.getOfflineResources()) {
-            filesToCahe.add(String.format("{ url: '%s', revision: '%s' }",
+            filesToCahe.add(String.format(WORKBOX_CACHE_FORMAT,
                     resource.replaceAll("'", ""), servletContext.hashCode()));
         }
 
@@ -357,9 +360,9 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
-     * manifest.json contents as a String.
+     * manifest.webmanifest contents as a String.
      *
-     * @return contents of manifest.json
+     * @return contents of manifest.webmanifest
      */
     public String getManifestJson() {
         return manifestJson;
@@ -381,8 +384,13 @@ public class PwaRegistry implements Serializable {
      * @return Google Workbox cache resource String of offline page
      */
     public String offlinePageCache() {
-        return String.format("{ url: '%s', revision: '%s' }",
+        return String.format(WORKBOX_CACHE_FORMAT,
                 pwaConfiguration.getOfflinePath(), offlineHash);
+    }
+
+    private String manifestCache() {
+        return String.format(WORKBOX_CACHE_FORMAT,
+                pwaConfiguration.getManifestPath(), manifestJson.hashCode());
     }
 
     /**
@@ -404,9 +412,9 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
-     * List of {@link PwaIcon}:s that should be added to manifest.json.
+     * List of {@link PwaIcon}:s that should be added to manifest.webmanifest.
      *
-     * @return List of {@link PwaIcon}:s that should be added to manifest.json
+     * @return List of {@link PwaIcon}:s that should be added to manifest.webmanifest
      */
     public List<PwaIcon> getManifestIcons() {
         return getIcons(PwaIcon.Domain.MANIFEST);
