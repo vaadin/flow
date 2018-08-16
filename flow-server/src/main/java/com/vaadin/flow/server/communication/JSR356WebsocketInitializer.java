@@ -48,7 +48,6 @@ import com.vaadin.flow.server.VaadinServlet;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@WebListener
 public class JSR356WebsocketInitializer implements ServletContextListener {
 
     private static boolean atmosphereAvailable = false;
