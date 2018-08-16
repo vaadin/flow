@@ -58,6 +58,7 @@ public class PwaRegistry implements Serializable {
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
     public static final String WORKBOX_FOLDER = "VAADIN/resources/workbox/";
+    private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
     private String offlineHtml = "";
     private String manifestJson = "";
@@ -202,7 +203,7 @@ public class PwaRegistry implements Serializable {
 
         // Add user defined resources
         for (String resource : pwaConfiguration.getOfflineResources()) {
-            filesToCahe.add(String.format("{ url: '%s', revision: '%s' }",
+            filesToCahe.add(String.format(WORKBOX_CACHE_FORMAT,
                     resource.replaceAll("'", ""), servletContext.hashCode()));
         }
 
@@ -383,12 +384,12 @@ public class PwaRegistry implements Serializable {
      * @return Google Workbox cache resource String of offline page
      */
     public String offlinePageCache() {
-        return String.format("{ url: '%s', revision: '%s' }",
+        return String.format(WORKBOX_CACHE_FORMAT,
                 pwaConfiguration.getOfflinePath(), offlineHash);
     }
 
     private String manifestCache() {
-        return String.format("{ url: '%s', revision: '%s' }",
+        return String.format(WORKBOX_CACHE_FORMAT,
                 pwaConfiguration.getManifestPath(), manifestJson.hashCode());
     }
 
