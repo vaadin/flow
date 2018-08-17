@@ -214,6 +214,7 @@ public class Page implements Serializable {
         ui.getInternals().getDependencyList().add(dependency);
     }
 
+    // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser. The
      * given parameters will be available to the expression as variables named

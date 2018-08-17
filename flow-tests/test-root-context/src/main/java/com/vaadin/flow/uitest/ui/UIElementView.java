@@ -22,7 +22,7 @@ import com.vaadin.flow.router.Route;
 public class UIElementView extends AbstractDivView {
 
     public UIElementView() {
-        getPage().executeJavaScript(getJs(), getElement());
+        getElement().executeJavaScript(getJs());
 
         NativeButton attachElement = new NativeButton("Attach Element via JS",
                 event -> attachElement());
@@ -30,12 +30,12 @@ public class UIElementView extends AbstractDivView {
     }
 
     private void attachElement() {
-        getPage().executeJavaScript(getJs(), getElement());
+        getElement().executeJavaScript(getJs());
     }
 
     private String getJs() {
         return "var newElement = document.createElement('div');"
                 + "newElement.className='body-child';"
-                + "$0.appendChild(newElement);";
+                + "this.appendChild(newElement);";
     }
 }
