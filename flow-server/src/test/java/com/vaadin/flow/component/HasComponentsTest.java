@@ -44,9 +44,8 @@ public class HasComponentsTest {
         innerComponent.setId("insert-component-index");
         component.addComponentAtIndex(2, innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(),
-                component.getElement().getChild(2).getComponent().get()
-                        .getId());
+        Assert.assertEquals(innerComponent.getId(), component.getElement()
+                .getChild(2).getComponent().get().getId());
     }
 
     @Test
@@ -67,9 +66,45 @@ public class HasComponentsTest {
         innerComponent.setId("insert-component-index-greater");
         component.addComponentAtIndex(100, innerComponent);
         checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(), component.getElement()
-                .getChild((int) (component.getChildren().count() - 1))
-                .getComponent().get().getId());
+        Assert.assertEquals(innerComponent.getId(),
+                component.getElement()
+                        .getChild((int) (component.getChildren().count() - 1))
+                        .getComponent().get().getId());
+    }
+
+    @Test
+    public void remove_removeComponentWithNoParent() {
+        TestComponent component = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+
+        // No any exception is thrown
+        component.remove(innerComponent);
+    }
+
+    @Test
+    public void remove_removeComponentWithCorrectParent() {
+        TestComponent component = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+
+        long size = component.getChildren().count();
+
+        component.add(innerComponent);
+
+        component.remove(innerComponent);
+
+        Assert.assertEquals(size, component.getChildren().count());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void remove_removeComponentWithDifferentParent() {
+        TestComponent component = createTestStructure();
+
+        TestComponent another = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+
+        another.add(innerComponent);
+
+        component.remove(innerComponent);
     }
 
     private TestComponent createTestStructure() {
