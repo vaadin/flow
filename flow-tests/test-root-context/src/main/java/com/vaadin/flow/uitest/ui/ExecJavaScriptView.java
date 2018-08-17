@@ -45,8 +45,8 @@ public class ExecJavaScriptView extends AbstractDivView {
                 e -> {
                     Input input = new Input();
                     input.addClassName("newInput");
-                    UI.getCurrent().getPage().executeJavaScript("$0.value = $1",
-                            input, "Value from js");
+                    input.getElement().executeJavaScript("this.value=$0",
+                            "Value from js");
                     add(input);
                 });
         createElementButton.setId("createButton");

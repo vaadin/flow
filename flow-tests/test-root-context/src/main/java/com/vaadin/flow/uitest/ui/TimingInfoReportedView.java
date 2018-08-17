@@ -29,7 +29,7 @@ public class TimingInfoReportedView extends Div {
             + "function report(array){ "
             + "var div = document.createElement('div');"
             + "div.className='log';"
-            + "$0.appendChild(div); "
+            + "this.appendChild(div); "
             + "if (array.length != 5) { "
             + "  div.appendChild(document.createTextNode('ERROR: expected 5 values, got '+array.length())); "
             + "}"
@@ -49,10 +49,10 @@ public class TimingInfoReportedView extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        getUI().get().getPage().executeJavaScript(REPORT_TIMINGS, getElement());
+        getElement().executeJavaScript(REPORT_TIMINGS);
         NativeButton button = new NativeButton("test request");
-        button.addClickListener(event -> getUI().get().getPage()
-                .executeJavaScript(REPORT_TIMINGS, getElement()));
+        button.addClickListener(
+                event -> getElement().executeJavaScript(REPORT_TIMINGS));
         add(button);
     }
 
