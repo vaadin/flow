@@ -28,20 +28,20 @@ import java.io.Serializable;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class VaadinUriResolver implements Serializable{
+public abstract class VaadinUriResolver implements Serializable {
 
     /**
      * Translates a Vaadin URI to a URL that can be loaded by the browser. The
      * following URI schemes are supported:
      * <ul>
-     * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
+     * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code>
      * resolves to the application context root</li>
-     * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code> -
-     * resolves to the build path where web components were compiled. Browsers
+     * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
+     * - resolves to the build path where web components were compiled. Browsers
      * supporting ES6 can receive different, more optimized files than browsers
      * that only support ES5.</li>
-     * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
-     * resolves to the base URI of the page</li>
+     * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#BASE_PROTOCOL_PREFIX}</code>
+     * - resolves to the base URI of the page</li>
      * </ul>
      * Any other URI protocols, such as <code>http://</code> or
      * <code>https://</code> are passed through this method unmodified.
