@@ -93,6 +93,56 @@ public class SystemErrorHandler {
             return;
         }
 
+        Element systemErrorContainer = handleError(caption, message, details);
+        systemErrorContainer.addEventListener("click",
+                e -> WidgetUtil.redirect(url), false);
+
+        Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
+            int keyCode = ((KeyboardEvent) e).getKeyCode();
+            if (keyCode == KeyCode.ESC) {
+                WidgetUtil.redirect(url);
+            }
+        }, false);
+    }
+
+    /**
+     * Shows the given error message if not running in production mode and logs
+     * it to the console if running in production mode.
+     *
+     * @param errorMessage
+     *            the error message to show
+     */
+    public void handleError(String errorMessage) {
+        Console.error(errorMessage);
+        if (registry.getApplicationConfiguration().isProductionMode()) {
+            return;
+        }
+
+        Element errorContainer = handleError(null, errorMessage, null);
+        errorContainer.addEventListener("click", e -> {
+            // Allow user to dismiss the error by clicking it.
+            errorContainer.getParentElement().removeChild(errorContainer);
+        });
+    }
+
+    /**
+     * Shows an error message if not running in production mode and logs it to
+     * the console if running in production mode.
+     *
+     * @param throwable
+     *            the throwable which occurred
+     */
+    public void handleError(Throwable throwable) {
+        Throwable unwrappedThrowable = unwrapUmbrellaException(throwable);
+        if (unwrappedThrowable instanceof AssertionError) {
+            handleError("Assertion error: " + unwrappedThrowable.getMessage());
+        } else {
+            handleError(unwrappedThrowable.getMessage());
+        }
+    }
+
+    private Element handleError(String caption, String message,
+            String details) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
         systemErrorContainer.setClassName("v-system-error");
@@ -119,57 +169,8 @@ public class SystemErrorHandler {
             Console.error(details);
         }
 
-        systemErrorContainer.addEventListener("click",
-                e -> WidgetUtil.redirect(url), false);
-
-        document.addEventListener(Event.KEYDOWN, e -> {
-            int keyCode = ((KeyboardEvent) e).getKeyCode();
-            if (keyCode == KeyCode.ESC) {
-                WidgetUtil.redirect(url);
-            }
-        }, false);
-
         document.getBody().appendChild(systemErrorContainer);
-    }
-
-    /**
-     * Shows the given error message if not running in production mode and logs
-     * it to the console if running in production mode.
-     *
-     * @param errorMessage
-     *            the error message to show
-     */
-    public void handleError(String errorMessage) {
-        Console.error(errorMessage);
-        if (registry.getApplicationConfiguration().isProductionMode()) {
-            return;
-        }
-
-        Document document = Browser.getDocument();
-        Element errorContainer = document.createDivElement();
-        errorContainer.setClassName("v-system-error");
-        errorContainer.setTextContent(errorMessage);
-        errorContainer.addEventListener("click", e -> {
-            // Allow user to dismiss the error by clicking it.
-            errorContainer.getParentElement().removeChild(errorContainer);
-        });
-        document.getBody().appendChild(errorContainer);
-    }
-
-    /**
-     * Shows an error message if not running in production mode and logs it to
-     * the console if running in production mode.
-     *
-     * @param throwable
-     *            the throwable which occurred
-     */
-    public void handleError(Throwable throwable) {
-        Throwable unwrappedThrowable = unwrapUmbrellaException(throwable);
-        if (unwrappedThrowable instanceof AssertionError) {
-            handleError("Assertion error: " + unwrappedThrowable.getMessage());
-        } else {
-            handleError(unwrappedThrowable.getMessage());
-        }
+        return systemErrorContainer;
     }
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
