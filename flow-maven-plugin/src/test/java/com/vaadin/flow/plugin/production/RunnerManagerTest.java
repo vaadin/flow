@@ -20,7 +20,6 @@ import java.io.File;
 import java.util.Collections;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,46 +27,26 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.common.RunnerManager;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class RunnerManagerTest {
 
     private final ProxyConfig proxyConfig = new ProxyConfig(
             Collections.emptyList());
-    private final String nodeVersion = "v8.11.1";
-    private final String yarnVersion = "v1.6.0";
 
     @Rule
-    public final ExpectedException exception = ExpectedException.none();
+    public ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public TemporaryFolder donwloadDirectory = new TemporaryFolder();
+    public TemporaryFolder downloadDirectory = new TemporaryFolder();
 
     @Test
-    public void getLocalRunnerManagerWithoutInstalling()
-            throws TaskRunnerException {
+    public void getLocalRunnerManagerWithoutInstalling() {
         File nonExistingFile = new File("desNotExist");
-        new RunnerManager(donwloadDirectory.getRoot(), proxyConfig,
+        new RunnerManager(downloadDirectory.getRoot(), proxyConfig,
                 nonExistingFile, nonExistingFile);
 
-        assertTrue("In the local mode, no file is downloaded!",
-                donwloadDirectory.getRoot().list().length == 0);
-    }
-
-    @Test
-    public void getRunnerManagerInstalling() {
-        try {
-            RunnerManager runnerManager = new RunnerManager(
-                    donwloadDirectory.getRoot(), proxyConfig, nodeVersion,
-                    yarnVersion);
-            // in the case that node and yarn are installed correctly, the
-            // download directory should not be empty
-            assertTrue(
-                    "In the installation mode, node and yarn(files) should be downloaded!",
-                    donwloadDirectory.getRoot().list().length > 0);
-        } catch (IllegalStateException e) {
-            // skip: it was not possible to install node and yarn.
-        }
-
+        assertEquals("In the local mode, no file should be downloaded", 0,
+                downloadDirectory.getRoot().list().length);
     }
 }
