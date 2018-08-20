@@ -21,8 +21,6 @@ import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.Objects;
 
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 
 /**
@@ -39,23 +37,14 @@ public class TranspilationStep {
      *
      * @param frontendToolsManager
      *            the manager to be used to transpile files, not {@code null}
-     * @param proxyConfig
-     *            proxy config to use when downloading frontend tools, not
-     *            {@code null}
-     * @param nodeVersion
-     *            node version to install, not {@code null}
-     * @param yarnVersion
-     *            yarn version to install, not {@code null}
      * @param networkConcurrency
      *            maximum number of concurrent network requests
      */
     public TranspilationStep(FrontendToolsManager frontendToolsManager,
-            ProxyConfig proxyConfig, String nodeVersion, String yarnVersion,
             int networkConcurrency) {
         this.frontendToolsManager = Objects
                 .requireNonNull(frontendToolsManager);
-        frontendToolsManager.installFrontendTools(proxyConfig, nodeVersion,
-                yarnVersion, networkConcurrency);
+        frontendToolsManager.installFrontendTools(networkConcurrency);
     }
 
     /**

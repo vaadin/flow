@@ -28,14 +28,12 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Entity to operate frontend tools to transpile files.
@@ -80,6 +78,8 @@ public class FrontendToolsManager {
      * @param frontendDataProvider
      *            the source of the files required by the
      *            {@link FrontendToolsManager}, not {@code null}
+     * @param runnerManager
+     *            node, gulp and yarn runner
      */
     public FrontendToolsManager(File workingDirectory,
             String es5OutputDirectoryName, String es6OutputDirectoryName,
@@ -87,7 +87,7 @@ public class FrontendToolsManager {
             RunnerManager runnerManager) {
         FlowPluginFileUtils
                 .forceMkdir(Objects.requireNonNull(workingDirectory));
-        this.runnerManager = runnerManager;
+        this.runnerManager = Objects.requireNonNull(runnerManager);
         this.workingDirectory = workingDirectory;
         this.es5OutputDirectoryName = Objects
                 .requireNonNull(es5OutputDirectoryName);
@@ -98,22 +98,12 @@ public class FrontendToolsManager {
     }
 
     /**
-     * Installs tools required for transpilation. Tools installed are:
-     * <ul>
-     * <li><a href="https://github.com/nodejs/node">node</a></li>
-     * <li><a href="https://github.com/yarnpkg/yarn">yarn</a></li>
-     * <li><a href="https://github.com/gulpjs/gulp">gulp</a></li>
-     * </ul>
-     * Additionally, {@literal gulpfile.js} file that is used for installation
-     * and transpilation via {@literal gulp}.
+     * Installs tools required for transpilation.
+     * 
+     * Tools installed are specified in the {@literal package.json} file in the
+     * plugin project's resources directory. Additionally, copies numerous files
+     * required for transpilation into the working directory.
      *
-     * @param proxyConfig
-     *            proxy config to use when downloading frontend tools, not
-     *            {@code null}
-     * @param nodeVersion
-     *            node version, not {@code null}
-     * @param yarnVersion
-     *            yarn version, not {@code null}
      * @param networkConcurrency
      *            maximum number of concurrent network requests
      *
@@ -122,14 +112,9 @@ public class FrontendToolsManager {
      * @throws UncheckedIOException
      *             if supplementary file creation fails
      */
-    public void installFrontendTools(ProxyConfig proxyConfig,
-            String nodeVersion, String yarnVersion, int networkConcurrency) {
+    public void installFrontendTools(int networkConcurrency) {
         LOGGER.info("Installing required frontend tools to '{}'",
                 workingDirectory);
-        Objects.requireNonNull(proxyConfig);
-        Objects.requireNonNull(nodeVersion);
-        Objects.requireNonNull(yarnVersion);
-
         createFileFromTemplateResource("package.json", Collections.emptyMap());
         createFileFromTemplateResource("yarn.lock", Collections.emptyMap());
         try {

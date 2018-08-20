@@ -38,6 +38,8 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
@@ -53,6 +55,8 @@ import com.vaadin.flow.plugin.production.TranspilationStep;
  */
 @Mojo(name = "package-for-production", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class PackageForProductionMojo extends AbstractMojo {
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(PackageForProductionMojo.class);
 
     /**
      * Directory where the source files to use for transpilation are located.
@@ -208,25 +212,29 @@ public class PackageForProductionMojo extends AbstractMojo {
                 new AnnotationValuesExtractor(getProjectClassPathUrls()),
                 bundleConfiguration, getFragmentsData(fragments));
 
-        RunnerManager runnerManager;
-        if (nodePath == null || yarnPath == null) {
-            runnerManager = new RunnerManager(transpileWorkingDirectory,
-                    getProxyConfig(), nodeVersion, yarnVersion);
-        } else {
-            getLog().info("Using local node: " + nodePath);
-            getLog().info("Using local yarn: " + yarnPath);
-            runnerManager = new RunnerManager(transpileWorkingDirectory,
-                    getProxyConfig(), nodePath, yarnPath);
-        }
-
         FrontendToolsManager frontendToolsManager = new FrontendToolsManager(
                 transpileWorkingDirectory, es5OutputDirectoryName,
-                es6OutputDirectoryName, frontendDataProvider, runnerManager);
+                es6OutputDirectoryName, frontendDataProvider,
+                getRunnerManager());
 
-        new TranspilationStep(frontendToolsManager, getProxyConfig(),
-                nodeVersion, yarnVersion, yarnNetworkConcurrency)
-                        .transpileFiles(transpileEs6SourceDirectory,
-                                transpileOutputDirectory, skipEs5);
+        new TranspilationStep(frontendToolsManager, yarnNetworkConcurrency)
+                .transpileFiles(transpileEs6SourceDirectory,
+                        transpileOutputDirectory, skipEs5);
+    }
+
+    private RunnerManager getRunnerManager() {
+        if (nodePath == null || yarnPath == null) {
+            LOGGER.debug(
+                    "Either nodePath or yarnPath are not specified, downloading and using standalone ones, node: '{}', yarn: '{}'",
+                    nodeVersion, yarnVersion);
+            return new RunnerManager(transpileWorkingDirectory,
+                    getProxyConfig(), nodeVersion, yarnVersion);
+        } else {
+            LOGGER.debug("Using node at path '{}' and yarn at path '{}'",
+                    nodePath, yarnPath);
+            return new RunnerManager(transpileWorkingDirectory,
+                    getProxyConfig(), nodePath, yarnPath);
+        }
     }
 
     private Map<String, Set<String>> getFragmentsData(
