@@ -33,12 +33,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
-import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
-import com.github.eirslett.maven.plugins.frontend.lib.NodeInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
-import com.github.eirslett.maven.plugins.frontend.lib.YarnInstaller;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -63,7 +59,7 @@ public class FrontendToolsManager {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(FrontendToolsManager.class);
 
-    private final FrontendPluginFactory factory;
+    private final RunnerManager runnerManager;
     private final File workingDirectory;
     private final String es5OutputDirectoryName;
     private final String es6OutputDirectoryName;
@@ -87,11 +83,11 @@ public class FrontendToolsManager {
      */
     public FrontendToolsManager(File workingDirectory,
             String es5OutputDirectoryName, String es6OutputDirectoryName,
-            FrontendDataProvider frontendDataProvider) {
+            FrontendDataProvider frontendDataProvider,
+            RunnerManager runnerManager) {
         FlowPluginFileUtils
                 .forceMkdir(Objects.requireNonNull(workingDirectory));
-        this.factory = new FrontendPluginFactory(workingDirectory,
-                workingDirectory);
+        this.runnerManager = runnerManager;
         this.workingDirectory = workingDirectory;
         this.es5OutputDirectoryName = Objects
                 .requireNonNull(es5OutputDirectoryName);
@@ -137,22 +133,15 @@ public class FrontendToolsManager {
         createFileFromTemplateResource("package.json", Collections.emptyMap());
         createFileFromTemplateResource("yarn.lock", Collections.emptyMap());
         try {
-            factory.getNodeInstaller(proxyConfig).setNodeVersion(nodeVersion)
-                    .setNodeDownloadRoot(
-                            NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
-                    .install();
-            factory.getYarnInstaller(proxyConfig).setYarnVersion(yarnVersion)
-                    .setYarnDownloadRoot(
-                            YarnInstaller.DEFAULT_YARN_DOWNLOAD_ROOT)
-                    .install();
+
             StringBuilder args = new StringBuilder("install");
             if (networkConcurrency >= 0) {
                 args.append(" --network-concurrency ");
                 args.append(networkConcurrency);
             }
-            factory.getYarnRunner(proxyConfig, null).execute(args.toString(),
+            runnerManager.getYarnRunner().execute(args.toString(),
                     Collections.emptyMap());
-        } catch (InstallationException | TaskRunnerException e) {
+        } catch (TaskRunnerException e) {
             throw new IllegalStateException(
                     "Failed to install required frontend dependencies", e);
         }
@@ -246,13 +235,13 @@ public class FrontendToolsManager {
 
         Map<String, File> transpilationResults = new HashMap<>();
         try {
-            factory.getGulpRunner().execute("build_es6",
+            runnerManager.getGulpRunner().execute("build_es6",
                     Collections.emptyMap());
             addTranspilationResult(transpilationResults, outputDirectory,
                     es6OutputDirectoryName);
 
             if (!skipEs5) {
-                factory.getGulpRunner().execute("build_es5",
+                runnerManager.getGulpRunner().execute("build_es5",
                         Collections.emptyMap());
                 addTranspilationResult(transpilationResults, outputDirectory,
                         es5OutputDirectoryName);

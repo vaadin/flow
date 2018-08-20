@@ -43,6 +43,7 @@ import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
+import com.vaadin.flow.plugin.common.RunnerManager;
 import com.vaadin.flow.plugin.production.TranspilationStep;
 
 /**
@@ -62,13 +63,16 @@ public class PackageForProductionMojo extends AbstractMojo {
     private File transpileEs6SourceDirectory;
 
     /**
-     * The directory where we process the files from. The default is <code>${project.build}</code>.
+     * The directory where we process the files from. The default is
+     * <code>${project.build}</code>.
      */
     @Parameter(name = "transpileWorkingDirectory", defaultValue = "${project.build.directory}/", required = true)
     private File transpileWorkingDirectory;
 
     /**
-     * Target base directory where the transpilation output should be stored. The default is <code>${project.build.directory}/${project.build.finalName}</code>.
+     * Target base directory where the transpilation output should be stored.
+     * The default is
+     * <code>${project.build.directory}/${project.build.finalName}</code>.
      */
     @Parameter(name = "transpileOutputDirectory")
     private File transpileOutputDirectory;
@@ -104,16 +108,16 @@ public class PackageForProductionMojo extends AbstractMojo {
     private boolean bundle;
 
     /**
-     * If <code>false</code> the ES5 and ES6 code will not be minified. This will help in
-     * debugging if there are JS exception in runtime.
+     * If <code>false</code> the ES5 and ES6 code will not be minified. This
+     * will help in debugging if there are JS exception in runtime.
      */
     @Parameter(property = "minify", defaultValue = "true", required = true)
     private boolean minify;
 
     /**
-     * If <code>false</code> then the bundle will not receive a hash for the content. This
-     * will make the bundle not update on content change after it is cached in
-     * the browser.
+     * If <code>false</code> then the bundle will not receive a hash for the
+     * content. This will make the bundle not update on content change after it
+     * is cached in the browser.
      */
     @Parameter(property = "hash", defaultValue = "true", required = true)
     private boolean hash;
@@ -125,10 +129,22 @@ public class PackageForProductionMojo extends AbstractMojo {
     private File bundleConfiguration;
 
     /**
+     * Defines the node path.
+     */
+    @Parameter(name = "nodePath")
+    private File nodePath;
+
+    /**
      * Defines the node version. The default is <code>v8.11.1</code>.
      */
     @Parameter(name = "nodeVersion", defaultValue = "v8.11.1", required = true)
     private String nodeVersion;
+
+    /**
+     * Defines the node path.
+     */
+    @Parameter(name = "yarnPath")
+    private File yarnPath;
 
     /**
      * Defines the yarn version.The default is <code>v1.6.0</code>.
@@ -143,7 +159,8 @@ public class PackageForProductionMojo extends AbstractMojo {
     private int yarnNetworkConcurrency;
 
     /**
-     * If <code>false</code> then maven proxies will be used in the ProxyConfiguration.
+     * If <code>false</code> then maven proxies will be used in the
+     * ProxyConfiguration.
      */
     @Parameter(property = "ignoreMavenProxies", defaultValue = "true", required = true)
     private boolean ignoreMavenProxies;
@@ -168,13 +185,16 @@ public class PackageForProductionMojo extends AbstractMojo {
     public void execute() {
 
         if (transpileOutputDirectory == null) {
-            if ("jar".equals(project.getPackaging())
-                    && project.getArtifactMap().containsKey("com.vaadin:vaadin-spring-boot-starter")) {
+            if ("jar".equals(project.getPackaging()) && project.getArtifactMap()
+                    .containsKey("com.vaadin:vaadin-spring-boot-starter")) {
                 // in spring boot project there is not web app directory
-                transpileOutputDirectory = new File(project.getBuild().getOutputDirectory(), "META-INF/resources");
+                transpileOutputDirectory = new File(
+                        project.getBuild().getOutputDirectory(),
+                        "META-INF/resources");
             } else {
                 // the default assumes basic war project
-                transpileOutputDirectory = new File(project.getBuild().getDirectory(),
+                transpileOutputDirectory = new File(
+                        project.getBuild().getDirectory(),
                         project.getBuild().getFinalName());
             }
         }
@@ -183,13 +203,26 @@ public class PackageForProductionMojo extends AbstractMojo {
                 bundle, minify, hash, transpileEs6SourceDirectory,
                 new AnnotationValuesExtractor(getProjectClassPathUrls()),
                 bundleConfiguration, getFragmentsData(fragments));
+
+        RunnerManager runnerManager;
+        if (nodePath == null || yarnPath == null) {
+            runnerManager = new RunnerManager(transpileWorkingDirectory,
+                    getProxyConfig(), nodeVersion, yarnVersion);
+        } else {
+            getLog().info("Using local node: " + nodePath);
+            getLog().info("Using local yarn: " + yarnPath);
+            runnerManager = new RunnerManager(transpileWorkingDirectory,
+                    getProxyConfig(), nodePath, yarnPath);
+        }
+
         FrontendToolsManager frontendToolsManager = new FrontendToolsManager(
                 transpileWorkingDirectory, es5OutputDirectoryName,
-                es6OutputDirectoryName, frontendDataProvider);
+                es6OutputDirectoryName, frontendDataProvider, runnerManager);
+
         new TranspilationStep(frontendToolsManager, getProxyConfig(),
                 nodeVersion, yarnVersion, yarnNetworkConcurrency)
-                .transpileFiles(transpileEs6SourceDirectory,
-                        transpileOutputDirectory, skipEs5);
+                        .transpileFiles(transpileEs6SourceDirectory,
+                                transpileOutputDirectory, skipEs5);
     }
 
     private Map<String, Set<String>> getFragmentsData(
@@ -197,7 +230,7 @@ public class PackageForProductionMojo extends AbstractMojo {
         return Optional.ofNullable(mavenFragments)
                 .orElse(Collections.emptyList()).stream()
                 .peek(this::verifyFragment).collect(Collectors
-                .toMap(Fragment::getName, Fragment::getFiles));
+                        .toMap(Fragment::getName, Fragment::getFiles));
     }
 
     private void verifyFragment(Fragment fragment) {
@@ -229,7 +262,7 @@ public class PackageForProductionMojo extends AbstractMojo {
         return new ProxyConfig(getMavenProxies().stream()
                 .filter(Proxy::isActive)
                 .map(proxy -> decrypter
-                .decrypt(new DefaultSettingsDecryptionRequest(proxy)))
+                        .decrypt(new DefaultSettingsDecryptionRequest(proxy)))
                 .map(SettingsDecryptionResult::getProxy).map(this::createProxy)
                 .collect(Collectors.toList()));
     }

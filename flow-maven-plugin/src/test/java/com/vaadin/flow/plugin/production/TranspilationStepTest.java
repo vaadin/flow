@@ -1,3 +1,19 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.plugin.production;
 
 import static org.junit.Assert.assertEquals;
@@ -23,9 +39,11 @@ import org.junit.rules.TemporaryFolder;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.google.common.collect.ImmutableMap;
+
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
+import com.vaadin.flow.plugin.common.RunnerManager;
 
 /**
  * @author Vaadin Ltd
@@ -53,11 +71,15 @@ public class TranspilationStepTest {
         when(frontendDataProviderMock.createFragmentFiles(outputDirectory))
                 .thenReturn(Collections.singleton("fragment"));
 
+        RunnerManager runnerManagerMock = mock(RunnerManager.class);
         FrontendToolsManager frontendToolsManager = spy(
                 new FrontendToolsManager(outputDirectory, "frontend-es5",
-                        "frontend-es6", frontendDataProviderMock));
+                        "frontend-es6", frontendDataProviderMock,
+                        runnerManagerMock));
+
         doNothing().when(frontendToolsManager).installFrontendTools(proxyConfig,
                 nodeVersion, yarnVersion, networkConcurrency);
+
         return frontendToolsManager;
     }
 
