@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -38,7 +39,6 @@ import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
@@ -129,27 +129,31 @@ public class PackageForProductionMojo extends AbstractMojo {
     private File bundleConfiguration;
 
     /**
-     * Defines the node path.
+     * Defines the path to node executable to use. If specified,
+     * {@code nodeVersion} parameter is ignored.
      */
     @Parameter(name = "nodePath")
     private File nodePath;
 
     /**
-     * Defines the node version. The default is <code>v8.11.1</code>.
+     * Defines the node version to download and use, if {@code nodePath} is not
+     * set. The default is <code>v8.11.1</code>.
      */
-    @Parameter(name = "nodeVersion", defaultValue = "v8.11.1", required = true)
+    @Parameter(name = "nodeVersion", defaultValue = "v8.11.1")
     private String nodeVersion;
 
     /**
-     * Defines the node path.
+     * Defines the path to yarn executable to use. If specified,
+     * {@code yarnVersion} parameter is ignored.
      */
     @Parameter(name = "yarnPath")
     private File yarnPath;
 
     /**
-     * Defines the yarn version.The default is <code>v1.6.0</code>.
+     * Defines the yarn version to download and use, if {@code yarnVersion} is
+     * not set. The default is <code>v1.6.0</code>.
      */
-    @Parameter(name = "yarnVersion", defaultValue = "v1.6.0", required = true)
+    @Parameter(name = "yarnVersion", defaultValue = "v1.6.0")
     private String yarnVersion;
 
     /**
