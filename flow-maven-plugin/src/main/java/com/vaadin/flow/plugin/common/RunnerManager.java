@@ -31,36 +31,28 @@ import com.github.eirslett.maven.plugins.frontend.lib.YarnInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnRunner;
 
 /**
- * Creates and configures the runners used by the FrontendToolsManager,
+ * Creates and configures the runners used by the {@link FrontendToolsManager},
  * providing an extra layer of abstraction.
  *
  * RunnerManager can be used to grab the local node and yarn from the local
  * environment or to download and install them.
  */
 public class RunnerManager {
-
-    /**
-     * It is used in the installation of the dependencies.
-     */
     private final YarnRunner yarnRunner;
-
-    /**
-     * It is used in the transpilation process.
-     */
     private final GulpRunner gulpRunner;
 
     /**
-     * Creates the yarn and gulp runners downloading it dependencies(node and
-     * yarn).
+     * Initializes the manager, downloading node and yarn of the versions
+     * specified.
      * 
      * @param workingDirectory
-     *            working directory
+     *            the directory to install and run the tools into
      * @param proxyConfig
-     *            proxy configuration
+     *            the configuration used when installing and running the tools
      * @param nodeVersion
-     *            node version
+     *            node version to install
      * @param yarnVersion
-     *            yarn version
+     *            yarn version to install
      */
     public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
             String nodeVersion, String yarnVersion) {
@@ -84,17 +76,17 @@ public class RunnerManager {
     }
 
     /**
-     * Creates the yarn runner and gulp runners with out downloading node and
+     * Initializes the manager using the paths to locally installed node and
      * yarn.
      * 
      * @param workingDirectory
-     *            working directory
+     *            the directory to run the tools into
      * @param proxyConfig
-     *            proxy configuration
+     *            the configuration used when running the tools
      * @param nodePath
-     *            file which contains node
+     *            the path to locally installed node
      * @param yarnPath
-     *            file which contains yarn
+     *            the path to locally installed yarn
      */
     public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
             File nodePath, File yarnPath) {
