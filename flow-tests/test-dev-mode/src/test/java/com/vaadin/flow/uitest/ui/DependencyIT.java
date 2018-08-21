@@ -140,7 +140,8 @@ public class DependencyIT extends ChromeBrowserTest {
     }
 
     private List<String> getMessages() {
-        List<WebElement> elements = findElements(By.className("message"));
+        List<WebElement> elements = findElements(
+                By.xpath("html/body/*[@class='message']"));
         List<String> messages = new ArrayList<>();
         for (WebElement element : elements) {
             messages.add(element.getText());
