@@ -113,8 +113,8 @@ public class SystemErrorHandler {
      *            the error message to show
      */
     public void handleError(String errorMessage) {
-        Console.error(errorMessage);
         if (registry.getApplicationConfiguration().isProductionMode()) {
+            Console.error(errorMessage);
             return;
         }
 
