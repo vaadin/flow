@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.EmptyChange;
@@ -43,7 +44,92 @@ public abstract class NodeMap extends NodeFeature {
     private static final Serializable REMOVED_MARKER = new UniqueSerializable() {
     };
 
-    private Map<String, Serializable> values;
+    private interface Values extends Serializable {
+        int size();
+
+        Serializable get(String key);
+
+        Set<String> keySet();
+
+        boolean containsKey(String key);
+
+        default boolean isEmpty() {
+            return size() == 0;
+        }
+
+        Stream<Serializable> streamValues();
+    }
+
+    private static class SingleValue implements Values {
+
+        private final String key;
+
+        private Serializable value;
+
+        public SingleValue(String key, Serializable value) {
+            assert key != null;
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public int size() {
+            return 1;
+        }
+
+        @Override
+        public Serializable get(String key) {
+            if (containsKey(key)) {
+                return value;
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public Set<String> keySet() {
+            return Collections.singleton(key);
+        }
+
+        @Override
+        public boolean containsKey(String key) {
+            return this.key.equals(key);
+        }
+
+        @Override
+        public Stream<Serializable> streamValues() {
+            return Stream.of(value);
+        }
+    }
+
+    private static class HashMapValues extends HashMap<String, Serializable>
+            implements Values {
+
+        public HashMapValues(Values previousValues) {
+            super(previousValues == null ? 0 : previousValues.size());
+            if (previousValues != null) {
+                previousValues.keySet()
+                        .forEach(key -> put(key, previousValues.get(key)));
+            }
+        }
+
+        @Override
+        public Serializable get(String key) {
+            return super.get(key);
+        }
+
+        @Override
+        public boolean containsKey(String key) {
+            return super.containsKey(key);
+        }
+
+        @Override
+        public Stream<Serializable> streamValues() {
+            return values().stream();
+        }
+    }
+
+    private Values values;
 
     private boolean isPopulated;
 
@@ -71,12 +157,6 @@ public abstract class NodeMap extends NodeFeature {
         put(key, value, true);
     }
 
-    private void ensureValues() {
-        if (values == null) {
-            values = new HashMap<>();
-        }
-    }
-
     /**
      * Stores a value with the given key, replacing any value previously stored
      * with the same key.
@@ -101,8 +181,16 @@ public abstract class NodeMap extends NodeFeature {
         } else {
             setUnChanged(key);
         }
-        ensureValues();
-        values.put(key, value);
+
+        // Optimize memory use when there's only one key
+        if (values == null) {
+            values = new SingleValue(key, value);
+        } else {
+            if (!(values instanceof HashMapValues)) {
+                values = new HashMapValues(values);
+            }
+            ((HashMapValues) values).put(key, value);
+        }
 
         detatchPotentialChild(oldValue);
 
@@ -236,14 +324,27 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected Serializable remove(String key) {
         setChanged(key);
+        Serializable oldValue;
+
         if (values == null) {
             return null;
+        } else if (values instanceof SingleValue) {
+            oldValue = values.get(key);
+            if (values.containsKey(key)) {
+                values = null;
+            }
+        } else {
+            assert values instanceof HashMapValues;
+            HashMapValues hashMapValues = (HashMapValues) values;
+            oldValue = hashMapValues.remove(key);
+
+            if (hashMapValues.isEmpty()) {
+                values = null;
+            }
         }
-        Serializable oldValue = values.remove(key);
+
         detatchPotentialChild(oldValue);
-        if (values.isEmpty()) {
-            values = null;
-        }
+
         return oldValue;
     }
 
@@ -343,7 +444,7 @@ public abstract class NodeMap extends NodeFeature {
         }
         assert !values.isEmpty();
 
-        values.values().stream().filter(v -> v instanceof StateNode)
+        values.streamValues().filter(v -> v instanceof StateNode)
                 .forEach(v -> action.accept((StateNode) v));
     }
 
