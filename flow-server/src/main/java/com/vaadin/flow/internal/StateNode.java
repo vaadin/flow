@@ -25,12 +25,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
@@ -55,14 +56,83 @@ import com.vaadin.flow.shared.Registration;
  * @since 1.0
  */
 public class StateNode implements Serializable {
+    private static class FeatureSetKey implements Serializable {
+        private final Set<Class<? extends NodeFeature>> reportedFeatures;
+        private final Set<Class<? extends NodeFeature>> nonReportableFeatures;
+
+        public FeatureSetKey(
+                Collection<Class<? extends NodeFeature>> reportableFeatureTypes,
+                Class<? extends NodeFeature>[] additionalFeatureTypes) {
+            reportedFeatures = new HashSet<>(reportableFeatureTypes);
+            nonReportableFeatures = Stream.of(additionalFeatureTypes)
+                    /*
+                     * Should preferably require consistency in whether
+                     * reportable are also included in additional, but this is
+                     * not practical since both alternatives are currently used
+                     * in different implementations.
+                     */
+                    .filter(type -> !reportableFeatureTypes.contains(type))
+                    .collect(Collectors.toSet());
+
+            assert !nonReportableFeatures.removeAll(
+                    reportedFeatures) : "No reportable feature should also be non-reportable";
+            assert !reportedFeatures.removeAll(
+                    nonReportableFeatures) : "No non-reportable feature should also be reportable";
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(reportedFeatures, nonReportableFeatures);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            } else if (obj instanceof FeatureSetKey) {
+                FeatureSetKey that = (FeatureSetKey) obj;
+                return that.nonReportableFeatures.equals(nonReportableFeatures)
+                        && that.reportedFeatures.equals(reportedFeatures);
+            } else {
+                return false;
+            }
+        }
+
+        public Stream<Class<? extends NodeFeature>> getAllFeatures() {
+            return Stream.concat(nonReportableFeatures.stream(),
+                    reportedFeatures.stream());
+        }
+    }
+
+    private static class FeatureSet implements Serializable {
+        private final Set<Class<? extends NodeFeature>> reportedFeatures;
+
+        /**
+         * Maps from a node feature type to its index in the {@link #features}
+         * array. This instance is cached per unique set of used node feature
+         * types in {@link #featureSetCache}.
+         */
+        private final Map<Class<? extends NodeFeature>, Integer> mappings = new HashMap<>();
+
+        public FeatureSet(FeatureSetKey featureSetKey) {
+            reportedFeatures = featureSetKey.reportedFeatures;
+
+            featureSetKey.getAllFeatures().forEach(
+                    key -> mappings.put(key, Integer.valueOf(mappings.size())));
+        }
+    }
+
     /**
      * Cache of immutable node feature type set instances.
      */
-    private static final Map<Set<Class<? extends NodeFeature>>, Set<Class<? extends NodeFeature>>> nodeFeatureSetCache = new ConcurrentHashMap<>();
+    private static final Map<FeatureSetKey, FeatureSet> featureSetCache = new ConcurrentHashMap<>();
 
-    private final Map<Class<? extends NodeFeature>, NodeFeature> features = new HashMap<>();
+    private final FeatureSet featureSet;
 
-    private final Set<Class<? extends NodeFeature>> reportedFeatures;
+    /**
+     * Node feature instances for this node.
+     */
+    private final NodeFeature[] features;
 
     private Map<Class<? extends NodeFeature>, Serializable> changes;
 
@@ -106,7 +176,7 @@ public class StateNode implements Serializable {
      */
     @SuppressWarnings("unchecked")
     public StateNode(StateNode node) {
-        this(new ArrayList<>(node.reportedFeatures),
+        this(new ArrayList<>(node.featureSet.reportedFeatures),
                 getNonRepeatebleFeatures(node));
     }
 
@@ -117,32 +187,22 @@ public class StateNode implements Serializable {
      * @param reportableFeatureTypes
      *            the list of the features that are required on the client side
      *            (populated even if they are empty)
-     * @param nonReportableFeatureTypes
-     *            a collection of feature classes that the node should support
+     * @param additionalFeatureTypes
+     *            a collection of feature classes that the node should support.
+     *            May, but is not required to, also include reportable feature
+     *            types.
      */
     @SafeVarargs
     public StateNode(List<Class<? extends NodeFeature>> reportableFeatureTypes,
-            Class<? extends NodeFeature>... nonReportableFeatureTypes) {
-        reportedFeatures = getCachedFeatureSet(reportableFeatureTypes);
-        Stream.concat(reportableFeatureTypes.stream(),
-                Stream.of(nonReportableFeatureTypes)).forEach(this::addFeature);
-    }
+            Class<? extends NodeFeature>... additionalFeatureTypes) {
+        featureSet = featureSetCache
+                .computeIfAbsent(new FeatureSetKey(reportableFeatureTypes,
+                        additionalFeatureTypes), FeatureSet::new);
 
-    private static Set<Class<? extends NodeFeature>> getCachedFeatureSet(
-            Collection<Class<? extends NodeFeature>> reportableFeatureTypes) {
-        Set<Class<? extends NodeFeature>> keyAndValue = Collections
-                .unmodifiableSet(new HashSet<>(reportableFeatureTypes));
-
-        Set<Class<? extends NodeFeature>> currentValue = nodeFeatureSetCache
-                .putIfAbsent(keyAndValue, keyAndValue);
-
-        if (currentValue == null) {
-            // If we put the value there
-            return keyAndValue;
-        } else {
-            // If there was already a value there
-            return currentValue;
-        }
+        features = new NodeFeature[featureSet.mappings.size()];
+        featureSet.mappings.forEach((featureType,
+                index) -> features[index.intValue()] = NodeFeatureRegistry
+                        .create(featureType, this));
     }
 
     /**
@@ -252,7 +312,13 @@ public class StateNode implements Serializable {
     }
 
     private void forEachChild(Consumer<StateNode> action) {
-        getFeatures().values().forEach(n -> n.forEachChild(action));
+        forEachFeature(n -> n.forEachChild(action));
+    }
+
+    private void forEachFeature(Consumer<NodeFeature> action) {
+        for (NodeFeature feature : features) {
+            action.accept(feature);
+        }
     }
 
     /**
@@ -281,11 +347,14 @@ public class StateNode implements Serializable {
     public <T extends NodeFeature> T getFeature(Class<T> featureType) {
         assert featureType != null;
 
-        NodeFeature feature = getFeatures().get(featureType);
-        if (feature == null) {
+        Integer featureIndex = featureSet.mappings.get(featureType);
+        if (featureIndex == null) {
             throw new IllegalStateException(
                     "Node does not have the feature " + featureType);
         }
+
+        NodeFeature feature = features[featureIndex.intValue()];
+        assert feature != null;
 
         return featureType.cast(feature);
     }
@@ -301,7 +370,7 @@ public class StateNode implements Serializable {
     public boolean hasFeature(Class<? extends NodeFeature> featureType) {
         assert featureType != null;
 
-        return getFeatures().containsKey(featureType);
+        return featureSet.mappings.containsKey(featureType);
     }
 
     /**
@@ -366,8 +435,7 @@ public class StateNode implements Serializable {
 
                 // Make all changes show up as if the node was recently attached
                 clearChanges();
-                getFeatures().values()
-                        .forEach(NodeFeature::generateChangesFromEmpty);
+                forEachFeature(NodeFeature::generateChangesFromEmpty);
             } else {
                 collector.accept(new NodeDetachChange(this));
             }
@@ -381,15 +449,15 @@ public class StateNode implements Serializable {
             if (isInitialChanges) {
                 // send only required (reported) features updates
                 Stream<NodeFeature> initialFeatures = Stream
-                        .concat(getFeatures().entrySet().stream().filter(
-                                entry -> isReportedFeature(entry.getKey()))
-                                .map(Entry::getValue), getDisalowFeatures());
+                        .concat(featureSet.mappings.keySet().stream()
+                                .filter(this::isReportedFeature)
+                                .map(this::getFeature), getDisalowFeatures());
                 doCollectChanges(collector, initialFeatures);
             } else {
                 doCollectChanges(collector, getDisalowFeatures());
             }
         } else {
-            doCollectChanges(collector, getFeatures().values().stream());
+            doCollectChanges(collector, Stream.of(features));
         }
     }
 
@@ -575,7 +643,7 @@ public class StateNode implements Serializable {
             copy.forEach(Command::execute);
         }
 
-        getFeatures().values().forEach(f -> f.onAttach(initialAttach));
+        forEachFeature(f -> f.onAttach(initialAttach));
     }
 
     private void fireDetachListeners() {
@@ -585,7 +653,7 @@ public class StateNode implements Serializable {
             copy.forEach(Command::execute);
         }
 
-        getFeatures().values().forEach(NodeFeature::onDetach);
+        forEachFeature(NodeFeature::onDetach);
     }
 
     /**
@@ -644,7 +712,7 @@ public class StateNode implements Serializable {
      * @return whether the feature required by the client side
      */
     public boolean isReportedFeature(Class<? extends NodeFeature> featureType) {
-        return reportedFeatures.contains(featureType);
+        return featureSet.reportedFeatures.contains(featureType);
     }
 
     /**
@@ -688,8 +756,7 @@ public class StateNode implements Serializable {
     }
 
     private Stream<NodeFeature> getDisalowFeatures() {
-        return getFeatures().values().stream()
-                .filter(feature -> !feature.allowsChanges());
+        return Stream.of(features).filter(feature -> !feature.allowsChanges());
     }
 
     private void setInactive(boolean inactive) {
@@ -697,7 +764,7 @@ public class StateNode implements Serializable {
             isInactiveSelf = inactive;
 
             visitNodeTree(child -> {
-                if (!this.equals(child) && !child.isInactiveSelf) {
+                if (!equals(child) && !child.isInactiveSelf) {
                     /*
                      * We are here if: the child node itself is not inactive but
                      * it has some ascendant which is inactive.
@@ -734,25 +801,15 @@ public class StateNode implements Serializable {
         return ((StateTree) getOwner()).getUI();
     }
 
-    private void addFeature(Class<? extends NodeFeature> featureType) {
-        if (!features.containsKey(featureType)) {
-            NodeFeature feature = NodeFeatureRegistry.create(featureType, this);
-            features.put(featureType, feature);
-        }
-    }
-
-    private Map<Class<? extends NodeFeature>, NodeFeature> getFeatures() {
-        return features;
-    }
-
     @SuppressWarnings("rawtypes")
     private static Class[] getNonRepeatebleFeatures(StateNode node) {
-        if (node.reportedFeatures.isEmpty()) {
-            Set<Class<? extends NodeFeature>> set = node.features.keySet();
+        if (node.featureSet.reportedFeatures.isEmpty()) {
+            Set<Class<? extends NodeFeature>> set = node.featureSet.mappings
+                    .keySet();
             return set.toArray(new Class[set.size()]);
         }
-        return node.features.keySet().stream()
-                .filter(clazz -> !node.reportedFeatures.contains(clazz))
+        return node.featureSet.mappings.keySet().stream().filter(
+                clazz -> !node.featureSet.reportedFeatures.contains(clazz))
                 .toArray(Class[]::new);
     }
 
