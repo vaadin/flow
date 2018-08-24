@@ -164,6 +164,11 @@ public class MockServletServiceSessionSetup {
                     .getResourceAsStream(resource);
 
         }
+
+        public void verifyServletContextResourceNotLoaded(String resource) {
+            Mockito.verify(servlet.getServletContext(), Mockito.never())
+                    .getResourceAsStream(resource);
+        }
     }
 
     public static class TestVaadinServletResponse
