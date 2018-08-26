@@ -22,14 +22,15 @@ import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class that handles writing the response data into the response.
@@ -52,7 +53,7 @@ public class ResponseWriter implements Serializable {
 
     /**
      * Creates a response writer with custom buffer size.
-     * 
+     *
      * @param bufferSize
      *            custom buffer size
      */
@@ -84,7 +85,24 @@ public class ResponseWriter implements Serializable {
         URLConnection connection = null;
         InputStream dataStream = null;
 
-        if (acceptsGzippedResource(request)) {
+        if (acceptsBrotliResource(request)) {
+            String brotliFilenameWithPath = filenameWithPath + ".br";
+            try {
+                URL url = request.getServletContext()
+                        .getResource(brotliFilenameWithPath);
+                if (url != null) {
+                    connection = url.openConnection();
+                    dataStream = connection.getInputStream();
+                    response.setHeader("Content-Encoding", "br");
+                }
+            } catch (Exception e) {
+                getLogger().debug(
+                        "Unexpected exception looking for Brotli resource {}",
+                        brotliFilenameWithPath, e);
+            }
+        }
+
+        if (dataStream == null && acceptsGzippedResource(request)) {
             // try to serve a gzipped version if available
             String gzippedFilenameWithPath = filenameWithPath + ".gz";
             try {
@@ -98,14 +116,16 @@ public class ResponseWriter implements Serializable {
             } catch (Exception e) {
                 getLogger().debug(
                         "Unexpected exception looking for gzipped resource {}",
-                                gzippedFilenameWithPath,
-                        e);
+                        gzippedFilenameWithPath, e);
             }
         }
+
         if (dataStream == null) {
-            // gzipped resource not available, get non compressed
+            // compressed resource not available, get non compressed
             connection = resourceUrl.openConnection();
             dataStream = connection.getInputStream();
+        } else {
+            response.setHeader("Vary", "Accept-Encoding");
         }
 
         try {
@@ -125,8 +145,7 @@ public class ResponseWriter implements Serializable {
             try {
                 dataStream.close();
             } catch (IOException e) {
-                getLogger().debug(
-                        "Error closing input stream for resource", e);
+                getLogger().debug("Error closing input stream for resource", e);
             }
         }
     }
@@ -151,10 +170,31 @@ public class ResponseWriter implements Serializable {
      *
      * @param request
      *            the request for the resource
-     * @return true if the servlet should attempt to serve a precompressed
-     *         version of the resource, false otherwise
+     * @return true if the servlet should attempt to serve a gzipped version of
+     *         the resource, false otherwise
      */
     protected boolean acceptsGzippedResource(HttpServletRequest request) {
+        return acceptsEncoding(request, "gzip");
+    }
+
+    /**
+     * Returns whether it is ok to serve a Brotli version of the given resource.
+     * <p>
+     * If this method returns true, the browser is ok with receiving a Brotli
+     * version of the resource. In other cases, an uncompressed or gzipped file
+     * must be sent.
+     *
+     * @param request
+     *            the request for the resource
+     * @return true if the servlet should attempt to serve a Brotli version of
+     *         the resource, false otherwise
+     */
+    protected boolean acceptsBrotliResource(HttpServletRequest request) {
+        return acceptsEncoding(request, "br");
+    }
+
+    private static boolean acceptsEncoding(HttpServletRequest request,
+            String encodingName) {
         String accept = request.getHeader("Accept-Encoding");
         if (accept == null) {
             return false;
@@ -169,8 +209,8 @@ public class ResponseWriter implements Serializable {
         // "gzip;q=[notzero]"
         // "*"
         // "*;q=[not zero]"
-        if (accept.contains("gzip")) {
-            return !isQZero(accept, "gzip");
+        if (accept.contains(encodingName)) {
+            return !isQZero(accept, encodingName);
         }
         return accept.contains("*") && !isQZero(accept, "*");
     }
