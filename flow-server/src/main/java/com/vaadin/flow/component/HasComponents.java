@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.util.Objects;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -62,7 +64,13 @@ public interface HasComponents extends HasElement, HasEnabled {
         for (Component component : components) {
             Objects.requireNonNull(component,
                     "Component to remove cannot be null");
-            if (getElement().equals(component.getElement().getParent())) {
+            Element parent = component.getElement().getParent();
+            if (parent == null) {
+                LoggerFactory.getLogger(HasComponents.class).debug(
+                        "Remove of a component with no parent does nothing.");
+                return;
+            }
+            if (getElement().equals(parent)) {
                 getElement().removeChild(component.getElement());
             } else {
                 throw new IllegalArgumentException("The given component ("
