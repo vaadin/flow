@@ -307,13 +307,6 @@ public class UITest {
         ComponentTest.assertChildren(ui);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void removeNotChildComponent() {
-        UI ui = new UI();
-        Text text = new Text("foo");
-        ui.remove(text);
-    }
-
     @Test
     public void setSession_attachEventIsFired()
             throws InvalidRouteConfigurationException {
