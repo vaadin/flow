@@ -85,8 +85,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
              */
             if (updateFromClientFilter != null
                     && !updateFromClientFilter.test(key)) {
-                getLogger().warn("Ignoring model update for {}. "
-                        + "For security reasons, the property must have a two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
+                getLogger().warn(
+                        "Ignoring model update for {}. "
+                                + "For security reasons, the property must have a two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
                         key, AllowClientUpdates.class.getSimpleName());
                 return () -> {
                     // nop
@@ -134,11 +135,18 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             PropertyChangeListener listener) {
         assert hasElement();
 
+        List<PropertyChangeListener> propertyListeners;
         if (listeners == null) {
-            listeners = new HashMap<>();
+            propertyListeners = new ArrayList<>(1);
+            listeners = Collections.singletonMap(name, propertyListeners);
+        } else {
+            if (listeners.size() == 1 && !(listeners instanceof HashMap)) {
+                listeners = new HashMap<>(listeners);
+            }
+            propertyListeners = listeners.computeIfAbsent(name,
+                    key -> new ArrayList<>(1));
         }
-        List<PropertyChangeListener> propertyListeners = listeners
-                .computeIfAbsent(name, key -> new ArrayList<>());
+
         propertyListeners.add(listener);
         return () -> propertyListeners.remove(listener);
     }

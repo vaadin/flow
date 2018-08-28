@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.external.org.slf4j.Logger;
 import com.vaadin.external.org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
@@ -786,7 +785,9 @@ public class Binder<BEAN> implements Serializable {
             getBinder().fireStatusChangeEvent(false);
 
             bound = true;
-            getBinder().incompleteBindings.remove(getField());
+            if (getBinder().incompleteBindings != null) {
+                getBinder().incompleteBindings.remove(getField());
+            }
 
             return binding;
         }
@@ -823,7 +824,10 @@ public class Binder<BEAN> implements Serializable {
                 getBinder().boundProperties.put(propertyName, binding);
                 return binding;
             } finally {
-                getBinder().incompleteMemberFieldBindings.remove(getField());
+                if (getBinder().incompleteMemberFieldBindings != null) {
+                    getBinder().incompleteMemberFieldBindings
+                            .remove(getField());
+                }
             }
         }
 
@@ -1302,17 +1306,18 @@ public class Binder<BEAN> implements Serializable {
      */
     private final Map<String, Binding<BEAN, ?>> boundProperties = new HashMap<>();
 
-    private final Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteMemberFieldBindings = new IdentityHashMap<>();
+    private Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteMemberFieldBindings;
 
     private BEAN bean;
 
     private final Collection<Binding<BEAN, ?>> bindings = new ArrayList<>();
 
-    private final Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteBindings = new IdentityHashMap<>();
+    private Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteBindings;
 
     private final List<Validator<? super BEAN>> validators = new ArrayList<>();
 
-    private final Map<HasValue<?, ?>, ConverterDelegate<?>> initialConverters = new IdentityHashMap<>();
+    private final Map<HasValue<?, ?>, ConverterDelegate<?>> initialConverters = new IdentityHashMap<>(
+            4);
 
     private HashMap<Class<?>, List<SerializableConsumer<?>>> listeners = new HashMap<>();
 
@@ -1496,6 +1501,9 @@ public class Binder<BEAN> implements Serializable {
      */
     public <FIELDVALUE> BindingBuilder<BEAN, FIELDVALUE> forMemberField(
             HasValue<?, FIELDVALUE> field) {
+        if (incompleteMemberFieldBindings == null) {
+            incompleteMemberFieldBindings = new IdentityHashMap<>(8);
+        }
         incompleteMemberFieldBindings.put(field, null);
         return forField(field);
     }
@@ -2177,8 +2185,8 @@ public class Binder<BEAN> implements Serializable {
      */
     protected <T> Registration addListener(Class<T> eventType,
             SerializableConsumer<T> method) {
-        List<SerializableConsumer<?>> list = listeners.computeIfAbsent(eventType,
-                key -> new ArrayList<>());
+        List<SerializableConsumer<?>> list = listeners
+                .computeIfAbsent(eventType, key -> new ArrayList<>());
         list.add(method);
         return () -> list.remove(method);
     }
@@ -2188,8 +2196,8 @@ public class Binder<BEAN> implements Serializable {
      * <p>
      * Added listener is notified every time whenever any bound field value is
      * changed, i.e. the UI component value was changed, passed all the
-     * conversions and validations then propagated to the bound bean field. The same
-     * functionality can be achieved by adding a
+     * conversions and validations then propagated to the bound bean field. The
+     * same functionality can be achieved by adding a
      * {@link ValueChangeListener} to all fields in the {@link Binder}.
      * <p>
      * The listener is added to all fields regardless of whether the method is
@@ -2229,8 +2237,12 @@ public class Binder<BEAN> implements Serializable {
             BindingValidationStatusHandler handler) {
         BindingBuilder<BEAN, TARGET> newBinding = doCreateBinding(field,
                 converter, handler);
-        if (incompleteMemberFieldBindings.containsKey(field)) {
+        if (incompleteMemberFieldBindings != null
+                && incompleteMemberFieldBindings.containsKey(field)) {
             incompleteMemberFieldBindings.put(field, newBinding);
+        }
+        if (incompleteBindings == null) {
+            incompleteBindings = new IdentityHashMap<>(8);
         }
         incompleteBindings.put(field, newBinding);
         return newBinding;
@@ -2468,14 +2480,15 @@ public class Binder<BEAN> implements Serializable {
      *             if this binder has incomplete bindings
      */
     private void checkBindingsCompleted(String methodName) {
-        if (!incompleteMemberFieldBindings.isEmpty()) {
+        if (!(incompleteMemberFieldBindings == null
+                || incompleteMemberFieldBindings.isEmpty())) {
             throw new IllegalStateException(
                     "All bindings created with forMemberField must "
                             + "be completed with bindInstanceFields before calling "
                             + methodName);
         }
 
-        if (!incompleteBindings.isEmpty()) {
+        if (!(incompleteBindings == null || incompleteBindings.isEmpty())) {
             throw new IllegalStateException(
                     "All bindings created with forField must be completed before calling "
                             + methodName);
@@ -2540,7 +2553,8 @@ public class Binder<BEAN> implements Serializable {
                                 memberField, property, type)))
                 .reduce(0, this::accumulate, Integer::sum);
         if (numberOfBoundFields == 0 && bindings.isEmpty()
-                && incompleteBindings.isEmpty()) {
+                && (incompleteBindings == null
+                        || incompleteBindings.isEmpty())) {
             // Throwing here for incomplete bindings would be wrong as they
             // may be completed after this call. If they are not, setBean and
             // other methods will throw for those cases
@@ -2568,6 +2582,9 @@ public class Binder<BEAN> implements Serializable {
 
     private BindingBuilder<BEAN, ?> getIncompleteMemberFieldBinding(
             Field memberField, Object objectWithMemberFields) {
+        if (incompleteMemberFieldBindings == null) {
+            return null;
+        }
         return incompleteMemberFieldBindings
                 .get(getMemberFieldValue(memberField, objectWithMemberFields));
     }

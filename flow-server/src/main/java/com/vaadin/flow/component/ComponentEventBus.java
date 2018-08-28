@@ -69,7 +69,8 @@ public class ComponentEventBus implements Serializable {
     }
 
     // Package private to enable testing only
-    HashMap<Class<? extends ComponentEvent<?>>, ArrayList<ListenerWrapper<?>>> componentEventData = new HashMap<>();
+    HashMap<Class<? extends ComponentEvent<?>>, ArrayList<ListenerWrapper<?>>> componentEventData = new HashMap<>(
+            2);
 
     private Component component;
 
