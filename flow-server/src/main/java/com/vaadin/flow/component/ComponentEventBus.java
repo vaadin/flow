@@ -69,7 +69,8 @@ public class ComponentEventBus implements Serializable {
     }
 
     // Package private to enable testing only
-    HashMap<Class<? extends ComponentEvent<?>>, ArrayList<ListenerWrapper<?>>> componentEventData = new HashMap<>();
+    HashMap<Class<? extends ComponentEvent<?>>, ArrayList<ListenerWrapper<?>>> componentEventData = new HashMap<>(
+            2);
 
     private Component component;
 
@@ -151,7 +152,7 @@ public class ComponentEventBus implements Serializable {
             domListenerConsumer.accept(wrapper.domRegistration);
         }
 
-        componentEventData.computeIfAbsent(eventType, t -> new ArrayList<>())
+        componentEventData.computeIfAbsent(eventType, t -> new ArrayList<>(1))
                 .add(wrapper);
 
         return () -> removeListener(eventType, wrapper);

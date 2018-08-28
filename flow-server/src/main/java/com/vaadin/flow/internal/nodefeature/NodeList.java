@@ -170,7 +170,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     private void ensureValues() {
         if (values == null) {
-            values = new ArrayList<>();
+            values = new ArrayList<>(1);
         }
     }
 
@@ -329,7 +329,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
         if (isRemoveAllCalled && !hasRemoveAll) {
             changes = Stream
-                    .concat(Stream.of(new ListClearChange<T>(this)),
+                    .concat(Stream.of(new ListClearChange<>(this)),
                             allChanges.stream())
                     .filter(this::acceptChange).collect(Collectors.toList());
         } else {
@@ -398,7 +398,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
 
         isRemoveAllCalled = true;
-        addChange(new ListClearChange<T>(this));
+        addChange(new ListClearChange<>(this));
     }
 
     /**
