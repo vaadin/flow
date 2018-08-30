@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -174,6 +175,25 @@ public class HtmlDependencyParserTest {
         Assert.assertTrue(
                 "Dependencies parser doesn't return the simple relative URI",
                 dependencies.contains("frontend://relative.html"));
+    }
+
+    @Test
+    public void polymerDependency_ignored() {
+        String root = "foo.html";
+        HtmlDependencyParser parser = new HtmlDependencyParser(root);
+
+        String importContent = "<link rel='import' href='bower_components/polymer/polymer-element.html'>";
+
+        servlet.addServletContextResource("/frontend/foo.html", importContent);
+
+        Collection<String> dependencies = parser.parseDependencies(service);
+
+        servlet.verifyServletContextResourceLoadedOnce("/frontend/" + root);
+        servlet.verifyServletContextResourceNotLoaded(
+                "/frontend/bower_components/polymer/polymer-element.html");
+
+        Assert.assertEquals(Collections.singleton("frontend://" + root),
+                dependencies);
     }
 
     @Test
