@@ -72,7 +72,7 @@ public class HtmlDependencyParser implements Serializable {
 
     private void parseDependencies(String path, Set<String> dependencies,
             VaadinService service) {
-        if (dependencies.contains(path)) {
+        if (dependencies.contains(path) || isBlacklisted(path)) {
             return;
         }
         dependencies.add(path);
@@ -95,6 +95,12 @@ public class HtmlDependencyParser implements Serializable {
             getLogger().debug("Couldn't close template input stream",
                     exception);
         }
+    }
+
+    private static boolean isBlacklisted(String path) {
+        // Speed things up by not parsing files that are known to not use themes
+        return path.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                + "bower_components/polymer/");
     }
 
     private String resolveUri(String relative, String base) {
