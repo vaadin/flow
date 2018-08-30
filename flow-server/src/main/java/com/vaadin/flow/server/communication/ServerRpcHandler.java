@@ -172,7 +172,7 @@ public class ServerRpcHandler implements Serializable {
         }
 
         /**
-         * Gets the id of the client to server message
+         * Gets the id of the client to server message.
          *
          * @return the server message id
          */
