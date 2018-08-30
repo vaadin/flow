@@ -38,7 +38,9 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Immutable meta data related to a component class.
@@ -223,11 +225,14 @@ public class ComponentMetaData {
 
     private static HtmlImportDependency getHtmlImportDependencies(
             VaadinService service, HtmlImport htmlImport) {
-        String value = htmlImport.value();
-        HtmlDependencyParser parser = new HtmlDependencyParser(value);
+        String importPath = SharedUtil.prefixIfRelative(htmlImport.value(),
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
-        return new HtmlImportDependency(parser.parseDependencies(service),
-                htmlImport.loadMode());
+        DependencyTreeCache<String> cache = service.getHtmlImportDependencyCache();
+
+        Set<String> dependencies = cache.getDependencies(importPath);
+
+        return new HtmlImportDependency(dependencies, htmlImport.loadMode());
     }
 
     /**
