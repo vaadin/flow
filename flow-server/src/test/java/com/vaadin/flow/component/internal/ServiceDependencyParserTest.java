@@ -25,12 +25,19 @@ import org.junit.Test;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import net.jcip.annotations.NotThreadSafe;
 
+/**
+ * End-to-end tests with the same cases as the deprecated
+ * {@link HtmlDependencyParserTest}, but using
+ * {@link VaadinService#getHtmlImportDependencyCache()} instead.
+ */
 @NotThreadSafe
-@Deprecated
-public class HtmlDependencyParserTest {
+public class ServiceDependencyParserTest {
 
     private TestVaadinServlet servlet;
     private MockServletServiceSessionSetup mocks;
@@ -54,8 +61,10 @@ public class HtmlDependencyParserTest {
 
         servlet.addServletContextResource("/frontend/foo.html", "");
 
-        HtmlDependencyParser parser = new HtmlDependencyParser(root);
-        Collection<String> dependencies = parser.parseDependencies(service);
+        String prefixedRoot = SharedUtil.prefixIfRelative(root,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        Collection<String> dependencies = service.getHtmlImportDependencyCache()
+                .getDependencies(prefixedRoot);
         Assert.assertTrue(
                 "Dependencies parser doesn't return the root URI but '"
                         + dependencies + "'",
@@ -65,7 +74,6 @@ public class HtmlDependencyParserTest {
     @Test
     public void oneLevelDependency_variousURIs_URIsAreCollectedCorrectly() {
         String root = "baz/foo.html";
-        HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String importContent = "<link rel='import' href='relative1.html'>"
                 + "<link rel='import' href='foo/../relative1.html'>"
@@ -80,7 +88,10 @@ public class HtmlDependencyParserTest {
                 "");
         servlet.addServletContextResource("/absolute.html", "");
 
-        Collection<String> dependencies = parser.parseDependencies(service);
+        String prefixedRoot = SharedUtil.prefixIfRelative(root,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        Collection<String> dependencies = service.getHtmlImportDependencyCache()
+                .getDependencies(prefixedRoot);
 
         Assert.assertEquals(5, dependencies.size());
         servlet.verifyServletContextResourceLoadedOnce("/frontend/" + root);
@@ -110,13 +121,13 @@ public class HtmlDependencyParserTest {
     @Test
     public void oneLevelDependency_frontendUri_URIsAreCollectedCorrectly() {
         String root = "frontend://foo.html";
-        HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String importContent = "<link rel='import' href='relative.html'>";
         servlet.addServletContextResource("/frontend/foo.html", importContent);
         servlet.addServletContextResource("/frontend/relative.html", "");
 
-        Collection<String> dependencies = parser.parseDependencies(service);
+        Collection<String> dependencies = service.getHtmlImportDependencyCache()
+                .getDependencies(root);
 
         Assert.assertEquals(2, dependencies.size());
 
@@ -129,7 +140,6 @@ public class HtmlDependencyParserTest {
     @Test
     public void nestedDependencyLevels_variousURIs_URIsAreCollectedCorrectly() {
         String root = "foo.html";
-        HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String importContent = "<link rel='import' href='relative.html'>";
         servlet.addServletContextResource("/frontend/foo.html", importContent);
@@ -137,9 +147,10 @@ public class HtmlDependencyParserTest {
                 "<link rel='import' href='relative1.html'>");
         servlet.addServletContextResource("/frontend/relative1.html", "");
 
-        Collection<String> dependencies = parser.parseDependencies(service);
-
-        Assert.assertEquals(3, dependencies.size());
+        String prefixedRoot = SharedUtil.prefixIfRelative(root,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        Collection<String> dependencies = service.getHtmlImportDependencyCache()
+                .getDependencies(prefixedRoot);
 
         Assert.assertTrue("Dependencies parser doesn't return the root URI",
                 dependencies.contains("frontend://" + root));
@@ -154,7 +165,6 @@ public class HtmlDependencyParserTest {
     @Test
     public void dependenciesWithDifferentPathsIncludedOnlyOnce() {
         String root = "foo.html";
-        HtmlDependencyParser parser = new HtmlDependencyParser(root);
 
         String importContent = "<link rel='import' href='relative.html'>"
                 + "<link rel='import' href='foo/../relative.html'>"
@@ -163,7 +173,10 @@ public class HtmlDependencyParserTest {
         servlet.addServletContextResource("/frontend/foo.html", importContent);
         servlet.addServletContextResource("/frontend/relative.html", "");
 
-        Collection<String> dependencies = parser.parseDependencies(service);
+        String prefixedRoot = SharedUtil.prefixIfRelative(root,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        Collection<String> dependencies = service.getHtmlImportDependencyCache()
+                .getDependencies(prefixedRoot);
 
         Assert.assertEquals(2, dependencies.size());
 
@@ -173,4 +186,5 @@ public class HtmlDependencyParserTest {
                 "Dependencies parser doesn't return the simple relative URI",
                 dependencies.contains("frontend://relative.html"));
     }
+
 }

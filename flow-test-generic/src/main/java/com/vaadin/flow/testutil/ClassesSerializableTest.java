@@ -55,7 +55,7 @@ import static java.lang.reflect.Modifier.isStatic;
  * tries to serialize every single class (except ones from whitelist) in the
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link  #getJarPattern()}
+ * {@link #getJarPattern()}
  */
 
 public abstract class ClassesSerializableTest {
@@ -133,6 +133,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
                 "com\\.vaadin\\.flow\\.osgi\\.Activator",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
 
                 //Various test classes
                 ".*\\.test(s)?\\..*",
