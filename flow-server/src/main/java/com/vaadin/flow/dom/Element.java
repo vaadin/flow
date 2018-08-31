@@ -37,6 +37,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -466,12 +467,14 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if(hasAttribute(lowerCaseAttribute)) {
-            Optional<CustomAttribute> customAttribute = CustomAttribute.get(lowerCaseAttribute);
+        if (hasAttribute(lowerCaseAttribute)) {
+            Optional<CustomAttribute> customAttribute = CustomAttribute
+                    .get(lowerCaseAttribute);
             if (customAttribute.isPresent()) {
                 customAttribute.get().removeAttribute(this);
             } else {
-                getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
+                getStateProvider().removeAttribute(getNode(),
+                        lowerCaseAttribute);
             }
         }
         return this;
@@ -1338,12 +1341,13 @@ public class Element extends Node<Element> {
                 // This explicit class instantiation is the workaround
                 // which fixes a JVM optimization+serialization bug.
                 // Do not convert to lambda
-                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
                 // see ElementAttributeMap#deferRegistration
                 new Command() {
                     @Override
                     public void execute() {
-                        attachListener.onAttach(new ElementAttachEvent(Element.this));
+                        attachListener
+                                .onAttach(new ElementAttachEvent(Element.this));
                     }
                 });
     }
@@ -1370,12 +1374,13 @@ public class Element extends Node<Element> {
                 // This explicit class instantiation is the workaround
                 // which fixes a JVM optimization+serialization bug.
                 // Do not convert to lambda
-                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
                 // see ElementAttributeMap#deferRegistration
                 new Command() {
                     @Override
                     public void execute() {
-                        detachListener.onDetach(new ElementDetachEvent(Element.this));
+                        detachListener
+                                .onDetach(new ElementDetachEvent(Element.this));
                     }
                 });
     }
@@ -1451,27 +1456,75 @@ public class Element extends Node<Element> {
         assert !functionName
                 .startsWith(".") : "Function name should not start with a dot";
 
-        getNode().runWhenAttached(
-                ui -> doCallFunction(ui, functionName, arguments));
+        runBeforeAttachedResponse(ui -> {
+            // $0.method($1,$2,$3)
+            String paramPlaceholderString = IntStream
+                    .range(1, arguments.length + 1).mapToObj(i -> "$" + i)
+                    .collect(Collectors.joining(","));
+            Serializable[] jsParameters = Stream
+                    .concat(Stream.of(this), Stream.of(arguments))
+                    .toArray(Serializable[]::new);
 
+            ui.getPage().executeJavaScript(
+                    "$0." + functionName + "(" + paramPlaceholderString + ")",
+                    jsParameters);
+        });
     }
 
-    private void doCallFunction(UI ui, String functionName,
-            Serializable... arguments) {
-        ui.getInternals().getStateTree().beforeClientResponse(getNode(),
-                context -> {
-                    // $0.method($1,$2,$3)
-                    String paramPlaceholderString = IntStream
-                            .range(1, arguments.length + 1)
-                            .mapToObj(i -> "$" + i)
-                            .collect(Collectors.joining(","));
-                    Serializable[] jsParameters = Stream
-                            .concat(Stream.of(this), Stream.of(arguments))
-                            .toArray(Serializable[]::new);
+    // When updating JavaDocs here, keep in sync with Page.executeJavaScript
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser in the
+     * context of this element. This element will be available to the expression
+     * as <code>this</code>. The given parameters will be available as variables
+     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
+     * types are:
+     * <ul>
+     * <li>{@link String}
+     * <li>{@link Integer}
+     * <li>{@link Double}
+     * <li>{@link Boolean}
+     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
+     * element instance is not attached when the invocation is sent to the
+     * client)
+     * </ul>
+     * Note that the parameter variables can only be used in contexts where a
+     * JavaScript variable can be used. You should for instance do
+     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
+     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
+     * variables aren't evaluated inside strings or property names.
+     *
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
+     */
+    public void executeJavaScript(String expression,
+            Serializable... parameters) {
 
-                    ui.getPage().executeJavaScript("$0." + functionName + "("
-                            + paramPlaceholderString + ")", jsParameters);
-                });
+        // Add "this" as the last parameter
+        Serializable[] wrappedParameters = Stream
+                .concat(Stream.of(parameters), Stream.of(this))
+                .toArray(Serializable[]::new);
+
+        // Wrap in a function that is applied with last parameter as "this"
+        String wrappedExpression = "(function() { " + expression + "}).apply($"
+                + parameters.length + ")";
+
+        runBeforeAttachedResponse(ui -> ui.getPage()
+                .executeJavaScript(wrappedExpression, wrappedParameters));
+    }
+
+    /**
+     * Runs the given action right before the next response during which this
+     * element is attached.
+     *
+     * @param action
+     *            the action to run
+     */
+    private void runBeforeAttachedResponse(SerializableConsumer<UI> action) {
+        getNode().runWhenAttached(
+                ui -> ui.getInternals().getStateTree().beforeClientResponse(
+                        getNode(), context -> action.accept(context.getUI())));
     }
 
     /**

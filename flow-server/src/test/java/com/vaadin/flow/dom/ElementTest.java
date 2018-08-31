@@ -115,6 +115,7 @@ public class ElementTest extends AbstractNodeTest {
         ignore.add("as");
         // Possibly returns a remover or a wrapped return value in the future
         ignore.add("callFunction");
+        ignore.add("executeJavaScript");
 
         // ignore shadow root methods
         ignore.add("attachShadow");

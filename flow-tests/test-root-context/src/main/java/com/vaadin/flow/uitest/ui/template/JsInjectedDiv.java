@@ -23,9 +23,7 @@ import com.vaadin.flow.component.html.Div;
 public class JsInjectedDiv extends Div {
 
     public JsInjectedDiv() {
-        getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                        "window.divConnector.jsFunction($0)", getElement()));
+        getElement().executeJavaScript("window.divConnector.jsFunction(this)");
     }
 
     @ClientCallable
