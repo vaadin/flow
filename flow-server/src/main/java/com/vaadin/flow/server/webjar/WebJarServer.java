@@ -42,7 +42,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0.
  */
 public class WebJarServer implements Serializable {
-    private final ResponseWriter responseWriter = new ResponseWriter();
+    private final ResponseWriter responseWriter;
 
     private final String prefix;
     private final Pattern urlPattern;
@@ -57,6 +57,8 @@ public class WebJarServer implements Serializable {
      */
     public WebJarServer(DeploymentConfiguration deploymentConfiguration) {
         assert deploymentConfiguration != null;
+
+        responseWriter = new ResponseWriter(deploymentConfiguration);
 
         String frontendPrefix = deploymentConfiguration
                 .getDevelopmentFrontendPrefix();
