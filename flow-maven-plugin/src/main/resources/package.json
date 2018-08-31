@@ -14,6 +14,8 @@
     "gulp-if": "2.0.2",
     "gulp-ignore": "2.0.2",
     "gulp-string-replace": "1.0.0",
+    "gulp-gzip": "1.4.2",
+    "gulp-brotli": "1.2.1",
     "html-minifier": "3.5.8",
     "polymer-build": "2.1.1",
     "merge-stream": "1.0.1",
