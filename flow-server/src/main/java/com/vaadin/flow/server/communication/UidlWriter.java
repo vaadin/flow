@@ -336,8 +336,7 @@ public class UidlWriter implements Serializable {
         Set<Class<? extends Component>> componentsWithDependencies = new LinkedHashSet<>();
         stateTree.collectChanges(change -> {
             if (attachesComponent(change)) {
-                change.getNode().getFeature(ComponentMapping.class)
-                        .getComponent()
+                ComponentMapping.getComponent(change.getNode())
                         .ifPresent(component -> addComponentHierarchy(ui,
                                 componentsWithDependencies, component));
             }

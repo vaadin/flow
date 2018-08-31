@@ -182,7 +182,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Gets whether this element is a virtual child of its parent.
-     * 
+     *
      * @return <code>true</code> if the element has a parent and the element is
      *         a virtual child of it, <code>false</code> otherwise.
      */
@@ -191,7 +191,10 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         if (parentNode == null) {
             return false;
         }
-        if (!parentNode.getNode().hasFeature(VirtualChildrenList.class)) {
+        if (!parentNode.getNode().hasFeature(VirtualChildrenList.class)
+                || !parentNode.getNode()
+                        .getFeatureIfInitialized(VirtualChildrenList.class)
+                        .isPresent()) {
             return false;
         }
         Iterator<StateNode> iterator = parentNode.getNode()

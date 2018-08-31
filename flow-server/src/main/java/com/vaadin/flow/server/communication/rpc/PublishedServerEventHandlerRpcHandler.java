@@ -89,8 +89,7 @@ public class PublishedServerEventHandlerRpcHandler
                     "Incorrect type for method arguments: " + args.getClass());
         }
         assert node.hasFeature(ComponentMapping.class);
-        Optional<Component> component = node.getFeature(ComponentMapping.class)
-                .getComponent();
+        Optional<Component> component = ComponentMapping.getComponent(node);
         if (!component.isPresent()) {
             throw new IllegalStateException(
                     "Unable to handle RPC template event JSON message: "

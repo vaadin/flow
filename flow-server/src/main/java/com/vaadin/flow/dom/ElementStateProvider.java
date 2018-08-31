@@ -360,7 +360,7 @@ public interface ElementStateProvider extends Serializable {
      */
     default Optional<Component> getComponent(StateNode node) {
         assert node != null;
-        return node.getFeature(ComponentMapping.class).getComponent();
+        return ComponentMapping.getComponent(node);
     }
 
     /**

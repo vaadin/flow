@@ -1603,18 +1603,21 @@ public class Element extends Node<Element> {
         });
         if (component.getElement().getNode()
                 .hasFeature(VirtualChildrenList.class)) {
-            final Consumer<Component> stateChangeInformer = virtual -> {
-                virtual.onEnabledStateChanged(
-                        enabled ? virtual.getElement().isEnabled() : false);
-
-                informChildrenOfStateChange(enabled, virtual);
-            };
-            final Consumer<StateNode> childNodeConsumer = childNode -> Element
-                    .get(childNode).getComponent()
-                    .ifPresent(stateChangeInformer);
             component.getElement().getNode()
-                    .getFeature(VirtualChildrenList.class)
-                    .forEachChild(childNodeConsumer);
+                    .getFeatureIfInitialized(VirtualChildrenList.class)
+                    .ifPresent(list -> {
+                        final Consumer<Component> stateChangeInformer = virtual -> {
+                            virtual.onEnabledStateChanged(enabled
+                                    ? virtual.getElement().isEnabled() : false);
+
+                            informChildrenOfStateChange(enabled, virtual);
+                        };
+                        final Consumer<StateNode> childNodeConsumer = childNode -> Element
+                                .get(childNode).getComponent()
+                                .ifPresent(stateChangeInformer);
+
+                        list.forEachChild(childNodeConsumer);
+                    });
         }
     }
 

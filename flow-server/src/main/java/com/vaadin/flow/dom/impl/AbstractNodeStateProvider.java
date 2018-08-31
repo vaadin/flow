@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.util.Optional;
+
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
@@ -73,7 +75,15 @@ public abstract class AbstractNodeStateProvider
 
     @Override
     public int getChildCount(StateNode node) {
-        return getChildrenFeature(node).size();
+        Optional<ElementChildrenList> maybeList = node
+                .getFeatureIfInitialized(ElementChildrenList.class);
+        // Lacking Optional.mapToInt
+        if (maybeList.isPresent()) {
+            return maybeList.get().size();
+        } else {
+            return 0;
+        }
+
     }
 
     @Override
@@ -171,8 +181,9 @@ public abstract class AbstractNodeStateProvider
     protected void visitDescendants(Node<?> node, NodeVisitor visitor) {
         node.getChildren().forEach(child -> child.accept(visitor));
 
-        node.getNode().getFeature(VirtualChildrenList.class).iterator()
-                .forEachRemaining(child -> acceptVirtualChild(child, visitor));
+        node.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
+                .ifPresent(list -> list.iterator().forEachRemaining(
+                        child -> acceptVirtualChild(child, visitor)));
     }
 
     private void acceptVirtualChild(StateNode node, NodeVisitor visitor) {

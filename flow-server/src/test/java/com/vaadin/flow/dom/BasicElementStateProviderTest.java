@@ -10,8 +10,12 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.nodefeature.ShadowRootData;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.VaadinRequest;
 
 public class BasicElementStateProviderTest {
@@ -112,6 +116,27 @@ public class BasicElementStateProviderTest {
     }
 
     @Test
+    public void visitNode_noChildren_featuresNotInitialized() {
+        Element element = ElementFactory.createDiv();
+
+        assertNoChildFeatures(element);
+
+        element.accept(new TestNodeVisitor());
+
+        assertNoChildFeatures(element);
+    }
+
+    public static void assertNoChildFeatures(Element element) {
+        Assert.assertFalse("Node should not have a children list feature",
+                isFeatureInitialized(element, ElementChildrenList.class));
+        Assert.assertFalse(
+                "Node should not have a virtual children list feature",
+                isFeatureInitialized(element, VirtualChildrenList.class));
+        Assert.assertFalse("Node should not have a shadow root feature",
+                isFeatureInitialized(element, ShadowRootData.class));
+    }
+
+    @Test
     public void setVisible() {
         Element element = ElementFactory.createDiv();
 
@@ -128,6 +153,12 @@ public class BasicElementStateProviderTest {
         Assert.assertFalse(
                 element.getNode().getFeature(ElementData.class).isVisible());
 
+    }
+
+    private static boolean isFeatureInitialized(Element element,
+            Class<? extends NodeFeature> featureType) {
+        return element.getNode().getFeatureIfInitialized(featureType)
+                .isPresent();
     }
 
     private Element createHierarchy(Map<Node<?>, ElementType> map) {

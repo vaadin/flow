@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -200,9 +201,8 @@ public class StateNode implements Serializable {
                         additionalFeatureTypes), FeatureSet::new);
 
         features = new NodeFeature[featureSet.mappings.size()];
-        featureSet.mappings.forEach((featureType,
-                index) -> features[index.intValue()] = NodeFeatureRegistry
-                        .create(featureType, this));
+        // Eagerly initialize features that should always be sent
+        reportableFeatureTypes.forEach(this::getFeature);
     }
 
     /**
@@ -316,9 +316,11 @@ public class StateNode implements Serializable {
     }
 
     private void forEachFeature(Consumer<NodeFeature> action) {
-        for (NodeFeature feature : features) {
-            action.accept(feature);
-        }
+        getInitializedFeatures().forEach(action::accept);
+    }
+
+    private Stream<NodeFeature> getInitializedFeatures() {
+        return Stream.of(features).filter(Objects::nonNull);
     }
 
     /**
@@ -333,10 +335,10 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Gets the feature of the given type. This method throws
-     * {@link IllegalStateException} if this node does not contain the desired
-     * feature. Use {@link #hasFeature(Class)} to check whether a node contains
-     * a specific feature.
+     * Gets the feature of the given type, creating one if necessary. This
+     * method throws {@link IllegalStateException} if this node isn't configured
+     * to use the desired feature. Use {@link #hasFeature(Class)} to check
+     * whether a node is configured to use a specific feature.
      *
      * @param <T>
      *            the desired feature type
@@ -345,6 +347,18 @@ public class StateNode implements Serializable {
      * @return a feature instance, not <code>null</code>
      */
     public <T extends NodeFeature> T getFeature(Class<T> featureType) {
+        int featureIndex = getFeatureIndex(featureType);
+
+        NodeFeature feature = features[featureIndex];
+        if (feature == null) {
+            feature = NodeFeatureRegistry.create(featureType, this);
+            features[featureIndex] = feature;
+        }
+
+        return featureType.cast(feature);
+    }
+
+    private <T extends NodeFeature> int getFeatureIndex(Class<T> featureType) {
         assert featureType != null;
 
         Integer featureIndex = featureSet.mappings.get(featureType);
@@ -353,10 +367,28 @@ public class StateNode implements Serializable {
                     "Node does not have the feature " + featureType);
         }
 
-        NodeFeature feature = features[featureIndex.intValue()];
-        assert feature != null;
+        return featureIndex.intValue();
+    }
 
-        return featureType.cast(feature);
+    /**
+     * Gets the feature of the given type if it has been initialized. This
+     * method throws {@link IllegalStateException} if this node isn't configured
+     * to use the desired feature. Use {@link #hasFeature(Class)} to check
+     * whether a node is configured to use a specific feature.
+     *
+     * @param <T>
+     *            the desired feature type
+     * @param featureType
+     *            the desired feature type, not <code>null</code>
+     * @return a feature instance, or an empty optional if the feature is not
+     *         yet initialized for this node
+     */
+    public <T extends NodeFeature> Optional<T> getFeatureIfInitialized(
+            Class<T> featureType) {
+        int featureIndex = getFeatureIndex(featureType);
+
+        return Optional.ofNullable(features[featureIndex])
+                .map(featureType::cast);
     }
 
     /**
@@ -457,7 +489,7 @@ public class StateNode implements Serializable {
                 doCollectChanges(collector, getDisalowFeatures());
             }
         } else {
-            doCollectChanges(collector, Stream.of(features));
+            doCollectChanges(collector, getInitializedFeatures());
         }
     }
 
@@ -756,7 +788,8 @@ public class StateNode implements Serializable {
     }
 
     private Stream<NodeFeature> getDisalowFeatures() {
-        return Stream.of(features).filter(feature -> !feature.allowsChanges());
+        return getInitializedFeatures()
+                .filter(feature -> !feature.allowsChanges());
     }
 
     private void setInactive(boolean inactive) {
