@@ -41,8 +41,8 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
  * @author Vaadin Ltd
@@ -57,6 +57,10 @@ public class ResponseWriterTest {
 
     private static class OverrideableResponseWriter extends ResponseWriter {
         private Boolean overrideAcceptsGzippedResource;
+
+        public OverrideableResponseWriter() {
+            super(new MockDeploymentConfiguration());
+        }
 
         @Override
         protected boolean acceptsGzippedResource(HttpServletRequest request) {
@@ -192,7 +196,8 @@ public class ResponseWriterTest {
 
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
+        responseWriter.writeResponseContents("/static/file.js", fileJsURL,
+                request, response);
 
         Assert.assertArrayEquals(fileJsGzippedContents, out.getOutput());
         Assert.assertEquals(fileJsGzippedContents.length,
@@ -213,7 +218,8 @@ public class ResponseWriterTest {
 
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
+        responseWriter.writeResponseContents("/static/file.js", fileJsURL,
+                request, response);
 
         Assert.assertArrayEquals(fileJsContentsBytes, out.getOutput());
         Assert.assertEquals(fileJsContentsBytes.length,
@@ -240,7 +246,8 @@ public class ResponseWriterTest {
 
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
+        responseWriter.writeResponseContents("/static/file.js", fileJsURL,
+                request, response);
 
         Assert.assertArrayEquals(fileJsContentsBytes, out.getOutput());
         Assert.assertEquals(fileJsContentsBytes.length,
@@ -261,7 +268,7 @@ public class ResponseWriterTest {
     }
 
     private static URL createFileURLWithDataAndLength(String name, byte[] data,
-                                                      long lastModificationTime) throws MalformedURLException {
+            long lastModificationTime) throws MalformedURLException {
         return new URL("file", "", -1, name, new URLStreamHandler() {
             @Override
             protected URLConnection openConnection(URL u) throws IOException {

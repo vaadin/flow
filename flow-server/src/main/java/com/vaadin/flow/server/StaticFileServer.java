@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0
  */
 public class StaticFileServer implements Serializable {
-    private final ResponseWriter responseWriter = new ResponseWriter();
+    private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
 
@@ -56,8 +57,8 @@ public class StaticFileServer implements Serializable {
      */
     public StaticFileServer(VaadinServletService servletService) {
         this.servletService = servletService;
-        this.deploymentConfiguration = servletService
-                .getDeploymentConfiguration();
+        deploymentConfiguration = servletService.getDeploymentConfiguration();
+        responseWriter = new ResponseWriter(deploymentConfiguration);
     }
 
     /**
