@@ -349,4 +349,27 @@ public class NodeMapTest
         // The attach listener is not called one more time
         nodeMap.put("foo", child);
     }
+
+    @Test
+    public void put_replaceSingleValue_stillUseSingleValue() {
+        nodeMap.put("foo", "bar");
+
+        Assert.assertTrue(nodeMap.usesSingleMap());
+
+        nodeMap.put("foo", "baz");
+
+        Assert.assertTrue(nodeMap.usesSingleMap());
+    }
+
+    @Test
+    public void streamSingleNullValue() {
+        nodeMap.put("foo", null);
+
+        Assert.assertTrue(nodeMap.usesSingleMap());
+
+        nodeMap.forEachChild(child -> {
+            Assert.fail(
+                    "Should not happen, but forEachChild shouldn't explode either");
+        });
+    }
 }
