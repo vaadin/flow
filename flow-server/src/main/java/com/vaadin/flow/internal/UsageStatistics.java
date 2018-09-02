@@ -69,6 +69,14 @@ public class UsageStatistics {
     }
 
     private static ConcurrentHashMap<String, UsageEntry> entires = new ConcurrentHashMap<>();
+    static {
+        String version = System.getProperty("java.version");
+
+        // Ignore pre, build and opt fields
+        version = version.replaceAll("[-_+].*", "");
+
+        markAsUsed("java", version);
+    }
 
     private UsageStatistics() {
         // Only static methods here, no need to create an instance

@@ -1,6 +1,10 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +17,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -38,7 +44,6 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -57,13 +62,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import static org.hamcrest.Matchers.is;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -343,8 +341,10 @@ public class BootstrapHandlerTest {
 
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
-            settings.getLoadingIndicatorConfiguration().setSecondDelay(SECOND_DELAY);
+            settings.getLoadingIndicatorConfiguration()
+                    .setApplyDefaultTheme(false);
+            settings.getLoadingIndicatorConfiguration()
+                    .setSecondDelay(SECOND_DELAY);
 
             settings.getPushConfiguration().setPushMode(PushMode.MANUAL);
 
@@ -364,9 +364,6 @@ public class BootstrapHandlerTest {
 
     @Before
     public void setup() throws Exception {
-        // Ensure there will be a usage statistics script at the end of the body
-        UsageStatistics.markAsUsed("foo", null);
-
         mocks = new MockServletServiceSessionSetup();
         TestRouteRegistry routeRegistry = new TestRouteRegistry();
 
@@ -416,7 +413,7 @@ public class BootstrapHandlerTest {
     }
 
     private void initUI(UI ui, VaadinRequest request,
-                        Set<Class<? extends Component>> navigationTargets)
+            Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
 
         service.getRouteRegistry().setNavigationTargets(navigationTargets);
@@ -1324,9 +1321,11 @@ public class BootstrapHandlerTest {
 
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es5 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
+        assertThat(
+                String.format(
+                        "In development mode, es5 prefix should be equal to '%s' parameter value",
+                        Constants.FRONTEND_URL_ES5),
+                urlES5, is(es5Prefix + urlPart));
     }
 
     @Test
@@ -1344,9 +1343,11 @@ public class BootstrapHandlerTest {
 
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es6 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES6), urlES6, is(es6Prefix + urlPart));
+        assertThat(
+                String.format(
+                        "In development mode, es6 prefix should be equal to '%s' parameter value",
+                        Constants.FRONTEND_URL_ES6),
+                urlES6, is(es6Prefix + urlPart));
     }
 
     @Test
@@ -1526,13 +1527,11 @@ public class BootstrapHandlerTest {
         meta = metas.get(3);
         assertEquals("apple-mobile-web-app-status-bar-style",
                 meta.attr("name"));
-        assertEquals("black",
-                meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+        assertEquals("black", meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
 
         meta = metas.get(4);
         assertEquals("apple-mobile-web-app-capable", meta.attr("name"));
-        assertEquals("yes",
-                meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+        assertEquals("yes", meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
     }
 
     @Route("")
@@ -1567,7 +1566,7 @@ public class BootstrapHandlerTest {
     }
 
     private void assertStringEquals(String message, String expected,
-                                    String actual) {
+            String actual) {
         Assert.assertThat(message,
                 actual.replaceAll(System.getProperty("line.separator"), "\n"),
                 CoreMatchers.equalTo(expected));
@@ -1599,7 +1598,7 @@ public class BootstrapHandlerTest {
     }
 
     private void checkInlinedScript(Element head, String scriptName,
-                                    boolean shouldBeInlined) {
+            boolean shouldBeInlined) {
         StringBuilder builder = new StringBuilder();
         try (InputStream stream = getClass().getResourceAsStream(scriptName)) {
             IOUtils.readLines(stream, StandardCharsets.UTF_8)
