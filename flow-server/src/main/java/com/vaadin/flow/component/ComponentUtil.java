@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -291,7 +292,9 @@ public class ComponentUtil {
     private static boolean isVirtualChild(Component component,
             Component parentComponent) {
         Iterator<StateNode> iterator = parentComponent.getElement().getNode()
-                .getFeature(VirtualChildrenList.class).iterator();
+                .getFeatureIfInitialized(VirtualChildrenList.class)
+                .map(VirtualChildrenList::iterator)
+                .orElse(Collections.emptyIterator());
         while (iterator.hasNext()) {
             if (iterator.next().equals(component.getElement().getNode())) {
                 return true;

@@ -79,6 +79,23 @@ public class ComponentMapping extends ServerSideFeature {
         return Optional.ofNullable(component);
     }
 
+    /**
+     * Gets the component mapped to the given state node.
+     *
+     * @param node
+     *            the state node for which to find a component, not
+     *            <code>null</code>
+     * @return the mapped component, or an empty optional if no component is
+     *         mapped
+     */
+    public static Optional<Component> getComponent(StateNode node) {
+        assert node != null;
+        assert node.hasFeature(ComponentMapping.class);
+
+        return node.getFeatureIfInitialized(ComponentMapping.class)
+                .flatMap(ComponentMapping::getComponent);
+    }
+
     @Override
     public void onAttach(boolean initialAttach) {
         getComponent().ifPresent(
