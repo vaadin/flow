@@ -38,12 +38,12 @@ gulp.task('prepare', cb => {
 });
 
 const variantsData = {};
-gulp.task('gather-variants-data', ['prepare'], () => {
+gulp.task('gather-variants-data', gulp.series('prepare', () => {
   return gulp.src([globalVar.bowerSrcDir + "/*/theme/*/vaadin-*-styles.html"])
     .pipe(new VariantsTransform(variantsData));
-});
+}));
 
-gulp.task('generate', ['gather-variants-data'], () => {
+gulp.task('generate', gulp.series('gather-variants-data', () => {
   console.log(`Running generate task, for resources from: ${globalVar.bowerSrcDir}`);
   // the element filter reads the bower.json file and parses the dependencies
   const elementFilter = new ElementFilter();
@@ -69,6 +69,6 @@ gulp.task('generate', ['gather-variants-data'], () => {
     .pipe(new AnalyzerTransform(elementFilter, mixinCollector)) // transforms out PolymerElements
     .pipe(new ElementJsonTransform(versionReader, mixinCollector, variantsData)) // transforms out json files
     .pipe(gulp.dest('.'));
-});
+}));
 
-gulp.task('default', ['generate']);
+gulp.task('default', gulp.task('generate'));
