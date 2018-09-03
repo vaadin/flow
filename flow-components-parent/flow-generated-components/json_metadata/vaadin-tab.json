@@ -2,7 +2,7 @@
   "name": "Vaadin.TabElement",
   "tag": "vaadin-tab",
   "baseUrl": "vaadin-tabs/src/vaadin-tab.html",
-  "version": "2.1.0-alpha3",
+  "version": "2.1.0",
   "properties": [
     {
       "name": "value",
@@ -29,14 +29,7 @@
       "description": "If true, the item is in selected state.\n         "
     }
   ],
-  "methods": [
-    {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    }
-  ],
+  "methods": [],
   "events": [],
   "slots": [
     ""
@@ -52,5 +45,5 @@
       "icon-on-top"
     ]
   },
-  "description": "`<vaadin-tab>` is a Polymer 2 element providing an accessible and customizable tab.\n\n```\n  <vaadin-tab>\n    Tab 1\n  </vaadin-tab>\n```\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled` | Set to a disabled tab | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`selected` | Set when the tab is selected | :host\n`active` | Set when mousedown or enter/spacebar pressed | :host\n`orientation` | Set to `horizontal` or `vertical` depending on the direction of items  | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+  "description": "`<vaadin-tab>` is a Web Component providing an accessible and customizable tab.\n\n```\n  <vaadin-tab>\n    Tab 1\n  </vaadin-tab>\n```\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled` | Set to a disabled tab | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`selected` | Set when the tab is selected | :host\n`active` | Set when mousedown or enter/spacebar pressed | :host\n`orientation` | Set to `horizontal` or `vertical` depending on the direction of items  | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

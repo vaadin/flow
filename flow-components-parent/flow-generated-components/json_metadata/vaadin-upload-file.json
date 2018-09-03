@@ -13,14 +13,7 @@
       "description": ""
     }
   ],
-  "methods": [
-    {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    }
-  ],
+  "methods": [],
   "events": [
     {
       "name": "file-abort",

@@ -44,8 +44,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridFilterElement#5.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.GridFilterElement#5.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-grid-filter")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-filter.html")
 public abstract class GeneratedVaadinGridFilter<R extends GeneratedVaadinGridFilter<R, T>, T>

@@ -48,12 +48,6 @@
   ],
   "methods": [
     {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
       "name": "connectedCallback",
       "description": "",
       "parameters": [],

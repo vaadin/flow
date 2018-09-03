@@ -244,10 +244,6 @@ public abstract class GeneratedVaadinContextMenuOverlay<R extends GeneratedVaadi
         getElement().setProperty("focusTrap", focusTrap);
     }
 
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
-    }
-
     /**
      * @param sourceEvent
      *            Missing documentation!

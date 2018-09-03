@@ -40,8 +40,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-text-area>} is a Polymer 2 element for text area control in
- * forms.
+ * {@code <vaadin-text-area>} is a Web Component for text area control in forms.
  * </p>
  * <p>
  * &lt;vaadin-text-area label=&quot;Add description&quot;&gt;
@@ -143,8 +142,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TextAreaElement#2.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.TextAreaElement#2.1.2", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-text-area")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")
 public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R, T>, T>
@@ -153,7 +151,7 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
 
     /**
      * Adds theme variants to the component.
-     *
+     * 
      * @param variants
      *            theme variants to add
      */
@@ -165,7 +163,7 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
 
     /**
      * Removes theme variants from the component.
-     *
+     * 
      * @param variants
      *            theme variants to remove
      */
@@ -721,10 +719,6 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
      */
     @NotSupported
     protected void validate() {
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("change")

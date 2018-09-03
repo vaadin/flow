@@ -32,7 +32,7 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-radio-button>} is a Polymer element for radio buttons.
+ * {@code <vaadin-radio-button>} is a Web Component for radio buttons.
  * </p>
  * <p>
  * &lt;vaadin-radio-button
@@ -99,8 +99,7 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.RadioButtonElement#1.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.RadioButtonElement#1.1.1", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-radio-button")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-button.html")
 public abstract class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioButton<R>>
@@ -251,10 +250,6 @@ public abstract class GeneratedVaadinRadioButton<R extends GeneratedVaadinRadioB
      */
     protected void setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     public static class CheckedChangeEvent<R extends GeneratedVaadinRadioButton<R>>

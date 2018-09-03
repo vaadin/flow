@@ -35,7 +35,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-checkbox>} is a Polymer 2 element for customized checkboxes.
+ * {@code <vaadin-checkbox>} is a Web Component for customized checkboxes.
  * </p>
  * <p>
  * &lt;vaadin-checkbox&gt; Make my profile visible &lt;/vaadin-checkbox&gt;
@@ -69,32 +69,44 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * <tr>
  * <th>Attribute</th>
  * <th>Description</th>
+ * <th>Part name</th>
  * </tr>
  * </thead> <tbody>
  * <tr>
  * <td>{@code active}</td>
  * <td>Set when the checkbox is pressed down, either with mouse, touch or the
  * keyboard.</td>
+ * <td>{@code :host}</td>
  * </tr>
  * <tr>
  * <td>{@code disabled}</td>
  * <td>Set when the checkbox is disabled.</td>
+ * <td>{@code :host}</td>
  * </tr>
  * <tr>
  * <td>{@code focus-ring}</td>
  * <td>Set when the checkbox is focused using the keyboard.</td>
+ * <td>{@code :host}</td>
  * </tr>
  * <tr>
  * <td>{@code focused}</td>
  * <td>Set when the checkbox is focused.</td>
+ * <td>{@code :host}</td>
  * </tr>
  * <tr>
  * <td>{@code indeterminate}</td>
  * <td>Set when the checkbox is in indeterminate mode.</td>
+ * <td>{@code :host}</td>
  * </tr>
  * <tr>
  * <td>{@code checked}</td>
  * <td>Set when the checkbox is checked.</td>
+ * <td>{@code :host}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code empty}</td>
+ * <td>Set when there is no label provided.</td>
+ * <td>{@code label}</td>
  * </tr>
  * </tbody>
  * </table>
@@ -105,8 +117,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.CheckboxElement#2.2.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.CheckboxElement#2.2.1", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/src/vaadin-checkbox.html")
 public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R, T>, T>
@@ -232,10 +243,6 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      */
     protected void setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("change")

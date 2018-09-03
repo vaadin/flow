@@ -48,8 +48,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TimePickerElement#1.0.0-beta1",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.TimePickerElement#1.0.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-time-picker")
 @HtmlImport("frontend://bower_components/vaadin-time-picker/src/vaadin-time-picker.html")
 public abstract class GeneratedVaadinTimePicker<R extends GeneratedVaadinTimePicker<R, T>, T>
@@ -420,7 +419,7 @@ public abstract class GeneratedVaadinTimePicker<R extends GeneratedVaadinTimePic
      * configuring the items displayed in the selection box.
      * </p>
      * <p>
-     * It also configures the precission of the value string. By default the
+     * It also configures the precision of the value string. By default the
      * component formats values as {@code hh:mm} but setting a step value lower
      * than one minute or one second, format resolution changes to
      * {@code hh:mm:ss} and {@code hh:mm:ss.fff} respectively.
@@ -448,7 +447,7 @@ public abstract class GeneratedVaadinTimePicker<R extends GeneratedVaadinTimePic
      * configuring the items displayed in the selection box.
      * </p>
      * <p>
-     * It also configures the precission of the value string. By default the
+     * It also configures the precision of the value string. By default the
      * component formats values as {@code hh:mm} but setting a step value lower
      * than one minute or one second, format resolution changes to
      * {@code hh:mm:ss} and {@code hh:mm:ss.fff} respectively.

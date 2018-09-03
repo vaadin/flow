@@ -66,7 +66,7 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.HorizontalLayoutElement#1.1.0-alpha3",
+        "WebComponent: Vaadin.HorizontalLayoutElement#1.1.0",
         "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-horizontal-layout")
 @HtmlImport("frontend://bower_components/vaadin-ordered-layout/src/vaadin-horizontal-layout.html")
@@ -95,9 +95,5 @@ public abstract class GeneratedVaadinHorizontalLayout<R extends GeneratedVaadinH
         getThemeNames().removeAll(
                 Stream.of(variants).map(HorizontalLayoutVariant::getVariantName)
                         .collect(Collectors.toList()));
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 }

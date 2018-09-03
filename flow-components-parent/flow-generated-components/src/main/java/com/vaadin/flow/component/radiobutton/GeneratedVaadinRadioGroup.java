@@ -36,7 +36,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-radio-group>} is a Polymer element for grouping
+ * {@code <vaadin-radio-group>} is a Web Component for grouping
  * vaadin-radio-buttons.
  * </p>
  * <p>
@@ -100,6 +100,11 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * <td>Set when the element has a label</td>
  * <td>:host</td>
  * </tr>
+ * <tr>
+ * <td>{@code has-value}</td>
+ * <td>Set when the element has a value</td>
+ * <td>:host</td>
+ * </tr>
  * </tbody>
  * </table>
  * <p>
@@ -109,8 +114,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.RadioGroupElement#1.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.RadioGroupElement#1.1.1", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-radio-group")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-group.html")
 public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R, T>, T>
@@ -186,7 +190,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     *
+     * 
      * @return the {@code readonly} property from the webcomponent
      */
     protected boolean isReadonlyBoolean() {
@@ -201,7 +205,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * This attribute indicates that the user cannot modify the value of the
      * control.
      * </p>
-     *
+     * 
      * @param readonly
      *            the boolean value to set
      */
@@ -219,7 +223,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * This property is synchronized automatically from client side when a
      * 'invalid-changed' event happens.
      * </p>
-     *
+     * 
      * @return the {@code invalid} property from the webcomponent
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
@@ -234,7 +238,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * <p>
      * This property is set to true when the value is invalid.
      * </p>
-     *
+     * 
      * @param invalid
      *            the boolean value to set
      */
@@ -252,7 +256,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     *
+     * 
      * @return the {@code required} property from the webcomponent
      */
     protected boolean isRequiredBoolean() {
@@ -266,7 +270,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * <p>
      * Specifies that the user must fill in a value.
      * </p>
-     *
+     * 
      * @param required
      *            the boolean value to set
      */
@@ -284,7 +288,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     *
+     * 
      * @return the {@code errorMessage} property from the webcomponent
      */
     protected String getErrorMessageString() {
@@ -298,7 +302,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * <p>
      * Error to show when the input value is invalid.
      * </p>
-     *
+     * 
      * @param errorMessage
      *            the String value to set
      */
@@ -317,7 +321,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     *
+     * 
      * @return the {@code label} property from the webcomponent
      */
     protected String getLabelString() {
@@ -331,16 +335,12 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      * <p>
      * String used for the label element.
      * </p>
-     *
+     * 
      * @param label
      *            the String value to set
      */
     protected void setLabel(String label) {
         getElement().setProperty("label", label == null ? "" : label);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     /**
@@ -394,7 +394,7 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
     /**
      * Adds a listener for {@code invalid-changed} events fired by the
      * webcomponent.
-     *
+     * 
      * @param listener
      *            the listener
      * @return a {@link Registration} for removing the event listener

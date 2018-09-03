@@ -2,7 +2,7 @@
   "name": "Vaadin.TabsElement",
   "tag": "vaadin-tabs",
   "baseUrl": "vaadin-tabs/src/vaadin-tabs.html",
-  "version": "2.1.0-alpha3",
+  "version": "2.1.0",
   "properties": [
     {
       "name": "selected",
@@ -26,7 +26,7 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "The list of items from which a selection can be made.\nIs is populated from the elements passed to the light DOM,\nand updated dynamically when adding or removing items.\n\nThe item elements must implement `Vaadin.ItemMixin`.\n\nNote: unlike `<vaadin-combo-box>`, this property is read-only,\nso if you want to provide items by iterating array of data,\nyou have to use `dom-repeat` and place it to the light DOM.\n         ",
+      "description": "The list of items from which a selection can be made.\nIt is populated from the elements passed to the light DOM,\nand updated dynamically when adding or removing items.\n\nThe item elements must implement `Vaadin.ItemMixin`.\n\nNote: unlike `<vaadin-combo-box>`, this property is read-only,\nso if you want to provide items by iterating array of data,\nyou have to use `dom-repeat` and place it to the light DOM.\n         ",
       "readOnly": true,
       "notify": true
     }
@@ -34,12 +34,6 @@
   "methods": [
     {
       "name": "focus",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "updateStyles",
       "description": "",
       "parameters": [],
       "returns": "UNDEFINED"
@@ -57,6 +51,7 @@
   ],
   "variants": {
     "lumo": [
+      "centered",
       "small",
       "minimal",
       "hide-scroll-buttons",
@@ -66,5 +61,5 @@
       "fixed"
     ]
   },
-  "description": "`<vaadin-tabs>` is a Polymer 2 element for easy switching between different view\n\n```\n  <vaadin-tabs selected=\"4\">\n    <vaadin-tab>Page 1</vaadin-tab>\n    <vaadin-tab>Page 2</vaadin-tab>\n    <vaadin-tab>Page 3</vaadin-tab>\n    <vaadin-tab>Page 4</vaadin-tab>\n  </vaadin-tabs>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|--------------------------------------\n`back-button`     | Button for moving the scroll back\n`tabs`            | The tabs container\n`forward-button`  | Button for moving the scroll forward\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`orientation` | Tabs disposition, valid values are `horizontal` and `vertical`. | :host\n`overflow` | It's set to `start`, `end`, none or both. | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+  "description": "`<vaadin-tabs>` is a Web Component for easy switching between different views.\n\n```\n  <vaadin-tabs selected=\"4\">\n    <vaadin-tab>Page 1</vaadin-tab>\n    <vaadin-tab>Page 2</vaadin-tab>\n    <vaadin-tab>Page 3</vaadin-tab>\n    <vaadin-tab>Page 4</vaadin-tab>\n  </vaadin-tabs>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|--------------------------------------\n`back-button`     | Button for moving the scroll back\n`tabs`            | The tabs container\n`forward-button`  | Button for moving the scroll forward\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`orientation` | Tabs disposition, valid values are `horizontal` and `vertical`. | :host\n`overflow` | It's set to `start`, `end`, none or both. | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

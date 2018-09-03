@@ -258,10 +258,6 @@ public abstract class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadin
         getElement().setProperty("focusTrap", focusTrap);
     }
 
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
-    }
-
     /**
      * @param sourceEvent
      *            Missing documentation!

@@ -253,10 +253,6 @@ public abstract class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDial
         getElement().setProperty("focusTrap", focusTrap);
     }
 
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
-    }
-
     /**
      * @param sourceEvent
      *            Missing documentation!

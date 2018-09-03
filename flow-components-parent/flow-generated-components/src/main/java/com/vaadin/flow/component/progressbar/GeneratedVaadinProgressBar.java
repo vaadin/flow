@@ -29,7 +29,7 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-progress-bar>} is a Polymer 2 progress bar.
+ * {@code <vaadin-progress-bar>} is a Web Component for progress bars.
  * </p>
  * <p>
  * &lt;vaadin-progress-bar min=&quot;0&quot; max=&quot;1&quot;
@@ -99,8 +99,7 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ProgressBarElement#1.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.ProgressBarElement#1.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-progress-bar")
 @HtmlImport("frontend://bower_components/vaadin-progress-bar/src/vaadin-progress-bar.html")
 public abstract class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgressBar<R>>
@@ -258,9 +257,5 @@ public abstract class GeneratedVaadinProgressBar<R extends GeneratedVaadinProgre
      */
     protected void setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 }

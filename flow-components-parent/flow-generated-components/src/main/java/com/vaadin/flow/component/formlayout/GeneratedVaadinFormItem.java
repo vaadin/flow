@@ -28,8 +28,8 @@ import com.vaadin.flow.dom.Element;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-form-item>} is a Polymer 2 element providing labelled form
- * item wrapper for using inside {@code <vaadin-form-layout>}.
+ * {@code <vaadin-form-item>} is a Web Component providing labelled form item
+ * wrapper for using inside {@code <vaadin-form-layout>}.
  * </p>
  * <p>
  * {@code <vaadin-form-item>} accepts any number of children as the input
@@ -164,16 +164,11 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.FormItemElement#2.1.0-alpha4",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.FormItemElement#2.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-item.html")
 public abstract class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
         extends Component implements HasStyle, ClickNotifier<R> {
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
-    }
 
     /**
      * Adds the given components as children of this component at the slot

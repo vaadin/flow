@@ -29,7 +29,7 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-dialog>} is a Polymer 2 element for customized modal dialogs.
+ * {@code <vaadin-dialog>} is a Web Component for customized modal dialogs.
  * </p>
  * <p>
  * &lt;vaadin-dialog opened&gt; &lt;template&gt; Sample dialog &lt;/template&gt;
@@ -86,6 +86,45 @@ public abstract class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
      */
     protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Set the {@code aria-label} attribute for assistive technologies like
+     * screen readers. An {@code undefined} value for this property (the
+     * default) means that the {@code aria-label} attribute is not present at
+     * all.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code ariaLabel} property from the webcomponent
+     */
+    protected String getAriaLabelString() {
+        return getElement().getProperty("ariaLabel");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Set the {@code aria-label} attribute for assistive technologies like
+     * screen readers. An {@code undefined} value for this property (the
+     * default) means that the {@code aria-label} attribute is not present at
+     * all.
+     * </p>
+     * 
+     * @param ariaLabel
+     *            the String value to set
+     */
+    protected void setAriaLabel(String ariaLabel) {
+        getElement().setProperty("ariaLabel",
+                ariaLabel == null ? "" : ariaLabel);
     }
 
     public static class OpenedChangeEvent<R extends GeneratedVaadinDialog<R>>

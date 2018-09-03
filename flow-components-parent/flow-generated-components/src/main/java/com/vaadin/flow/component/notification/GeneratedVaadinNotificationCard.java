@@ -61,8 +61,4 @@ import com.vaadin.flow.component.Component;
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotificationCard<R extends GeneratedVaadinNotificationCard<R>>
         extends Component implements HasStyle {
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
-    }
 }

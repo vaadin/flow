@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2018 Vaadin Ltd.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -112,7 +112,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.CheckboxGroupElement#2.2.0-alpha3",
+        "WebComponent: Vaadin.CheckboxGroupElement#2.2.1",
         "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-checkbox-group")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/src/vaadin-checkbox-group.html")
@@ -122,7 +122,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
 
     /**
      * Adds theme variants to the component.
-     *
+     * 
      * @param variants
      *            theme variants to add
      */
@@ -134,7 +134,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
 
     /**
      * Removes theme variants from the component.
-     *
+     * 
      * @param variants
      *            theme variants to remove
      */
@@ -155,7 +155,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     *
+     * 
      * @return the {@code disabled} property from the webcomponent
      */
     protected boolean isDisabledBoolean() {
@@ -170,7 +170,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * The current disabled state of the checkbox group. True if group and all
      * internal checkboxes are disabled.
      * </p>
-     *
+     * 
      * @param disabled
      *            the boolean value to set
      */
@@ -188,7 +188,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     *
+     * 
      * @return the {@code label} property from the webcomponent
      */
     protected String getLabelString() {
@@ -202,7 +202,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * <p>
      * String used for the label element.
      * </p>
-     *
+     * 
      * @param label
      *            the String value to set
      */
@@ -220,7 +220,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     *
+     * 
      * @return the {@code errorMessage} property from the webcomponent
      */
     protected String getErrorMessageString() {
@@ -234,7 +234,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * <p>
      * Error to show when the input value is invalid.
      * </p>
-     *
+     * 
      * @param errorMessage
      *            the String value to set
      */
@@ -253,7 +253,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     *
+     * 
      * @return the {@code required} property from the webcomponent
      */
     protected boolean isRequiredBoolean() {
@@ -267,7 +267,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * <p>
      * Specifies that the user must fill in a value.
      * </p>
-     *
+     * 
      * @param required
      *            the boolean value to set
      */
@@ -285,7 +285,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * This property is synchronized automatically from client side when a
      * 'invalid-changed' event happens.
      * </p>
-     *
+     * 
      * @return the {@code invalid} property from the webcomponent
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
@@ -300,16 +300,12 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
      * <p>
      * This property is set to true when the control value is invalid.
      * </p>
-     *
+     * 
      * @param invalid
      *            the boolean value to set
      */
     protected void setInvalid(boolean invalid) {
         getElement().setProperty("invalid", invalid);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     /**
@@ -346,7 +342,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
     /**
      * Adds a listener for {@code invalid-changed} events fired by the
      * webcomponent.
-     *
+     * 
      * @param listener
      *            the listener
      * @return a {@link Registration} for removing the event listener
@@ -363,7 +359,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
     /**
      * Constructs a new GeneratedVaadinCheckboxGroup component with the given
      * arguments.
-     *
+     * 
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue
@@ -392,7 +388,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
     /**
      * Constructs a new GeneratedVaadinCheckboxGroup component with the given
      * arguments.
-     *
+     * 
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue
@@ -412,7 +408,7 @@ public abstract class GeneratedVaadinCheckboxGroup<R extends GeneratedVaadinChec
     /**
      * Constructs a new GeneratedVaadinCheckboxGroup component with the given
      * arguments.
-     *
+     * 
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue

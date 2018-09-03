@@ -19,8 +19,8 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonObject;
+import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -44,12 +44,11 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
         extends Component implements HasStyle {
 
     /**
-     * This property is synchronized automatically from client side when a
-     * 'opened-changed' event happens.
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
      * 
      * @return the {@code opened} property from the webcomponent
      */
-    @Synchronize(property = "opened", value = "opened-changed")
     protected boolean isOpenedBoolean() {
         return getElement().getProperty("opened", false);
     }
@@ -225,37 +224,6 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
             ComponentEventListener<VaadinComboBoxDropdownOpenedEvent<R>> listener) {
         return addListener(VaadinComboBoxDropdownOpenedEvent.class,
                 (ComponentEventListener) listener);
-    }
-
-    public static class OpenedChangeEvent<R extends GeneratedVaadinComboBoxDropdown<R>>
-            extends ComponentEvent<R> {
-        private final boolean opened;
-
-        public OpenedChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-            this.opened = source.isOpenedBoolean();
-        }
-
-        public boolean isOpened() {
-            return opened;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code opened-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    protected Registration addOpenedChangeListener(
-            ComponentEventListener<OpenedChangeEvent<R>> listener) {
-        return getElement()
-                .addPropertyChangeListener("opened",
-                        event -> listener.onComponentEvent(
-                                new OpenedChangeEvent<R>((R) this,
-                                        event.isUserOriginated())));
     }
 
     public static class TemplateChangeEvent<R extends GeneratedVaadinComboBoxDropdown<R>>

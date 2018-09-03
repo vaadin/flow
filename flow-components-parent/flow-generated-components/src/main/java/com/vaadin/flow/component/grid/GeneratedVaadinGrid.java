@@ -291,7 +291,7 @@ grid.size = 200; // The total number of items
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridElement#5.1.0-alpha3", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.GridElement#5.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid.html")
 public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
@@ -317,6 +317,75 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
     public void removeThemeVariants(GridVariant... variants) {
         getThemeNames().removeAll(Stream.of(variants)
                 .map(GridVariant::getVariantName).collect(Collectors.toList()));
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The item user has last interacted with. Turns to {@code null} after user
+     * deactivates the item by re-interacting with the currently active item.
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'active-item-changed' event happens.
+     * </p>
+     * 
+     * @return the {@code activeItem} property from the webcomponent
+     */
+    @Synchronize(property = "activeItem", value = "active-item-changed")
+    protected JsonObject getActiveItemJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("activeItem");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The item user has last interacted with. Turns to {@code null} after user
+     * deactivates the item by re-interacting with the currently active item.
+     * </p>
+     * 
+     * @param activeItem
+     *            the JsonObject value to set
+     */
+    protected void setActiveItem(JsonObject activeItem) {
+        getElement().setPropertyJson("activeItem", activeItem);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * An array containing the items which will be stamped to the column
+     * template instances.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code items} property from the webcomponent
+     */
+    protected JsonArray getItemsJsonArray() {
+        return (JsonArray) getElement().getPropertyRaw("items");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * An array containing the items which will be stamped to the column
+     * template instances.
+     * </p>
+     * 
+     * @param items
+     *            the JsonArray value to set
+     */
+    protected void setItems(JsonArray items) {
+        getElement().setPropertyJson("items", items);
     }
 
     /**
@@ -527,75 +596,6 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * The item user has last interacted with. Turns to {@code null} after user
-     * deactivates the item by re-interacting with the currently active item.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'active-item-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code activeItem} property from the webcomponent
-     */
-    @Synchronize(property = "activeItem", value = "active-item-changed")
-    protected JsonObject getActiveItemJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("activeItem");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The item user has last interacted with. Turns to {@code null} after user
-     * deactivates the item by re-interacting with the currently active item.
-     * </p>
-     * 
-     * @param activeItem
-     *            the JsonObject value to set
-     */
-    protected void setActiveItem(JsonObject activeItem) {
-        getElement().setPropertyJson("activeItem", activeItem);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * An array containing the items which will be stamped to the column
-     * template instances.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code items} property from the webcomponent
-     */
-    protected JsonArray getItemsJsonArray() {
-        return (JsonArray) getElement().getPropertyRaw("items");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * An array containing the items which will be stamped to the column
-     * template instances.
-     * </p>
-     * 
-     * @param items
-     *            the JsonArray value to set
-     */
-    protected void setItems(JsonArray items) {
-        getElement().setPropertyJson("items", items);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * An array containing references to items with open row details.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -621,6 +621,39 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      */
     protected void setDetailsOpenedItems(JsonArray detailsOpenedItems) {
         getElement().setPropertyJson("detailsOpenedItems", detailsOpenedItems);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * An array that contains the selected items.
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'selected-items-changed' event happens.
+     * </p>
+     * 
+     * @return the {@code selectedItems} property from the webcomponent
+     */
+    @Synchronize(property = "selectedItems", value = "selected-items-changed")
+    protected JsonObject getSelectedItemsJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("selectedItems");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * An array that contains the selected items.
+     * </p>
+     * 
+     * @param selectedItems
+     *            the JsonObject value to set
+     */
+    protected void setSelectedItems(JsonObject selectedItems) {
+        getElement().setPropertyJson("selectedItems", selectedItems);
     }
 
     /**
@@ -655,39 +688,6 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      */
     protected void setMultiSort(boolean multiSort) {
         getElement().setProperty("multiSort", multiSort);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * An array that contains the selected items.
-     * <p>
-     * This property is synchronized automatically from client side when a
-     * 'selected-items-changed' event happens.
-     * </p>
-     * 
-     * @return the {@code selectedItems} property from the webcomponent
-     */
-    @Synchronize(property = "selectedItems", value = "selected-items-changed")
-    protected JsonObject getSelectedItemsJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("selectedItems");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * An array that contains the selected items.
-     * </p>
-     * 
-     * @param selectedItems
-     *            the JsonObject value to set
-     */
-    protected void setSelectedItems(JsonObject selectedItems) {
-        getElement().setPropertyJson("selectedItems", selectedItems);
     }
 
     /**
@@ -754,10 +754,6 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      */
     protected void setHeightByRows(boolean heightByRows) {
         getElement().setProperty("heightByRows", heightByRows);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     /**
@@ -878,6 +874,37 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
         getElement().callFunction("deselectItem", item);
     }
 
+    public static class ActiveItemChangeEvent<R extends GeneratedVaadinGrid<R>>
+            extends ComponentEvent<R> {
+        private final JsonObject activeItem;
+
+        public ActiveItemChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+            this.activeItem = source.getActiveItemJsonObject();
+        }
+
+        public JsonObject getActiveItem() {
+            return activeItem;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code active-item-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    protected Registration addActiveItemChangeListener(
+            ComponentEventListener<ActiveItemChangeEvent<R>> listener) {
+        return getElement()
+                .addPropertyChangeListener("activeItem",
+                        event -> listener.onComponentEvent(
+                                new ActiveItemChangeEvent<R>((R) this,
+                                        event.isUserOriginated())));
+    }
+
     public static class DataProviderChangeEvent<R extends GeneratedVaadinGrid<R>>
             extends ComponentEvent<R> {
         private final JsonObject dataProvider;
@@ -967,37 +994,6 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
                 event -> listener.onComponentEvent(
                         new ExpandedItemsChangeEvent<R>((R) this,
                                 event.isUserOriginated())));
-    }
-
-    public static class ActiveItemChangeEvent<R extends GeneratedVaadinGrid<R>>
-            extends ComponentEvent<R> {
-        private final JsonObject activeItem;
-
-        public ActiveItemChangeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-            this.activeItem = source.getActiveItemJsonObject();
-        }
-
-        public JsonObject getActiveItem() {
-            return activeItem;
-        }
-    }
-
-    /**
-     * Adds a listener for {@code active-item-changed} events fired by the
-     * webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    protected Registration addActiveItemChangeListener(
-            ComponentEventListener<ActiveItemChangeEvent<R>> listener) {
-        return getElement()
-                .addPropertyChangeListener("activeItem",
-                        event -> listener.onComponentEvent(
-                                new ActiveItemChangeEvent<R>((R) this,
-                                        event.isUserOriginated())));
     }
 
     public static class SelectedItemsChangeEvent<R extends GeneratedVaadinGrid<R>>

@@ -10,8 +10,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "",
-      "notify": true
+      "description": ""
     },
     {
       "name": "template",
@@ -76,11 +75,6 @@
     {
       "name": "vaadin-combo-box-dropdown-opened",
       "description": "vaadin-combo-box-dropdown-opened",
-      "properties": []
-    },
-    {
-      "name": "opened-changed",
-      "description": "Fired when the `opened` property changes.",
       "properties": []
     },
     {

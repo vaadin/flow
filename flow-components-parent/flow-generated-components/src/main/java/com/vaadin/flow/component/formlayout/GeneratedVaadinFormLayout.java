@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-form-layout>} is a Polymer 2 element providing configurable
+ * {@code <vaadin-form-layout>} is a Web Component providing configurable
  * responsive layout for form elements.
  * </p>
  * <p>
@@ -134,8 +134,7 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.FormLayoutElement#2.1.0-alpha4",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.FormLayoutElement#2.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/src/vaadin-form-layout.html")
 public abstract class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>

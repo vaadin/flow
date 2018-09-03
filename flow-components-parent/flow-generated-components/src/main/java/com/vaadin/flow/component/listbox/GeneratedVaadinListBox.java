@@ -26,7 +26,7 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-list-box>} is a Polymer 2 element for menus
+ * {@code <vaadin-list-box>} is a Web Component for creating menus.
  * </p>
  * <p>
  * {@code
@@ -61,8 +61,7 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ListBoxElement#1.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.ListBoxElement#1.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-list-box")
 @HtmlImport("frontend://bower_components/vaadin-list-box/src/vaadin-list-box.html")
 public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>>
@@ -70,9 +69,5 @@ public abstract class GeneratedVaadinListBox<R extends GeneratedVaadinListBox<R>
 
     protected void focus() {
         getElement().callFunction("focus");
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 }

@@ -108,7 +108,7 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridTreeToggleElement#5.1.0-alpha3",
+        "WebComponent: Vaadin.GridTreeToggleElement#5.1.0",
         "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-grid-tree-toggle")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-tree-toggle.html")
@@ -236,10 +236,6 @@ public abstract class GeneratedVaadinGridTreeToggle<R extends GeneratedVaadinGri
      */
     protected void setExpanded(boolean expanded) {
         getElement().setProperty("expanded", expanded);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     public static class ExpandedChangeEvent<R extends GeneratedVaadinGridTreeToggle<R>>

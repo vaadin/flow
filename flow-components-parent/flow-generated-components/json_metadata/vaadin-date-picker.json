@@ -2,7 +2,7 @@
   "name": "Vaadin.DatePickerElement",
   "tag": "vaadin-date-picker",
   "baseUrl": "vaadin-date-picker/src/vaadin-date-picker.html",
-  "version": "3.2.0-alpha4",
+  "version": "3.2.0",
   "properties": [
     {
       "name": "autofocus",
@@ -137,12 +137,6 @@
     }
   ],
   "methods": [
-    {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
     {
       "name": "open",
       "description": "Opens the dropdown.\n     ",

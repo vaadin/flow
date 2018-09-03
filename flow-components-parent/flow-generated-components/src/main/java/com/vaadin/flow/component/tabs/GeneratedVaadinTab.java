@@ -29,7 +29,7 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-tab>} is a Polymer 2 element providing an accessible and
+ * {@code <vaadin-tab>} is a Web Component providing an accessible and
  * customizable tab.
  * </p>
  * <p>
@@ -89,7 +89,7 @@ Tab 1
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TabElement#2.1.0-alpha3", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.TabElement#2.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-tab")
 @HtmlImport("frontend://bower_components/vaadin-tabs/src/vaadin-tab.html")
 public abstract class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
@@ -213,9 +213,5 @@ public abstract class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>
      */
     protected void setSelected(boolean selected) {
         getElement().setProperty("selected", selected);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 }

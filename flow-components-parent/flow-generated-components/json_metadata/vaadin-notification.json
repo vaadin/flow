@@ -2,7 +2,7 @@
   "name": "Vaadin.NotificationElement",
   "tag": "vaadin-notification",
   "baseUrl": "vaadin-notification/src/vaadin-notification.html",
-  "version": "1.1.0-alpha3",
+  "version": "1.1.0",
   "properties": [
     {
       "name": "duration",
@@ -55,5 +55,5 @@
   "behaviors": [],
   "mixins": [],
   "variants": {},
-  "description": "`<vaadin-notification>` is a Polymer 2 element providing accessible and customizable notifications (toasts).\n\n```\n<vaadin-notification>\n  <template>\n    Your work has been saved\n  </template>\n</vaadin-notification>\n```"
+  "description": "`<vaadin-notification>` is a Web Component providing accessible and customizable notifications (toasts).\n\n```\n<vaadin-notification>\n  <template>\n    Your work has been saved\n  </template>\n</vaadin-notification>\n```"
 }

@@ -258,10 +258,6 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
         getElement().setProperty("focusTrap", focusTrap);
     }
 
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
-    }
-
     /**
      * @param sourceEvent
      *            Missing documentation!

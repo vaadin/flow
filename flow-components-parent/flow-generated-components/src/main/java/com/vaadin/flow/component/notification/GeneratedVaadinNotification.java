@@ -29,7 +29,7 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-notification>} is a Polymer 2 element providing accessible and
+ * {@code <vaadin-notification>} is a Web Component providing accessible and
  * customizable notifications (toasts).
  * </p>
  * <p>
@@ -42,8 +42,7 @@ Your work has been saved
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.NotificationElement#1.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.NotificationElement#1.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-notification")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R>>

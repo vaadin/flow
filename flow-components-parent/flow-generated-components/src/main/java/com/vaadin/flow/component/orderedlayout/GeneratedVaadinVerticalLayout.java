@@ -66,7 +66,7 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.VerticalLayoutElement#1.1.0-alpha3",
+        "WebComponent: Vaadin.VerticalLayoutElement#1.1.0",
         "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-vertical-layout")
 @HtmlImport("frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html")
@@ -95,9 +95,5 @@ public abstract class GeneratedVaadinVerticalLayout<R extends GeneratedVaadinVer
         getThemeNames().removeAll(
                 Stream.of(variants).map(VerticalLayoutVariant::getVariantName)
                         .collect(Collectors.toList()));
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 }

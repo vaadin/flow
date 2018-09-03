@@ -136,8 +136,7 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ContextMenuElement#4.1.0-alpha4",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.ContextMenuElement#4.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-context-menu")
 @HtmlImport("frontend://bower_components/vaadin-context-menu/src/vaadin-context-menu.html")
 public abstract class GeneratedVaadinContextMenu<R extends GeneratedVaadinContextMenu<R>>

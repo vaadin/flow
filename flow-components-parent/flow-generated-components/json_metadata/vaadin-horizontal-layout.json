@@ -2,16 +2,9 @@
   "name": "Vaadin.HorizontalLayoutElement",
   "tag": "vaadin-horizontal-layout",
   "baseUrl": "vaadin-ordered-layout/src/vaadin-horizontal-layout.html",
-  "version": "1.1.0-alpha3",
+  "version": "1.1.0",
   "properties": [],
-  "methods": [
-    {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    }
-  ],
+  "methods": [],
   "events": [],
   "slots": [
     ""

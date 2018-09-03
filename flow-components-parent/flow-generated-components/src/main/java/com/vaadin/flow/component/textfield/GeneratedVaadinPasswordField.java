@@ -28,8 +28,8 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-password-field>} is a Polymer 2 element for password field
- * control in forms.
+ * {@code <vaadin-password-field>} is a Web Component for password field control
+ * in forms.
  * </p>
  * <p>
  * &lt;vaadin-password-field label=&quot;Password&quot;&gt;
@@ -82,7 +82,7 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#2.1.0-alpha3",
+        "WebComponent: Vaadin.PasswordFieldElement#2.1.2",
         "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
