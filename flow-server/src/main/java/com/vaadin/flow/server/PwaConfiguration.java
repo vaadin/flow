@@ -46,13 +46,17 @@ public class PwaConfiguration implements Serializable {
     private final String offlinePath;
     private final String serviceWorkerPath;
     private final String display;
-    private final String startUrl;
+    private final String rootUrl;
+    private final String startPath;
     private final boolean enabled;
     private final List<String> offlineResources;
     private boolean enableInstallPrompt;
 
     protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
         serviceWorkerPath = "sw.js";
+        rootUrl = servletContext == null || servletContext.getContextPath() == null
+                || servletContext.getContextPath().isEmpty() ? "/"
+                : servletContext.getContextPath() + "/";
         if (pwa != null) {
             appName = pwa.name();
             shortName = pwa.shortName().substring(0,
@@ -64,7 +68,7 @@ public class PwaConfiguration implements Serializable {
             manifestPath = checkPath(pwa.manifestPath());
             offlinePath = checkPath(pwa.offlinePath());
             display = pwa.display();
-            startUrl = getStartUrl(servletContext);
+            startPath = pwa.startPath().replaceAll("^/+", "");
             enabled = true;
             offlineResources = Arrays.asList(pwa.offlineResources());
             enableInstallPrompt = pwa.enableInstallPrompt();
@@ -78,17 +82,11 @@ public class PwaConfiguration implements Serializable {
             manifestPath = DEFAULT_PATH;
             offlinePath = DEFAULT_OFFLINE_PATH;
             display = DEFAULT_DISPLAY;
-            startUrl = getStartUrl(servletContext);
+            startPath = "";
             enabled = false;
             offlineResources = Collections.emptyList();
             enableInstallPrompt = false;
         }
-    }
-
-    private static String getStartUrl(ServletContext context) {
-        return context == null || context.getContextPath() == null
-                || context.getContextPath().isEmpty() ? "/"
-                        : context.getContextPath() + "/";
     }
 
     private static String checkPath(String path) {
@@ -245,10 +243,21 @@ public class PwaConfiguration implements Serializable {
     /**
      * Gets the start url of the PWA application.
      *
+     * <p>Used in manifest as start url.
+     *
      * @return start url of the PWA application
      */
     public String getStartUrl() {
-        return startUrl;
+        return rootUrl + startPath;
+    }
+
+    /**
+     * Gets the application root url.
+     *
+     * @return application root url
+     */
+    public String getRootUrl() {
+        return rootUrl;
     }
 
     /**
