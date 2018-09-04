@@ -25,7 +25,7 @@ const AnalyzerTransform = require('./lib/js/analyzer-transform');
 const ElementJsonTransform = require('./lib/js/element-json-transform');
 const gulpIgnore = require('gulp-ignore');
 
-gulp.task('generate', function() {
+gulp.task('generate', () => {
   if (!fs.existsSync(globalVar.bowerSrcDir) || fs.readdirSync(globalVar.bowerSrcDir).length === 0) {
     console.error(`Source directory ${globalVar.bowerSrcDir} does not exists or empty`);
     process.exit(1)
@@ -61,6 +61,4 @@ gulp.task('generate', function() {
     .pipe(gulp.dest('.'));
 });
 
-gulp.task('default', function() {
-  gulp.start('generate');
-});
+gulp.task('default', gulp.task('generate'));
