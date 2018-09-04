@@ -53,7 +53,7 @@ require('coa').Cmd()
     .long('dependenciesFile')
     .end()
   .act(function() {
-    gulp.start('default');
+    gulp.task('default')();
   })
   .end()
   .run(process.argv.slice(2));
