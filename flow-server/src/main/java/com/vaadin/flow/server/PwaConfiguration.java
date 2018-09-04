@@ -54,9 +54,9 @@ public class PwaConfiguration implements Serializable {
 
     protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
         serviceWorkerPath = "sw.js";
-        rootUrl = servletContext == null || servletContext.getContextPath() == null
-                || servletContext.getContextPath().isEmpty() ? "/"
-                : servletContext.getContextPath() + "/";
+        rootUrl = hasContextPath(servletContext)
+                ? servletContext.getContextPath() + "/"
+                : "/";
         if (pwa != null) {
             appName = pwa.name();
             shortName = pwa.shortName().substring(0,
@@ -87,6 +87,12 @@ public class PwaConfiguration implements Serializable {
             offlineResources = Collections.emptyList();
             enableInstallPrompt = false;
         }
+    }
+
+    private static boolean hasContextPath(ServletContext servletContext) {
+        return !(servletContext == null
+                || servletContext.getContextPath() == null
+                || servletContext.getContextPath().isEmpty());
     }
 
     private static String checkPath(String path) {
