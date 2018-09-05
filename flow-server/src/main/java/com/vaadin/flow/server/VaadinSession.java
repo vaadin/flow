@@ -59,7 +59,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * Current VaadinSession object which can be accessed by
  * {@link VaadinSession#getCurrent} is not present before {@link VaadinServlet}
  * starts handling the HTTP request. For example, it cannot be used in any
- * implementation of {@Link javax.servlet.Filter} interface.
+ * implementation of {@link javax.servlet.Filter} interface.
  *
  * @author Vaadin Ltd
  * @since 7.0.0
