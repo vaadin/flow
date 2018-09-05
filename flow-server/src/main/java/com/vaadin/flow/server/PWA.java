@@ -91,6 +91,21 @@ public @interface PWA {
     String iconPath() default PwaConfiguration.DEFAULT_ICON;
 
     /**
+     * (Root relative) start url, used in web-manifest, property start_url
+     * <p>
+     * Used in manifest as start_url of application. Must be relative to root
+     * context. ie. If install address of application would be
+     * https://foo.bar.org/sub/  and wanted start url would be
+     * https://foo.bar.org/sub/pwa-start then value of startPath would be
+     * "pwa-start" (without leading "/").
+     * <p>
+     * Defaults to root of application.
+     *
+     * @return application start url
+     */
+    String startPath() default "";
+
+    /**
      * Name of the application.
      *
      * @return name of the application

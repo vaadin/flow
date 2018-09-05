@@ -172,7 +172,7 @@ public class PwaRegistry implements Serializable {
                 pwaConfiguration.getBackgroundColor());
         manifestData.put("theme_color", pwaConfiguration.getThemeColor());
         manifestData.put("start_url", pwaConfiguration.getStartUrl());
-        manifestData.put("scope", pwaConfiguration.getStartUrl());
+        manifestData.put("scope", pwaConfiguration.getRootUrl());
 
         // Add icons
         JsonArray iconList = Json.createArray();
