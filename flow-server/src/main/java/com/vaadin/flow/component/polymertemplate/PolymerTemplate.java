@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -63,6 +63,7 @@ import elemental.json.JsonArray;
  * @see Id
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
@@ -94,6 +95,15 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      *            the related service instance
      */
     protected PolymerTemplate(TemplateParser parser, VaadinService service) {
+        if (service == null) {
+            throw new IllegalStateException(VaadinService.class.getSimpleName()
+                    + " instance is null. "
+                    + "It means that you are trying to create "
+                    + "a component instance outside of servlet request thread "
+                    + "which is not thread safe. Any component "
+                    + "instantiation logic should be protected by a session lock."
+                    + "Call your logic inside the UI::access method.");
+        }
         TemplateInitializer templateInitializer = new TemplateInitializer(this,
                 parser, service);
         templateInitializer.initChildElements();

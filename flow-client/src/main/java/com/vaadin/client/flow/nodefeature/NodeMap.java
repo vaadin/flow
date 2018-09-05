@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,7 @@ import elemental.json.JsonValue;
  * a property changes since the property is a reactive values of its own.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class NodeMap extends NodeFeature implements ReactiveValue {
     private final JsMap<String, MapProperty> properties = JsCollections.map();

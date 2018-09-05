@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasTheme;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.DomEvent;
@@ -43,6 +46,18 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * <p>
  * &lt;vaadin-text-area label=&quot;Add description&quot;&gt;
  * &lt;/vaadin-text-area&gt;
+ * </p>
+ * <h3>Prefixes and suffixes</h3>
+ * <p>
+ * These are child elements of a {@code <vaadin-text-area>} that are displayed
+ * inline with the input, before or after. In order for an element to be
+ * considered as a prefix, it must have the slot attribute set to {@code prefix}
+ * (and similarly for {@code suffix}).
+ * </p>
+ * <p>
+ * &lt;vaadin-text-area label=&quot;Add description&quot;&gt; &lt;div
+ * slot=&quot;prefix&quot;&gt;Details:&lt;/div&gt; &lt;div
+ * slot=&quot;suffix&quot;&gt;The end!&lt;/div&gt; &lt;/vaadin-text-area&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
@@ -127,13 +142,38 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TextAreaElement#2.0.1", "Flow#1.0-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.TextAreaElement#2.1.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-text-area")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")
 public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R, T>, T>
         extends AbstractSinglePropertyField<R, T>
-        implements HasStyle, Focusable<R> {
+        implements HasStyle, Focusable<R>, HasTheme {
+
+    /**
+     * Adds theme variants to the component.
+     *
+     * @param variants
+     *            theme variants to add
+     */
+    public void addThemeVariants(TextAreaVariant... variants) {
+        getThemeNames()
+                .addAll(Stream.of(variants).map(TextAreaVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
+
+    /**
+     * Removes theme variants from the component.
+     *
+     * @param variants
+     *            theme variants to remove
+     */
+    public void removeThemeVariants(TextAreaVariant... variants) {
+        getThemeNames().removeAll(
+                Stream.of(variants).map(TextAreaVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
 
     /**
      * <p>
@@ -681,6 +721,10 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
      */
     @NotSupported
     protected void validate() {
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("change")

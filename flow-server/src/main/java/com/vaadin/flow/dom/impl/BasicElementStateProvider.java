@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -69,6 +70,7 @@ import elemental.json.JsonValue;
  * an implementation detail which can change.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
@@ -152,6 +154,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         return node.getFeature(ElementAttributeMap.class);
     }
 
+    private static Optional<ElementAttributeMap> getAttributeFeatureIfInitialized(
+            StateNode node) {
+        return node.getFeatureIfInitialized(ElementAttributeMap.class);
+    }
+
     /**
      * Gets the property feature for the given node and asserts it is non-null.
      *
@@ -161,6 +168,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
      */
     private static ElementPropertyMap getPropertyFeature(StateNode node) {
         return node.getFeature(ElementPropertyMap.class);
+    }
+
+    private static Optional<ElementPropertyMap> getPropertyFeatureIfInitialized(
+            StateNode node) {
+        return node.getFeatureIfInitialized(ElementPropertyMap.class);
     }
 
     @Override
@@ -177,7 +189,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        return getAttributeFeature(node).get(attribute);
+        return getAttributeFeatureIfInitialized(node)
+                .map(feature -> feature.get(attribute)).orElse(null);
     }
 
     @Override
@@ -185,7 +198,9 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        return getAttributeFeature(node).has(attribute);
+        Optional<ElementAttributeMap> maybeFeature = getAttributeFeatureIfInitialized(
+                node);
+        return maybeFeature.isPresent() && maybeFeature.get().has(attribute);
     }
 
     @Override
@@ -193,12 +208,14 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeFeature(node).remove(attribute);
+        getAttributeFeatureIfInitialized(node)
+                .map(feature -> feature.remove(attribute));
     }
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        return getAttributeFeature(node).attributes();
+        return getAttributeFeatureIfInitialized(node)
+                .map(ElementAttributeMap::attributes).orElseGet(Stream::empty);
     }
 
     @Override
@@ -235,7 +252,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        return getPropertyFeature(node).getProperty(name);
+        return getPropertyFeatureIfInitialized(node)
+                .map(feature -> feature.getProperty(name)).orElse(null);
     }
 
     @Override
@@ -252,7 +270,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyFeature(node).removeProperty(name);
+        getPropertyFeatureIfInitialized(node)
+                .ifPresent(feature -> feature.removeProperty(name));
     }
 
     @Override
@@ -260,14 +279,22 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        return getPropertyFeature(node).hasProperty(name);
+        Optional<ElementPropertyMap> maybeFeature = getPropertyFeatureIfInitialized(
+                node);
+        if (maybeFeature.isPresent()) {
+            return maybeFeature.get().hasProperty(name);
+        } else {
+            return false;
+        }
     }
 
     @Override
     public Stream<String> getPropertyNames(StateNode node) {
         assert node != null;
 
-        return getPropertyFeature(node).getPropertyNames();
+        return getPropertyFeatureIfInitialized(node)
+                .map(ElementPropertyMap::getPropertyNames)
+                .orElseGet(Stream::empty);
     }
 
     @Override
@@ -325,7 +352,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public StateNode getShadowRoot(StateNode node) {
-        return node.getFeature(ShadowRootData.class).getShadowRoot();
+        return node.getFeatureIfInitialized(ShadowRootData.class)
+                .map(ShadowRootData::getShadowRoot).orElse(null);
     }
 
     @Override

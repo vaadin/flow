@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,49 +20,52 @@ import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class SubPropertyModelIT extends ChromeBrowserTest {
 
     @Test
     public void subproperties() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
         Assert.assertEquals("message",
-                getInShadowRoot(template, By.id("msg")).getText());
+                template.$(TestBenchElement.class).id("msg").getText());
 
-        getInShadowRoot(template, By.id("button")).click();
+        template.$(TestBenchElement.class).id("button").click();
 
         Assert.assertEquals("Updated",
-                getInShadowRoot(template, By.id("msg")).getText());
+                template.$(TestBenchElement.class).id("msg").getText());
 
-        getInShadowRoot(template, By.id("sync")).click();
+        template.$(TestBenchElement.class).id("sync").click();
 
         WebElement syncedReport = findElement(By.id("synced-msg"));
         Assert.assertEquals("Set from the client", syncedReport.getText());
 
-        WebElement input = getInShadowRoot(template, By.id("input"));
+        TestBenchElement input = template.$(TestBenchElement.class).id("input");
         input.clear();
         input.sendKeys("foo");
 
         List<WebElement> valueUpdate = findElements(By.id("value-update"));
         Optional<WebElement> result = valueUpdate.stream()
                 .filter(element -> element.getText().equals("foo")).findAny();
-        Assert.assertTrue(
-                "Unable to find updated input value element. "
-                        + "Looks like input hasn't sent an event for subproperty",
+        Assert.assertTrue("Unable to find updated input value element. "
+                + "Looks like input hasn't sent an event for subproperty",
                 result.isPresent());
 
         // click message
-        getInShadowRoot(template, By.id("msg")).click();
+        template.$(TestBenchElement.class).id("msg").click();
 
         Assert.assertEquals(
                 "Clicking status message did not get the same modelData as in the message box.",
-                getInShadowRoot(template, By.id("msg")).getText(),
+                template.$(TestBenchElement.class).id("msg").getText(),
                 findElement(By.id("statusClick")).getText());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,14 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasTheme;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.NotSupported;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.component.AbstractSinglePropertyField;
@@ -42,6 +50,26 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  * <h3>Styling</h3>
  * <p>
+ * The following shadow DOM parts are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code label}</td>
+ * <td>The label element</td>
+ * </tr>
+ * <tr>
+ * <td>{@code group-field}</td>
+ * <td>The element that wraps radio-buttons</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
  * The following state attributes are available for styling:
  * </p>
  * <table>
@@ -57,6 +85,21 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * <td>Set when the radio group and its children are disabled.</td>
  * <td>:host</td>
  * </tr>
+ * <tr>
+ * <td>{@code readonly}</td>
+ * <td>Set to a readonly text field</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code invalid}</td>
+ * <td>Set when the element is invalid</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code has-label}</td>
+ * <td>Set when the element has a label</td>
+ * <td>:host</td>
+ * </tr>
  * </tbody>
  * </table>
  * <p>
@@ -65,12 +108,38 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.RadioGroupElement#1.0.1", "Flow#1.0-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.RadioGroupElement#1.1.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-radio-group")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-group.html")
 public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R, T>, T>
-        extends AbstractSinglePropertyField<R, T> implements HasStyle {
+        extends AbstractSinglePropertyField<R, T>
+        implements HasStyle, HasTheme {
+
+    /**
+     * Adds theme variants to the component.
+     * 
+     * @param variants
+     *            theme variants to add
+     */
+    public void addThemeVariants(RadioGroupVariant... variants) {
+        getThemeNames().addAll(
+                Stream.of(variants).map(RadioGroupVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
+
+    /**
+     * Removes theme variants from the component.
+     * 
+     * @param variants
+     *            theme variants to remove
+     */
+    public void removeThemeVariants(RadioGroupVariant... variants) {
+        getThemeNames().removeAll(
+                Stream.of(variants).map(RadioGroupVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
 
     /**
      * <p>
@@ -104,6 +173,239 @@ public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGr
      */
     protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This attribute indicates that the user cannot modify the value of the
+     * control.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     *
+     * @return the {@code readonly} property from the webcomponent
+     */
+    protected boolean isReadonlyBoolean() {
+        return getElement().getProperty("readonly", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This attribute indicates that the user cannot modify the value of the
+     * control.
+     * </p>
+     *
+     * @param readonly
+     *            the boolean value to set
+     */
+    protected void setReadonly(boolean readonly) {
+        getElement().setProperty("readonly", readonly);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This property is set to true when the value is invalid.
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'invalid-changed' event happens.
+     * </p>
+     *
+     * @return the {@code invalid} property from the webcomponent
+     */
+    @Synchronize(property = "invalid", value = "invalid-changed")
+    protected boolean isInvalidBoolean() {
+        return getElement().getProperty("invalid", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * This property is set to true when the value is invalid.
+     * </p>
+     *
+     * @param invalid
+     *            the boolean value to set
+     */
+    protected void setInvalid(boolean invalid) {
+        getElement().setProperty("invalid", invalid);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Specifies that the user must fill in a value.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     *
+     * @return the {@code required} property from the webcomponent
+     */
+    protected boolean isRequiredBoolean() {
+        return getElement().getProperty("required", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Specifies that the user must fill in a value.
+     * </p>
+     *
+     * @param required
+     *            the boolean value to set
+     */
+    protected void setRequired(boolean required) {
+        getElement().setProperty("required", required);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Error to show when the input value is invalid.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     *
+     * @return the {@code errorMessage} property from the webcomponent
+     */
+    protected String getErrorMessageString() {
+        return getElement().getProperty("errorMessage");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Error to show when the input value is invalid.
+     * </p>
+     *
+     * @param errorMessage
+     *            the String value to set
+     */
+    protected void setErrorMessage(String errorMessage) {
+        getElement().setProperty("errorMessage",
+                errorMessage == null ? "" : errorMessage);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * String used for the label element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     *
+     * @return the {@code label} property from the webcomponent
+     */
+    protected String getLabelString() {
+        return getElement().getProperty("label");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * String used for the label element.
+     * </p>
+     *
+     * @param label
+     *            the String value to set
+     */
+    protected void setLabel(String label) {
+        getElement().setProperty("label", label == null ? "" : label);
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Returns true if {@code value} is valid. {@code <iron-form>} uses this to
+     * check the validity or all its elements.
+     * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>boolean</code>. Functions with return types different than void are
+     * not supported at this moment.
+     */
+    @NotSupported
+    protected void validate() {
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Returns true if the current input value satisfies all constraints (if
+     * any)
+     * </p>
+     * <p>
+     * This function is not supported by Flow because it returns a
+     * <code>boolean</code>. Functions with return types different than void are
+     * not supported at this moment.
+     */
+    @NotSupported
+    protected void checkValidity() {
+    }
+
+    public static class InvalidChangeEvent<R extends GeneratedVaadinRadioGroup<R, ?>>
+            extends ComponentEvent<R> {
+        private final boolean invalid;
+
+        public InvalidChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+            this.invalid = source.isInvalidBoolean();
+        }
+
+        public boolean isInvalid() {
+            return invalid;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code invalid-changed} events fired by the
+     * webcomponent.
+     *
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    protected Registration addInvalidChangeListener(
+            ComponentEventListener<InvalidChangeEvent<R>> listener) {
+        return getElement()
+                .addPropertyChangeListener("invalid",
+                        event -> listener.onComponentEvent(
+                                new InvalidChangeEvent<R>((R) this,
+                                        event.isUserOriginated())));
     }
 
     /**

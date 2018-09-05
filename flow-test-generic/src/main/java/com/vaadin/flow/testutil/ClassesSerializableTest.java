@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,16 +45,17 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.lang.reflect.Modifier.isStatic;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
+import static java.lang.reflect.Modifier.isStatic;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
  * tries to serialize every single class (except ones from whitelist) in the
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link  #getJarPattern()}
+ * {@link #getJarPattern()}
  */
 
 public abstract class ClassesSerializableTest {
@@ -99,6 +100,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletResponse",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AnnotationValidator",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletDeployer",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.ServletContextListeners",
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",
@@ -130,6 +132,8 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
+                "com\\.vaadin\\.flow\\.osgi\\.Activator",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
 
                 //Various test classes
                 ".*\\.test(s)?\\..*",
@@ -142,6 +146,11 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.internal\\.HasCurrentService",
                 "com\\.vaadin\\.flow\\.component\\.ValueChangeMonitor",
                 "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?");
+    }
+
+    protected boolean isTestClassPath(String classPath) {
+        File file = new File(classPath);
+        return "test-classes".equals(file.getName());
     }
 
     /**
@@ -285,7 +294,9 @@ public abstract class ClassesSerializableTest {
         List<String> classes = new ArrayList<>();
         List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile).collect(Collectors.toList());
         for (String location : rawClasspathEntries) {
-            classes.addAll(findServerClasses(location, excludes));
+            if (!isTestClassPath(location)) {
+                classes.addAll(findServerClasses(location, excludes));
+            }
         }
 
         ArrayList<Field> nonSerializableFunctionFields = new ArrayList<>();

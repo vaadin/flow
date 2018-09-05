@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,9 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasTheme;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 
 /**
@@ -93,14 +96,40 @@ import com.vaadin.flow.component.Component;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.TabsElement#2.0.0", "Flow#1.0-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.TabsElement#2.1.0-alpha3", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-tabs")
 @HtmlImport("frontend://bower_components/vaadin-tabs/src/vaadin-tabs.html")
 public abstract class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>>
-        extends Component implements HasStyle {
+        extends Component implements HasStyle, HasTheme {
+
+    /**
+     * Adds theme variants to the component.
+     * 
+     * @param variants
+     *            theme variants to add
+     */
+    public void addThemeVariants(TabsVariant... variants) {
+        getThemeNames().addAll(Stream.of(variants)
+                .map(TabsVariant::getVariantName).collect(Collectors.toList()));
+    }
+
+    /**
+     * Removes theme variants from the component.
+     * 
+     * @param variants
+     *            theme variants to remove
+     */
+    public void removeThemeVariants(TabsVariant... variants) {
+        getThemeNames().removeAll(Stream.of(variants)
+                .map(TabsVariant::getVariantName).collect(Collectors.toList()));
+    }
 
     protected void focus() {
         getElement().callFunction("focus");
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 }

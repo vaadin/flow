@@ -1,6 +1,11 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,6 +18,19 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
@@ -23,9 +41,9 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -44,22 +62,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class BootstrapHandlerTest {
 
@@ -339,8 +341,10 @@ public class BootstrapHandlerTest {
 
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
-            settings.getLoadingIndicatorConfiguration().setSecondDelay(SECOND_DELAY);
+            settings.getLoadingIndicatorConfiguration()
+                    .setApplyDefaultTheme(false);
+            settings.getLoadingIndicatorConfiguration()
+                    .setSecondDelay(SECOND_DELAY);
 
             settings.getPushConfiguration().setPushMode(PushMode.MANUAL);
 
@@ -360,9 +364,6 @@ public class BootstrapHandlerTest {
 
     @Before
     public void setup() throws Exception {
-        // Ensure there will be a usage statistics script at the end of the body
-        UsageStatistics.markAsUsed("foo", null);
-
         mocks = new MockServletServiceSessionSetup();
         TestRouteRegistry routeRegistry = new TestRouteRegistry();
 
@@ -412,7 +413,7 @@ public class BootstrapHandlerTest {
     }
 
     private void initUI(UI ui, VaadinRequest request,
-                        Set<Class<? extends Component>> navigationTargets)
+            Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
 
         service.getRouteRegistry().setNavigationTargets(navigationTargets);
@@ -1018,18 +1019,20 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        assertStringEquals("Custom style should have been added to head.",
-                "<script id=\"_theme-header-injection\">\n"
-                        + "function _inlineHeader(tag, content){\n"
-                        + "var customStyle = document.createElement(tag);\n"
-                        + "customStyle.innerHTML= content;\n"
-                        + "var firstScript=document.head.querySelector('script');\n"
-                        + "document.head.insertBefore(customStyle,firstScript);\n"
-                        + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                        + "</script>",
-                allElements.get(14).toString());
+        String expected = "<script id=\"_theme-header-injection\">\n"
+                + "function _inlineHeader(tag, content){\n"
+                + "var customStyle = document.createElement(tag);\n"
+                + "customStyle.innerHTML= content;\n"
+                + "var firstScript=document.head.querySelector('script');\n"
+                + "document.head.insertBefore(customStyle,firstScript);\n"
+                + "}\n"
+                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                + "</script>";
+        // Custom style should have been added to head.
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Element::toString)
+                        .anyMatch(s -> s.equals(expected)));
     }
 
     @Test // 3333
@@ -1052,19 +1055,22 @@ public class BootstrapHandlerTest {
                         .anyMatch(element -> element.equals(
                                 "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
         allElements = page.head().getAllElements();
+
         // Note element 0 is the full head element.
-        assertStringEquals("Custom style should have been added to head.",
-                "<script id=\"_theme-header-injection\">\n"
-                        + "function _inlineHeader(tag, content){\n"
-                        + "var customStyle = document.createElement(tag);\n"
-                        + "customStyle.innerHTML= content;\n"
-                        + "var firstScript=document.head.querySelector('script');\n"
-                        + "document.head.insertBefore(customStyle,firstScript);\n"
-                        + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                        + "</script>",
-                allElements.get(14).toString());
+        String expected = "<script id=\"_theme-header-injection\">\n"
+                + "function _inlineHeader(tag, content){\n"
+                + "var customStyle = document.createElement(tag);\n"
+                + "customStyle.innerHTML= content;\n"
+                + "var firstScript=document.head.querySelector('script');\n"
+                + "document.head.insertBefore(customStyle,firstScript);\n"
+                + "}\n"
+                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                + "</script>";
+        // Custom style should have been added to head.
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Element::toString)
+                        .anyMatch(s -> s.equals(expected)));
     }
 
     @Test // 3333
@@ -1099,19 +1105,20 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        assertStringEquals("Custom style should have been added to head.",
-                "<script id=\"_theme-header-injection\">\n"
-                        + "function _inlineHeader(tag, content){\n"
-                        + "var customStyle = document.createElement(tag);\n"
-                        + "customStyle.innerHTML= content;\n"
-                        + "var firstScript=document.head.querySelector('script');\n"
-                        + "document.head.insertBefore(customStyle,firstScript);\n"
-                        + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                        + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                        + "</script>",
-                allElements.get(14).toString());
-
+        String expected = "<script id=\"_theme-header-injection\">\n"
+                + "function _inlineHeader(tag, content){\n"
+                + "var customStyle = document.createElement(tag);\n"
+                + "customStyle.innerHTML= content;\n"
+                + "var firstScript=document.head.querySelector('script');\n"
+                + "document.head.insertBefore(customStyle,firstScript);\n"
+                + "}\n"
+                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
+                + "</script>";
+        // Custom style should have been added to head.
+        Assert.assertTrue("Custom style should have been added to head.",
+                allElements.stream().map(Element::toString)
+                        .anyMatch(s -> s.equals(expected)));
     }
 
     @Test
@@ -1314,9 +1321,11 @@ public class BootstrapHandlerTest {
 
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es5 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
+        assertThat(
+                String.format(
+                        "In development mode, es5 prefix should be equal to '%s' parameter value",
+                        Constants.FRONTEND_URL_ES5),
+                urlES5, is(es5Prefix + urlPart));
     }
 
     @Test
@@ -1334,9 +1343,11 @@ public class BootstrapHandlerTest {
 
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es6 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES6), urlES6, is(es6Prefix + urlPart));
+        assertThat(
+                String.format(
+                        "In development mode, es6 prefix should be equal to '%s' parameter value",
+                        Constants.FRONTEND_URL_ES6),
+                urlES6, is(es6Prefix + urlPart));
     }
 
     @Test
@@ -1480,8 +1491,82 @@ public class BootstrapHandlerTest {
                 secondInit.getUI(), uiReference.get());
     }
 
+    @Route("")
+    @Tag(Tag.DIV)
+    @Meta(name = "apple-mobile-web-app-capable", content = "yes")
+    @Meta(name = "apple-mobile-web-app-status-bar-style", content = "black")
+    public static class MetaAnnotations extends Component {
+    }
+
+    @Test
+    public void addMultiMetaTagViaMetaAnnotation_MetaSizeCorrect_ContentCorrect()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MetaAnnotations.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Element head = page.head();
+        Elements metas = head.getElementsByTag("meta");
+
+        Assert.assertEquals(5, metas.size());
+        Element meta = metas.get(0);
+        assertEquals("Content-Type", meta.attr("http-equiv"));
+        assertEquals("text/html; charset=utf-8", meta.attr("content"));
+
+        meta = metas.get(1);
+        assertEquals("X-UA-Compatible", meta.attr("http-equiv"));
+        assertEquals("IE=edge", meta.attr("content"));
+
+        meta = metas.get(2);
+        assertEquals(BootstrapHandler.VIEWPORT, meta.attr("name"));
+        assertEquals(Viewport.DEFAULT,
+                meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+
+        meta = metas.get(3);
+        assertEquals("apple-mobile-web-app-status-bar-style",
+                meta.attr("name"));
+        assertEquals("black", meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+
+        meta = metas.get(4);
+        assertEquals("apple-mobile-web-app-capable", meta.attr("name"));
+        assertEquals("yes", meta.attr(BootstrapHandler.CONTENT_ATTRIBUTE));
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    @Meta(name = "", content = "yes")
+    public static class MetaAnnotationsContainsNull extends Component {
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void AnnotationContainsNullValue_ExceptionThrown()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MetaAnnotationsContainsNull.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+    }
+
+    @Tag(Tag.DIV)
+    @Meta(name = "apple-mobile-web-app-capable", content = "yes")
+    public static class MetaAnnotationsWithoutRoute extends Component {
+    }
+
+    @Test(expected = InvalidRouteConfigurationException.class)
+    public void AnnotationsWithoutRoute_ExceptionThrown()
+            throws InvalidRouteConfigurationException {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MetaAnnotationsWithoutRoute.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+    }
+
     private void assertStringEquals(String message, String expected,
-                                    String actual) {
+            String actual) {
         Assert.assertThat(message,
                 actual.replaceAll(System.getProperty("line.separator"), "\n"),
                 CoreMatchers.equalTo(expected));
@@ -1513,7 +1598,7 @@ public class BootstrapHandlerTest {
     }
 
     private void checkInlinedScript(Element head, String scriptName,
-                                    boolean shouldBeInlined) {
+            boolean shouldBeInlined) {
         StringBuilder builder = new StringBuilder();
         try (InputStream stream = getClass().getResourceAsStream(scriptName)) {
             IOUtils.readLines(stream, StandardCharsets.UTF_8)
@@ -1573,18 +1658,25 @@ public class BootstrapHandlerTest {
 
     @Test
     public void testUIConfiguration_usingPageSettings() throws Exception {
-        Assert.assertTrue("By default loading indicator is themed", testUI.getLoadingIndicatorConfiguration().isApplyDefaultTheme());
+        Assert.assertTrue("By default loading indicator is themed", testUI
+                .getLoadingIndicatorConfiguration().isApplyDefaultTheme());
 
-        initUI(testUI, createVaadinRequest(), Collections.singleton(InitialPageConfiguratorRoute.class));
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorRoute.class));
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
-        Assert.assertFalse("Default indicator theme is not themed anymore", testUI.getLoadingIndicatorConfiguration().isApplyDefaultTheme());
+        Assert.assertFalse("Default indicator theme is not themed anymore",
+                testUI.getLoadingIndicatorConfiguration()
+                        .isApplyDefaultTheme());
 
-        Assert.assertEquals(InitialPageConfiguratorRoute.SECOND_DELAY, testUI.getLoadingIndicatorConfiguration().getSecondDelay());
+        Assert.assertEquals(InitialPageConfiguratorRoute.SECOND_DELAY,
+                testUI.getLoadingIndicatorConfiguration().getSecondDelay());
 
-        Assert.assertEquals(PushMode.MANUAL, testUI.getPushConfiguration().getPushMode());
+        Assert.assertEquals(PushMode.MANUAL,
+                testUI.getPushConfiguration().getPushMode());
 
-        Assert.assertTrue(testUI.getReconnectDialogConfiguration().isDialogModal());
+        Assert.assertTrue(
+                testUI.getReconnectDialogConfiguration().isDialogModal());
     }
 }

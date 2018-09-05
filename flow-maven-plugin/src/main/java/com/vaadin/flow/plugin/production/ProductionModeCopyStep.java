@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,16 +43,16 @@ import elemental.json.JsonObject;
 
 /**
  * Copies specified artifacts' contents to the output folder.
- * <p>
- * Note: this class is intended to be independent from Maven dependencies so that it can be reused in Gradle plugin in future.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class ProductionModeCopyStep {
+    public static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
+
     static final String WEB_JAR_FILES_BASE = "META-INF/resources/webjars/";
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductionModeCopyStep.class);
-    private static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
     private static final String BOWER_JSON_FILE_NAME = "bower.json";
     private static final String BOWER_COMPONENTS_DIRECTORY_NAME = "bower_components";
 

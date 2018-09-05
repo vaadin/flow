@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,8 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,24 +46,32 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.DependencyTreeCache;
+import com.vaadin.flow.component.internal.HtmlImportParser;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -76,14 +83,13 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
  * browser requests.
  *
- * @author Vaadin Ltd.
- * @since 7.0
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public abstract class VaadinService implements Serializable {
 
@@ -186,6 +192,10 @@ public abstract class VaadinService implements Serializable {
 
     private Instantiator instantiator;
 
+    private DependencyTreeCache<String> htmlImportDependencyCache;
+
+    private Registration htmlImportDependencyCacheClearRegistration;
+
     /**
      * Creates a new vaadin service based on a deployment configuration.
      *
@@ -234,7 +244,6 @@ public abstract class VaadinService implements Serializable {
      * Initializes this service. The service should be initialized before it is
      * used.
      *
-     * @since 7.1
      * @throws ServiceException
      *             if a problem occurs when creating the service
      */
@@ -262,6 +271,38 @@ public abstract class VaadinService implements Serializable {
                 .collect(Collectors.toList());
 
         router = new Router(getRouteRegistry());
+        if (!getDeploymentConfiguration().isProductionMode()) {
+            Logger logger = getLogger();
+            logger.debug("The application has the following routes: ");
+            router.getRoutes().stream().map(Object::toString)
+                    .forEach(logger::debug);
+        }
+
+        htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
+            List<String> dependencies = new ArrayList<>();
+            WebBrowser browser = FakeBrowser.getEs6();
+            HtmlImportParser.parseImports(path,
+                    resourcePath -> getResourceAsStream(resourcePath, browser,
+                            null),
+                    resourcePath -> resolveResource(resourcePath, browser),
+                    dependency -> {
+                        if (!dependency.startsWith(
+                                "frontend://bower_components/polymer/")) {
+                            dependencies.add(dependency);
+                        }
+                    });
+
+            return dependencies;
+        });
+
+        /*
+         * When all reflection caches are cleared, we also clear the HMTL
+         * dependnecy cache so that the reflection caches managed by
+         * ComponentMetaData won't keep using previously parsed data.
+         */
+        htmlImportDependencyCacheClearRegistration = ReflectionCache
+                .addClearAllAction(htmlImportDependencyCache::clear);
+
         initialized = true;
     }
 
@@ -271,6 +312,8 @@ public abstract class VaadinService implements Serializable {
      * @return the route registry to use, not <code>null</code>
      */
     protected abstract RouteRegistry getRouteRegistry();
+
+    protected abstract PwaRegistry getPwaRegistry();
 
     /**
      * Called during initialization to add the request handlers for the service.
@@ -286,13 +329,16 @@ public abstract class VaadinService implements Serializable {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = new ArrayList<>();
-        handlers.add(new FaviconHandler());
         handlers.add(new SessionRequestHandler());
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
         handlers.add(new StreamRequestHandler());
-
+        PwaRegistry pwaRegistry = getPwaRegistry();
+        if (pwaRegistry != null
+                && pwaRegistry.getPwaConfiguration().isEnabled()) {
+            handlers.add(new PwaHandler(pwaRegistry));
+        }
         return handlers;
     }
 
@@ -1257,7 +1303,6 @@ public abstract class VaadinService implements Serializable {
      * Closes those UIs in the given session for which {@link #isUIActive}
      * yields false.
      *
-     * @since 7.0.0
      */
     private void closeInactiveUIs(VaadinSession session) {
         final String sessionId = session.getSession().getId();
@@ -1281,7 +1326,6 @@ public abstract class VaadinService implements Serializable {
      *
      * @see DeploymentConfiguration#getHeartbeatInterval()
      *
-     * @since 7.0.0
      *
      * @return The heartbeat timeout in seconds or a negative number if timeout
      *         never occurs.
@@ -1306,15 +1350,13 @@ public abstract class VaadinService implements Serializable {
      * @see DeploymentConfiguration#isCloseIdleSessions()
      * @see #getHeartbeatTimeout()
      *
-     * @since 7.0.0
      *
      * @return The UIDL request timeout in seconds, or a negative number if
      *         timeout never occurs.
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval()
-                : -1;
+                ? session.getSession().getMaxInactiveInterval() : -1;
     }
 
     /**
@@ -1326,7 +1368,6 @@ public abstract class VaadinService implements Serializable {
      * returns false and {@link #getHeartbeatTimeout() getHeartbeatTimeout} is
      * negative or has not yet expired.
      *
-     * @since 8.1
      *
      * @param ui
      *            The UI whose status to check
@@ -1441,7 +1482,6 @@ public abstract class VaadinService implements Serializable {
      *
      * @see #createRequestHandlers()
      *
-     * @since 7.1
      */
     public Iterable<RequestHandler> getRequestHandlers() {
         return requestHandlers;
@@ -1775,7 +1815,6 @@ public abstract class VaadinService implements Serializable {
     /**
      * Checks whether Atmosphere is available for use.
      *
-     * @since 7.6
      * @return true if Atmosphere is available, false otherwise
      */
     protected boolean isAtmosphereAvailable() {
@@ -1787,7 +1826,6 @@ public abstract class VaadinService implements Serializable {
      * internally used by {@link VaadinSession#accessSynchronously(Command)} and
      * {@link UI#accessSynchronously(Command)} to help avoid causing deadlocks.
      *
-     * @since 7.1
      * @param session
      *            the session that is being locked
      * @throws IllegalStateException
@@ -1806,7 +1844,6 @@ public abstract class VaadinService implements Serializable {
      * not detect all cases where some other session is locked, but it should
      * cover the most typical situations.
      *
-     * @since 7.2
      * @param session
      *            the session that is expected to be locked
      * @return <code>true</code> if another session is also locked by the
@@ -1832,7 +1869,6 @@ public abstract class VaadinService implements Serializable {
      *
      * @see DeploymentConfiguration#isXsrfProtectionEnabled()
      *
-     * @since 7.1
      *
      * @param session
      *            the vaadin session for which the check should be done
@@ -1861,7 +1897,6 @@ public abstract class VaadinService implements Serializable {
      * implemented here instead of in {@link VaadinSession} to enable overriding
      * the implementation without using a custom subclass of VaadinSession.
      *
-     * @since 7.1
      * @see VaadinSession#access(Command)
      *
      * @param session
@@ -1888,7 +1923,6 @@ public abstract class VaadinService implements Serializable {
      * lock is not held by any thread, it is acquired and the queue is purged
      * right away.
      *
-     * @since 7.1.2
      * @param session
      *            the session for which the access queue should be purged
      */
@@ -1926,7 +1960,6 @@ public abstract class VaadinService implements Serializable {
      *
      * @param session
      *            the vaadin session to purge the queue for
-     * @since 7.1
      */
     public void runPendingAccessTasks(VaadinSession session) {
         session.checkHasLock();
@@ -1969,7 +2002,6 @@ public abstract class VaadinService implements Serializable {
      * it is not guaranteed that listeners will be invoked in the order they
      * were added.
      *
-     * @since 7.2
      * @param listener
      *            the service destroy listener to add
      *
@@ -1992,9 +2024,10 @@ public abstract class VaadinService implements Serializable {
      * @see #addServiceDestroyListener(ServiceDestroyListener)
      * @see Servlet#destroy()
      *
-     * @since 7.2
      */
     public void destroy() {
+        htmlImportDependencyCacheClearRegistration.remove();
+
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
         serviceDestroyListeners
                 .forEach(listener -> listener.serviceDestroy(event));
@@ -2009,7 +2042,6 @@ public abstract class VaadinService implements Serializable {
      * @throws SecurityException
      *             If current security policy forbids acquiring class loader
      *
-     * @since 7.3.5
      */
     protected void setDefaultClassLoader() {
         try {
@@ -2026,7 +2058,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * By default stores the VaadinSession in the underlying HTTP session.
      *
-     * @since 7.6
      * @param session
      *            the VaadinSession to store
      * @param wrappedSession
@@ -2045,7 +2076,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * Called by {@link #storeSession(VaadinSession, WrappedSession)}
      *
-     * @since 7.6
      * @param wrappedSession
      *            the underlying HTTP session
      * @param session
@@ -2060,7 +2090,6 @@ public abstract class VaadinService implements Serializable {
      * Called when the VaadinSession should be loaded from the underlying HTTP
      * session
      *
-     * @since 7.6
      * @param wrappedSession
      *            the underlying HTTP session
      * @return the VaadinSession in the HTTP session or null if not found
@@ -2084,7 +2113,6 @@ public abstract class VaadinService implements Serializable {
      *
      * @param wrappedSession
      *            the underlying HTTP session
-     * @since 7.6
      * @return the VaadinSession or null if no session was found
      */
     protected VaadinSession readFromHttpSession(WrappedSession wrappedSession) {
@@ -2096,7 +2124,6 @@ public abstract class VaadinService implements Serializable {
      * Called when the VaadinSession should be removed from the underlying HTTP
      * session
      *
-     * @since 7.6
      * @param wrappedSession
      *            the underlying HTTP session
      */
@@ -2109,7 +2136,6 @@ public abstract class VaadinService implements Serializable {
      * Performs the actual removal of the VaadinSession from the underlying HTTP
      * session after sanity checks have been performed
      *
-     * @since 7.6
      * @param wrappedSession
      *            the underlying HTTP session
      */
@@ -2122,7 +2148,6 @@ public abstract class VaadinService implements Serializable {
      * Returns the name used for storing the VaadinSession in the underlying
      * HTTP session
      *
-     * @since 7.6
      * @return the attribute name used for storing the VaadinSession
      */
     protected String getSessionAttributeName() {
@@ -2250,4 +2275,12 @@ public abstract class VaadinService implements Serializable {
     public abstract Optional<String> getThemedUrl(String url,
             WebBrowser browser, AbstractTheme theme);
 
+    /**
+     * Gets the HTML import dependency cache that is used by this service.
+     *
+     * @return the HTML dependency cache
+     */
+    public DependencyTreeCache<String> getHtmlImportDependencyCache() {
+        return htmlImportDependencyCache;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,7 +31,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * class for resolving system properties and a set of init parameters.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
+ * @since 1.0
  */
 public class DefaultDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
@@ -68,7 +68,6 @@ public class DefaultDeploymentConfiguration
     /**
      * Default value for {@link #isSyncIdCheckEnabled()} = {@value} .
      *
-     * @since 7.3
      */
     public static final boolean DEFAULT_SYNC_ID_CHECK = true;
 
@@ -153,7 +152,7 @@ public class DefaultDeploymentConfiguration
         }
         if (pkgName == null) {
             pkgName = "";
-        } else {
+        } else if (!pkgName.isEmpty()) {
             pkgName += '.';
         }
         String val = System.getProperty(pkgName + parameterName);

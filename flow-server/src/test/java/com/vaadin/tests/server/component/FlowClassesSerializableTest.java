@@ -2,6 +2,7 @@ package com.vaadin.tests.server.component;
 
 import java.io.OutputStream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
@@ -26,11 +27,12 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
      */
     @Test
     public void htmlComponentAndHtmlContainer() throws Throwable {
-        Component[] components = {new HtmlComponent("dummy-tag"),
-                new HtmlContainer("dummy-tag")};
+        Component[] components = { new HtmlComponent("dummy-tag"),
+                new HtmlContainer("dummy-tag") };
         for (Component component : components) {
             Component componentCopy = serializeAndDeserialize(component);
-            assertEquals(component.getElement().getTag(), componentCopy.getElement().getTag());
+            assertEquals(component.getElement().getTag(),
+                    componentCopy.getElement().getTag());
             assertNotSame(component.getElement(), componentCopy.getElement());
         }
     }
@@ -44,14 +46,18 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
      */
     @Test
     public void streamResource() throws Throwable {
-        UI.setCurrent(new UI());
+        UI ui = new UI();
+        UI.setCurrent(ui);
         try {
             Element element = new Element("dummy-element");
             StreamReceiver streamReceiver = new StreamReceiver(
                     element.getNode(), "upload", new MyStreamVariable());
+            Assert.assertEquals(ui, UI.getCurrent());
             element.setAttribute("target", streamReceiver);
             serializeAndDeserialize(element);
-            assertTrue("Basic smoke test with ", element.getAttribute("target").length() > 10);
+            assertTrue("Basic smoke test with ",
+                    element.getAttribute("target").length() > 10);
+
         } finally {
             UI.setCurrent(null);
         }

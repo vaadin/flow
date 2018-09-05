@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,16 +15,23 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.IOException;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultSystemMessagesProvider;
+import com.vaadin.flow.server.SystemMessages;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.JsonConstants;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 @Route("com.vaadin.flow.uitest.ui.InternalErrorView")
 public class InternalErrorView extends AbstractDivView {
@@ -47,7 +54,7 @@ public class InternalErrorView extends AbstractDivView {
         enableNotificationButton.setId("enable-notification");
 
         NativeButton causeExceptionButton = new NativeButton("Cause exception",
-                event -> System.out.println(1 / 0));
+                event -> showInternalError());
         causeExceptionButton.setId("cause-exception");
 
         NativeButton resetSystemMessagesButton = new NativeButton(
@@ -57,6 +64,31 @@ public class InternalErrorView extends AbstractDivView {
         add(message, updateMessageButton, closeSessionButton,
                 enableNotificationButton, causeExceptionButton,
                 resetSystemMessagesButton);
+    }
+
+    private void showInternalError() {
+        SystemMessages systemMessages = VaadinService.getCurrent()
+                .getSystemMessages(getLocale(), VaadinRequest.getCurrent());
+
+        showCriticalNotification(systemMessages.getInternalErrorCaption(),
+                systemMessages.getInternalErrorMessage(), "",
+                systemMessages.getInternalErrorURL());
+
+    }
+
+    protected void showCriticalNotification(String caption, String message,
+            String details, String url) {
+        VaadinService service = VaadinService.getCurrent();
+        VaadinResponse response = VaadinService.getCurrentResponse();
+
+        try {
+            service.writeUncachedStringResponse(response,
+                    JsonConstants.JSON_CONTENT_TYPE,
+                    VaadinService.createCriticalNotificationJSON(caption,
+                            message, details, url));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void enableSessionExpiredNotification() {

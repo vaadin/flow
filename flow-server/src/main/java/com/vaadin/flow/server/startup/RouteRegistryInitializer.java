@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,8 +47,10 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             Set<Class<? extends Component>> routes = validateRouteClasses(
                     classSet.stream());
 
-            RouteRegistry.getInstance(servletContext)
-                    .setNavigationTargets(routes);
+            RouteRegistry routeRegistry = RouteRegistry
+                    .getInstance(servletContext);
+            routeRegistry.setNavigationTargets(routes);
+            routeRegistry.setPwaConfigurationClass(validatePwaClass(classSet.stream()));
         } catch (InvalidRouteConfigurationException irce) {
             throw new ServletException(
                     "Exception while registering Routes on servlet startup",

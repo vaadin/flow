@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import com.vaadin.flow.router.Route;
 public class UIElementView extends AbstractDivView {
 
     public UIElementView() {
-        getPage().executeJavaScript(getJs(), getElement());
+        getElement().executeJavaScript(getJs());
 
         NativeButton attachElement = new NativeButton("Attach Element via JS",
                 event -> attachElement());
@@ -30,12 +30,12 @@ public class UIElementView extends AbstractDivView {
     }
 
     private void attachElement() {
-        getPage().executeJavaScript(getJs(), getElement());
+        getElement().executeJavaScript(getJs());
     }
 
     private String getJs() {
         return "var newElement = document.createElement('div');"
                 + "newElement.className='body-child';"
-                + "$0.appendChild(newElement);";
+                + "this.appendChild(newElement);";
     }
 }

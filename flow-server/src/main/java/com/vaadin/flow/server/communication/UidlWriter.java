@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -71,7 +71,7 @@ import elemental.json.JsonValue;
  * type information among others.
  *
  * @author Vaadin Ltd
- * @since 7.1
+ * @since 1.0
  */
 public class UidlWriter implements Serializable {
     private static final String COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE = "Could not read url %s contents";
@@ -336,8 +336,7 @@ public class UidlWriter implements Serializable {
         Set<Class<? extends Component>> componentsWithDependencies = new LinkedHashSet<>();
         stateTree.collectChanges(change -> {
             if (attachesComponent(change)) {
-                change.getNode().getFeature(ComponentMapping.class)
-                        .getComponent()
+                ComponentMapping.getComponent(change.getNode())
                         .ifPresent(component -> addComponentHierarchy(ui,
                                 componentsWithDependencies, component));
             }

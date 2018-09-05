@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,11 +25,11 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class TimingInfoReportedView extends Div {
 
   //@formatter:off
-    private static final String REPORT_TIMINGS = "setTimeout(function() {"
+    private static final String REPORT_TIMINGS = "var element = this; setTimeout(function() {"
             + "function report(array){ "
             + "var div = document.createElement('div');"
             + "div.className='log';"
-            + "$0.appendChild(div); "
+            + "element.appendChild(div); "
             + "if (array.length != 5) { "
             + "  div.appendChild(document.createTextNode('ERROR: expected 5 values, got '+array.length())); "
             + "}"
@@ -49,10 +49,10 @@ public class TimingInfoReportedView extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        getUI().get().getPage().executeJavaScript(REPORT_TIMINGS, getElement());
+        getElement().executeJavaScript(REPORT_TIMINGS);
         NativeButton button = new NativeButton("test request");
-        button.addClickListener(event -> getUI().get().getPage()
-                .executeJavaScript(REPORT_TIMINGS, getElement()));
+        button.addClickListener(
+                event -> getElement().executeJavaScript(REPORT_TIMINGS));
         add(button);
     }
 

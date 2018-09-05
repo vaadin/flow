@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Objects;
+
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -29,6 +33,7 @@ import com.vaadin.flow.dom.Element;
  * components should be added to some other element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface HasComponents extends HasElement, HasEnabled {
     /**
@@ -38,9 +43,10 @@ public interface HasComponents extends HasElement, HasEnabled {
      *            the components to add
      */
     default void add(Component... components) {
-        assert components != null;
+        Objects.requireNonNull(components, "Components should not be null");
         for (Component component : components) {
-            assert component != null;
+            Objects.requireNonNull(component,
+                    "Component to add cannot be null");
             getElement().appendChild(component.getElement());
         }
     }
@@ -54,9 +60,17 @@ public interface HasComponents extends HasElement, HasEnabled {
      *             if any of the components is not a child of this component
      */
     default void remove(Component... components) {
+        Objects.requireNonNull(components, "Components should not be null");
         for (Component component : components) {
-            assert component != null;
-            if (getElement().equals(component.getElement().getParent())) {
+            Objects.requireNonNull(component,
+                    "Component to remove cannot be null");
+            Element parent = component.getElement().getParent();
+            if (parent == null) {
+                LoggerFactory.getLogger(HasComponents.class).debug(
+                        "Remove of a component with no parent does nothing.");
+                return;
+            }
+            if (getElement().equals(parent)) {
                 getElement().removeChild(component.getElement());
             } else {
                 throw new IllegalArgumentException("The given component ("
@@ -73,5 +87,41 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void removeAll() {
         getElement().removeAllChildren();
+    }
+
+    /**
+     * Adds the given component as child of this component at the specific
+     * index.
+     *
+     * @param index
+     *            the index, where the component will be added. If {@code index}
+     *            is negative, the component will be added as the first child of
+     *            this component; if {@code index} is greater than the current
+     *            children number this component has, the component will be
+     *            added as the last child.
+     * @param component
+     *            the component to add, value should not be null
+     */
+    default void addComponentAtIndex(int index, Component component) {
+        Objects.requireNonNull(component, "Component should not be null");
+        int indexCheck;
+        if (index < 0) {
+            indexCheck = 0;
+        } else if (index > getElement().getChildCount()) {
+            indexCheck = getElement().getChildCount();
+        } else {
+            indexCheck = index;
+        }
+        getElement().insertChild(indexCheck, component.getElement());
+    }
+
+    /**
+     * Adds the given component as the first child of this component.
+     *
+     * @param component
+     *            the component to add, value should not be null
+     */
+    default void addComponentAsFirst(Component component) {
+        addComponentAtIndex(0, component);
     }
 }

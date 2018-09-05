@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,17 +27,21 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;dl&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.DL)
-public class DescriptionList extends HtmlContainer implements ClickNotifier {
+public class DescriptionList extends HtmlContainer
+        implements ClickNotifier<DescriptionList> {
 
     /**
      * Component representing a <code>&lt;dt&gt;</code> element.
      *
      * @author Vaadin Ltd
+     * @since 1.0
      */
     @Tag(Tag.DT)
-    public static class Term extends HtmlContainer implements ClickNotifier {
+    public static class Term extends HtmlContainer
+            implements ClickNotifier<Term> {
 
         /**
          * Creates a new empty term.
@@ -72,10 +76,11 @@ public class DescriptionList extends HtmlContainer implements ClickNotifier {
      * Component representing a <code>&lt;dd&gt;</code> element.
      *
      * @author Vaadin Ltd
+     * @since 1.0
      */
     @Tag(Tag.DD)
     public static class Description extends HtmlContainer
-            implements ClickNotifier {
+            implements ClickNotifier<Description> {
 
         /**
          * Creates a new empty description.

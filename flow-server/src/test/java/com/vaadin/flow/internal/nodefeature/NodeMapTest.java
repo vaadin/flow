@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -348,5 +348,28 @@ public class NodeMapTest
 
         // The attach listener is not called one more time
         nodeMap.put("foo", child);
+    }
+
+    @Test
+    public void put_replaceSingleValue_stillUseSingleValue() {
+        nodeMap.put("foo", "bar");
+
+        Assert.assertTrue(nodeMap.usesSingleMap());
+
+        nodeMap.put("foo", "baz");
+
+        Assert.assertTrue(nodeMap.usesSingleMap());
+    }
+
+    @Test
+    public void streamSingleNullValue() {
+        nodeMap.put("foo", null);
+
+        Assert.assertTrue(nodeMap.usesSingleMap());
+
+        nodeMap.forEachChild(child -> {
+            Assert.fail(
+                    "Should not happen, but forEachChild shouldn't explode either");
+        });
     }
 }

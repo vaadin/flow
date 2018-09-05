@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,12 +19,16 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class LazyLoadingTemplateIT extends ChromeBrowserTest {
 
     @Test
@@ -36,12 +40,13 @@ public class LazyLoadingTemplateIT extends ChromeBrowserTest {
 
         waitUntil(driver -> templateIsLoaded());
 
-        WebElement template = findElements(By.id("template")).get(0);
-        WebElement valueDiv = getInShadowRoot(template, By.id("msg"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        TestBenchElement valueDiv = template.$(TestBenchElement.class)
+                .id("msg");
         Assert.assertEquals("foo", valueDiv.getText());
 
         testBench().enableWaitForVaadin();
-        WebElement input = getInShadowRoot(template, By.id("input"));
+        WebElement input = template.$(TestBenchElement.class).id("input");
         input.clear();
         input.sendKeys("bar");
         input.sendKeys(Keys.ENTER);
@@ -52,7 +57,9 @@ public class LazyLoadingTemplateIT extends ChromeBrowserTest {
     private boolean templateIsLoaded() {
         Assert.assertTrue(isElementPresent(By.id("initial-div")));
         Assert.assertTrue(findElement(By.id("initial-div")).isDisplayed());
-        List<WebElement> template = findElements(By.id("template"));
-        return !template.isEmpty() && isPresentInShadowRoot(template.get(0), By.id("msg"));
+        List<TestBenchElement> template = $(TestBenchElement.class)
+                .attribute("id", "template").all();
+        return !template.isEmpty() && !template.get(0).$(TestBenchElement.class)
+                .attribute("id", "msg").all().isEmpty();
     }
 }

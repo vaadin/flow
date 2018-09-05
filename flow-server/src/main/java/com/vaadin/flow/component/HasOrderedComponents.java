@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -121,7 +121,7 @@ public interface HasOrderedComponents<T extends Component>
     default Component getComponentAt(int index) {
         if (index < 0) {
             throw new IllegalArgumentException(
-                    "The 'index' argument should be greater than 0. It was: "
+                    "The 'index' argument should be greater than or equal to 0. It was: "
                             + index);
         }
         return ((T) this).getChildren().sequential().skip(index).findFirst()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,8 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @JavaScript("frontend://in-memory-connector.js")
 @Route(value = "com.vaadin.flow.uitest.ui.InMemoryChildrenView", layout = ViewTestLayout.class)
@@ -32,10 +32,8 @@ public class InMemoryChildrenView extends AbstractDivView {
         label.setId("in-memory");
         label.setText("In memory element");
         getElement().appendVirtualChild(label.getElement());
-        getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                        "window.inMemoryConnector.init($0, $1)", getElement(),
-                        label));
+        getElement().executeJavaScript(
+                "window.inMemoryConnector.init(this, $0)", label);
         Div target = new Div();
         target.setId("target");
         add(target);

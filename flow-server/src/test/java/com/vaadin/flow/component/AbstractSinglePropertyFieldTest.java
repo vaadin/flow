@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -434,6 +434,14 @@ public class AbstractSinglePropertyFieldTest {
         }
     }
 
+    @Tag("tag")
+    private static class JsonArrayField
+            extends AbstractSinglePropertyField<JsonArrayField, JsonArray> {
+        public JsonArrayField() {
+            super("property", Json.createArray(), false);
+        }
+    }
+
     @Test
     public void jsonField() {
         JsonField field = new JsonField();
@@ -456,6 +464,28 @@ public class AbstractSinglePropertyFieldTest {
         field.getElement().setProperty("property", "text");
         monitor.discard();
         Assert.assertEquals("\"text\"", field.getValue().toJson());
+    }
+
+    @Test
+    public void jsonArrayField() {
+        JsonArrayField field = new JsonArrayField();
+        ValueChangeMonitor<JsonArray> monitor = new ValueChangeMonitor<>(field);
+
+        Assert.assertEquals(JsonType.ARRAY, field.getValue().getType());
+        Assert.assertEquals(0, field.getValue().length());
+        monitor.assertNoEvent();
+
+        field.setValue(
+                JsonUtils.createArray(Json.create("foo"), Json.create(42)));
+        monitor.discard();
+        Assert.assertEquals("[\"foo\",42]",
+                ((JsonArray) field.getElement().getPropertyRaw("property"))
+                        .toJson());
+
+        field.getElement().setPropertyJson("property",
+                JsonUtils.createArray(Json.create(37), Json.create("bar")));
+        monitor.discard();
+        Assert.assertEquals("[37,\"bar\"]", field.getValue().toJson());
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -43,6 +45,8 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -52,7 +56,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class FrontendDataProviderTest {
     @Rule
@@ -67,7 +72,7 @@ public class FrontendDataProviderTest {
     private File cssFile;
     private File htmlFile;
 
-    private ThemedURLTranslator translator = Mockito
+    private final ThemedURLTranslator translator = Mockito
             .mock(ThemedURLTranslator.class);
 
     public class TestFrontendDataProvider extends FrontendDataProvider {
@@ -98,9 +103,8 @@ public class FrontendDataProviderTest {
         cssFile = createFile(sourceDirectory, "test.css");
         htmlFile = createFile(sourceDirectory, "test.html");
 
-        Mockito.doAnswer(invocation -> {
-            return invocation.getArgumentAt(0, Set.class);
-        }).when(translator).applyTheme(Matchers.any());
+        Mockito.doAnswer(invocation -> invocation.getArgumentAt(0, Set.class))
+                .when(translator).applyTheme(Matchers.any());
     }
 
     private File createFile(File directory, String fileName)
@@ -333,6 +337,71 @@ public class FrontendDataProviderTest {
 
         verify(annotationValuesExtractorMock, Mockito.times(2))
                 .extractAnnotationValues(anyMap());
+    }
+
+    @Test
+    public void importsWithContextOrBaseProtocolAreIgnored()
+            throws IOException {
+        List<String> expectedFiles = Arrays.asList("result1.js", "result2.js",
+                "result1.css", "result2.css", "result1.html", "result2.html");
+
+        for (String file : expectedFiles) {
+            assertTrue("Failed to create a test file",
+                    new File(sourceDirectory, file).createNewFile());
+        }
+
+        AnnotationValuesExtractor annotationValuesExtractorMock = mock(
+                AnnotationValuesExtractor.class);
+        when(annotationValuesExtractorMock.extractAnnotationValues(
+                ImmutableMap.of(StyleSheet.class, ThemedURLTranslator.VALUE,
+                        JavaScript.class, ThemedURLTranslator.VALUE)))
+                                .thenReturn(getCssAndJsImports(expectedFiles));
+        when(annotationValuesExtractorMock.extractAnnotationValues(Collections
+                .singletonMap(HtmlImport.class, ThemedURLTranslator.VALUE)))
+                        .thenReturn(getHtmlImports(expectedFiles));
+
+        FrontendDataProvider dataProvider = new TestFrontendDataProvider(false,
+                false, sourceDirectory, annotationValuesExtractorMock, null,
+                Collections.emptyMap());
+
+        String shellFile = dataProvider.createShellFile(targetDirectory);
+        List<String> shellFileContents = Files.lines(Paths.get(shellFile))
+                .collect(Collectors.toList());
+
+        assertTrue(
+                "No imports with context:// or base:// prefix should be in the shell file",
+                shellFileContents.stream()
+                        .noneMatch(line -> line.contains("shouldBeIgnored")));
+
+        for (String expectedFile : expectedFiles) {
+            assertTrue(String.format(
+                    "Regular files or files with frontend:// prefix should be imported in the shell file, but the file '%s' is missing",
+                    expectedFile),
+                    shellFileContents.stream()
+                            .anyMatch(line -> line.contains(expectedFile)));
+        }
+    }
+
+    private ImmutableMap<Class<? extends Annotation>, Set<String>> getHtmlImports(
+            List<String> expectedFiles) {
+        return ImmutableMap.of(HtmlImport.class, ImmutableSet.of(
+                "/shouldBeIgnored.html", "context://shouldBeIgnored.html",
+                "base://shouldBeIgnored.html",
+                "frontend://" + expectedFiles.get(4), expectedFiles.get(5)));
+    }
+
+    private HashMap<Class<? extends Annotation>, Set<String>> getCssAndJsImports(
+            List<String> expectedFiles) {
+        return new HashMap<>(ImmutableMap.of(JavaScript.class, ImmutableSet.of(
+                "/shouldBeIgnored.js", "context://shouldBeIgnored.js",
+                "base://shouldBeIgnored.js",
+                "frontend://" + expectedFiles.get(0), expectedFiles.get(1)),
+                StyleSheet.class,
+                ImmutableSet.of("/shouldBeIgnored.css",
+                        "context://shouldBeIgnored.css",
+                        "base://shouldBeIgnored.css",
+                        "frontend://" + expectedFiles.get(2),
+                        expectedFiles.get(3))));
     }
 
     private void findAndVerifyFragment(Collection<String> outputFragmentNames,

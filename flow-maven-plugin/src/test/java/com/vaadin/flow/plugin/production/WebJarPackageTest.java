@@ -14,7 +14,8 @@ import com.vaadin.flow.plugin.common.ArtifactData;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class WebJarPackageTest {
     @Rule
@@ -65,17 +66,29 @@ public class WebJarPackageTest {
                 packageWithoutPrefixedVersion,
                 createPackage(packageName, prefixedVersion));
 
-        assertEquals("Expected to have version without prefix after merge",
-                merged.getPackageName(),
-                packageWithoutPrefixedVersion.getPackageName());
-        assertEquals("Got different package name after merge",
-                merged.getPathToPackage(),
-                packageWithoutPrefixedVersion.getPathToPackage());
-        assertEquals("Got different WebJar after merge", merged.getWebJar(),
-                packageWithoutPrefixedVersion.getWebJar());
+        assertPackagesEqual(packageWithoutPrefixedVersion, merged);
+    }
+
+    @Test
+    public void selectCorrectPackage_topmostBowerJsonIsSelected() {
+        String name = "popper.js";
+        String version = "1.14.3";
+        WebJarPackage topLevelPackage = createPackage(name, version,
+                "META-INF/resources/webjars/popper.js/");
+        WebJarPackage nestedPackage = createPackage(name, version,
+                "META-INF/resources/webjars/popper.js/packages/popper/");
+        WebJarPackage selected = WebJarPackage
+                .selectCorrectPackage(topLevelPackage, nestedPackage);
+
+        assertPackagesEqual(topLevelPackage, selected);
     }
 
     private WebJarPackage createPackage(String name, String version) {
+        return createPackage(name, version, "path");
+    }
+
+    private WebJarPackage createPackage(String name, String version,
+            String path) {
         if (webJarFile == null) {
             try {
                 webJarFile = testDirectory.newFile("testWebJarFile");
@@ -86,6 +99,15 @@ public class WebJarPackageTest {
         }
         return new WebJarPackage(
                 new ArtifactData(webJarFile, "artifactId", version), name,
-                "path");
+                path);
+    }
+
+    private void assertPackagesEqual(WebJarPackage expected, WebJarPackage actual) {
+        assertEquals("Expected to have version without prefix after merge",
+                expected.getPackageName(), actual.getPackageName());
+        assertEquals("Got different package name after merge",
+                expected.getPathToPackage(), actual.getPathToPackage());
+        assertEquals("Got different WebJar after merge", expected.getWebJar(),
+                actual.getWebJar());
     }
 }

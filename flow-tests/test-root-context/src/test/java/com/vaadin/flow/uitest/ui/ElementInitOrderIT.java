@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,11 +20,14 @@ import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class ElementInitOrderIT extends ChromeBrowserTest {
 
     @Test
@@ -42,7 +45,7 @@ public class ElementInitOrderIT extends ChromeBrowserTest {
         for (String name : Arrays.asList("init-order-polymer",
                 "init-order-nopolymer")) {
             TestBenchElement element = $(name).first();
-            String status = findInShadowRoot(element, By.id("status")).get(0)
+            String status = element.$(TestBenchElement.class).id("status")
                     .getText();
             Assert.assertEquals(
                     "property = property, attribute = attribute, child count = 1, style = style, class = class",

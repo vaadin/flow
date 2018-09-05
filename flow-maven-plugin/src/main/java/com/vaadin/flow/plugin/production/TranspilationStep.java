@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,16 +21,13 @@ import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.Objects;
 
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 
 /**
  * Transpiles artifacts in the specified directory.
- * <p>
- * Note: this class is intended to be independent from Maven dependencies so
- * that it can be reused in Gradle plugin in future.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class TranspilationStep {
     private final FrontendToolsManager frontendToolsManager;
@@ -40,23 +37,14 @@ public class TranspilationStep {
      *
      * @param frontendToolsManager
      *            the manager to be used to transpile files, not {@code null}
-     * @param proxyConfig
-     *            proxy config to use when downloading frontend tools, not
-     *            {@code null}
-     * @param nodeVersion
-     *            node version to install, not {@code null}
-     * @param yarnVersion
-     *            yarn version to install, not {@code null}
      * @param networkConcurrency
      *            maximum number of concurrent network requests
      */
     public TranspilationStep(FrontendToolsManager frontendToolsManager,
-            ProxyConfig proxyConfig, String nodeVersion, String yarnVersion,
             int networkConcurrency) {
         this.frontendToolsManager = Objects
                 .requireNonNull(frontendToolsManager);
-        frontendToolsManager.installFrontendTools(proxyConfig, nodeVersion,
-                yarnVersion, networkConcurrency);
+        frontendToolsManager.installFrontendTools(networkConcurrency);
     }
 
     /**

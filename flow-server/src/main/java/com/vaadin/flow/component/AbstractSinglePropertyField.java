@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,7 @@ import elemental.json.JsonValue;
  * Abstract field that is based on a single element property.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <C>
  *            the source type for value change events
  * @param <T>
@@ -125,13 +126,7 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
                 Boolean.FALSE);
         addHandler(Element::setProperty, Element::getProperty, Integer.class,
                 Integer.valueOf(0));
-        addHandler(Element::setPropertyJson,
-                (element, property, defaultValue) -> {
-                    Serializable value = element.getPropertyRaw(property);
-                    // JsonValue is passed straight through, other primitive
-                    // values are jsonified
-                    return JsonCodec.encodeWithoutTypeInfo(value);
-                }, JsonValue.class, null);
+        typeHandlers.put(JsonValue.class, getHandler(JsonValue.class));
     }
 
     private final SerializableBiConsumer<C, T> propertyWriter;
@@ -235,18 +230,7 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
             }
         }
 
-        @SuppressWarnings("unchecked")
-        TypeHandler<P> typeHandler = (TypeHandler<P>) typeHandlers
-                .get(elementPropertyType);
-        if (typeHandler == null) {
-            throw new IllegalArgumentException(
-                    "Unsupported element property type: "
-                            + elementPropertyType.getName()
-                            + ". Supported types are: "
-                            + typeHandlers.keySet().parallelStream()
-                                    .map(Class::getName)
-                                    .collect(Collectors.joining(", ")));
-        }
+        TypeHandler<P> typeHandler = findHandler(elementPropertyType);
 
         Element element = getElement();
 
@@ -260,6 +244,23 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
 
         doSetSynchronizedEvent(
                 SharedUtil.camelCaseToDashSeparated(propertyName) + "-changed");
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private <P> TypeHandler<P> findHandler(Class<P> clazz) {
+        TypeHandler<P> typeHandler = (TypeHandler<P>) typeHandlers.get(clazz);
+        if (typeHandler == null && JsonValue.class.isAssignableFrom(clazz)) {
+            typeHandler = getHandler((Class) clazz);
+        }
+        if (typeHandler == null) {
+            throw new IllegalArgumentException(
+                    "Unsupported element property type: " + clazz.getName()
+                            + ". Supported types are: "
+                            + typeHandlers.keySet().parallelStream()
+                                    .map(Class::getName)
+                                    .collect(Collectors.joining(", ")));
+        }
+        return typeHandler;
     }
 
     @SuppressWarnings("unchecked")
@@ -330,6 +331,19 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
     @Override
     protected void setPresentationValue(T newPresentationValue) {
         propertyWriter.accept((C) this, newPresentationValue);
+    }
+
+    private static <P extends JsonValue> TypeHandler<P> getHandler(
+            Class<P> type) {
+        ElementGetter<P> getter = (element, property, defaultValue) -> {
+            Serializable value = element.getPropertyRaw(property);
+            // JsonValue is passed straight through, other primitive
+            // values are jsonified
+            return type.cast(JsonCodec.encodeWithoutTypeInfo(value));
+        };
+        ElementSetter<P> setter = (element, property, value) -> element
+                .setPropertyJson(property, value);
+        return new TypeHandler<P>(setter, getter, null);
     }
 
     private static <T> void addHandler(ElementSetter<T> setter,

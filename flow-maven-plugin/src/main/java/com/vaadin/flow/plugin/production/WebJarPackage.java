@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,13 +16,15 @@
 package com.vaadin.flow.plugin.production;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.flow.plugin.common.ArtifactData;
 
 /**
  * Wrapper around {@link ArtifactData} that holds information about a package located in the corresponding WebJar.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class WebJarPackage {
     private final ArtifactData webJar;
@@ -83,21 +85,51 @@ public class WebJarPackage {
      * @param package1 first package data
      * @param package2 second package data
      * @return package with as less issues as possible
-     * @throws IllegalArgumentException when packages have different names of versions
+     * @throws IllegalArgumentException when packages have different names or versions
      */
-    public static WebJarPackage selectCorrectPackage(WebJarPackage package1, WebJarPackage package2) {
+    public static WebJarPackage selectCorrectPackage(WebJarPackage package1,
+            WebJarPackage package2) {
         if (!Objects.equals(package1.packageName, package2.packageName)) {
             throw new IllegalArgumentException(String.format(
-                    "Cannot process packages with different names: '%s' and '%s'", package1.packageName, package2.packageName));
+                    "Cannot process packages with different names: '%s' and '%s'",
+                    package1.packageName, package2.packageName));
         }
 
-        String normalizedVersion1 = normalizeVersion(package1.webJar.getVersion());
-        String normalizedVersion2 = normalizeVersion(package2.webJar.getVersion());
+        String normalizedVersion1 = normalizeVersion(
+                package1.webJar.getVersion());
+        String normalizedVersion2 = normalizeVersion(
+                package2.webJar.getVersion());
         if (Objects.equals(normalizedVersion1, normalizedVersion2)) {
-            return Objects.equals(normalizedVersion1, package1.webJar.getVersion()) ? package1 : package2;
+            return selectTopmostPackage(package1, package2).orElseGet(
+                    () -> tryToSelectPackageWithNormalizedVersion(package1,
+                            package2, normalizedVersion1));
         }
         throw new IllegalArgumentException(String.format(
-                "Two webJars have same name and different versions: '%s' and '%s', there should be no version differences", package1.webJar, package2.webJar));
+                "Two webJars have same name and different versions: '%s' and '%s', there should be no version differences",
+                package1.webJar, package2.webJar));
+    }
+    
+    private static Optional<WebJarPackage> selectTopmostPackage(
+            WebJarPackage package1, WebJarPackage package2) {
+        String path1 = package1.getPathToPackage();
+        String path2 = package2.getPathToPackage();
+
+        if (!Objects.equals(path1, path2)) {
+            if (path1.startsWith(path2)) {
+                return Optional.of(package2);
+            } else if (path2.startsWith(path1)) {
+                return Optional.of(package1);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static WebJarPackage tryToSelectPackageWithNormalizedVersion(
+            WebJarPackage package1, WebJarPackage package2,
+            String normalizedVersion1) {
+        return Objects.equals(normalizedVersion1, package1.webJar.getVersion())
+                ? package1
+                : package2;
     }
 
     private static String normalizeVersion(String version) {

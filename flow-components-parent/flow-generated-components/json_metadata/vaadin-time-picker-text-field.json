@@ -1,0 +1,188 @@
+{
+  "name": "Vaadin.TimePickerTextFieldElement",
+  "tag": "vaadin-time-picker-text-field",
+  "baseUrl": "vaadin-time-picker/src/vaadin-time-picker-text-field.html",
+  "version": "UNKNOWN",
+  "properties": [
+    {
+      "name": "autofocus",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specify that this control should have input focus when the page loads.\n         "
+    },
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the user cannot interact with this element.\n         "
+    },
+    {
+      "name": "autocomplete",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete\n         "
+    },
+    {
+      "name": "autocorrect",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.\n         "
+    },
+    {
+      "name": "autocapitalize",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.\n         "
+    },
+    {
+      "name": "errorMessage",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Error to show when the input value is invalid.\n         "
+    },
+    {
+      "name": "label",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "String used for the label element.\n         "
+    },
+    {
+      "name": "maxlength",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Maximum number of characters (in Unicode code points) that the user can enter.\n         "
+    },
+    {
+      "name": "minlength",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Minimum number of characters (in Unicode code points) that the user can enter.\n         "
+    },
+    {
+      "name": "name",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the control, which is submitted with the form data.\n         "
+    },
+    {
+      "name": "placeholder",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "A hint to the user of what can be entered in the control.\n         "
+    },
+    {
+      "name": "readonly",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "This attribute indicates that the user cannot modify the value of the control.\n         "
+    },
+    {
+      "name": "required",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specifies that the user must fill in a value.\n         "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The initial value of the control.\nIt can be used for two-way data binding.\n         ",
+      "notify": true
+    },
+    {
+      "name": "invalid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "This property is set to true when the control value is invalid.\n         ",
+      "notify": true
+    },
+    {
+      "name": "preventInvalidInput",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When set to true, user is prevented from typing a value that\nconflicts with the given `pattern`.\n         "
+    },
+    {
+      "name": "list",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Identifies a list of pre-defined options to suggest to the user.\nThe value must be the id of a <datalist> element in the same document.\n             "
+    },
+    {
+      "name": "pattern",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.\n             "
+    },
+    {
+      "name": "title",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Message to show to the user when validation fails.\n             "
+    }
+  ],
+  "methods": [
+    {
+      "name": "checkValidity",
+      "description": "Returns true if the current input value satisfies all constraints (if any)",
+      "parameters": [],
+      "returns": "BOOLEAN"
+    },
+    {
+      "name": "validate",
+      "description": "Returns true if `value` is valid.\n`<iron-form>` uses this to check the validity or all its elements.",
+      "parameters": [],
+      "returns": "BOOLEAN"
+    }
+  ],
+  "events": [
+    {
+      "name": "change",
+      "description": "change",
+      "properties": []
+    }
+  ],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [],
+  "variants": {},
+  "description": "The text-field element.\n\n### Styling\n\nSee [`<vaadin-text-field>` documentation](https://github.com/vaadin/vaadin-text-field/blob/master/src/vaadin-text-field.html)\nfor `<vaadin-time-picker-text-field>` parts and available slots (prefix, suffix etc.)\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+}

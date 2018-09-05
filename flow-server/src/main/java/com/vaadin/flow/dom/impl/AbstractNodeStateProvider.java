@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,6 +14,8 @@
  * the License.
  */
 package com.vaadin.flow.dom.impl;
+
+import java.util.Optional;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
@@ -33,6 +35,7 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
  * composition essence of the provider.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class AbstractNodeStateProvider
@@ -72,7 +75,15 @@ public abstract class AbstractNodeStateProvider
 
     @Override
     public int getChildCount(StateNode node) {
-        return getChildrenFeature(node).size();
+        Optional<ElementChildrenList> maybeList = node
+                .getFeatureIfInitialized(ElementChildrenList.class);
+        // Lacking Optional.mapToInt
+        if (maybeList.isPresent()) {
+            return maybeList.get().size();
+        } else {
+            return 0;
+        }
+
     }
 
     @Override
@@ -170,8 +181,9 @@ public abstract class AbstractNodeStateProvider
     protected void visitDescendants(Node<?> node, NodeVisitor visitor) {
         node.getChildren().forEach(child -> child.accept(visitor));
 
-        node.getNode().getFeature(VirtualChildrenList.class).iterator()
-                .forEachRemaining(child -> acceptVirtualChild(child, visitor));
+        node.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
+                .ifPresent(list -> list.iterator().forEachRemaining(
+                        child -> acceptVirtualChild(child, visitor)));
     }
 
     private void acceptVirtualChild(StateNode node, NodeVisitor visitor) {

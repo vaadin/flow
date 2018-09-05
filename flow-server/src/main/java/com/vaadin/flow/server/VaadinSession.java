@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -62,7 +62,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * implementation of {@link javax.servlet.Filter} interface.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
+ * @since 1.0
  */
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
@@ -271,7 +271,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Retrieves all {@link VaadinSession}s which are stored in the given HTTP
      * session
      *
-     * @since 7.2
      * @param httpSession
      *            the HTTP session
      * @return the found VaadinSessions
@@ -386,7 +385,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @see #removeRequestHandler(RequestHandler)
      *
-     * @since 7.0
      */
     public void addRequestHandler(RequestHandler handler) {
         checkHasLock();
@@ -399,7 +397,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @param handler
      *            the request handler to remove
      *
-     * @since 7.0
      */
     public void removeRequestHandler(RequestHandler handler) {
         checkHasLock();
@@ -417,7 +414,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #addRequestHandler(RequestHandler)
      * @see #removeRequestHandler(RequestHandler)
      *
-     * @since 7.0
      */
     public Collection<RequestHandler> getRequestHandlers() {
         checkHasLock();
@@ -439,7 +435,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @see #setCurrent(VaadinSession)
      *
-     * @since 7.0
      */
     public static VaadinSession getCurrent() {
         return CurrentInstance.get(VaadinSession.class);
@@ -463,7 +458,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #getCurrent()
      * @see ThreadLocal
      *
-     * @since 7.0
      */
     public static void setCurrent(VaadinSession session) {
         CurrentInstance.set(VaadinSession.class, session);
@@ -476,7 +470,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @return a collection of UIs belonging to this application
      *
-     * @since 7.0
      */
     public Collection<UI> getUIs() {
         checkHasLock();
@@ -501,7 +494,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Checks if the current thread has exclusive access to this VaadinSession
      *
      * @return true if the thread has exclusive access, false otherwise
-     * @since 7.1
      */
     public boolean hasLock() {
         ReentrantLock l = ((ReentrantLock) getLockInstance());
@@ -552,7 +544,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the session to use for checking
      *
      * @return true if this thread has exclusive access, false otherwise
-     * @since 7.6
      */
     protected static boolean hasLock(VaadinService service,
             WrappedSession session) {
@@ -837,7 +828,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Returns the lifecycle state of this session.
      *
-     * @since 7.2
      * @return the current state
      */
     public VaadinSessionState getState() {
@@ -849,7 +839,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Sets the lifecycle state of this session. The allowed transitions are
      * OPEN to CLOSING and CLOSING to CLOSED.
      *
-     * @since 7.2
      * @param state
      *            the new state
      */
@@ -899,7 +888,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @throws IllegalStateException
      *             if the current thread holds the lock for another session
      *
-     * @since 7.1
      *
      * @see #lock()
      * @see #getCurrent()
@@ -955,7 +943,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #accessSynchronously(Command)
      * @see UI#access(Command)
      *
-     * @since 7.1
      *
      * @param command
      *            the command which accesses the session
@@ -971,7 +958,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * safe to call this method and access the returned queue without holding
      * the {@link #lock() session lock}.
      *
-     * @since 7.1
      *
      * @return the queue of pending access tasks
      */
@@ -983,7 +969,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Gets the CSRF token (aka double submit cookie) that is used to protect
      * against Cross Site Request Forgery attacks.
      *
-     * @since 7.1
      * @return the csrf token string
      */
     public String getCsrfToken() {
@@ -1030,7 +1015,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * <p>
      * Called internally by the framework.
      *
-     * @since 7.6
      * @param wrappedSession
      *            the session this VaadinSession is stored in
      * @param vaadinService

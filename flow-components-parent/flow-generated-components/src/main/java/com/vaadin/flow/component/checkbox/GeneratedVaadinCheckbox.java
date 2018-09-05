@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -104,8 +104,9 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.CheckboxElement#2.1.1", "Flow#1.0-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.CheckboxElement#2.2.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/src/vaadin-checkbox.html")
 public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R, T>, T>
@@ -231,6 +232,10 @@ public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<
      */
     protected void setIndeterminate(boolean indeterminate) {
         getElement().setProperty("indeterminate", indeterminate);
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("change")

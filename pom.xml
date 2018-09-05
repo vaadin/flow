@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -7,12 +8,12 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
-    
+    <version>1.1-SNAPSHOT</version>
+
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-parent</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.1</version>
     </parent>
 
     <modules>
@@ -93,13 +94,23 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
-        <testbench.version>6.0.0.rc1</testbench.version>
+        <testbench.version>6.0.1</testbench.version>
         <jetty.version>9.4.11.v20180605</jetty.version>
 
         <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
-        <node.version>v7.10.1</node.version>
-        <npm.version>5.3.0</npm.version>
+        <node.version>v8.11.1</node.version>
+        <npm.version>6.1.0</npm.version>
+
+        <!-- Used in OSGi manifests -->
+        <jsoup.version>1.11.2</jsoup.version>
+        <!-- Note that this should be kept in sync with the class Constants -->
+        <atmosphere.runtime.version>2.4.24.vaadin1</atmosphere.runtime.version>
+
+        <!-- OSGi -->
+        <!-- Note: the parserVersion value is set by build-helper-maven-plugin  -->
+        <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
+        <bnd.version>3.3.0</bnd.version>
 
         <maven.test.skip>false</maven.test.skip>
     </properties>
@@ -178,6 +189,17 @@
                 <groupId>javax.portlet</groupId>
                 <artifactId>portlet-api</artifactId>
                 <version>2.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.webjars.bowergithub.webcomponents</groupId>
+                <artifactId>webcomponentsjs</artifactId>
+                <version>1.2.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bowergithub.polymer</groupId>
+                <artifactId>polymer</artifactId>
+                <version>2.6.0</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -355,6 +377,31 @@
                     </filesets>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>parse-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>${bnd.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bnd-process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -419,7 +466,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -502,17 +549,9 @@
                     <plugins>
                         <plugin>
                             <artifactId>maven-surefire-plugin</artifactId>
-                            <!--TODO tests require some fixing-->
-                            <configuration>
-                                <skipTests>true</skipTests>
-                            </configuration>
                         </plugin>
                         <plugin>
                             <artifactId>maven-failsafe-plugin</artifactId>
-                            <!--TODO tests require some fixing-->
-                            <configuration>
-                                <skipTests>true</skipTests>
-                            </configuration>
                             <dependencies>
                                 <dependency>
                                     <groupId>javax.xml.bind</groupId>

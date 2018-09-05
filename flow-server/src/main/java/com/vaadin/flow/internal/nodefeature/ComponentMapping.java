@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.StateNode;
  * A server side only node feature for mapping a node to a component.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentMapping extends ServerSideFeature {
 
@@ -76,6 +77,23 @@ public class ComponentMapping extends ServerSideFeature {
      */
     public Optional<Component> getComponent() {
         return Optional.ofNullable(component);
+    }
+
+    /**
+     * Gets the component mapped to the given state node.
+     *
+     * @param node
+     *            the state node for which to find a component, not
+     *            <code>null</code>
+     * @return the mapped component, or an empty optional if no component is
+     *         mapped
+     */
+    public static Optional<Component> getComponent(StateNode node) {
+        assert node != null;
+        assert node.hasFeature(ComponentMapping.class);
+
+        return node.getFeatureIfInitialized(ComponentMapping.class)
+                .flatMap(ComponentMapping::getComponent);
     }
 
     @Override

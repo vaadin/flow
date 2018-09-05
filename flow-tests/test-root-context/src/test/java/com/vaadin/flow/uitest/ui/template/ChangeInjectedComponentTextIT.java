@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,21 +17,23 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class ChangeInjectedComponentTextIT extends ChromeBrowserTest {
 
     @Test
     public void setText_injectedComponent_textReplacesContent() {
         open();
 
-        WebElement template = findElement(
-                By.tagName("update-injected-component-text"));
-
-        WebElement injected = getInShadowRoot(template, By.id("injected"));
+        WebElement injected = $("update-injected-component-text").first()
+                .$(TestBenchElement.class).id("injected");
         Assert.assertEquals(
                 "New text value doesn't replace the content of the element",
                 "new text", injected.getText());

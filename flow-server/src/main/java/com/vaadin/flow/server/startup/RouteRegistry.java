@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,8 +31,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +51,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -108,6 +108,8 @@ public class RouteRegistry implements Serializable {
             return handledExceptionType;
         }
     }
+
+    private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
 
     private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
@@ -680,5 +682,30 @@ public class RouteRegistry implements Serializable {
         }
         return Optional.ofNullable(
                 findThemeForNavigationTarget(navigationTarget, path));
+    }
+
+    /**
+     * Gets pwa configuration class.
+     *
+     * @return a class that has PWA-annotation.
+     */
+    public Class<?> getPwaConfigurationClass() {
+        return pwaConfigurationClass.get();
+    }
+
+    /**
+     * Sets pwa configuration class.
+     *
+     * Should be set along with setNavigationTargets, for scanning of proper
+     * pwa configuration class is done along route scanning.
+     * See {@link AbstractRouteRegistryInitializer}.
+     *
+     * @param pwaClass a class that has PWA -annotation, that's to be used in
+     *                 service initialization.
+     */
+    public void setPwaConfigurationClass(Class<?> pwaClass) {
+        if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
+            pwaConfigurationClass.set(pwaClass);
+        }
     }
 }

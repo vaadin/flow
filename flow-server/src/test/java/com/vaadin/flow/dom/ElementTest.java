@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,6 +31,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.ListAddChange;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
@@ -48,6 +48,7 @@ import com.vaadin.tests.util.TestUtil;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {
@@ -115,6 +116,7 @@ public class ElementTest extends AbstractNodeTest {
         ignore.add("as");
         // Possibly returns a remover or a wrapped return value in the future
         ignore.add("callFunction");
+        ignore.add("executeJavaScript");
 
         // ignore shadow root methods
         ignore.add("attachShadow");
@@ -2299,6 +2301,70 @@ public class ElementTest extends AbstractNodeTest {
         child.removeFromParent();
 
         Assert.assertTrue("Child should be enabled", child.isEnabled());
+    }
+
+    @Test
+    public void emptyElement_setDisabled_noChildFeatures() {
+        Element element = ElementFactory.createDiv();
+
+        element.setEnabled(false);
+
+        BasicElementStateProviderTest.assertNoChildFeatures(element);
+    }
+
+    @Test
+    public void emptyElement_isVirtualChild_noChildFeatures() {
+        Element element = ElementFactory.createDiv();
+
+        element.isVirtualChild();
+
+        BasicElementStateProviderTest.assertNoChildFeatures(element);
+    }
+
+    @Test
+    public void elementWithoutComponent_getComponentFeature() {
+        Element element = ElementFactory.createDiv();
+        element.appendChild(ElementFactory.createDiv());
+
+        element.getComponent();
+
+        Assert.assertFalse(
+                "getComponent() shouldn't initialize a component mapping feature",
+                element.getNode()
+                        .getFeatureIfInitialized(ComponentMapping.class)
+                        .isPresent());
+    }
+
+    @Test
+    public void readMissingProperty_noFeatureInitialized() {
+        Element element = ElementFactory.createDiv();
+
+        element.getProperty("foo");
+        element.hasProperty("foo");
+        element.removeProperty("foo");
+        element.getPropertyNames().collect(Collectors.toList());
+
+        Assert.assertFalse(
+                "reading a property value shouldn't initialize a property map feature",
+                element.getNode()
+                        .getFeatureIfInitialized(ElementPropertyMap.class)
+                        .isPresent());
+    }
+
+    @Test
+    public void readMissingAttribute_noFeatureInitialized() {
+        Element element = ElementFactory.createDiv();
+
+        element.getAttribute("foo");
+        element.hasAttribute("foo");
+        element.removeAttribute("foo");
+        element.getAttributeNames().collect(Collectors.toList());
+
+        Assert.assertFalse(
+                "reading an attribute value shouldn't initialize an attribute map feature",
+                element.getNode()
+                        .getFeatureIfInitialized(ElementAttributeMap.class)
+                        .isPresent());
     }
 
     public void syncProperty_delegateTo3ArgsMethod() {

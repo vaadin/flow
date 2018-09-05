@@ -4,7 +4,14 @@
   "baseUrl": "vaadin-notification/src/vaadin-notification.html",
   "version": "UNKNOWN",
   "properties": [],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [],
   "slots": [
     ""
@@ -13,5 +20,6 @@
   "mixins": [
     "Vaadin.ThemableMixin"
   ],
+  "variants": {},
   "description": "The container element for the notification\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`overlay` | The notification container\n`content` | The content of the notification\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

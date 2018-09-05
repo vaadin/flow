@@ -19,6 +19,17 @@
       ]
     }
     
+    ready(){
+        super.ready();
+        this.addEventListener("click", function(event){
+            if (this.firstChild && 
+                    typeof this.firstChild.click === "function" && 
+                        event.target === this ){
+                this.firstChild.click();
+            }
+        });
+    }
+    
     _asyncAttachRenderedComponentIfAble() {
       this._debouncer = Polymer.Debouncer.debounce(
         this._debouncer,
@@ -63,8 +74,8 @@
     }
     
     _clear() {
-      while (this.hasChildNodes()) {
-        this.removeChild(this.lastChild);
+      while (this.firstChild) {
+        this.removeChild(this.firstChild);
       }
     }
 

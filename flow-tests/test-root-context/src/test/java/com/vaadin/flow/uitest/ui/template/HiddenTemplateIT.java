@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,22 +17,26 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class HiddenTemplateIT extends ChromeBrowserTest {
 
     @Test
     public void initiallyHiddenElementStaysHidden() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement child = getInShadowRoot(template, By.id("child"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        WebElement child = template.$(TestBenchElement.class).id("child");
         Assert.assertNotNull(child.getAttribute("hidden"));
 
-        WebElement visibility = getInShadowRoot(template, By.id("visibility"));
+        WebElement visibility = template.$(TestBenchElement.class)
+                .id("visibility");
         visibility.click();
         Assert.assertNotNull(child.getAttribute("hidden"));
 
@@ -44,15 +48,16 @@ public class HiddenTemplateIT extends ChromeBrowserTest {
     public void initiallyNotHiddenElementChangesItsVisibility() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
 
-        WebElement hidden = getInShadowRoot(template, By.id("hidden"));
+        WebElement hidden = template.$(TestBenchElement.class).id("hidden");
         hidden.click();
 
-        WebElement child = getInShadowRoot(template, By.id("child"));
+        WebElement child = template.$(TestBenchElement.class).id("child");
         Assert.assertNull(child.getAttribute("hidden"));
 
-        WebElement visibility = getInShadowRoot(template, By.id("visibility"));
+        WebElement visibility = template.$(TestBenchElement.class)
+                .id("visibility");
         visibility.click();
         Assert.assertNotNull(child.getAttribute("hidden"));
 

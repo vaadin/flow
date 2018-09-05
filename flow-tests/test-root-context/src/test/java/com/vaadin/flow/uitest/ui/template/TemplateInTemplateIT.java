@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,27 +17,29 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class TemplateInTemplateIT extends ChromeBrowserTest {
 
     @Test
     public void childTemplateInstanceHandlesEvent() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        TestBenchElement child = (TestBenchElement) getInShadowRoot(template,
-                By.id("child"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        TestBenchElement child = template.$(TestBenchElement.class).id("child");
 
         child.getPropertyElement("shadowRoot", "firstElementChild").click();
 
         Assert.assertTrue(isElementPresent(By.id("click-handler")));
 
-        WebElement text = getInShadowRoot(child, By.id("text"));
+        WebElement text = child.$(TestBenchElement.class).id("text");
         Assert.assertEquals("foo", text.getText());
     }
 }

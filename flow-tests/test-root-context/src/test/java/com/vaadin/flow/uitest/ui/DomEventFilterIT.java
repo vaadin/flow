@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -76,6 +76,34 @@ public class DomEventFilterIT extends ChromeBrowserTest {
          */
         Thread.sleep(500);
         assertMessages(4);
+    }
+
+    @Test
+    public void componentWithDebounce() throws InterruptedException {
+        open();
+
+        WebElement input = findElement(By.id("debounce-component"));
+
+        input.sendKeys("a");
+        assertMessages(0);
+
+        Thread.sleep(750);
+        input.sendKeys("b");
+        assertMessages(0);
+
+        Thread.sleep(1100);
+        assertMessages(0, "Component: ab");
+
+        input.sendKeys("c");
+        Thread.sleep(200);
+        assertMessages(1);
+
+        input.sendKeys("d");
+        Thread.sleep(800);
+        assertMessages(1);
+        Thread.sleep(300);
+        assertMessages(1, "Component: abcd");
+
     }
 
     private void assertMessages(int skip, String... expectedTail) {

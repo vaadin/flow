@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.component.internal;
 
-import static org.junit.Assert.assertEquals;
-
-import java.net.URI;
 import java.util.Collection;
 
 import org.junit.After;
@@ -32,6 +29,7 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletSe
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
+@Deprecated
 public class HtmlDependencyParserTest {
 
     private TestVaadinServlet servlet;
@@ -174,39 +172,5 @@ public class HtmlDependencyParserTest {
         Assert.assertTrue(
                 "Dependencies parser doesn't return the simple relative URI",
                 dependencies.contains("frontend://relative.html"));
-    }
-
-    @Test
-    public void normalizeURI() throws Exception {
-        assertEquals("http://foo/bar", normalize("http://foo/bar"));
-        assertEquals("http://foo/../bar", normalize("http://foo/../bar"));
-        assertEquals("http://foo/bar", normalize("http://foo/./bar"));
-        assertEquals("http://foo/bar", normalize("http://foo/baz/../bar"));
-
-        for (String protocol : new String[] { "frontend", "context", "base" }) {
-            assertEquals(protocol + "://foo/bar",
-                    normalize(protocol + "://foo/bar"));
-            assertEquals(protocol + "://bar",
-                    normalize(protocol + "://foo/../bar"));
-            assertEquals(protocol + "://foo", normalize(protocol + "://./foo"));
-            assertEquals(protocol + "://foo",
-                    normalize(protocol + "://././foo"));
-            assertEquals(protocol + "://foo/bar",
-                    normalize(protocol + "://foo/./bar"));
-            assertEquals(protocol + "://foo/bar",
-                    normalize(protocol + "://foo/baz/../bar"));
-            assertEquals(protocol
-                    + "://bower_components/vaadin-button/src/vaadin-button.html",
-                    normalize(protocol
-                            + "://src/views/login/../../../bower_components/vaadin-button/src/vaadin-button.html"));
-            assertEquals(protocol + "://components/js/hash-actions.html",
-                    normalize(protocol
-                            + "://components/../components/js/hash-actions.html"));
-        }
-
-    }
-
-    private String normalize(String string) throws Exception {
-        return HtmlDependencyParser.toNormalizedURI(new URI(string));
     }
 }

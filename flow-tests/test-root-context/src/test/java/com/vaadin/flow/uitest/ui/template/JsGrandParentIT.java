@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,23 +16,25 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class JsGrandParentIT extends ChromeBrowserTest {
 
     @Test
     public void callJsInsideGrandInjected() {
         open();
 
-        WebElement parent = findElement(By.tagName("js-grand-parent"));
-        WebElement child = getInShadowRoot(parent,
-                By.cssSelector("js-sub-template"));
-        WebElement grandChild = getInShadowRoot(child,
-                By.cssSelector("js-injected-grand-child"));
-        WebElement label = getInShadowRoot(grandChild, By.id("foo-prop"));
+        TestBenchElement parent = $("js-grand-parent").first();
+        TestBenchElement child = parent.$("js-sub-template").first();
+        TestBenchElement grandChild = child.$("js-injected-grand-child")
+                .first();
+        WebElement label = grandChild.$(TestBenchElement.class).id("foo-prop");
 
         waitUntil(driver -> "bar".equals(label.getText()));
     }

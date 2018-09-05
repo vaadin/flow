@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -75,9 +75,9 @@ import com.vaadin.flow.component.Component;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
         "WebComponent: Vaadin.ComboBoxItemElement#UNKNOWN",
-        "Flow#1.0-SNAPSHOT" })
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-item.html")
 public abstract class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>
@@ -128,23 +128,8 @@ public abstract class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinCombo
      * 
      * @return the {@code item} property from the webcomponent
      */
-    protected JsonObject getItemObjectJsonObject() {
+    protected JsonObject getItemJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("item");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * The item to render
-     * </p>
-     * 
-     * @param item
-     *            the String value to set
-     */
-    protected void setItem(String item) {
-        getElement().setProperty("item", item == null ? "" : item);
     }
 
     /**
@@ -256,5 +241,9 @@ public abstract class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinCombo
      */
     protected void setFocused(boolean focused) {
         getElement().setProperty("focused", focused);
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 }

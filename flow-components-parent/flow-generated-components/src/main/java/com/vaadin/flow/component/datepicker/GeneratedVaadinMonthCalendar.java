@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,9 +26,9 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.Component;
 
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
         "WebComponent: Vaadin.MonthCalendarElement#UNKNOWN",
-        "Flow#1.0-SNAPSHOT" })
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-month-calendar")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
 public abstract class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar<R>>

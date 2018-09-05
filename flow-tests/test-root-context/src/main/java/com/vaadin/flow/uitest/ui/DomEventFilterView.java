@@ -15,13 +15,46 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DomEventFilterView", layout = ViewTestLayout.class)
 public class DomEventFilterView extends AbstractDivView {
+
+    @Tag("input")
+    public static class DebounceComponent extends Component {
+        public Registration addInputListener(
+                ComponentEventListener<InputEvent> listener,
+                int debounceTimeout) {
+            return getEventBus().addListener(InputEvent.class, listener,
+                    domReg -> domReg.debounce(debounceTimeout));
+        }
+    }
+
+    @DomEvent("input")
+    public static class InputEvent extends ComponentEvent<DebounceComponent> {
+        private String value;
+
+        public InputEvent(DebounceComponent source, boolean fromClient,
+                @EventData("element.value") String value) {
+            super(source, fromClient);
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
     private final Element messages = new Element("div");
 
     public DomEventFilterView() {
@@ -49,8 +82,14 @@ public class DomEventFilterView extends AbstractDivView {
                         + e.getEventData().getString("element.value")))
                 .throttle(1000);
 
+        DebounceComponent component = new DebounceComponent();
+        component.setId("debounce-component");
+        component.addInputListener(
+                e -> addMessage("Component: " + e.getValue()), 1000);
+
         messages.setAttribute("id", "messages");
-        getElement().appendChild(space, debounce, messages);
+        getElement().appendChild(space, debounce, component.getElement(),
+                messages);
     }
 
     private void addMessage(String message) {

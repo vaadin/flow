@@ -5,6 +5,7 @@ package com.vaadin.flow.testcategory;
  * {@code @Category(PushTests.class)}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public interface PushTests {
 

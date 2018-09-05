@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,19 +17,23 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class RestoreViewWithAttachedByIdIT extends ChromeBrowserTest {
 
     @Test
     public void injectedComponentWorksAfterReattach() {
         open();
 
-        WebElement target = getInShadowRoot(findElement(By.id("template")),
-                By.id("target"));
+        WebElement target = $(TestBenchElement.class).id("template")
+                .$(TestBenchElement.class).id("target");
         Assert.assertEquals("Server Side Text", target.getText());
 
         // replace the template with a label
@@ -41,8 +45,8 @@ public class RestoreViewWithAttachedByIdIT extends ChromeBrowserTest {
         // return the template back
         button.click();
 
-        target = getInShadowRoot(findElement(By.id("template")),
-                By.id("target"));
+        target = $(TestBenchElement.class).id("template")
+                .$(TestBenchElement.class).id("target");
         Assert.assertEquals("Server Side Text", target.getText());
     }
 }

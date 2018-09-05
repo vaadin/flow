@@ -2,7 +2,7 @@
   "name": "Vaadin.ListBoxElement",
   "tag": "vaadin-list-box",
   "baseUrl": "vaadin-list-box/src/vaadin-list-box.html",
-  "version": "1.0.2",
+  "version": "1.1.0-alpha3",
   "properties": [
     {
       "name": "selected",
@@ -19,7 +19,7 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": " The array of list items ",
+      "description": "The list of items from which a selection can be made.\nIs is populated from the elements passed to the light DOM,\nand updated dynamically when adding or removing items.\n\nThe item elements must implement `Vaadin.ItemMixin`.\n\nNote: unlike `<vaadin-combo-box>`, this property is read-only,\nso if you want to provide items by iterating array of data,\nyou have to use `dom-repeat` and place it to the light DOM.\n         ",
       "readOnly": true,
       "notify": true
     }
@@ -27,6 +27,12 @@
   "methods": [
     {
       "name": "focus",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "updateStyles",
       "description": "",
       "parameters": [],
       "returns": "UNDEFINED"
@@ -41,5 +47,6 @@
     "Vaadin.ListMixin",
     "Vaadin.ThemableMixin"
   ],
+  "variants": {},
   "description": "`<vaadin-list-box>` is a Polymer 2 element for menus\n\n```\n  <vaadin-list-box selected=\"2\">\n    <vaadin-item>Item 1</vaadin-item>\n    <vaadin-item>Item 2</vaadin-item>\n    <vaadin-item>Item 3</vaadin-item>\n    <vaadin-item>Item 4</vaadin-item>\n  </vaadin-list-box>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|------------------------\n`items`           | The items container\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

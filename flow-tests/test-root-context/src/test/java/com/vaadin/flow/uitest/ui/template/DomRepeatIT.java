@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,26 +18,32 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
+import org.junit.experimental.categories.Category;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
+@Category(IgnoreOSGi.class)
 public class DomRepeatIT extends ChromeBrowserTest {
 
     @Test
     public void checkThatIndicesAreCorrect() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
 
         for (int i = 0; i < DomRepeatView.NUMBER_OF_EMPLOYEES; i++) {
-            getInShadowRoot(template, By.id(DomRepeatView.TR_ID_PREFIX + i)).click();
-            String eventIndex = getInShadowRoot(template, By.id(DomRepeatView.EVENT_INDEX_ID)).getText();
-            String repeatIndex = getInShadowRoot(template, By.id(DomRepeatView.REPEAT_INDEX_ID)).getText();
+            template.$(TestBenchElement.class)
+                    .id(DomRepeatView.TR_ID_PREFIX + i).click();
+            String eventIndex = template.$(TestBenchElement.class)
+                    .id(DomRepeatView.EVENT_INDEX_ID).getText();
+            String repeatIndex = template.$(TestBenchElement.class)
+                    .id(DomRepeatView.REPEAT_INDEX_ID).getText();
 
             Assert.assertEquals(eventIndex, repeatIndex);
             Assert.assertEquals(i, Integer.parseInt(repeatIndex));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,31 +17,35 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class InjectsJsTemplateIT extends ChromeBrowserTest {
 
     @Test
     public void executeJsOnInjectedElement() {
         open();
 
-        WebElement parent = findElement(By.tagName("injects-js-template"));
+        TestBenchElement parent = $("injects-js-template").first();
 
-        WebElement injectedTemplate = getInShadowRoot(parent,
-                By.id("injected-template"));
+        TestBenchElement injectedTemplate = parent.$(TestBenchElement.class)
+                .id("injected-template");
 
-        WebElement fooLabel = getInShadowRoot(injectedTemplate,
-                By.id("foo-prop"));
+        WebElement fooLabel = injectedTemplate.$(TestBenchElement.class)
+                .id("foo-prop");
         Assert.assertEquals("bar", fooLabel.getText());
 
-        WebElement bazLabel = getInShadowRoot(injectedTemplate,
-                By.id("baz-prop"));
+        WebElement bazLabel = injectedTemplate.$(TestBenchElement.class)
+                .id("baz-prop");
         Assert.assertEquals("setFromParent", bazLabel.getText());
 
-        WebElement injectedDiv = getInShadowRoot(parent, By.id("injected-div"));
+        WebElement injectedDiv = parent.$(TestBenchElement.class)
+                .id("injected-div");
         Assert.assertEquals("setFromParent", injectedDiv.getAttribute("class"));
     }
 }

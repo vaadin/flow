@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,9 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Interface that defines the contract of adding and removing multiple
  * {@link DataGenerator}s to a given object.
- * 
- * @author Vaadin Ltd.
+ *
+ * @author Vaadin Ltd
+ * @since 1.0.
  *
  * @param <T>
  *            the data type of the {@link DataGenerator}s.
@@ -43,9 +44,13 @@ public interface HasDataGenerators<T> extends Serializable {
     /**
      * Removes the given data generator.
      *
+     * @deprecated Use the registration returned from
+     *             {@link #addDataGenerator(DataGenerator)} instead.
+     *
      * @param generator
      *            the data generator to remove
      */
+    @Deprecated
     void removeDataGenerator(DataGenerator<T> generator);
 
 }

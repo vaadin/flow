@@ -2,7 +2,7 @@
   "name": "Vaadin.ButtonElement",
   "tag": "vaadin-button",
   "baseUrl": "vaadin-button/src/vaadin-button.html",
-  "version": "2.0.1",
+  "version": "2.1.0-alpha3",
   "properties": [
     {
       "name": "autofocus",
@@ -21,7 +21,14 @@
       "description": "If true, the user cannot interact with this element.\n         "
     }
   ],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [],
   "slots": [
     "prefix",
@@ -35,5 +42,22 @@
     "Vaadin.ThemableMixin",
     "Polymer.GestureEventListeners"
   ],
-  "description": "`<vaadin-button>` is a Polymer 2 element providing an accessible and customizable button.\n\n```html\n<vaadin-button>\n</vaadin-button>\n```\n\n### Styling\n\nThe following shadow DOM parts are exposed for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label (text) inside the button\n`prefix` | A slot for e.g. an icon before the label\n`suffix` | A slot for e.g. an icon after the label\n\n\nThe following attributes are exposed for styling:\n\nAttribute | Description\n--------- | -----------\n`active` | Set when the button is pressed down, either with mouse, touch or the keyboard.\n`disabled` | Set when the button is disabled.\n`focus-ring` | Set when the button is focused using the keyboard.\n`focused` | Set when the button is focused.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+  "variants": {
+    "lumo": [
+      "small",
+      "large",
+      "tertiary",
+      "tertiary-inline",
+      "primary",
+      "success",
+      "error",
+      "contrast",
+      "icon"
+    ],
+    "material": [
+      "contained",
+      "outlined"
+    ]
+  },
+  "description": "`<vaadin-button>` is a Polymer 2 element providing an accessible and customizable button.\n\n```html\n<vaadin-button>\n</vaadin-button>\n```\n\n```js\ndocument.querySelector('vaadin-button').addEventListener('click', () => alert('Hello World!'));\n```\n\n### Styling\n\nThe following shadow DOM parts are exposed for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label (text) inside the button\n`prefix` | A slot for e.g. an icon before the label\n`suffix` | A slot for e.g. an icon after the label\n\n\nThe following attributes are exposed for styling:\n\nAttribute | Description\n--------- | -----------\n`active` | Set when the button is pressed down, either with mouse, touch or the keyboard.\n`disabled` | Set when the button is disabled.\n`focus-ring` | Set when the button is focused using the keyboard.\n`focused` | Set when the button is focused.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

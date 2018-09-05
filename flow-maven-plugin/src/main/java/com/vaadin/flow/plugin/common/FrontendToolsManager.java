@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,18 +28,12 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
-import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
-import com.github.eirslett.maven.plugins.frontend.lib.NodeInstaller;
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
-import com.github.eirslett.maven.plugins.frontend.lib.YarnInstaller;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Entity to operate frontend tools to transpile files.
@@ -56,13 +50,14 @@ import com.google.common.collect.ImmutableMap;
  * <a href="https://github.com/nodejs/node">node</a> are used to get and launch
  * the tools required.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class FrontendToolsManager {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(FrontendToolsManager.class);
 
-    private final FrontendPluginFactory factory;
+    private final RunnerManager runnerManager;
     private final File workingDirectory;
     private final String es5OutputDirectoryName;
     private final String es6OutputDirectoryName;
@@ -83,14 +78,16 @@ public class FrontendToolsManager {
      * @param frontendDataProvider
      *            the source of the files required by the
      *            {@link FrontendToolsManager}, not {@code null}
+     * @param runnerManager
+     *            node, gulp and yarn runner
      */
     public FrontendToolsManager(File workingDirectory,
             String es5OutputDirectoryName, String es6OutputDirectoryName,
-            FrontendDataProvider frontendDataProvider) {
+            FrontendDataProvider frontendDataProvider,
+            RunnerManager runnerManager) {
         FlowPluginFileUtils
                 .forceMkdir(Objects.requireNonNull(workingDirectory));
-        this.factory = new FrontendPluginFactory(workingDirectory,
-                workingDirectory);
+        this.runnerManager = Objects.requireNonNull(runnerManager);
         this.workingDirectory = workingDirectory;
         this.es5OutputDirectoryName = Objects
                 .requireNonNull(es5OutputDirectoryName);
@@ -101,22 +98,12 @@ public class FrontendToolsManager {
     }
 
     /**
-     * Installs tools required for transpilation. Tools installed are:
-     * <ul>
-     * <li><a href="https://github.com/nodejs/node">node</a></li>
-     * <li><a href="https://github.com/yarnpkg/yarn">yarn</a></li>
-     * <li><a href="https://github.com/gulpjs/gulp">gulp</a></li>
-     * </ul>
-     * Additionally, {@literal gulpfile.js} file that is used for installation
-     * and transpilation via {@literal gulp}.
+     * Installs tools required for transpilation.
+     * 
+     * Tools installed are specified in the {@literal package.json} file in the
+     * plugin project's resources directory. Additionally, copies numerous files
+     * required for transpilation into the working directory.
      *
-     * @param proxyConfig
-     *            proxy config to use when downloading frontend tools, not
-     *            {@code null}
-     * @param nodeVersion
-     *            node version, not {@code null}
-     * @param yarnVersion
-     *            yarn version, not {@code null}
      * @param networkConcurrency
      *            maximum number of concurrent network requests
      *
@@ -125,33 +112,21 @@ public class FrontendToolsManager {
      * @throws UncheckedIOException
      *             if supplementary file creation fails
      */
-    public void installFrontendTools(ProxyConfig proxyConfig,
-            String nodeVersion, String yarnVersion, int networkConcurrency) {
+    public void installFrontendTools(int networkConcurrency) {
         LOGGER.info("Installing required frontend tools to '{}'",
                 workingDirectory);
-        Objects.requireNonNull(proxyConfig);
-        Objects.requireNonNull(nodeVersion);
-        Objects.requireNonNull(yarnVersion);
-
         createFileFromTemplateResource("package.json", Collections.emptyMap());
         createFileFromTemplateResource("yarn.lock", Collections.emptyMap());
         try {
-            factory.getNodeInstaller(proxyConfig).setNodeVersion(nodeVersion)
-                    .setNodeDownloadRoot(
-                            NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
-                    .install();
-            factory.getYarnInstaller(proxyConfig).setYarnVersion(yarnVersion)
-                    .setYarnDownloadRoot(
-                            YarnInstaller.DEFAULT_YARN_DOWNLOAD_ROOT)
-                    .install();
+
             StringBuilder args = new StringBuilder("install");
             if (networkConcurrency >= 0) {
                 args.append(" --network-concurrency ");
                 args.append(networkConcurrency);
             }
-            factory.getYarnRunner(proxyConfig, null).execute(args.toString(),
+            runnerManager.getYarnRunner().execute(args.toString(),
                     Collections.emptyMap());
-        } catch (InstallationException | TaskRunnerException e) {
+        } catch (TaskRunnerException e) {
             throw new IllegalStateException(
                     "Failed to install required frontend dependencies", e);
         }
@@ -245,13 +220,13 @@ public class FrontendToolsManager {
 
         Map<String, File> transpilationResults = new HashMap<>();
         try {
-            factory.getGulpRunner().execute("build_es6",
+            runnerManager.getGulpRunner().execute("build_es6",
                     Collections.emptyMap());
             addTranspilationResult(transpilationResults, outputDirectory,
                     es6OutputDirectoryName);
 
             if (!skipEs5) {
-                factory.getGulpRunner().execute("build_es5",
+                runnerManager.getGulpRunner().execute("build_es5",
                         Collections.emptyMap());
                 addTranspilationResult(transpilationResults, outputDirectory,
                         es5OutputDirectoryName);

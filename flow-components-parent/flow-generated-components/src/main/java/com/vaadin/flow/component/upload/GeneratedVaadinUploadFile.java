@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -114,22 +114,22 @@ import com.vaadin.flow.component.Component;
  * <tr>
  * <td>{@code error}</td>
  * <td>An error has happened during uploading</td>
- * <td>{@code progress}</td>
+ * <td>{@code :host}</td>
  * </tr>
  * <tr>
  * <td>{@code indeterminate}</td>
  * <td>Uploading is in progress, but the progress value is unknown</td>
- * <td>{@code progress}</td>
+ * <td>{@code :host}</td>
  * </tr>
  * <tr>
  * <td>{@code uploading}</td>
  * <td>Uploading is in progress</td>
- * <td>{@code progress}</td>
+ * <td>{@code :host}</td>
  * </tr>
  * <tr>
  * <td>{@code complete}</td>
  * <td>Uploading has finished successfully</td>
- * <td>{@code progress}</td>
+ * <td>{@code :host}</td>
  * </tr>
  * </tbody>
  * </table>
@@ -139,8 +139,8 @@ import com.vaadin.flow.component.Component;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.UploadFileElement#UNKNOWN", "Flow#1.0-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.UploadFileElement#UNKNOWN", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-upload-file")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload-file.html")
 public abstract class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>
@@ -162,6 +162,10 @@ public abstract class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadF
      */
     protected void setFile(JsonObject file) {
         getElement().setPropertyJson("file", file);
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("file-abort")

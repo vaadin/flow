@@ -2,7 +2,7 @@
   "name": "Vaadin.CheckboxElement",
   "tag": "vaadin-checkbox",
   "baseUrl": "vaadin-checkbox/src/vaadin-checkbox.html",
-  "version": "2.1.1",
+  "version": "2.2.0-alpha3",
   "properties": [
     {
       "name": "autofocus",
@@ -55,7 +55,14 @@
       "description": "The value given to the data submitted with the checkbox's name to the server when the control is inside a form.\n             "
     }
   ],
-  "methods": [],
+  "methods": [
+    {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [
     {
       "name": "change",
@@ -83,5 +90,6 @@
     "Vaadin.ThemableMixin",
     "Polymer.GestureEventListeners"
   ],
+  "variants": {},
   "description": "`<vaadin-checkbox>` is a Polymer 2 element for customized checkboxes.\n\n```html\n<vaadin-checkbox>\n  Make my profile visible\n</vaadin-checkbox>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|----------------\n`checkbox`        | The checkbox element\n`label`           | The label content element\n\nThe following state attributes are available for styling:\n\nAttribute    | Description\n-------------|------------\n`active`     | Set when the checkbox is pressed down, either with mouse, touch or the keyboard.\n`disabled`   | Set when the checkbox is disabled.\n`focus-ring` | Set when the checkbox is focused using the keyboard.\n`focused`    | Set when the checkbox is focused.\n`indeterminate` | Set when the checkbox is in indeterminate mode.\n`checked` | Set when the checkbox is checked.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

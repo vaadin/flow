@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,9 +23,10 @@ const VersionReader = require('./lib/js/version-transform');
 const MixinCollector = require('./lib/js/mixin-collector');
 const AnalyzerTransform = require('./lib/js/analyzer-transform');
 const ElementJsonTransform = require('./lib/js/element-json-transform');
+const VariantsTransform = require('./lib/js/variants-transform');
 const gulpIgnore = require('gulp-ignore');
 
-gulp.task('generate', function() {
+gulp.task('prepare', cb => {
   if (!fs.existsSync(globalVar.bowerSrcDir) || fs.readdirSync(globalVar.bowerSrcDir).length === 0) {
     console.error(`Source directory ${globalVar.bowerSrcDir} does not exists or empty`);
     process.exit(1)
@@ -33,7 +34,16 @@ gulp.task('generate', function() {
 
   console.log(`Cleaning output directory ${globalVar.targetDir}`);
   fs.removeSync(globalVar.targetDir);
+  cb();
+});
 
+const variantsData = {};
+gulp.task('gather-variants-data', gulp.series('prepare', () => {
+  return gulp.src([globalVar.bowerSrcDir + "/*/theme/*/vaadin-*-styles.html"])
+    .pipe(new VariantsTransform(variantsData));
+}));
+
+gulp.task('generate', gulp.series('gather-variants-data', () => {
   console.log(`Running generate task, for resources from: ${globalVar.bowerSrcDir}`);
   // the element filter reads the bower.json file and parses the dependencies
   const elementFilter = new ElementFilter();
@@ -53,14 +63,12 @@ gulp.task('generate', function() {
     "!" + globalVar.bowerSrcDir + "web-animations-js/*",
     // Not useful in gwt and also has spurious event names
     "!" + globalVar.bowerSrcDir + "iron-jsonp-library/*",
-    ])
+  ])
     .pipe(gulpIgnore.include(file => elementFilter.acceptFile(file))) // ignores files not directly mentioned in the dependencies
     .pipe(versionReader) // Reads the versions of the elements
     .pipe(new AnalyzerTransform(elementFilter, mixinCollector)) // transforms out PolymerElements
-    .pipe(new ElementJsonTransform(versionReader, mixinCollector)) // transforms out json files
+    .pipe(new ElementJsonTransform(versionReader, mixinCollector, variantsData)) // transforms out json files
     .pipe(gulp.dest('.'));
-});
+}));
 
-gulp.task('default', function() {
-  gulp.start('generate');
-});
+gulp.task('default', gulp.task('generate'));

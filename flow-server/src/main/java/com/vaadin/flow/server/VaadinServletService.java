@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,10 +23,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.servlet.GenericServlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -38,6 +41,7 @@ import com.vaadin.flow.theme.AbstractTheme;
  * A service implementation connected to a {@link VaadinServlet}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class VaadinServletService extends VaadinService {
 
@@ -75,6 +79,7 @@ public class VaadinServletService extends VaadinService {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
+        handlers.add(0, new FaviconHandler());
         handlers.add(0, new BootstrapHandler());
         if (isAtmosphereAvailable()) {
             try {
@@ -165,13 +170,20 @@ public class VaadinServletService extends VaadinService {
         return appId;
     }
 
-    private static final Logger getLogger() {
+    private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinServletService.class.getName());
     }
 
     @Override
     protected RouteRegistry getRouteRegistry() {
         return RouteRegistry.getInstance(getServlet().getServletContext());
+    }
+
+    @Override
+    protected PwaRegistry getPwaRegistry() {
+        return Optional.ofNullable(getServlet())
+                .map(GenericServlet::getServletContext)
+                .map(PwaRegistry::getInstance).orElse(null);
     }
 
     @Override

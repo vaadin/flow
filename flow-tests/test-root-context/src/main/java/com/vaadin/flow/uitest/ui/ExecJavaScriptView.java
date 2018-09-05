@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,8 +45,8 @@ public class ExecJavaScriptView extends AbstractDivView {
                 e -> {
                     Input input = new Input();
                     input.addClassName("newInput");
-                    UI.getCurrent().getPage().executeJavaScript("$0.value = $1",
-                            input, "Value from js");
+                    input.getElement().executeJavaScript("this.value=$0",
+                            "Value from js");
                     add(input);
                 });
         createElementButton.setId("createButton");

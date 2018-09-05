@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,10 +17,12 @@ package com.vaadin.flow.uitest.ui.dependencies;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
 
@@ -28,10 +30,8 @@ public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
     public void inlineDependeciesWithFrontendProtocol() {
         open();
 
-        WebElement body = findElement(By.tagName("body"));
-        WebElement template = findElement(By.id("template"));
-        WebElement templateElement = getInShadowRoot(template,
-                By.id("frontend-inline"));
+        WebElement templateElement = $(TestBenchElement.class).id("template")
+                .$(DivElement.class).id("frontend-inline");
 
         Assert.assertEquals("Inline HTML loaded via frontent protocol",
                 templateElement.getText());
@@ -42,4 +42,5 @@ public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
         WebElement js = findElement(By.id("js"));
         Assert.assertEquals("Inlined JS", js.getText());
     }
+
 }

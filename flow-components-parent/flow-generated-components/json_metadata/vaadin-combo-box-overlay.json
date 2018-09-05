@@ -66,6 +66,12 @@
   ],
   "methods": [
     {
+      "name": "updateStyles",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
       "name": "close",
       "description": "",
       "parameters": [
@@ -133,5 +139,6 @@
   "slots": [],
   "behaviors": [],
   "mixins": [],
+  "variants": {},
   "description": "The overlay element.\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html)\nfor `<vaadin-combo-box-overlay>` parts.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

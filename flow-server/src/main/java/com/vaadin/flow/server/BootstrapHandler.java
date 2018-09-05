@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 
 package com.vaadin.flow.server;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -35,10 +37,21 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.DataNode;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.DocumentType;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
+import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.client.ClientResourcesUtils;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
@@ -58,30 +71,22 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.ThemeDefinition;
+
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.DataNode;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.DocumentType;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
-import org.jsoup.parser.Tag;
-import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
  * initial GET request.
  *
  * @author Vaadin Ltd
- * @since 7.0.0
+ * @since 1.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
@@ -93,14 +98,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
+    private static final String SCRIPT_TAG = "script";
 
     /**
      * Location of client nocache file, relative to the context root.
      */
     private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_PATH
             + "/client.nocache.js";
-    private static final Pattern SCRIPT_END_TAG_PATTERN = Pattern
-            .compile("</(script)", Pattern.CASE_INSENSITIVE);
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
     private static final String BABEL_HELPERS_JS = readResource(
@@ -436,6 +440,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             exportUsageStatistics(document);
         }
 
+        setupPwa(document, context);
+
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
                 context.getResponse(), document, context.getUI(),
@@ -462,7 +468,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }).collect(Collectors.joining("\n"));
 
         if (!registerScript.isEmpty()) {
-            document.body().appendElement("script").text(registerScript);
+            document.body().appendElement(SCRIPT_TAG).text(registerScript);
         }
     }
 
@@ -662,6 +668,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "right: 1em;" //
                 + "border: 1px solid black;" //
                 + "padding: 1em;" //
+                + "z-index: 10000;" //
                 + "}");
 
         // Basic system error dialog style just to make it visible and outside
@@ -694,11 +701,69 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .attr(CONTENT_ATTRIBUTE, BootstrapUtils
                         .getViewportContent(context).orElse(Viewport.DEFAULT));
 
+        if (!BootstrapUtils.getMetaTargets(context).isEmpty()) {
+            BootstrapUtils.getMetaTargets(context).forEach((name,content)->head.appendElement(META_TAG)
+                    .attr("name",name).attr(CONTENT_ATTRIBUTE,content));
+        }
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
                 head.appendElement("title").appendText(title);
             }
         });
+    }
+
+    private static void setupPwa(Document document, BootstrapContext context) {
+        VaadinService vaadinService = context.getSession().getService();
+        if (vaadinService == null) {
+            return;
+        }
+
+        PwaRegistry registry = vaadinService.getPwaRegistry();
+        if (registry == null) {
+            return;
+        }
+
+        PwaConfiguration config = registry.getPwaConfiguration();
+
+        if (config.isEnabled()) {
+            // Add header injections
+            Element head = document.head();
+
+            // Describe PWA capability for iOS devices
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-capable")
+                    .attr(CONTENT_ATTRIBUTE, "yes");
+
+            // Theme color
+            head.appendElement(META_TAG).attr("name", "theme-color")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-status-bar-style")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+
+            // Add manifest
+            head.appendElement("link").attr("rel", "manifest").attr("href",
+                    config.getManifestPath());
+
+            // Add icons
+            for (PwaIcon icon : registry.getHeaderIcons()) {
+                head.appendChild(icon.asElement());
+            }
+
+            // Add service worker initialization
+            head.appendElement(SCRIPT_TAG)
+                    .text("if ('serviceWorker' in navigator) {\n"
+                            + "  window.addEventListener('load', function() {\n"
+                            + "    navigator.serviceWorker.register('"
+                            + config.getServiceWorkerPath() + "');\n"
+                            + "  });\n" + "}");
+
+            // add body injections
+            if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
+                // PWA Install prompt html/js
+                document.body().append(registry.getInstallPrompt());
+            }
+        }
     }
 
     private static void appendWebComponentsPolyfills(Element head,
@@ -751,7 +816,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static Element createJavaScriptElement(String sourceUrl,
             boolean defer) {
-        Element jsElement = new Element(Tag.valueOf("script"), "")
+        Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                 .attr("type", "text/javascript").attr(DEFER_ATTRIBUTE, defer);
         if (sourceUrl != null) {
             jsElement = jsElement.attr("src", sourceUrl);
@@ -868,10 +933,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String appConfigString = JsonUtil.stringify(appConfig, indent);
 
         String initialUIDLString = JsonUtil.stringify(initialUIDL, indent);
-        // Browser interpret </script> as end of script no matter if it is
-        // inside a string or not so we must escape it
-        initialUIDLString = SCRIPT_END_TAG_PATTERN.matcher(initialUIDLString)
-                .replaceAll("<\\\\x2F$1");
+
+        /*
+         * The < symbol is escaped to prevent two problems:
+         *
+         * 1 - The browser interprets </script> as end of script no matter if it
+         * is inside a string
+         *
+         * 2 - Scripts can be injected with <!-- <script>, that can cause
+         * unexpected behavior or complete crash of the app
+         */
+        initialUIDLString = initialUIDLString.replace("<", "\\x3C");
 
         if (!productionMode) {
             // only used in debug mode by profiler
@@ -1142,7 +1214,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .isProductionMode();
 
         boolean resolveNow = !productionMode || clientEngineFile == null;
-        if (resolveNow && BootstrapHandler.class.getResource(
+        if (resolveNow && ClientResourcesUtils.getResource(
                 "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
             return context.getUriResolver().resolveVaadinUri(
                     "context://" + CLIENT_ENGINE_NOCACHE_FILE);
@@ -1215,7 +1287,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static String readClientEngine() {
         // read client engine file name
-        try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
+        try (InputStream prop = ClientResourcesUtils.getResource(
                 "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
                         + "/compile.properties")) {
             // null when running SDM or tests

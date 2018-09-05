@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -261,6 +261,61 @@ public class ComponentEventBusTest {
         component.fireEvent(new ServerEvent(component, new BigDecimal("12.2")));
 
         eventTracker.assertEventCalled(component, false);
+    }
+
+    @Test
+    public void domEvent_addListenerWithDomListenerConsumer() {
+        TestComponent component = new TestComponent();
+        EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
+        component.getEventBus().addListener(MappedToDomEvent.class,
+                eventTracker, domRegistration -> domRegistration.debounce(200));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nonDomEvent_addListenerWithDomListenerConsumer_throws() {
+        TestComponent component = new TestComponent();
+        EventTracker<ServerEvent> eventTracker = new EventTracker<>();
+        component.getEventBus().addListener(ServerEvent.class, eventTracker,
+                domRegistration -> domRegistration.debounce(200));
+    }
+
+    private int calls = 0;
+
+    @Test
+    public void domEvent_addSameListenerTwice() {
+        TestComponent component = new TestComponent();
+
+        ComponentEventListener<MappedToDomEvent> listener = e -> calls++;
+
+        Registration reg1 = component.addListener(MappedToDomEvent.class,
+                listener);
+        Registration reg2 = component.addListener(MappedToDomEvent.class,
+                listener);
+
+        Assert.assertEquals(1,
+                component.getEventBus().componentEventData.size());
+        Assert.assertEquals(2, component.getEventBus().componentEventData
+                .get(MappedToDomEvent.class).size());
+
+        fireDomEvent(component, "dom-event", Json.createObject());
+        Assert.assertEquals(2, calls);
+
+        reg1.remove();
+        Assert.assertEquals(1,
+                component.getEventBus().componentEventData.size());
+        Assert.assertEquals(1, component.getEventBus().componentEventData
+                .get(MappedToDomEvent.class).size());
+
+        fireDomEvent(component, "dom-event", Json.createObject());
+
+        Assert.assertEquals(3, calls);
+
+        reg2.remove();
+        Assert.assertEquals(0,
+                component.getEventBus().componentEventData.size());
+
+        fireDomEvent(component, "dom-event", Json.createObject());
+        Assert.assertEquals(3, calls);
     }
 
     @Test

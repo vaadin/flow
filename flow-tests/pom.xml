@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -13,13 +13,17 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>test-pwa</module>
         <module>test-resources</module>
+        <module>test-common</module>
         <module>test-root-context</module>
+        <module>test-dev-mode</module>
         <module>test-root-ui-context</module>
         <module>test-subcontext</module>
         <module>test-scalability</module>
         <module>test-memory-leaks</module>
         <module>test-servlet</module>
+        <module>test-themes</module>
         <module>servlet-containers</module>
     </modules>
 
@@ -140,6 +144,13 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <configuration>
+                        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -203,7 +214,19 @@
                 <test.excludegroup></test.excludegroup>
             </properties>
         </profile>
-
+        <profile>
+            <id>ie11</id>
+            <activation>
+                <property>
+                    <!-- In BrowserStack tests are run on IE11 -->
+                    <name>test.use.browserstack</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11</test.excludegroup>
+            </properties>
+        </profile>
     </profiles>
 
 </project>

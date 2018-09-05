@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,9 @@
  */
 package com.vaadin.generator.metadata;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.component.HasComponents;
 
@@ -23,7 +25,6 @@ import com.vaadin.flow.component.HasComponents;
  * Base class of the representation of a webcomponent for the code generator. It
  * holds all the data needed to generate the Java wrapper class that interacts
  * with the webcomponent at the client side.
- *
  */
 public class ComponentMetadata {
     private String tag;
@@ -38,6 +39,7 @@ public class ComponentMetadata {
     private List<String> behaviors;
     private List<String> slots;
     private List<String> mixins;
+    private Map<String, List<String>> variants = new HashMap<>();
 
     /**
      * Gets the name of the ES6 class of the webcomponent, which is used to
@@ -296,4 +298,21 @@ public class ComponentMetadata {
         this.mixins = mixins;
     }
 
+    /**
+     * Gets theme variants for the component.
+     *
+     * @return theme variants data for the component
+     */
+    public Map<String, List<String>> getVariants() {
+        return variants;
+    }
+
+    /**
+     * Sets theme variants for the component.
+     *
+     * @param variants theme variants data for the component
+     */
+    public void setVariants(Map<String, List<String>> variants) {
+        this.variants = variants;
+    }
 }

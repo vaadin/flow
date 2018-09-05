@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,19 +32,24 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Provides necessary data for {@link FrontendToolsManager} to process project
  * frontend files.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
+ * @since 1.0.
  */
 public class FrontendDataProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrontendDataProvider.class);
 
     private final boolean shouldBundle;
     private final boolean shouldMinify;
@@ -175,7 +180,7 @@ public class FrontendDataProvider {
     protected ThemedURLTranslator getTranslator(File es6SourceDirectory,
             ClassPathIntrospector introspector) {
         return new ThemedURLTranslator(
-                url -> new File(es6SourceDirectory, removeFlowPrefixes(url)),
+                url -> new File(es6SourceDirectory, removeFrontendPrefix(url)),
                 introspector);
     }
 
@@ -213,8 +218,14 @@ public class FrontendDataProvider {
         File fragmentFile = new File(es6SourceDirectory, fragmentImportPath);
         if (!fragmentFile.isFile()) {
             throw new IllegalArgumentException(String.format(
-                    "The fragment file path '%s' was resolved to '%s', which either does not exist or not a file.",
-                    fragmentImportPath, fragmentFile));
+                    "An import that ends with '%s' cannot be resolved: the corresponding file '%s' was not found.%n"
+                            + "Double check the corresponding import and verify the following:%n"
+                            + "* the import string is correct%n"
+                            + "* the file imported is either present in '%s' directory of the project or in one of the project WebJar dependencies or in one of the regular jar dependencies%n"
+                            + "* if the file is present in one of the regular jar dependencies, it should be located in `%s` directory in the jar",
+                    fragmentImportPath, fragmentFile,
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
+                    ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH));
         }
         return fragmentFile;
     }
@@ -246,7 +257,8 @@ public class FrontendDataProvider {
                         .applyTheme(htmlImportUrls));
 
         return annotationValues.values().stream().flatMap(Collection::stream)
-                .map(this::removeFlowPrefixes)
+                .filter(this::canBeResolvedInFrontendDirectory)
+                .map(this::removeFrontendPrefix)
                 .map(annotationImport -> getFileFromSourceDirectory(
                         es6SourceDirectory, annotationImport))
                 .filter(fileInSourceDirectory -> !fragmentFiles
@@ -254,10 +266,20 @@ public class FrontendDataProvider {
                 .collect(Collectors.toSet());
     }
 
-    private String removeFlowPrefixes(String url) {
-        return url.replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")
-                .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX, "")
-                .replace(ApplicationConstants.BASE_PROTOCOL_PREFIX, "");
+    private boolean canBeResolvedInFrontendDirectory(String url) {
+        boolean canBeResolved = url
+                .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
+                || !(url.startsWith("/") || url.contains("://"));
+        if (!canBeResolved) {
+            LOGGER.debug(
+                    "Import '{}' will not be processed by the plugin: only imports with '{}' protocol or relative urls with no protocol are eligible for processing",
+                    url, ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        }
+        return canBeResolved;
+    }
+
+    private String removeFrontendPrefix(String url) {
+        return url.replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX, "");
     }
 
     private String createFragmentFile(File targetDirectory, String fragmentName,

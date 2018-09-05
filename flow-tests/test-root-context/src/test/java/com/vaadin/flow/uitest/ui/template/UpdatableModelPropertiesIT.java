@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,11 +17,14 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class UpdatableModelPropertiesIT extends ChromeBrowserTest {
 
     @Test
@@ -76,8 +79,8 @@ public class UpdatableModelPropertiesIT extends ChromeBrowserTest {
     }
 
     private WebElement getElement(String id) {
-        WebElement template = findElement(By.id("template"));
-        return getInShadowRoot(template, By.id(id));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        return template.$(TestBenchElement.class).id(id);
     }
 
     private void waitUpdate() {
@@ -88,16 +91,18 @@ public class UpdatableModelPropertiesIT extends ChromeBrowserTest {
     private void assertUpdate(String expectedValue) {
         waitUpdate();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement value = template.findElement(By.id("property-value"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        WebElement value = template.$(TestBenchElement.class)
+                .id("property-value");
         Assert.assertEquals(expectedValue, value.getText());
     }
 
     private void assertNoUpdate(String unexpectedValue) {
         waitUpdate();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement value = template.findElement(By.id("property-value"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        WebElement value = template.$(TestBenchElement.class)
+                .id("property-value");
         Assert.assertNotEquals(unexpectedValue, value.getText());
     }
 

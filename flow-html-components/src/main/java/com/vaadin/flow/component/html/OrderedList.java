@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,9 +27,11 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;ol&gt;</code> element.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 @Tag(Tag.OL)
-public class OrderedList extends HtmlContainer implements ClickNotifier {
+public class OrderedList extends HtmlContainer
+        implements ClickNotifier<OrderedList> {
 
     /**
      * Defines the numbering type of the list items.
@@ -86,7 +88,7 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
     /**
      * Creates a new empty ordered list with the specified
      * {@link NumberingType}.
-     * 
+     *
      * @param type
      *            the numbering type of the list items
      */

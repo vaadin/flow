@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,6 +39,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -110,6 +112,37 @@ class BootstrapUtils {
             BootstrapHandler.BootstrapContext context) {
         return context.getPageConfigurationAnnotation(Viewport.class)
                 .map(Viewport::value);
+    }
+
+    /**
+     * Returns the map which contains name and content of the customized meta
+     * tag for the target route chain that was navigated to, specified with
+     * {@link Meta} on the {@link Route} class or the {@link ParentLayout} of
+     * the route.
+     * 
+     * @param context
+     *            the bootstrap context
+     * @return the map contains name and content value string for the customized
+     *         meta tag
+     */
+    static Map<String, String> getMetaTargets(
+            BootstrapHandler.BootstrapContext context) {
+        List<Meta> metaAnnotations = context.getPageConfigurationAnnotations(Meta.class);
+        boolean illegalValue = false;
+        Map<String, String> map = new HashMap<>();
+        for (Meta meta : metaAnnotations) {
+            if (!meta.name().isEmpty() && !meta.content().isEmpty()) {
+                map.put(meta.name(), meta.content());
+            } else {
+                illegalValue = true;
+                break;
+            }
+        }
+        if (illegalValue) {
+            throw new IllegalStateException(
+                    "Meta tags added via Meta annotation contain null value on name or content attribute.");
+        }
+        return map;
     }
 
     /**

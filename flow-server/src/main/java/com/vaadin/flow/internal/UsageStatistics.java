@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,7 @@ import com.vaadin.flow.server.Version;
  * https://github.com/vaadin/vaadin-usage-statistics.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class UsageStatistics {
     /**
@@ -68,6 +69,14 @@ public class UsageStatistics {
     }
 
     private static ConcurrentHashMap<String, UsageEntry> entires = new ConcurrentHashMap<>();
+    static {
+        String version = System.getProperty("java.version");
+
+        // Ignore pre, build and opt fields
+        version = version.replaceAll("[-_+].*", "");
+
+        markAsUsed("java", version);
+    }
 
     private UsageStatistics() {
         // Only static methods here, no need to create an instance

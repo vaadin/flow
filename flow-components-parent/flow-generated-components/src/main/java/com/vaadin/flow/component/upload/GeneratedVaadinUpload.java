@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -112,8 +112,9 @@ import com.vaadin.flow.dom.Element;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-        "WebComponent: Vaadin.UploadElement#4.0.0", "Flow#1.0-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+        "WebComponent: Vaadin.UploadElement#4.2.0-alpha3",
+        "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-upload")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload.html")
 public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
@@ -778,6 +779,10 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      */
     protected void setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
+    }
+
+    protected void updateStyles() {
+        getElement().callFunction("updateStyles");
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * A thread-safe cache for the result of doing some reflection lookup based on a
@@ -30,13 +31,14 @@ import com.vaadin.flow.function.SerializableFunction;
  * finite number of classes for which reflection results are used.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <C>
  *            the class types that are used as the cache keys
  * @param <T>
  *            the cached value type
  */
 public class ReflectionCache<C, T> {
-    private static final Set<ReflectionCache<?, ?>> caches = Collections
+    private static final Set<Runnable> clearAllActions = Collections
             .synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     private final ConcurrentHashMap<Class<? extends C>, T> values = new ConcurrentHashMap<>();
@@ -60,7 +62,7 @@ public class ReflectionCache<C, T> {
         }
         this.valueProvider = wrapValueProvider(valueProvider);
 
-        caches.add(this);
+        addClearAllAction(this::clear);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -119,9 +121,27 @@ public class ReflectionCache<C, T> {
     }
 
     /**
-     * Clears all mappings from all reflection caches.
+     * Adds an action that will be run when all reflection caches are cleared.
+     * <p>
+     * The actions are held with a weak reference, which typically means that
+     * the action will be ignored if the returned registration is garbage
+     * collected.
+     *
+     * @see #clearAll()
+     *
+     * @param action
+     *            the action to run
+     * @return a registration for removing the action
+     */
+    public static Registration addClearAllAction(Runnable action) {
+        clearAllActions.add(action);
+        return () -> clearAllActions.remove(action);
+    }
+
+    /**
+     * Clears all mappings from all reflection caches and related resources.
      */
     public static void clearAll() {
-        caches.forEach(ReflectionCache::clear);
+        clearAllActions.forEach(Runnable::run);
     }
 }

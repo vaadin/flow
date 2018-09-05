@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
  * Contains methods for updating and querying hierarchical structure.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  *
  * @param <N>
  *            The narrowed type of the node
@@ -181,7 +182,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Gets whether this element is a virtual child of its parent.
-     * 
+     *
      * @return <code>true</code> if the element has a parent and the element is
      *         a virtual child of it, <code>false</code> otherwise.
      */
@@ -190,7 +191,10 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         if (parentNode == null) {
             return false;
         }
-        if (!parentNode.getNode().hasFeature(VirtualChildrenList.class)) {
+        if (!parentNode.getNode().hasFeature(VirtualChildrenList.class)
+                || !parentNode.getNode()
+                        .getFeatureIfInitialized(VirtualChildrenList.class)
+                        .isPresent()) {
             return false;
         }
         Iterator<StateNode> iterator = parentNode.getNode()

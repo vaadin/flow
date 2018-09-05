@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,6 +55,7 @@ import com.vaadin.flow.shared.Registration;
  * component.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  * @param <C>
  *            the source type for value change events
  * @param <T>
@@ -68,6 +69,7 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
      * Value change event fired by components.
      *
      * @author Vaadin Ltd
+ * @since 1.0
      * @param <C>
      *            the source component type
      * @param <V>

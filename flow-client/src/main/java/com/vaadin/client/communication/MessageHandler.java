@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,8 +49,8 @@ import elemental.json.JsonObject;
  * from the server (state changes, RPCs and other updates) and ensuring that the
  * connectors are updated accordingly.
  *
- * @since 7.6
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class MessageHandler {
 
@@ -378,10 +378,14 @@ public class MessageHandler {
 
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
                 // Invoke JS only after all tree changes have been
-                // propagated
+                // propagated and after post flush listeners added during
+                // message processing (so add one more post flush listener which
+                // is called after all added post listeners).
                 Reactive.addPostFlushListener(
-                        () -> registry.getExecuteJavaScriptProcessor().execute(
-                                json.getArray(JsonConstants.UIDL_KEY_EXECUTE)));
+                        () -> Reactive.addPostFlushListener(() -> registry
+                                .getExecuteJavaScriptProcessor()
+                                .execute(json.getArray(
+                                        JsonConstants.UIDL_KEY_EXECUTE))));
             }
 
             Console.log("handleUIDLMessage: "
@@ -701,7 +705,6 @@ public class MessageHandler {
      *
      * If the given string is not wrapped as expected, returns null
      *
-     * @since 7.6
      * @param jsonWithWrapping
      *            the JSON received from the server
      * @return an unwrapped JSON string or null if the given string was not

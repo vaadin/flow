@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.ExistingElementMap;
+import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.collection.JsArray;
@@ -38,10 +39,44 @@ import elemental.json.JsonObject;
 
 /**
  * @author Vaadin Ltd
+ * @since 1.0
  *
  */
 public abstract class GwtPropertyElementBinderTest
         extends ClientEngineTestBase {
+
+    private static class TestRegistry extends Registry {
+        private InitialPropertiesHandler handler = new InitialPropertiesHandler(
+                this);
+
+        private ConstantPool constantPool;
+        private ExistingElementMap existingElementMap;
+
+        TestRegistry(ConstantPool constantPool,
+                ExistingElementMap existingElementMap) {
+            this.constantPool = constantPool;
+            this.existingElementMap = existingElementMap;
+        }
+
+        @Override
+        public ConstantPool getConstantPool() {
+            return constantPool;
+        }
+
+        @Override
+        public ExistingElementMap getExistingElementMap() {
+            return existingElementMap;
+        }
+
+        @Override
+        public InitialPropertiesHandler getInitialPropertiesHandler() {
+            return handler;
+        }
+
+        private void setTree(StateTree tree) {
+            set(StateTree.class, tree);
+        }
+    }
 
     protected static class CollectingStateTree extends StateTree {
         JsArray<StateNode> collectedNodes = JsCollections.array();
@@ -52,17 +87,8 @@ public abstract class GwtPropertyElementBinderTest
 
         public CollectingStateTree(ConstantPool constantPool,
                 ExistingElementMap existingElementMap) {
-            super(new Registry() {
-                @Override
-                public ConstantPool getConstantPool() {
-                    return constantPool;
-                }
-
-                @Override
-                public ExistingElementMap getExistingElementMap() {
-                    return existingElementMap;
-                }
-            });
+            super(new TestRegistry(constantPool, existingElementMap));
+            ((TestRegistry) getRegistry()).setTree(this);
         }
 
         @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
  * The default implementation of {@link ErrorHandler}.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class DefaultErrorHandler implements ErrorHandler {
     @Override
@@ -39,7 +40,6 @@ public class DefaultErrorHandler implements ErrorHandler {
      * users (~developers using Vaadin). This method tries to choose the
      * relevant one to be reported.
      *
-     * @since 7.2
      * @param t
      *            a throwable passed to ErrorHandler
      * @return the throwable that is relevant for Vaadin users

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,6 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
-import java.util.Arrays;
 
 /**
  * Goal that copies all production mode files into the
@@ -67,6 +67,7 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     @Override
     public void execute() {
         List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
+                .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(artifact -> new ArtifactData(artifact.getFile(),
                         artifact.getArtifactId(), artifact.getVersion()))
                 .collect(Collectors.toList());

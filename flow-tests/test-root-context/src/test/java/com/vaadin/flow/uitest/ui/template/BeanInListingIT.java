@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,13 +18,16 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.List;
 
 import org.junit.Test;
-import org.openqa.selenium.By;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class BeanInListingIT extends ChromeBrowserTest {
 
     private static final class SelectedCondition
@@ -55,8 +58,8 @@ public class BeanInListingIT extends ChromeBrowserTest {
     public void beanInTwoWayBinding() throws InterruptedException {
         open();
 
-        WebElement selected = getInShadowRoot(findElement(By.id("template")),
-                By.id("selected"));
+        TestBenchElement selected = $(TestBenchElement.class).id("template")
+                .$(TestBenchElement.class).id("selected");
 
         assertSelectionValue("user-item", selected, "foo");
 
@@ -69,9 +72,9 @@ public class BeanInListingIT extends ChromeBrowserTest {
 
     private void assertSelectionValue(String className, WebElement selected,
             String item) {
-        WebElement template = findElement(By.id("template"));
-        List<WebElement> items = findInShadowRoot(template,
-                By.className(className));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
+        List<TestBenchElement> items = template.$(TestBenchElement.class)
+                .attribute("class", className).all();
         items.stream().filter(itemElement -> itemElement.getText().equals(item))
                 .findFirst().get().click();
 

@@ -18,6 +18,8 @@ const gulpIf = require('gulp-if');
 const gulpRename = require('gulp-rename');
 const gulpIgnore = require('gulp-ignore');
 const gulpReplace = require('gulp-string-replace');
+const gzip = require('gulp-gzip');
+const brotli = require('gulp-brotli');
 const polymerBuild = require('polymer-build');
 const mergeStream = require('merge-stream');
 const Transform = require('stream').Transform;
@@ -83,21 +85,22 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                 if (bundle) {
                     console.log('Will bundle frontend files.');
                     processedStream = processedStream.pipe(buildBundler);
+                    if (hash) {
+                        console.log('Will hash bundle file names.');
+                        processedStream = processedStream
+                            .pipe(tap(file => {
+                                const bundleSet = buildBundler.manifest.bundles;
+                                const bundleFile = bundleSet.get(file.relative);
+                                if (bundleFile) {
+                                    bundleSet.delete(file.relative);
+                                    file.path = file.path.replace(/(\.\w+)$/, '-' + hasha(file.contents).slice(0, 15) + '.cache$1');
+                                    bundleSet.set(file.relative, bundleFile);
+                                }
+                            }));
+                    }
                 } else {
-                    processedStream = processedStream.pipe(gulpIgnore.exclude(file => { return file.path === shellFile } ));
-                }
-
-                if (hash) {
-                    console.log('Will hash bundle file names.');
-                    processedStream = processedStream
-                    .pipe(tap(file => {
-                      const bundleSet = buildBundler.manifest.bundles;
-                      const bundle = bundleSet.get(file.relative);
-                      if (bundle) {
-                        bundleSet.delete(file.relative);
-                        file.path = file.path.replace(/(\.\w+)$/, '-' + hasha(file.contents).slice(0, 15) + '.cache$1');
-                        bundleSet.set(file.relative, bundle);
-                      }
+                    processedStream = processedStream.pipe(gulpIgnore.exclude(file => {
+                        return file.path === shellFile
                     }));
                 }
 
@@ -107,6 +110,7 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     .pipe(gulpIf(/\.html$/, gulpReplace(`assetpath="${redundantPathPrefix}/`, 'assetpath="', { logs: { enabled: false } })))
                     .pipe(gulp.dest(configurationTargetDirectory));
 
+
                 console.log(`Will copy files to target directory '${configurationTargetDirectory}'.`);
                 console.log("Starting operations stated above, this might take a while.");
 
@@ -114,6 +118,19 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
                     buildStream.on('end', resolve);
                     buildStream.on('error', reject);
                 });
+            })
+            .then(() => {
+              const gzipStream = gulp.src(`${configurationTargetDirectory}/**/*.{html,css,js}`)
+                  .pipe(gzip());
+              const brotliStream = gulp.src(`${configurationTargetDirectory}/**/*.{html,css,js}`)
+                  .pipe(brotli.compress());
+              const compressedStream = mergeStream(gzipStream, brotliStream)
+                  .pipe(gulp.dest(configurationTargetDirectory));
+
+              return new Promise((resolve, reject) => {
+                  compressedStream.on('end', resolve);
+                  compressedStream.on('error', reject);
+              });
             })
             .then(() => {
                 if (bundle) {

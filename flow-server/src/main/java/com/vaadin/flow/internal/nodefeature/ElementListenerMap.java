@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,6 +47,7 @@ import elemental.json.JsonValue;
  * associated with the keys are currently not used.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ElementListenerMap extends NodeMap {
     /**
@@ -128,9 +129,17 @@ public class ElementListenerMap extends NodeMap {
             }
 
             if (eventDataExpressions == null) {
-                eventDataExpressions = new HashSet<>();
+                eventDataExpressions = Collections.singleton(eventData);
+            } else {
+                if (eventDataExpressions.size() == 1) {
+                    Set<String> oldExpressions = eventDataExpressions;
+                    // Don't use no-args or Collection constructors that
+                    // allocate for 16 entries
+                    eventDataExpressions = new HashSet<>(4);
+                    eventDataExpressions.addAll(oldExpressions);
+                }
+                eventDataExpressions.add(eventData);
             }
-            eventDataExpressions.add(eventData);
 
             listenerMap.updateEventSettings(type);
 
@@ -232,14 +241,22 @@ public class ElementListenerMap extends NodeMap {
         assert eventType != null;
         assert listener != null;
 
-        if (listeners == null) {
-            listeners = new HashMap<>();
-        }
-
         if (!contains(eventType)) {
-            assert !listeners.containsKey(eventType);
+            assert listeners == null || !listeners.containsKey(eventType);
 
-            listeners.put(eventType, new ArrayList<>());
+            ArrayList<DomEventListenerWrapper> listenerList = new ArrayList<>(
+                    1);
+
+            if (listeners == null) {
+                listeners = Collections.singletonMap(eventType, listenerList);
+            } else {
+                if (listeners.size() == 1 && !(listeners instanceof HashMap)) {
+                    listeners = new HashMap<>(listeners);
+                }
+
+                listeners.put(eventType, listenerList);
+            }
+
         }
 
         DomEventListenerWrapper listenerWrapper = new DomEventListenerWrapper(
@@ -336,10 +353,11 @@ public class ElementListenerMap extends NodeMap {
 
             // No more listeners of this type?
             if (listenerList.isEmpty()) {
-                listeners.remove(eventType);
-
-                if (listeners.isEmpty()) {
+                if (listeners.size() == 1) {
+                    assert listeners.containsKey(eventType);
                     listeners = null;
+                } else {
+                    listeners.remove(eventType);
                 }
 
                 // Remove from the set that is synchronized with the client

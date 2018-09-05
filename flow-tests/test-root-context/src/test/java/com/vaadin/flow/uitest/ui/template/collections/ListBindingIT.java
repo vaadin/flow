@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,22 +22,25 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
  * Normal tests with @Before are not implemented because each @Test starts new
  * Chrome process.
  */
+@Category(IgnoreOSGi.class)
 public class ListBindingIT extends ChromeBrowserTest {
 
     @Test
     public void listDataBinding() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $(TestBenchElement.class).id("template");
 
         checkInitialState(template);
 
@@ -71,48 +74,48 @@ public class ListBindingIT extends ChromeBrowserTest {
         assertMethodWorksCorrectly("sortDescending", template, "3", "2", "1");
 
         assertMethodWorksCorrectly("setInitialStateToEachMessage", template,
-                ListBindingView.INITIAL_STATE,
-                ListBindingView.INITIAL_STATE,
+                ListBindingView.INITIAL_STATE, ListBindingView.INITIAL_STATE,
                 ListBindingView.INITIAL_STATE);
     }
 
-    private void checkModelItemWorks(WebElement template) {
+    private void checkModelItemWorks(TestBenchElement template) {
         resetState(template);
 
-        List<WebElement> msgs = findInShadowRoot(template, By.className("msg"));
+        List<TestBenchElement> msgs = template.$(TestBenchElement.class)
+                .attribute("class", "msg").all();
 
         // Click b message
         msgs.get(1).click();
 
         // Assert that the message was gotten correctly on the server side
         Assert.assertEquals("Couldn't validate element click selection.",
-                getInShadowRoot(template, By.id("selection")).getText(),
+                template.$(TestBenchElement.class).id("selection").getText(),
                 "Clicked message: " + msgs.get(1).getText());
     }
 
-    private void checkInitialState(WebElement template) {
+    private void checkInitialState(TestBenchElement template) {
         Assert.assertEquals(
                 Collections.singletonList(ListBindingView.INITIAL_STATE),
                 getMessages(template));
     }
 
     private void assertMethodWorksCorrectly(String handlerName,
-            WebElement template, String... expectedMessages) {
+            TestBenchElement template, String... expectedMessages) {
         resetState(template);
-        getInShadowRoot(template, By.id(handlerName)).click();
+        template.$(TestBenchElement.class).id(handlerName).click();
 
         Assert.assertEquals(Arrays.asList(expectedMessages),
                 getMessages(template));
     }
 
-    private void resetState(WebElement template) {
-        getInShadowRoot(template, By.id("reset")).click();
-        Assert.assertEquals(ListBindingView.RESET_STATE,
-                getMessages(template));
+    private void resetState(TestBenchElement template) {
+        template.$(TestBenchElement.class).id("reset").click();
+        Assert.assertEquals(ListBindingView.RESET_STATE, getMessages(template));
     }
 
-    private List<String> getMessages(WebElement template) {
-        return findInShadowRoot(template, By.className("msg")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+    private List<String> getMessages(TestBenchElement template) {
+        return template.$(TestBenchElement.class).attribute("class", "msg")
+                .all().stream().map(WebElement::getText)
+                .collect(Collectors.toList());
     }
 }

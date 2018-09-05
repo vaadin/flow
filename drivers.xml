@@ -2,10 +2,10 @@
 <root>
     <windows>
         <driver id="googlechrome">
-            <version id="2.38">
+            <version id="2.40">
                 <bitrate thirtytwobit="true" sixtyfourbit="true">
-                    <filelocation>http://chromedriver.storage.googleapis.com/2.38/chromedriver_win32.zip</filelocation>
-                    <hash>913f2233ad1de3ef32c597d10688ef2fef2333d5</hash>
+                    <filelocation>http://chromedriver.storage.googleapis.com/2.40/chromedriver_win32.zip</filelocation>
+                    <hash>33f7cb28aed2e0ec31a5497b150e6dea4e9276ba</hash>
                     <hashtype>sha1</hashtype>
                 </bitrate>
             </version>
@@ -13,10 +13,10 @@
     </windows>
     <linux>
         <driver id="googlechrome">
-            <version id="2.38">
+            <version id="2.40">
                 <bitrate sixtyfourbit="true">
-                    <filelocation>https://chromedriver.storage.googleapis.com/2.38/chromedriver_linux64.zip</filelocation>
-                    <hash>37741d14df5ed6bc3fcdf025b2d2ae1a0fc73216</hash>
+                    <filelocation>https://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip</filelocation>
+                    <hash>f1fba3c21f39570beff90ccec63450118339de2a</hash>
                     <hashtype>sha1</hashtype>
                 </bitrate>
             </version>
@@ -24,10 +24,10 @@
     </linux>
     <osx>
         <driver id="googlechrome">
-            <version id="2.38">
+            <version id="2.40">
                 <bitrate sixtyfourbit="true">
-                    <filelocation>https://chromedriver.storage.googleapis.com/2.38/chromedriver_mac64.zip</filelocation>
-                    <hash>54b11f9c3d64e84a9f4da3592154bfb0dedb59af</hash>
+                    <filelocation>https://chromedriver.storage.googleapis.com/2.40/chromedriver_mac64.zip</filelocation>
+                    <hash>2b8a98d5ed8a3601880aae324c50f4f20f389d2d</hash>
                     <hashtype>sha1</hashtype>
                 </bitrate>
             </version>

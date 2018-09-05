@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,12 +38,15 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Immutable meta data related to a component class.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class ComponentMetaData {
 
@@ -222,11 +225,14 @@ public class ComponentMetaData {
 
     private static HtmlImportDependency getHtmlImportDependencies(
             VaadinService service, HtmlImport htmlImport) {
-        String value = htmlImport.value();
-        HtmlDependencyParser parser = new HtmlDependencyParser(value);
+        String importPath = SharedUtil.prefixIfRelative(htmlImport.value(),
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
-        return new HtmlImportDependency(parser.parseDependencies(service),
-                htmlImport.loadMode());
+        DependencyTreeCache<String> cache = service.getHtmlImportDependencyCache();
+
+        Set<String> dependencies = cache.getDependencies(importPath);
+
+        return new HtmlImportDependency(dependencies, htmlImport.loadMode());
     }
 
     /**

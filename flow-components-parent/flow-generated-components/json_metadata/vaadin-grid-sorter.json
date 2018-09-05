@@ -1,0 +1,40 @@
+{
+  "name": "Vaadin.GridSorterElement",
+  "tag": "vaadin-grid-sorter",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-sorter.html",
+  "version": "5.1.0-alpha3",
+  "properties": [
+    {
+      "name": "path",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "JS Path of the property in the item used for sorting the data.\n             "
+    },
+    {
+      "name": "direction",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "How to sort the data.\nPossible values are `asc` to use an ascending algorithm, `desc` to sort the data in\ndescending direction, or `null` for not sorting the data.\n             ",
+      "notify": true
+    }
+  ],
+  "methods": [],
+  "events": [
+    {
+      "name": "direction-changed",
+      "description": "Fired when the `direction` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [
+    ""
+  ],
+  "behaviors": [],
+  "mixins": [],
+  "variants": {},
+  "description": "`<vaadin-grid-sorter>` is a helper element for the `<vaadin-grid>` that provides out-of-the-box UI controls,\nvisual feedback, and handlers for sorting the grid data.\n\n#### Example:\n```html\n<vaadin-grid-column>\n  <template class=\"header\">\n    <vaadin-grid-sorter path=\"name.first\">First Name</vaadin-grid-sorter>\n  </template>\n  <template>[[item.name.first]]</template>\n</vaadin-grid-column>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`content` | The slotted content wrapper\n`indicators` | The internal sorter indicators.\n`order` | The internal sorter order\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`direction` | Sort direction of a sorter | :host"
+}

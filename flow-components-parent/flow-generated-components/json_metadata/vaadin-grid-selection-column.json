@@ -1,0 +1,55 @@
+{
+  "name": "Vaadin.GridSelectionColumnElement",
+  "tag": "vaadin-grid-selection-column",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-selection-column.html",
+  "version": "5.1.0-alpha3",
+  "properties": [
+    {
+      "name": "width",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Width of the cells for this column.\n           "
+    },
+    {
+      "name": "flexGrow",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Flex grow ratio for the cell widths. When set to 0, cell width is fixed.\n           "
+    },
+    {
+      "name": "selectAll",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true, all the items are selected.\n           ",
+      "notify": true
+    },
+    {
+      "name": "autoSelect",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true, the active gets automatically selected.\n           "
+    }
+  ],
+  "methods": [],
+  "events": [
+    {
+      "name": "select-all-changed",
+      "description": "Fired when the `selectAll` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [],
+  "variants": {},
+  "description": "`<vaadin-grid-selection-column>` is a helper element for the `<vaadin-grid>`\nthat provides default templates and functionality for item selection.\n\n#### Example:\n```html\n<vaadin-grid items=\"[[items]]\">\n <vaadin-grid-selection-column frozen auto-select></vaadin-grid-selection-column>\n\n <vaadin-grid-column>\n   ...\n```\n\nBy default the selection column displays `<vaadin-checkbox>` elements in the\ncolumn cells. The checkboxes in the body rows toggle selection of the corresponding row items.\n\nWhen the grid data is provided as an array of [`items`](#/elements/vaadin-grid#property-items),\nthe column header gets an additional checkbox that can be used for toggling\nselection for all the items at once.\n\n__The default content templates can also be overridden with custom ones.__",
+  "parentTagName": "vaadin-grid-column"
+}

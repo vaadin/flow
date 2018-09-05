@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,19 +19,22 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
+@Category(IgnoreOSGi.class)
 public class AfterServerChangesIT extends ChromeBrowserTest {
 
     @Test
     public void notifyServerUpdateOnTheClientSide() {
         open();
 
-        List<WebElement> components = findElements(
-                By.tagName("after-server-changes"));
+        List<TestBenchElement> components = $("after-server-changes").all();
         components.forEach(component -> assertAfterServerUpdate(component, 1));
 
         WebElement update = findElement(By.id("update"));
@@ -46,15 +49,14 @@ public class AfterServerChangesIT extends ChromeBrowserTest {
 
         // The second components is removed
         // No exceptions , everything is functional
-        assertAfterServerUpdate(findElement(By.tagName("after-server-changes")),
-                3);
+        assertAfterServerUpdate($("after-server-changes").first(), 3);
     }
 
-    private void assertAfterServerUpdate(WebElement component, int i) {
-        WebElement count = getInShadowRoot(component, By.id("count"));
+    private void assertAfterServerUpdate(TestBenchElement element, int i) {
+        WebElement count = element.$(TestBenchElement.class).id("count");
         Assert.assertEquals(String.valueOf(i), count.getText());
 
-        WebElement delta = getInShadowRoot(component, By.id("delta"));
+        WebElement delta = element.$(TestBenchElement.class).id("delta");
         Assert.assertEquals(Boolean.TRUE.toString(), delta.getText());
     }
 }
