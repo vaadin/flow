@@ -269,7 +269,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**
      * Retrieves all {@link VaadinSession}s which are stored in the given HTTP
-     * session
+     * session.
      *
      * @param httpSession
      *            the HTTP session
@@ -491,7 +491,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Checks if the current thread has exclusive access to this VaadinSession
+     * Checks if the current thread has exclusive access to this
+     * <code>VaadinSession</code>.
      *
      * @return true if the thread has exclusive access, false otherwise
      */
