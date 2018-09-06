@@ -55,6 +55,11 @@ import com.vaadin.flow.shared.communication.PushMode;
  * Everything inside a {@link VaadinSession} should be serializable to ensure
  * compatibility with schemes using serialization for persisting the session
  * data.
+ * <p>
+ * Current VaadinSession object which can be accessed by
+ * {@link VaadinSession#getCurrent} is not present before {@link VaadinServlet}
+ * starts handling the HTTP request. For example, it cannot be used in any
+ * implementation of {@link javax.servlet.Filter} interface.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -264,7 +269,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**
      * Retrieves all {@link VaadinSession}s which are stored in the given HTTP
-     * session
+     * session.
      *
      * @param httpSession
      *            the HTTP session
@@ -486,7 +491,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Checks if the current thread has exclusive access to this VaadinSession
+     * Checks if the current thread has exclusive access to this
+     * <code>VaadinSession</code>.
      *
      * @return true if the thread has exclusive access, false otherwise
      */
