@@ -18,6 +18,7 @@ package com.vaadin.flow.internal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -118,8 +119,10 @@ public class StateNode implements Serializable {
         public FeatureSet(FeatureSetKey featureSetKey) {
             reportedFeatures = featureSetKey.reportedFeatures;
 
-            featureSetKey.getAllFeatures().forEach(
-                    key -> mappings.put(key, Integer.valueOf(mappings.size())));
+            featureSetKey.getAllFeatures()
+                    .sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR)
+                    .forEach(key -> mappings.put(key,
+                            Integer.valueOf(mappings.size())));
         }
     }
 
@@ -131,9 +134,9 @@ public class StateNode implements Serializable {
     private final FeatureSet featureSet;
 
     /**
-     * Node feature instances for this node.
+     * Node feature instances for this node, or a single item.
      */
-    private final NodeFeature[] features;
+    private Serializable features;
 
     private Map<Class<? extends NodeFeature>, Serializable> changes;
 
@@ -200,7 +203,7 @@ public class StateNode implements Serializable {
                 .computeIfAbsent(new FeatureSetKey(reportableFeatureTypes,
                         additionalFeatureTypes), FeatureSet::new);
 
-        features = new NodeFeature[featureSet.mappings.size()];
+        features = null;
         // Eagerly initialize features that should always be sent
         reportableFeatureTypes.forEach(this::getFeature);
     }
@@ -320,7 +323,13 @@ public class StateNode implements Serializable {
     }
 
     private Stream<NodeFeature> getInitializedFeatures() {
-        return Stream.of(features).filter(Objects::nonNull);
+        if (features == null) {
+            return Stream.empty();
+        } else if (features instanceof NodeFeature) {
+            return Stream.of((NodeFeature) features);
+        } else {
+            return Stream.of((NodeFeature[]) features).filter(Objects::nonNull);
+        }
     }
 
     /**
@@ -349,10 +358,46 @@ public class StateNode implements Serializable {
     public <T extends NodeFeature> T getFeature(Class<T> featureType) {
         int featureIndex = getFeatureIndex(featureType);
 
-        NodeFeature feature = features[featureIndex];
-        if (feature == null) {
+        /*
+         * To limit memory use, the features array is kept as short as possible
+         * and the size is increased when needed.
+         *
+         * Furthermore, instead of a one-item array, the single item is stored
+         * as the field value. This further optimizes the case of text nodes and
+         * template model nodes.
+         */
+        NodeFeature feature;
+        if (featureIndex == 0 && features instanceof NodeFeature) {
+            feature = (NodeFeature) features;
+        } else if (featureIndex == 0 && features == null) {
             feature = NodeFeatureRegistry.create(featureType, this);
-            features[featureIndex] = feature;
+            features = feature;
+        } else {
+            NodeFeature[] featuresArray;
+            if (features instanceof NodeFeature[]) {
+                featuresArray = (NodeFeature[]) features;
+            } else {
+                assert features == null || features instanceof NodeFeature;
+
+                featuresArray = new NodeFeature[featureIndex + 1];
+                if (features instanceof NodeFeature) {
+                    featuresArray[0] = (NodeFeature) features;
+                }
+                features = featuresArray;
+            }
+
+            // Increase size if necessary
+            if (featureIndex >= featuresArray.length) {
+                featuresArray = Arrays.copyOf(featuresArray, featureIndex + 1);
+                features = featuresArray;
+            }
+
+            feature = featuresArray[featureIndex];
+
+            if (feature == null) {
+                feature = NodeFeatureRegistry.create(featureType, this);
+                featuresArray[featureIndex] = feature;
+            }
         }
 
         return featureType.cast(feature);
@@ -385,9 +430,26 @@ public class StateNode implements Serializable {
      */
     public <T extends NodeFeature> Optional<T> getFeatureIfInitialized(
             Class<T> featureType) {
+        if (features == null) {
+            return Optional.empty();
+        }
         int featureIndex = getFeatureIndex(featureType);
 
-        return Optional.ofNullable(features[featureIndex])
+        if (features instanceof NodeFeature) {
+            if (featureIndex == 0) {
+                return Optional.of(featureType.cast(features));
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        NodeFeature[] featuresArray = (NodeFeature[]) features;
+
+        if (featureIndex >= featuresArray.length) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(featuresArray[featureIndex])
                 .map(featureType::cast);
     }
 
