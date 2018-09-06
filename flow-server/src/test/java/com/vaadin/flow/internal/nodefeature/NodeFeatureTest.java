@@ -16,8 +16,11 @@
 
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -120,6 +123,54 @@ public class NodeFeatureTest {
             Assert.assertEquals("Unexpected type for id " + id, expectedType,
                     NodeFeatureRegistry.getFeature(id));
         });
+    }
+
+    @Test
+    public void priorityOrder() {
+        List<Class<? extends NodeFeature>> priorityOrder = buildExpectedIdMap()
+                .keySet().stream()
+                .sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR)
+                .collect(Collectors.toList());
+
+        List<Class<? extends NodeFeature>> expectedOrder = Arrays.asList(
+                /* Primary features */
+                ElementData.class, TextNodeMap.class, ModelList.class,
+                BasicTypeValue.class,
+
+                /* Common element features */
+                ElementChildrenList.class, ElementPropertyMap.class,
+
+                /* Component mapped features */
+                ComponentMapping.class, ClientCallableHandlers.class,
+
+                /* Supplementary element stuff */
+                ElementClassList.class, ElementAttributeMap.class,
+                ElementListenerMap.class, SynchronizedPropertiesList.class,
+                SynchronizedPropertyEventsList.class, VirtualChildrenList.class,
+
+                /* PolymerTemplate stuff */
+                PolymerEventListenerMap.class, PolymerServerEventHandlers.class,
+
+                /* Rarely used element stuff */
+                ElementStylePropertyMap.class, ShadowRootData.class,
+                ShadowRootHost.class, AttachExistingElementFeature.class,
+
+                /* Only used for the root node */
+                PushConfigurationMap.class,
+                PushConfigurationParametersMap.class,
+                LoadingIndicatorConfigurationMap.class,
+                PollConfigurationMap.class,
+                ReconnectDialogConfigurationMap.class);
+
+        Assert.assertEquals(priorityOrder.size(), expectedOrder.size());
+
+        for (int i = 0; i < priorityOrder.size(); i++) {
+            if (priorityOrder.get(i) != expectedOrder.get(i)) {
+                Assert.fail("Invalid priority ordering at index " + i
+                        + ". Expected " + expectedOrder.get(i).getSimpleName()
+                        + " but got " + priorityOrder.get(i).getSimpleName());
+            }
+        }
     }
 
 }
