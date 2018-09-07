@@ -13,6 +13,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
+import java.util.concurrent.locks.Lock;
+
 @Route("template-push")
 @Push(transport = Transport.WEBSOCKET)
 @HtmlImport("TemplatePushView.html")
@@ -58,17 +60,13 @@ public class TemplatePushView extends PolymerTemplate<TemplateModel> {
 
         @Override
         public void run() {
-            sleep();
+            // We can acquire the lock after the request started this thread is processed
+            // Needed to make sure that this is sent as a push message
+            Lock lockInstance = ui.getSession().getLockInstance();
+            lockInstance.lock();
+            lockInstance.unlock();
+
             ui.access(() -> execute(ui));
-        }
-
-        private void sleep() {
-            try {
-                // Needed to make sure that this is sent as a push message
-                Thread.sleep(100);
-            } catch (InterruptedException e1) {
-            }
-
         }
 
         protected abstract void execute(UI ui);

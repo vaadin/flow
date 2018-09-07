@@ -9,6 +9,8 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 
+import java.util.concurrent.locks.Lock;
+
 @Route("push")
 @Push(transport = Transport.WEBSOCKET)
 public class PushView extends Div {
@@ -22,11 +24,12 @@ public class PushView extends Div {
 
         @Override
         public void run() {
-            try {
-                // Needed to make sure that this is sent as a push message
-                Thread.sleep(100);
-            } catch (InterruptedException e1) {
-            }
+            // We can acquire the lock after the request started this thread is processed
+            // Needed to make sure that this is sent as a push message
+            Lock lockInstance = ui.getSession().getLockInstance();
+            lockInstance.lock();
+            lockInstance.unlock();
+
             ui.access(() -> {
                 Paragraph world = new Paragraph("World");
                 world.setId("world");
