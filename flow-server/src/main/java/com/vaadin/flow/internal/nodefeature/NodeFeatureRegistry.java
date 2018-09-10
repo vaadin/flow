@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,59 +33,105 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurati
  * @since 1.0
  */
 public class NodeFeatureRegistry {
-    private static int nextNodeFeatureId = 0;
+    private static int nextNodePriority = 0;
 
     // Non-private for testing purposes
     static final Map<Class<? extends NodeFeature>, NodeFeatureData> nodeFeatures = new HashMap<>();
     private static final Map<Integer, Class<? extends NodeFeature>> idToFeature = new HashMap<>();
 
+    /**
+     * Comparator for finding the priority order between node feature types.
+     */
+    public static final Comparator<Class<? extends NodeFeature>> PRIORITY_COMPARATOR = Comparator
+            .comparingInt(feature -> getData(feature).priority);
+
     private static class NodeFeatureData implements Serializable {
         private final SerializableFunction<StateNode, ? extends NodeFeature> factory;
         private final int id;
+        private final int priority;
 
         private <T extends NodeFeature> NodeFeatureData(
-                SerializableFunction<StateNode, T> factory) {
+                SerializableFunction<StateNode, T> factory, int id) {
             this.factory = factory;
-            id = nextNodeFeatureId++;
+            this.id = id;
+            priority = nextNodePriority++;
         }
     }
 
     static {
-        registerFeature(ElementData.class, ElementData::new);
-        registerFeature(ElementPropertyMap.class, ElementPropertyMap::new);
-        registerFeature(ElementChildrenList.class, ElementChildrenList::new);
-        registerFeature(ElementAttributeMap.class, ElementAttributeMap::new);
-        registerFeature(ElementListenerMap.class, ElementListenerMap::new);
-        registerFeature(PushConfigurationMap.class, PushConfigurationMap::new);
-        registerFeature(PushConfigurationParametersMap.class,
-                PushConfigurationParametersMap::new);
-        registerFeature(TextNodeMap.class, TextNodeMap::new);
-        registerFeature(PollConfigurationMap.class, PollConfigurationMap::new);
-        registerFeature(ReconnectDialogConfigurationMap.class,
-                ReconnectDialogConfigurationMap::new);
-        registerFeature(LoadingIndicatorConfigurationMap.class,
-                LoadingIndicatorConfigurationMap::new);
-        registerFeature(ElementClassList.class, ElementClassList::new);
-        registerFeature(ElementStylePropertyMap.class,
-                ElementStylePropertyMap::new);
-        registerFeature(SynchronizedPropertiesList.class,
-                SynchronizedPropertiesList::new);
-        registerFeature(SynchronizedPropertyEventsList.class,
-                SynchronizedPropertyEventsList::new);
-        registerFeature(ComponentMapping.class, ComponentMapping::new);
-        registerFeature(ModelList.class, ModelList::new);
-        registerFeature(PolymerServerEventHandlers.class,
-                PolymerServerEventHandlers::new);
-        registerFeature(PolymerEventListenerMap.class,
-                PolymerEventListenerMap::new);
+        /* Primary features */
+        registerFeature(ElementData.class, ElementData::new,
+                NodeFeatures.ELEMENT_DATA);
+        registerFeature(TextNodeMap.class, TextNodeMap::new,
+                NodeFeatures.TEXT_NODE);
+        registerFeature(ModelList.class, ModelList::new,
+                NodeFeatures.TEMPLATE_MODELLIST);
+        registerFeature(BasicTypeValue.class, BasicTypeValue::new,
+                NodeFeatures.BASIC_TYPE_VALUE);
+
+        /* Common element features */
+        registerFeature(ElementChildrenList.class, ElementChildrenList::new,
+                NodeFeatures.ELEMENT_CHILDREN);
+        registerFeature(ElementPropertyMap.class, ElementPropertyMap::new,
+                NodeFeatures.ELEMENT_PROPERTIES);
+
+        /* Component mapped features */
+        registerFeature(ComponentMapping.class, ComponentMapping::new,
+                NodeFeatures.COMPONENT_MAPPING);
         registerFeature(ClientCallableHandlers.class,
-                ClientCallableHandlers::new);
-        registerFeature(ShadowRootData.class, ShadowRootData::new);
-        registerFeature(ShadowRootHost.class, ShadowRootHost::new);
+                ClientCallableHandlers::new,
+                NodeFeatures.CLIENT_DELEGATE_HANDLERS);
+
+        /* Supplementary element stuff */
+        registerFeature(ElementClassList.class, ElementClassList::new,
+                NodeFeatures.CLASS_LIST);
+        registerFeature(ElementAttributeMap.class, ElementAttributeMap::new,
+                NodeFeatures.ELEMENT_ATTRIBUTES);
+        registerFeature(ElementListenerMap.class, ElementListenerMap::new,
+                NodeFeatures.ELEMENT_LISTENERS);
+        registerFeature(SynchronizedPropertiesList.class,
+                SynchronizedPropertiesList::new,
+                NodeFeatures.SYNCHRONIZED_PROPERTIES);
+        registerFeature(SynchronizedPropertyEventsList.class,
+                SynchronizedPropertyEventsList::new,
+                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+        registerFeature(VirtualChildrenList.class, VirtualChildrenList::new,
+                NodeFeatures.VIRTUAL_CHILDREN);
+
+        /* PolymerTemplate stuff */
+        registerFeature(PolymerEventListenerMap.class,
+                PolymerEventListenerMap::new,
+                NodeFeatures.POLYMER_EVENT_LISTENERS);
+        registerFeature(PolymerServerEventHandlers.class,
+                PolymerServerEventHandlers::new,
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
+
+        /* Rarely used element stuff */
+        registerFeature(ElementStylePropertyMap.class,
+                ElementStylePropertyMap::new,
+                NodeFeatures.ELEMENT_STYLE_PROPERTIES);
+        registerFeature(ShadowRootData.class, ShadowRootData::new,
+                NodeFeatures.SHADOW_ROOT_DATA);
+        registerFeature(ShadowRootHost.class, ShadowRootHost::new,
+                NodeFeatures.SHADOW_ROOT_HOST);
         registerFeature(AttachExistingElementFeature.class,
-                AttachExistingElementFeature::new);
-        registerFeature(BasicTypeValue.class, BasicTypeValue::new);
-        registerFeature(VirtualChildrenList.class, VirtualChildrenList::new);
+                AttachExistingElementFeature::new,
+                NodeFeatures.ATTACH_EXISTING_ELEMENT);
+
+        /* Only used for the root node */
+        registerFeature(PushConfigurationMap.class, PushConfigurationMap::new,
+                NodeFeatures.UI_PUSHCONFIGURATION);
+        registerFeature(PushConfigurationParametersMap.class,
+                PushConfigurationParametersMap::new,
+                NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
+        registerFeature(LoadingIndicatorConfigurationMap.class,
+                LoadingIndicatorConfigurationMap::new,
+                NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
+        registerFeature(PollConfigurationMap.class, PollConfigurationMap::new,
+                NodeFeatures.POLL_CONFIGURATION);
+        registerFeature(ReconnectDialogConfigurationMap.class,
+                ReconnectDialogConfigurationMap::new,
+                NodeFeatures.RECONNECT_DIALOG_CONFIGURATION);
     }
 
     private NodeFeatureRegistry() {
@@ -92,8 +139,8 @@ public class NodeFeatureRegistry {
     }
 
     private static <T extends NodeFeature> void registerFeature(Class<T> type,
-            SerializableFunction<StateNode, T> factory) {
-        NodeFeatureData featureData = new NodeFeatureData(factory);
+            SerializableFunction<StateNode, T> factory, int id) {
+        NodeFeatureData featureData = new NodeFeatureData(factory, id);
         nodeFeatures.put(type, featureData);
         idToFeature.put(featureData.id, type);
     }
