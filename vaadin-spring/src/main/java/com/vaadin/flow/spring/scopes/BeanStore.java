@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.scopes;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -32,7 +33,7 @@ import com.vaadin.flow.server.VaadinSession;
  * @author Vaadin Ltd
  *
  */
-class BeanStore {
+class BeanStore implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(BeanStore.class.getName());
@@ -55,7 +56,7 @@ class BeanStore {
     }
 
     /**
-     * Return the object with the given name from the underlying scop.,
+     * Return the object with the given name from the underlying scope,
      *
      * @param name
      *            the name of the object to retrieve
@@ -107,8 +108,7 @@ class BeanStore {
             try {
                 destructionCallback.run();
             } catch (Exception e) {
-                LOGGER.error(
-                        "BeanStore destruction callback failed", e);
+                LOGGER.error("BeanStore destruction callback failed", e);
             }
         }
         destructionCallbacks.clear();
