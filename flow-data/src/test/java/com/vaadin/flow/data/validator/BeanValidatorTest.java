@@ -16,7 +16,7 @@ public class BeanValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testFirstNameNullFails() {
-        assertFails(null, "may not be null", validator("firstname"));
+        assertFails(null, "must not be null", validator("firstname"));
     }
 
     @Test
@@ -44,7 +44,7 @@ public class BeanValidatorTest extends ValidatorTestBase {
     public void testDateOfBirthInTheFutureFails() {
         Calendar year3k = Calendar.getInstance();
         year3k.set(3000, 0, 1);
-        assertFails(year3k, "must be in the past", validator("dateOfBirth"));
+        assertFails(year3k, "must be a past date", validator("dateOfBirth"));
     }
 
     @Test
@@ -56,16 +56,15 @@ public class BeanValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testAddressesNullFails() {
-        assertFails(null, "may not be null", validator("addresses"));
+        assertFails(null, "must not be null", validator("addresses"));
     }
 
     @Test
     public void testInvalidDecimalsFailsInFrench() {
         setLocale(Locale.FRENCH);
         BeanValidator v = validator("decimals");
-        assertFails("1234.567",
-                "Valeur numérique hors limite (<3 chiffres>.<2 chiffres> attendus)",
-                v);
+        assertFails("1234.567", "valeur numérique hors limite "
+                + "(<3 chiffres>.<2 chiffres> attendu)", v);
     }
 
     @Test

@@ -50,8 +50,8 @@
             <version>2.8.2.vaadin1</version>
             <exclusions>
                 <exclusion>
-                    <groupId>javax.validation</groupId>
-                    <artifactId>validation-api</artifactId>
+                    <groupId>com.google.gwt</groupId>
+                    <artifactId>gwt-elemental</artifactId>
                 </exclusion>
             </exclusions>
 
