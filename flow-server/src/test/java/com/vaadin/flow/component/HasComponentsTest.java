@@ -48,28 +48,20 @@ public class HasComponentsTest {
                 .getChild(2).getComponent().get().getId());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void insertComponentIndexLessThanZero() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
         innerComponent.setId("insert-component-index-less");
         component.addComponentAtIndex(-5, innerComponent);
-        checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(), component.getElement()
-                .getChild(0).getComponent().get().getId());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void insertComponentIndexGreaterThanChildrenNumber() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
         innerComponent.setId("insert-component-index-greater");
         component.addComponentAtIndex(100, innerComponent);
-        checkChildren(4, component);
-        Assert.assertEquals(innerComponent.getId(),
-                component.getElement()
-                        .getChild((int) (component.getChildren().count() - 1))
-                        .getComponent().get().getId());
     }
 
     @Test
