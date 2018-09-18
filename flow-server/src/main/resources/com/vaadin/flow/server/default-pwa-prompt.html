@@ -1,10 +1,10 @@
 <div id="pwa-ip" style="display: none;position: fixed;bottom: 0;width: 100%;background: var(--lumo-primary-color);color: var(--lumo-primary-contrast-color);z-index: 1000;padding: 2em 0;">
     <div style="display: grid;grid-template-columns: 80px auto 80px;justify-content: space-between;width: 100%;max-width: 964px;margin: auto;">
-        <div style="background-image: url(%%%LOGO_PATH%%%); background-size: cover; width: 72px; height: 72px;"></div>
-        <h2 style="margin: 0; align-self: center; color: var(--lumo-primary-contrast-color);">%%%PROJECT_NAME%%%</h2>
-        <iron-icon id="pwa-closeip" icon="vaadin:close" style="justify-self: end; align-self: center;cursor: pointer;"></iron-icon>
-        <vaadin-button id="pwa-promptip" tabindex="0" role="button" style="background-color: rgba(0,0,0,0.2);grid-column-start: 2;cursor: pointer;" theme="primary"><iron-icon icon="vaadin:mobile" slot="suffix"></iron-icon>%%%ADD_HOME_SCREEN%%%</vaadin-button>
-    </div>
+        <div style="background-image: url(%%%LOGO_PATH%%%); background-size: cover; width: 72px; height: 100%; background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
+    <h2 style="margin: 0; align-self: center; color: var(--lumo-primary-contrast-color);">%%%PROJECT_NAME%%%</h2>
+    <div id="pwa-closeip" style="justify-self: end; align-self: center;cursor: pointer; font-weight: 600; font-family: Arial, sans-serif; font-size: 32px">X</div>
+    <div id="pwa-promptip" style="background-color: rgba(0,0,0,0.2);grid-column-start: 2;cursor: pointer; width: 100%; border-radius: 10px; padding: 1em; box-sizing: border-box; text-align: center; font-weight: 600;  font-size: 1.25em;">%%%ADD_HOME_SCREEN%%%</div>
+</div>
 </div>
 <script type="application/javascript">
     window.addEventListener('load', function() {
