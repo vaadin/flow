@@ -312,7 +312,8 @@ public class PwaRegistry implements Serializable {
         return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
-                        largest != null ? largest.getHref() : "")
+                        largest != null ? pwaConfiguration.getRootUrl()
+                                + largest.getHref() : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 
     }
@@ -325,7 +326,8 @@ public class PwaRegistry implements Serializable {
         return BootstrapHandler.readResource("default-pwa-prompt.html")
                 .replace("%%%ADD_HOME_SCREEN%%%", "Add to home screen")
                 .replace("%%%LOGO_PATH%%%",
-                        largest == null ? "" : largest.getHref())
+                        largest == null ? "" : pwaConfiguration.getRootUrl()
+                                + largest.getHref())
                 .replace("%%%PROJECT_NAME%%%", pwaConfiguration.getAppName());
     }
 
