@@ -127,6 +127,7 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
+                            <overWriteReleases>true</overWriteReleases>
                             <includes>**/webjars/**</includes>
                         </configuration>
                     </execution>
