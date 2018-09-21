@@ -137,6 +137,7 @@
                 <version>1.7</version>
                 <executions>
                     <execution>
+                        <id>repackage-webjars</id>
                         <phase>generate-resources</phase>
                         <configuration>
                             <tasks>
@@ -154,13 +155,8 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
                     <execution>
+                        <id>ui-jar-classes</id>
                         <phase>package</phase>
                         <configuration>
                             <tasks>
@@ -172,7 +168,7 @@
                                 <copy
                                     todir="${ui.jar.classes}/META-INF/resources/frontend/bower_components">
                                     <fileset
-                                        dir="${project.build.directory}/dependency/META-INF/resources/webjars/" />
+                                        dir="${ui.jar.classes}/frontend/bower_components" />
                                 </copy>
                             </tasks>
                         </configuration>
