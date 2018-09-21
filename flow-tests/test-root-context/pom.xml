@@ -140,6 +140,7 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <tasks>
+                                <delete dir="${ui.jar.classes}"></delete>
                                 <mkdir
                                     dir="${ui.jar.classes}/frontend/bower_components"></mkdir>
                                 <move
