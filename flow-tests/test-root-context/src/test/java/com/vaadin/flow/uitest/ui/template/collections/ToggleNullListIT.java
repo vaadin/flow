@@ -10,7 +10,6 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Category(IgnoreOSGi.class)
 public class ToggleNullListIT extends ChromeBrowserTest {
 
     @Test

@@ -18,7 +18,6 @@ import com.vaadin.testbench.TestBenchElement;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-@Category(IgnoreOSGi.class)
 public class ClearListIT extends ChromeBrowserTest {
 
     @Test

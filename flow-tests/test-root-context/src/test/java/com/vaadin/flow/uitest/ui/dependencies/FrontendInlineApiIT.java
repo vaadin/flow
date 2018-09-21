@@ -29,7 +29,6 @@ import com.vaadin.flow.testcategory.IgnoreOSGi;
  * @since 1.0
  *
  */
-@Category(IgnoreOSGi.class)
 public class FrontendInlineApiIT extends AbstractFrontendInlineIT {
 
 }

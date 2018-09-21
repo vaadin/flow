@@ -30,7 +30,6 @@ import com.vaadin.testbench.TestBenchElement;
  * Normal tests with @Before are not implemented because each @Test starts new
  * Chrome process.
  */
-@Category(IgnoreOSGi.class)
 public class ListInsideListBindingIT extends ChromeBrowserTest {
 
     @Test

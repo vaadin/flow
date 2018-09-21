@@ -28,7 +28,6 @@ import com.vaadin.testbench.TestBenchElement;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-@Category(IgnoreOSGi.class)
 public class DomRepeatIT extends ChromeBrowserTest {
 
     @Test

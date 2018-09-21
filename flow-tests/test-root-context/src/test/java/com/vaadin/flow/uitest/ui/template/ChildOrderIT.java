@@ -36,7 +36,6 @@ import com.vaadin.testbench.TestBenchElement;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-@Category(IgnoreOSGi.class)
 public class ChildOrderIT extends ChromeBrowserTest {
 
     private TestBenchElement root;
