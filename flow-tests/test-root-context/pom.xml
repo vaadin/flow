@@ -127,7 +127,6 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <overWriteReleases>true</overWriteReleases>
                             <includes>**/webjars/**</includes>
                         </configuration>
                     </execution>
@@ -156,11 +155,11 @@
                             <tasks>
                                 <mkdir
                                     dir="${ui.jar.classes}/frontend/bower_components"></mkdir>
-                                <move
+                                <copy
                                     todir="${ui.jar.classes}/frontend/bower_components">
                                     <fileset
                                         dir="${project.build.directory}/dependency/META-INF/resources/webjars/" />
-                                </move>
+                                </copy>
                             </tasks>
                         </configuration>
                         <goals>
