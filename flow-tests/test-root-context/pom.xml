@@ -137,11 +137,22 @@
                 <version>1.7</version>
                 <executions>
                     <execution>
-                        <id>repackage-webjars</id>
-                        <phase>generate-resources</phase>
+                        <id>clean-ui-classes</id>
+                        <phase>initialize</phase>
                         <configuration>
                             <tasks>
                                 <delete dir="${ui.jar.classes}"></delete>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>repackage-webjars</id>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <tasks>
                                 <mkdir
                                     dir="${ui.jar.classes}/frontend/bower_components"></mkdir>
                                 <move
@@ -160,8 +171,7 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <copy
-                                    todir="${ui.jar.classes}">
+                                <copy todir="${ui.jar.classes}">
                                     <fileset
                                         dir="${project.build.outputDirectory}" />
                                 </copy>
