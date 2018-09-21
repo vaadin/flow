@@ -13,6 +13,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <ui.jar.classes>${project.build.directory}/ui-jar</ui.jar.classes>
     </properties>
 
     <dependencies>
@@ -126,7 +127,7 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includes>**/webjars/*</includes>
+                            <includes>**/webjars/**</includes>
                         </configuration>
                     </execution>
                 </executions>
@@ -140,9 +141,9 @@
                         <configuration>
                             <tasks>
                                 <mkdir
-                                    dir="${project.build.directory}/ui-jar/bower_components"></mkdir>
+                                    dir="${ui.jar.classes}/frontend/bower_components"></mkdir>
                                 <move
-                                    todir="${project.build.directory}/ui-jar/bower_components">
+                                    todir="${ui.jar.classes}/frontend/bower_components">
                                     <fileset
                                         dir="${project.build.directory}/dependency/META-INF/resources/webjars/" />
                                 </move>
@@ -159,13 +160,18 @@
                 <version>1.7</version>
                 <executions>
                     <execution>
-                        <phase>process-classes</phase>
+                        <phase>package</phase>
                         <configuration>
                             <tasks>
                                 <copy
-                                    todir="${project.build.directory}/ui-jar/">
+                                    todir="${ui.jar.classes}">
                                     <fileset
                                         dir="${project.build.outputDirectory}" />
+                                </copy>
+                                <copy
+                                    todir="${ui.jar.classes}/META-INF/resources/frontend/bower_components">
+                                    <fileset
+                                        dir="${project.build.directory}/dependency/META-INF/resources/webjars/" />
                                 </copy>
                             </tasks>
                         </configuration>
@@ -251,7 +257,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                        <classesDirectory>${project.build.directory}/ui-jar/</classesDirectory>
+                            <classesDirectory>${ui.jar.classes}</classesDirectory>
                             <!-- Class from the "test-common" module are 
                                 included into the resulting "root-context" jar. As a result we don't need 
                                 "test-common" as a dependency. Another option is to have it as a separate 
