@@ -30,7 +30,6 @@ import org.openqa.selenium.logging.LogEntry;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Category(IgnoreOSGi.class)
 public class EmptyListsIT extends ChromeBrowserTest {
 
     @Test

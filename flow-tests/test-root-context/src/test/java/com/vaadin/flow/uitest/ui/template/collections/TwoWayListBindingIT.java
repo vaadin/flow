@@ -28,7 +28,6 @@ import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Category(IgnoreOSGi.class)
 public class TwoWayListBindingIT extends ChromeBrowserTest {
 
     @Test

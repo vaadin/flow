@@ -10,7 +10,6 @@ import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-@Category(IgnoreOSGi.class)
 public class PropertiesUpdatedBeforeChangeEventsIT extends ChromeBrowserTest {
 
     private WebElement firstPropInput;

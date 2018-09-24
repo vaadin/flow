@@ -20,9 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -30,7 +28,6 @@ import com.vaadin.testbench.TestBenchElement;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-@Category(IgnoreOSGi.class)
 public class OneWayPolymerBindingIT extends ChromeBrowserTest {
 
     // Numerous tests are carried out in the single test case, because it's
