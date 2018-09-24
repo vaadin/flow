@@ -2,7 +2,7 @@
   "name": "Vaadin.TabsElement",
   "tag": "vaadin-tabs",
   "baseUrl": "vaadin-tabs/src/vaadin-tabs.html",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "properties": [
     {
       "name": "selected",
@@ -51,6 +51,7 @@
   ],
   "variants": {
     "lumo": [
+      "icon-on-top",
       "centered",
       "small",
       "minimal",

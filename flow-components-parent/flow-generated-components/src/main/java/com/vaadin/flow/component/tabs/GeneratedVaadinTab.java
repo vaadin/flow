@@ -89,7 +89,7 @@ Tab 1
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TabElement#2.1.0", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.TabElement#2.1.1", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-tab")
 @HtmlImport("frontend://bower_components/vaadin-tabs/src/vaadin-tab.html")
 public abstract class GeneratedVaadinTab<R extends GeneratedVaadinTab<R>>

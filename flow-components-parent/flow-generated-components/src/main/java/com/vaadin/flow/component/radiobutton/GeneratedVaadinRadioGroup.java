@@ -114,7 +114,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.RadioGroupElement#1.1.1", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.RadioGroupElement#1.1.2", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-radio-group")
 @HtmlImport("frontend://bower_components/vaadin-radio-button/src/vaadin-radio-group.html")
 public abstract class GeneratedVaadinRadioGroup<R extends GeneratedVaadinRadioGroup<R, T>, T>

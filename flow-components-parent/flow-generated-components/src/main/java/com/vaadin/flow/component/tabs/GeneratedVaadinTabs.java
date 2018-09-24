@@ -97,7 +97,7 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TabsElement#2.1.0", "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.TabsElement#2.1.1", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-tabs")
 @HtmlImport("frontend://bower_components/vaadin-tabs/src/vaadin-tabs.html")
 public abstract class GeneratedVaadinTabs<R extends GeneratedVaadinTabs<R>>
