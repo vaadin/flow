@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.contexttest.ui;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -26,10 +23,23 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinSession;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Abstract layout to test various resourcess accessibility.
+ * Contains:
+ * <ul>
+ * <li>Static CSS</li>
+ * <li>Dynamically loadable CSS.</li>
+ * <li>Static JS script</li>
+ * <li>Dynamically loadable JS script.</li>
+ * </ul>
+ */
 @StyleSheet("context://test-files/css/allred.css")
-public class DependencyUI extends UI {
+public abstract class DependencyLayout extends Div {
 
     @StyleSheet("context://test-files/css/allblueimportant.css")
     public static class AllBlueImportantComponent extends Div {
@@ -49,8 +59,7 @@ public class DependencyUI extends UI {
         }
     }
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public DependencyLayout() {
         getElement().appendChild(ElementFactory.createDiv(
                 "This test initially loads a stylesheet which makes all text red and a JavaScript which listens to body clicks"));
         getElement().appendChild(ElementFactory.createHr());
@@ -58,10 +67,10 @@ public class DependencyUI extends UI {
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
-        StreamRegistration jsStreamRegistration = getSession().getResourceRegistry()
+        StreamRegistration jsStreamRegistration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(getJsResource());
         jsOrder.addEventListener("click", e -> {
-            getPage()
+            UI.getCurrent().getPage()
                     .addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
@@ -85,7 +94,7 @@ public class DependencyUI extends UI {
             // loaded
             try {
                 Thread.sleep(500);
-            } catch (Exception e1) {
+            } catch (Exception ignored) {
             }
             return new ByteArrayInputStream(
                     js.getBytes(StandardCharsets.UTF_8));
