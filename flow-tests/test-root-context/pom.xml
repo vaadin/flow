@@ -201,20 +201,8 @@
                         </goals>
                         <configuration>
                             <resources>
-                                <!-- Copy resource files into META-INF/resources 
-                                    so that they becomes discoverable via HTTP (there is an HttpService which 
-                                    registers them). But this is not enough since servlet context should also 
-                                    be able to find those resources and return their content. Registering them 
-                                    for HTTP doesn't solve this. So there is one more resources registration 
-                                    below which makes them available for ServletContext. Technically only one 
-                                    of those registration should be needed. Needs to be fixed later on. -->
-                                <resource>
-                                    <directory>src/main/webapp</directory>
-                                    <targetPath>META-INF/resources</targetPath>
-                                </resource>
-                                <!-- This should not be needed but servlet 
-                                    context doesn't find template files without this: files are copied into the 
-                                    root and they become available by their direct path -->
+                                <!--  This makes static resource files be available
+                                via servlet context and via HTTP -->
                                 <resource>
                                     <directory>src/main/webapp</directory>
                                     <targetPath></targetPath>
