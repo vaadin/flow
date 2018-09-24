@@ -13,6 +13,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <ui.jar.classes>${project.build.directory}/ui-jar</ui.jar.classes>
     </properties>
 
     <dependencies>
@@ -73,7 +74,7 @@
             <groupId>org.webjars.bowergithub.webcomponents</groupId>
             <artifactId>webcomponentsjs</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
@@ -116,6 +117,78 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includes>**/webjars/**</includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>clean-ui-classes</id>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <tasks>
+                                <delete dir="${ui.jar.classes}"></delete>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>repackage-webjars</id>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <tasks>
+                                <mkdir
+                                    dir="${ui.jar.classes}/frontend/bower_components"></mkdir>
+                                <copy
+                                    todir="${ui.jar.classes}/frontend/bower_components">
+                                    <fileset
+                                        dir="${project.build.directory}/dependency/META-INF/resources/webjars/" />
+                                </copy>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>ui-jar-classes</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <copy todir="${ui.jar.classes}">
+                                    <fileset
+                                        dir="${project.build.outputDirectory}" />
+                                </copy>
+                                <copy
+                                    todir="${ui.jar.classes}/META-INF/resources/frontend/bower_components">
+                                    <fileset
+                                        dir="${ui.jar.classes}/frontend/bower_components" />
+                                </copy>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.0.0</version>
@@ -140,20 +213,20 @@
                 </executions>
             </plugin>
             <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>${maven.war.plugin.version}</version>
-                    <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <Implementation-Title>${project.name}
-                                </Implementation-Title>
-                                <Implementation-Version>${project.version}
-                                </Implementation-Version>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
-                </plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${maven.war.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Title>${project.name}
+                            </Implementation-Title>
+                            <Implementation-Version>${project.version}
+                            </Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -179,19 +252,16 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <!-- 
-                            Class from the "test-common" module are included into 
-                            the resulting "root-context" jar.
-                            As a result we don't need "test-common" as a dependency.  
-                            Another option is to have it as a separate bundle.
-                            And later on may be we need a test which does it. 
-                            The lines below allows to exclude "test-common" module 
-                            classes from the "root-context" jar.
-                            I don't really know why jar plugin puts classes from 
-                            "test-common" module to the "root-context" jar.-->
-                            <!-- excludes>
-                                <exclude>**/servlet/*</exclude>
-                            </excludes-->
+                            <classesDirectory>${ui.jar.classes}</classesDirectory>
+                            <!-- Class from the "test-common" module are 
+                                included into the resulting "root-context" jar. As a result we don't need 
+                                "test-common" as a dependency. Another option is to have it as a separate 
+                                bundle. And later on may be we need a test which does it. The lines below 
+                                allows to exclude "test-common" module classes from the "root-context" jar. 
+                                I don't really know why jar plugin puts classes from "test-common" module 
+                                to the "root-context" jar. -->
+                            <!-- excludes> <exclude>**/servlet/*</exclude> 
+                                </excludes -->
                             <classifier>ui</classifier>
                         </configuration>
                     </execution>

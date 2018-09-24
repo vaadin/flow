@@ -25,7 +25,6 @@ import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-@Category(IgnoreOSGi.class)
 public class TemplateInTemplateIT extends ChromeBrowserTest {
 
     @Test
