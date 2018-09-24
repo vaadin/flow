@@ -191,7 +191,7 @@ public class TreeData<T> implements Serializable {
      */
     public TreeData<T> addItems(T parent,
             @SuppressWarnings("unchecked") T... items) {
-        Arrays.asList(items).stream().forEach(item -> addItem(parent, item));
+        Arrays.stream(items).forEach(item -> addItem(parent, item));
         return this;
     }
 
@@ -216,7 +216,7 @@ public class TreeData<T> implements Serializable {
      *             if any of the items are null
      */
     public TreeData<T> addItems(T parent, Collection<T> items) {
-        items.stream().forEach(item -> addItem(parent, item));
+        items.forEach(item -> addItem(parent, item));
         return this;
     }
 
