@@ -58,11 +58,11 @@ public class DependencyUI extends UI {
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
-        StreamRegistration foo = getSession().getResourceRegistry()
+        StreamRegistration jsStreamRegistration = getSession().getResourceRegistry()
                 .registerResource(getJsResource());
         jsOrder.addEventListener("click", e -> {
             getPage()
-                    .addJavaScript("base://" + foo.getResourceUri().toString());
+                    .addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")
@@ -84,7 +84,7 @@ public class DependencyUI extends UI {
             // Wait to ensure that client side will stop until the JavaScript is
             // loaded
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (Exception e1) {
             }
             return new ByteArrayInputStream(
