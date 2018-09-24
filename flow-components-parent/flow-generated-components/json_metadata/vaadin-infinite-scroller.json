@@ -83,6 +83,14 @@
           ],
           "objectType": [],
           "description": "New attribute value"
+        },
+        {
+          "name": "namespace",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Attribute namespace."
         }
       ],
       "returns": "OBJECT"

@@ -35,8 +35,8 @@ import com.vaadin.flow.dom.Element;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-upload>} is a Polymer 2 element for uploading multiple files
- * with drag and drop support.
+ * {@code <vaadin-upload>} is a Web Component for uploading multiple files with
+ * drag and drop support.
  * </p>
  * <p>
  * Example:
@@ -113,8 +113,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.UploadElement#4.2.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.UploadElement#4.2.1", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-upload")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload.html")
 public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
@@ -779,10 +778,6 @@ public abstract class GeneratedVaadinUpload<R extends GeneratedVaadinUpload<R>>
      */
     protected void setI18n(JsonObject i18n) {
         getElement().setPropertyJson("i18n", i18n);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     /**

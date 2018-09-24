@@ -242,8 +242,4 @@ public abstract class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinCombo
     protected void setFocused(boolean focused) {
         getElement().setProperty("focused", focused);
     }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
-    }
 }

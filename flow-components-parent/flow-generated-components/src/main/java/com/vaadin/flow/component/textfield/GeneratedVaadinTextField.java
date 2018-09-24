@@ -40,7 +40,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-text-field>} is a Polymer 2 element for text field control in
+ * {@code <vaadin-text-field>} is a Web Component for text field control in
  * forms.
  * </p>
  * <p>
@@ -161,8 +161,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.TextFieldElement#2.1.2", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-field.html")
 public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R, T>, T>
@@ -839,10 +838,6 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
      */
     @NotSupported
     protected void validate() {
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("change")

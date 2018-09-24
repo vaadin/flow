@@ -2,7 +2,7 @@
   "name": "Vaadin.RadioGroupElement",
   "tag": "vaadin-radio-group",
   "baseUrl": "vaadin-radio-button/src/vaadin-radio-group.html",
-  "version": "1.1.0-alpha3",
+  "version": "1.1.2",
   "properties": [
     {
       "name": "disabled",
@@ -65,12 +65,6 @@
   ],
   "methods": [
     {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
       "name": "validate",
       "description": "Returns true if `value` is valid.\n`<iron-form>` uses this to check the validity or all its elements.",
       "parameters": [],
@@ -110,5 +104,5 @@
       "vertical"
     ]
   },
-  "description": "`<vaadin-radio-group>` is a Polymer element for grouping vaadin-radio-buttons.\n\n```html\n<vaadin-radio-group>\n  <vaadin-radio-button name=\"foo\">Foo</vaadin-radio-button>\n  <vaadin-radio-button name=\"bar\">Bar</vaadin-radio-button>\n  <vaadin-radio-button name=\"baz\">Baz</vaadin-radio-button>\n</vaadin-radio-group>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`group-field` | The element that wraps radio-buttons\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio group and its children are disabled. | :host\n`readonly` | Set to a readonly text field | :host\n`invalid` | Set when the element is invalid | :host\n`has-label` | Set when the element has a label | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+  "description": "`<vaadin-radio-group>` is a Web Component for grouping vaadin-radio-buttons.\n\n```html\n<vaadin-radio-group>\n  <vaadin-radio-button name=\"foo\">Foo</vaadin-radio-button>\n  <vaadin-radio-button name=\"bar\">Bar</vaadin-radio-button>\n  <vaadin-radio-button name=\"baz\">Baz</vaadin-radio-button>\n</vaadin-radio-group>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`group-field` | The element that wraps radio-buttons\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio group and its children are disabled. | :host\n`readonly` | Set to a readonly text field | :host\n`invalid` | Set when the element is invalid | :host\n`has-label` | Set when the element has a label | :host\n`has-value` | Set when the element has a value | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

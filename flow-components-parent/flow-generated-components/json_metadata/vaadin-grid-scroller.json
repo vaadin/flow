@@ -15,6 +15,12 @@
   ],
   "methods": [
     {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
       "name": "clearSelection",
       "description": "",
       "parameters": [],

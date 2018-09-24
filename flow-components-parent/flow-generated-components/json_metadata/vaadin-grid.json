@@ -2,8 +2,25 @@
   "name": "Vaadin.GridElement",
   "tag": "vaadin-grid",
   "baseUrl": "vaadin-grid/src/vaadin-grid.html",
-  "version": "5.1.0-alpha3",
+  "version": "5.1.0",
   "properties": [
+    {
+      "name": "activeItem",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The item user has last interacted with. Turns to `null` after user deactivates\nthe item by re-interacting with the currently active item.\n         ",
+      "notify": true
+    },
+    {
+      "name": "items",
+      "type": [
+        "ARRAY"
+      ],
+      "objectType": [],
+      "description": "An array containing the items which will be stamped to the column template\ninstances.\n         "
+    },
     {
       "name": "pageSize",
       "type": [
@@ -49,37 +66,12 @@
       "notify": true
     },
     {
-      "name": "activeItem",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "The item user has last interacted with. Turns to `null` after user deactivates\nthe item by re-interacting with the currently active item.\n         ",
-      "notify": true
-    },
-    {
-      "name": "items",
-      "type": [
-        "ARRAY"
-      ],
-      "objectType": [],
-      "description": "An array containing the items which will be stamped to the column template\ninstances.\n         "
-    },
-    {
       "name": "detailsOpenedItems",
       "type": [
         "ARRAY"
       ],
       "objectType": [],
       "description": "An array containing references to items with open row details.\n         "
-    },
-    {
-      "name": "multiSort",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "When `true`, all `<vaadin-grid-sorter>` are applied for sorting.\n         "
     },
     {
       "name": "selectedItems",
@@ -89,6 +81,14 @@
       "objectType": [],
       "description": "An array that contains the selected items.\n         ",
       "notify": true
+    },
+    {
+      "name": "multiSort",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When `true`, all `<vaadin-grid-sorter>` are applied for sorting.\n         "
     },
     {
       "name": "columnReorderingAllowed",
@@ -108,12 +108,6 @@
     }
   ],
   "methods": [
-    {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
     {
       "name": "getItemId",
       "description": "Returns a value that identifies the item. Uses `itemIdPath` if available.\nCan be customized by overriding.\n     ",
@@ -233,10 +227,18 @@
   "behaviors": [],
   "mixins": [
     "Vaadin.ThemableMixin",
+    "Vaadin.Grid.A11yMixin",
+    "Vaadin.Grid.ActiveItemMixin",
+    "Vaadin.Grid.ArrayDataProviderMixin",
+    "Vaadin.Grid.ColumnResizingMixin",
     "Vaadin.Grid.DataProviderMixin",
+    "Vaadin.Grid.DynamicColumnsMixin",
+    "Vaadin.Grid.FilterMixin",
+    "Vaadin.Grid.RowDetailsMixin",
     "Vaadin.Grid.ScrollMixin",
+    "Vaadin.Grid.SelectionMixin",
+    "Vaadin.Grid.SortMixin",
     "Vaadin.Grid.KeyboardNavigationMixin",
-    "Vaadin.Grid.CombinedMixin",
     "Vaadin.Grid.ColumnReorderingMixin"
   ],
   "variants": {

@@ -164,10 +164,6 @@ public abstract class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadF
         getElement().setPropertyJson("file", file);
     }
 
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
-    }
-
     @DomEvent("file-abort")
     public static class FileAbortEvent<R extends GeneratedVaadinUploadFile<R>>
             extends ComponentEvent<R> {

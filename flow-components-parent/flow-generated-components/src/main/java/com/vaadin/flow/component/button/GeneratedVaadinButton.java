@@ -33,7 +33,7 @@ import com.vaadin.flow.dom.Element;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-button>} is a Polymer 2 element providing an accessible and
+ * {@code <vaadin-button>} is a Web Component providing an accessible and
  * customizable button.
  * </p>
  * <p>
@@ -103,8 +103,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ButtonElement#2.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.ButtonElement#2.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/src/vaadin-button.html")
 public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
@@ -197,10 +196,6 @@ public abstract class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
      */
     protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     /**

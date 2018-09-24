@@ -224,8 +224,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxElement#4.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.ComboBoxElement#4.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box.html")
 public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R, T>, T>
@@ -834,10 +833,6 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     protected void checkValidity() {
         getElement().callFunction("checkValidity");
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("custom-value-set")

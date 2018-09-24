@@ -2,7 +2,7 @@
   "name": "Vaadin.ComboBoxElement",
   "tag": "vaadin-combo-box",
   "baseUrl": "vaadin-combo-box/src/vaadin-combo-box.html",
-  "version": "4.1.0-alpha3",
+  "version": "4.1.0",
   "properties": [
     {
       "name": "autofocus",
@@ -218,12 +218,6 @@
     {
       "name": "checkValidity",
       "description": "Returns true if the current input value satisfies all constraints (if any)\n\nYou can override the `checkValidity` method for custom validations.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "updateStyles",
-      "description": "",
       "parameters": [],
       "returns": "UNDEFINED"
     }

@@ -2,7 +2,7 @@
   "name": "Vaadin.TimePickerElement",
   "tag": "vaadin-time-picker",
   "baseUrl": "vaadin-time-picker/src/vaadin-time-picker.html",
-  "version": "1.0.0-beta1",
+  "version": "1.0.0",
   "properties": [
     {
       "name": "autofocus",
@@ -108,7 +108,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "Specifies the number of valid intervals in a day or in an hour used for\nconfiguring the items displayed in the selection box.\n\nIt also configures the precission of the value string. By default\nthe component formats values as `hh:mm` but setting a step value\nlower than one minute or one second, format resolution changes to\n`hh:mm:ss` and `hh:mm:ss.fff` respectively.\n\nUnit must be set in seconds, and for correctly configuring intervals\nin the dropdown, it need to evenly divide a day or an hour.\n             "
+      "description": "Specifies the number of valid intervals in a day or in an hour used for\nconfiguring the items displayed in the selection box.\n\nIt also configures the precision of the value string. By default\nthe component formats values as `hh:mm` but setting a step value\nlower than one minute or one second, format resolution changes to\n`hh:mm:ss` and `hh:mm:ss.fff` respectively.\n\nUnit must be set in seconds, and for correctly configuring intervals\nin the dropdown, it need to evenly divide a day or an hour.\n             "
     },
     {
       "name": "i18n",

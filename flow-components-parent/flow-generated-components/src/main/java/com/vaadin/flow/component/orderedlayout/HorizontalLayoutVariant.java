@@ -22,7 +22,7 @@ import javax.annotation.Generated;
  * component.
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.HorizontalLayoutElement#1.1.0-alpha3",
+        "WebComponent: Vaadin.HorizontalLayoutElement#1.1.0",
         "Flow#1.1-SNAPSHOT" })
 public enum HorizontalLayoutVariant {
     LUMO_SPACING_XS("spacing-xs"), LUMO_SPACING_S("spacing-s"), LUMO_SPACING(

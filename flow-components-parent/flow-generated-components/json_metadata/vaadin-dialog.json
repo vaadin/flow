@@ -27,6 +27,14 @@
       ],
       "objectType": [],
       "description": "Set to true to disable closing dialog on Escape press\n             "
+    },
+    {
+      "name": "ariaLabel",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Set the `aria-label` attribute for assistive technologies like\nscreen readers. An `undefined` value for this property (the\ndefault) means that the `aria-label` attribute is not present at\nall.\n             "
     }
   ],
   "methods": [
@@ -50,5 +58,5 @@
     "Vaadin.ElementMixin"
   ],
   "variants": {},
-  "description": "`<vaadin-dialog>` is a Polymer 2 element for customized modal dialogs.\n\n```html\n<vaadin-dialog opened>\n  <template>\n    Sample dialog\n  </template>\n</vaadin-dialog>\n```\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html)\nfor `<vaadin-dialog-overlay>` parts.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+  "description": "`<vaadin-dialog>` is a Web Component for customized modal dialogs.\n\n```html\n<vaadin-dialog opened>\n  <template>\n    Sample dialog\n  </template>\n</vaadin-dialog>\n```\n\n### Styling\n\nSee [`<vaadin-overlay>` documentation](https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html)\nfor `<vaadin-dialog-overlay>` parts.\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

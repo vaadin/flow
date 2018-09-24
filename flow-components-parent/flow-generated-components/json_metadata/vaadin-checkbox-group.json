@@ -2,7 +2,7 @@
   "name": "Vaadin.CheckboxGroupElement",
   "tag": "vaadin-checkbox-group",
   "baseUrl": "vaadin-checkbox/src/vaadin-checkbox-group.html",
-  "version": "2.2.0-alpha3",
+  "version": "2.2.2",
   "properties": [
     {
       "name": "disabled",
@@ -18,7 +18,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "String used for the label element.\n            "
+      "description": "String used for the label element.\n             "
     },
     {
       "name": "value",
@@ -26,7 +26,7 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "Value of the checkbox group.\n             ",
+      "description": "Value of the checkbox group.\nNote: toggling the checkboxes modifies the value by creating new\narray each time, to override Polymer dirty-checking for arrays.\nYou can still use Polymer array mutation methods to update the value.\n             ",
       "notify": true
     },
     {
@@ -56,12 +56,6 @@
     }
   ],
   "methods": [
-    {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
     {
       "name": "validate",
       "description": "Returns true if `value` is valid.\n`<iron-form>` uses this to check the validity or all its elements.",
@@ -96,5 +90,5 @@
       "vertical"
     ]
   },
-  "description": "`<vaadin-checkbox-group>` is a Polymer element for grouping vaadin-checkboxes.\n\n```html\n<vaadin-checkbox-group label=\"Preferred language of contact:\">\n <vaadin-checkbox value=\"en\">English</vaadin-checkbox>\n <vaadin-checkbox value=\"fr\">Français</vaadin-checkbox>\n <vaadin-checkbox value=\"de\">Deutsch</vaadin-checkbox>\n</vaadin-checkbox-group>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`group-field` | The element that wraps checkboxes\n`error-message` | The error message element\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the checkbox group and its children are disabled. | :host\n`has-label` | Set when the element has a label | :host\n`required` | Set when the element is required | :host\n`invalid` | Set when the element is invalid | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+  "description": "`<vaadin-checkbox-group>` is a Polymer element for grouping vaadin-checkboxes.\n\n```html\n<vaadin-checkbox-group label=\"Preferred language of contact:\">\n <vaadin-checkbox value=\"en\">English</vaadin-checkbox>\n <vaadin-checkbox value=\"fr\">Français</vaadin-checkbox>\n <vaadin-checkbox value=\"de\">Deutsch</vaadin-checkbox>\n</vaadin-checkbox-group>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`group-field` | The element that wraps checkboxes\n`error-message` | The error message element\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the checkbox group and its children are disabled. | :host\n`has-label` | Set when the element has a label | :host\n`has-value` | Set when the element has a value | :host\n`required` | Set when the element is required | :host\n`invalid` | Set when the element is invalid | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

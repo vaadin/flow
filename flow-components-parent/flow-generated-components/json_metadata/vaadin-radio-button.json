@@ -2,7 +2,7 @@
   "name": "Vaadin.RadioButtonElement",
   "tag": "vaadin-radio-button",
   "baseUrl": "vaadin-radio-button/src/vaadin-radio-button.html",
-  "version": "1.1.0-alpha3",
+  "version": "1.1.2",
   "properties": [
     {
       "name": "autofocus",
@@ -46,14 +46,7 @@
       "description": "The value for this element.\n             "
     }
   ],
-  "methods": [
-    {
-      "name": "updateStyles",
-      "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    }
-  ],
+  "methods": [],
   "events": [
     {
       "name": "checked-changed",
@@ -72,5 +65,5 @@
     "Polymer.GestureEventListeners"
   ],
   "variants": {},
-  "description": "`<vaadin-radio-button>` is a Polymer element for radio buttons.\n\n```html\n<vaadin-radio-button value=\"foo\">Foo</vaadin-radio-button>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|----------------\n`radio`           | The radio button element\n`label`           | The label content element\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio button is disabled. | :host\n`focus-ring` | Set when the radio button is focused using the keyboard. | :host\n`focused`    | Set when the radio button is focused. | :host\n`checked`    | Set when the radio button is checked. | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+  "description": "`<vaadin-radio-button>` is a Web Component for radio buttons.\n\n```html\n<vaadin-radio-button value=\"foo\">Foo</vaadin-radio-button>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name         | Description\n------------------|----------------\n`radio`           | The radio button element\n`label`           | The label content element\n\nThe following state attributes are available for styling:\n\nAttribute  | Description | Part name\n-----------|-------------|------------\n`disabled`   | Set when the radio button is disabled. | :host\n`focus-ring` | Set when the radio button is focused using the keyboard. | :host\n`focused`    | Set when the radio button is focused. | :host\n`checked`    | Set when the radio button is checked. | :host\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
 }

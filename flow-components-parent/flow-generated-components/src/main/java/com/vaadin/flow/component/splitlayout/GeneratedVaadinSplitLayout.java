@@ -35,8 +35,8 @@ import com.vaadin.flow.dom.Element;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-split-layout>} is a Polymer element implementing a split
- * layout for two content elements with a draggable splitter between them.
+ * {@code <vaadin-split-layout>} is a Web Component implementing a split layout
+ * for two content elements with a draggable splitter between them.
  * </p>
  * <p>
  * &lt;vaadin-split-layout&gt; &lt;div&gt;First content element&lt;/div&gt;
@@ -188,8 +188,7 @@ import com.vaadin.flow.dom.Element;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.SplitLayoutElement#4.1.0-alpha3",
-        "Flow#1.1-SNAPSHOT" })
+        "WebComponent: Vaadin.SplitLayoutElement#4.1.0", "Flow#1.1-SNAPSHOT" })
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/src/vaadin-split-layout.html")
 public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
@@ -252,10 +251,6 @@ public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitL
     protected void setOrientation(String orientation) {
         getElement().setProperty("orientation",
                 orientation == null ? "" : orientation);
-    }
-
-    protected void updateStyles() {
-        getElement().callFunction("updateStyles");
     }
 
     @DomEvent("iron-resize")
