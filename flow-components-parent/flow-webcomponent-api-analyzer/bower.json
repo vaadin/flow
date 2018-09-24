@@ -26,7 +26,7 @@
   ],
   "dependencies": {
     "vaadin-button": "2.1.0",
-    "vaadin-checkbox": "2.2.1",
+    "vaadin-checkbox": "2.2.2",
     "vaadin-combo-box": "4.1.0",
     "vaadin-context-menu": "4.1.0",
     "vaadin-date-picker": "3.2.0",
@@ -37,11 +37,11 @@
     "vaadin-notification": "1.1.0",
     "vaadin-ordered-layout": "1.1.0",
     "vaadin-progress-bar": "1.1.0",
-    "vaadin-radio-button": "1.1.1",
+    "vaadin-radio-button": "1.1.2",
     "vaadin-split-layout": "4.1.0",
-    "vaadin-tabs": "2.1.0",
+    "vaadin-tabs": "2.1.1",
     "vaadin-text-field": "2.1.2",
-    "vaadin-upload": "4.2.0",
+    "vaadin-upload": "4.2.1",
     "vaadin-time-picker": "1.0.0"
   }
 }
