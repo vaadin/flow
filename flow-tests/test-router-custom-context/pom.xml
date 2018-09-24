@@ -13,8 +13,8 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <server.port>9997</server.port>
-        <server.stop.port>9996</server.stop.port>
+        <server.port>9999</server.port>
+        <server.stop.port>9998</server.stop.port>
 
         <jetty.skip>${maven.test.skip}</jetty.skip>
     </properties>

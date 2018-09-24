@@ -23,6 +23,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.WildcardParameter;
 
+/**
+ * UI to be a parent for routed layouts (see inner classes). Mapped to root URL
+ */
 public class RootUI extends UI implements RouterLayout {
 
     @Route("")

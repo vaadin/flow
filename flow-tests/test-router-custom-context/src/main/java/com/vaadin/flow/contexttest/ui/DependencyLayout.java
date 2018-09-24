@@ -28,6 +28,16 @@ import com.vaadin.flow.server.VaadinSession;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Abstract layout to test various resourcess accessibility.
+ * Contains:
+ * <ul>
+ * <li>Static CSS</li>
+ * <li>Dynamically loadable CSS.</li>
+ * <li>Static JS script</li>
+ * <li>Dynamically loadable JS script.</li>
+ * </ul>
+ */
 @StyleSheet("context://test-files/css/allred.css")
 public abstract class DependencyLayout extends Div {
 
@@ -57,11 +67,11 @@ public abstract class DependencyLayout extends Div {
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
-        StreamRegistration foo = VaadinSession.getCurrent().getResourceRegistry()
+        StreamRegistration jsStreamRegistration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(getJsResource());
         jsOrder.addEventListener("click", e -> {
             UI.getCurrent().getPage()
-                    .addJavaScript("base://" + foo.getResourceUri().toString());
+                    .addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")
@@ -83,8 +93,8 @@ public abstract class DependencyLayout extends Div {
             // Wait to ensure that client side will stop until the JavaScript is
             // loaded
             try {
-                Thread.sleep(1000);
-            } catch (Exception e1) {
+                Thread.sleep(500);
+            } catch (Exception ignored) {
             }
             return new ByteArrayInputStream(
                     js.getBytes(StandardCharsets.UTF_8));

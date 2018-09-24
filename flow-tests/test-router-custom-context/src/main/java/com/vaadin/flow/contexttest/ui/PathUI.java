@@ -24,10 +24,13 @@ import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.WildcardParameter;
 
+/**
+ * UI to be a parent for routed layouts (see inner classes). Mapped to some context inside the application.
+ */
 @RoutePrefix("routed")
 public class PathUI extends Div implements RouterLayout {
 
-    @Route(value = "",layout = PathUI.class)
+    @Route(value = "", layout = PathUI.class)
     public static class RootContextLayout extends DependencyLayout {
 
         public RootContextLayout() {
@@ -36,7 +39,7 @@ public class PathUI extends Div implements RouterLayout {
         }
     }
 
-    @Route(value = "sub-context",layout = PathUI.class)
+    @Route(value = "sub-context", layout = PathUI.class)
     public static class SubContextLayout extends DependencyLayout implements HasUrlParameter<String> {
 
         public SubContextLayout() {
