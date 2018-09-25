@@ -18,7 +18,7 @@
         <dependency>
             <groupId>org.webjars.bowergithub.vaadin</groupId>
             <artifactId>vaadin-material-styles</artifactId>
-            <version>0.4.0</version>
+            <version>1.2.0</version>
         </dependency>
     </dependencies>
 </project>
