@@ -16,37 +16,51 @@
 
 package com.vaadin.flow.plugin.production;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.util.Collections;
 
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
+import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import com.vaadin.flow.plugin.common.RunnerManager;
-
-import static org.junit.Assert.assertEquals;
 
 public class RunnerManagerTest {
 
-    private final ProxyConfig proxyConfig = new ProxyConfig(
-            Collections.emptyList());
+  private final ProxyConfig proxyConfig = new ProxyConfig(
+      Collections.emptyList());
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
-    @Rule
-    public TemporaryFolder downloadDirectory = new TemporaryFolder();
+  @Rule
+  public TemporaryFolder downloadDirectory = new TemporaryFolder();
 
-    @Test
-    public void getLocalRunnerManagerWithoutInstalling() {
-        File nonExistingFile = new File("desNotExist");
-        new RunnerManager(downloadDirectory.getRoot(), proxyConfig,
-                nonExistingFile, nonExistingFile);
+  /**
+   * Just to check if yarn execute task contains customized URL for npm registry
+   */
+  @Test
+  public void badNpmRegistryShouldThrowException() throws TaskRunnerException {
+    final File nonExistingFile = new File("desNotExist");
+    final RunnerManager runnerManager = new RunnerManager(downloadDirectory.getRoot(), proxyConfig,
+        nonExistingFile, nonExistingFile, "https://dummyhost:1234/");
+    exception.expect(TaskRunnerException.class);
+    exception.expectMessage("--registry=https://dummyhost:1234/");
+    runnerManager.getYarnRunner().execute(null, Collections.emptyMap());
+  }
 
-        assertEquals("In the local mode, no file should be downloaded", 0,
-                downloadDirectory.getRoot().list().length);
-    }
+  @Test
+  public void getLocalRunnerManagerWithoutInstalling() {
+    final File nonExistingFile = new File("desNotExist");
+    new RunnerManager(downloadDirectory.getRoot(), proxyConfig,
+        nonExistingFile, nonExistingFile, "localhost");
+
+    assertEquals("In the local mode, no file should be downloaded", 0,
+        downloadDirectory.getRoot().list().length);
+  }
 }

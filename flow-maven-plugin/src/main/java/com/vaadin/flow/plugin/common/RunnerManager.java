@@ -18,6 +18,9 @@ package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.eirslett.maven.plugins.frontend.lib.DefaultGulpRunnerLocal;
 import com.github.eirslett.maven.plugins.frontend.lib.DefaultYarnRunnerLocal;
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
@@ -29,93 +32,106 @@ import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnConfigurationLocal;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnRunner;
+import com.helger.commons.url.URLValidator;
 
 /**
- * Creates and configures the runners used by the {@link FrontendToolsManager},
- * providing an extra layer of abstraction.
+ * Creates and configures the runners used by the {@link FrontendToolsManager}, providing an extra layer of abstraction.
  *
- * RunnerManager can be used to grab the local node and yarn from the local
- * environment or to download and install them.
+ * RunnerManager can be used to grab the local node and yarn from the local environment or to download and install them.
  */
 public class RunnerManager {
-    private final YarnRunner yarnRunner;
-    private final GulpRunner gulpRunner;
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(RunnerManager.class);
+  private final YarnRunner yarnRunner;
+  private final GulpRunner gulpRunner;
 
-    /**
-     * Initializes the manager, downloading node and yarn of the versions
-     * specified.
-     * 
-     * @param workingDirectory
-     *            the directory to install and run the tools into
-     * @param proxyConfig
-     *            the configuration used when installing and running the tools
-     * @param nodeVersion
-     *            node version to install
-     * @param yarnVersion
-     *            yarn version to install
-     */
-    public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
-            String nodeVersion, String yarnVersion) {
-        FrontendPluginFactory factory = new FrontendPluginFactory(
-                workingDirectory, workingDirectory);
-        try {
-            factory.getNodeInstaller(proxyConfig).setNodeVersion(nodeVersion)
-                    .setNodeDownloadRoot(
-                            NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
-                    .install();
-            factory.getYarnInstaller(proxyConfig).setYarnVersion(yarnVersion)
-                    .setYarnDownloadRoot(
-                            YarnInstaller.DEFAULT_YARN_DOWNLOAD_ROOT)
-                    .install();
-        } catch (InstallationException e) {
-            throw new IllegalStateException(
-                    "Failed to install required frontend dependencies", e);
-        }
-        yarnRunner = factory.getYarnRunner(proxyConfig, null);
-        gulpRunner = factory.getGulpRunner();
+  /**
+   * Initializes the manager using the paths to locally installed node and yarn.
+   *
+   * @param workingDirectory
+   *                           the directory to run the tools into
+   * @param proxyConfig
+   *                           the configuration used when running the tools
+   * @param nodePath
+   *                           the path to locally installed node
+   * @param yarnPath
+   *                           the path to locally installed yarn
+   * @param npmRegistryURL
+   *                           the custom URL to NPM registry
+   */
+  public RunnerManager(final File workingDirectory, final ProxyConfig proxyConfig,
+      final File nodePath, final File yarnPath, final String npmRegistryURL) {
+    final NodeExecutorConfigLocal nodeExecutorConfig = new NodeExecutorConfigLocal(
+        nodePath, null, workingDirectory, workingDirectory);
+    final YarnConfigurationLocal yarnConfigurationLocal = new YarnConfigurationLocal(
+        nodePath, yarnPath, workingDirectory);
+
+    final String finalNpmRegistryUrl = npmRegistryUrl(npmRegistryURL);
+    yarnRunner = new DefaultYarnRunnerLocal(yarnConfigurationLocal,
+        proxyConfig, finalNpmRegistryUrl).getDefaultYarnRunner();
+    gulpRunner = new DefaultGulpRunnerLocal(nodeExecutorConfig)
+        .getDefaultGulpRunner();
+  }
+
+  /**
+   * Initializes the manager, downloading node and yarn of the versions specified.
+   *
+   * @param workingDirectory
+   *                           the directory to install and run the tools into
+   * @param proxyConfig
+   *                           the configuration used when installing and running the tools
+   * @param nodeVersion
+   *                           node version to install
+   * @param yarnVersion
+   *                           yarn version to install
+   * @param npmRegistryURL
+   *                           the custom URL to NPM registry
+   */
+  public RunnerManager(final File workingDirectory, final ProxyConfig proxyConfig,
+      final String nodeVersion, final String yarnVersion, final String npmRegistryURL) {
+    final FrontendPluginFactory factory = new FrontendPluginFactory(
+        workingDirectory, workingDirectory);
+    try {
+      factory.getNodeInstaller(proxyConfig).setNodeVersion(nodeVersion)
+          .setNodeDownloadRoot(
+              NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+          .install();
+      factory.getYarnInstaller(proxyConfig).setYarnVersion(yarnVersion)
+          .setYarnDownloadRoot(
+              YarnInstaller.DEFAULT_YARN_DOWNLOAD_ROOT)
+          .install();
+    } catch (final InstallationException e) {
+      throw new IllegalStateException(
+          "Failed to install required frontend dependencies", e);
     }
+    final String finalNpmRegistryUrl = npmRegistryUrl(npmRegistryURL);
+    yarnRunner = factory.getYarnRunner(proxyConfig, finalNpmRegistryUrl);
+    gulpRunner = factory.getGulpRunner();
+  }
 
-    /**
-     * Initializes the manager using the paths to locally installed node and
-     * yarn.
-     * 
-     * @param workingDirectory
-     *            the directory to run the tools into
-     * @param proxyConfig
-     *            the configuration used when running the tools
-     * @param nodePath
-     *            the path to locally installed node
-     * @param yarnPath
-     *            the path to locally installed yarn
-     */
-    public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
-            File nodePath, File yarnPath) {
-        NodeExecutorConfigLocal nodeExecutorConfig = new NodeExecutorConfigLocal(
-                nodePath, null, workingDirectory, workingDirectory);
-        YarnConfigurationLocal yarnConfigurationLocal = new YarnConfigurationLocal(
-                nodePath, yarnPath, workingDirectory);
+  /**
+   * Gets the {@link GulpRunner} that will be used in the transpilation.
+   *
+   * @return gulpRunner GulpRunner
+   */
+  public GulpRunner getGulpRunner() {
+    return gulpRunner;
+  }
 
-        yarnRunner = new DefaultYarnRunnerLocal(yarnConfigurationLocal,
-                proxyConfig, null).getDefaultYarnRunner();
-        gulpRunner = new DefaultGulpRunnerLocal(nodeExecutorConfig)
-                .getDefaultGulpRunner();
+  /**
+   * Gets the {@link YarnRunner} that is used to install dependencies.
+   *
+   * @return yarnRunner YarnRunner
+   */
+  public YarnRunner getYarnRunner() {
+    return yarnRunner;
+  }
+
+  private String npmRegistryUrl(final String customizedNpmRegistryURL) {
+    if (URLValidator.isValid(customizedNpmRegistryURL)) {
+      return customizedNpmRegistryURL;
     }
-
-    /**
-     * Gets the {@link YarnRunner} that is used to install dependencies.
-     * 
-     * @return yarnRunner YarnRunner
-     */
-    public YarnRunner getYarnRunner() {
-        return yarnRunner;
-    }
-
-    /**
-     * Gets the {@link GulpRunner} that will be used in the transpilation.
-     *
-     * @return gulpRunner GulpRunner
-     */
-    public GulpRunner getGulpRunner() {
-        return gulpRunner;
-    }
+    LOGGER.warn("Provided npmRegistryURL {} is not valid. Ignoring custoized Npm registry URL. ", customizedNpmRegistryURL);
+    return null;
+  }
 }
