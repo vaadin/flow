@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -54,6 +55,7 @@ public class ProductionModeCopyStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductionModeCopyStep.class);
     private static final String BOWER_JSON_FILE_NAME = "bower.json";
+    private static final String PACKAGE_JSON_FILE_NAME = "package.json";
     private static final String BOWER_COMPONENTS_DIRECTORY_NAME = "bower_components";
 
     private final JarContentsManager jarContentsManager;
@@ -111,9 +113,7 @@ public class ProductionModeCopyStep {
     }
 
     private void storeWebJarData(ArtifactData webJar) {
-        jarContentsManager
-                .findFiles(webJar.getFileOrDirectory(), WEB_JAR_FILES_BASE,
-                        BOWER_JSON_FILE_NAME)
+        getWebJarFiles(webJar)
                 .stream()
                 .map(bowerJsonPath -> new WebJarPackage(webJar,
                         getPackageName(webJar, bowerJsonPath),
@@ -121,6 +121,20 @@ public class ProductionModeCopyStep {
                 .forEach(webJarPackage -> webJarNameToPackage.merge(
                         webJarPackage.getPackageName(), webJarPackage,
                         WebJarPackage::selectCorrectPackage));
+    }
+
+    private List<String> getWebJarFiles(ArtifactData webJar) {
+        List<String> bowerJsonFiles = jarContentsManager
+                .findFiles(webJar.getFileOrDirectory(), WEB_JAR_FILES_BASE,
+                        BOWER_JSON_FILE_NAME);
+        if (!bowerJsonFiles.isEmpty()) {
+            return bowerJsonFiles;
+        }
+        // try to find something here since there are bowergithub WebJars that have no
+        // bower.json but have package.json like https://repo1.maven.org/maven2/org/webjars/bowergithub/webcomponents/shadycss/1.5.0-1/
+        return jarContentsManager
+                .findFiles(webJar.getFileOrDirectory(), WEB_JAR_FILES_BASE,
+                        PACKAGE_JSON_FILE_NAME);
     }
 
     private String getPackageDirectory(String bowerJsonPath) {
@@ -136,7 +150,8 @@ public class ProductionModeCopyStep {
         }
         JsonObject jsonObject = Json.parse(fileContents);
         if (jsonObject.hasKey("name")) {
-            return jsonObject.getString("name");
+            String name = jsonObject.getString("name");
+            return name.substring(name.lastIndexOf('/') + 1);
         } else {
             throw new IllegalStateException(String.format("Incorrect WebJar '%s': file '%s' inside it has no 'name' field", webJar, nameSourceJarPath));
         }
