@@ -26,12 +26,14 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
 /**
- * Configures server push for a {@link UI}. Adding <code>@Push</code> to a UI
- * class configures the UI for automatic push. If some other push mode is
- * desired, it can be passed as a parameter, e.g.
+ * Configures automatic server push for a root {@link com.vaadin.flow.router.Route navigation target}
+ * (or custom {@link UI}). If some other push mode is desired, it can be passed as a parameter, e.g.
  * <code>@Push(PushMode.MANUAL)</code>.
  *
  * @see PushMode
+ * @see com.vaadin.flow.router.Route
+ * @see com.vaadin.flow.router.RoutePrefix
+ * @see com.vaadin.flow.router.RouterLayout
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -40,7 +42,7 @@ import com.vaadin.flow.shared.ui.Transport;
 @Target(ElementType.TYPE)
 public @interface Push {
     /**
-     * Returns the {@link PushMode} to use for the annotated UI. The default
+     * The {@link PushMode} to use for the annotated root navigation target (or custom UI). The default
      * push mode when this annotation is present is {@link PushMode#AUTOMATIC}.
      *
      * @return the push mode to use
@@ -48,7 +50,7 @@ public @interface Push {
     PushMode value() default PushMode.AUTOMATIC;
 
     /**
-     * Returns the transport type used for the push for the annotated UI. The
+     * Transport type used for the push for the annotated root navigation target (or custom UI). The
      * default transport type when this annotation is present is
      * {@link Transport#WEBSOCKET_XHR}.
      *
