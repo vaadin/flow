@@ -165,6 +165,12 @@ public class PackageForProductionMojo extends AbstractMojo {
      */
     @Parameter(name = "yarnNetworkConcurrency", defaultValue = "-1")
     private int yarnNetworkConcurrency;
+    
+    /**
+     * Defines the URL of npm modules. Skip default registry.
+     */
+    @Parameter(property = "npmRegistryURL")
+    private String npmRegistryURL;
 
     /**
      * If <code>false</code> then maven proxies will be used in the
@@ -223,18 +229,17 @@ public class PackageForProductionMojo extends AbstractMojo {
     }
 
     private RunnerManager getRunnerManager() {
-        if (nodePath == null || yarnPath == null) {
-            LOGGER.debug(
-                    "Either nodePath or yarnPath are not specified, downloading and using standalone ones, node: '{}', yarn: '{}'",
-                    nodeVersion, yarnVersion);
-            return new RunnerManager(transpileWorkingDirectory,
-                    getProxyConfig(), nodeVersion, yarnVersion);
-        } else {
-            LOGGER.debug("Using node at path '{}' and yarn at path '{}'",
-                    nodePath, yarnPath);
-            return new RunnerManager(transpileWorkingDirectory,
-                    getProxyConfig(), nodePath, yarnPath);
-        }
+      if (nodePath == null || yarnPath == null) {
+        LOGGER.debug(
+            "Either nodePath or yarnPath are not specified, downloading and using standalone ones, node: '{}', yarn: '{}'",
+            nodeVersion, yarnVersion);
+        return new RunnerManager(transpileWorkingDirectory,
+            getProxyConfig(), nodeVersion, yarnVersion, npmRegistryURL);
+      }
+      LOGGER.debug("Using node at path '{}' and yarn at path '{}'",
+          nodePath, yarnPath);
+      return new RunnerManager(transpileWorkingDirectory,
+          getProxyConfig(), nodePath, yarnPath, npmRegistryURL);
     }
 
     private Map<String, Set<String>> getFragmentsData(
