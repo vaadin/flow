@@ -59,6 +59,8 @@ public class RunnerManager {
      *            node version to install
      * @param yarnVersion
      *            yarn version to install
+     * @param npmRegistryURL 
+     *            the custom URL to NPM registry 
      */
     public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
             String nodeVersion, String yarnVersion, String npmRegistryURL) {
@@ -94,6 +96,8 @@ public class RunnerManager {
      *            the path to locally installed node
      * @param yarnPath
      *            the path to locally installed yarn
+     * @param npmRegistryURL 
+     *            the custom URL to NPM registry 
      */
     public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
             File nodePath, File yarnPath, String npmRegistryURL) {
