@@ -269,7 +269,7 @@ public class Location implements Serializable {
         if (endIndex == 0) {
             throw new IllegalArgumentException("Location '" + path
                     + "' is incorrect, it cannot start with " + QUERY_SEPARATOR
-                    + "symbol");
+                    + " symbol");
         } else if (endIndex > 0) {
             basePath = path.substring(0, endIndex);
         } else {
