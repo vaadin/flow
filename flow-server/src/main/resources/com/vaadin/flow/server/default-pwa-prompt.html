@@ -9,7 +9,7 @@
 <script type="application/javascript">
     window.addEventListener('load', function() {
         window.Vaadin.Flow.pwaIPUI = document.getElementById("pwa-ip");
-        window.addEventListener('beforeinstallprompt', (e) => {
+        window.addEventListener('beforeinstallprompt', function(e) {
             e.preventDefault();
             window.Vaadin.Flow.deferredPrompt = e;
             window.Vaadin.Flow.pwaIPUI.style.display = "block";
@@ -19,7 +19,7 @@
             window.Vaadin.Flow.pwaIPUI.style.display = 'none';
             window.Vaadin.Flow.deferredPrompt.prompt();
             window.Vaadin.Flow.deferredPrompt.userChoice
-                .then((choiceResult) => {
+                .then(function() {
                     window.Vaadin.Flow.deferredPrompt = null;
                 });
         });
