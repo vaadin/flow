@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -119,12 +120,12 @@ public class Router implements Serializable {
                     .warn("Exception when parsing location path {}", path, iae);
         }
 
-        String encodedPath = path.substring(0, path.indexOf("?"));
+        String encodedPath = path.substring(0, path.indexOf('?'));
         try {
             if (path.startsWith("/")) {
-                encodedPath = URLEncoder.encode(path.substring(1), "UTF-8");
+                encodedPath = URLEncoder.encode(path.substring(1), StandardCharsets.UTF_8.name());
             } else {
-                encodedPath = URLEncoder.encode(path, "UTF-8");
+                encodedPath = URLEncoder.encode(path, StandardCharsets.UTF_8.name());
             }
         } catch (UnsupportedEncodingException e) {
             LoggerFactory.getLogger(Router.class.getName())
