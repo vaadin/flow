@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.contexttest.ui;
 
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -23,7 +24,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
+import org.atmosphere.cpr.AtmosphereResource;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +45,12 @@ import java.nio.charset.StandardCharsets;
  */
 @StyleSheet("context://test-files/css/allred.css")
 public abstract class DependencyLayout extends Div {
+
+    public static final String RUN_PUSH_ID = "runPush";
+    public static final String PUSH_SIGNAL_ID = "push-signal";
+    public static final String PUSH_WORKS_TEXT = "Push works";
+    public static final String NO_PUSH_YET_TEXT = "No Push Yet";
+    private final Element pushWorks;
 
     @StyleSheet("context://test-files/css/allblueimportant.css")
     public static class AllBlueImportantComponent extends Div {
@@ -80,7 +91,35 @@ public abstract class DependencyLayout extends Div {
             add(new AllBlueImportantComponent());
 
         });
-        getElement().appendChild(jsOrder, allBlue, ElementFactory.createHr());
+
+        Element runPush = ElementFactory
+                .createButton("Run delayed push request")
+                .setAttribute("id", RUN_PUSH_ID);
+
+
+        pushWorks = ElementFactory.createDiv(NO_PUSH_YET_TEXT);
+        pushWorks.setAttribute("id", PUSH_SIGNAL_ID);
+        runPush.addEventListener("click", e -> {
+            UI ui = getUI().orElseThrow(IllegalStateException::new);
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(100);
+                        ui.access(() -> {
+                            //if push does not work, we'll fail here
+                            ui.push();
+                            pushWorks.setText(PUSH_WORKS_TEXT);
+                            ui.push();
+                        });
+
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }.start();
+        });
+        getElement().appendChild(jsOrder, allBlue, runPush, ElementFactory.createHr(),pushWorks);
     }
 
     private StreamResource getJsResource() {
