@@ -29,6 +29,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -107,10 +108,16 @@ public abstract class DependencyLayout extends Div {
                     try {
                         Thread.sleep(100);
                         ui.access(() -> {
-                            //if push does not work, we'll fail here
-                            ui.push();
+                            try {
+                                //if push does not work, we'll fail here
+                                ui.push();
+                            } catch (Throwable e) {
+                                LoggerFactory.getLogger(DependencyLayout.class).info("Push does not work (most probably not a problem)");
+                                return;
+                            }
                             pushWorks.setText(PUSH_WORKS_TEXT);
                             ui.push();
+
                         });
 
                     } catch (InterruptedException ignored) {

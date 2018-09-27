@@ -3,6 +3,7 @@ package com.vaadin.flow.contexttest.ui;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -27,22 +28,25 @@ public class PushIT extends ChromeBrowserTest {
 
     @Test
     public void testLongPolling() throws InterruptedException {
-        doTest("", Transport. LONG_POLLING, true);
+        doTest("", Transport.LONG_POLLING, true);
     }
 
     @Test
+    @Ignore
     public void testSubContextWebsocket() throws InterruptedException {
         doTest("sub-context", Transport.WEBSOCKET, true);
     }
 
     @Test
+    @Ignore
     public void testSubContextWebsocketXhr() throws InterruptedException {
         doTest("sub-context", Transport.WEBSOCKET_XHR, true);
     }
 
     @Test
+    @Ignore
     public void testSubContextLongPolling() throws InterruptedException {
-        doTest("sub-context", Transport. LONG_POLLING, true);
+        doTest("sub-context", Transport.LONG_POLLING, true);
     }
 
     @Test
@@ -52,7 +56,7 @@ public class PushIT extends ChromeBrowserTest {
 
     @Test
     public void testRoutedLongPolling() throws InterruptedException {
-        doTest("routed", Transport. LONG_POLLING, true);
+        doTest("routed", Transport.LONG_POLLING, true);
     }
 
     @Test
@@ -67,7 +71,7 @@ public class PushIT extends ChromeBrowserTest {
 
     @Test
     public void testRoutedSubContextLongPolling() throws InterruptedException {
-        doTest("routed/sub-context", Transport. LONG_POLLING, true);
+        doTest("routed/sub-context", Transport.LONG_POLLING, true);
     }
 
     private void doTest(final String subContext, Transport transport, boolean pushMustWork) throws InterruptedException {
