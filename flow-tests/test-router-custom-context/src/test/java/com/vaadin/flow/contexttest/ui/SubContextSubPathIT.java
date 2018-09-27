@@ -1,8 +1,8 @@
 package com.vaadin.flow.contexttest.ui;
 
-import org.junit.Assert;
-import org.openqa.selenium.By;
+import org.junit.Ignore;
 
+@Ignore
 public class SubContextSubPathIT extends SubContextIT {
 
     @Override
