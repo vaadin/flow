@@ -23,6 +23,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -274,5 +275,23 @@ public class Page implements Serializable {
      */
     public void reload() {
         executeJavaScript("window.location.reload();");
+    }
+
+    /**
+     * Adds a new {@link BrowserWindowResizeListener} to this UI. The listener
+     * will be notified whenever the browser window within which this UI resides
+     * is resized.
+     *
+     * @param resizeListener
+     *            the listener to add
+     * @return a registration object for removing the listener
+     *
+     * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
+     * @see Registration
+     */
+    public Registration addBrowserWindowResizeListener(
+            BrowserWindowResizeListener resizeListener) {
+        // TODO
+        return null;
     }
 }
