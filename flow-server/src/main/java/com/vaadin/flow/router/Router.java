@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,8 +30,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +89,6 @@ public class Router implements Serializable {
     public void initializeUI(UI ui, VaadinRequest initRequest) {
         Location location = getLocationForRequest(initRequest.getPathInfo(),
                 initRequest.getParameterMap());
-
         ui.getPage().getHistory().setHistoryStateChangeHandler(
                 e -> navigate(ui, e.getLocation(), e.getTrigger()));
 
@@ -112,7 +113,25 @@ public class Router implements Serializable {
         final QueryParameters queryParameters = QueryParameters
                 .full(parameterMap);
 
-        return new Location(path, queryParameters);
+        try {
+            return new Location(path, queryParameters);
+        } catch (IllegalArgumentException iae) {
+            LoggerFactory.getLogger(Router.class.getName())
+                    .warn("Exception when parsing location path {}", path, iae);
+        }
+
+        String encodedPath = path.substring(0, path.indexOf('?'));
+        try {
+            if (path.startsWith("/")) {
+                encodedPath = URLEncoder.encode(path.substring(1), StandardCharsets.UTF_8.name());
+            } else {
+                encodedPath = URLEncoder.encode(path, StandardCharsets.UTF_8.name());
+            }
+        } catch (UnsupportedEncodingException e) {
+            LoggerFactory.getLogger(Router.class.getName())
+                    .warn("Exception when encoding path {}", path, e);
+        }
+        return new Location(encodedPath);
     }
 
     /**
@@ -450,19 +469,23 @@ public class Router implements Serializable {
     /**
      * Gets the effective route path value of the annotated class.
      *
-     * @param component the component where the route points to
-     * @param route the annotation
-     * @return The value of the annotation or naming convention based value
-     * if no explicit value is given.
+     * @param component
+     *            the component where the route points to
+     * @param route
+     *            the annotation
+     * @return The value of the annotation or naming convention based value if
+     *         no explicit value is given.
      */
     public static String resolve(Class<?> component, Route route) {
-        if(route.value().equals(Route.NAMING_CONVENTION)) {
+        if (route.value().equals(Route.NAMING_CONVENTION)) {
             String simpleName = component.getSimpleName();
-            if("MainView".equals(simpleName) || "Main".equals(simpleName)) {
+            if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
                 return "";
             }
-            if(simpleName.endsWith("View")) {
-                return simpleName.substring(0, simpleName.length() - "View".length()).toLowerCase();
+            if (simpleName.endsWith("View")) {
+                return simpleName
+                        .substring(0, simpleName.length() - "View".length())
+                        .toLowerCase();
             }
             return simpleName.toLowerCase();
         }

@@ -33,7 +33,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 
 /**
  * A generic request to the server, wrapping a more specific request type, e.g.
- * HttpServletReqest.
+ * HttpServletRequest.
  *
  * @author Vaadin Ltd
  * @since 1.0
