@@ -60,7 +60,7 @@ public class RunnerManager {
      * @param yarnVersion
      *            yarn version to install
      * @param npmRegistryURL 
-     *            the custom URL to NPM registry 
+     *            the custom URL to NPM registry or null for default registry
      */
     public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
             String nodeVersion, String yarnVersion, String npmRegistryURL) {
@@ -97,7 +97,7 @@ public class RunnerManager {
      * @param yarnPath
      *            the path to locally installed yarn
      * @param npmRegistryURL 
-     *            the custom URL to NPM registry 
+     *            the custom URL to NPM registry or null for default registry
      */
     public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
             File nodePath, File yarnPath, String npmRegistryURL) {
@@ -135,7 +135,7 @@ public class RunnerManager {
       if (URLValidator.isValid(customizedNpmRegistryURL)) {
         return customizedNpmRegistryURL;
       }
-      LOGGER.warn("Provided npmRegistryURL {} is not valid. Ignoring custoized Npm registry URL. ", customizedNpmRegistryURL);
+      LOGGER.warn("Provided npmRegistryURL {} is not valid. Ignoring customized NPM registry URL. Default NPM registry URL will be used instead. ", customizedNpmRegistryURL);
       return null;
     }
 }

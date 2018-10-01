@@ -167,7 +167,8 @@ public class PackageForProductionMojo extends AbstractMojo {
     private int yarnNetworkConcurrency;
     
     /**
-     * Defines the URL of npm modules. Skip default registry.
+     * Defines the URL of npm modules. Yarn will use the given NPM registry URL if valid, 
+     * otherwise the default registry will be used.
      */
     @Parameter(property = "npmRegistryURL")
     private String npmRegistryURL;
