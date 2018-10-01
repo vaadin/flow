@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.BrowserWindowResizeEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -30,12 +29,8 @@ public class BrowserWindowResizeView extends AbstractDivView {
         windowSize.setId("size-info");
 
         getPage().addBrowserWindowResizeListener(
-                event -> windowSize.setText(getInfoMsg(event)));
+                event -> windowSize.setText(String.valueOf(event.getWidth())));
 
         add(windowSize);
-    }
-
-    private String getInfoMsg(BrowserWindowResizeEvent event) {
-        return event.getWidth() + ", " + event.getHeight();
     }
 }
