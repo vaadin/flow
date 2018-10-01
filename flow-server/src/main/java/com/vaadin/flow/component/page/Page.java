@@ -387,7 +387,7 @@ public class Page implements Serializable {
         return resizeReceiver.addListener(resizeListener);
     }
 
-    private static class LazyJsLoader {
+    private static class LazyJsLoader implements Serializable {
 
         private static final String JS_FILE_NAME = "windowResizeListener.js";
 
