@@ -48,7 +48,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 public class Page implements Serializable {
 
     @Tag(Tag.DIV)
-    public static class ResizeEventReceiver extends Component {
+    private static class ResizeEventReceiver extends Component {
 
         private int windowResizeListenersSize;
 
@@ -407,7 +407,8 @@ public class Page implements Serializable {
             } catch (IOException e) {
                 throw new RuntimeException(
                         "Couldn't read window resize listener JavaScript file "
-                                + JS_FILE_NAME + ". The package is broken");
+                                + JS_FILE_NAME + ". The package is broken",
+                        e);
             }
         }
     }
