@@ -15,14 +15,25 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
+import com.vaadin.flow.component.ClientCallable;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -35,6 +46,79 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @since 1.0
  */
 public class Page implements Serializable {
+
+    @Tag(Tag.DIV)
+    private static class ResizeEventReceiver extends Component {
+
+        private int windowResizeListenersSize;
+
+        @ClientCallable
+        private void windowResized(int width, int height) {
+            if (windowResizeListenersSize != 0) {
+                fireEvent(new ResizeEvent(this, width, height));
+            }
+        }
+
+        private Registration addListener(BrowserWindowResizeListener listener) {
+            windowResizeListenersSize++;
+            Registration registration = addListener(ResizeEvent.class,
+                    event -> listener
+                            .browserWindowResized(event.getApiEvent()));
+            return new ResizeRegistration(this, registration);
+        }
+
+        private void listenerIsUnregistered() {
+            windowResizeListenersSize--;
+            if (windowResizeListenersSize == 0) {
+                // remove JS listener
+                getUI().get().getPage().executeJavaScript("$0.resizeRemove()",
+                        this);
+            }
+        }
+    }
+
+    private static class ResizeEvent
+            extends ComponentEvent<ResizeEventReceiver> {
+
+        private final BrowserWindowResizeEvent apiEvent;
+
+        private ResizeEvent(ResizeEventReceiver source, int width, int height) {
+            super(source, true);
+            apiEvent = new BrowserWindowResizeEvent(
+                    source.getUI().get().getPage(), width, height);
+        }
+
+        private BrowserWindowResizeEvent getApiEvent() {
+            return apiEvent;
+        }
+    }
+
+    private static class ResizeRegistration implements Registration {
+        private boolean isInvoked;
+
+        private final Registration origin;
+        private final ResizeEventReceiver receiver;
+
+        private ResizeRegistration(ResizeEventReceiver receiver,
+                Registration origin) {
+            this.origin = origin;
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void remove() {
+            if (isInvoked) {
+                return;
+            }
+            origin.remove();
+            receiver.listenerIsUnregistered();
+
+            isInvoked = true;
+        }
+
+    }
+
+    private ResizeEventReceiver resizeReceiver;
 
     /**
      * Callback method for canceling executable javascript set with
@@ -274,5 +358,58 @@ public class Page implements Serializable {
      */
     public void reload() {
         executeJavaScript("window.location.reload();");
+    }
+
+    /**
+     * Adds a new {@link BrowserWindowResizeListener} to this UI. The listener
+     * will be notified whenever the browser window within which this UI resides
+     * is resized.
+     *
+     * @param resizeListener
+     *            the listener to add, not {@code null}
+     * @return a registration object for removing the listener
+     *
+     * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
+     * @see Registration
+     */
+    public Registration addBrowserWindowResizeListener(
+            BrowserWindowResizeListener resizeListener) {
+        Objects.requireNonNull(resizeListener);
+        if (resizeReceiver == null) {
+            // lazy creation which is done only one time since there is no way
+            // to remove virtual children
+            resizeReceiver = new ResizeEventReceiver();
+            ui.getElement().appendVirtualChild(resizeReceiver.getElement());
+        }
+        if (resizeReceiver.windowResizeListenersSize == 0) {
+            // JS resize listener may be completely disabled if there are not
+            // listeners
+            executeJavaScript(LazyJsLoader.WINDOW_LISTENER_JS, resizeReceiver);
+        }
+        return resizeReceiver.addListener(resizeListener);
+    }
+
+    private static class LazyJsLoader implements Serializable {
+
+        private static final String JS_FILE_NAME = "windowResizeListener.js";
+
+        private static final String WINDOW_LISTENER_JS = readJS();
+
+        private static String readJS() {
+            try (InputStream stream = Page.class
+                    .getResourceAsStream(JS_FILE_NAME);
+                    BufferedReader bf = new BufferedReader(
+                            new InputStreamReader(stream,
+                                    StandardCharsets.UTF_8))) {
+                StringBuilder builder = new StringBuilder();
+                bf.lines().forEach(builder::append);
+                return builder.toString();
+            } catch (IOException e) {
+                throw new RuntimeException(
+                        "Couldn't read window resize listener JavaScript file "
+                                + JS_FILE_NAME + ". The package is broken",
+                        e);
+            }
+        }
     }
 }
