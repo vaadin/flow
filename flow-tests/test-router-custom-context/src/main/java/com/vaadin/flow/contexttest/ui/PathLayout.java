@@ -34,7 +34,7 @@ public class PathLayout extends Div implements RouterLayout {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        com.vaadin.flow.contexttest.ui.RootContextLayout.setupPush();
+        PushUtil.setupPush();
     }
 
     @Route(value = "", layout = PathLayout.class)
@@ -46,7 +46,7 @@ public class PathLayout extends Div implements RouterLayout {
         }
     }
 
-    @Route(value = "path-sub-context", layout = PathLayout.class)
+    @Route(value = "sub-context", layout = PathLayout.class)
     public static class SubContextLayout extends DependencyLayout implements HasUrlParameter<String> {
 
         public SubContextLayout() {

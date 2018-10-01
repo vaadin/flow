@@ -57,17 +57,17 @@ public class PushIT extends ChromeBrowserTest {
 
     @Test
     public void testRoutedSubContextWebsocket() throws InterruptedException {
-        doTest("routed/path-sub-context", Transport.WEBSOCKET, true);
+        doTest("routed/sub-context", Transport.WEBSOCKET, true);
     }
 
     @Test
     public void testRoutedSubContextWebsocketXhr() throws InterruptedException {
-        doTest("routed/path-sub-context", Transport.WEBSOCKET_XHR, true);
+        doTest("routed/sub-context", Transport.WEBSOCKET_XHR, true);
     }
 
     @Test
     public void testRoutedSubContextLongPolling() throws InterruptedException {
-        doTest("routed/path-sub-context", Transport.LONG_POLLING, true);
+        doTest("routed/sub-context", Transport.LONG_POLLING, true);
     }
 
     private void doTest(final String subContext, Transport transport, boolean pushMustWork) throws InterruptedException {
@@ -80,6 +80,6 @@ public class PushIT extends ChromeBrowserTest {
         Thread.sleep(300);
         WebElement signal = findElement(By.id(DependencyLayout.PUSH_SIGNAL_ID));
         String sampleText = pushMustWork ? DependencyLayout.PUSH_WORKS_TEXT : DependencyLayout.NO_PUSH_YET_TEXT;
-        Assert.assertEquals(sampleText, signal.getText());
+        Assert.assertEquals("Push state check failed", sampleText, signal.getText());
     }
 }
