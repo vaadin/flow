@@ -39,6 +39,9 @@ import com.vaadin.flow.component.UI;
  * This annotation can be used multiple times on the same class.
  *
  * @see Route
+ * @see RoutePrefix
+ * @see RouterLayout
+ * @see UI
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -58,10 +61,12 @@ public @interface RouteAlias {
      * Sets the parent component for the route target component.
      * <p>
      * When navigating between components that use the same layout, the same
-     * component instance is reused.
+     * component instance is reused. The default is the {@link UI} of the application.
+     * If a component class (which must implement {@link  RouterLayout} interface) is specified here,
+     * the class instance is added into default {@link UI} automatically. In most cases that means the use
+     * a custom UI for this is a bad idea.
      *
      * @return the layout component class used by the route target component.
-     *         The default is the {@link UI} of the application.
      */
     Class<? extends RouterLayout> layout() default UI.class;
 
