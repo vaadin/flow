@@ -61,12 +61,15 @@ public @interface RouteAlias {
      * Sets the parent component for the route target component.
      * <p>
      * When navigating between components that use the same layout, the same
-     * component instance is reused. The default is the {@link UI} of the application.
-     * If a component class (which must implement {@link  RouterLayout} interface) is specified here,
-     * the class instance is added into default {@link UI} automatically. In most cases that means the use
-     * a custom UI for this is a bad idea.
+     * component instance is reused. Default layout target is the {@link UI}, but the layout should not be a custom
+     * {@code UI} as {@code UI} is a special class used to know where the route stack ends and no parent layouts should
+     * be involved.
+     *
+     * <p>
+     * All layout stacks will be appended to the {@code UI}  as it represents the Body element.
      *
      * @return the layout component class used by the route target component.
+     * @see RouterLayout
      */
     Class<? extends RouterLayout> layout() default UI.class;
 
