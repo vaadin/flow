@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-buildtools</artifactId>
     <name>vaadin-buildhelpers</name>
@@ -16,7 +16,7 @@
 
     <build>
         <resources>
-            <!-- Include eclipse formatting settings in the jar to make them 
+            <!-- Include eclipse formatting settings in the jar to make them
                 available as a dependency for all submodules -->
             <resource>
                 <directory>${project.basedir}/../eclipse</directory>

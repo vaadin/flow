@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- Inheriting parent so we can get configuration properties and organization, 
+    <!-- Inheriting parent so we can get configuration properties and organization,
         license etc. information from it. Drawback is some not needed dependencies. -->
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-components-parent</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-webcomponent-api-analyzer</artifactId>
     <name>Flow WebComponent API Analyzer</name>
@@ -45,11 +45,11 @@
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
-                                    <!-- TODO #1805 need to figure out how 
-                                        to pass command line parameters from maven calls to this, such as what packages 
-                                        to create and what should be the output folder. flow-webcomponent-api-analyzer.js 
+                                    <!-- TODO #1805 need to figure out how
+                                        to pass command line parameters from maven calls to this, such as what packages
+                                        to create and what should be the output folder. flow-webcomponent-api-analyzer.js
                                         for current defaults. -->
-                                    <!-- This argument matches to the "scripts" 
+                                    <!-- This argument matches to the "scripts"
                                         defined in package.json file. -->
                                     <arguments>run-script
                                         flow-components
@@ -78,8 +78,8 @@
                                     <directory>bower_components</directory>
                                 </fileset>
 
-                                <!-- Since this module is responsible for 
-                                    generating the json_metadata directory, it is also responsible for cleaning 
+                                <!-- Since this module is responsible for
+                                    generating the json_metadata directory, it is also responsible for cleaning
                                     it out -->
                                 <fileset>
                                     <directory>../flow-generated-components/json_metadata</directory>
