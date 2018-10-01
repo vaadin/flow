@@ -34,7 +34,7 @@ public class BrowserWindowResizeEvent extends EventObject {
      * Creates a new event.
      *
      * @param source
-     *            the uI for which the browser window has been resized
+     *            the page for which the browser window has been resized
      * @param width
      *            the new width of the browser window
      * @param height
