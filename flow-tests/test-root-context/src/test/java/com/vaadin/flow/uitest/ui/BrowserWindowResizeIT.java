@@ -36,12 +36,12 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
 
         WebElement info = findElement(By.id("size-info"));
 
-        Assert.assertEquals(newWidth, info.getText());
+        Assert.assertEquals(String.valueOf(newWidth), info.getText());
 
         newWidth -= 30;
         getDriver().manage().window()
                 .setSize(new Dimension(newWidth, currentSize.getHeight()));
 
-        Assert.assertEquals(newWidth, info.getText());
+        Assert.assertEquals(String.valueOf(newWidth), info.getText());
     }
 }
