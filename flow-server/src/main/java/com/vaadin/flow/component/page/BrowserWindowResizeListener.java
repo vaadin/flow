@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.io.Serializable;
+
 /**
  * Listener that gets notified when the size of the browser window containing
  * the uI has changed.
@@ -25,7 +27,7 @@ package com.vaadin.flow.component.page;
  *
  */
 @FunctionalInterface
-public interface BrowserWindowResizeListener {
+public interface BrowserWindowResizeListener extends Serializable {
     /**
      * Invoked when the browser window containing a UI has been resized.
      *
