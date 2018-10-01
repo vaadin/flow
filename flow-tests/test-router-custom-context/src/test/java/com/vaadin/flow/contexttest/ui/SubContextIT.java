@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.openqa.selenium.By;
 
-@Ignore
 public class SubContextIT extends AbstractContextIT {
 
     @Override

@@ -8,14 +8,12 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
-@RoutePrefix("")
 public class RootContextLayout extends Div implements RouterLayout {
 
     public static void setupPush() {
@@ -45,19 +43,17 @@ public class RootContextLayout extends Div implements RouterLayout {
 
     }
     @Route(value = "sub-context", layout = RootContextLayout.class)
-    public static class SubContextLayout extends DependencyLayout /*implements HasUrlParameter<String> */{
+    public static class SubContextLayout extends DependencyLayout implements HasUrlParameter<String> {
 
         public SubContextLayout() {
             getElement().appendChild(ElementFactory.createDiv("Sub Context Layout")
                     .setAttribute("id", "sub"));
         }
 
-/*
         @Override
         public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
             //ignored
         }
-*/
     }
 
 }

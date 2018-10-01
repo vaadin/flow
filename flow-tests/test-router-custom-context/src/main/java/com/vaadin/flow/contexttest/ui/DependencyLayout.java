@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.contexttest.ui;
 
-import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -24,11 +23,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.shared.ui.Transport;
-import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
@@ -81,14 +76,14 @@ public abstract class DependencyLayout extends Div {
                 .setAttribute("id", "loadJs");
         StreamRegistration jsStreamRegistration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(getJsResource());
-        jsOrder.addEventListener("click", e -> {
+        jsOrder.addEventListener("click", event -> {
             UI.getCurrent().getPage()
                     .addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")
                 .setAttribute("id", "loadBlue");
-        allBlue.addEventListener("click", e -> {
+        allBlue.addEventListener("click", event -> {
             add(new AllBlueImportantComponent());
 
         });
@@ -100,7 +95,7 @@ public abstract class DependencyLayout extends Div {
 
         pushWorks = ElementFactory.createDiv(NO_PUSH_YET_TEXT);
         pushWorks.setAttribute("id", PUSH_SIGNAL_ID);
-        runPush.addEventListener("click", e -> {
+        runPush.addEventListener("click", event -> {
             UI ui = getUI().orElseThrow(IllegalStateException::new);
             new Thread() {
                 @Override

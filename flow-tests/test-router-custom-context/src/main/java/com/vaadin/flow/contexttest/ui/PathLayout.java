@@ -46,7 +46,7 @@ public class PathLayout extends Div implements RouterLayout {
         }
     }
 
-    @Route(value = "sub-context", layout = PathLayout.class)
+    @Route(value = "path-sub-context", layout = PathLayout.class)
     public static class SubContextLayout extends DependencyLayout implements HasUrlParameter<String> {
 
         public SubContextLayout() {

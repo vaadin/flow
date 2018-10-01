@@ -10,7 +10,6 @@ import org.openqa.selenium.WebElement;
 
 public class PushIT extends ChromeBrowserTest {
 
-
     @Test
     public void testNoPush() throws InterruptedException {
         doTest("routed", null, false);
@@ -32,19 +31,16 @@ public class PushIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore
     public void testSubContextWebsocket() throws InterruptedException {
         doTest("sub-context", Transport.WEBSOCKET, true);
     }
 
     @Test
-    @Ignore
     public void testSubContextWebsocketXhr() throws InterruptedException {
         doTest("sub-context", Transport.WEBSOCKET_XHR, true);
     }
 
     @Test
-    @Ignore
     public void testSubContextLongPolling() throws InterruptedException {
         doTest("sub-context", Transport.LONG_POLLING, true);
     }
@@ -61,17 +57,17 @@ public class PushIT extends ChromeBrowserTest {
 
     @Test
     public void testRoutedSubContextWebsocket() throws InterruptedException {
-        doTest("routed/sub-context", Transport.WEBSOCKET, true);
+        doTest("routed/path-sub-context", Transport.WEBSOCKET, true);
     }
 
     @Test
     public void testRoutedSubContextWebsocketXhr() throws InterruptedException {
-        doTest("routed/sub-context", Transport.WEBSOCKET_XHR, true);
+        doTest("routed/path-sub-context", Transport.WEBSOCKET_XHR, true);
     }
 
     @Test
     public void testRoutedSubContextLongPolling() throws InterruptedException {
-        doTest("routed/sub-context", Transport.LONG_POLLING, true);
+        doTest("routed/path-sub-context", Transport.LONG_POLLING, true);
     }
 
     private void doTest(final String subContext, Transport transport, boolean pushMustWork) throws InterruptedException {

@@ -7,7 +7,7 @@ public class RoutedSubContextIT extends AbstractContextIT {
 
     @Override
     protected String getAppContext() {
-        return "/routed/sub-context/";
+        return "/routed/path-sub-context/";
     }
 
     @Override
