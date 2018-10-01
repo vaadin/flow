@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -63,7 +64,7 @@ public class Page implements Serializable {
             Registration registration = addListener(ResizeEvent.class,
                     event -> listener
                             .browserWindowResized(event.getApiEvent()));
-            return () -> new ResizeRegistration(this, registration);
+            return new ResizeRegistration(this, registration);
         }
 
         private void listenerIsUnregistered() {
@@ -365,7 +366,7 @@ public class Page implements Serializable {
      * is resized.
      *
      * @param resizeListener
-     *            the listener to add
+     *            the listener to add, not {@code null}
      * @return a registration object for removing the listener
      *
      * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
@@ -373,6 +374,7 @@ public class Page implements Serializable {
      */
     public Registration addBrowserWindowResizeListener(
             BrowserWindowResizeListener resizeListener) {
+        Objects.requireNonNull(resizeListener);
         if (resizeReceiver == null) {
             // lazy creation which is done only one time since there is no way
             // to remove virtual children
