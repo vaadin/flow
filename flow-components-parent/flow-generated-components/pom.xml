@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-components-parent</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-generated-components</artifactId>
     <name>Flow Generated Component</name>
@@ -32,7 +32,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <!-- When javadocs are created, let's not fail since 
+                    <!-- When javadocs are created, let's not fail since
                         we cannot guarantee perfect syntax for now -->
                     <failOnError>false</failOnError>
                 </configuration>

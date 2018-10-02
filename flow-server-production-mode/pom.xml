@@ -5,16 +5,16 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-server-production-mode</artifactId>
     <name>Flow Server Production Mode</name>
     <packaging>jar</packaging>
 
     <description>
-    This is a wrapper project for the web-fragment.xml file that sets productionMode=true. When this jar is 
-    added to the classpath of a web application, it will run in production mode automatically. This is better 
-    used in conjunction with the compilation and minification of resources for production deployment. See 
+    This is a wrapper project for the web-fragment.xml file that sets productionMode=true. When this jar is
+    added to the classpath of a web application, it will run in production mode automatically. This is better
+    used in conjunction with the compilation and minification of resources for production deployment. See
     the documentation about ES5 compilation and resource minification at
     https://vaadin.com/docs/v10/flow/web-components/tutorial-webcomponents-es5.html for more
     information.

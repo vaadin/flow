@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-server</artifactId>
     <name>Flow Server</name>
@@ -54,7 +54,7 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>1.3.3</version>
-            <!-- commons-fileupload:1.3.3 depends on commons-io:2.2, override 
+            <!-- commons-fileupload:1.3.3 depends on commons-io:2.2, override
                 it with Flow declaration -->
             <exclusions>
                 <exclusion>
@@ -183,7 +183,7 @@
                 <executions>
                     <execution>
                         <goals>
-                            <!-- Output -tests.jar so other modules can depend 
+                            <!-- Output -tests.jar so other modules can depend
                                 on the test classes -->
                             <goal>test-jar</goal>
                         </goals>
