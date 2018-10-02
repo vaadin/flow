@@ -258,7 +258,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
             boolean mapperHasKey = keyMapper.has(bean);
             String key = keyMapper.key(bean);
             if (mapperHasKey) {
-                passivatedByUpdate.values().stream()
+                passivatedByUpdate.values()
                         .forEach(set -> set.remove(key));
             }
             activeKeys.add(key);

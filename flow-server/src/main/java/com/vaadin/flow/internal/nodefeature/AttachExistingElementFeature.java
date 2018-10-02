@@ -131,7 +131,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
     @Override
     public void forEachChild(Consumer<StateNode> action) {
         if (callbacks != null) {
-            callbacks.keySet().stream().forEach(action::accept);
+            callbacks.keySet().forEach(action::accept);
         }
     }
 

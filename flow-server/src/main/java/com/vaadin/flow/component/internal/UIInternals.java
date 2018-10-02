@@ -772,8 +772,7 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        dependencies.getHtmlImports().stream()
-                .forEach(html -> addHtmlImport(html, page));
+        dependencies.getHtmlImports().forEach(html -> addHtmlImport(html, page));
         dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependencies.getStyleSheets().forEach(styleSheet -> page
@@ -787,7 +786,7 @@ public class UIInternals implements Serializable {
         // contain versions for which files. They must be translated before
         // added to page though, as whatever is added there is sent without
         // modifications to the client
-        dependency.getUris().stream().forEach(uri -> page
+        dependency.getUris().forEach(uri -> page
                 .addHtmlImport(translateTheme(uri), dependency.getLoadMode()));
     }
 
