@@ -18,6 +18,9 @@ package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.eirslett.maven.plugins.frontend.lib.DefaultGulpRunnerLocal;
 import com.github.eirslett.maven.plugins.frontend.lib.DefaultYarnRunnerLocal;
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
@@ -29,6 +32,7 @@ import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnConfigurationLocal;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnRunner;
+import com.helger.commons.url.URLValidator;
 
 /**
  * Creates and configures the runners used by the {@link FrontendToolsManager},
@@ -38,6 +42,8 @@ import com.github.eirslett.maven.plugins.frontend.lib.YarnRunner;
  * environment or to download and install them.
  */
 public class RunnerManager {
+  
+    private static final Logger LOGGER = LoggerFactory.getLogger(RunnerManager.class);
     private final YarnRunner yarnRunner;
     private final GulpRunner gulpRunner;
 
@@ -53,9 +59,11 @@ public class RunnerManager {
      *            node version to install
      * @param yarnVersion
      *            yarn version to install
+     * @param npmRegistryURL 
+     *            the custom URL to NPM registry or null for default registry
      */
     public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
-            String nodeVersion, String yarnVersion) {
+            String nodeVersion, String yarnVersion, String npmRegistryURL) {
         FrontendPluginFactory factory = new FrontendPluginFactory(
                 workingDirectory, workingDirectory);
         try {
@@ -71,7 +79,8 @@ public class RunnerManager {
             throw new IllegalStateException(
                     "Failed to install required frontend dependencies", e);
         }
-        yarnRunner = factory.getYarnRunner(proxyConfig, null);
+        final String finalNpmRegistryUrl = npmRegistryUrl(npmRegistryURL);
+        yarnRunner = factory.getYarnRunner(proxyConfig, finalNpmRegistryUrl);
         gulpRunner = factory.getGulpRunner();
     }
 
@@ -87,16 +96,19 @@ public class RunnerManager {
      *            the path to locally installed node
      * @param yarnPath
      *            the path to locally installed yarn
+     * @param npmRegistryURL 
+     *            the custom URL to NPM registry or null for default registry
      */
     public RunnerManager(File workingDirectory, ProxyConfig proxyConfig,
-            File nodePath, File yarnPath) {
+            File nodePath, File yarnPath, String npmRegistryURL) {
         NodeExecutorConfigLocal nodeExecutorConfig = new NodeExecutorConfigLocal(
                 nodePath, null, workingDirectory, workingDirectory);
         YarnConfigurationLocal yarnConfigurationLocal = new YarnConfigurationLocal(
                 nodePath, yarnPath, workingDirectory);
 
+        final String finalNpmRegistryUrl = npmRegistryUrl(npmRegistryURL);
         yarnRunner = new DefaultYarnRunnerLocal(yarnConfigurationLocal,
-                proxyConfig, null).getDefaultYarnRunner();
+            proxyConfig, finalNpmRegistryUrl).getDefaultYarnRunner();
         gulpRunner = new DefaultGulpRunnerLocal(nodeExecutorConfig)
                 .getDefaultGulpRunner();
     }
@@ -117,5 +129,13 @@ public class RunnerManager {
      */
     public GulpRunner getGulpRunner() {
         return gulpRunner;
+    }
+    
+    private String npmRegistryUrl(final String customizedNpmRegistryURL) {
+      if (URLValidator.isValid(customizedNpmRegistryURL)) {
+        return customizedNpmRegistryURL;
+      }
+      LOGGER.warn("Provided npmRegistryURL {} is not valid. Ignoring customized NPM registry URL. Default NPM registry URL will be used instead. ", customizedNpmRegistryURL);
+      return null;
     }
 }
