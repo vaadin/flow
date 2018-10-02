@@ -54,15 +54,22 @@
     </scm>
 
     <properties>
-        <flow.repo.id>vaadin-snapshots</flow.repo.id>
+        <flow.snapshot.repo.id>vaadin-snapshots</flow.snapshot.repo.id>
         <flow.snapshot.repo.url>
             https://oss.sonatype.org/content/repositories/vaadin-snapshots/
         </flow.snapshot.repo.url>
+        <flow.release.repo.id>vaadin-prereleases</flow.release.repo.id>
         <flow.release.repo.url>
             https://maven.vaadin.com/vaadin-prereleases/
         </flow.release.repo.url>
-        <flow.deployment.repo.url>${flow.snapshot.repo.url}
+        <flow.deployment.repo.id>${flow.snapshot.repo.id}</flow.deployment.repo.id>
+        <flow.deployment.repo.url>
+            ${flow.snapshot.repo.url}
         </flow.deployment.repo.url>
+        <flow.addons.repo.id>vaadin-addons</flow.addons.repo.id>
+        <flow.addons.repo.url>
+            http://maven.vaadin.com/vaadin-addons
+        </flow.addons.repo.url>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -116,29 +123,29 @@
 
     <repositories>
         <repository>
-            <id>flow</id>
+            <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
         </repository>
         <repository>
-            <id>flow-snapshots</id>
+            <id>${flow.snapshot.repo.id}</id>
             <url>${flow.snapshot.repo.url}</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
         </repository>
         <repository>
-            <id>vaadin-addons</id>
-            <url>http://maven.vaadin.com/vaadin-addons</url>
+            <id>${flow.addons.repo.id}</id>
+            <url>${flow.addons.repo.url}</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
-            <id>flow</id>
+            <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
         </pluginRepository>
         <pluginRepository>
-            <id>flow-snapshots</id>
+            <id>${flow.snapshot.repo.id}</id>
             <url>${flow.snapshot.repo.url}</url>
             <snapshots>
                 <enabled>true</enabled>
