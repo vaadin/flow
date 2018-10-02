@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +41,12 @@ import java.nio.charset.StandardCharsets;
  */
 @StyleSheet("context://test-files/css/allred.css")
 public abstract class DependencyLayout extends Div {
+
+    public static final String RUN_PUSH_ID = "runPush";
+    public static final String PUSH_SIGNAL_ID = "push-signal";
+    public static final String PUSH_WORKS_TEXT = "Push works";
+    public static final String NO_PUSH_YET_TEXT = "No Push Yet";
+    private final Element pushWorks;
 
     @StyleSheet("context://test-files/css/allblueimportant.css")
     public static class AllBlueImportantComponent extends Div {
@@ -69,18 +76,54 @@ public abstract class DependencyLayout extends Div {
                 .setAttribute("id", "loadJs");
         StreamRegistration jsStreamRegistration = VaadinSession.getCurrent().getResourceRegistry()
                 .registerResource(getJsResource());
-        jsOrder.addEventListener("click", e -> {
+        jsOrder.addEventListener("click", event -> {
             UI.getCurrent().getPage()
                     .addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")
                 .setAttribute("id", "loadBlue");
-        allBlue.addEventListener("click", e -> {
+        allBlue.addEventListener("click", event -> {
             add(new AllBlueImportantComponent());
 
         });
-        getElement().appendChild(jsOrder, allBlue, ElementFactory.createHr());
+
+        Element runPush = ElementFactory
+                .createButton("Run delayed push request")
+                .setAttribute("id", RUN_PUSH_ID);
+
+
+        pushWorks = ElementFactory.createDiv(NO_PUSH_YET_TEXT);
+        pushWorks.setAttribute("id", PUSH_SIGNAL_ID);
+        runPush.addEventListener("click", event -> {
+            UI ui = getUI().orElseThrow(IllegalStateException::new);
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(100);
+                        ui.access(() -> {
+                            try {
+                                //if push does not work, we'll fail here
+                                ui.push();
+                            } catch (Throwable e) {
+                                LoggerFactory
+                                        .getLogger(DependencyLayout.class)
+                                        .debug("Push does not work (most probably not a problem)", e);
+                                return;
+                            }
+                            pushWorks.setText(PUSH_WORKS_TEXT);
+                            ui.push();
+
+                        });
+
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }.start();
+        });
+        getElement().appendChild(jsOrder, allBlue, runPush, ElementFactory.createHr(),pushWorks);
     }
 
     private StreamResource getJsResource() {
