@@ -1,7 +1,5 @@
 package com.vaadin.flow.contexttest.ui;
 
-import org.junit.Ignore;
-
 public class SubContextSubPathIT extends SubContextIT {
 
     @Override

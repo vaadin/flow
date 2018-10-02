@@ -3,7 +3,6 @@ package com.vaadin.flow.contexttest.ui;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;

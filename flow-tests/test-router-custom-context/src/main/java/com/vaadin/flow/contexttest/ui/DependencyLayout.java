@@ -107,7 +107,9 @@ public abstract class DependencyLayout extends Div {
                                 //if push does not work, we'll fail here
                                 ui.push();
                             } catch (Throwable e) {
-                                LoggerFactory.getLogger(DependencyLayout.class).info("Push does not work (most probably not a problem)");
+                                LoggerFactory
+                                        .getLogger(DependencyLayout.class)
+                                        .debug("Push does not work (most probably not a problem)", e);
                                 return;
                             }
                             pushWorks.setText(PUSH_WORKS_TEXT);

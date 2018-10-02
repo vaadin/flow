@@ -1,7 +1,6 @@
 package com.vaadin.flow.contexttest.ui;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.openqa.selenium.By;
 
 public class SubContextIT extends AbstractContextIT {
