@@ -57,7 +57,7 @@ public class PwaRegistry implements Serializable {
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
-    public static final String WORKBOX_FOLDER = "VAADIN/resources/workbox/";
+    public static final String WORKBOX_FOLDER = "VAADIN/static/workbox/";
     private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
     private String offlineHtml = "";
@@ -210,8 +210,8 @@ public class PwaRegistry implements Serializable {
         String workBoxAbsolutePath = servletContext.getContextPath() + "/"
                 + WORKBOX_FOLDER;
         // Google Workbox import
-        stringBuilder.append("importScripts('").append(workBoxAbsolutePath)
-                .append("workbox-sw.js');\n\n");
+        stringBuilder.append("importScripts('").append(workBoxAbsolutePath).append(pwaConfiguration.getServiceWorkerPath())
+                .append("');\n\n");
 
         stringBuilder.append("workbox.setConfig({\n")
                 .append("  modulePathPrefix: '").append(workBoxAbsolutePath)
