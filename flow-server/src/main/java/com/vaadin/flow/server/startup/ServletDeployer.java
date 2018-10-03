@@ -19,11 +19,14 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
+import java.util.Optional;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinServlet;
 
 /**
@@ -46,8 +49,26 @@ public class ServletDeployer implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
+        testServlet(context);
         createAppServlet(context);
         createServlet(context, "frontendFilesServlet", "/frontend/*");
+    }
+
+    private void testServlet(ServletContext context) {
+        for (ServletRegistration registration : context
+                .getServletRegistrations().values()) {
+            Optional<Class<?>> servletClass = loadClass(
+                    context.getClassLoader(), registration.getClassName());
+            if (!servletClass.map(this::isVaadinServlet).orElse(false)) {
+                continue;
+            }
+            Properties properties = new Properties();
+            properties.putAll(registration.getInitParameters());
+            DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
+                    servletClass.getClass(), properties);
+            // TODO kb determine production mode and use frontend-es? or frontend servlet mapping respectively.
+            System.out.println(configuration);
+        }
     }
 
     private void createAppServlet(ServletContext servletContext) {
@@ -109,20 +130,28 @@ public class ServletDeployer implements ServletContextListener {
     private ServletRegistration findVaadinServlet(ServletContext context) {
         return context.getServletRegistrations().values().stream()
                 .filter(registration -> isVaadinServlet(
-                        context.getClassLoader(), registration))
+                        context.getClassLoader(), registration.getClassName()))
                 .findAny().orElse(null);
     }
 
-    private boolean isVaadinServlet(ClassLoader classLoader,
-            ServletRegistration registration) {
-        String className = registration.getClassName();
+    private boolean isVaadinServlet(ClassLoader classLoader, String className) {
+        return loadClass(classLoader, className)
+                .map(VaadinServlet.class::isAssignableFrom).orElse(false);
+    }
+
+    private boolean isVaadinServlet(Class<?> servletClass) {
+        return VaadinServlet.class.isAssignableFrom(servletClass);
+    }
+
+    private Optional<Class<?>> loadClass(ClassLoader classLoader,
+            String className) {
         try {
-            return VaadinServlet.class
-                    .isAssignableFrom(classLoader.loadClass(className));
+            return Optional.of(classLoader.loadClass(className));
         } catch (ClassNotFoundException e) {
-            getLogger().info("Assuming {} is not a Vaadin servlet", className,
-                    e);
-            return false;
+            getLogger().warn(
+                    "Failed to load class {}, ignoring it when deploying Vaadin servlets",
+                    className, e);
+            return Optional.empty();
         }
     }
 
