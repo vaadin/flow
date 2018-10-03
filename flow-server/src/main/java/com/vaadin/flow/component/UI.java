@@ -673,6 +673,10 @@ public class UI extends Component
      */
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
+        if (getRouter() == null) {
+            return Optional.empty();
+        }
+
         return getRouter().getRegistry().getThemeFor(navigationTarget, path);
     }
 
