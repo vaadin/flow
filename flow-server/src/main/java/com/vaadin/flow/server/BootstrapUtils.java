@@ -436,7 +436,9 @@ class BootstrapUtils {
             VaadinRequest request) {
         assert ui != null;
         assert request != null;
-
+        if (ui.getRouter() == null) {
+            return Optional.empty();
+        }
         return ui.getRouter().resolveNavigationTarget(request.getPathInfo(),
                 request.getParameterMap()).map(navigationState -> {
                     Class<? extends RouterLayout> parentLayout = RouterUtil
