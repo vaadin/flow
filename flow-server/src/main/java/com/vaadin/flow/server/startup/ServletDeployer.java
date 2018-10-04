@@ -15,18 +15,22 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.DeploymentConfigurationCreator;
 import com.vaadin.flow.server.VaadinServlet;
 
 /**
@@ -49,12 +53,14 @@ public class ServletDeployer implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
-        testServlet(context);
         createAppServlet(context);
-        createServlet(context, "frontendFilesServlet", "/frontend/*");
+        if (hasDevelopmentModeServlet(context)) {
+            createServletIfNotExists(context, "frontendFilesServlet",
+                    "/frontend/*");
+        }
     }
 
-    private void testServlet(ServletContext context) {
+    private boolean hasDevelopmentModeServlet(ServletContext context) {
         for (ServletRegistration registration : context
                 .getServletRegistrations().values()) {
             Optional<Class<?>> servletClass = loadClass(
@@ -62,13 +68,47 @@ public class ServletDeployer implements ServletContextListener {
             if (!servletClass.map(this::isVaadinServlet).orElse(false)) {
                 continue;
             }
-            Properties properties = new Properties();
-            properties.putAll(registration.getInitParameters());
-            DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
-                    servletClass.getClass(), properties);
-            // TODO kb determine production mode and use frontend-es? or frontend servlet mapping respectively.
-            System.out.println(configuration);
+
+            DeploymentConfiguration configuration;
+            try {
+                configuration = DeploymentConfigurationCreator
+                        .createDeploymentConfiguration(servletClass.get(),
+                                getServletConfig(context, registration));
+            } catch (ServletException e) {
+                throw new IllegalStateException(e);
+            }
+            if (!configuration.isProductionMode()) {
+                return true;
+            }
         }
+
+        return false;
+    }
+
+    private ServletConfig getServletConfig(ServletContext context,
+            ServletRegistration registration) {
+        return new ServletConfig() {
+            @Override
+            public String getServletName() {
+                return registration.getName();
+            }
+
+            @Override
+            public ServletContext getServletContext() {
+                return context;
+            }
+
+            @Override
+            public String getInitParameter(String name) {
+                return registration.getInitParameter(name);
+            }
+
+            @Override
+            public Enumeration<String> getInitParameterNames() {
+                return Collections
+                        .enumeration(registration.getInitParameters().keySet());
+            }
+        };
     }
 
     private void createAppServlet(ServletContext servletContext) {
@@ -88,10 +128,10 @@ public class ServletDeployer implements ServletContextListener {
             return;
         }
 
-        createServlet(servletContext, "/*", getClass().getName());
+        createServletIfNotExists(servletContext, "/*", getClass().getName());
     }
 
-    private void createServlet(ServletContext context, String name,
+    private void createServletIfNotExists(ServletContext context, String name,
             String path) {
         ServletRegistration existingServlet = findServletByPathPart(context,
                 path);
