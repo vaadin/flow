@@ -279,7 +279,7 @@ public final class ComponentGeneratorUtils {
                     "Not a supported type for getters: " + basicType);
         }
     }
-    
+
     /**
      * Generates a code snippet that uses the {@link Element} API to retrieve
      * properties from the client model when it implements the {@link HasValue}
@@ -323,7 +323,7 @@ public final class ComponentGeneratorUtils {
         case BOOLEAN:
         case NUMBER:
             return generateElementApiGetterForType(basicType, propertyName);
-            
+
         default:
             throw new ComponentGenerationException(
                     "Not a supported type for getters: " + basicType);
@@ -332,8 +332,9 @@ public final class ComponentGeneratorUtils {
 
     private static String generateElementApiValueGetterForTypeRaw(
             String returnType, String propertyName, String variableName) {
-        return String.format("Object %s = getElement().getPropertyRaw(\"%s\");"
-                + "return (%s) (%s == null ? getEmptyValue() : %s);",
+        return String.format(
+                "Object %s = getElement().getPropertyRaw(\"%s\");"
+                        + "return (%s) (%s == null ? getEmptyValue() : %s);",
                 variableName, propertyName, returnType, variableName,
                 variableName);
     }
@@ -382,6 +383,9 @@ public final class ComponentGeneratorUtils {
      */
     public static Class<?> toJavaType(ComponentBasicType type) {
         switch (type) {
+
+        case FUNCTION:
+            System.out.println("asdf");
         case STRING:
             return String.class;
         case NUMBER:

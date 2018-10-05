@@ -83,7 +83,8 @@ const getType = (type) => {
     type === 'BOOLEAN' ||
     type === 'NUMBER' ||
     type === 'OBJECT' ||
-    type === 'ARRAY') {
+    type === 'ARRAY' ||
+    type === 'FUNCTION') {
     return type;
   } else {
     console.warn(`Unsupported type requested: ${type}`);
