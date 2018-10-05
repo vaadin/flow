@@ -34,22 +34,33 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationCreator;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
 
 /**
- * Context listener that automatically registers a Vaadin servlet. The servlet
- * is only registered if all of the following conditions apply:
+ * Context listener that automatically registers Vaadin servlets.
+ *
+ * The servlets registered are:
  * <ul>
- * <li>At least one class annotated with {@link Route @Route} is found on the
- * classpath
- * <li>No servlet is registered for <code>/*</code>
- * <li>No Vaadin servlet is registered
+ * <li>Vaadin application servlet, mapped to '/*'<br/>
+ * The servlet won't be registered, if any {@link VaadinServlet} is registered
+ * already or if there are no classes annotated with {@link Route}
+ * annotation.</li>
+ * <li>Frontend files servlet, mapped to '/frontend/*' <br/>
+ * The servlet is registered when the application is started in the development
+ * mode.</li>
  * </ul>
+ *
+ * In addition to the rules above, a servlet won't be registered, if any servlet
+ * had been mapped to the same path already or if
+ * {@link com.vaadin.flow.server.Constants#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
+ * system property is set to {@code true}.
  *
  * @author Vaadin Ltd
  * @since 1.0
+ *
+ * @see VaadinServletConfiguration#disableAutomaticServletRegistration()
  */
 public class ServletDeployer implements ServletContextListener {
-
     private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
     @Override
