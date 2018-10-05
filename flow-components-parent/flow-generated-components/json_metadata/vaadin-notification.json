@@ -2,7 +2,7 @@
   "name": "Vaadin.NotificationElement",
   "tag": "vaadin-notification",
   "baseUrl": "vaadin-notification/src/vaadin-notification.html",
-  "version": "1.1.0",
+  "version": "1.2.0-beta1",
   "properties": [
     {
       "name": "duration",
@@ -28,9 +28,23 @@
       ],
       "objectType": [],
       "description": "Alignment of the notification in the viewport\nValid values are `top-stretch|top-start|top-center|top-end|middle|bottom-start|bottom-center|bottom-end|bottom-stretch`\n             "
+    },
+    {
+      "name": "renderer",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the content of the notification.\nReceives two arguments:\n\n- `root` The `<vaadin-notification-card>` DOM element. Append\n  your content to it.\n- `notification` The reference to the `<vaadin-notification>` element.\n             "
     }
   ],
   "methods": [
+    {
+      "name": "render",
+      "description": "Manually invoke existing renderer.\n         ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
     {
       "name": "open",
       "description": "Opens the notification.\n         ",
@@ -53,7 +67,9 @@
   ],
   "slots": [],
   "behaviors": [],
-  "mixins": [],
+  "mixins": [
+    "Vaadin.ThemePropertyMixin"
+  ],
   "variants": {},
-  "description": "`<vaadin-notification>` is a Web Component providing accessible and customizable notifications (toasts).\n\n```\n<vaadin-notification>\n  <template>\n    Your work has been saved\n  </template>\n</vaadin-notification>\n```"
+  "description": "`<vaadin-notification>` is a Web Component providing accessible and customizable notifications (toasts).\nThe content of the notification can be populated in two ways: imperatively by using renderer callback function\nand declaratively by using Polymer's Templates.\n\n### Rendering\n\nBy default, the notification uses the content provided by using the renderer callback function.\n\nThe renderer function provides `root`, `notification` arguments.\nGenerate DOM content, append it to the `root` element and control the state\nof the host element by accessing `notification`. Before generating new content,\nusers are able to check if there is already content in `root` for reusing it.\n\n```html\n<vaadin-notification id=\"notification\"></vaadin-notification>\n```\n```js\nconst notification = document.querySelector('#notification');\nnotification.renderer = function(root) {\n  root.textContent = \"Your work has been saved\";\n};\n```\n\nRenderer is called on the opening of the notification.\nDOM generated during the renderer call can be reused\nin the next renderer call and will be provided with the `root` argument.\nOn first call it will be empty.\n\n### Polymer Templates\n\nAlternatively, the content can be provided with Polymer's Template.\nNotification finds the first child template and uses that in case renderer callback function\nis not provided. You can also set a custom template using the `template` property.\n\n```\n<vaadin-notification>\n  <template>\n    Your work has been saved\n  </template>\n</vaadin-notification>\n```\n\n### Styling\n\n`<vaadin-notification>` uses `<vaadin-notification-card>` internal\nthemable component as the actual visible notification cards. See\nthe stylable parts the\n[`<vaadin-notification-card>` API](https://vaadin.com/components/vaadin-notification/html-api/elements/Vaadin.NotificationCard).\n\nNote: the `theme` attribute value set on `<vaadin-notification>` is\npropagated to the internal `<vaadin-notification-card>`."
 }

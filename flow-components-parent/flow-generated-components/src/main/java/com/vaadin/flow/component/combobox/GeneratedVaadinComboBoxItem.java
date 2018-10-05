@@ -242,4 +242,38 @@ public abstract class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinCombo
     protected void setFocused(boolean focused) {
         getElement().setProperty("focused", focused);
     }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the content of the
+     * {@code <vaadin-combo-box-item>} propagated from the combo box element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code renderer} property from the webcomponent
+     */
+    protected JsonObject getRendererJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("renderer");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the content of the
+     * {@code <vaadin-combo-box-item>} propagated from the combo box element.
+     * </p>
+     * 
+     * @param renderer
+     *            the JsonObject value to set
+     */
+    protected void setRenderer(JsonObject renderer) {
+        getElement().setPropertyJson("renderer", renderer);
+    }
 }

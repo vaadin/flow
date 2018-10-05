@@ -22,14 +22,6 @@
       "notify": true
     },
     {
-      "name": "touchDevice",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "True if the device supports touch events.\n           "
-    },
-    {
       "name": "positionTarget",
       "type": [
         "OBJECT"
@@ -44,6 +36,14 @@
       ],
       "objectType": [],
       "description": "If `true`, overlay is aligned above the `positionTarget`\n           "
+    },
+    {
+      "name": "theme",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Used to propagate the `theme` attribute from the host element.\n           "
     }
   ],
   "methods": [

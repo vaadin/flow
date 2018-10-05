@@ -59,7 +59,11 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+<<<<<<< HEAD
         "WebComponent: Vaadin.GridSelectionColumnElement#5.1.0",
+=======
+        "WebComponent: Vaadin.GridSelectionColumnElement#5.2.0-beta1",
+>>>>>>> Update generated components based on minor pre-releases
         "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-selection-column")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-selection-column.html")

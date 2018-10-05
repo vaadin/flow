@@ -236,9 +236,28 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * you should use the <a href="#vaadin-date-picker-light">
  * {@code <vaadin-date-picker-light>}</a> element.
  * </p>
+ * <p>
+ * In addition to {@code <vaadin-date-picker>} itself, the following internal
+ * components are themable:
+ * </p>
+ * <ul>
+ * <li>{@code <vaadin-text-field>}</li>
+ * <li>{@code <vaadin-date-picker-overlay>}</li>
+ * <li>{@code <vaadin-date-picker-overlay-content>}</li>
+ * <li>{@code <vaadin-month-calendar>}</li>
+ * </ul>
+ * <p>
+ * Note: the {@code theme} attribute value set on {@code <vaadin-date-picker>}
+ * is propagated to the internal themable components listed above.
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+<<<<<<< HEAD
         "WebComponent: Vaadin.DatePickerElement#3.2.0", "Flow#1.2-SNAPSHOT" })
+=======
+        "WebComponent: Vaadin.DatePickerElement#3.3.0-beta1",
+        "Flow#1.2-SNAPSHOT" })
+>>>>>>> Update generated components based on minor pre-releases
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
 public abstract class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R, T>, T>

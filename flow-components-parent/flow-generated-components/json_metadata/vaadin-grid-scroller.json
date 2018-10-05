@@ -10,7 +10,8 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": ""
+      "description": "",
+      "notify": true
     }
   ],
   "methods": [
@@ -33,7 +34,13 @@
       "returns": "UNDEFINED"
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "name": "size-changed",
+      "description": "Fired when the `size` property changes.",
+      "properties": []
+    }
+  ],
   "slots": [],
   "behaviors": [],
   "mixins": [],

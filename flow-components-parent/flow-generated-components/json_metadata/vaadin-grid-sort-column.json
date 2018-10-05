@@ -1,0 +1,39 @@
+{
+  "name": "Vaadin.GridSortColumnElement",
+  "tag": "vaadin-grid-sort-column",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-sort-column.html",
+  "version": "5.2.0-beta1",
+  "properties": [
+    {
+      "name": "path",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "JS Path of the property in the item used for sorting the data.\n           "
+    },
+    {
+      "name": "direction",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "How to sort the data.\nPossible values are `asc` to use an ascending algorithm, `desc` to sort the data in\ndescending direction, or `null` for not sorting the data.\n           ",
+      "notify": true
+    }
+  ],
+  "methods": [],
+  "events": [
+    {
+      "name": "direction-changed",
+      "description": "Fired when the `direction` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [],
+  "variants": {},
+  "description": "`<vaadin-grid-sort-column>` is a helper element for the `<vaadin-grid>`\nthat provides default header template and functionality for sorting.\n\n#### Example:\n```html\n<vaadin-grid items=\"[[items]]\">\n <vaadin-grid-sort-column path=\"name.first\" direction=\"asc\"></vaadin-grid-sort-column>\n\n <vaadin-grid-column>\n   ...\n```",
+  "parentTagName": "vaadin-grid-column"
+}

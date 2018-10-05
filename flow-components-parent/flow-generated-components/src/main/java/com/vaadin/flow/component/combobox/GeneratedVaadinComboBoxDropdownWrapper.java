@@ -126,6 +126,40 @@ public abstract class GeneratedVaadinComboBoxDropdownWrapper<R extends Generated
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Custom function for rendering the content of the
+     * {@code <vaadin-combo-box-item>} propagated from the combo box element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code renderer} property from the webcomponent
+     */
+    protected JsonObject getRendererJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("renderer");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the content of the
+     * {@code <vaadin-combo-box-item>} propagated from the combo box element.
+     * </p>
+     * 
+     * @param renderer
+     *            the JsonObject value to set
+     */
+    protected void setRenderer(JsonObject renderer) {
+        getElement().setPropertyJson("renderer", renderer);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * {@code true} when new items are being loaded.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -151,6 +185,38 @@ public abstract class GeneratedVaadinComboBoxDropdownWrapper<R extends Generated
      */
     protected void setLoading(boolean loading) {
         getElement().setProperty("loading", loading);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Used to propagate the {@code theme} attribute from the host element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code theme} property from the webcomponent
+     */
+    protected String getThemeString() {
+        return getElement().getProperty("theme");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Used to propagate the {@code theme} attribute from the host element.
+     * </p>
+     * 
+     * @param theme
+     *            the String value to set
+     */
+    protected void setTheme(String theme) {
+        getElement().setProperty("theme", theme == null ? "" : theme);
     }
 
     /**

@@ -36,17 +36,78 @@ import com.vaadin.flow.dom.Element;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-grid>} is a free, high quality data grid / data table Polymer
- * element.
+ * {@code <vaadin-grid>} is a free, high quality data grid / data table Web
+ * Component. The content of the the grid can be populated in two ways:
+ * imperatively by using renderer callback function and declaratively by using
+ * Polymer's Templates.
  * </p>
  * <h3>Quick Start</h3>
  * <p>
- * Use the <a href="#/elements/vaadin-grid-column">{@code <vaadin-grid-column>}
- * </a> element to configure the grid columns.
+ * Start with an assigning an array to the <a
+ * href="#/elements/vaadin-grid#property-items">{@code items}</a> property to
+ * visualize your data.
  * </p>
  * <p>
- * Then assign an array to the <a href="#/elements/vaadin-grid#property-items">
- * {@code items}</a> property to visualize your data.
+ * Use the <a href="#/elements/vaadin-grid-column">{@code <vaadin-grid-column>}
+ * </a> element to configure the grid columns. Set {@code path} and
+ * {@code header} shorthand properties for the columns to define what gets
+ * rendered in the cells of the column.
+ * </p>
+ * <h4>Example:</h4>
+ * <p>
+ * &lt;vaadin-grid&gt; &lt;vaadin-grid-column path=&quot;name.first&quot;
+ * header=&quot;First Name&quot;&gt;&lt;/vaadin-grid-column&gt;
+ * &lt;vaadin-grid-column path=&quot;name.last&quot; header=&quot;Last
+ * Name&quot;&gt;&lt;/vaadin-grid-column&gt; &lt;vaadin-grid-column
+ * path=&quot;email&quot;&gt;&lt;/vaadin-grid-column&gt; &lt;/vaadin-grid&gt;
+ * </p>
+ * <p>
+ * For custom content {@code vaadin-grid-column} element provides you with three
+ * types of {@code renderer} callback functions: {@code headerRenderer},
+ * {@code renderer} and {@code footerRenderer}.
+ * </p>
+ * <p>
+ * Each of those renderer functions provides {@code root}, {@code column},
+ * {@code rowData} arguments when applicable. Generate DOM content, append it to
+ * the {@code root} element and control the state of the host element by
+ * accessing {@code column}. Before generating new content, users are able to
+ * check if there is already content in {@code root} for reusing it.
+ * </p>
+ * <p>
+ * Renderers are called on initialization of new column cells and each time the
+ * related row data is updated. DOM generated during the renderer call can be
+ * reused in the next renderer call and will be provided with the {@code root}
+ * argument. On first call it will be empty.
+ * </p>
+ * <h4>Example:</h4>
+ * <p>
+ * &lt;vaadin-grid&gt; &lt;vaadin-grid-column&gt;&lt;/vaadin-grid-column&gt;
+ * &lt;vaadin-grid-column&gt;&lt;/vaadin-grid-column&gt;
+ * &lt;vaadin-grid-column&gt;&lt;/vaadin-grid-column&gt; &lt;/vaadin-grid&gt;
+ * {@code const grid = document.querySelector('vaadin-grid');grid.items = [
+ * 'name': 'John', 'surname': 'Lennon', 'role': 'singer'}, {'name': 'Ringo',
+ * 'surname': 'Starr', 'role': 'drums'}];
+ * </p>
+ * <p>
+ * const columns = grid.querySelectorAll('vaadin-grid-column');
+ * </p>
+ * <p>
+ * columns[0].headerRenderer = function(root) { root.textContent = 'Name'; };
+ * columns[0].renderer = function(root, column, rowData) { root.textContent =
+ * rowData.item.name; };
+ * </p>
+ * <p>
+ * columns[1].headerRenderer = function(root) { root.textContent = 'Surname'; };
+ * columns[1].renderer = function(root, column, rowData) { root.textContent =
+ * rowData.item.surname; };
+ * </p>
+ * <p>
+ * columns[2].headerRenderer = function(root) { root.textContent = 'Role'; };
+ * columns[2].renderer = function(root, column, rowData) { root.textContent =
+ * rowData.item.role; };}
+ * </p>
+ * <p>
+ * Alternatively, the content can be provided with Polymer's Templates:
  * </p>
  * <h4>Example:</h4>
  * <p>
@@ -253,6 +314,11 @@ grid.size = 200; // The total number of items
  * <td>cell</td>
  * </tr>
  * <tr>
+ * <td>* {@code first-column}</td>
+ * <td>First visible cell on a row</td>
+ * <td>cell</td>
+ * </tr>
+ * <tr>
  * <td>{@code last-column}</td>
  * <td>Last visible cell on a row</td>
  * <td>cell</td>
@@ -291,7 +357,11 @@ grid.size = 200; // The total number of items
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+<<<<<<< HEAD
         "WebComponent: Vaadin.GridElement#5.1.0", "Flow#1.2-SNAPSHOT" })
+=======
+        "WebComponent: Vaadin.GridElement#5.2.0-beta1", "Flow#1.2-SNAPSHOT" })
+>>>>>>> Update generated components based on minor pre-releases
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid.html")
 public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
@@ -628,6 +698,64 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Custom function for rendering the content of the row details. Receives
+     * three arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The row details content DOM element. Append your content
+     * to it.</li>
+     * <li>{@code grid} The {@code <vaadin-grid>} element.</li>
+     * <li>{@code rowData} The object with the properties related with the
+     * rendered item, contains:
+     * <ul>
+     * <li>{@code rowData.index} The index of the item.</li>
+     * <li>{@code rowData.item} The item.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * @return the {@code rowDetailsRenderer} property from the webcomponent
+     */
+    protected JsonObject getRowDetailsRendererJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("rowDetailsRenderer");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the content of the row details. Receives
+     * three arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The row details content DOM element. Append your content
+     * to it.</li>
+     * <li>{@code grid} The {@code <vaadin-grid>} element.</li>
+     * <li>{@code rowData} The object with the properties related with the
+     * rendered item, contains:
+     * <ul>
+     * <li>{@code rowData.index} The index of the item.</li>
+     * <li>{@code rowData.item} The item.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * @param rowDetailsRenderer
+     *            the JsonObject value to set
+     */
+    protected void setRowDetailsRenderer(JsonObject rowDetailsRenderer) {
+        getElement().setPropertyJson("rowDetailsRenderer", rowDetailsRenderer);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * An array that contains the selected items.
      * <p>
      * This property is synchronized automatically from client side when a
@@ -872,6 +1000,19 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      */
     protected void deselectItem(JsonObject item) {
         getElement().callFunction("deselectItem", item);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Manually invoke existing renderers for all the columns (header, footer
+     * and body cells) and opened row details.
+     * </p>
+     */
+    protected void render() {
+        getElement().callFunction("render");
     }
 
     public static class ActiveItemChangeEvent<R extends GeneratedVaadinGrid<R>>

@@ -1,0 +1,32 @@
+{
+  "name": "Vaadin.GridFilterColumnElement",
+  "tag": "vaadin-grid-filter-column",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-filter-column.html",
+  "version": "5.2.0-beta1",
+  "properties": [
+    {
+      "name": "header",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Text to display as the label of the column filter text-field.\n           "
+    },
+    {
+      "name": "path",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "JS Path of the property in the item used for filtering the data.\n           "
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [],
+  "variants": {},
+  "description": "`<vaadin-grid-filter-column>` is a helper element for the `<vaadin-grid>`\nthat provides default header template and functionality for filtering.\n\n#### Example:\n```html\n<vaadin-grid items=\"[[items]]\">\n <vaadin-grid-filter-column path=\"name.first\"></vaadin-grid-filter-column>\n\n <vaadin-grid-column>\n   ...\n```",
+  "parentTagName": "vaadin-grid-column"
+}

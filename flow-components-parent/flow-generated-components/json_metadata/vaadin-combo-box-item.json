@@ -44,6 +44,14 @@
       ],
       "objectType": [],
       "description": "True when item is focused\n           "
+    },
+    {
+      "name": "renderer",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the content of the `<vaadin-combo-box-item>` propagated from the combo box element.\n           "
     }
   ],
   "methods": [

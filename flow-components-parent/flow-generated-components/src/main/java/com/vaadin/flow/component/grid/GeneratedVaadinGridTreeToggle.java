@@ -108,7 +108,11 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+<<<<<<< HEAD
         "WebComponent: Vaadin.GridTreeToggleElement#5.1.0",
+=======
+        "WebComponent: Vaadin.GridTreeToggleElement#5.2.0-beta1",
+>>>>>>> Update generated components based on minor pre-releases
         "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-tree-toggle")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-tree-toggle.html")
