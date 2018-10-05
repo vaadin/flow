@@ -55,7 +55,7 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-spring-boot-starter</artifactId>
+            <artifactId>vaadin-spring</artifactId>
             <version>${project.version}</version>
         </dependency>
 

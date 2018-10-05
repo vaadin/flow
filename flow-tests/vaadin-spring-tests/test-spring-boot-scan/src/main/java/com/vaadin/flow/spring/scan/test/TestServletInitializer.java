@@ -26,7 +26,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.spring.annotation.EnableVaadin;
 
 @SpringBootApplication
@@ -39,9 +38,6 @@ public class TestServletInitializer implements AuthorizationServerConfigurer {
 
     public static void main(String[] args) {
         SpringApplication.run(TestServletInitializer.class, args);
-        // declare here only for testing, if the vaadin-core dependency presents
-        // otherwise compilation error
-        Button button = new Button();
     }
 
     @Override
