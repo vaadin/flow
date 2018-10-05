@@ -30,6 +30,14 @@ public class NoRootTestIT extends ChromeBrowserTest {
                 String.format("Expected Polymer version: '%s', actual: '%s'",
                         expectedPolymerVersion, actualPolymerText),
                 actualPolymerText.endsWith(expectedPolymerVersion));
+
+        // Service workers are loaded with a delay
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new AssertionError("Unexpected interrupt", e);
+        }
+        checkLogsForErrors();
     }
 
     @Override
