@@ -91,6 +91,11 @@ public final class Constants implements Serializable {
      */
     public static final String I18N_PROVIDER = "i18n.provider";
 
+    /**
+     * TODO kb
+     */
+    public static final String DISABLE_AUTOMATIC_SERVLET_REGISTRATION = "disable.automatic.servlet.registration";
+
     private Constants() {
         // prevent instantiation constants class only
     }
