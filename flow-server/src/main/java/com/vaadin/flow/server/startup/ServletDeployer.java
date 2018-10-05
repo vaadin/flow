@@ -21,6 +21,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Optional;
@@ -53,36 +55,50 @@ public class ServletDeployer implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
-        createAppServlet(context);
-        if (hasDevelopmentModeServlet(context)) {
-            createServletIfNotExists(context, "frontendFilesServlet",
-                    "/frontend/*");
+        boolean enableServlets = true;
+        boolean hasDevelopmentMode = false;
+
+        for (DeploymentConfiguration configuration : getServletConfigurations(
+                context)) {
+            enableServlets = enableServlets
+                    && !configuration.disableAutomaticServletRegistration();
+            hasDevelopmentMode = hasDevelopmentMode
+                    || !configuration.isProductionMode();
+        }
+
+        if (enableServlets) {
+            createAppServlet(context);
+            if (hasDevelopmentMode) {
+                createServletIfNotExists(context, "frontendFilesServlet",
+                        "/frontend/*");
+            }
         }
     }
 
-    private boolean hasDevelopmentModeServlet(ServletContext context) {
-        for (ServletRegistration registration : context
-                .getServletRegistrations().values()) {
+    private Collection<DeploymentConfiguration> getServletConfigurations(
+            ServletContext context) {
+        Collection<? extends ServletRegistration> registrations = context
+                .getServletRegistrations().values();
+        Collection<DeploymentConfiguration> result = new ArrayList<>(
+                registrations.size());
+        for (ServletRegistration registration : registrations) {
             Optional<Class<?>> servletClass = loadClass(
                     context.getClassLoader(), registration.getClassName());
             if (!servletClass.map(this::isVaadinServlet).orElse(false)) {
                 continue;
             }
 
-            DeploymentConfiguration configuration;
             try {
-                configuration = DeploymentConfigurationCreator
+                result.add(DeploymentConfigurationCreator
                         .createDeploymentConfiguration(servletClass.get(),
-                                getServletConfig(context, registration));
+                                getServletConfig(context, registration)));
             } catch (ServletException e) {
-                throw new IllegalStateException(e);
-            }
-            if (!configuration.isProductionMode()) {
-                return true;
+                throw new IllegalStateException(String.format(
+                        "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
+                        registration.getName(), servletClass.get()), e);
             }
         }
-
-        return false;
+        return result;
     }
 
     private ServletConfig getServletConfig(ServletContext context,
@@ -128,7 +144,7 @@ public class ServletDeployer implements ServletContextListener {
             return;
         }
 
-        createServletIfNotExists(servletContext, "/*", getClass().getName());
+        createServletIfNotExists(servletContext, getClass().getName(), "/*");
     }
 
     private void createServletIfNotExists(ServletContext context, String name,

@@ -104,4 +104,11 @@ public @interface VaadinServletConfiguration {
     @InitParameterName(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS)
     boolean closeIdleSessions() default DefaultDeploymentConfiguration.DEFAULT_CLOSE_IDLE_SESSIONS;
 
+    /**
+     * TODO kb
+     * @return
+     */
+    @InitParameterName(Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION)
+    boolean disableAutomaticServletRegistration() default false;
+
 }

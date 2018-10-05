@@ -282,4 +282,12 @@ public interface DeploymentConfiguration extends Serializable {
     default boolean useCompiledFrontendResources() {
         return isProductionMode() && !getBooleanProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
     }
+
+    /**
+     * TODO kb
+     * @return
+     */
+    default boolean disableAutomaticServletRegistration() {
+        return getBooleanProperty(Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
+    }
 }
