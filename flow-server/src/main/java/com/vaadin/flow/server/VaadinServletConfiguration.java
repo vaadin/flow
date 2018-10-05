@@ -105,8 +105,12 @@ public @interface VaadinServletConfiguration {
     boolean closeIdleSessions() default DefaultDeploymentConfiguration.DEFAULT_CLOSE_IDLE_SESSIONS;
 
     /**
-     * TODO kb
-     * @return
+     * Whether the framework should register automatic servlets for the
+     * application or not. The default value is <code>false</code>.
+     *
+     * @return true if no automatic servlet registration should be done
+     *
+     * @see DeploymentConfiguration#disableAutomaticServletRegistration()
      */
     @InitParameterName(Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION)
     boolean disableAutomaticServletRegistration() default false;

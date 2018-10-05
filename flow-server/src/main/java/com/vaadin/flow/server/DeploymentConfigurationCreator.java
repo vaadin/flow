@@ -29,17 +29,27 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 
 /**
- * TODO kb
+ * A class that creates {@link DeploymentConfiguration} filled with all
+ * parameters specified by the framework users.
  */
-public class DeploymentConfigurationCreator {
+public final class DeploymentConfigurationCreator {
+
+    private DeploymentConfigurationCreator() {
+    }
 
     /**
-     * TODO kb
+     * Creates a {@link DeploymentConfiguration} instance that is filled with
+     * all parameters, specified for the current app.
      *
      * @param systemPropertyBaseClass
+     *            the class to look for properties defined with annotations
      * @param servletConfig
-     * @return
+     *            the config to get the rest of the properties from
+     * @return {@link DeploymentConfiguration} instance
+     *
      * @throws ServletException
+     *             if construction of the {@link Properties} for the parameters
+     *             fails
      */
     public static DeploymentConfiguration createDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, ServletConfig servletConfig)

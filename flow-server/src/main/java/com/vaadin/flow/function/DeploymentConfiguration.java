@@ -284,10 +284,17 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * TODO kb
-     * @return
+     * Determines if Flow should automatically register servlets. Servlets are
+     * registered only if servlets with the same paths are registered.
+     *
+     * User can explicitly disable automatic servlet registration by setting the
+     * {@link Constants#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} property to
+     * {@code true}.
+     *
+     * @return {@code true} if Flow should not automatically register servlets
      */
     default boolean disableAutomaticServletRegistration() {
-        return getBooleanProperty(Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
+        return getBooleanProperty(
+                Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
     }
 }
