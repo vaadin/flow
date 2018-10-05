@@ -84,10 +84,24 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
  * how to apply styles for shadow parts</a>
  * </p>
+ * <p>
+ * In addition to {@code <vaadin-date-picker-light>} itself, the following
+ * internal components are themable:
+ * </p>
+ * <ul>
+ * <li>{@code <vaadin-date-picker-overlay>}</li>
+ * <li>{@code <vaadin-date-picker-overlay-content>}</li>
+ * <li>{@code <vaadin-month-calendar>}</li>
+ * </ul>
+ * <p>
+ * Note: the {@code theme} attribute value set on
+ * {@code <vaadin-date-picker-light>} is propagated to the internal themable
+ * components listed above.
+ * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.DatePickerLightElement#3.2.0",
-        "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.DatePickerLightElement#3.3.0-beta1",
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-light.html")
 public abstract class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R, T>, T>

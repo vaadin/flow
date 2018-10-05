@@ -2,7 +2,7 @@
   "name": "Vaadin.GridColumnGroupElement",
   "tag": "vaadin-grid-column-group",
   "baseUrl": "vaadin-grid/src/vaadin-grid-column-group.html",
-  "version": "5.1.0",
+  "version": "5.2.0-beta1",
   "properties": [
     {
       "name": "resizable",
@@ -27,6 +27,38 @@
       ],
       "objectType": [],
       "description": "When set to true, the cells for this column are hidden.\n         "
+    },
+    {
+      "name": "header",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Text content to display in the header cell of the column.\n         "
+    },
+    {
+      "name": "textAlign",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Aligns the columns cell content horizontally.\nSupported values: \"start\", \"center\" and \"end\".\n         "
+    },
+    {
+      "name": "headerRenderer",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the header content.\nReceives two arguments:\n\n- `root` The header cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n         "
+    },
+    {
+      "name": "footerRenderer",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the footer content.\nReceives two arguments:\n\n- `root` The footer cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n         "
     },
     {
       "name": "flexGrow",

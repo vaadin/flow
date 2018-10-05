@@ -33,9 +33,9 @@ import com.vaadin.flow.component.Component;
  * Element for internal use only.
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
         "WebComponent: Vaadin.DeviceDetectorElement#UNKNOWN",
-        "Flow#1.1-SNAPSHOT" })
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-device-detector")
 @HtmlImport("frontend://bower_components/vaadin-context-menu/src/vaadin-device-detector.html")
 public abstract class GeneratedVaadinDeviceDetector<R extends GeneratedVaadinDeviceDetector<R>>

@@ -1,0 +1,32 @@
+{
+  "name": "Vaadin.GridTreeColumnElement",
+  "tag": "vaadin-grid-tree-column",
+  "baseUrl": "vaadin-grid/src/vaadin-grid-tree-column.html",
+  "version": "5.2.0-beta1",
+  "properties": [
+    {
+      "name": "path",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "JS Path of the property in the item used as text content for the tree toggle.\n           "
+    },
+    {
+      "name": "itemHasChildrenPath",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "JS Path of the property in the item that indicates whether the item has child items.\n           "
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [],
+  "variants": {},
+  "description": "`<vaadin-grid-tree-column>` is a helper element for the `<vaadin-grid>`\nthat provides default template and functionality for toggling tree/hierarchical items.\n\n#### Example:\n```html\n<vaadin-grid items=\"[[items]]\">\n <vaadin-grid-tree-column path=\"name.first\"></vaadin-grid-tree-column>\n\n <vaadin-grid-column>\n   ...\n```",
+  "parentTagName": "vaadin-grid-column"
+}

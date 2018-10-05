@@ -139,8 +139,8 @@ import com.vaadin.flow.component.Component;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.UploadFileElement#UNKNOWN", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.UploadFileElement#UNKNOWN", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-upload-file")
 @HtmlImport("frontend://bower_components/vaadin-upload/src/vaadin-upload-file.html")
 public abstract class GeneratedVaadinUploadFile<R extends GeneratedVaadinUploadFile<R>>

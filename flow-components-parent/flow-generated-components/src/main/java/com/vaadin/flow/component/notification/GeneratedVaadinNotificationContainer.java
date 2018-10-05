@@ -30,9 +30,9 @@ import com.vaadin.flow.dom.Element;
  * The container element for all notifications.
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
         "WebComponent: Vaadin.NotificationContainer#UNKNOWN",
-        "Flow#1.1-SNAPSHOT" })
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-notification-container")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotificationContainer<R extends GeneratedVaadinNotificationContainer<R>>

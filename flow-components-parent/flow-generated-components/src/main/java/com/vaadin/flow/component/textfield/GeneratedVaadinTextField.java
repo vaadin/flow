@@ -160,8 +160,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.1.2", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.TextFieldElement#2.1.2", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-field.html")
 public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R, T>, T>

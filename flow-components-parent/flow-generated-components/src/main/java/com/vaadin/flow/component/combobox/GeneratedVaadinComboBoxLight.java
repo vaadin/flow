@@ -19,9 +19,9 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
+import elemental.json.JsonObject;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.ComponentEvent;
@@ -80,13 +80,143 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * &lt;/paper-input&gt; &lt;/vaadin-combo-box-light&gt;
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxLightElement#4.1.0",
-        "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.ComboBoxLightElement#4.2.0-alpha4",
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-light.html")
 public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R, T>, T>
         extends AbstractSinglePropertyField<R, T> implements HasStyle {
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Number of items fetched at a time from the dataprovider.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code pageSize} property from the webcomponent
+     */
+    protected double getPageSizeDouble() {
+        return getElement().getProperty("pageSize", 0.0);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Number of items fetched at a time from the dataprovider.
+     * </p>
+     * 
+     * @param pageSize
+     *            the double value to set
+     */
+    protected void setPageSize(double pageSize) {
+        getElement().setProperty("pageSize", pageSize);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Total number of items.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code size} property from the webcomponent
+     */
+    protected double getSizeDouble() {
+        return getElement().getProperty("size", 0.0);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Total number of items.
+     * </p>
+     * 
+     * @param size
+     *            the double value to set
+     */
+    protected void setSize(double size) {
+        getElement().setProperty("size", size);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Function that provides items lazily. Receives arguments {@code params},
+     * {@code callback}
+     * </p>
+     * <p>
+     * {@code params.page} Requested page index
+     * </p>
+     * <p>
+     * {@code params.pageSize} Current page size
+     * </p>
+     * <p>
+     * {@code params.filter} Currently applied filter
+     * </p>
+     * <p>
+     * {@code callback(items, size)} Callback function with arguments:
+     * </p>
+     * <ul>
+     * <li>{@code items} Current page of items</li>
+     * <li>{@code size} Total number of items.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.</li>
+     * </ul>
+     * 
+     * @return the {@code dataProvider} property from the webcomponent
+     */
+    protected JsonObject getDataProviderJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("dataProvider");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Function that provides items lazily. Receives arguments {@code params},
+     * {@code callback}
+     * </p>
+     * <p>
+     * {@code params.page} Requested page index
+     * </p>
+     * <p>
+     * {@code params.pageSize} Current page size
+     * </p>
+     * <p>
+     * {@code params.filter} Currently applied filter
+     * </p>
+     * <p>
+     * {@code callback(items, size)} Callback function with arguments:
+     * </p>
+     * <ul>
+     * <li>{@code items} Current page of items</li>
+     * <li>{@code size} Total number of items.</li>
+     * </ul>
+     * 
+     * @param dataProvider
+     *            the JsonObject value to set
+     */
+    protected void setDataProvider(JsonObject dataProvider) {
+        getElement().setPropertyJson("dataProvider", dataProvider);
+    }
 
     /**
      * <p>
@@ -183,6 +313,66 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
      */
     protected void setReadonly(boolean readonly) {
         getElement().setProperty("readonly", readonly);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the content of every item. Receives three
+     * arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The {@code <vaadin-combo-box-item>} internal container
+     * DOM element.</li>
+     * <li>{@code comboBox} The reference to the {@code <vaadin-combo-box>}
+     * element.</li>
+     * <li>{@code model} The object with the properties related with the
+     * rendered item, contains:
+     * <ul>
+     * <li>{@code model.index} The index of the rendered item.</li>
+     * <li>{@code model.item} The item.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * @return the {@code renderer} property from the webcomponent
+     */
+    protected JsonObject getRendererJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("renderer");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the content of every item. Receives three
+     * arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The {@code <vaadin-combo-box-item>} internal container
+     * DOM element.</li>
+     * <li>{@code comboBox} The reference to the {@code <vaadin-combo-box>}
+     * element.</li>
+     * <li>{@code model} The object with the properties related with the
+     * rendered item, contains:
+     * <ul>
+     * <li>{@code model.index} The index of the rendered item.</li>
+     * <li>{@code model.item} The item.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * @param renderer
+     *            the JsonObject value to set
+     */
+    protected void setRenderer(JsonObject renderer) {
+        getElement().setPropertyJson("renderer", renderer);
     }
 
     /**
@@ -498,6 +688,45 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Path for the id of the item. If {@code items} is an array of objects, the
+     * {@code itemIdPath} is used to compare and identify the same item in
+     * {@code selectedItem} and {@code filteredItems} (items given by the
+     * {@code dataProvider} callback).
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code itemIdPath} property from the webcomponent
+     */
+    protected String getItemIdPathString() {
+        return getElement().getProperty("itemIdPath");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for the id of the item. If {@code items} is an array of objects, the
+     * {@code itemIdPath} is used to compare and identify the same item in
+     * {@code selectedItem} and {@code filteredItems} (items given by the
+     * {@code dataProvider} callback).
+     * </p>
+     * 
+     * @param itemIdPath
+     *            the String value to set
+     */
+    protected void setItemIdPath(String itemIdPath) {
+        getElement().setProperty("itemIdPath",
+                itemIdPath == null ? "" : itemIdPath);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * The name of this element.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -601,6 +830,30 @@ public abstract class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComb
      */
     protected JsonObject getInputElementJsonObject() {
         return (JsonObject) getElement().getPropertyRaw("inputElement");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Clears the cached pages and reloads data from dataprovider when needed.
+     * </p>
+     */
+    protected void clearCache() {
+        getElement().callFunction("clearCache");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Manually invoke existing renderer.
+     * </p>
+     */
+    protected void render() {
+        getElement().callFunction("render");
     }
 
     /**

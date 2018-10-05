@@ -35,9 +35,9 @@ import com.vaadin.flow.component.Component;
  * Element for internal use only.
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
         "WebComponent: Vaadin.ComboBoxDropdownElement#UNKNOWN",
-        "Flow#1.1-SNAPSHOT" })
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-combo-box-dropdown")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown.html")
 public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinComboBoxDropdown<R>>
@@ -78,38 +78,6 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
      */
     protected void setTemplate(JsonObject template) {
         getElement().setPropertyJson("template", template);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * True if the device supports touch events.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code touchDevice} property from the webcomponent
-     */
-    protected boolean isTouchDeviceBoolean() {
-        return getElement().getProperty("touchDevice", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * True if the device supports touch events.
-     * </p>
-     * 
-     * @param touchDevice
-     *            the boolean value to set
-     */
-    protected void setTouchDevice(boolean touchDevice) {
-        getElement().setProperty("touchDevice", touchDevice);
     }
 
     /**
@@ -174,6 +142,38 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
      */
     protected void setAlignedAbove(boolean alignedAbove) {
         getElement().setProperty("alignedAbove", alignedAbove);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Used to propagate the {@code theme} attribute from the host element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code theme} property from the webcomponent
+     */
+    protected String getThemeString() {
+        return getElement().getProperty("theme");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Used to propagate the {@code theme} attribute from the host element.
+     * </p>
+     * 
+     * @param theme
+     *            the String value to set
+     */
+    protected void setTheme(String theme) {
+        getElement().setProperty("theme", theme == null ? "" : theme);
     }
 
     protected void notifyResize() {

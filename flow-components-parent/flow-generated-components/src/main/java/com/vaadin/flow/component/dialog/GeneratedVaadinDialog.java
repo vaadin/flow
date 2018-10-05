@@ -19,6 +19,7 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
+import elemental.json.JsonObject;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -29,7 +30,39 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-dialog>} is a Web Component for customized modal dialogs.
+ * {@code <vaadin-dialog>} is a Web Component for creating customized modal
+ * dialogs. The content of the dialog can be populated in two ways: imperatively
+ * by using renderer callback function and declaratively by using Polymer's
+ * Templates.
+ * </p>
+ * <h3>Rendering</h3>
+ * <p>
+ * By default, the dialog uses the content provided by using the renderer
+ * callback function.
+ * </p>
+ * <p>
+ * The renderer function provides {@code root}, {@code dialog} arguments.
+ * Generate DOM content, append it to the {@code root} element and control the
+ * state of the host element by accessing {@code dialog}. Before generating new
+ * content, users are able to check if there is already content in {@code root}
+ * for reusing it.
+ * </p>
+ * <p>
+ * &lt;vaadin-dialog id=&quot;dialog&quot;&gt;&lt;/vaadin-dialog&gt;
+ * {@code const dialog = document.querySelector('#dialog');dialog.renderer =
+ * function(root, dialog) root.textContent = &quot;Sample dialog&quot;; };}
+ * </p>
+ * <p>
+ * Renderer is called on the opening of the dialog. DOM generated during the
+ * renderer call can be reused in the next renderer call and will be provided
+ * with the {@code root} argument. On first call it will be empty.
+ * </p>
+ * <h3>Polymer Templates</h3>
+ * <p>
+ * Alternatively, the content can be provided with Polymer's Template. Dialog
+ * finds the first child template and uses that in case renderer callback
+ * function is not provided. You can also set a custom template using the
+ * {@code template} property.
  * </p>
  * <p>
  * &lt;vaadin-dialog opened&gt; &lt;template&gt; Sample dialog &lt;/template&gt;
@@ -43,17 +76,53 @@ import com.vaadin.flow.component.Component;
  * {@code <vaadin-dialog-overlay>} parts.
  * </p>
  * <p>
+ * Note: the {@code theme} attribute value set on {@code <vaadin-dialog>} is
+ * propagated to the internal {@code <vaadin-dialog-overlay>} component.
+ * </p>
+ * <p>
  * See <a
  * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.DialogElement#null", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.DialogElement#null", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-dialog")
 @HtmlImport("frontend://bower_components/vaadin-dialog/src/vaadin-dialog.html")
 public abstract class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
         extends Component {
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Theme to apply to the overlay element
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code theme} property from the webcomponent
+     */
+    protected String getThemeString() {
+        return getElement().getProperty("theme");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Theme to apply to the overlay element
+     * </p>
+     * 
+     * @param theme
+     *            the String value to set
+     */
+    protected void setTheme(String theme) {
+        getElement().setProperty("theme", theme == null ? "" : theme);
+    }
 
     /**
      * <p>
@@ -125,6 +194,62 @@ public abstract class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
     protected void setAriaLabel(String ariaLabel) {
         getElement().setProperty("ariaLabel",
                 ariaLabel == null ? "" : ariaLabel);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the content of the dialog. Receives two
+     * arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The root container DOM element. Append your content to
+     * it.</li>
+     * <li>{@code dialog} The reference to the {@code <vaadin-dialog>} element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.</li>
+     * </ul>
+     * 
+     * @return the {@code renderer} property from the webcomponent
+     */
+    protected JsonObject getRendererJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("renderer");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the content of the dialog. Receives two
+     * arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The root container DOM element. Append your content to
+     * it.</li>
+     * <li>{@code dialog} The reference to the {@code <vaadin-dialog>} element.</li>
+     * </ul>
+     * 
+     * @param renderer
+     *            the JsonObject value to set
+     */
+    protected void setRenderer(JsonObject renderer) {
+        getElement().setPropertyJson("renderer", renderer);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Manually invoke existing renderer.
+     * </p>
+     */
+    protected void render() {
+        getElement().callFunction("render");
     }
 
     public static class OpenedChangeEvent<R extends GeneratedVaadinDialog<R>>

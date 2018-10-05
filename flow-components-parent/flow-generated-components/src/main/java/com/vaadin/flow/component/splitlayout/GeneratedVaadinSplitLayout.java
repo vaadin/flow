@@ -187,8 +187,8 @@ import com.vaadin.flow.dom.Element;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.SplitLayoutElement#4.1.0", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.SplitLayoutElement#4.1.0", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/src/vaadin-split-layout.html")
 public abstract class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>

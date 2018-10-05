@@ -19,6 +19,7 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
+import elemental.json.JsonObject;
 import com.vaadin.flow.component.Component;
 
 /**
@@ -27,24 +28,16 @@ import com.vaadin.flow.component.Component;
  * </p>
  * <p>
  * A {@code <vaadin-grid-column>} is used to configure how a column in
- * {@code <vaadin-grid>} should look like by using HTML templates. A column can
- * have a template for each of the three table sections: header, body and
- * footer.
+ * {@code <vaadin-grid>} should look like.
  * </p>
  * <p>
- * The {@code class} attribute is used to differentiate header and footer
- * templates from the body template.
- * </p>
- * <h4>Example:</h4>
- * <p>
- * &lt;vaadin-grid-column&gt; &lt;template class=&quot;header&quot;&gt;I'm in
- * the header&lt;/template&gt; &lt;template&gt;I'm in the body&lt;/template&gt;
- * &lt;template class=&quot;footer&quot;&gt;I'm in the footer&lt;/template&gt;
- * &lt;/vaadin-grid-column&gt;
+ * See {@code <vaadin-grid>} documentation and demos for instructions and
+ * examples on how to configure the {@code <vaadin-grid-column>}. {@code }`
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridColumnElement#5.1.0", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.GridColumnElement#5.2.0-beta1",
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-column")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-column.html")
 public abstract class GeneratedVaadinGridColumn<R extends GeneratedVaadinGridColumn<R>>
@@ -155,6 +148,157 @@ public abstract class GeneratedVaadinGridColumn<R extends GeneratedVaadinGridCol
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Text content to display in the header cell of the column.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code header} property from the webcomponent
+     */
+    protected String getHeaderString() {
+        return getElement().getProperty("header");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Text content to display in the header cell of the column.
+     * </p>
+     * 
+     * @param header
+     *            the String value to set
+     */
+    protected void setHeader(String header) {
+        getElement().setProperty("header", header == null ? "" : header);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Aligns the columns cell content horizontally. Supported values:
+     * &quot;start&quot;, &quot;center&quot; and &quot;end&quot;.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code textAlign} property from the webcomponent
+     */
+    protected String getTextAlignString() {
+        return getElement().getProperty("textAlign");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Aligns the columns cell content horizontally. Supported values:
+     * &quot;start&quot;, &quot;center&quot; and &quot;end&quot;.
+     * </p>
+     * 
+     * @param textAlign
+     *            the String value to set
+     */
+    protected void setTextAlign(String textAlign) {
+        getElement().setProperty("textAlign",
+                textAlign == null ? "" : textAlign);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the header content. Receives two arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The header cell content DOM element. Append your content
+     * to it.</li>
+     * <li>{@code column} The {@code <vaadin-grid-column>} element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.</li>
+     * </ul>
+     * 
+     * @return the {@code headerRenderer} property from the webcomponent
+     */
+    protected JsonObject getHeaderRendererJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("headerRenderer");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the header content. Receives two arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The header cell content DOM element. Append your content
+     * to it.</li>
+     * <li>{@code column} The {@code <vaadin-grid-column>} element.</li>
+     * </ul>
+     * 
+     * @param headerRenderer
+     *            the JsonObject value to set
+     */
+    protected void setHeaderRenderer(JsonObject headerRenderer) {
+        getElement().setPropertyJson("headerRenderer", headerRenderer);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the footer content. Receives two arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The footer cell content DOM element. Append your content
+     * to it.</li>
+     * <li>{@code column} The {@code <vaadin-grid-column>} element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.</li>
+     * </ul>
+     * 
+     * @return the {@code footerRenderer} property from the webcomponent
+     */
+    protected JsonObject getFooterRendererJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("footerRenderer");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the footer content. Receives two arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The footer cell content DOM element. Append your content
+     * to it.</li>
+     * <li>{@code column} The {@code <vaadin-grid-column>} element.</li>
+     * </ul>
+     * 
+     * @param footerRenderer
+     *            the JsonObject value to set
+     */
+    protected void setFooterRenderer(JsonObject footerRenderer) {
+        getElement().setPropertyJson("footerRenderer", footerRenderer);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * Width of the cells for this column.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -212,5 +356,105 @@ public abstract class GeneratedVaadinGridColumn<R extends GeneratedVaadinGridCol
      */
     protected void setFlexGrow(double flexGrow) {
         getElement().setProperty("flexGrow", flexGrow);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the cell content. Receives three arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The cell content DOM element. Append your content to it.
+     * </li>
+     * <li>{@code column} The {@code <vaadin-grid-column>} element.</li>
+     * <li>{@code rowData} The object with the properties related with the
+     * rendered item, contains:
+     * <ul>
+     * <li>{@code rowData.index} The index of the item.</li>
+     * <li>{@code rowData.item} The item.</li>
+     * <li>{@code rowData.expanded} Sublevel toggle state.</li>
+     * <li>{@code rowData.level} Level of the tree represented with a horizontal
+     * offset of the toggle button.</li>
+     * <li>{@code rowData.selected} Selected state.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * @return the {@code renderer} property from the webcomponent
+     */
+    protected JsonObject getRendererJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("renderer");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Custom function for rendering the cell content. Receives three arguments:
+     * </p>
+     * <ul>
+     * <li>{@code root} The cell content DOM element. Append your content to it.
+     * </li>
+     * <li>{@code column} The {@code <vaadin-grid-column>} element.</li>
+     * <li>{@code rowData} The object with the properties related with the
+     * rendered item, contains:
+     * <ul>
+     * <li>{@code rowData.index} The index of the item.</li>
+     * <li>{@code rowData.item} The item.</li>
+     * <li>{@code rowData.expanded} Sublevel toggle state.</li>
+     * <li>{@code rowData.level} Level of the tree represented with a horizontal
+     * offset of the toggle button.</li>
+     * <li>{@code rowData.selected} Selected state.</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * @param renderer
+     *            the JsonObject value to set
+     */
+    protected void setRenderer(JsonObject renderer) {
+        getElement().setPropertyJson("renderer", renderer);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path to an item sub-property whose value gets displayed in the column
+     * body cells. The property name is also shown in the column header if an
+     * explicit header or renderer isn't defined.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code path} property from the webcomponent
+     */
+    protected String getPathString() {
+        return getElement().getProperty("path");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path to an item sub-property whose value gets displayed in the column
+     * body cells. The property name is also shown in the column header if an
+     * explicit header or renderer isn't defined.
+     * </p>
+     * 
+     * @param path
+     *            the String value to set
+     */
+    protected void setPath(String path) {
+        getElement().setProperty("path", path == null ? "" : path);
     }
 }

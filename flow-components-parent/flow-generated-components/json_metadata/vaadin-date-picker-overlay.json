@@ -14,6 +14,22 @@
       "notify": true
     },
     {
+      "name": "owner",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Owner element passed with renderer function\n           "
+    },
+    {
+      "name": "renderer",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the content of the overlay.\nReceives three arguments:\n\n- `root` The root container DOM element. Append your content to it.\n- `owner` The host element of the renderer function.\n- `model` The object with the properties related with rendering.\n           "
+    },
+    {
       "name": "template",
       "type": [
         "OBJECT"
@@ -46,6 +62,14 @@
       ],
       "objectType": [],
       "description": ""
+    },
+    {
+      "name": "model",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Object with properties that is passed to `renderer` function\n           "
     },
     {
       "name": "modeless",
@@ -89,6 +113,12 @@
     {
       "name": "disconnectedCallback",
       "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "render",
+      "description": "Manually invoke existing renderer.\n       ",
       "parameters": [],
       "returns": "UNDEFINED"
     }

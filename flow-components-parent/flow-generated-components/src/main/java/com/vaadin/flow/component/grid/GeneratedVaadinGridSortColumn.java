@@ -23,76 +23,33 @@ import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.component.Component;
 
 /**
  * <p>
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-grid-sorter>} is a helper element for the
- * {@code <vaadin-grid>} that provides out-of-the-box UI controls, visual
- * feedback, and handlers for sorting the grid data.
+ * {@code <vaadin-grid-sort-column>} is a helper element for the
+ * {@code <vaadin-grid>} that provides default header template and functionality
+ * for sorting.
  * </p>
  * <h4>Example:</h4>
  * <p>
- * &lt;vaadin-grid-column&gt; &lt;template class=&quot;header&quot;&gt;
- * &lt;vaadin-grid-sorter path=&quot;name.first&quot;&gt;First
- * Name&lt;/vaadin-grid-sorter&gt; &lt;/template&gt;
- * &lt;template&gt;[[item.name.first]]&lt;/template&gt;
- * &lt;/vaadin-grid-column&gt;
+ * &lt;vaadin-grid items=&quot;[[items]]&quot;&gt; &lt;vaadin-grid-sort-column
+ * path=&quot;name.first&quot;
+ * direction=&quot;asc&quot;&gt;&lt;/vaadin-grid-sort-column&gt;
  * </p>
- * <h3>Styling</h3>
  * <p>
- * The following shadow DOM parts are available for styling:
+ * &lt;vaadin-grid-column&gt; ...
  * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Part name</th>
- * <th>Description</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code content}</td>
- * <td>The slotted content wrapper</td>
- * </tr>
- * <tr>
- * <td>{@code indicators}</td>
- * <td>The internal sorter indicators.</td>
- * </tr>
- * <tr>
- * <td>{@code order}</td>
- * <td>The internal sorter order</td>
- * </tr>
- * </tbody>
- * </table>
- * <p>
- * The following state attributes are available for styling:
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Attribute</th>
- * <th>Description</th>
- * <th>Part name</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code direction}</td>
- * <td>Sort direction of a sorter</td>
- * <td>:host</td>
- * </tr>
- * </tbody>
- * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.GridSorterElement#5.2.0-beta1",
+        "WebComponent: Vaadin.GridSortColumnElement#5.2.0-beta1",
         "Flow#1.2-SNAPSHOT" })
-@Tag("vaadin-grid-sorter")
-@HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-sorter.html")
-public abstract class GeneratedVaadinGridSorter<R extends GeneratedVaadinGridSorter<R>>
-        extends Component implements HasStyle {
+@Tag("vaadin-grid-sort-column")
+@HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-sort-column.html")
+public abstract class GeneratedVaadinGridSortColumn<R extends GeneratedVaadinGridSortColumn<R>>
+        extends GeneratedVaadinGridColumn<R> implements HasStyle {
 
     /**
      * <p>
@@ -164,7 +121,7 @@ public abstract class GeneratedVaadinGridSorter<R extends GeneratedVaadinGridSor
                 direction == null ? "" : direction);
     }
 
-    public static class DirectionChangeEvent<R extends GeneratedVaadinGridSorter<R>>
+    public static class DirectionChangeEvent<R extends GeneratedVaadinGridSortColumn<R>>
             extends ComponentEvent<R> {
         private final String direction;
 

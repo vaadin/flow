@@ -19,6 +19,10 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.Component;
 
 /**
@@ -29,19 +33,20 @@ import com.vaadin.flow.component.Component;
  * This Element is used internally by vaadin-grid.
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: GridScrollerElement#UNKNOWN", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: GridScrollerElement#UNKNOWN", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-scroller")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-scroller.html")
 public abstract class GeneratedVaadinGridScroller<R extends GeneratedVaadinGridScroller<R>>
         extends Component implements HasStyle {
 
     /**
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
+     * This property is synchronized automatically from client side when a
+     * 'size-changed' event happens.
      * 
      * @return the {@code size} property from the webcomponent
      */
+    @Synchronize(property = "size", value = "size-changed")
     protected double getSizeDouble() {
         return getElement().getProperty("size", 0.0);
     }
@@ -60,5 +65,36 @@ public abstract class GeneratedVaadinGridScroller<R extends GeneratedVaadinGridS
 
     protected void updateViewportBoundaries() {
         getElement().callFunction("updateViewportBoundaries");
+    }
+
+    public static class SizeChangeEvent<R extends GeneratedVaadinGridScroller<R>>
+            extends ComponentEvent<R> {
+        private final double size;
+
+        public SizeChangeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+            this.size = source.getSizeDouble();
+        }
+
+        public double getSize() {
+            return size;
+        }
+    }
+
+    /**
+     * Adds a listener for {@code size-changed} events fired by the
+     * webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    protected Registration addSizeChangeListener(
+            ComponentEventListener<SizeChangeEvent<R>> listener) {
+        return getElement()
+                .addPropertyChangeListener("size",
+                        event -> listener.onComponentEvent(
+                                new SizeChangeEvent<R>((R) this,
+                                        event.isUserOriginated())));
     }
 }
