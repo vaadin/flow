@@ -7,12 +7,12 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinServlet;
 
-@Route
+@Route("")
 @HtmlImport("frontend://bower_components/polymer/polymer.html")
-public class TestView extends Div {
-    private static final String TEST_VIEW_ID = "testView";
+public class NoRootTestView extends Div {
+    static final String TEST_VIEW_ID = "testView";
 
-    public TestView() {
+    public NoRootTestView() {
         setId(TEST_VIEW_ID);
         getElement().executeJavaScript(String.format(
                 "document.getElementById('%s').textContent = 'Polymer version: ' + Polymer.version",
@@ -21,6 +21,5 @@ public class TestView extends Div {
 
     @WebServlet(name = "customMappingServlet", urlPatterns = "/custom/*")
     public static class CustomMappingServlet extends VaadinServlet {
-
     }
 }

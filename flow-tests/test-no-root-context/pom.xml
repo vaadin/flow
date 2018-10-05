@@ -64,6 +64,16 @@
                     </webAppConfig>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <polymer.version>${polymer.version}</polymer.version>
+                    </systemProperties>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
