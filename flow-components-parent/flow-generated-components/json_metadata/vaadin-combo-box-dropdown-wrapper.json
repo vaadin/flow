@@ -29,12 +29,28 @@
       "description": "The element to position/align the dropdown by.\n           "
     },
     {
+      "name": "renderer",
+      "type": [
+        "FUNCTION"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the content of the `<vaadin-combo-box-item>` propagated from the combo box element.\n           "
+    },
+    {
       "name": "loading",
       "type": [
         "BOOLEAN"
       ],
       "objectType": [],
       "description": "`true` when new items are being loaded.\n           "
+    },
+    {
+      "name": "theme",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Used to propagate the `theme` attribute from the host element.\n           "
     }
   ],
   "methods": [

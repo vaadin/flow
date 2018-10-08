@@ -2,7 +2,7 @@
   "name": "Vaadin.GridColumnElement",
   "tag": "vaadin-grid-column",
   "baseUrl": "vaadin-grid/src/vaadin-grid-column.html",
-  "version": "5.1.0",
+  "version": "5.2.0-beta1",
   "properties": [
     {
       "name": "resizable",
@@ -29,6 +29,38 @@
       "description": "When set to true, the cells for this column are hidden.\n         "
     },
     {
+      "name": "header",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Text content to display in the header cell of the column.\n         "
+    },
+    {
+      "name": "textAlign",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Aligns the columns cell content horizontally.\nSupported values: \"start\", \"center\" and \"end\".\n         "
+    },
+    {
+      "name": "headerRenderer",
+      "type": [
+        "FUNCTION"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the header content.\nReceives two arguments:\n\n- `root` The header cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n         "
+    },
+    {
+      "name": "footerRenderer",
+      "type": [
+        "FUNCTION"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the footer content.\nReceives two arguments:\n\n- `root` The footer cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n         "
+    },
+    {
       "name": "width",
       "type": [
         "STRING"
@@ -43,6 +75,22 @@
       ],
       "objectType": [],
       "description": "Flex grow ratio for the cell widths. When set to 0, cell width is fixed.\n           "
+    },
+    {
+      "name": "renderer",
+      "type": [
+        "FUNCTION"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the cell content.\nReceives three arguments:\n\n- `root` The cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n- `rowData` The object with the properties related with\n  the rendered item, contains:\n  - `rowData.index` The index of the item.\n  - `rowData.item` The item.\n  - `rowData.expanded` Sublevel toggle state.\n  - `rowData.level` Level of the tree represented with a horizontal offset of the toggle button.\n  - `rowData.selected` Selected state.\n           "
+    },
+    {
+      "name": "path",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Path to an item sub-property whose value gets displayed in the column body cells.\nThe property name is also shown in the column header if an explicit header or renderer isn't defined.\n           "
     }
   ],
   "methods": [],
@@ -53,5 +101,5 @@
     "Vaadin.Grid.ColumnBaseMixin"
   ],
   "variants": {},
-  "description": "A `<vaadin-grid-column>` is used to configure how a column in `<vaadin-grid>`\nshould look like by using HTML templates.\nA column can have a template for each of the three table sections: header, body and footer.\n\nThe `class` attribute is used to differentiate header and footer templates from the body template.\n\n#### Example:\n```html\n<vaadin-grid-column>\n  <template class=\"header\">I'm in the header</template>\n  <template>I'm in the body</template>\n  <template class=\"footer\">I'm in the footer</template>\n</vaadin-grid-column>\n```"
+  "description": "A `<vaadin-grid-column>` is used to configure how a column in `<vaadin-grid>`\nshould look like.\n\nSee `<vaadin-grid>` documentation and demos for instructions and examples on how\nto configure the `<vaadin-grid-column>`.\n```"
 }

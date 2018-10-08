@@ -32,6 +32,57 @@ import com.vaadin.flow.component.Component;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
+ * {@code <vaadin-context-menu>} is a Web Component for creating context menus.
+ * The content of the menu can be populated in two ways: imperatively by using
+ * renderer callback function and declaratively by using Polymer's Templates.
+ * </p>
+ * <h3>Rendering</h3>
+ * <p>
+ * By default, the context menu uses the content provided using the renderer
+ * callback function.
+ * </p>
+ * <p>
+ * The renderer function provides {@code root}, {@code contextMenu},
+ * {@code model} arguments when applicable. Generate DOM content by using
+ * {@code model} object properties if needed, append it to the {@code root}
+ * element and control the state of the host element by accessing
+ * {@code contextMenu}. Before generating new content, users are able to check
+ * if there is already content in {@code root} for reusing it.
+ * </p>
+ * <p>
+ * &lt;vaadin-context-menu id=&quot;contextMenu&quot;&gt; &lt;p&gt;This
+ * paragraph has a context menu.&lt;/p&gt; &lt;/vaadin-context-menu&gt;
+ * {@code const contextMenu = document.querySelector('#contextMenu');
+ * contextMenu.renderer = (root, contextMenu, context) =&gt; let listBox =
+ * root.firstElementChild; if (!listBox) { listBox =
+ * document.createElement('vaadin-list-box'); root.appendChild(listBox); }
+ * </p>
+ * <p>
+ * let item = listBox.querySelector('vaadin-item'); if (!item) { item =
+ * document.createElement('vaadin-item'); listBox.appendChild(item); }
+ * item.textContent = 'Content of the selector: ' + context.target.textContent;
+ * };}
+ * </p>
+ * <p>
+ * You can access the menu context inside the renderer using
+ * {@code context.target} and {@code context.detail}.
+ * </p>
+ * <p>
+ * Renderer is called on the opening of the context-menu and each time the
+ * related context is updated. DOM generated during the renderer call can be
+ * reused in the next renderer call and will be provided with the {@code root}
+ * argument. On first call it will be empty.
+ * </p>
+ * <p>
+ * <strong>NOTE:</strong> when the {@code renderer} function is defined, the
+ * template content is not in use.
+ * </p>
+ * <h3>Polymer Templates</h3>
+ * <p>
+ * Alternatively to using the {@code renderer}, you are able to populate the
+ * menu content using Polymer's Templates:
+ * </p>
+ * <p>
  * &lt;vaadin-context-menu&gt; &lt;template&gt; &lt;vaadin-list-box&gt;
  * &lt;vaadin-item&gt;First menu item&lt;/vaadin-item&gt;
  * &lt;vaadin-item&gt;Second menu item&lt;/vaadin-item&gt;
@@ -130,13 +181,27 @@ import com.vaadin.flow.component.Component;
  * </p>
  * <h3>Styling</h3>
  * <p>
+ * {@code <vaadin-context-menu>} uses {@code <vaadin-context-menu-overlay>}
+ * internal themable component as the actual visible context menu overlay. See
+ * See <a href=
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/src/vaadin-overlay.html"
+ * >{@code <vaadin-overlay>} documentation</a> for
+ * {@code <vaadin-context-menu-overlay>} parts.
+ * </p>
+ * <p>
  * See <a
  * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
  * how to apply styles for shadow parts</a>
  * </p>
+ * <p>
+ * Note: the {@code theme} attribute value set on {@code <vaadin-context-menu>}
+ * is propagated to the internal {@code <vaadin-context-menu-overlay>}
+ * component.
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.ContextMenuElement#4.1.0", "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.ContextMenuElement#4.2.0-beta1",
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-context-menu")
 @HtmlImport("frontend://bower_components/vaadin-context-menu/src/vaadin-context-menu.html")
 public abstract class GeneratedVaadinContextMenu<R extends GeneratedVaadinContextMenu<R>>
@@ -292,6 +357,18 @@ public abstract class GeneratedVaadinContextMenu<R extends GeneratedVaadinContex
      */
     protected void setCloseOn(String closeOn) {
         getElement().setProperty("closeOn", closeOn == null ? "" : closeOn);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Manually invoke existing renderer.
+     * </p>
+     */
+    protected void render() {
+        getElement().callFunction("render");
     }
 
     /**

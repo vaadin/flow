@@ -158,6 +158,38 @@ public abstract class GeneratedVaadinComboBoxDropdownWrapper<R extends Generated
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Used to propagate the {@code theme} attribute from the host element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code theme} property from the webcomponent
+     */
+    protected String getThemeString() {
+        return getElement().getProperty("theme");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Used to propagate the {@code theme} attribute from the host element.
+     * </p>
+     * 
+     * @param theme
+     *            the String value to set
+     */
+    protected void setTheme(String theme) {
+        getElement().setProperty("theme", theme == null ? "" : theme);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * Gets the index of the item with the provided label.
      * </p>
      * <p>

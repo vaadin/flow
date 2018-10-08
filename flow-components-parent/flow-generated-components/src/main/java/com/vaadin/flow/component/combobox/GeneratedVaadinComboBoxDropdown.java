@@ -85,38 +85,6 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * True if the device supports touch events.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code touchDevice} property from the webcomponent
-     */
-    protected boolean isTouchDeviceBoolean() {
-        return getElement().getProperty("touchDevice", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * True if the device supports touch events.
-     * </p>
-     * 
-     * @param touchDevice
-     *            the boolean value to set
-     */
-    protected void setTouchDevice(boolean touchDevice) {
-        getElement().setProperty("touchDevice", touchDevice);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * The element to position/align the dropdown by.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -174,6 +142,38 @@ public abstract class GeneratedVaadinComboBoxDropdown<R extends GeneratedVaadinC
      */
     protected void setAlignedAbove(boolean alignedAbove) {
         getElement().setProperty("alignedAbove", alignedAbove);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Used to propagate the {@code theme} attribute from the host element.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code theme} property from the webcomponent
+     */
+    protected String getThemeString() {
+        return getElement().getProperty("theme");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Used to propagate the {@code theme} attribute from the host element.
+     * </p>
+     * 
+     * @param theme
+     *            the String value to set
+     */
+    protected void setTheme(String theme) {
+        getElement().setProperty("theme", theme == null ? "" : theme);
     }
 
     protected void notifyResize() {

@@ -2,7 +2,7 @@
   "name": "Vaadin.GridTreeToggleElement",
   "tag": "vaadin-grid-tree-toggle",
   "baseUrl": "vaadin-grid/src/vaadin-grid-tree-toggle.html",
-  "version": "5.1.0",
+  "version": "5.2.0-beta1",
   "properties": [
     {
       "name": "level",

@@ -45,10 +45,8 @@ public class ExclusionRegistry {
 
     static {
         excludePropertyType(ComponentBasicType.FUNCTION);
-        excludeProperty("vaadin-combo-box", "value");
+        excludeProperty("vaadin-combo-box", "dataProvider");
         excludeProperty("vaadin-radio-group", "value");
-        excludeProperty("vaadin-combo-box", "itemLabelPath");
-        excludeProperty("vaadin-combo-box", "itemValuePath");
         excludeProperty("vaadin-tabs", "selected");
         excludeProperty("vaadin-tabs", "orientation");
         excludeProperty("vaadin-tabs", "items");

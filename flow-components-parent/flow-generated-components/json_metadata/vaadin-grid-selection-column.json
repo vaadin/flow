@@ -2,7 +2,7 @@
   "name": "Vaadin.GridSelectionColumnElement",
   "tag": "vaadin-grid-selection-column",
   "baseUrl": "vaadin-grid/src/vaadin-grid-selection-column.html",
-  "version": "5.1.0",
+  "version": "5.2.0-beta1",
   "properties": [
     {
       "name": "width",

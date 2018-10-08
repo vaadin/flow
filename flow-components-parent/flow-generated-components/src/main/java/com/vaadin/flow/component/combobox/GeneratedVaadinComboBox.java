@@ -23,6 +23,7 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
@@ -66,10 +67,36 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * <p>
  * This element can be used within an {@code iron-form}.
  * </p>
+ * <h3>Item rendering</h3>
+ * <p>
+ * {@code <vaadin-combo-box>} supports using custom renderer callback function
+ * for defining the content of {@code <vaadin-combo-box-item>}.
+ * </p>
+ * <p>
+ * The renderer function provides {@code root}, {@code comboBox}, {@code model}
+ * arguments when applicable. Generate DOM content by using {@code model} object
+ * properties if needed, append it to the {@code root} element and control the
+ * state of the host element by accessing {@code comboBox}. Before generating
+ * new content, users are able to check if there is already content in
+ * {@code root} for reusing it.
+ * </p>
+ * <p>
+ * &lt;vaadin-combo-box id=&quot;combo-box&quot;&gt;&lt;/vaadin-combo-box&gt;
+ * {@code const comboBox = document.querySelector('#combo-box');comboBox.items =
+ * [ 'label': 'Hydrogen', 'value': 'H'}]; comboBox.renderer = function(root,
+ * comboBox, model) { root.innerHTML = model.index + ': ' + model.item.label +
+ * ' ' + '<b>' + model.item.value + '</b>'; };}
+ * </p>
+ * <p>
+ * Renderer is called on the opening of the combo-box and each time the related
+ * model is updated. DOM generated during the renderer call can be reused in the
+ * next renderer call and will be provided with the {@code root} argument. On
+ * first call it will be empty.
+ * </p>
  * <h3>Item Template</h3>
  * <p>
- * {@code <vaadin-combo-box>} supports using custom item template provided in
- * the light DOM:
+ * Alternatively, the content of the {@code <vaadin-combo-box-item>} can be
+ * populated by using custom item template provided in the light DOM:
  * </p>
  * <p>
  * &lt;vaadin-combo-box items='[{&quot;label&quot;: &quot;Hydrogen&quot;,
@@ -110,6 +137,34 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </tr>
  * </tbody>
  * </table>
+ * <h3>Lazy Loading with Function Data Provider</h3>
+ * <p>
+ * In addition to assigning an array to the items property, you can
+ * alternatively provide the {@code <vaadin-combo-box>} data through the <a
+ * href="#/elements/vaadin-combo-box#property-dataProvider">{@code dataProvider}
+ * </a> function property. The {@code <vaadin-combo-box>} calls this function
+ * lazily, only when it needs more data to be displayed.
+ * </p>
+ * <p>
+ * See the <a href="#/elements/vaadin-combo-box#property-dataProvider">
+ * {@code dataProvider}</a> in the API reference below for the detailed data
+ * provider arguments description, and the “Lazy Loading“ example on “Basics”
+ * page in the demos.
+ * </p>
+ * <p>
+ * <strong>Note that when using function data providers, the total number of
+ * items needs to be set manually. The total number of items can be returned in
+ * the second argument of the data provider callback:</strong>
+ * </p>
+ * <p>
+ * {@code javascript comboBox.dataProvider = function(params, callback) var url
+ * = 'https://api.example/data' + '?page=' + params.page + // the requested page
+ * index '&amp;per_page=' + params.pageSize; // number of items on the page var
+ * xhr = new XMLHttpRequest(); xhr.onload = function() { var response =
+ * JSON.parse(xhr.responseText); callback( response.employees, // requested page
+ * of items response.totalSize // total number of items ); }; xhr.open('GET',
+ * url, true); xhr.send(); };}
+ * </p>
  * <h3>Styling</h3>
  * <p>
  * The following custom properties are available for styling:
@@ -218,13 +273,27 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </tbody>
  * </table>
  * <p>
+ * In addition to {@code <vaadin-combo-box>} itself, the following internal
+ * components are themable:
+ * </p>
+ * <ul>
+ * <li>{@code <vaadin-text-field>}</li>
+ * <li>{@code <vaadin-combo-box-overlay>}</li>
+ * <li>{@code <vaadin-combo-box-item>}</li>
+ * </ul>
+ * <p>
+ * Note: the {@code theme} attribute value set on {@code <vaadin-combo-box>} is
+ * propagated to the internal themable components listed above.
+ * </p>
+ * <p>
  * See <a
  * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
  * how to apply styles for shadow parts</a>
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.ComboBoxElement#4.1.0", "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.ComboBoxElement#4.2.0-alpha4",
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box.html")
 public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R, T>, T>
@@ -279,6 +348,70 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     protected void setDisabled(boolean disabled) {
         getElement().setProperty("disabled", disabled);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Number of items fetched at a time from the dataprovider.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code pageSize} property from the webcomponent
+     */
+    protected double getPageSizeDouble() {
+        return getElement().getProperty("pageSize", 0.0);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Number of items fetched at a time from the dataprovider.
+     * </p>
+     * 
+     * @param pageSize
+     *            the double value to set
+     */
+    protected void setPageSize(double pageSize) {
+        getElement().setProperty("pageSize", pageSize);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Total number of items.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code size} property from the webcomponent
+     */
+    protected double getSizeDouble() {
+        return getElement().getProperty("size", 0.0);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Total number of items.
+     * </p>
+     * 
+     * @param size
+     *            the double value to set
+     */
+    protected void setSize(double size) {
+        getElement().setProperty("size", size);
     }
 
     /**
@@ -505,6 +638,178 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     protected void setFilter(String filter) {
         getElement().setProperty("filter", filter == null ? "" : filter);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The selected item from the {@code items} array.
+     * <p>
+     * This property is synchronized automatically from client side when a
+     * 'selected-item-changed' event happens.
+     * </p>
+     * 
+     * @return the {@code selectedItem} property from the webcomponent
+     */
+    @Synchronize(property = "selectedItem", value = "selected-item-changed")
+    protected JsonObject getSelectedItemJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("selectedItem");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The selected item from the {@code items} array.
+     * </p>
+     * 
+     * @param selectedItem
+     *            the JsonObject value to set
+     */
+    protected void setSelectedItem(JsonObject selectedItem) {
+        getElement().setPropertyJson("selectedItem", selectedItem);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for label of the item. If {@code items} is an array of objects, the
+     * {@code itemLabelPath} is used to fetch the displayed string label for
+     * each item.
+     * </p>
+     * <p>
+     * The item label is also used for matching items when processing user
+     * input, i.e., for filtering and selecting items.
+     * </p>
+     * <p>
+     * When using item templates, the property is still needed because it is
+     * used for filtering, and for displaying the selected item value in the
+     * input box.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code itemLabelPath} property from the webcomponent
+     */
+    protected String getItemLabelPathString() {
+        return getElement().getProperty("itemLabelPath");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for label of the item. If {@code items} is an array of objects, the
+     * {@code itemLabelPath} is used to fetch the displayed string label for
+     * each item.
+     * </p>
+     * <p>
+     * The item label is also used for matching items when processing user
+     * input, i.e., for filtering and selecting items.
+     * </p>
+     * <p>
+     * When using item templates, the property is still needed because it is
+     * used for filtering, and for displaying the selected item value in the
+     * input box.
+     * </p>
+     * 
+     * @param itemLabelPath
+     *            the String value to set
+     */
+    protected void setItemLabelPath(String itemLabelPath) {
+        getElement().setProperty("itemLabelPath",
+                itemLabelPath == null ? "" : itemLabelPath);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for the value of the item. If {@code items} is an array of objects,
+     * the {@code itemValuePath:} is used to fetch the string value for the
+     * selected item.
+     * </p>
+     * <p>
+     * The item value is used in the {@code value} property of the combo box, to
+     * provide the form value.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code itemValuePath} property from the webcomponent
+     */
+    protected String getItemValuePathString() {
+        return getElement().getProperty("itemValuePath");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for the value of the item. If {@code items} is an array of objects,
+     * the {@code itemValuePath:} is used to fetch the string value for the
+     * selected item.
+     * </p>
+     * <p>
+     * The item value is used in the {@code value} property of the combo box, to
+     * provide the form value.
+     * </p>
+     * 
+     * @param itemValuePath
+     *            the String value to set
+     */
+    protected void setItemValuePath(String itemValuePath) {
+        getElement().setProperty("itemValuePath",
+                itemValuePath == null ? "" : itemValuePath);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for the id of the item. If {@code items} is an array of objects, the
+     * {@code itemIdPath} is used to compare and identify the same item in
+     * {@code selectedItem} and {@code filteredItems} (items given by the
+     * {@code dataProvider} callback).
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code itemIdPath} property from the webcomponent
+     */
+    protected String getItemIdPathString() {
+        return getElement().getProperty("itemIdPath");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for the id of the item. If {@code items} is an array of objects, the
+     * {@code itemIdPath} is used to compare and identify the same item in
+     * {@code selectedItem} and {@code filteredItems} (items given by the
+     * {@code dataProvider} callback).
+     * </p>
+     * 
+     * @param itemIdPath
+     *            the String value to set
+     */
+    protected void setItemIdPath(String itemIdPath) {
+        getElement().setProperty("itemIdPath",
+                itemIdPath == null ? "" : itemIdPath);
     }
 
     /**
@@ -771,6 +1076,30 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Clears the cached pages and reloads data from dataprovider when needed.
+     * </p>
+     */
+    protected void clearCache() {
+        getElement().callFunction("clearCache");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Manually invoke existing renderer.
+     * </p>
+     */
+    protected void render() {
+        getElement().callFunction("render");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * Opens the dropdown list.
      * </p>
      */
@@ -868,8 +1197,15 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
 
     public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBox<R, ?>>
             extends ComponentEvent<R> {
+        private final JsonObject selectedItem;
+
         public SelectedItemChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
+            this.selectedItem = source.getSelectedItemJsonObject();
+        }
+
+        public JsonObject getSelectedItem() {
+            return selectedItem;
         }
     }
 
@@ -1054,8 +1390,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
             Class<P> elementPropertyType,
             SerializableFunction<P, T> presentationToModel,
             SerializableFunction<T, P> modelToPresentation) {
-        super("selectedItem", defaultValue, elementPropertyType,
-                presentationToModel, modelToPresentation);
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
         if (initialValue != null) {
             setModelValue(initialValue, false);
             setPresentationValue(initialValue);
@@ -1075,7 +1411,7 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     public GeneratedVaadinComboBox(T initialValue, T defaultValue,
             boolean acceptNullValues) {
-        super("selectedItem", defaultValue, acceptNullValues);
+        super("value", defaultValue, acceptNullValues);
         if (initialValue != null) {
             setModelValue(initialValue, false);
             setPresentationValue(initialValue);
@@ -1105,8 +1441,8 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
             Class<P> elementPropertyType,
             SerializableBiFunction<R, P, T> presentationToModel,
             SerializableBiFunction<R, T, P> modelToPresentation) {
-        super("selectedItem", defaultValue, elementPropertyType,
-                presentationToModel, modelToPresentation);
+        super("value", defaultValue, elementPropertyType, presentationToModel,
+                modelToPresentation);
         if (initialValue != null) {
             setModelValue(initialValue, false);
             setPresentationValue(initialValue);

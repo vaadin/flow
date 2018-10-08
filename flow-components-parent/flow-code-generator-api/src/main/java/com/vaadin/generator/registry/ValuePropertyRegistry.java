@@ -29,7 +29,6 @@ public final class ValuePropertyRegistry {
     private static final Map<String, String> REGISTRY = new HashMap<>();
     static {
         REGISTRY.put("vaadin-checkbox", "checked");
-        REGISTRY.put("vaadin-combo-box", "selectedItem");
     }
 
     private ValuePropertyRegistry() {
