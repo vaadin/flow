@@ -93,6 +93,13 @@ public class ExclusionRegistry {
         }
     }
 
+    /**
+     * Excludes all the properties that have the given type from all the
+     * components.
+     * 
+     * @param type
+     *            the property type to exclude
+     */
     public static void excludePropertyType(ComponentBasicType type) {
         Objects.requireNonNull(type, "type cannot be null");
         if (!PROPERTY_TYPE_EXCLUSION_REGISTRY.contains(type)) {
