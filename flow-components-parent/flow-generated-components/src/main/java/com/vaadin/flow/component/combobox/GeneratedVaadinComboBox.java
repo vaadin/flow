@@ -21,9 +21,9 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.Focusable;
-import elemental.json.JsonObject;
 import com.vaadin.flow.component.Synchronize;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import com.vaadin.flow.component.NotSupported;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.DomEvent;
@@ -419,72 +419,6 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Function that provides items lazily. Receives arguments {@code params},
-     * {@code callback}
-     * </p>
-     * <p>
-     * {@code params.page} Requested page index
-     * </p>
-     * <p>
-     * {@code params.pageSize} Current page size
-     * </p>
-     * <p>
-     * {@code params.filter} Currently applied filter
-     * </p>
-     * <p>
-     * {@code callback(items, size)} Callback function with arguments:
-     * </p>
-     * <ul>
-     * <li>{@code items} Current page of items</li>
-     * <li>{@code size} Total number of items.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * 
-     * @return the {@code dataProvider} property from the webcomponent
-     */
-    protected JsonObject getDataProviderJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("dataProvider");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Function that provides items lazily. Receives arguments {@code params},
-     * {@code callback}
-     * </p>
-     * <p>
-     * {@code params.page} Requested page index
-     * </p>
-     * <p>
-     * {@code params.pageSize} Current page size
-     * </p>
-     * <p>
-     * {@code params.filter} Currently applied filter
-     * </p>
-     * <p>
-     * {@code callback(items, size)} Callback function with arguments:
-     * </p>
-     * <ul>
-     * <li>{@code items} Current page of items</li>
-     * <li>{@code size} Total number of items.</li>
-     * </ul>
-     * 
-     * @param dataProvider
-     *            the JsonObject value to set
-     */
-    protected void setDataProvider(JsonObject dataProvider) {
-        getElement().setPropertyJson("dataProvider", dataProvider);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * True if the dropdown is open, false otherwise.
      * <p>
      * This property is synchronized automatically from client side when a
@@ -737,6 +671,106 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     protected void setSelectedItem(JsonObject selectedItem) {
         getElement().setPropertyJson("selectedItem", selectedItem);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for label of the item. If {@code items} is an array of objects, the
+     * {@code itemLabelPath} is used to fetch the displayed string label for
+     * each item.
+     * </p>
+     * <p>
+     * The item label is also used for matching items when processing user
+     * input, i.e., for filtering and selecting items.
+     * </p>
+     * <p>
+     * When using item templates, the property is still needed because it is
+     * used for filtering, and for displaying the selected item value in the
+     * input box.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code itemLabelPath} property from the webcomponent
+     */
+    protected String getItemLabelPathString() {
+        return getElement().getProperty("itemLabelPath");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for label of the item. If {@code items} is an array of objects, the
+     * {@code itemLabelPath} is used to fetch the displayed string label for
+     * each item.
+     * </p>
+     * <p>
+     * The item label is also used for matching items when processing user
+     * input, i.e., for filtering and selecting items.
+     * </p>
+     * <p>
+     * When using item templates, the property is still needed because it is
+     * used for filtering, and for displaying the selected item value in the
+     * input box.
+     * </p>
+     * 
+     * @param itemLabelPath
+     *            the String value to set
+     */
+    protected void setItemLabelPath(String itemLabelPath) {
+        getElement().setProperty("itemLabelPath",
+                itemLabelPath == null ? "" : itemLabelPath);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for the value of the item. If {@code items} is an array of objects,
+     * the {@code itemValuePath:} is used to fetch the string value for the
+     * selected item.
+     * </p>
+     * <p>
+     * The item value is used in the {@code value} property of the combo box, to
+     * provide the form value.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code itemValuePath} property from the webcomponent
+     */
+    protected String getItemValuePathString() {
+        return getElement().getProperty("itemValuePath");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Path for the value of the item. If {@code items} is an array of objects,
+     * the {@code itemValuePath:} is used to fetch the string value for the
+     * selected item.
+     * </p>
+     * <p>
+     * The item value is used in the {@code value} property of the combo box, to
+     * provide the form value.
+     * </p>
+     * 
+     * @param itemValuePath
+     *            the String value to set
+     */
+    protected void setItemValuePath(String itemValuePath) {
+        getElement().setProperty("itemValuePath",
+                itemValuePath == null ? "" : itemValuePath);
     }
 
     /**
