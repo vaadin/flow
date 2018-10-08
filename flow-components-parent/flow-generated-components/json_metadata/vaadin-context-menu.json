@@ -49,7 +49,7 @@
     {
       "name": "renderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the content of the menu overlay.\nReceives three arguments:\n\n- `root` The root container DOM element. Append your content to it.\n- `contextMenu` The reference to the `<vaadin-context-menu>` element.\n- `context` The object with the menu context, contains:\n  - `context.target`  the target of the menu opening event,\n  - `context.detail` the menu opening event detail.\n             "

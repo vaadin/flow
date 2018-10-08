@@ -31,7 +31,7 @@
     {
       "name": "renderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the content of the `<vaadin-combo-box-item>` propagated from the combo box element.\n           "

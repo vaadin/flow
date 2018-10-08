@@ -357,11 +357,7 @@ grid.size = 200; // The total number of items
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-<<<<<<< HEAD
-        "WebComponent: Vaadin.GridElement#5.1.0", "Flow#1.2-SNAPSHOT" })
-=======
         "WebComponent: Vaadin.GridElement#5.2.0-beta1", "Flow#1.2-SNAPSHOT" })
->>>>>>> Update generated components based on minor pre-releases
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid.html")
 public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
@@ -691,64 +687,6 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      */
     protected void setDetailsOpenedItems(JsonArray detailsOpenedItems) {
         getElement().setPropertyJson("detailsOpenedItems", detailsOpenedItems);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of the row details. Receives
-     * three arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The row details content DOM element. Append your content
-     * to it.</li>
-     * <li>{@code grid} The {@code <vaadin-grid>} element.</li>
-     * <li>{@code rowData} The object with the properties related with the
-     * rendered item, contains:
-     * <ul>
-     * <li>{@code rowData.index} The index of the item.</li>
-     * <li>{@code rowData.item} The item.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * 
-     * @return the {@code rowDetailsRenderer} property from the webcomponent
-     */
-    protected JsonObject getRowDetailsRendererJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("rowDetailsRenderer");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of the row details. Receives
-     * three arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The row details content DOM element. Append your content
-     * to it.</li>
-     * <li>{@code grid} The {@code <vaadin-grid>} element.</li>
-     * <li>{@code rowData} The object with the properties related with the
-     * rendered item, contains:
-     * <ul>
-     * <li>{@code rowData.index} The index of the item.</li>
-     * <li>{@code rowData.item} The item.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * 
-     * @param rowDetailsRenderer
-     *            the JsonObject value to set
-     */
-    protected void setRowDetailsRenderer(JsonObject rowDetailsRenderer) {
-        getElement().setPropertyJson("rowDetailsRenderer", rowDetailsRenderer);
     }
 
     /**

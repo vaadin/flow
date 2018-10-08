@@ -87,12 +87,8 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-<<<<<<< HEAD
-        "WebComponent: Vaadin.GridSorterElement#5.1.0", "Flow#1.2-SNAPSHOT" })
-=======
         "WebComponent: Vaadin.GridSorterElement#5.2.0-beta1",
         "Flow#1.2-SNAPSHOT" })
->>>>>>> Update generated components based on minor pre-releases
 @Tag("vaadin-grid-sorter")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-sorter.html")
 public abstract class GeneratedVaadinGridSorter<R extends GeneratedVaadinGridSorter<R>>

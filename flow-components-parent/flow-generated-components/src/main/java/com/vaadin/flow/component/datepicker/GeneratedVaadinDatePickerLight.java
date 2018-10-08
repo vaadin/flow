@@ -100,11 +100,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-<<<<<<< HEAD
-        "WebComponent: Vaadin.DatePickerLightElement#3.2.0",
-=======
         "WebComponent: Vaadin.DatePickerLightElement#3.3.0-beta1",
->>>>>>> Update generated components based on minor pre-releases
         "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker-light.html")

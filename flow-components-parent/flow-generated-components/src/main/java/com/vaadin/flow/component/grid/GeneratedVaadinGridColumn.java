@@ -19,7 +19,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
-import elemental.json.JsonObject;
 import com.vaadin.flow.component.Component;
 
 /**
@@ -36,12 +35,8 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-<<<<<<< HEAD
-        "WebComponent: Vaadin.GridColumnElement#5.1.0", "Flow#1.2-SNAPSHOT" })
-=======
         "WebComponent: Vaadin.GridColumnElement#5.2.0-beta1",
         "Flow#1.2-SNAPSHOT" })
->>>>>>> Update generated components based on minor pre-releases
 @Tag("vaadin-grid-column")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-column.html")
 public abstract class GeneratedVaadinGridColumn<R extends GeneratedVaadinGridColumn<R>>
@@ -219,90 +214,6 @@ public abstract class GeneratedVaadinGridColumn<R extends GeneratedVaadinGridCol
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Custom function for rendering the header content. Receives two arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The header cell content DOM element. Append your content
-     * to it.</li>
-     * <li>{@code column} The {@code <vaadin-grid-column>} element.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * 
-     * @return the {@code headerRenderer} property from the webcomponent
-     */
-    protected JsonObject getHeaderRendererJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("headerRenderer");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the header content. Receives two arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The header cell content DOM element. Append your content
-     * to it.</li>
-     * <li>{@code column} The {@code <vaadin-grid-column>} element.</li>
-     * </ul>
-     * 
-     * @param headerRenderer
-     *            the JsonObject value to set
-     */
-    protected void setHeaderRenderer(JsonObject headerRenderer) {
-        getElement().setPropertyJson("headerRenderer", headerRenderer);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the footer content. Receives two arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The footer cell content DOM element. Append your content
-     * to it.</li>
-     * <li>{@code column} The {@code <vaadin-grid-column>} element.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * 
-     * @return the {@code footerRenderer} property from the webcomponent
-     */
-    protected JsonObject getFooterRendererJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("footerRenderer");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the footer content. Receives two arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The footer cell content DOM element. Append your content
-     * to it.</li>
-     * <li>{@code column} The {@code <vaadin-grid-column>} element.</li>
-     * </ul>
-     * 
-     * @param footerRenderer
-     *            the JsonObject value to set
-     */
-    protected void setFooterRenderer(JsonObject footerRenderer) {
-        getElement().setPropertyJson("footerRenderer", footerRenderer);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Width of the cells for this column.
      * <p>
      * This property is not synchronized automatically from the client side, so
@@ -360,70 +271,6 @@ public abstract class GeneratedVaadinGridColumn<R extends GeneratedVaadinGridCol
      */
     protected void setFlexGrow(double flexGrow) {
         getElement().setProperty("flexGrow", flexGrow);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the cell content. Receives three arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The cell content DOM element. Append your content to it.
-     * </li>
-     * <li>{@code column} The {@code <vaadin-grid-column>} element.</li>
-     * <li>{@code rowData} The object with the properties related with the
-     * rendered item, contains:
-     * <ul>
-     * <li>{@code rowData.index} The index of the item.</li>
-     * <li>{@code rowData.item} The item.</li>
-     * <li>{@code rowData.expanded} Sublevel toggle state.</li>
-     * <li>{@code rowData.level} Level of the tree represented with a horizontal
-     * offset of the toggle button.</li>
-     * <li>{@code rowData.selected} Selected state.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * 
-     * @return the {@code renderer} property from the webcomponent
-     */
-    protected JsonObject getRendererJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("renderer");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the cell content. Receives three arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The cell content DOM element. Append your content to it.
-     * </li>
-     * <li>{@code column} The {@code <vaadin-grid-column>} element.</li>
-     * <li>{@code rowData} The object with the properties related with the
-     * rendered item, contains:
-     * <ul>
-     * <li>{@code rowData.index} The index of the item.</li>
-     * <li>{@code rowData.item} The item.</li>
-     * <li>{@code rowData.expanded} Sublevel toggle state.</li>
-     * <li>{@code rowData.level} Level of the tree represented with a horizontal
-     * offset of the toggle button.</li>
-     * <li>{@code rowData.selected} Selected state.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * 
-     * @param renderer
-     *            the JsonObject value to set
-     */
-    protected void setRenderer(JsonObject renderer) {
-        getElement().setPropertyJson("renderer", renderer);
     }
 
     /**

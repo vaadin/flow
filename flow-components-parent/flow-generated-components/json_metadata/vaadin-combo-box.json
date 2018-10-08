@@ -64,7 +64,7 @@
     {
       "name": "renderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the content of every item.\nReceives three arguments:\n\n- `root` The `<vaadin-combo-box-item>` internal container DOM element.\n- `comboBox` The reference to the `<vaadin-combo-box>` element.\n- `model` The object with the properties related with the rendered\n  item, contains:\n  - `model.index` The index of the rendered item.\n  - `model.item` The item.\n         "

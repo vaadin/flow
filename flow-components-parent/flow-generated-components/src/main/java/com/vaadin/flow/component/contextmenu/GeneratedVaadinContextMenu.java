@@ -200,12 +200,8 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-<<<<<<< HEAD
-        "WebComponent: Vaadin.ContextMenuElement#4.1.0", "Flow#1.2-SNAPSHOT" })
-=======
         "WebComponent: Vaadin.ContextMenuElement#4.2.0-beta1",
         "Flow#1.2-SNAPSHOT" })
->>>>>>> Update generated components based on minor pre-releases
 @Tag("vaadin-context-menu")
 @HtmlImport("frontend://bower_components/vaadin-context-menu/src/vaadin-context-menu.html")
 public abstract class GeneratedVaadinContextMenu<R extends GeneratedVaadinContextMenu<R>>
@@ -361,64 +357,6 @@ public abstract class GeneratedVaadinContextMenu<R extends GeneratedVaadinContex
      */
     protected void setCloseOn(String closeOn) {
         getElement().setProperty("closeOn", closeOn == null ? "" : closeOn);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of the menu overlay. Receives
-     * three arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The root container DOM element. Append your content to
-     * it.</li>
-     * <li>{@code contextMenu} The reference to the
-     * {@code <vaadin-context-menu>} element.</li>
-     * <li>{@code context} The object with the menu context, contains:
-     * <ul>
-     * <li>{@code context.target} the target of the menu opening event,</li>
-     * <li>{@code context.detail} the menu opening event detail.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * 
-     * @return the {@code renderer} property from the webcomponent
-     */
-    protected JsonObject getRendererJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("renderer");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of the menu overlay. Receives
-     * three arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The root container DOM element. Append your content to
-     * it.</li>
-     * <li>{@code contextMenu} The reference to the
-     * {@code <vaadin-context-menu>} element.</li>
-     * <li>{@code context} The object with the menu context, contains:
-     * <ul>
-     * <li>{@code context.target} the target of the menu opening event,</li>
-     * <li>{@code context.detail} the menu opening event detail.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * 
-     * @param renderer
-     *            the JsonObject value to set
-     */
-    protected void setRenderer(JsonObject renderer) {
-        getElement().setPropertyJson("renderer", renderer);
     }
 
     /**

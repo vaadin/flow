@@ -47,7 +47,7 @@
     {
       "name": "renderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the content of the dialog.\nReceives two arguments:\n\n- `root` The root container DOM element. Append your content to it.\n- `dialog` The reference to the `<vaadin-dialog>` element.\n             "

@@ -19,7 +19,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonObject;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -194,50 +193,6 @@ public abstract class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
     protected void setAriaLabel(String ariaLabel) {
         getElement().setProperty("ariaLabel",
                 ariaLabel == null ? "" : ariaLabel);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of the dialog. Receives two
-     * arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The root container DOM element. Append your content to
-     * it.</li>
-     * <li>{@code dialog} The reference to the {@code <vaadin-dialog>} element.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * 
-     * @return the {@code renderer} property from the webcomponent
-     */
-    protected JsonObject getRendererJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("renderer");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of the dialog. Receives two
-     * arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The root container DOM element. Append your content to
-     * it.</li>
-     * <li>{@code dialog} The reference to the {@code <vaadin-dialog>} element.</li>
-     * </ul>
-     * 
-     * @param renderer
-     *            the JsonObject value to set
-     */
-    protected void setRenderer(JsonObject renderer) {
-        getElement().setPropertyJson("renderer", renderer);
     }
 
     /**

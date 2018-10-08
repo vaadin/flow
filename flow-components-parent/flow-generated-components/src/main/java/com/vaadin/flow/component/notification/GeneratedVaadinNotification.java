@@ -19,7 +19,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonObject;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
@@ -88,12 +87,8 @@ Your work has been saved
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-<<<<<<< HEAD
-        "WebComponent: Vaadin.NotificationElement#1.1.0", "Flow#1.2-SNAPSHOT" })
-=======
         "WebComponent: Vaadin.NotificationElement#1.2.0-beta1",
         "Flow#1.2-SNAPSHOT" })
->>>>>>> Update generated components based on minor pre-releases
 @Tag("vaadin-notification")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R>>
@@ -198,52 +193,6 @@ public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotif
      */
     protected void setPosition(String position) {
         getElement().setProperty("position", position == null ? "" : position);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of the notification. Receives
-     * two arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The {@code <vaadin-notification-card>} DOM element.
-     * Append your content to it.</li>
-     * <li>{@code notification} The reference to the
-     * {@code <vaadin-notification>} element.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * 
-     * @return the {@code renderer} property from the webcomponent
-     */
-    protected JsonObject getRendererJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("renderer");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of the notification. Receives
-     * two arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The {@code <vaadin-notification-card>} DOM element.
-     * Append your content to it.</li>
-     * <li>{@code notification} The reference to the
-     * {@code <vaadin-notification>} element.</li>
-     * </ul>
-     * 
-     * @param renderer
-     *            the JsonObject value to set
-     */
-    protected void setRenderer(JsonObject renderer) {
-        getElement().setPropertyJson("renderer", renderer);
     }
 
     /**

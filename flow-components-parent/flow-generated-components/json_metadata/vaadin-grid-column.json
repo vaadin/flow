@@ -47,7 +47,7 @@
     {
       "name": "headerRenderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the header content.\nReceives two arguments:\n\n- `root` The header cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n         "
@@ -55,7 +55,7 @@
     {
       "name": "footerRenderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the footer content.\nReceives two arguments:\n\n- `root` The footer cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n         "
@@ -79,7 +79,7 @@
     {
       "name": "renderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the cell content.\nReceives three arguments:\n\n- `root` The cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n- `rowData` The object with the properties related with\n  the rendered item, contains:\n  - `rowData.index` The index of the item.\n  - `rowData.item` The item.\n  - `rowData.expanded` Sublevel toggle state.\n  - `rowData.level` Level of the tree represented with a horizontal offset of the toggle button.\n  - `rowData.selected` Selected state.\n           "

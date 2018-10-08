@@ -292,12 +292,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-<<<<<<< HEAD
-        "WebComponent: Vaadin.ComboBoxElement#4.1.0", "Flow#1.2-SNAPSHOT" })
-=======
         "WebComponent: Vaadin.ComboBoxElement#4.2.0-alpha4",
         "Flow#1.2-SNAPSHOT" })
->>>>>>> Update generated components based on minor pre-releases
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box.html")
 public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R, T>, T>
@@ -533,66 +529,6 @@ public abstract class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<
      */
     protected void setReadonly(boolean readonly) {
         getElement().setProperty("readonly", readonly);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of every item. Receives three
-     * arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The {@code <vaadin-combo-box-item>} internal container
-     * DOM element.</li>
-     * <li>{@code comboBox} The reference to the {@code <vaadin-combo-box>}
-     * element.</li>
-     * <li>{@code model} The object with the properties related with the
-     * rendered item, contains:
-     * <ul>
-     * <li>{@code model.index} The index of the rendered item.</li>
-     * <li>{@code model.item} The item.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * 
-     * @return the {@code renderer} property from the webcomponent
-     */
-    protected JsonObject getRendererJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("renderer");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Custom function for rendering the content of every item. Receives three
-     * arguments:
-     * </p>
-     * <ul>
-     * <li>{@code root} The {@code <vaadin-combo-box-item>} internal container
-     * DOM element.</li>
-     * <li>{@code comboBox} The reference to the {@code <vaadin-combo-box>}
-     * element.</li>
-     * <li>{@code model} The object with the properties related with the
-     * rendered item, contains:
-     * <ul>
-     * <li>{@code model.index} The index of the rendered item.</li>
-     * <li>{@code model.item} The item.</li>
-     * </ul>
-     * </li>
-     * </ul>
-     * 
-     * @param renderer
-     *            the JsonObject value to set
-     */
-    protected void setRenderer(JsonObject renderer) {
-        getElement().setPropertyJson("renderer", renderer);
     }
 
     /**

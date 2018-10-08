@@ -47,7 +47,7 @@
     {
       "name": "headerRenderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the header content.\nReceives two arguments:\n\n- `root` The header cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n         "
@@ -55,7 +55,7 @@
     {
       "name": "footerRenderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the footer content.\nReceives two arguments:\n\n- `root` The footer cell content DOM element. Append your content to it.\n- `column` The `<vaadin-grid-column>` element.\n         "

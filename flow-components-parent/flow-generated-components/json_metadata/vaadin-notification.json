@@ -32,7 +32,7 @@
     {
       "name": "renderer",
       "type": [
-        "OBJECT"
+        "FUNCTION"
       ],
       "objectType": [],
       "description": "Custom function for rendering the content of the notification.\nReceives two arguments:\n\n- `root` The `<vaadin-notification-card>` DOM element. Append\n  your content to it.\n- `notification` The reference to the `<vaadin-notification>` element.\n             "
