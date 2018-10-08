@@ -23,6 +23,6 @@ package com.vaadin.generator.metadata;
  */
 public enum ComponentBasicType implements ComponentType {
 
-    BOOLEAN, DATE, NUMBER, STRING, ARRAY, OBJECT, UNDEFINED;
+    BOOLEAN, DATE, NUMBER, STRING, ARRAY, OBJECT, FUNCTION, UNDEFINED;
 
 }

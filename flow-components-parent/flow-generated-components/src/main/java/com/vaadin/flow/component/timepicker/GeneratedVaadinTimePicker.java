@@ -47,8 +47,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * triggered.
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TimePickerElement#1.0.0", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.TimePickerElement#1.0.0", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-time-picker")
 @HtmlImport("frontend://bower_components/vaadin-time-picker/src/vaadin-time-picker.html")
 public abstract class GeneratedVaadinTimePicker<R extends GeneratedVaadinTimePicker<R, T>, T>

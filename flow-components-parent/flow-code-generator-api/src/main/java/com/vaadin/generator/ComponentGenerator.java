@@ -15,7 +15,8 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
+import static com.vaadin.generator.registry.ValuePropertyRegistry.valueName;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +36,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.Generated;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -88,9 +91,6 @@ import com.vaadin.generator.registry.ExclusionRegistry;
 import com.vaadin.generator.registry.PropertyNameRemapRegistry;
 
 import elemental.json.JsonObject;
-
-import static com.vaadin.generator.registry.ValuePropertyRegistry.valueName;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base class of the component generation process. It takes a
@@ -484,7 +484,8 @@ public class ComponentGenerator {
             ComponentMetadata metadata) {
         metadata.getProperties().stream()
                 .filter(property -> !ExclusionRegistry.isPropertyExcluded(
-                        metadata.getTag(), property.getName()))
+                        metadata.getTag(), property.getName(),
+                        property.getType()))
                 .filter(ComponentPropertyData::isNotify).forEachOrdered(
                         property -> generateEventForPropertyWithNotify(metadata,
                                 property));
@@ -772,7 +773,8 @@ public class ComponentGenerator {
 
         metadata.getProperties().stream()
                 .filter(property -> !ExclusionRegistry.isPropertyExcluded(
-                        metadata.getTag(), property.getName()))
+                        metadata.getTag(), property.getName(),
+                        property.getType()))
                 .forEachOrdered(property -> {
 
                     boolean isValue = hasValue

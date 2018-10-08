@@ -20,8 +20,8 @@ import javax.annotation.Generated;
 /**
  * Set of theme variants applicable for {@code vaadin-tabs} component.
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.TabsElement#2.1.1", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.TabsElement#2.1.1", "Flow#1.2-SNAPSHOT" })
 public enum TabsVariant {
     LUMO_ICON_ON_TOP("icon-on-top"), LUMO_CENTERED("centered"), LUMO_SMALL(
             "small"), LUMO_MINIMAL("minimal"), LUMO_HIDE_SCROLL_BUTTONS(

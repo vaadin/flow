@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.generator.metadata.ComponentBasicType;
 
 /**
  * Registry for all exclusions in the generated files. Excluded properties,
@@ -40,8 +41,10 @@ public class ExclusionRegistry {
     private static final Map<String, Set<String>> BEHAVIOR_EXCLUSION_REGISTRY = new HashMap<>();
     private static final Map<String, Set<String>> INTERFACE_EXCLUSION_REGISTRY = new HashMap<>();
     private static final Set<String> TAG_EXCLUSION_REGISTRY = new HashSet<>();
+    private static final Set<ComponentBasicType> PROPERTY_TYPE_EXCLUSION_REGISTRY = new HashSet<>();
 
     static {
+        excludePropertyType(ComponentBasicType.FUNCTION);
         excludeProperty("vaadin-combo-box", "value");
         excludeProperty("vaadin-radio-group", "value");
         excludeProperty("vaadin-combo-box", "itemLabelPath");
@@ -55,6 +58,14 @@ public class ExclusionRegistry {
         excludeProperty("vaadin-dialog", "noCloseOnOutsideClick");
         excludeProperty("vaadin-list-box", "selected");
         excludeProperty("vaadin-list-box", "items");
+        excludeProperty("vaadin-combo-box-overlay", "owner");
+        excludeProperty("vaadin-combo-box-overlay", "model");
+        excludeProperty("vaadin-context-menu-overlay", "owner");
+        excludeProperty("vaadin-context-menu-overlay", "model");
+        excludeProperty("vaadin-date-picker-overlay", "owner");
+        excludeProperty("vaadin-date-picker-overlay", "model");
+        excludeProperty("vaadin-dialog-overlay", "owner");
+        excludeProperty("vaadin-dialog-overlay", "model");
         excludeEvent("vaadin-combo-box", "change");
         excludeEvent("vaadin-combo-box", "valued-changed");
         excludeBehaviorOrMixin("vaadin-date-picker",
@@ -87,6 +98,20 @@ public class ExclusionRegistry {
         Objects.requireNonNull(elementTag, "elementTag cannot be null");
         if (!TAG_EXCLUSION_REGISTRY.contains(elementTag)) {
             TAG_EXCLUSION_REGISTRY.add(elementTag);
+        }
+    }
+
+    /**
+     * Excludes all the properties that have the given type from all the
+     * components.
+     * 
+     * @param type
+     *            the property type to exclude
+     */
+    public static void excludePropertyType(ComponentBasicType type) {
+        Objects.requireNonNull(type, "type cannot be null");
+        if (!PROPERTY_TYPE_EXCLUSION_REGISTRY.contains(type)) {
+            PROPERTY_TYPE_EXCLUSION_REGISTRY.add(type);
         }
     }
 
@@ -204,11 +229,20 @@ public class ExclusionRegistry {
      *            the tag of the element
      * @param propertyName
      *            the name of the property
+     * @param type
+     *            the type of the property
      * @return <code>true</code> if the property should be excluded,
      *         <code>false</code> otherwise
      */
     public static boolean isPropertyExcluded(String elementTag,
-            String propertyName) {
+            String propertyName, Set<ComponentBasicType> type) {
+
+        boolean hasExcludedType = type != null && type.stream()
+                .anyMatch(PROPERTY_TYPE_EXCLUSION_REGISTRY::contains);
+        if (hasExcludedType) {
+            return true;
+        }
+
         return isExcluded(elementTag, propertyName,
                 PROPERTY_EXCLUSION_REGISTRY);
     }

@@ -290,8 +290,8 @@ grid.size = 200; // The total number of items
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: Vaadin.GridElement#5.1.0", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: Vaadin.GridElement#5.1.0", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid.html")
 public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>

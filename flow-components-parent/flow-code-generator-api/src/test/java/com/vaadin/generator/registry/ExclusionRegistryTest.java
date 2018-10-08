@@ -1,16 +1,25 @@
 package com.vaadin.generator.registry;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.generator.metadata.ComponentBasicType;
 
 /**
  * Unit tests for the {@link ExclusionRegistry}.
  *
  */
 public class ExclusionRegistryTest {
+
+    private static HashSet<ComponentBasicType> numberType = new HashSet<>(
+            Arrays.asList(ComponentBasicType.NUMBER));
+    private static HashSet<ComponentBasicType> functionType = new HashSet<>(
+            Arrays.asList(ComponentBasicType.FUNCTION));
 
     @Test
     public void excludeEvents() {
@@ -24,10 +33,10 @@ public class ExclusionRegistryTest {
         Assert.assertTrue(ExclusionRegistry.isEventExcluded("some-other-tag",
                 "someOtherEvent"));
 
-        Assert.assertFalse(
-                ExclusionRegistry.isPropertyExcluded("some-tag", "someEvent"));
         Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
-                "someOtherEvent"));
+                "someEvent", numberType));
+        Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
+                "someOtherEvent", numberType));
         Assert.assertFalse(
                 ExclusionRegistry.isMethodExcluded("some-tag", "someEvent"));
         Assert.assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
@@ -44,11 +53,11 @@ public class ExclusionRegistryTest {
         ExclusionRegistry.excludeProperty(null, "someOtherProperty");
 
         Assert.assertTrue(ExclusionRegistry.isPropertyExcluded("some-tag",
-                "someProperty"));
+                "someProperty", numberType));
         Assert.assertTrue(ExclusionRegistry.isPropertyExcluded("some-tag",
-                "someOtherProperty"));
+                "someOtherProperty", numberType));
         Assert.assertTrue(ExclusionRegistry.isPropertyExcluded("some-other-tag",
-                "someOtherProperty"));
+                "someOtherProperty", numberType));
 
         Assert.assertFalse(
                 ExclusionRegistry.isEventExcluded("some-tag", "someProperty"));
@@ -62,6 +71,13 @@ public class ExclusionRegistryTest {
                 .isBehaviorOrMixinExcluded("some-tag", "someProperty"));
         Assert.assertFalse(ExclusionRegistry
                 .isBehaviorOrMixinExcluded("some-tag", "someOtherProperty"));
+    }
+
+    @Test
+    public void excludePropertyTypes() {
+        ExclusionRegistry.excludePropertyType(ComponentBasicType.FUNCTION);
+        Assert.assertTrue(ExclusionRegistry.isPropertyExcluded("some-tag",
+                "someProperty", functionType));
     }
 
     @Test
@@ -80,10 +96,10 @@ public class ExclusionRegistryTest {
                 ExclusionRegistry.isEventExcluded("some-tag", "someMethod"));
         Assert.assertFalse(ExclusionRegistry.isEventExcluded("some-tag",
                 "someOtherMethod"));
-        Assert.assertFalse(
-                ExclusionRegistry.isPropertyExcluded("some-tag", "someMethod"));
         Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
-                "someOtherMethod"));
+                "someMethod", numberType));
+        Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
+                "someOtherMethod", numberType));
         Assert.assertFalse(ExclusionRegistry
                 .isBehaviorOrMixinExcluded("some-tag", "someMethod"));
         Assert.assertFalse(ExclusionRegistry
@@ -111,9 +127,9 @@ public class ExclusionRegistryTest {
         Assert.assertFalse(ExclusionRegistry.isMethodExcluded("some-tag",
                 "someOtherBehavior"));
         Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
-                "someBehavior"));
+                "someBehavior", numberType));
         Assert.assertFalse(ExclusionRegistry.isPropertyExcluded("some-tag",
-                "someOtherBehavior"));
+                "someOtherBehavior", numberType));
 
     }
 
