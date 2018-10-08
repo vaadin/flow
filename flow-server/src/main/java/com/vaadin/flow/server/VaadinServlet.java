@@ -130,7 +130,7 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        return DeploymentConfigurationCreator
+        return DeploymentConfigurationFactory
                 .createDeploymentConfiguration(getClass(), getServletConfig());
     }
 

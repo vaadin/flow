@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.Optional;
@@ -32,9 +33,9 @@ import com.vaadin.flow.internal.AnnotationReader;
  * A class that creates {@link DeploymentConfiguration} filled with all
  * parameters specified by the framework users.
  */
-public final class DeploymentConfigurationCreator {
+public final class DeploymentConfigurationFactory implements Serializable {
 
-    private DeploymentConfigurationCreator() {
+    private DeploymentConfigurationFactory() {
     }
 
     /**

@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.DeploymentConfigurationCreator;
+import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 
@@ -95,21 +95,25 @@ public class ServletDeployer implements ServletContextListener {
         for (ServletRegistration registration : registrations) {
             Optional<Class<?>> servletClass = loadClass(
                     context.getClassLoader(), registration.getClassName());
-            if (!servletClass.map(this::isVaadinServlet).orElse(false)) {
-                continue;
-            }
-
-            try {
-                result.add(DeploymentConfigurationCreator
-                        .createDeploymentConfiguration(servletClass.get(),
-                                getServletConfig(context, registration)));
-            } catch (ServletException e) {
-                throw new IllegalStateException(String.format(
-                        "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                        registration.getName(), servletClass.get()), e);
+            if (servletClass.map(this::isVaadinServlet).orElse(false)) {
+                result.add(createDeploymentConfiguration(
+                        getServletConfig(context, registration),
+                        servletClass.get()));
             }
         }
         return result;
+    }
+
+    private DeploymentConfiguration createDeploymentConfiguration(
+            ServletConfig servletConfig, Class<?> servletClass) {
+        try {
+            return DeploymentConfigurationFactory
+                    .createDeploymentConfiguration(servletClass, servletConfig);
+        } catch (ServletException e) {
+            throw new IllegalStateException(String.format(
+                    "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
+                    servletConfig.getServletName(), servletClass), e);
+        }
     }
 
     private ServletConfig getServletConfig(ServletContext context,
