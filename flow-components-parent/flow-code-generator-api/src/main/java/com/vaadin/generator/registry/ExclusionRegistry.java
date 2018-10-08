@@ -58,6 +58,14 @@ public class ExclusionRegistry {
         excludeProperty("vaadin-dialog", "noCloseOnOutsideClick");
         excludeProperty("vaadin-list-box", "selected");
         excludeProperty("vaadin-list-box", "items");
+        excludeProperty("vaadin-combo-box-overlay", "owner");
+        excludeProperty("vaadin-combo-box-overlay", "model");
+        excludeProperty("vaadin-context-menu-overlay", "owner");
+        excludeProperty("vaadin-context-menu-overlay", "model");
+        excludeProperty("vaadin-date-picker-overlay", "owner");
+        excludeProperty("vaadin-date-picker-overlay", "model");
+        excludeProperty("vaadin-dialog-overlay", "owner");
+        excludeProperty("vaadin-dialog-overlay", "model");
         excludeEvent("vaadin-combo-box", "change");
         excludeEvent("vaadin-combo-box", "valued-changed");
         excludeBehaviorOrMixin("vaadin-date-picker",

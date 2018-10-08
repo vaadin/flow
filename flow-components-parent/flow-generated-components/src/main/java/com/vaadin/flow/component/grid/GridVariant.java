@@ -23,13 +23,13 @@ import javax.annotation.Generated;
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
         "WebComponent: Vaadin.GridElement#5.1.0", "Flow#1.2-SNAPSHOT" })
 public enum GridVariant {
-    LUMO_NO_BORDER("no-border"), LUMO_NO_ROW_BORDERS(
-            "no-row-borders"), LUMO_COLUMN_BORDERS(
-                    "column-borders"), LUMO_ROW_STRIPES(
-                            "row-stripes"), LUMO_COMPACT(
-                                    "compact"), LUMO_WRAP_CELL_CONTENT(
-                                            "wrap-cell-content"), MATERIAL_COLUMN_DIVIDERS(
-                                                    "column-dividers");
+    MATERIAL_COLUMN_DIVIDERS("column-dividers"), LUMO_NO_BORDER(
+            "no-border"), LUMO_NO_ROW_BORDERS(
+                    "no-row-borders"), LUMO_COLUMN_BORDERS(
+                            "column-borders"), LUMO_ROW_STRIPES(
+                                    "row-stripes"), LUMO_COMPACT(
+                                            "compact"), LUMO_WRAP_CELL_CONTENT(
+                                                    "wrap-cell-content");
 
     private final String variant;
 

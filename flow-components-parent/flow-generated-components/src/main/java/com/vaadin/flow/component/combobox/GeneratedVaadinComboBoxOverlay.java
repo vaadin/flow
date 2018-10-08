@@ -79,38 +79,6 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Owner element passed with renderer function
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code owner} property from the webcomponent
-     */
-    protected JsonObject getOwnerJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("owner");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Owner element passed with renderer function
-     * </p>
-     * 
-     * @param owner
-     *            the JsonObject value to set
-     */
-    protected void setOwner(JsonObject owner) {
-        getElement().setPropertyJson("owner", owner);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * The template of the overlay content.
      * <p>
      * This property is synchronized automatically from client side when a
@@ -220,38 +188,6 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
      */
     protected void setWithBackdrop(boolean withBackdrop) {
         getElement().setProperty("withBackdrop", withBackdrop);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Object with properties that is passed to {@code renderer} function
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return the {@code model} property from the webcomponent
-     */
-    protected JsonObject getModelJsonObject() {
-        return (JsonObject) getElement().getPropertyRaw("model");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Object with properties that is passed to {@code renderer} function
-     * </p>
-     * 
-     * @param model
-     *            the JsonObject value to set
-     */
-    protected void setModel(JsonObject model) {
-        getElement().setPropertyJson("model", model);
     }
 
     /**
