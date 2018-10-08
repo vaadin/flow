@@ -47,9 +47,9 @@ import com.vaadin.flow.component.Component;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
         "WebComponent: Vaadin.ComboBoxOverlayElement#UNKNOWN",
-        "Flow#1.1-SNAPSHOT" })
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/src/vaadin-combo-box-dropdown.html")
 public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOverlay<R>>
@@ -72,6 +72,38 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
      */
     protected void setOpened(boolean opened) {
         getElement().setProperty("opened", opened);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Owner element passed with renderer function
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code owner} property from the webcomponent
+     */
+    protected JsonObject getOwnerJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("owner");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Owner element passed with renderer function
+     * </p>
+     * 
+     * @param owner
+     *            the JsonObject value to set
+     */
+    protected void setOwner(JsonObject owner) {
+        getElement().setPropertyJson("owner", owner);
     }
 
     /**
@@ -195,6 +227,38 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
+     * Object with properties that is passed to {@code renderer} function
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code model} property from the webcomponent
+     */
+    protected JsonObject getModelJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("model");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Object with properties that is passed to {@code renderer} function
+     * </p>
+     * 
+     * @param model
+     *            the JsonObject value to set
+     */
+    protected void setModel(JsonObject model) {
+        getElement().setPropertyJson("model", model);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
      * When true the overlay won't disable the main content, showing it doesn’t
      * change the functionality of the user interface.
      * <p>
@@ -264,6 +328,18 @@ public abstract class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinCo
      */
     protected void close(JsonObject sourceEvent) {
         getElement().callFunction("close", sourceEvent);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Manually invoke existing renderer.
+     * </p>
+     */
+    protected void render() {
+        getElement().callFunction("render");
     }
 
     @DomEvent("vaadin-overlay-close")

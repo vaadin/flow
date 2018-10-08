@@ -30,8 +30,8 @@ import com.vaadin.flow.component.Component;
  * This Element is used internally by vaadin-grid.
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
-        "WebComponent: GridOuterScrollerElement#UNKNOWN", "Flow#1.1-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
+        "WebComponent: GridOuterScrollerElement#UNKNOWN", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-outer-scroller")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-outer-scroller.html")
 public abstract class GeneratedVaadinGridOuterScroller<R extends GeneratedVaadinGridOuterScroller<R>>

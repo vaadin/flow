@@ -51,9 +51,9 @@ import com.vaadin.flow.component.Component;
  * &lt;/vaadin-grid-column&gt; &lt;/vaadin-grid-column-group&gt;
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
         "WebComponent: Vaadin.GridColumnGroupElement#5.1.0",
-        "Flow#1.1-SNAPSHOT" })
+        "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-column-group")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-column-group.html")
 public abstract class GeneratedVaadinGridColumnGroup<R extends GeneratedVaadinGridColumnGroup<R>>

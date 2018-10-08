@@ -21,9 +21,9 @@ import javax.annotation.Generated;
  * Set of theme variants applicable for {@code vaadin-horizontal-layout}
  * component.
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.1-SNAPSHOT",
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
         "WebComponent: Vaadin.HorizontalLayoutElement#1.1.0",
-        "Flow#1.1-SNAPSHOT" })
+        "Flow#1.2-SNAPSHOT" })
 public enum HorizontalLayoutVariant {
     LUMO_SPACING_XS("spacing-xs"), LUMO_SPACING_S("spacing-s"), LUMO_SPACING(
             "spacing"), LUMO_SPACING_L("spacing-l"), LUMO_SPACING_XL(
