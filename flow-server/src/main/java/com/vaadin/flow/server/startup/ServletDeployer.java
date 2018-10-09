@@ -21,6 +21,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,6 +64,39 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
 public class ServletDeployer implements ServletContextListener {
     private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
+    private static class StubServletConfig
+            implements ServletConfig, Serializable {
+        private final ServletContext context;
+        private final ServletRegistration registration;
+
+        private StubServletConfig(ServletContext context,
+                ServletRegistration registration) {
+            this.context = context;
+            this.registration = registration;
+        }
+
+        @Override
+        public String getServletName() {
+            return registration.getName();
+        }
+
+        @Override
+        public ServletContext getServletContext() {
+            return context;
+        }
+
+        @Override
+        public String getInitParameter(String name) {
+            return registration.getInitParameter(name);
+        }
+
+        @Override
+        public Enumeration<String> getInitParameterNames() {
+            return Collections
+                    .enumeration(registration.getInitParameters().keySet());
+        }
+    }
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
@@ -95,10 +129,12 @@ public class ServletDeployer implements ServletContextListener {
                 registrations.size());
         for (ServletRegistration registration : registrations) {
             loadClass(context.getClassLoader(), registration.getClassName())
-                    .ifPresent(servletClass -> result
-                            .add(createDeploymentConfiguration(
-                                    getServletConfig(context, registration),
-                                    servletClass)));
+                    .ifPresent(
+                            servletClass -> result
+                                    .add(createDeploymentConfiguration(
+                                            new StubServletConfig(context,
+                                                    registration),
+                                            servletClass)));
         }
         return result;
     }
@@ -113,32 +149,6 @@ public class ServletDeployer implements ServletContextListener {
                     "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
                     servletConfig.getServletName(), servletClass), e);
         }
-    }
-
-    private ServletConfig getServletConfig(ServletContext context,
-            ServletRegistration registration) {
-        return new ServletConfig() {
-            @Override
-            public String getServletName() {
-                return registration.getName();
-            }
-
-            @Override
-            public ServletContext getServletContext() {
-                return context;
-            }
-
-            @Override
-            public String getInitParameter(String name) {
-                return registration.getInitParameter(name);
-            }
-
-            @Override
-            public Enumeration<String> getInitParameterNames() {
-                return Collections
-                        .enumeration(registration.getInitParameters().keySet());
-            }
-        };
     }
 
     private void createAppServlet(ServletContext context) {
