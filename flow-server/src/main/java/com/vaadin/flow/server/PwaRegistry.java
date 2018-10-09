@@ -57,7 +57,7 @@ public class PwaRegistry implements Serializable {
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
-    public static final String WORKBOX_FOLDER = "VAADIN/static/workbox/";
+    public static final String WORKBOX_FOLDER = "VAADIN/static/server/workbox/";
     private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
     private String offlineHtml = "";
