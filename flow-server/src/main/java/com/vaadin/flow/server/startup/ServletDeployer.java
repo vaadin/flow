@@ -66,11 +66,12 @@ public class ServletDeployer implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
-        boolean enableServlets = true;
-        boolean hasDevelopmentMode = false;
+        Collection<DeploymentConfiguration> servletConfigurations = getServletConfigurations(
+                context);
 
-        for (DeploymentConfiguration configuration : getServletConfigurations(
-                context)) {
+        boolean enableServlets = true;
+        boolean hasDevelopmentMode = servletConfigurations.isEmpty();
+        for (DeploymentConfiguration configuration : servletConfigurations) {
             enableServlets = enableServlets
                     && !configuration.disableAutomaticServletRegistration();
             hasDevelopmentMode = hasDevelopmentMode
@@ -93,13 +94,11 @@ public class ServletDeployer implements ServletContextListener {
         Collection<DeploymentConfiguration> result = new ArrayList<>(
                 registrations.size());
         for (ServletRegistration registration : registrations) {
-            Optional<Class<?>> servletClass = loadClass(
-                    context.getClassLoader(), registration.getClassName());
-            if (servletClass.map(this::isVaadinServlet).orElse(false)) {
-                result.add(createDeploymentConfiguration(
-                        getServletConfig(context, registration),
-                        servletClass.get()));
-            }
+            loadClass(context.getClassLoader(), registration.getClassName())
+                    .ifPresent(servletClass -> result
+                            .add(createDeploymentConfiguration(
+                                    getServletConfig(context, registration),
+                                    servletClass)));
         }
         return result;
     }
@@ -142,15 +141,15 @@ public class ServletDeployer implements ServletContextListener {
         };
     }
 
-    private void createAppServlet(ServletContext servletContext) {
-        if (!RouteRegistry.getInstance(servletContext).hasNavigationTargets()) {
+    private void createAppServlet(ServletContext context) {
+        if (!RouteRegistry.getInstance(context).hasNavigationTargets()) {
             getLogger().info(
                     "{} there are no navigation targets annotated with @Route",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
             return;
         }
 
-        ServletRegistration vaadinServlet = findVaadinServlet(servletContext);
+        ServletRegistration vaadinServlet = findVaadinServlet(context);
         if (vaadinServlet != null) {
             getLogger().info(
                     "{} there is already a Vaadin servlet with the name {}",
@@ -159,7 +158,7 @@ public class ServletDeployer implements ServletContextListener {
             return;
         }
 
-        createServletIfNotExists(servletContext, getClass().getName(), "/*");
+        createServletIfNotExists(context, getClass().getName(), "/*");
     }
 
     private void createServletIfNotExists(ServletContext context, String name,
@@ -208,10 +207,6 @@ public class ServletDeployer implements ServletContextListener {
     private boolean isVaadinServlet(ClassLoader classLoader, String className) {
         return loadClass(classLoader, className)
                 .map(VaadinServlet.class::isAssignableFrom).orElse(false);
-    }
-
-    private boolean isVaadinServlet(Class<?> servletClass) {
-        return VaadinServlet.class.isAssignableFrom(servletClass);
     }
 
     private Optional<Class<?>> loadClass(ClassLoader classLoader,
