@@ -120,7 +120,7 @@ public class AnnotationReader {
         // Find from the class hierarchy
         Class<?> currentType = clazz;
         T annotation;
-        while (currentType != Object.class) {
+        while (currentType != null && currentType != Object.class) {
             annotation = currentType.getAnnotation(annotationType);
             if (annotation != null) {
                 return Optional.of(annotation);

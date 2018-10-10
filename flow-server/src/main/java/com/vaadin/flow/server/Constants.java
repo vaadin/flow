@@ -91,6 +91,12 @@ public final class Constants implements Serializable {
      */
     public static final String I18N_PROVIDER = "i18n.provider";
 
+    /**
+     * Configuration name for the parameter that determines if Flow should automatically
+     * register servlets needed for the application to work.
+     */
+    public static final String DISABLE_AUTOMATIC_SERVLET_REGISTRATION = "disable.automatic.servlet.registration";
+
     private Constants() {
         // prevent instantiation constants class only
     }

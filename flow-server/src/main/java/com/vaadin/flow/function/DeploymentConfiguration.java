@@ -268,18 +268,38 @@ public interface DeploymentConfiguration extends Serializable {
      * @return {@code true} if webJars are enabled, {@code false} otherwise
      */
     default boolean areWebJarsEnabled() {
-        return !getBooleanProperty(Constants.DISABLE_WEBJARS, useCompiledFrontendResources());
+        return !getBooleanProperty(Constants.DISABLE_WEBJARS,
+                useCompiledFrontendResources());
     }
 
     /**
      * Determines if Flow should use compiled or original frontend resources.
      *
      * User can explicitly disable bundled resources usage by setting the
-     * {@link Constants#USE_ORIGINAL_FRONTEND_RESOURCES} property to {@code true}.
+     * {@link Constants#USE_ORIGINAL_FRONTEND_RESOURCES} property to
+     * {@code true}.
      *
      * @return {@code true} if Flow should use compiled frontend resources.
      */
     default boolean useCompiledFrontendResources() {
-        return isProductionMode() && !getBooleanProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
+        return isProductionMode() && !getBooleanProperty(
+                Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
+    }
+
+    /**
+     * Determines if Flow should automatically register servlets. For more
+     * information on the servlets registered, refer to
+     * {@link com.vaadin.flow.server.startup.ServletDeployer} javadoc.
+     *
+     * User can explicitly disable automatic servlet registration by setting the
+     * {@link Constants#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} property to
+     * {@code true}.
+     *
+     * @return {@code true} if Flow should not automatically register servlets
+     * @see com.vaadin.flow.server.startup.ServletDeployer
+     */
+    default boolean disableAutomaticServletRegistration() {
+        return getBooleanProperty(
+                Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
     }
 }

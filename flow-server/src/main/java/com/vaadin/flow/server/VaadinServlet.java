@@ -15,27 +15,21 @@
  */
 package com.vaadin.flow.server;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.Optional;
-import java.util.Properties;
-
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Optional;
+import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.flow.server.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -94,52 +88,6 @@ public class VaadinServlet extends HttpServlet {
 
     }
 
-    private void readUiFromEnclosingClass(Properties initParameters) {
-        Class<?> enclosingClass = getClass().getEnclosingClass();
-
-        if (enclosingClass != null
-                && UI.class.isAssignableFrom(enclosingClass)) {
-            initParameters.put(VaadinSession.UI_PARAMETER,
-                    enclosingClass.getName());
-        }
-    }
-
-    private void readConfigurationAnnotation(Properties initParameters)
-            throws ServletException {
-        Optional<VaadinServletConfiguration> optionalConfigAnnotation = AnnotationReader
-                .getAnnotationFor(getClass(), VaadinServletConfiguration.class);
-        if (optionalConfigAnnotation.isPresent()) {
-            VaadinServletConfiguration configuration = optionalConfigAnnotation
-                    .get();
-            Method[] methods = VaadinServletConfiguration.class
-                    .getDeclaredMethods();
-            for (Method method : methods) {
-                InitParameterName name = method
-                        .getAnnotation(InitParameterName.class);
-                assert name != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
-
-                try {
-                    Object value = method.invoke(configuration);
-
-                    String stringValue;
-                    if (value instanceof Class<?>) {
-                        stringValue = ((Class<?>) value).getName();
-                    } else {
-                        stringValue = value.toString();
-                    }
-
-                    initParameters.setProperty(name.value(), stringValue);
-                } catch (Exception e) {
-                    // This should never happen
-                    throw new ServletException(
-                            "Could not read @VaadinServletConfiguration value "
-                                    + method.getName(),
-                            e);
-                }
-            }
-        }
-    }
-
     protected void servletInitialized() throws ServletException {
         // Empty by default
     }
@@ -182,29 +130,9 @@ public class VaadinServlet extends HttpServlet {
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        Properties initParameters = new Properties();
-
-        readUiFromEnclosingClass(initParameters);
-
-        readConfigurationAnnotation(initParameters);
-
-        // Read default parameters from server.xml
-        final ServletContext context = getServletConfig().getServletContext();
-        for (final Enumeration<String> e = context.getInitParameterNames(); e
-                .hasMoreElements();) {
-            final String name = e.nextElement();
-            initParameters.setProperty(name, context.getInitParameter(name));
-        }
-
-        // Override with application config from web.xml
-        for (final Enumeration<String> e = getServletConfig()
-                .getInitParameterNames(); e.hasMoreElements();) {
-            final String name = e.nextElement();
-            initParameters.setProperty(name,
-                    getServletConfig().getInitParameter(name));
-        }
-
-        return createDeploymentConfiguration(initParameters);
+        return createDeploymentConfiguration(DeploymentConfigurationFactory
+                .createDeploymentConfiguration(getClass(), getServletConfig())
+                .getInitParameters());
     }
 
     /**
