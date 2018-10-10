@@ -42,11 +42,11 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
  *
  * The servlets registered are:
  * <ul>
- * <li>Vaadin application servlet, mapped to '/*'<br/>
+ * <li>Vaadin application servlet, mapped to '/*'<br>
  * The servlet won't be registered, if any {@link VaadinServlet} is registered
  * already or if there are no classes annotated with {@link Route}
  * annotation.</li>
- * <li>Frontend files servlet, mapped to '/frontend/*' <br/>
+ * <li>Frontend files servlet, mapped to '/frontend/*' <br>
  * The servlet is registered when the application is started in the development
  * mode.</li>
  * </ul>
