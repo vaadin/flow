@@ -48,7 +48,9 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
  * annotation.</li>
  * <li>Frontend files servlet, mapped to '/frontend/*' <br>
  * The servlet is registered when the application is started in the development
- * mode.</li>
+ * mode or has
+ * {@link com.vaadin.flow.server.Constants#USE_ORIGINAL_FRONTEND_RESOURCES}
+ * parameter set to {@code true}.</li>
  * </ul>
  *
  * In addition to the rules above, a servlet won't be registered, if any servlet
@@ -109,7 +111,7 @@ public class ServletDeployer implements ServletContextListener {
             enableServlets = enableServlets
                     && !configuration.disableAutomaticServletRegistration();
             hasDevelopmentMode = hasDevelopmentMode
-                    || !configuration.isProductionMode();
+                    || !configuration.useCompiledFrontendResources();
         }
 
         if (enableServlets) {
