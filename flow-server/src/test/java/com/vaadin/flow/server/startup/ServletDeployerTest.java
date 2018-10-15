@@ -10,6 +10,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -156,6 +158,21 @@ public class ServletDeployerTest {
     }
 
     @Test
+    public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed() {
+        Map<String, String> params = new HashMap<>();
+        params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        params.put(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
+
+        deployer.contextInitialized(
+                getContextEvent(true, getServletRegistration("test",
+                        TestServlet.class, emptyList(), params)));
+
+        assertMappingsCount(2);
+        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+    }
+
+    @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet() {
         deployer.contextInitialized(getContextEvent(true,
                 getServletRegistration("test", TestServlet.class,
@@ -265,7 +282,7 @@ public class ServletDeployerTest {
         Capture<String> parameterNameCapture = newCapture();
         expect(registrationMock.getInitParameter(capture(parameterNameCapture)))
                 .andAnswer(() -> initParameters
-                        .get(parameterNameCapture.getValue()));
+                        .get(parameterNameCapture.getValue())).anyTimes();
         replay(registrationMock);
         return registrationMock;
     }
