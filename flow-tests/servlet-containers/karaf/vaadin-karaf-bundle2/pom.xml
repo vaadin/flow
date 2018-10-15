@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-test-karaf</artifactId>
+        <version>1.2-SNAPSHOT</version>
+    </parent>
+    <artifactId>vaadin-karaf-bundle2</artifactId>
+    <packaging>jar</packaging>
+    <name>Vaadin Karaf test bundle 2</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-client</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Possible osgi integration should come here -->
+        <!-- Version should be provided in the BOM -->
+        <!--<dependency>-->
+            <!--<groupId>com.vaadin</groupId>-->
+            <!--<artifactId>flow-osgi-integration</artifactId>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.annotation</artifactId>
+            <version>6.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bnd-process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!--<profiles>-->
+        <!--<profile>-->
+            <!--&lt;!&ndash; Vaadin pre-release repositories &ndash;&gt;-->
+            <!--<id>vaadin-prerelease</id>-->
+            <!--<activation>-->
+                <!--<activeByDefault>true</activeByDefault>-->
+            <!--</activation>-->
+
+            <!--<repositories>-->
+                <!--<repository>-->
+                    <!--<id>vaadin-prereleases</id>-->
+                    <!--<url>http://maven.vaadin.com/vaadin-prereleases</url>-->
+                <!--</repository>-->
+                <!--<repository>-->
+                    <!--<id>vaadin-snapshots</id>-->
+                    <!--<url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>-->
+                    <!--<releases>-->
+                        <!--<enabled>false</enabled>-->
+                    <!--</releases>-->
+                    <!--<snapshots>-->
+                        <!--<enabled>true</enabled>-->
+                    <!--</snapshots>-->
+                <!--</repository>-->
+            <!--</repositories>-->
+            <!--<pluginRepositories>-->
+                <!--<pluginRepository>-->
+                    <!--<id>vaadin-prereleases</id>-->
+                    <!--<url>http://maven.vaadin.com/vaadin-prereleases</url>-->
+                <!--</pluginRepository>-->
+                <!--<pluginRepository>-->
+                    <!--<id>vaadin-snapshots</id>-->
+                    <!--<url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>-->
+                    <!--<releases>-->
+                        <!--<enabled>false</enabled>-->
+                    <!--</releases>-->
+                    <!--<snapshots>-->
+                        <!--<enabled>true</enabled>-->
+                    <!--</snapshots>-->
+                <!--</pluginRepository>-->
+            <!--</pluginRepositories>-->
+        <!--</profile>-->
+    <!--</profiles>-->
+
+</project>

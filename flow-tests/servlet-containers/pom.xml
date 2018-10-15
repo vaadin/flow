@@ -96,6 +96,12 @@
             </modules>
         </profile>
         <profile>
+            <id>karaf</id>
+            <modules>
+                <module>karaf</module>
+            </modules>
+        </profile>
+        <profile>
             <id>local-run</id>
             <activation>
                 <property>
