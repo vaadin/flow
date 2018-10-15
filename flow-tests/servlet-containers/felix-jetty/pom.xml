@@ -171,7 +171,6 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
-                <version>${bnd.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

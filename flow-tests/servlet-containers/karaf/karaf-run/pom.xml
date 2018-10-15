@@ -54,18 +54,28 @@
                             <goal>client</goal>
                         </goals>
                         <configuration>
-                            <keyFile>karaf.id_dsa</keyFile>
                             <delay>5</delay>
-                            <attempts>150</attempts>
+                            <attempts>100</attempts>
+                            <port>8181</port>
                             <commands>
                                 <!--Scheduled shutdown in 15 minutes-->
                                 <command>shutdown -f +10</command>
                                 <command>feature:install http</command>
                                 <command>feature:install http-whiteboard</command>
+                                <command>feature:install webconsole</command>
                                 <command>bundle:install -s mvn:org.jsoup/jsoup/1.8.3</command>
+                                <command>bundle:install -s mvn:com.google.code.gson/gson/2.3.1</command>
                                 <command>bundle:install -s mvn:com.vaadin.external/gentyref/1.2.0.vaadin1</command>
+                                <command>bundle:install -s mvn:com.helger/ph-commons/9.1.2</command>
+                                <command>bundle:install -s mvn:com.helger/ph-css/6.1.1</command>
+                                <command>bundle:install -s mvn:com.vaadin.external.gwt/gwt-elemental/2.8.2.vaadin2</command>
+                                <command>bundle:install -s mvn:net.bytebuddy/byte-buddy/1.9.0</command>
+                                <command>bundle:install -s mvn:commons-io/commons-io/2.5</command>
+                                <command>bundle:install -s mvn:commons-fileupload/commons-fileupload/1.3.3</command>
+                                <command>bundle:install -s mvn:org.jsoup/jsoup/1.10.3</command>
                                 <command>bundle:install -s mvn:com.vaadin/flow-server/${project.version}</command>
                                 <command>bundle:install -s mvn:com.vaadin/flow-client/${project.version}</command>
+                                <command>bundle:install -s mvn:com.vaadin/flow-html-components/${project.version}</command>
                                 <!--<command>bundle:install -s mvn:com.vaadin/flow-osgi-integration/${project.version}</command>-->
                                 <command>
                                     <![CDATA[bundle:install -s file:./../vaadin-karaf-bundle1/target/vaadin-karaf-bundle1-${project.version}.jar]]></command>

@@ -13,11 +13,12 @@ public class Bundle1 extends Div {
         Input textField = new Input();
         textField.getElement().setAttribute("placeholder",
                 "Type your name here:");
+        textField.setId("bundle-input");
 
         NativeButton button = new NativeButton("Click Me");
         button.addClickListener(event -> add(
                 new Label("Thanks " + textField.getValue() + ", it works!")));
-        button.setId("bundle-1-button");
+        button.setId("bundle-button");
 
         add(textField, button);
     }

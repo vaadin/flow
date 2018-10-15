@@ -16,7 +16,7 @@ public class KarafIntegrationIT extends ChromeBrowserTest {
     @Test
     public void testApp1() {
         runBasicTest(APP1_URL, "bar");
-        WebElement element = getDriver().findElement(By.id("bundle-1-button"));
+        WebElement element = getDriver().findElement(By.id("bundle-button"));
     }
 
     @Test
@@ -27,8 +27,8 @@ public class KarafIntegrationIT extends ChromeBrowserTest {
     private void runBasicTest(String app1Url, String text) {
         getDriver().navigate().to(app1Url);
 
-        getDriver().findElement(By.id("bundle-2-input")).sendKeys(text);
-        getDriver().findElement(By.id("bundle-2-button")).click();
+        getDriver().findElement(By.id("bundle-input")).sendKeys(text);
+        getDriver().findElement(By.id("bundle-button")).click();
         String foundText = getDriver().findElement(By.id("message")).getText();
         Assert.assertEquals("Thanks " + text + ", it works!", foundText);
     }

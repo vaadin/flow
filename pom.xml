@@ -117,7 +117,6 @@
         <!-- OSGi -->
         <!-- Note: the parserVersion value is set by build-helper-maven-plugin  -->
         <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-        <bnd.version>3.3.0</bnd.version>
 
         <maven.test.skip>false</maven.test.skip>
     </properties>
@@ -405,7 +404,6 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
-                <version>${bnd.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -417,6 +415,13 @@
         </plugins>
         <pluginManagement>
             <plugins>
+
+                <plugin>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-maven-plugin</artifactId>
+                    <version>4.0.0</version>
+                </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>

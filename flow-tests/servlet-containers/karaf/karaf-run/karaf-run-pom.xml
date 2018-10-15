@@ -3,17 +3,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>karaf-runner</artifactId>
     <groupId>com.vaadin</groupId>
-    <version>8.6-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
+                <!--<version>4.0.8</version>-->
                 <version>4.2.1</version>
                 <configuration>
+                    <karafDistribution>mvn:org.apache.karaf/apache-karaf/4.2.1/zip</karafDistribution>
                     <deployProjectArtifact>false</deployProjectArtifact>
                     <startSsh>true</startSsh>
+                    <keepRunning>true</keepRunning>
                 </configuration>
             </plugin>
         </plugins>
