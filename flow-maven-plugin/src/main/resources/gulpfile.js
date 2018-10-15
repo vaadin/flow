@@ -133,10 +133,12 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
               });
             })
             .then(() => {
+                const bundleManifestFile = path.join(configurationTargetDirectory, 'vaadin-flow-bundle-manifest.json');
                 if (bundle) {
-                    const bundleManifestFile = path.join(configurationTargetDirectory, 'vaadin-flow-bundle-manifest.json');
                     console.log(`Writing bundle manifest to '${bundleManifestFile}'`);
-                    writeBundleInformation(buildBundler, redundantPathPrefix, bundleManifestFile);
+                    writeFileContents(bundleManifestFile, bundleMapToJson(buildBundler.manifest.bundles, redundantPathPrefix));
+                } else {
+                    writeFileContents(bundleManifestFile, "{}");
                 }
             })
             .then(() => {
@@ -146,20 +148,20 @@ function buildConfiguration(polymerProject, redundantPathPrefix, configurationTa
     });
 }
 
-function writeBundleInformation(buildBundler, redundantPathPrefix, outputFile) {
+function writeFileContents(outputFile, contents) {
     const manifestOutput = fs.openSync(outputFile, 'w');
-    fs.writeSync(manifestOutput, bundleMapToJson(buildBundler.manifest.bundles));
+    fs.writeSync(manifestOutput, contents);
     fs.closeSync(manifestOutput);
+}
 
-    function bundleMapToJson(bundleMap) {
-        const result = {};
-        bundleMap.forEach((bundleObject, bundleUrl) => {
-            result[bundleUrl] = [...bundleObject.inlinedHtmlImports, ...bundleObject.inlinedScripts, ...bundleObject.inlinedStyles || []]
-                .map(value => value.replace(redundantPathPrefix, ''))
-                .map(value => value.startsWith('/') ? value.substring(1) : value);
-        });
-        return JSON.stringify(result);
-    }
+function bundleMapToJson(bundleMap, redundantPathPrefix) {
+    const result = {};
+    bundleMap.forEach((bundleObject, bundleUrl) => {
+      result[bundleUrl] = [...bundleObject.inlinedHtmlImports, ...bundleObject.inlinedScripts, ...bundleObject.inlinedStyles || []]
+          .map(value => value.replace(redundantPathPrefix, ''))
+          .map(value => value.startsWith('/') ? value.substring(1) : value);
+    });
+    return JSON.stringify(result);
 }
 
 class SafeTransform extends Transform {
