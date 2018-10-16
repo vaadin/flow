@@ -42,7 +42,7 @@ public abstract class AbstractComponentDataGenerator<T>
         String itemKey = getItemKey(item);
         Component oldComponent = getRenderedComponent(itemKey);
         if (oldComponent != null) {
-            Component recreatedComponent = createComponent(item);
+            Component recreatedComponent = updateComponent(oldComponent, item);
 
             int oldId = oldComponent.getElement().getNode().getId();
             int newId = recreatedComponent.getElement().getNode().getId();
@@ -84,6 +84,23 @@ public abstract class AbstractComponentDataGenerator<T>
      * @return a {@link Component} which represents the provided item
      */
     protected abstract Component createComponent(T item);
+
+    /**
+     * Updates an existing component after the item has been updated. By
+     * default, it creates a new component instance via
+     * {@link #createComponent(Object)}.
+     * 
+     * @param currentComponent
+     *            the current component used to represent the item, not
+     *            <code>null</code>
+     * @param item
+     *            the updated item
+     * @return the component that should represent the updated item, not
+     *         <code>null</code>
+     */
+    protected Component updateComponent(Component currentComponent, T item) {
+        return createComponent(item);
+    }
 
     /**
      * Gets a unique key for a given item. Items with the same keys are
