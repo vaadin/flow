@@ -44,7 +44,7 @@ public class PwaConfiguration implements Serializable {
     private final String iconPath;
     private final String manifestPath;
     private final String offlinePath;
-    private final String serviceWorkerPath = "workbox-sw.js";
+    private final String serviceWorkerPath = "sw.js";
     private final String display;
     private final String rootUrl;
     private final String startPath;

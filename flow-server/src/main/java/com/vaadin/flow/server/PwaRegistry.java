@@ -210,7 +210,7 @@ public class PwaRegistry implements Serializable {
         String workBoxAbsolutePath = servletContext.getContextPath() + "/"
                 + WORKBOX_FOLDER;
         // Google Workbox import
-        stringBuilder.append("importScripts('").append(workBoxAbsolutePath).append(pwaConfiguration.getServiceWorkerPath())
+        stringBuilder.append("importScripts('").append(workBoxAbsolutePath).append("workbox-sw.js")
                 .append("');\n\n");
 
         stringBuilder.append("workbox.setConfig({\n")
