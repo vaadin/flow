@@ -1,5 +1,8 @@
 package com.vaadin.flow.noroot;
 
+import java.util.Map;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -31,12 +34,17 @@ public class NoRootTestIT extends ChromeBrowserTest {
                         expectedPolymerVersion, actualPolymerText),
                 actualPolymerText.endsWith(expectedPolymerVersion));
 
-        // Service workers are loaded with a delay
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new AssertionError("Unexpected interrupt", e);
-        }
+        // Refresh the page to get the service worker activated
+        getDriver().get(getDriver().getCurrentUrl());
+        @SuppressWarnings("unchecked") // javascript
+        Map<String, String> serviceWorkerData = (Map<String, String>) executeScript(
+                "return navigator.serviceWorker.controller");
+        Assert.assertNotNull(
+                "Expect to have service worker data after page reload",
+                serviceWorkerData);
+        Assert.assertEquals(
+                "Expect the service worker to be activated after the page reload",
+                "activated", serviceWorkerData.get("state"));
         checkLogsForErrors();
     }
 
