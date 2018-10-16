@@ -20,6 +20,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
@@ -105,9 +106,15 @@ public class Html extends Component {
     private void setOuterHtml(Document doc) {
         int nrChildren = doc.body().children().size();
         if (nrChildren != 1) {
-            throw new IllegalArgumentException(
-                    "HTML must contain exactly one root element. Found "
-                            + nrChildren);
+            String message = "HTML must contain exactly one top level element (ignoring text nodes). Found "
+                    + nrChildren;
+            if (nrChildren > 1) {
+                String tagNames = doc.body().children().stream()
+                        .map(element -> element.tagName())
+                        .collect(Collectors.joining(", "));
+                message += " elements with the tag names " + tagNames;
+            }
+            throw new IllegalArgumentException(message);
         }
 
         org.jsoup.nodes.Element root = doc.body().child(0);
