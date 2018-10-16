@@ -91,6 +91,11 @@ public class ComponentDataGenerator<T>
     }
 
     @Override
+    protected Component updateComponent(Component currentComponent, T item) {
+        return componentRenderer.updateComponent(currentComponent, item);
+    }
+
+    @Override
     protected String getItemKey(T item) {
         if (keyMapper == null) {
             return null;

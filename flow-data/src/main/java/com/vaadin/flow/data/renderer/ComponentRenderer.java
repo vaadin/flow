@@ -25,6 +25,7 @@ import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
@@ -50,6 +51,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
 
     private SerializableSupplier<COMPONENT> componentSupplier;
     private SerializableFunction<SOURCE, COMPONENT> componentFunction;
+    private SerializableBiFunction<Component, SOURCE, Component> componentUpdateFunction;
     private SerializableBiConsumer<COMPONENT, SOURCE> itemConsumer;
     private String componentRendererTag = "flow-component-renderer";
 
@@ -105,10 +107,37 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
      *
      * @param componentFunction
      *            a function that can generate new component instances
+     * @see #ComponentRenderer(SerializableFunction, SerializableBiFunction)
      */
     public ComponentRenderer(
             SerializableFunction<SOURCE, COMPONENT> componentFunction) {
+        this(componentFunction, null);
+    }
+
+    /**
+     * Creates a new ComponentRenderer that uses the componentFunction to
+     * generate new {@link Component} instances, and a componentUpdateFunction
+     * to update existing {@link Component} instances.
+     * <p>
+     * The componentUpdateFunction can return a different component than the one
+     * previously created. In those cases, the new instance is used, and the old
+     * is discarded.
+     * <p>
+     * Some components may support several rendered components at once, so
+     * different component instances should be created for each different item
+     * for those components.
+     * 
+     * @param componentFunction
+     *            a function that can generate new component instances
+     * @param componentUpdateFunction
+     *            a function that can update the existing component instance for
+     *            the item, or generate a new component based on the item update
+     */
+    public ComponentRenderer(
+            SerializableFunction<SOURCE, COMPONENT> componentFunction,
+            SerializableBiFunction<Component, SOURCE, Component> componentUpdateFunction) {
         this.componentFunction = componentFunction;
+        this.componentUpdateFunction = componentUpdateFunction;
     }
 
     /**
@@ -207,6 +236,29 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
             itemConsumer.accept(component, item);
         }
         return component;
+    }
+
+    /**
+     * Called when the item is updated. By default, a new {@link Component} is
+     * created (via {@link #createComponent(Object)}) when the item is updated,
+     * but setting a update function via the
+     * {@link #ComponentRenderer(SerializableFunction, SerializableBiFunction)}
+     * can change the behavior.
+     * 
+     * @param currentComponent
+     *            the current component used to render the item, not
+     *            <code>null</code>
+     * @param item
+     *            the updated item
+     * @return the component that should be used to render the updated item. The
+     *         same instance can be returned, or a totally new one, but not
+     *         <code>null</code>.
+     */
+    public Component updateComponent(Component currentComponent, SOURCE item) {
+        if (componentUpdateFunction != null) {
+            return componentUpdateFunction.apply(currentComponent, item);
+        }
+        return createComponent(item);
     }
 
     private class ComponentRendering extends ComponentDataGenerator<SOURCE>
