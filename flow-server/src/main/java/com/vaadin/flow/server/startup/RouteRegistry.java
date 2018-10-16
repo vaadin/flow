@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,12 +31,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContext;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.osgi.OSGiAccess;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.InternalServerError;
@@ -109,6 +111,40 @@ public class RouteRegistry implements Serializable {
         }
     }
 
+    private static class OSGiRouteRegistry extends RouteRegistry {
+
+        private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>(
+                Collections.emptySet());
+
+        private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>(
+                Collections.emptySet());
+
+        @Override
+        public void setNavigationTargets(
+                Set<Class<? extends Component>> navigationTargets)
+                throws InvalidRouteConfigurationException {
+            this.navigationTargets.set(navigationTargets);
+            // There is no need to execute this logic here but this method will
+            // throw an exception if there are invalid routes
+            super.setNavigationTargets(navigationTargets);
+        }
+
+        @Override
+        public boolean navigationTargetsInitialized() {
+            return false;
+        }
+
+        @Override
+        protected void handleRoutesOverwrite() {
+        }
+
+        @Override
+        public void setErrorNavigationTargets(
+                Set<Class<? extends Component>> errorNavigationTargets) {
+            this.errorNavigationTargets.set(errorNavigationTargets);
+        }
+    }
+
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
 
     private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
@@ -174,7 +210,7 @@ public class RouteRegistry implements Serializable {
                     .getAttribute(RouteRegistry.class.getName());
 
             if (attribute == null) {
-                attribute = new RouteRegistry();
+                attribute = createRegistry(servletContext);
                 servletContext.setAttribute(RouteRegistry.class.getName(),
                         attribute);
             }
@@ -204,8 +240,7 @@ public class RouteRegistry implements Serializable {
             throws InvalidRouteConfigurationException {
 
         if (navigationTargetsInitialized()) {
-            throw new InvalidRouteConfigurationException(
-                    "Routes have already been initialized");
+            handleRoutesOverwrite();
         }
         registerNavigationTargets(navigationTargets);
     }
@@ -246,6 +281,8 @@ public class RouteRegistry implements Serializable {
      * @return list of routes available for this registry
      */
     public List<RouteData> getRegisteredRoutes() {
+        initRoutes();
+
         // Build and collect only on first request
         if (routeData.get() == null) {
             List<RouteData> registeredRoutes = new ArrayList<>();
@@ -355,9 +392,8 @@ public class RouteRegistry implements Serializable {
      */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
-        if (!errorNavigationTargetsInitialized()) {
-            initErrorTargets(new HashMap<>());
-        }
+        initErrorTargets();
+
         ErrorTargetEntry result = searchByCause(exception);
         if (result == null) {
             result = searchBySuperType(exception);
@@ -411,6 +447,7 @@ public class RouteRegistry implements Serializable {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
+        initRoutes();
         return getNavigationTarget(pathString, new ArrayList<>());
     }
 
@@ -430,6 +467,7 @@ public class RouteRegistry implements Serializable {
      */
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
+        initRoutes();
         if (hasRouteTo(pathString)) {
             return Optional.ofNullable(
                     getRoutes().get(pathString).getTarget(segments));
@@ -447,6 +485,7 @@ public class RouteRegistry implements Serializable {
      */
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
+        initRoutes();
 
         return getRoutes().containsKey(pathString);
     }
@@ -462,6 +501,7 @@ public class RouteRegistry implements Serializable {
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        initRoutes();
         return Optional.ofNullable(collectRequiredParameters(navigationTarget));
     }
 
@@ -551,14 +591,21 @@ public class RouteRegistry implements Serializable {
         }
         if (!routes.compareAndSet(null,
                 Collections.unmodifiableMap(routesMap))) {
-            throw new IllegalStateException(
-                    "Route registry has been already initialized");
+            handleRoutesOverwrite();
         }
         if (!targetRoutes.compareAndSet(null,
                 Collections.unmodifiableMap(targetRoutesMap))) {
-            throw new IllegalStateException(
-                    "Route registry has been already initialized");
+            handleTargetsOverwrite();
         }
+    }
+
+    protected void handleRoutesOverwrite() {
+        throw new IllegalStateException(
+                "Route registry has been already initialized");
+    }
+
+    protected void handleTargetsOverwrite() {
+        handleRoutesOverwrite();
     }
 
     private void addRoute(Map<String, RouteTarget> routesMap,
@@ -619,6 +666,7 @@ public class RouteRegistry implements Serializable {
      *         registered; otherwise <code>false</code>
      */
     public boolean hasNavigationTargets() {
+        initRoutes();
         return !getRoutes().isEmpty();
     }
 
@@ -636,6 +684,7 @@ public class RouteRegistry implements Serializable {
      * @return true if we have registered routes
      */
     public boolean hasRoutes() {
+        initRoutes();
         return navigationTargetsInitialized() && !routes.get().isEmpty();
     }
 
@@ -696,16 +745,63 @@ public class RouteRegistry implements Serializable {
     /**
      * Sets pwa configuration class.
      *
-     * Should be set along with setNavigationTargets, for scanning of proper
-     * pwa configuration class is done along route scanning.
-     * See {@link AbstractRouteRegistryInitializer}.
+     * Should be set along with setNavigationTargets, for scanning of proper pwa
+     * configuration class is done along route scanning. See
+     * {@link AbstractRouteRegistryInitializer}.
      *
-     * @param pwaClass a class that has PWA -annotation, that's to be used in
-     *                 service initialization.
+     * @param pwaClass
+     *            a class that has PWA -annotation, that's to be used in service
+     *            initialization.
      */
     public void setPwaConfigurationClass(Class<?> pwaClass) {
         if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
             pwaConfigurationClass.set(pwaClass);
         }
+    }
+
+    private void initRoutes() {
+        try {
+            doInitOSGiRoutes();
+        } catch (InvalidRouteConfigurationException exception) {
+            assert false : "Exception may not be thrown here since it should have been thrown by "
+                    + OSGiRouteRegistry.class;
+        }
+    }
+
+    private void initErrorTargets() {
+        if (errorNavigationTargetsInitialized()) {
+            return;
+        }
+
+        if (OSGiAccess.getInstance().getOsgiServletContext() != null
+                && OSGiAccess.getInstance().hasInitializers()) {
+            OSGiRouteRegistry registry = (OSGiRouteRegistry) getInstance(
+                    OSGiAccess.getInstance().getOsgiServletContext());
+            setErrorNavigationTargets(registry.errorNavigationTargets.get());
+        }
+
+        if (!errorNavigationTargetsInitialized()) {
+            initErrorTargets(new HashMap<>());
+        }
+    }
+
+    private void doInitOSGiRoutes() throws InvalidRouteConfigurationException {
+        if (navigationTargetsInitialized()
+                || OSGiAccess.getInstance().getOsgiServletContext() == null) {
+            return;
+        }
+        if (OSGiAccess.getInstance().hasInitializers()) {
+            OSGiRouteRegistry registry = (OSGiRouteRegistry) getInstance(
+                    OSGiAccess.getInstance().getOsgiServletContext());
+            setNavigationTargets(registry.navigationTargets.get());
+        }
+    }
+
+    private static RouteRegistry createRegistry(ServletContext context) {
+        if (context != null && context == OSGiAccess.getInstance()
+                .getOsgiServletContext()) {
+            return new OSGiRouteRegistry();
+        }
+        return new RouteRegistry();
     }
 }

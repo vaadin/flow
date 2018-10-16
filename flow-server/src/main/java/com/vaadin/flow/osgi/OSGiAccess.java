@@ -172,15 +172,22 @@ public final class OSGiAccess {
     }
 
     private ServletContext createOSGiServletContext() {
-        Builder<OSGiServletContext> builder = new ByteBuddy()
-                .subclass(OSGiServletContext.class);
+        try {
+            Class.forName("org.osgi.framework.FrameworkUtil");
 
-        Class<? extends OSGiServletContext> osgiServletContextClass = builder
-                .make().load(OSGiServletContext.class.getClassLoader(),
-                        ClassLoadingStrategy.Default.WRAPPER)
-                .getLoaded();
+            Builder<OSGiServletContext> builder = new ByteBuddy()
+                    .subclass(OSGiServletContext.class);
 
-        return ReflectTools.createProxyInstance(osgiServletContextClass,
-                ServletContext.class);
+            Class<? extends OSGiServletContext> osgiServletContextClass = builder
+                    .make().load(OSGiServletContext.class.getClassLoader(),
+                            ClassLoadingStrategy.Default.WRAPPER)
+                    .getLoaded();
+
+            return ReflectTools.createProxyInstance(osgiServletContextClass,
+                    ServletContext.class);
+
+        } catch (ClassNotFoundException exception) {
+            return null;
+        }
     }
 }
