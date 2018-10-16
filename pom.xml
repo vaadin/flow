@@ -30,6 +30,7 @@
         <module>flow-components-parent</module>
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
+        <module>flow-bom</module>
         <module>build-tools</module>
     </modules>
 
