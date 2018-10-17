@@ -1,4 +1,4 @@
-package com.vaadin.flow.osgi;
+package com.vaadin.flow.server.osgi;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.osgi.OSGiAccess;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.InternalServerError;
@@ -54,6 +53,7 @@ import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -240,7 +240,8 @@ public class RouteRegistry implements Serializable {
             throws InvalidRouteConfigurationException {
 
         if (navigationTargetsInitialized()) {
-            handleRoutesOverwrite();
+            throw new InvalidRouteConfigurationException(
+                    "Routes have already been initialized");
         }
         registerNavigationTargets(navigationTargets);
     }
