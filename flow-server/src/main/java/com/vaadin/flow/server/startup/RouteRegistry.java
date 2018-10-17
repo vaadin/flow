@@ -139,6 +139,10 @@ public class RouteRegistry implements Serializable {
         }
 
         @Override
+        protected void initPwa() {
+        }
+
+        @Override
         public void setErrorNavigationTargets(
                 Set<Class<? extends Component>> errorNavigationTargets) {
             this.errorNavigationTargets.set(errorNavigationTargets);
@@ -600,11 +604,6 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    protected void handleInitializedRegistry() {
-        throw new IllegalStateException(
-                "Route registry has been already initialized");
-    }
-
     private void addRoute(Map<String, RouteTarget> routesMap,
             Class<? extends Component> navigationTarget,
             Collection<String> paths)
@@ -757,16 +756,10 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private void initRoutes() {
-        try {
-            doInitOSGiRoutes();
-        } catch (InvalidRouteConfigurationException exception) {
-            assert false : "Exception may not be thrown here since it should have been thrown by "
-                    + OSGiRouteRegistry.class;
-        }
-    }
-
-    private void initPwa() {
+    /**
+     * Initializes PWA configuration class.
+     */
+    protected void initPwa() {
         if (navigationTargetsInitialized()
                 || OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return;
@@ -775,6 +768,23 @@ public class RouteRegistry implements Serializable {
             OSGiRouteRegistry registry = (OSGiRouteRegistry) getInstance(
                     OSGiAccess.getInstance().getOsgiServletContext());
             setPwaConfigurationClass(registry.getPwaConfigurationClass());
+        }
+    }
+
+    /**
+     * Handles an attempt to initialize already initialized route registry.
+     */
+    protected void handleInitializedRegistry() {
+        throw new IllegalStateException(
+                "Route registry has been already initialized");
+    }
+
+    private void initRoutes() {
+        try {
+            doInitOSGiRoutes();
+        } catch (InvalidRouteConfigurationException exception) {
+            assert false : "Exception may not be thrown here since it should have been thrown by "
+                    + OSGiRouteRegistry.class;
         }
     }
 

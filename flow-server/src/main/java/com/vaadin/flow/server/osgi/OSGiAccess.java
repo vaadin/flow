@@ -57,17 +57,15 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 public final class OSGiAccess {
     private final static OSGiAccess INSTANCE = new OSGiAccess();
 
-    private final static boolean IS_IN_OSGI = isInOSGi();
-
-    private final ServletContext context = IS_IN_OSGI
+    private final ServletContext context = LazyOSGiDetector.IS_IN_OSGI
             ? createOSGiServletContext()
             : null;
 
-    private final AtomicReference<Collection<Class<? extends ServletContainerInitializer>>> initializerClasses = IS_IN_OSGI
+    private final AtomicReference<Collection<Class<? extends ServletContainerInitializer>>> initializerClasses = LazyOSGiDetector.IS_IN_OSGI
             ? new AtomicReference<>()
             : null;
 
-    private final Map<Long, Collection<Class<?>>> cachedClasses = IS_IN_OSGI
+    private final Map<Long, Collection<Class<?>>> cachedClasses = LazyOSGiDetector.IS_IN_OSGI
             ? new ConcurrentHashMap<>()
             : null;
 
@@ -235,15 +233,6 @@ public final class OSGiAccess {
         return "";
     }
 
-    private static boolean isInOSGi() {
-        try {
-            Class.forName("org.osgi.framework.FrameworkUtil");
-            return true;
-        } catch (ClassNotFoundException exception) {
-            return false;
-        }
-    }
-
     private ServletContext createOSGiServletContext() {
         Builder<OSGiServletContext> builder = new ByteBuddy()
                 .subclass(OSGiServletContext.class);
@@ -255,5 +244,18 @@ public final class OSGiAccess {
 
         return ReflectTools.createProxyInstance(osgiServletContextClass,
                 ServletContext.class);
+    }
+
+    private static final class LazyOSGiDetector {
+        private final static boolean IS_IN_OSGI = isInOSGi();
+
+        private static boolean isInOSGi() {
+            try {
+                Class.forName("org.osgi.framework.FrameworkUtil");
+                return true;
+            } catch (ClassNotFoundException exception) {
+                return false;
+            }
+        }
     }
 }
