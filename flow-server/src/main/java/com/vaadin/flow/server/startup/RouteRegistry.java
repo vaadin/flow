@@ -739,6 +739,7 @@ public class RouteRegistry implements Serializable {
      * @return a class that has PWA-annotation.
      */
     public Class<?> getPwaConfigurationClass() {
+        initPwa();
         return pwaConfigurationClass.get();
     }
 
@@ -765,6 +766,18 @@ public class RouteRegistry implements Serializable {
         } catch (InvalidRouteConfigurationException exception) {
             assert false : "Exception may not be thrown here since it should have been thrown by "
                     + OSGiRouteRegistry.class;
+        }
+    }
+
+    private void initPwa() {
+        if (navigationTargetsInitialized()
+                || OSGiAccess.getInstance().getOsgiServletContext() == null) {
+            return;
+        }
+        if (OSGiAccess.getInstance().hasInitializers()) {
+            OSGiRouteRegistry registry = (OSGiRouteRegistry) getInstance(
+                    OSGiAccess.getInstance().getOsgiServletContext());
+            setPwaConfigurationClass(registry.getPwaConfigurationClass());
         }
     }
 

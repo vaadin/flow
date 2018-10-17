@@ -45,7 +45,13 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 
 /**
+ * Manages scanned classes inside OSGi conteiner.
+ * <p>
+ * It doesn't do anything outside of OSGi.
+ *
  * @author Vaadin Ltd
+ *
+ * @see #getInstance()
  *
  */
 public final class OSGiAccess {
@@ -58,6 +64,7 @@ public final class OSGiAccess {
     private final Map<Long, Collection<Class<?>>> cachedClasses = new ConcurrentHashMap<>();
 
     private OSGiAccess() {
+        // The class is a singleton. Avoid instantiation outside of the class.
     }
 
     public static abstract class OSGiServletContext implements ServletContext {
@@ -88,30 +95,80 @@ public final class OSGiAccess {
 
     }
 
+    /**
+     * Gets the singleton instance.
+     *
+     * @return the singleton instance
+     */
     public static OSGiAccess getInstance() {
         return INSTANCE;
     }
 
+    /**
+     * Gets a servlet context instance which is used to track registries which
+     * are storage of scanned classes.
+     * <p>
+     * This is not a real servlet context. It's just a proxied unique instance
+     * which is used to be able to access registries in a generic way via some
+     * {@code getInstance(ServletContext)} method.
+     *
+     * @return
+     */
     public ServletContext getOsgiServletContext() {
         return context;
     }
 
+    /**
+     * Sets the discovered servlet context initializer classes.
+     * <p>
+     * The OSGi bundle tracker is used to scan all classes in bundles and it
+     * also scans <b>flow-server</b> module for servlet initializer classes.
+     * They are set using this method once they are collected.
+     *
+     * @param contextInitializers
+     *            servlet context initializer classes
+     */
     public void setServletContainerInitializers(
             Collection<Class<? extends ServletContainerInitializer>> contextInitializers) {
         assert contextInitializers != null;
         initializerClasses.set(new ArrayList<>(contextInitializers));
     }
 
+    /**
+     * Checks whether the servlet initializers are discovered.
+     *
+     * @return {@code true} if servlet initializers are set, {@code false}
+     *         otherwise
+     */
     public boolean hasInitializers() {
         return initializerClasses.get() != null;
     }
 
+    /**
+     * Adds scanned classes in active bundles.
+     * <p>
+     * The map contains a bundle id as a key and classes discovered in the
+     * bundle as a value.
+     *
+     * @param extenderClasses
+     *            a map with discovered classes in active bundles
+     */
     public void addScannedClasses(
             Map<Long, Collection<Class<?>>> extenderClasses) {
         cachedClasses.putAll(extenderClasses);
         resetContextInitializers();
     }
 
+    /**
+     * Removes classes from the bundle identified by the {@code bundleId}.
+     * <p>
+     * When a bundle becomes inactive its classes should not be used anymore.
+     * This method removes the classes from the bundle from the collection of
+     * discovered classes.
+     *
+     * @param bundleId
+     *            the bundle identifier
+     */
     public void removeScannedClasses(Long bundleId) {
         cachedClasses.remove(bundleId);
         resetContextInitializers();

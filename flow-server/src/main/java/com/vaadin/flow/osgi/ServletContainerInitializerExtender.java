@@ -21,6 +21,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.BundleTracker;
 
 /**
+ * Bundle activator which starts bundle tracker.
+ * 
  * @author Vaadin Ltd
  *
  */

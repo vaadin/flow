@@ -20,6 +20,16 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Bundle tracker to discover all classes in active bundles.
+ * <p>
+ * The tracker scans for all classes in active bundles which have
+ * <b>Vaadin-OSGi-Extender</b> header and report them to the {@link OSGiAccess}
+ * instance.
+ *
+ * @author Vaadin Ltd
+ *
+ */
 public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     private final Bundle flowServerBundle;
