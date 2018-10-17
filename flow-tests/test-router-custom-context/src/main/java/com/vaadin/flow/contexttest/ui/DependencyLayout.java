@@ -16,6 +16,7 @@
 package com.vaadin.flow.contexttest.ui;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
@@ -41,6 +42,8 @@ import java.nio.charset.StandardCharsets;
  * </ul>
  */
 @StyleSheet("context://test-files/css/allred.css")
+@JavaScript("frontend://es6.js")
+@HtmlImport("frontend://testhtml.html")
 @NoTheme
 public abstract class DependencyLayout extends Div {
 

@@ -26,11 +26,19 @@ public abstract class AbstractContextIT extends ChromeBrowserTest {
     public void testStyleInjection() {
         open();
         verifyCorrectUI();
+        verifyFrontend();
         styleInjection();
     }
 
     @Test
     public void testScriptInjection() {
+        open();
+        verifyCorrectUI();
+        scriptInjection();
+    }
+
+    @Test
+    public void testStaticResource() {
         open();
         verifyCorrectUI();
         scriptInjection();
@@ -46,6 +54,12 @@ public abstract class AbstractContextIT extends ChromeBrowserTest {
         // Wait as the framework will not stop until the stylesheet is loaded
         waitUntil(input -> findElementById("hello").getCssValue("color")
                 .equals(BLUE));
+    }
+
+
+    private void verifyFrontend() {
+
+        Assert.assertEquals("Piece of ES6 works", findElementById("es6-div").getText());
     }
 
     private void scriptInjection() {
