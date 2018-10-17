@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -13,8 +13,8 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-
         <jetty.skip>${maven.test.skip}</jetty.skip>
+        <transpilation.output>${project.build.directory}/build</transpilation.output>
     </properties>
 
     <dependencies>
@@ -27,6 +27,22 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>1.2-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>copy-production-files</goal>
+                            <goal>package-for-production</goal>
+                        </goals>
+                        <configuration>
+                            <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- The Jetty plugin allows us to easily test the development
                 build by running jetty:run -->
             <plugin>
@@ -52,8 +68,18 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>vaadin.productionMode</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
                     <webAppConfig>
                         <contextPath>/context</contextPath>
+                        <resourceBases>
+                            <resourceBase>${project.build.directory}</resourceBase>
+                            <resourceBase>${transpilation.output}</resourceBase>
+                        </resourceBases>
                     </webAppConfig>
                 </configuration>
             </plugin>
