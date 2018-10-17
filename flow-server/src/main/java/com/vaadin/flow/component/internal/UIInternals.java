@@ -26,13 +26,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.vaadin.flow.router.AfterNavigationListener;
-import com.vaadin.flow.router.BeforeEnterListener;
-import com.vaadin.flow.router.BeforeLeaveListener;
-import com.vaadin.flow.router.ListenerPriority;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +51,14 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.router.AfterNavigationListener;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
+import com.vaadin.flow.router.BeforeLeaveListener;
+import com.vaadin.flow.router.ListenerPriority;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -472,13 +472,17 @@ public class UIInternals implements Serializable {
             Class<?> o1Class = o1.getClass();
             Class<?> o2Class = o2.getClass();
 
-            final ListenerPriority listenerPriority1 = o1Class.getAnnotation(ListenerPriority.class);
-            final ListenerPriority listenerPriority2 = o2Class.getAnnotation(ListenerPriority.class);
+            final ListenerPriority listenerPriority1 = o1Class
+                    .getAnnotation(ListenerPriority.class);
+            final ListenerPriority listenerPriority2 = o2Class
+                    .getAnnotation(ListenerPriority.class);
 
-            final int priority1 = listenerPriority1 != null ? listenerPriority1.value() : 0;
-            final int priority2 = listenerPriority2 != null ? listenerPriority2.value() : 0;
+            final int priority1 = listenerPriority1 != null
+                    ? listenerPriority1.value() : 0;
+            final int priority2 = listenerPriority2 != null
+                    ? listenerPriority2.value() : 0;
 
-            //we want to have a descending order
+            // we want to have a descending order
             return Integer.compare(priority2, priority1);
         });
 
@@ -618,6 +622,11 @@ public class UIInternals implements Serializable {
 
         updateTheme(target, path);
 
+        HasElement oldRoot = null;
+        if (!routerTargetChain.isEmpty()) {
+            oldRoot = routerTargetChain.get(routerTargetChain.size() - 1);
+        }
+
         this.viewLocation = viewLocation;
 
         Element uiElement = ui.getElement();
@@ -668,20 +677,11 @@ public class UIInternals implements Serializable {
         Element rootElement = root.getElement();
 
         if (!uiElement.equals(rootElement.getParent())) {
-            removeServerSideChildrenFromUI(uiElement);
+            if (oldRoot != null) {
+                oldRoot.getElement().removeFromParent();
+            }
             rootElement.removeFromParent();
             uiElement.appendChild(rootElement);
-        }
-    }
-
-    /*
-     * Removes only the server-side children of the UI. This is needed because
-     * otherwise client-side-only elements, such as the {@code noscript} element
-     * and the loading indicator would also be removed.
-     */
-    private void removeServerSideChildrenFromUI(Element ui) {
-        while (ui.getChildCount() > 0) {
-            ui.removeChild(0);
         }
     }
 
@@ -772,7 +772,8 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        dependencies.getHtmlImports().forEach(html -> addHtmlImport(html, page));
+        dependencies.getHtmlImports()
+                .forEach(html -> addHtmlImport(html, page));
         dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependencies.getStyleSheets().forEach(styleSheet -> page

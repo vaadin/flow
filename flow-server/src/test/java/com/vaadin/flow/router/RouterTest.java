@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,6 +50,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
@@ -62,10 +68,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -2443,12 +2446,13 @@ public class RouterTest extends RoutingTestBase {
     public void getUrl_throws_for_required_parameter()
             throws InvalidRouteConfigurationException {
         expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(String.format(
-                "Navigation target '%s' requires a parameter and can not be resolved. "
-                        + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
-                        + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
-                        + "instead",
-                RouteWithParameter.class.getName()));
+        expectedEx
+                .expectMessage(String.format(
+                        "Navigation target '%s' requires a parameter and can not be resolved. "
+                                + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
+                                + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
+                                + "instead",
+                        RouteWithParameter.class.getName()));
         setNavigationTargets(RouteWithParameter.class);
 
         router.getUrl(RouteWithParameter.class);
@@ -2863,15 +2867,16 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Non existent route should have returned.",
                 HttpServletResponse.SC_NOT_FOUND, result);
 
-        Assert.assertEquals(NavigationTrigger.PROGRAMMATIC, FileNotFound.trigger);
+        Assert.assertEquals(NavigationTrigger.PROGRAMMATIC,
+                FileNotFound.trigger);
 
         router.navigate(ui, new Location("router_link"),
                 NavigationTrigger.ROUTER_LINK);
 
-        Assert.assertEquals(NavigationTrigger.ROUTER_LINK, FileNotFound.trigger);
+        Assert.assertEquals(NavigationTrigger.ROUTER_LINK,
+                FileNotFound.trigger);
 
-        router.navigate(ui, new Location("history"),
-                NavigationTrigger.HISTORY);
+        router.navigate(ui, new Location("history"), NavigationTrigger.HISTORY);
 
         Assert.assertEquals(NavigationTrigger.HISTORY, FileNotFound.trigger);
 
@@ -2891,54 +2896,79 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("", resolve(Main.class));
         Assert.assertEquals("", resolve(MainView.class));
         Assert.assertEquals("", resolve(View.class));
-        Assert.assertEquals("namingconvention", resolve(NamingConvention.class));
-        Assert.assertEquals("namingconvention", resolve(NamingConventionView.class));
+        Assert.assertEquals("namingconvention",
+                resolve(NamingConvention.class));
+        Assert.assertEquals("namingconvention",
+                resolve(NamingConventionView.class));
     }
 
     @Test
-    public void basic_naming_based_routes() throws InvalidRouteConfigurationException {
+    public void basic_naming_based_routes()
+            throws InvalidRouteConfigurationException {
         setNavigationTargets(NamingConvention.class, Main.class);
 
         Assert.assertEquals(Main.class,
-                router.resolveNavigationTarget("/", Collections.emptyMap()).get()
-                        .getNavigationTarget());
+                router.resolveNavigationTarget("/", Collections.emptyMap())
+                        .get().getNavigationTarget());
 
-        Assert.assertEquals(NamingConvention.class,
-                router.resolveNavigationTarget("/namingconvention",
-                        Collections.emptyMap()).get().getNavigationTarget());
+        Assert.assertEquals(
+                NamingConvention.class, router
+                        .resolveNavigationTarget("/namingconvention",
+                                Collections.emptyMap())
+                        .get().getNavigationTarget());
     }
 
     @Test
-    public void basic_naming_based_routes_with_trailing_view() throws InvalidRouteConfigurationException {
+    public void basic_naming_based_routes_with_trailing_view()
+            throws InvalidRouteConfigurationException {
         setNavigationTargets(NamingConventionView.class, MainView.class);
 
         Assert.assertEquals(MainView.class,
-                router.resolveNavigationTarget("/", Collections.emptyMap()).get()
-                        .getNavigationTarget());
+                router.resolveNavigationTarget("/", Collections.emptyMap())
+                        .get().getNavigationTarget());
 
-        Assert.assertEquals(NamingConventionView.class,
-                router.resolveNavigationTarget("/namingconvention",
-                        Collections.emptyMap()).get().getNavigationTarget());
+        Assert.assertEquals(
+                NamingConventionView.class, router
+                        .resolveNavigationTarget("/namingconvention",
+                                Collections.emptyMap())
+                        .get().getNavigationTarget());
     }
 
     @Test
-    public void test_naming_based_routes_with_name_view() throws InvalidRouteConfigurationException {
+    public void test_naming_based_routes_with_name_view()
+            throws InvalidRouteConfigurationException {
         setNavigationTargets(View.class);
 
         Assert.assertEquals(View.class,
-                router.resolveNavigationTarget("/", Collections.emptyMap()).get()
-                        .getNavigationTarget());
+                router.resolveNavigationTarget("/", Collections.emptyMap())
+                        .get().getNavigationTarget());
     }
 
     @Test
     public void verify_collisions_not_allowed_with_naming_convention() {
         InvalidRouteConfigurationException exception = null;
         try {
-            setNavigationTargets(NamingConvention.class, NamingConventionView.class);
+            setNavigationTargets(NamingConvention.class,
+                    NamingConventionView.class);
         } catch (InvalidRouteConfigurationException e) {
             exception = e;
         }
-        Assert.assertNotNull("Routes with same navigation target should not be allowed", exception);
+        Assert.assertNotNull(
+                "Routes with same navigation target should not be allowed",
+                exception);
+    }
+
+    @Test
+    public void preserve_initial_ui_contents()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(View.class);
+
+        Element specialChild = new Element("div");
+        ui.getElement().appendChild(specialChild);
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(ui.getElement(), specialChild.getParent());
     }
 
     private void setNavigationTargets(
