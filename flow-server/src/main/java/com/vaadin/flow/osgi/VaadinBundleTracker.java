@@ -18,6 +18,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.BundleTracker;
+import org.slf4j.LoggerFactory;
 
 public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
@@ -47,8 +48,8 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
                 // classes
                 executor.execute(() -> scanActivatedBundle(bundle));
             }
-        } else if (event != null
-                && (event.getType() & BundleEvent.STOPPED) > 0) {
+        } else if (event != null && (event.getType() & BundleEvent.STOPPED) > 0
+                && isVaadinExtender(bundle)) {
             // Remove all bundle classes once the bundle becomes stopped
             OSGiAccess.getInstance().removeScannedClasses(bundle.getBundleId());
         }
@@ -73,7 +74,7 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     }
 
     private void scanActivatedBundle(Bundle bundle) {
-        if (!isActive(bundle)) {
+        if (!isActive(bundle) || !isVaadinExtender(bundle)) {
             return;
         }
         if (OSGiAccess.getInstance().hasInitializers()) {
@@ -99,19 +100,19 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     }
 
     private boolean isVaadinExtender(Bundle bundle) {
-        // TODO : use a bundle header
-        return !flowServerBundle.equals(bundle);
+        return !flowServerBundle.equals(bundle) && Boolean.TRUE.toString()
+                .equals(bundle.getHeaders().get("Vaadin-OSGi-Extender"));
     }
 
     private void handleFlowServerClassError(String className,
             Throwable throwable) {
-        // LoggerFactory.getLogger(VaadinBundleTracker.class)
-        // .trace("Couldn't load class '{}'", className, throwable);
+        LoggerFactory.getLogger(VaadinBundleTracker.class)
+                .trace("Couldn't load class '{}'", className, throwable);
     }
 
     private void handleBundleClassError(String className, Throwable throwable) {
-        // LoggerFactory.getLogger(VaadinBundleTracker.class)
-        // .warn("Couldn't load class '{}'", className, throwable);
+        LoggerFactory.getLogger(VaadinBundleTracker.class)
+                .warn("Couldn't load class '{}'", className, throwable);
     }
 
     private void scanClasses(Bundle bundle, Map<Long, Collection<Class<?>>> map,
