@@ -135,7 +135,7 @@ public class RouteRegistry implements Serializable {
         }
 
         @Override
-        protected void handleRoutesOverwrite() {
+        protected void handleInitializedRegistry() {
         }
 
         @Override
@@ -592,21 +592,17 @@ public class RouteRegistry implements Serializable {
         }
         if (!routes.compareAndSet(null,
                 Collections.unmodifiableMap(routesMap))) {
-            handleRoutesOverwrite();
+            handleInitializedRegistry();
         }
         if (!targetRoutes.compareAndSet(null,
                 Collections.unmodifiableMap(targetRoutesMap))) {
-            handleTargetsOverwrite();
+            handleInitializedRegistry();
         }
     }
 
-    protected void handleRoutesOverwrite() {
+    protected void handleInitializedRegistry() {
         throw new IllegalStateException(
                 "Route registry has been already initialized");
-    }
-
-    protected void handleTargetsOverwrite() {
-        handleRoutesOverwrite();
     }
 
     private void addRoute(Map<String, RouteTarget> routesMap,

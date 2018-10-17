@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.OutputStream;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,16 +35,6 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
                     componentCopy.getElement().getTag());
             assertNotSame(component.getElement(), componentCopy.getElement());
         }
-    }
-
-    @Override
-    protected Stream<String> getExcludedPatterns() {
-        return Stream.concat(Stream.of(
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.ServletContainerInitializerExtender",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess(\\$.*)",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.VaadinBundleTracker"),
-                super.getExcludedPatterns());
     }
 
     /**

@@ -57,11 +57,19 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 public final class OSGiAccess {
     private final static OSGiAccess INSTANCE = new OSGiAccess();
 
-    private final ServletContext context = createOSGiServletContext();
+    private final static boolean IS_IN_OSGI = isInOSGi();
 
-    private final AtomicReference<Collection<Class<? extends ServletContainerInitializer>>> initializerClasses = new AtomicReference<>();
+    private final ServletContext context = IS_IN_OSGI
+            ? createOSGiServletContext()
+            : null;
 
-    private final Map<Long, Collection<Class<?>>> cachedClasses = new ConcurrentHashMap<>();
+    private final AtomicReference<Collection<Class<? extends ServletContainerInitializer>>> initializerClasses = IS_IN_OSGI
+            ? new AtomicReference<>()
+            : null;
+
+    private final Map<Long, Collection<Class<?>>> cachedClasses = IS_IN_OSGI
+            ? new ConcurrentHashMap<>()
+            : null;
 
     private OSGiAccess() {
         // The class is a singleton. Avoid instantiation outside of the class.
@@ -200,9 +208,8 @@ public final class OSGiAccess {
             cachedClasses.forEach((bundle, classes) -> result.addAll(classes));
         } else {
             Class<?>[] requestedAnnotationTypes = typesAnnotation.value();
-            assert validateTypes(
-                    requestedAnnotationTypes) == null : validateTypes(
-                            requestedAnnotationTypes);
+            assert validateTypes(requestedAnnotationTypes)
+                    .isEmpty() : validateTypes(requestedAnnotationTypes);
             Predicate<Class<?>> hasType = clazz -> Stream
                     .of(requestedAnnotationTypes)
                     .anyMatch(annotation -> AnnotationReader
@@ -225,26 +232,28 @@ public final class OSGiAccess {
                     notAnnotationType.get(),
                     HandlesTypes.class.getSimpleName());
         }
-        return null;
+        return "";
+    }
+
+    private static boolean isInOSGi() {
+        try {
+            Class.forName("org.osgi.framework.FrameworkUtil");
+            return true;
+        } catch (ClassNotFoundException exception) {
+            return false;
+        }
     }
 
     private ServletContext createOSGiServletContext() {
-        try {
-            Class.forName("org.osgi.framework.FrameworkUtil");
+        Builder<OSGiServletContext> builder = new ByteBuddy()
+                .subclass(OSGiServletContext.class);
 
-            Builder<OSGiServletContext> builder = new ByteBuddy()
-                    .subclass(OSGiServletContext.class);
+        Class<? extends OSGiServletContext> osgiServletContextClass = builder
+                .make().load(OSGiServletContext.class.getClassLoader(),
+                        ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
 
-            Class<? extends OSGiServletContext> osgiServletContextClass = builder
-                    .make().load(OSGiServletContext.class.getClassLoader(),
-                            ClassLoadingStrategy.Default.WRAPPER)
-                    .getLoaded();
-
-            return ReflectTools.createProxyInstance(osgiServletContextClass,
-                    ServletContext.class);
-
-        } catch (ClassNotFoundException exception) {
-            return null;
-        }
+        return ReflectTools.createProxyInstance(osgiServletContextClass,
+                ServletContext.class);
     }
 }
