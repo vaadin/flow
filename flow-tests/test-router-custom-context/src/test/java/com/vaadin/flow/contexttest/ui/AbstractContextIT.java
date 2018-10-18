@@ -8,7 +8,7 @@ import org.openqa.selenium.WebElement;
 
 public abstract class AbstractContextIT extends ChromeBrowserTest {
 
-    private static final String JETTY_CONTEXT = "/custom-context";
+    private static final String JETTY_CONTEXT = "/context";
 
     private static final String RED = "rgba(255, 0, 0, 1)";
     private static final String BLUE = "rgba(0, 0, 255, 1)";
@@ -26,7 +26,6 @@ public abstract class AbstractContextIT extends ChromeBrowserTest {
     public void testStyleInjection() {
         open();
         verifyCorrectUI();
-        verifyFrontend();
         styleInjection();
     }
 
@@ -54,12 +53,6 @@ public abstract class AbstractContextIT extends ChromeBrowserTest {
         // Wait as the framework will not stop until the stylesheet is loaded
         waitUntil(input -> findElementById("hello").getCssValue("color")
                 .equals(BLUE));
-    }
-
-
-    private void verifyFrontend() {
-
-        Assert.assertEquals("Piece of ES6 works", findElementById("es6-div").getText());
     }
 
     private void scriptInjection() {

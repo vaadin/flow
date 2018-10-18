@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>test-frontend-custom-context</module>
         <module>test-pwa</module>
         <module>test-resources</module>
         <module>test-common</module>

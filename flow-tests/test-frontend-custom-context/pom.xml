@@ -7,13 +7,14 @@
         <artifactId>flow-tests</artifactId>
         <version>1.2-SNAPSHOT</version>
     </parent>
-    <artifactId>test-router-custom-context</artifactId>
-    <name>Flow Router on custom context test</name>
+    <artifactId>test-frontend-custom-context</artifactId>
+    <name>Flow Frontend Resources on custom context test</name>
     <packaging>war</packaging>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <jetty.skip>${maven.test.skip}</jetty.skip>
+        <transpilation.output>${project.build.directory}/build</transpilation.output>
     </properties>
 
     <dependencies>
@@ -26,6 +27,22 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>1.2-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>copy-production-files</goal>
+                            <goal>package-for-production</goal>
+                        </goals>
+                        <configuration>
+                            <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- The Jetty plugin allows us to easily test the development
                 build by running jetty:run -->
             <plugin>
@@ -51,8 +68,18 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>vaadin.productionMode</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
                     <webAppConfig>
-                        <contextPath>/context</contextPath>
+                        <contextPath>/custom-frontend-context</contextPath>
+                        <resourceBases>
+                            <resourceBase>${project.build.directory}</resourceBase>
+                            <resourceBase>${transpilation.output}</resourceBase>
+                        </resourceBases>
                     </webAppConfig>
                 </configuration>
             </plugin>
