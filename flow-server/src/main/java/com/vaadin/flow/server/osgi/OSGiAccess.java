@@ -15,11 +15,13 @@
  */
 package com.vaadin.flow.server.osgi;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -37,8 +39,10 @@ import javax.servlet.annotation.HandlesTypes;
 
 import org.slf4j.LoggerFactory;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.HasErrorParameter;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType.Builder;
@@ -199,38 +203,37 @@ public final class OSGiAccess {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     private Set<Class<?>> filterClasses(HandlesTypes typesAnnotation) {
         Set<Class<?>> result = new HashSet<>();
         if (typesAnnotation == null) {
             cachedClasses.forEach((bundle, classes) -> result.addAll(classes));
         } else {
-            Class<?>[] requestedAnnotationTypes = typesAnnotation.value();
-            assert validateTypes(requestedAnnotationTypes)
-                    .isEmpty() : validateTypes(requestedAnnotationTypes);
-            Predicate<Class<?>> hasType = clazz -> Stream
-                    .of(requestedAnnotationTypes)
+            Class<?>[] requestedTypes = typesAnnotation.value();
+
+            Predicate<Class<?>> isAnnotation = Class::isAnnotation;
+
+            List<Class<? extends Annotation>> annotations = Stream
+                    .of(requestedTypes).filter(isAnnotation)
+                    .map(clazz -> (Class<? extends Annotation>) clazz)
+                    .collect(Collectors.toList());
+
+            List<Class<?>> superTypes = Stream.of(requestedTypes)
+                    .filter(isAnnotation.negate()).collect(Collectors.toList());
+
+            Predicate<Class<?>> hasType = clazz -> annotations.stream()
                     .anyMatch(annotation -> AnnotationReader
-                            .getAnnotationFor(clazz, (Class) annotation)
-                            .isPresent());
+                            .getAnnotationFor(clazz, annotation).isPresent())
+                    || superTypes.stream()
+                            .anyMatch(superType -> GenericTypeReflector
+                                    .isSuperType(HasErrorParameter.class,
+                                            clazz));
+
             cachedClasses.forEach((bundle, classes) -> result.addAll(classes
                     .stream().filter(hasType).collect(Collectors.toList())));
+
         }
         return result;
-    }
-
-    private String validateTypes(Class<?>[] types) {
-        Predicate<Class<?>> isAnnotation = Class::isAnnotation;
-        Optional<Class<?>> notAnnotationType = Stream.of(types)
-                .filter(isAnnotation.negate()).findFirst();
-        if (notAnnotationType.isPresent()) {
-            return String.format("Unexpected type '%s' in '%s' annotation. "
-                    + "The current implementation doesn't supoport it. "
-                    + "Implementation design has to be changed to support this type.",
-                    notAnnotationType.get(),
-                    HandlesTypes.class.getSimpleName());
-        }
-        return "";
     }
 
     private ServletContext createOSGiServletContext() {

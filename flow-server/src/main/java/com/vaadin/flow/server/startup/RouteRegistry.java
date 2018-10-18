@@ -143,6 +143,14 @@ public class RouteRegistry implements Serializable {
         }
 
         @Override
+        protected void initErrorTargets() {
+        }
+
+        @Override
+        protected void initRoutes() {
+        }
+
+        @Override
         public void setErrorNavigationTargets(
                 Set<Class<? extends Component>> errorNavigationTargets) {
             this.errorNavigationTargets.set(errorNavigationTargets);
@@ -779,7 +787,10 @@ public class RouteRegistry implements Serializable {
                 "Route registry has been already initialized");
     }
 
-    private void initRoutes() {
+    /**
+     * Initializes routes if they weren't yet initialized.
+     */
+    protected void initRoutes() {
         try {
             doInitOSGiRoutes();
         } catch (InvalidRouteConfigurationException exception) {
@@ -788,7 +799,10 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private void initErrorTargets() {
+    /**
+     * Initializes error targets if they weren't yet initialized.
+     */
+    protected void initErrorTargets() {
         if (errorNavigationTargetsInitialized()) {
             return;
         }
