@@ -59,7 +59,7 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
  *
  */
 public final class OSGiAccess {
-    private final static OSGiAccess INSTANCE = new OSGiAccess();
+    private static final OSGiAccess INSTANCE = new OSGiAccess();
 
     private final ServletContext context = LazyOSGiDetector.IS_IN_OSGI
             ? createOSGiServletContext()
@@ -77,7 +77,15 @@ public final class OSGiAccess {
         // The class is a singleton. Avoid instantiation outside of the class.
     }
 
-    public static abstract class OSGiServletContext implements ServletContext {
+    /**
+     * This is internal class and is not intended to be used.
+     * <p>
+     * It's public only because it needs to be proxied.
+     * <p>
+     * This class represents a singletion servlet context instance which is not
+     * a real servlet context.
+     */
+    public abstract static class OSGiServletContext implements ServletContext {
 
         private final Map<String, Object> attributes = new HashMap<>();
 
@@ -250,7 +258,7 @@ public final class OSGiAccess {
     }
 
     private static final class LazyOSGiDetector {
-        private final static boolean IS_IN_OSGI = isInOSGi();
+        private static final boolean IS_IN_OSGI = isInOSGi();
 
         private static boolean isInOSGi() {
             try {

@@ -136,18 +136,51 @@ public class RouteRegistry implements Serializable {
 
         @Override
         protected void handleInitializedRegistry() {
+            // Don't do anything in this fake internal registry
         }
 
         @Override
-        protected void initPwa() {
+        public Optional<ErrorTargetEntry> getErrorNavigationTarget(
+                Exception exception) {
+            return Optional.empty();
         }
 
         @Override
-        protected void initErrorTargets() {
+        public Optional<Class<? extends Component>> getNavigationTarget(
+                String pathString) {
+            return Optional.empty();
         }
 
         @Override
-        protected void initRoutes() {
+        public Optional<Class<? extends Component>> getNavigationTarget(
+                String pathString, List<String> segments) {
+            return Optional.empty();
+        }
+
+        @Override
+        public List<RouteData> getRegisteredRoutes() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Optional<String> getTargetUrl(
+                Class<? extends Component> navigationTarget) {
+            return Optional.empty();
+        }
+
+        @Override
+        public boolean hasRoutes() {
+            return false;
+        }
+
+        @Override
+        public boolean hasRouteTo(String pathString) {
+            return false;
+        }
+
+        @Override
+        public boolean hasNavigationTargets() {
+            return false;
         }
 
         @Override
@@ -787,10 +820,7 @@ public class RouteRegistry implements Serializable {
                 "Route registry has been already initialized");
     }
 
-    /**
-     * Initializes routes if they weren't yet initialized.
-     */
-    protected void initRoutes() {
+    private void initRoutes() {
         try {
             doInitOSGiRoutes();
         } catch (InvalidRouteConfigurationException exception) {
@@ -799,10 +829,7 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    /**
-     * Initializes error targets if they weren't yet initialized.
-     */
-    protected void initErrorTargets() {
+    private void initErrorTargets() {
         if (errorNavigationTargetsInitialized()) {
             return;
         }

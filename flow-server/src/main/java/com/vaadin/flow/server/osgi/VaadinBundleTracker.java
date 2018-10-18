@@ -36,6 +36,12 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     private Executor executor = Executors.newSingleThreadExecutor();
 
+    /**
+     * Creates a new instance of a bundle tracker.
+     *
+     * @param context
+     *            the {@code BundleContext} against which the tracking is done
+     */
     public VaadinBundleTracker(BundleContext context) {
         super(context, Bundle.ACTIVE | Bundle.RESOLVED, null);
         flowServerBundle = context.getBundle();
@@ -48,10 +54,10 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
             if (flowServerBundle.equals(bundle)) {
                 // First: scan for servlet context initializers in flow-server
                 // bundle to reuse the same logic
-                executor.execute(() -> scanContextInitializers());
+                executor.execute(this::scanContextInitializers);
                 // Now scan all active bundles for all classes instead of
                 // scanning every inidividual activated bundle/
-                executor.execute(() -> scanActiveBundles());
+                executor.execute(this::scanActiveBundles);
 
             } else if ((flowServerBundle.getState() & Bundle.ACTIVE) != 0) {
                 // If flow-server bundle is already active then scan bundle for
@@ -128,9 +134,6 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     private void scanClasses(Bundle bundle, Map<Long, Collection<Class<?>>> map,
             BiConsumer<String, Throwable> throwableHandler) {
         BundleWiring wiring = bundle.adapt(BundleWiring.class);
-
-        if (wiring == null) {
-        }
 
         // get all .class resources of this bundle
         Collection<String> classes = wiring.listResources("/", "*.class",
