@@ -41,7 +41,6 @@ import java.nio.charset.StandardCharsets;
  * </ul>
  */
 @StyleSheet("context://test-files/css/allred.css")
-@JavaScript("frontend://es6.js")
 @NoTheme
 public abstract class DependencyLayout extends Div {
 
