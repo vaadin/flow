@@ -75,7 +75,7 @@
                         </systemProperty>
                     </systemProperties>
                     <webAppConfig>
-                        <contextPath>/context</contextPath>
+                        <contextPath>/custom-context</contextPath>
                         <resourceBases>
                             <resourceBase>${project.build.directory}</resourceBase>
                             <resourceBase>${transpilation.output}</resourceBase>
