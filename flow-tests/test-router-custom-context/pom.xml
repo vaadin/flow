@@ -52,7 +52,7 @@
                 </executions>
                 <configuration>
                     <webAppConfig>
-                        <contextPath>/context</contextPath>
+                        <contextPath>/custom-context-router</contextPath>
                     </webAppConfig>
                 </configuration>
             </plugin>
