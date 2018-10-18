@@ -36,13 +36,6 @@ public abstract class AbstractContextIT extends ChromeBrowserTest {
         scriptInjection();
     }
 
-    @Test
-    public void testStaticResource() {
-        open();
-        verifyCorrectUI();
-        scriptInjection();
-    }
-
     private void styleInjection() {
         // Initial stylesheet makes all text red
         Assert.assertEquals(RED, findElementById("hello").getCssValue("color"));
