@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +30,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -51,6 +54,9 @@ public class VaadinResourceTrackerComponent {
     private HttpService httpService;
 
     private final Map<Long, Delegate> resourceToRegistration = Collections
+            .synchronizedMap(new LinkedHashMap<>());
+
+    private final Map<Long, List<ServiceRegistration<? extends OsgiVaadinStaticResource>>> contributorToRegistrations = Collections
             .synchronizedMap(new LinkedHashMap<>());
 
     private static final class Delegate implements HttpContext {
@@ -111,6 +117,37 @@ public class VaadinResourceTrackerComponent {
         unregisterResource(serviceId);
     }
 
+    @Reference(cardinality = ReferenceCardinality.MULTIPLE, service = OsgiVaadinContributor.class, policy = ReferencePolicy.DYNAMIC)
+    void bindContributor(
+            ServiceReference<OsgiVaadinContributor> contributorRef) {
+        Bundle bundle = contributorRef.getBundle();
+        BundleContext context = bundle.getBundleContext();
+
+        OsgiVaadinContributor contributor = context.getService(contributorRef);
+        if (contributor == null) {
+            return;
+        }
+        Long serviceId = (Long) contributorRef
+                .getProperty(Constants.SERVICE_ID);
+        List<OsgiVaadinStaticResource> contributions = contributor
+                .getContributions();
+        contributorToRegistrations.put(serviceId, contributions.stream()
+                .map(contribution -> context.registerService(
+                        OsgiVaadinStaticResource.class, contribution, null))
+                .collect(Collectors.toList()));
+    }
+
+    void unbindContributor(
+            ServiceReference<OsgiVaadinContributor> contributorRef) {
+        Long serviceId = (Long) contributorRef
+                .getProperty(Constants.SERVICE_ID);
+        List<ServiceRegistration<? extends OsgiVaadinStaticResource>> registrations = contributorToRegistrations
+                .get(serviceId);
+        if (registrations != null) {
+            registrations.forEach(ServiceRegistration::unregister);
+        }
+    }
+
     @Reference
     void setHttpService(HttpService service) {
         this.httpService = service;
@@ -122,19 +159,28 @@ public class VaadinResourceTrackerComponent {
 
     @Activate
     void activate() throws NamespaceException {
-        for (Delegate registration : resourceToRegistration.values()) {
-            registration.init(httpService);
-            httpService.registerResources(registration.alias, registration.path,
-                    registration);
+        synchronized (resourceToRegistration) {
+            for (Delegate registration : resourceToRegistration.values()) {
+                registration.init(httpService);
+                httpService.registerResources(registration.alias,
+                        registration.path, registration);
+            }
         }
     }
 
     @Deactivate
     void deactivate() {
-        for (final Delegate registration : resourceToRegistration.values()) {
-            unregisterResource(registration);
+        synchronized (resourceToRegistration) {
+            resourceToRegistration.values().stream()
+                    .forEach(this::unregisterResource);
+            resourceToRegistration.clear();
         }
-        resourceToRegistration.clear();
+        synchronized (contributorToRegistrations) {
+            contributorToRegistrations.values()
+                    .forEach(registrations -> registrations
+                            .forEach(ServiceRegistration::unregister));
+            contributorToRegistrations.clear();
+        }
         httpService = null;
     }
 
