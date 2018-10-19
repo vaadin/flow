@@ -112,6 +112,113 @@ public class RouteRegistry implements Serializable {
     }
 
     private static class OSGiRouteRegistry extends RouteRegistry {
+        @Override
+        public Class<?> getPwaConfigurationClass() {
+            initPwa();
+            return super.getPwaConfigurationClass();
+        }
+
+        @Override
+        public List<RouteData> getRegisteredRoutes() {
+            initRoutes();
+            return super.getRegisteredRoutes();
+        }
+
+        @Override
+        public Optional<ErrorTargetEntry> getErrorNavigationTarget(
+                Exception exception) {
+            initErrorTargets();
+            return super.getErrorNavigationTarget(exception);
+        }
+
+        @Override
+        public Optional<Class<? extends Component>> getNavigationTarget(
+                String pathString) {
+            initRoutes();
+            return super.getNavigationTarget(pathString);
+        }
+
+        @Override
+        public Optional<Class<? extends Component>> getNavigationTarget(
+                String pathString, List<String> segments) {
+            initRoutes();
+            return super.getNavigationTarget(pathString, segments);
+        }
+
+        @Override
+        public boolean hasRouteTo(String pathString) {
+            initRoutes();
+            return super.hasRouteTo(pathString);
+        }
+
+        @Override
+        public Optional<String> getTargetUrl(
+                Class<? extends Component> navigationTarget) {
+            initRoutes();
+            return super.getTargetUrl(navigationTarget);
+        }
+
+        @Override
+        public boolean hasNavigationTargets() {
+            initRoutes();
+            return super.hasNavigationTargets();
+        }
+
+        @Override
+        public boolean hasRoutes() {
+            initRoutes();
+            return super.hasRoutes();
+        }
+
+        private void initErrorTargets() {
+            if (errorNavigationTargetsInitialized()) {
+                return;
+            }
+
+            if (OSGiAccess.getInstance().getOsgiServletContext() != null
+                    && OSGiAccess.getInstance().hasInitializers()) {
+                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
+                        OSGiAccess.getInstance().getOsgiServletContext());
+                setErrorNavigationTargets(
+                        registry.errorNavigationTargets.get());
+            }
+        }
+
+        private void doInitOSGiRoutes()
+                throws InvalidRouteConfigurationException {
+            if (navigationTargetsInitialized() || OSGiAccess.getInstance()
+                    .getOsgiServletContext() == null) {
+                return;
+            }
+            if (OSGiAccess.getInstance().hasInitializers()) {
+                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
+                        OSGiAccess.getInstance().getOsgiServletContext());
+                setNavigationTargets(registry.navigationTargets.get());
+            }
+        }
+
+        private void initRoutes() {
+            try {
+                doInitOSGiRoutes();
+            } catch (InvalidRouteConfigurationException exception) {
+                assert false : "Exception may not be thrown here since it should have been thrown by "
+                        + OSGiDataCollector.class;
+            }
+        }
+
+        private void initPwa() {
+            if (navigationTargetsInitialized()) {
+                return;
+            }
+            if (OSGiAccess.getInstance().hasInitializers()) {
+                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
+                        OSGiAccess.getInstance().getOsgiServletContext());
+                setPwaConfigurationClass(registry.getPwaConfigurationClass());
+            }
+        }
+    }
+
+    private static class OSGiDataCollector extends RouteRegistry {
 
         private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>(
                 Collections.emptySet());
@@ -137,50 +244,6 @@ public class RouteRegistry implements Serializable {
         @Override
         protected void handleInitializedRegistry() {
             // Don't do anything in this fake internal registry
-        }
-
-        @Override
-        public Optional<ErrorTargetEntry> getErrorNavigationTarget(
-                Exception exception) {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Class<? extends Component>> getNavigationTarget(
-                String pathString) {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Class<? extends Component>> getNavigationTarget(
-                String pathString, List<String> segments) {
-            return Optional.empty();
-        }
-
-        @Override
-        public List<RouteData> getRegisteredRoutes() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public Optional<String> getTargetUrl(
-                Class<? extends Component> navigationTarget) {
-            return Optional.empty();
-        }
-
-        @Override
-        public boolean hasRoutes() {
-            return false;
-        }
-
-        @Override
-        public boolean hasRouteTo(String pathString) {
-            return false;
-        }
-
-        @Override
-        public boolean hasNavigationTargets() {
-            return false;
         }
 
         @Override
@@ -327,8 +390,6 @@ public class RouteRegistry implements Serializable {
      * @return list of routes available for this registry
      */
     public List<RouteData> getRegisteredRoutes() {
-        initRoutes();
-
         // Build and collect only on first request
         if (routeData.get() == null) {
             List<RouteData> registeredRoutes = new ArrayList<>();
@@ -412,21 +473,6 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private void initErrorTargets(
-            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
-        if (!exceptionTargetsMap.containsKey(NotFoundException.class)) {
-            exceptionTargetsMap.put(NotFoundException.class,
-                    RouteNotFoundError.class);
-        }
-        if (!exceptionTargetsMap.containsKey(Exception.class)) {
-            exceptionTargetsMap.put(Exception.class, InternalServerError.class);
-        }
-        if (!exceptionTargets.compareAndSet(null, exceptionTargetsMap)) {
-            throw new IllegalStateException(
-                    "Exception targets has been already initialized");
-        }
-    }
-
     /**
      * Get a registered navigation target for given exception. First we will
      * search for a matching cause for in the exception chain and if no match
@@ -438,8 +484,9 @@ public class RouteRegistry implements Serializable {
      */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
-        initErrorTargets();
-
+        if (!errorNavigationTargetsInitialized()) {
+            initErrorTargets(new HashMap<>());
+        }
         ErrorTargetEntry result = searchByCause(exception);
         if (result == null) {
             result = searchBySuperType(exception);
@@ -493,7 +540,6 @@ public class RouteRegistry implements Serializable {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
-        initRoutes();
         return getNavigationTarget(pathString, new ArrayList<>());
     }
 
@@ -513,7 +559,6 @@ public class RouteRegistry implements Serializable {
      */
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
-        initRoutes();
         if (hasRouteTo(pathString)) {
             return Optional.ofNullable(
                     getRoutes().get(pathString).getTarget(segments));
@@ -531,7 +576,6 @@ public class RouteRegistry implements Serializable {
      */
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
-        initRoutes();
 
         return getRoutes().containsKey(pathString);
     }
@@ -547,7 +591,6 @@ public class RouteRegistry implements Serializable {
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
-        initRoutes();
         return Optional.ofNullable(collectRequiredParameters(navigationTarget));
     }
 
@@ -703,7 +746,6 @@ public class RouteRegistry implements Serializable {
      *         registered; otherwise <code>false</code>
      */
     public boolean hasNavigationTargets() {
-        initRoutes();
         return !getRoutes().isEmpty();
     }
 
@@ -721,7 +763,6 @@ public class RouteRegistry implements Serializable {
      * @return true if we have registered routes
      */
     public boolean hasRoutes() {
-        initRoutes();
         return navigationTargetsInitialized() && !routes.get().isEmpty();
     }
 
@@ -776,7 +817,6 @@ public class RouteRegistry implements Serializable {
      * @return a class that has PWA-annotation.
      */
     public Class<?> getPwaConfigurationClass() {
-        initPwa();
         return pwaConfigurationClass.get();
     }
 
@@ -798,21 +838,6 @@ public class RouteRegistry implements Serializable {
     }
 
     /**
-     * Initializes PWA configuration class.
-     */
-    protected void initPwa() {
-        if (navigationTargetsInitialized()
-                || OSGiAccess.getInstance().getOsgiServletContext() == null) {
-            return;
-        }
-        if (OSGiAccess.getInstance().hasInitializers()) {
-            OSGiRouteRegistry registry = (OSGiRouteRegistry) getInstance(
-                    OSGiAccess.getInstance().getOsgiServletContext());
-            setPwaConfigurationClass(registry.getPwaConfigurationClass());
-        }
-    }
-
-    /**
      * Handles an attempt to initialize already initialized route registry.
      */
     protected void handleInitializedRegistry() {
@@ -820,49 +845,27 @@ public class RouteRegistry implements Serializable {
                 "Route registry has been already initialized");
     }
 
-    private void initRoutes() {
-        try {
-            doInitOSGiRoutes();
-        } catch (InvalidRouteConfigurationException exception) {
-            assert false : "Exception may not be thrown here since it should have been thrown by "
-                    + OSGiRouteRegistry.class;
+    private void initErrorTargets(
+            Map<Class<? extends Exception>, Class<? extends Component>> map) {
+        if (!map.containsKey(NotFoundException.class)) {
+            map.put(NotFoundException.class, RouteNotFoundError.class);
         }
-    }
-
-    private void initErrorTargets() {
-        if (errorNavigationTargetsInitialized()) {
-            return;
+        if (!map.containsKey(Exception.class)) {
+            map.put(Exception.class, InternalServerError.class);
         }
-
-        if (OSGiAccess.getInstance().getOsgiServletContext() != null
-                && OSGiAccess.getInstance().hasInitializers()) {
-            OSGiRouteRegistry registry = (OSGiRouteRegistry) getInstance(
-                    OSGiAccess.getInstance().getOsgiServletContext());
-            setErrorNavigationTargets(registry.errorNavigationTargets.get());
-        }
-
-        if (!errorNavigationTargetsInitialized()) {
-            initErrorTargets(new HashMap<>());
-        }
-    }
-
-    private void doInitOSGiRoutes() throws InvalidRouteConfigurationException {
-        if (navigationTargetsInitialized()
-                || OSGiAccess.getInstance().getOsgiServletContext() == null) {
-            return;
-        }
-        if (OSGiAccess.getInstance().hasInitializers()) {
-            OSGiRouteRegistry registry = (OSGiRouteRegistry) getInstance(
-                    OSGiAccess.getInstance().getOsgiServletContext());
-            setNavigationTargets(registry.navigationTargets.get());
+        if (!exceptionTargets.compareAndSet(null, map)) {
+            throw new IllegalStateException(
+                    "Exception targets has been already initialized");
         }
     }
 
     private static RouteRegistry createRegistry(ServletContext context) {
         if (context != null && context == OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
-            return new OSGiRouteRegistry();
+            return new OSGiDataCollector();
+        } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
+            return new RouteRegistry();
         }
-        return new RouteRegistry();
+        return new OSGiRouteRegistry();
     }
 }
