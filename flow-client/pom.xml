@@ -110,7 +110,7 @@
                     <!-- Exclude all source files and classes so only the
                         compile result ends up in the JAR -->
                     <includes>
-                        <include>com/vaadin/flow/osgi/*</include>
+                        <include>com/vaadin/flow/client/osgi/*</include>
                         <include>META-INF/**</include>
                     </includes>
                 </configuration>

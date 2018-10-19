@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.osgi;
+package com.vaadin.flow.client.osgi;
 
 import java.util.Hashtable;
 
