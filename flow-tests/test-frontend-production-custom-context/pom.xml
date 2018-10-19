@@ -8,7 +8,7 @@
         <version>1.2-SNAPSHOT</version>
     </parent>
     <artifactId>test-frontend-custom-context</artifactId>
-    <name>Flow Frontend Resources on custom context test</name>
+    <name>Flow Frontend Resources on custom context test under Production Mode</name>
     <packaging>war</packaging>
 
     <properties>
@@ -53,14 +53,14 @@
                     <!-- start and stop jetty (running our app) when running
                         integration tests -->
                     <execution>
-                        <id>start-jetty</id>
+                        <id>start-production-jetty</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>start</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>stop-jetty</id>
+                        <id>stop-production-jetty</id>
                         <phase>post-integration-test</phase>
                         <goals>
                             <goal>stop</goal>
@@ -74,6 +74,10 @@
                             <value>true</value>
                         </systemProperty>
                     </systemProperties>
+                    <httpConnector>
+                        <port>8878</port>
+                    </httpConnector>
+                    <stopPort>8879</stopPort>
                     <webAppConfig>
                         <contextPath>/custom-frontend-context</contextPath>
                         <resourceBases>

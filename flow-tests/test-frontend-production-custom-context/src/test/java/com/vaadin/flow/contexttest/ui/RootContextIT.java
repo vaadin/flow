@@ -27,7 +27,12 @@ public class RootContextIT extends ChromeBrowserTest {
 
     private void verifyFrontend() {
 
-        Assert.assertEquals("Piece of ES6 works", findElementById("es6-div").getText());
+        Assert.assertEquals("Piece of ES6 works from bundled frontend resources", findElementById("es6-div").getText());
+    }
+
+    @Override
+    protected int getDeploymentPort() {
+        return 8878;
     }
 
     protected WebElement findElementById(String id) {
