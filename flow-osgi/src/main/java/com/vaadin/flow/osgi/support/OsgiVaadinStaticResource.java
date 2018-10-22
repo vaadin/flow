@@ -24,12 +24,12 @@ package com.vaadin.flow.osgi.support;
  * available by URI "/VAADIN/static/{resourceName}" then is the alias for the
  * path.
  * <p>
- * Another usecase is resources inside the <b>"frontend"<b> folder. You may want
- * to register static web resources available by the URI "/frontend/mycomponent"
- * (this is the alias) which are located inside bundle by the path
- * "/META-INF/resources/frontend/mycomponent" (this path is a standard path for
- * the web resources in jar but it can be any path you want if it's supposed to
- * be used inside OSGi only).
+ * Another usecase is resources inside the <b>"frontend"</b> folder. You may
+ * want to register static web resources available by the URI
+ * "/frontend/mycomponent" (this is the alias) which are located inside a bundle
+ * by the path "/META-INF/resources/frontend/mycomponent" (this path is a
+ * standard path for the web resources in jar but it can be any path you want if
+ * it's supposed to be used inside OSGi only).
  * <p>
  * To publish a resource, an implementation of this interface needs to be
  * registered as an OSGi service, which makes
