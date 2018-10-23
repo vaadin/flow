@@ -74,10 +74,6 @@
                             <value>true</value>
                         </systemProperty>
                     </systemProperties>
-                    <httpConnector>
-                        <port>8878</port>
-                    </httpConnector>
-                    <stopPort>8879</stopPort>
                     <webAppConfig>
                         <contextPath>/custom-frontend-context</contextPath>
                         <resourceBases>
