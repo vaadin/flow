@@ -13,22 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.osgi;
+package com.vaadin.flow.osgi.support;
 
-import java.io.InputStream;
-
-import com.vaadin.flow.client.ClientResources;
+import java.util.List;
 
 /**
- * OSGi service to access to the client-side resources.
- *
- * @author Vaadin Ltd
+ * Used to declare multiple OsgiVaadinResources with a single OSGi component.
  *
  */
-class OsgiClientResources implements ClientResources {
-
-    @Override
-    public InputStream getResource(String path) {
-        return OsgiClientResources.class.getResourceAsStream(path);
-    }
+public interface OsgiVaadinContributor {
+    /**
+     * Gets the contributions to register.
+     *
+     * @return a list of resources to register
+     */
+    List<OsgiVaadinStaticResource> getContributions();
 }

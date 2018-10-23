@@ -33,6 +33,12 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>flow-osgi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>flow-test-root-context</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
@@ -41,16 +47,38 @@
 
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-            <version>5.0.0</version>
+            <artifactId>org.osgi.core</artifactId>
+            <version>6.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr</artifactId>
+            <version>2.1.10</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>6.0.0</version>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr.annotations</artifactId>
+            <version>1.12.0</version>
+            <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr.compat</artifactId>
+            <version>1.0.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr.ds-annotations</artifactId>
+            <version>1.2.10</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -71,8 +99,8 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Those dependencies are need for OSGi container where this bundle
-            will be deployed. They will be copied into the bundle folder of OSGi container
+        <!-- Those dependencies are need for OSGi container where this bundle 
+            will be deployed. They will be copied into the bundle folder of OSGi container 
             and automatically installed form there. -->
 
         <dependency>

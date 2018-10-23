@@ -32,14 +32,9 @@ import org.osgi.service.http.HttpContext;
 
 public final class StaticResourceServlet extends HttpServlet {
 
-    private final String path;
+    private String path;
 
-    private final HttpContext context;
-
-    public StaticResourceServlet(final String prefix, HttpContext context) {
-        this.path = prefix;
-        this.context = context;
-    }
+    private HttpContext context;
 
     @Override
     protected void doGet(HttpServletRequest request,
@@ -54,6 +49,14 @@ public final class StaticResourceServlet extends HttpServlet {
         } else {
             handle(request, response, resourceUrl, resName);
         }
+    }
+
+    void setPath(String path) {
+        this.path = path;
+    }
+
+    void setContext(HttpContext context) {
+        this.context = context;
     }
 
     private void handle(HttpServletRequest request,
@@ -101,4 +104,5 @@ public final class StaticResourceServlet extends HttpServlet {
         }
         return length;
     }
+
 }

@@ -19,6 +19,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
  */
 public class OSGiHttpServiceRegistration {
 
+    static final String RESOURCES_SERVLET = "resourcesServlet";
+
     public static void registerHttpService(ServletContext ctx) {
         try {
             Class.forName("org.osgi.framework.FrameworkUtil");
@@ -38,6 +41,29 @@ public class OSGiHttpServiceRegistration {
             Dictionary<String, ?> props = new Hashtable();
             bundle.getBundleContext().registerService(HttpService.class,
                     new OsgiHttpServiceFactory(ctx), props);
+
+            /*
+             * The code below is a hack for jetty-osgi-boot to register
+             * "/VAADIN/static/client" URI via HttpService.
+             *
+             * OsgiHttpService.registerResources method may not be used for
+             * servlet registration because it's too late to do this with the
+             * current approach.
+             *
+             * So the servlet is registered here assuming there will be only one
+             * resource registration for "/VAADIN/static/client".
+             *
+             * We should use some another proper Web server implementation
+             * inside OSGi which provides HttpService. In this case all this
+             * package can be just removed completely.
+             */
+            StaticResourceServlet servlet = new StaticResourceServlet();
+
+            ServletRegistration.Dynamic dynamic = ctx
+                    .addServlet(RESOURCES_SERVLET, servlet);
+            dynamic.addMapping("/VAADIN/static/client/*");
+            ctx.setAttribute(RESOURCES_SERVLET, servlet);
+
         } catch (ClassNotFoundException exception) {
             LoggerFactory.getLogger(OSGiHttpServiceRegistration.class)
                     .debug(exception.getMessage(), exception);
