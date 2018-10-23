@@ -717,11 +717,15 @@ public class ComponentGenerator {
         getVariantNameMethod.getJavaDoc().setText("Gets the variant name.")
                 .addTagValue(JAVADOC_RETURN, "variant name");
 
-        for (Map.Entry<String, List<String>> themeNameAndVariants : metadata
-                .getVariants().entrySet()) {
-            for (String variant : themeNameAndVariants.getValue()) {
-                classEnum.addEnumConstant(createEnumFieldName(String.format(
-                        "%s_%s", themeNameAndVariants.getKey(), variant)))
+        // sort the theme names to produce deterministic output
+        List<String> themeNames = metadata.getVariants().keySet().stream()
+                .sorted().collect(Collectors.toList());
+
+        for (String themeName : themeNames) {
+            for (String variant : metadata.getVariants().get(themeName)) {
+                classEnum
+                        .addEnumConstant(createEnumFieldName(
+                                String.format("%s_%s", themeName, variant)))
                         .setConstructorArguments(
                                 String.format("\"%s\"", variant));
             }
@@ -1206,7 +1210,7 @@ public class ComponentGenerator {
      * events.
      * <p>
      * The "value" also cannot be multi-typed.
-     * 
+     *
      * @param javaClass
      */
     private boolean shouldImplementHasValue(ComponentMetadata metadata,
