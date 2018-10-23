@@ -66,13 +66,13 @@ public class VaadinResourceTrackerComponent {
 
         private volatile HttpContext context;
 
-        public Delegate(String alias, String path, Bundle bundle) {
+        Delegate(String alias, String path, Bundle bundle) {
             this.alias = alias;
             this.path = path;
             this.bundle = bundle;
         }
 
-        public void init(HttpService service) {
+        void init(HttpService service) {
             context = service.createDefaultHttpContext();
         }
 

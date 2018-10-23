@@ -18,7 +18,7 @@ package com.vaadin.flow.client.osgi;
 import com.vaadin.flow.osgi.support.OsgiVaadinStaticResource;
 
 /**
- * Client resources registration
+ * Client resources registration.
  *
  * @author Vaadin Ltd
  *

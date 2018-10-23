@@ -52,6 +52,15 @@ public interface OsgiVaadinStaticResource {
      */
     String getAlias();
 
+    /**
+     * Creates a new resource instance.
+     *
+     * @param path
+     *            the resource path inside a bundle
+     * @param alias
+     *            the URI alias
+     * @return a new resource instance
+     */
     public static OsgiVaadinStaticResource create(String path, String alias) {
         return new OsgiVaadinStaticResource() {
             @Override
