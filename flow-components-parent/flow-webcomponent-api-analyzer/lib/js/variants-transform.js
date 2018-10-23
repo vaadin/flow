@@ -141,10 +141,12 @@ module.exports = class VariantsTransform extends Transform {
       }
 
       const componentThemes = this.variantsData[componentTag];
+      var themeNames = [];
       for (const themeName in componentThemes) {
         if (!componentThemes.hasOwnProperty(themeName)) {
           continue;
         }
+        themeNames.push(themeName);
 
         const themeModules = modulesData[themeName];
         const moduleId = themeToTagToModuleId[themeName][componentTag];
@@ -156,8 +158,14 @@ module.exports = class VariantsTransform extends Transform {
           componentThemes[themeName] = [...variantsToFill];
         }
       }
-      if (!Object.keys(componentThemes).length) {
-        delete this.variantsData[componentTag];
+      if (Object.keys(componentThemes).length) {
+          themeNames = themeNames.sort();
+          const sortedThemes = {};
+          themeNames.forEach( theme => sortedThemes[theme] = componentThemes[theme]);
+          this.variantsData[componentTag] = sortedThemes;  
+      }
+      else {
+          delete this.variantsData[componentTag];
       }
     }
     cb();
