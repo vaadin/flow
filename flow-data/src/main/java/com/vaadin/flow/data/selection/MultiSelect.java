@@ -94,7 +94,8 @@ public interface MultiSelect<C extends Component, T> extends
      * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing
      * to deselect.
      *
-     * @param items to add to selection, not {@code null}
+     * @param items
+     *            to add to selection, not {@code null}
      */
     default void select(Iterable<T> items) {
         Objects.requireNonNull(items);
@@ -119,11 +120,12 @@ public interface MultiSelect<C extends Component, T> extends
      * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing
      * to select.
      *
-     * @param items to remove from selection, not {@code null}
+     * @param items
+     *            to remove from selection, not {@code null}
      */
     default void deselect(Iterable<T> items) {
         Objects.requireNonNull(items);
-        Stream.of(items).forEach(Objects::requireNonNull);
+        items.forEach(Objects::requireNonNull);
 
         Set<T> itemsToDeselect;
         if (items instanceof Set) {
