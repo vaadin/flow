@@ -4,20 +4,25 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
- * the License. 
+ * the License.
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,9 +38,6 @@ import com.vaadin.flow.internal.StateTree;
 
 import elemental.json.JsonValue;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 public class HierarchicalCommunicatorTest {
 
     private static final String ROOT = "ROOT";
@@ -49,6 +51,8 @@ public class HierarchicalCommunicatorTest {
     private StateTree stateTree;
     private final int pageSize = 50;
     private StateNode stateNode;
+
+    private List<String> enqueueFunctions = new ArrayList<>();
 
     private class UpdateQueue implements HierarchicalUpdate {
         @Override
@@ -65,6 +69,7 @@ public class HierarchicalCommunicatorTest {
 
         @Override
         public void enqueue(String name, Serializable... arguments) {
+            enqueueFunctions.add(name);
         }
 
         @Override
@@ -148,14 +153,16 @@ public class HierarchicalCommunicatorTest {
             dataProvider.refreshItem(item);
         }
 
+        int number = refreshAll ? 6 : 5;
+
         ArgumentCaptor<SerializableConsumer> attachCaptor = ArgumentCaptor
                 .forClass(SerializableConsumer.class);
-        Mockito.verify(stateNode, Mockito.times(4))
+        Mockito.verify(stateNode, Mockito.times(number))
                 .runWhenAttached(attachCaptor.capture());
 
         attachCaptor.getAllValues().forEach(consumer -> consumer.accept(ui));
 
-        Mockito.verify(stateTree, Mockito.times(4))
+        Mockito.verify(stateTree, Mockito.times(number))
                 .beforeClientResponse(Mockito.any(), Mockito.any());
     }
 
@@ -172,6 +179,18 @@ public class HierarchicalCommunicatorTest {
         assertFalse("Stalled object in KeyMapper",
                 communicator.getKeyMapper().has(ROOT));
         assertEquals(-1, communicator.getParentIndex(FOLDER).longValue());
+    }
+
+    @Test
+    public void reset_noDataControllers_hierarchicalUpdateIsCalled() {
+        enqueueFunctions.clear();
+        // The communicator is just initialized with a data provider and has no
+        // any data controllers
+        communicator.reset();
+
+        Assert.assertEquals(1, enqueueFunctions.size());
+        Assert.assertEquals("$connector.ensureHierarchy",
+                enqueueFunctions.get(0));
     }
 
 }
