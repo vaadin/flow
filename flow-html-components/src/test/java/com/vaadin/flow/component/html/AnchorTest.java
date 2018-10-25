@@ -15,13 +15,27 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 public class AnchorTest extends ComponentTest {
 
-    // Actual test methods in super class
+    @Test
+    public void removeHref() {
+        Anchor anchor = new Anchor();
+        anchor.setHref("foo");
+        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+
+        anchor.removeHref();
+        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+    }
+
+    // Other test methods in super class
 
     @Override
     protected void addProperties() {
         addStringProperty("href", "", false);
         addOptionalStringProperty("target");
     }
+
 }
