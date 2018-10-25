@@ -100,8 +100,6 @@ public class Anchor extends HtmlContainer {
      *
      * @see Anchor#setHref(String)
      *
-     * @param href
-     *            the href to set
      */
     public void removeHref() {
         getElement().removeAttribute("href");
