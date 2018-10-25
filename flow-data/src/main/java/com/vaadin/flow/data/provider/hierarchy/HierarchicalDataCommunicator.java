@@ -4,14 +4,14 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
- * the License. 
+ * the License.
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
@@ -88,7 +88,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     /**
      * Construct a new hierarchical data communicator backed by a
      * {@link TreeDataProvider}.
-     * 
+     *
      * @param dataGenerator
      *            the data generator function
      * @param arrayUpdater
@@ -147,10 +147,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         super.reset();
 
         if (!dataControllers.isEmpty()) {
-            dataControllers.values()
-                    .forEach(HierarchicalCommunicationController::unregisterPassivatedKeys);
+            dataControllers.values().forEach(
+                    HierarchicalCommunicationController::unregisterPassivatedKeys);
             dataControllers.clear();
+        }
 
+        if (getHierarchyMapper() != null) {
             HierarchicalUpdate update = arrayUpdater
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
@@ -168,13 +170,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     public void setParentRequestedRange(int start, int length, T parentItem) {
         String parentKey = uniqueKeyProviderSupplier.get().apply(parentItem);
 
-        HierarchicalCommunicationController<T> controller = dataControllers.computeIfAbsent(
-                parentKey,
-                key -> new HierarchicalCommunicationController<>(parentKey, getKeyMapper(),
-                        mapper, dataGenerator,
-                        size -> arrayUpdater.startUpdate(getDataProviderSize()),
-                        (pkey, range) -> mapper.fetchChildItems(
-                                getKeyMapper().get(pkey), range)));
+        HierarchicalCommunicationController<T> controller = dataControllers
+                .computeIfAbsent(parentKey,
+                        key -> new HierarchicalCommunicationController<>(
+                                parentKey, getKeyMapper(), mapper,
+                                dataGenerator,
+                                size -> arrayUpdater
+                                        .startUpdate(getDataProviderSize()),
+                                (pkey, range) -> mapper.fetchChildItems(
+                                        getKeyMapper().get(pkey), range)));
 
         controller.setRequestRange(start, length);
         requestFlush(controller);
@@ -307,7 +311,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * method will have no effect if the row is already collapsed.
      * <p>
      * Changes are synchronized to the client.
-     * 
+     *
      * @param items
      *            the items to collapse
      * @return the collapsed items
@@ -345,7 +349,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * item is already expanded or if it has no children.
      * <p>
      * Changes are synchronized to the client.
-     * 
+     *
      * @param item
      *            the item to expand
      */
@@ -358,7 +362,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * item is already expanded or if it has no children.
      * <p>
      * Changes are synchronized to the client.
-     * 
+     *
      * @param items
      *            the items to expand
      * @return the expanded items
@@ -459,7 +463,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Returns depth of item in the tree starting from zero representing a root.
-     * 
+     *
      * @param item
      *            Target item
      * @return depth of item in the tree or -1 if item is null
@@ -497,7 +501,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Returns true if there is any expanded items.
-     * 
+     *
      * @return {@code true} if there is any expanded items.
      */
     public boolean hasExpandedItems() {
