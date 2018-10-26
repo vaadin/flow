@@ -2,7 +2,7 @@
   "name": "Vaadin.GridSortColumnElement",
   "tag": "vaadin-grid-sort-column",
   "baseUrl": "vaadin-grid/src/vaadin-grid-sort-column.html",
-  "version": "5.2.0-beta1",
+  "version": "5.2.1",
   "properties": [
     {
       "name": "path",

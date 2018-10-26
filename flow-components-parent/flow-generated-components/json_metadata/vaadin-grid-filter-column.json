@@ -2,7 +2,7 @@
   "name": "Vaadin.GridFilterColumnElement",
   "tag": "vaadin-grid-filter-column",
   "baseUrl": "vaadin-grid/src/vaadin-grid-filter-column.html",
-  "version": "5.2.0-beta1",
+  "version": "5.2.1",
   "properties": [
     {
       "name": "header",
