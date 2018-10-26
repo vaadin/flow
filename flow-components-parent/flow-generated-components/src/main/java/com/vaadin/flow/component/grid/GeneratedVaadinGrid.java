@@ -56,9 +56,9 @@ import com.vaadin.flow.dom.Element;
  * <h4>Example:</h4>
  * <p>
  * &lt;vaadin-grid&gt; &lt;vaadin-grid-column path=&quot;name.first&quot;
- * header=&quot;First Name&quot;&gt;&lt;/vaadin-grid-column&gt;
+ * header=&quot;First name&quot;&gt;&lt;/vaadin-grid-column&gt;
  * &lt;vaadin-grid-column path=&quot;name.last&quot; header=&quot;Last
- * Name&quot;&gt;&lt;/vaadin-grid-column&gt; &lt;vaadin-grid-column
+ * name&quot;&gt;&lt;/vaadin-grid-column&gt; &lt;vaadin-grid-column
  * path=&quot;email&quot;&gt;&lt;/vaadin-grid-column&gt; &lt;/vaadin-grid&gt;
  * </p>
  * <p>
@@ -357,7 +357,7 @@ grid.size = 200; // The total number of items
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.GridElement#5.2.0-beta1", "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.GridElement#5.2.1", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid.html")
 public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
@@ -951,6 +951,22 @@ public abstract class GeneratedVaadinGrid<R extends GeneratedVaadinGrid<R>>
      */
     protected void render() {
         getElement().callFunction("render");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Updates the computed metrics and positioning of internal grid parts
+     * (row/details cell positioning etc). Needs to be invoked whenever the
+     * sizing of grid content changes asynchronously to ensure consistent
+     * appearance (e.g. when a contained image whose bounds aren't known
+     * beforehand finishes loading).
+     * </p>
+     */
+    protected void notifyResize() {
+        getElement().callFunction("notifyResize");
     }
 
     public static class ActiveItemChangeEvent<R extends GeneratedVaadinGrid<R>>

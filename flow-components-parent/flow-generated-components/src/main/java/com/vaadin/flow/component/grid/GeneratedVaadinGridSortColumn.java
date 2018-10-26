@@ -44,7 +44,7 @@ import com.vaadin.flow.shared.Registration;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.GridSortColumnElement#5.2.0-beta1",
+        "WebComponent: Vaadin.GridSortColumnElement#5.2.1",
         "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-sort-column")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-sort-column.html")

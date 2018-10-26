@@ -39,7 +39,7 @@ import com.vaadin.flow.component.HasStyle;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.GridTreeColumnElement#5.2.0-beta1",
+        "WebComponent: Vaadin.GridTreeColumnElement#5.2.1",
         "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-tree-column")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-tree-column.html")

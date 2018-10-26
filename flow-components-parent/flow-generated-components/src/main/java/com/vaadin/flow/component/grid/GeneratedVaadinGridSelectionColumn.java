@@ -54,12 +54,11 @@ import com.vaadin.flow.shared.Registration;
  * for all the items at once.
  * </p>
  * <p>
- * <strong>The default content templates can also be overridden with custom
- * ones.</strong>
+ * <strong>The default content can also be overridden</strong>
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.GridSelectionColumnElement#5.2.0-beta1",
+        "WebComponent: Vaadin.GridSelectionColumnElement#5.2.1",
         "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-selection-column")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-selection-column.html")
