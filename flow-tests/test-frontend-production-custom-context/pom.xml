@@ -58,6 +58,21 @@
                         <goals>
                             <goal>start</goal>
                         </goals>
+                        <configuration>
+                            <systemProperties>
+                                <systemProperty>
+                                    <name>vaadin.productionMode</name>
+                                    <value>true</value>
+                                </systemProperty>
+                            </systemProperties>
+                            <webAppConfig>
+                                <contextPath>/custom-frontend-context</contextPath>
+                                <resourceBases>
+                                    <resourceBase>${project.build.directory}</resourceBase>
+                                    <resourceBase>${transpilation.output}</resourceBase>
+                                </resourceBases>
+                            </webAppConfig>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>stop-production-jetty</id>
@@ -67,25 +82,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>vaadin.productionMode</name>
-                            <value>true</value>
-                        </systemProperty>
-                    </systemProperties>
-                    <httpConnector>
-                        <port>8878</port>
-                    </httpConnector>
-                    <stopPort>8879</stopPort>
-                    <webAppConfig>
-                        <contextPath>/custom-frontend-context</contextPath>
-                        <resourceBases>
-                            <resourceBase>${project.build.directory}</resourceBase>
-                            <resourceBase>${transpilation.output}</resourceBase>
-                        </resourceBases>
-                    </webAppConfig>
-                </configuration>
             </plugin>
         </plugins>
     </build>
