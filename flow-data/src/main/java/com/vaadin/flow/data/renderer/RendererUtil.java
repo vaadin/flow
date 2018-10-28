@@ -26,6 +26,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.internal.StateTree;
 
 /**
  * Class used internally by components that support {@link TemplateRenderer}. It
@@ -76,21 +77,28 @@ public class RendererUtil {
              * the template element must have the "__dataHost" property set with
              * the column element.
              */
-            templateDataHost.getNode().runWhenAttached(
-                    ui -> ui.getInternals().getStateTree().beforeClientResponse(
-                            templateDataHost.getNode(),
-                            context -> processTemplateRendererEventHandlers(
-                                    context.getUI(), templateDataHost,
-                                    eventHandlers, keyMapper)));
+            templateDataHost.getNode()
+                    .addAttachListener(() -> getUI(templateDataHost)
+                            .getInternals().getStateTree()
+                            .beforeClientResponse(templateDataHost.getNode(),
+                                    context -> processTemplateRendererEventHandlers(
+                                            context.getUI(), templateDataHost,
+                                            eventHandlers, keyMapper)));
 
-            contentTemplate.getNode().runWhenAttached(
-                    ui -> ui.getInternals().getStateTree().beforeClientResponse(
-                            templateDataHost.getNode(),
-                            context -> context.getUI().getPage()
-                                    .executeJavaScript("$0.__dataHost = $1;",
-                                            contentTemplate,
-                                            templateDataHost)));
+            contentTemplate.getNode()
+                    .addAttachListener(() -> getUI(contentTemplate)
+                            .getInternals().getStateTree()
+                            .beforeClientResponse(templateDataHost.getNode(),
+                                    context -> context.getUI().getPage()
+                                            .executeJavaScript(
+                                                    "$0.__dataHost = $1;",
+                                                    contentTemplate,
+                                                    templateDataHost)));
         }
+    }
+
+    private static UI getUI(Element element) {
+        return ((StateTree) element.getNode().getOwner()).getUI();
     }
 
     private static <T> void processTemplateRendererEventHandlers(UI ui,
