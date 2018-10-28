@@ -136,7 +136,6 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.FutureAccess",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
-                "com\\.vaadin\\.flow\\.client\\.osgi\\.Activator",
                 "com\\.vaadin\\.flow\\.client\\.osgi\\.OSGiClientStaticResource",
                 "com\\.vaadin\\.flow\\.\\.osgi\\.support\\.OsgiVaadinContributor",
                 "com\\.vaadin\\.flow\\.\\.osgi\\.support\\.OsgiVaadinStaticResource",
