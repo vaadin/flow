@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.ValueProvider;
@@ -121,9 +122,10 @@ public class RendererUtil {
                 handlerName, eventOrigin.getNode().getId(), handlerName),
                 eventOrigin);
 
-        eventOrigin.addEventListener(handlerName,
-                event -> processEventFromTemplateRenderer(event, handlerName,
-                        consumer, keyMapper));
+        DomListenerRegistration registration = eventOrigin.addEventListener(
+                handlerName, event -> processEventFromTemplateRenderer(event,
+                        handlerName, consumer, keyMapper));
+        eventOrigin.addDetachListener(event -> registration.remove());
     }
 
     private static <T> void processEventFromTemplateRenderer(DomEvent event,
