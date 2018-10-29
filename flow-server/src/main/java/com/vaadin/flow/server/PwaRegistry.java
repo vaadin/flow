@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import javax.imageio.ImageIO;
-import javax.servlet.ServletContext;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -33,6 +31,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
+import javax.servlet.ServletContext;
 
 import com.vaadin.flow.server.startup.RouteRegistry;
 
@@ -54,6 +55,7 @@ import elemental.json.JsonObject;
  * </ul>
  */
 public class PwaRegistry implements Serializable {
+    private static final String HEADLESS_PROPERTY = "java.awt.headless";
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
@@ -70,6 +72,11 @@ public class PwaRegistry implements Serializable {
 
     private PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
+        if (System.getProperty(HEADLESS_PROPERTY) == null) {
+            // set headless mode if the property is not explicitly set
+            System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
+        }
+
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
         pwaConfiguration = new PwaConfiguration(pwa, servletContext);
@@ -210,8 +217,8 @@ public class PwaRegistry implements Serializable {
         String workBoxAbsolutePath = servletContext.getContextPath() + "/"
                 + WORKBOX_FOLDER;
         // Google Workbox import
-        stringBuilder.append("importScripts('").append(workBoxAbsolutePath).append("workbox-sw.js")
-                .append("');\n\n");
+        stringBuilder.append("importScripts('").append(workBoxAbsolutePath)
+                .append("workbox-sw.js").append("');\n\n");
 
         stringBuilder.append("workbox.setConfig({\n")
                 .append("  modulePathPrefix: '").append(workBoxAbsolutePath)
@@ -260,8 +267,8 @@ public class PwaRegistry implements Serializable {
                 RouteRegistry reg = RouteRegistry.getInstance(servletContext);
 
                 // Initialize PwaRegistry with found PWA settings
-                PWA pwa = reg.getPwaConfigurationClass() != null
-                        ? reg.getPwaConfigurationClass().getAnnotation(PWA.class)
+                PWA pwa = reg.getPwaConfigurationClass() != null ? reg
+                        .getPwaConfigurationClass().getAnnotation(PWA.class)
                         : null;
                 // will fall back to defaults, if no PWA annotation available
                 try {
@@ -312,22 +319,24 @@ public class PwaRegistry implements Serializable {
         return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
-                        largest != null ? pwaConfiguration.getRootUrl()
-                                + largest.getHref() : "")
+                        largest != null
+                                ? pwaConfiguration.getRootUrl()
+                                        + largest.getHref()
+                                : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 
     }
 
     private String initializeInstallPrompt(PwaConfiguration pwaConfiguration) {
-        PwaIcon largest = getIcons().stream()
-                .filter(PwaIcon::shouldBeCached)
+        PwaIcon largest = getIcons().stream().filter(PwaIcon::shouldBeCached)
                 .min((icon1, icon2) -> icon2.getWidth() - icon1.getWidth())
                 .orElse(null);
         return BootstrapHandler.readResource("default-pwa-prompt.html")
                 .replace("%%%ADD_HOME_SCREEN%%%", "Add to home screen")
                 .replace("%%%LOGO_PATH%%%",
-                        largest == null ? "" : pwaConfiguration.getRootUrl()
-                                + largest.getHref())
+                        largest == null ? ""
+                                : pwaConfiguration.getRootUrl()
+                                        + largest.getHref())
                 .replace("%%%PROJECT_NAME%%%", pwaConfiguration.getAppName());
     }
 
@@ -416,7 +425,8 @@ public class PwaRegistry implements Serializable {
     /**
      * List of {@link PwaIcon}:s that should be added to manifest.webmanifest.
      *
-     * @return List of {@link PwaIcon}:s that should be added to manifest.webmanifest
+     * @return List of {@link PwaIcon}:s that should be added to
+     *         manifest.webmanifest
      */
     public List<PwaIcon> getManifestIcons() {
         return getIcons(PwaIcon.Domain.MANIFEST);
