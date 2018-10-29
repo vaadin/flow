@@ -2,7 +2,7 @@
   "name": "Vaadin.GridColumnElement",
   "tag": "vaadin-grid-column",
   "baseUrl": "vaadin-grid/src/vaadin-grid-column.html",
-  "version": "5.2.0-beta1",
+  "version": "5.2.1",
   "properties": [
     {
       "name": "resizable",

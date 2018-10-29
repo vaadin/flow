@@ -87,8 +87,7 @@ Your work has been saved
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.NotificationElement#1.2.0-beta1",
-        "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.NotificationElement#1.2.0", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-notification")
 @HtmlImport("frontend://bower_components/vaadin-notification/src/vaadin-notification.html")
 public abstract class GeneratedVaadinNotification<R extends GeneratedVaadinNotification<R>>

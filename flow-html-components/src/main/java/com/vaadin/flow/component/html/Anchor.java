@@ -81,12 +81,28 @@ public class Anchor extends HtmlContainer {
 
     /**
      * Sets the URL that this anchor links to.
+     * <p>
+     * Use the method {@link #removeHref()} to remove the <b>href</b> attribute
+     * instead of setting it to an empty string.
+     *
+     * @see #removeHref()
+     * @see #setHref(AbstractStreamResource)
      *
      * @param href
-     *            the href to set, or <code>""</code> to remove the href value
+     *            the href to set
      */
     public void setHref(String href) {
         set(hrefDescriptor, href);
+    }
+
+    /**
+     * Removes href attribute.
+     *
+     * @see Anchor#setHref(String)
+     *
+     */
+    public void removeHref() {
+        getElement().removeAttribute("href");
     }
 
     /**

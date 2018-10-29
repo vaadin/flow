@@ -35,8 +35,7 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.GridColumnElement#5.2.0-beta1",
-        "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.GridColumnElement#5.2.1", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-column")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-column.html")
 public abstract class GeneratedVaadinGridColumn<R extends GeneratedVaadinGridColumn<R>>

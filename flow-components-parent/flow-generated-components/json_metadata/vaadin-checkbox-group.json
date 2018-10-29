@@ -83,10 +83,10 @@
     "Vaadin.ThemableMixin"
   ],
   "variants": {
-    "material": [
+    "lumo": [
       "vertical"
     ],
-    "lumo": [
+    "material": [
       "vertical"
     ]
   },

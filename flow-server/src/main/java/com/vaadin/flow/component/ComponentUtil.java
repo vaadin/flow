@@ -365,7 +365,7 @@ public class ComponentUtil {
      * @throws IllegalArgumentException
      *             if the event type is not annotated with {@link DomEvent}
      */
-    public <T extends ComponentEvent<?>> Registration addListener(
+    public static <T extends ComponentEvent<?>> Registration addListener(
             Component component, Class<T> eventType,
             ComponentEventListener<T> listener,
             Consumer<DomListenerRegistration> domListenerConsumer) {

@@ -84,6 +84,61 @@ public interface MultiSelect<C extends Component, T> extends
     }
 
     /**
+     * Adds the given items to the set of currently selected items.
+     * <p>
+     * By default this does not clear any previous selection. To do that, use
+     * {@link #deselectAll()}.
+     * <p>
+     * If the all the items were already selected, this is a NO-OP.
+     * <p>
+     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing
+     * to deselect.
+     *
+     * @param items
+     *            to add to selection, not {@code null}
+     */
+    default void select(Iterable<T> items) {
+        Objects.requireNonNull(items);
+        items.forEach(Objects::requireNonNull);
+
+        Set<T> itemsToSelect;
+        if (items instanceof Set) {
+            itemsToSelect = (Set<T>) items;
+        } else {
+            itemsToSelect = new LinkedHashSet<>();
+            items.forEach(itemsToSelect::add);
+        }
+
+        updateSelection(itemsToSelect, Collections.emptySet());
+    }
+
+    /**
+     * Removes the given items from the set of currently selected items.
+     * <p>
+     * If the none of the items were selected, this is a NO-OP.
+     * <p>
+     * This is a short-hand for {@link #updateSelection(Set, Set)} with nothing
+     * to select.
+     *
+     * @param items
+     *            to remove from selection, not {@code null}
+     */
+    default void deselect(Iterable<T> items) {
+        Objects.requireNonNull(items);
+        items.forEach(Objects::requireNonNull);
+
+        Set<T> itemsToDeselect;
+        if (items instanceof Set) {
+            itemsToDeselect = (Set<T>) items;
+        } else {
+            itemsToDeselect = new LinkedHashSet<>();
+            items.forEach(itemsToDeselect::add);
+        }
+
+        updateSelection(Collections.emptySet(), itemsToDeselect);
+    }
+
+    /**
      * Updates the selection by adding and removing the given items from it.
      * <p>
      * If all the added items were already selected and the removed items were
