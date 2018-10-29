@@ -35,7 +35,7 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>
