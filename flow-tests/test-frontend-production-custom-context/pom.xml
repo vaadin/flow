@@ -23,6 +23,11 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server-production-mode</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -58,21 +63,6 @@
                         <goals>
                             <goal>start</goal>
                         </goals>
-                        <configuration>
-                            <systemProperties>
-                                <systemProperty>
-                                    <name>vaadin.productionMode</name>
-                                    <value>true</value>
-                                </systemProperty>
-                            </systemProperties>
-                            <webAppConfig>
-                                <contextPath>/custom-frontend-context</contextPath>
-                                <resourceBases>
-                                    <resourceBase>${project.build.directory}</resourceBase>
-                                    <resourceBase>${transpilation.output}</resourceBase>
-                                </resourceBases>
-                            </webAppConfig>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>stop-production-jetty</id>
@@ -82,6 +72,15 @@
                         </goals>
                     </execution>
                 </executions>
+
+                <configuration>
+                    <webAppConfig>
+                        <contextPath>/custom-frontend-context</contextPath>
+                        <resourceBases>
+                            <resourceBase>${transpilation.output}</resourceBase>
+                        </resourceBases>
+                    </webAppConfig>
+                </configuration>
             </plugin>
         </plugins>
     </build>
