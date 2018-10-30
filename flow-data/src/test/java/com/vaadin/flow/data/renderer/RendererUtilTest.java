@@ -64,6 +64,27 @@ public class RendererUtilTest {
     }
 
     @Test
+    public void registerEventHandlers_elementsAreAlreadyAttached_setupEvenHandlers() {
+        UI ui = new TestUI();
+
+        Element contentTemplate = new Element(Tag.DIV);
+        Element templateDataHost = new Element(Tag.SPAN);
+        attachElements(ui, contentTemplate, templateDataHost);
+
+        TestUIInternals internals = (TestUIInternals) ui.getInternals();
+
+        Renderer<String> renderer = new Renderer<>();
+
+        renderer.setEventHandler("foo", value -> {
+        });
+
+        RendererUtil.registerEventHandlers(renderer, contentTemplate,
+                templateDataHost, ValueProvider.identity());
+
+        assertJSExecutions(ui, internals, contentTemplate, templateDataHost);
+    }
+
+    @Test
     public void registerEventHandlers_setupEvenHandlersOnAttach() {
         UI ui = new TestUI();
         TestUIInternals internals = (TestUIInternals) ui.getInternals();
@@ -79,19 +100,24 @@ public class RendererUtilTest {
         RendererUtil.registerEventHandlers(renderer, contentTemplate,
                 templateDataHost, ValueProvider.identity());
 
+        attachElements(ui, contentTemplate, templateDataHost);
         assertJSExecutions(ui, internals, contentTemplate, templateDataHost);
 
         ui.getElement().removeAllChildren();
         internals.invocations.clear();
 
+        attachElements(ui, contentTemplate, templateDataHost);
         assertJSExecutions(ui, internals, contentTemplate, templateDataHost);
+    }
+
+    private void attachElements(UI ui, Element contentTemplate,
+            Element templateDataHost) {
+        ui.getElement().appendChild(contentTemplate);
+        ui.getElement().appendChild(templateDataHost);
     }
 
     private void assertJSExecutions(UI ui, TestUIInternals internals,
             Element contentTemplate, Element templateDataHost) {
-        ui.getElement().appendChild(contentTemplate);
-        ui.getElement().appendChild(templateDataHost);
-
         internals.getStateTree().runExecutionsBeforeClientResponse();
 
         Assert.assertEquals(2, internals.invocations.size());

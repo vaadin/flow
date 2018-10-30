@@ -27,7 +27,9 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.server.Command;
 
 /**
  * Class used internally by components that support {@link TemplateRenderer}. It
@@ -78,23 +80,27 @@ public class RendererUtil {
              * the template element must have the "__dataHost" property set with
              * the column element.
              */
-            templateDataHost.getNode()
-                    .addAttachListener(() -> getUI(templateDataHost)
-                            .getInternals().getStateTree()
+            runOnAttach(templateDataHost.getNode(),
+                    () -> getUI(templateDataHost).getInternals().getStateTree()
                             .beforeClientResponse(templateDataHost.getNode(),
                                     context -> processTemplateRendererEventHandlers(
                                             context.getUI(), templateDataHost,
                                             eventHandlers, keyMapper)));
 
-            contentTemplate.getNode()
-                    .addAttachListener(() -> getUI(contentTemplate)
-                            .getInternals().getStateTree()
-                            .beforeClientResponse(templateDataHost.getNode(),
-                                    context -> context.getUI().getPage()
-                                            .executeJavaScript(
-                                                    "$0.__dataHost = $1;",
-                                                    contentTemplate,
-                                                    templateDataHost)));
+            runOnAttach(contentTemplate.getNode(), () -> getUI(contentTemplate)
+                    .getInternals().getStateTree()
+                    .beforeClientResponse(templateDataHost.getNode(),
+                            context -> context.getUI().getPage()
+                                    .executeJavaScript("$0.__dataHost = $1;",
+                                            contentTemplate,
+                                            templateDataHost)));
+        }
+    }
+
+    private static void runOnAttach(StateNode node, Command command) {
+        node.addAttachListener(command);
+        if (node.isAttached()) {
+            command.execute();
         }
     }
 
