@@ -38,8 +38,6 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
@@ -55,9 +53,6 @@ import com.vaadin.flow.plugin.production.TranspilationStep;
  */
 @Mojo(name = "package-for-production", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class PackageForProductionMojo extends AbstractMojo {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(PackageForProductionMojo.class);
-
     /**
      * Directory where the source files to use for transpilation are located.
      * <b>Note!</b> This should match <code>copyOutputDirectory</code>
@@ -165,13 +160,20 @@ public class PackageForProductionMojo extends AbstractMojo {
      */
     @Parameter(name = "yarnNetworkConcurrency", defaultValue = "-1")
     private int yarnNetworkConcurrency;
-    
+
     /**
-     * Defines the URL of npm modules. Yarn will use the given NPM registry URL if valid, 
-     * otherwise the default registry will be used.
+     * Defines the URL of npm modules. Yarn will use the given NPM registry URL
+     * if valid, otherwise the default registry will be used.
      */
     @Parameter(property = "npmRegistryURL")
     private String npmRegistryURL;
+
+    /**
+     * If {@code true}, attempts to detect frontend tools (Node, Yarn) in the
+     * system and use them for processing the frontend files.
+     */
+    @Parameter(property = "autodetectTools", defaultValue = "true")
+    private boolean autodetectTools;
 
     /**
      * If <code>false</code> then maven proxies will be used in the
@@ -198,7 +200,6 @@ public class PackageForProductionMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-
         if (transpileOutputDirectory == null) {
             if ("jar".equals(project.getPackaging()) && project.getArtifactMap()
                     .containsKey("com.vaadin:vaadin-spring-boot-starter")) {
@@ -230,17 +231,11 @@ public class PackageForProductionMojo extends AbstractMojo {
     }
 
     private RunnerManager getRunnerManager() {
-      if (nodePath == null || yarnPath == null) {
-        LOGGER.debug(
-            "Either nodePath or yarnPath are not specified, downloading and using standalone ones, node: '{}', yarn: '{}'",
-            nodeVersion, yarnVersion);
-        return new RunnerManager(transpileWorkingDirectory,
-            getProxyConfig(), nodeVersion, yarnVersion, npmRegistryURL);
-      }
-      LOGGER.debug("Using node at path '{}' and yarn at path '{}'",
-          nodePath, yarnPath);
-      return new RunnerManager(transpileWorkingDirectory,
-          getProxyConfig(), nodePath, yarnPath, npmRegistryURL);
+        return new RunnerManager.Builder(transpileWorkingDirectory,
+                getProxyConfig()).versionsToDownload(nodeVersion, yarnVersion)
+                        .localInstallations(nodePath, yarnPath)
+                        .autodetectTools(autodetectTools)
+                        .npmRegistryUrl(npmRegistryURL).build();
     }
 
     private Map<String, Set<String>> getFragmentsData(
