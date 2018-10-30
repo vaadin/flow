@@ -21,13 +21,11 @@ import java.util.stream.StreamSupport;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class EmptyListsIT extends ChromeBrowserTest {
@@ -51,6 +49,8 @@ public class EmptyListsIT extends ChromeBrowserTest {
                             .intValue())
                     .filter(entry -> !entry.getMessage()
                             .contains("favicon.ico"))
+                    .filter(entry -> !entry.getMessage()
+                            .contains("HTML Imports is deprecated"))
                     .findAny();
             anyError.ifPresent(entry -> Assert.fail(entry.getMessage()));
         }
