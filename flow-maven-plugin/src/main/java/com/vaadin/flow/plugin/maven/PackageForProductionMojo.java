@@ -172,7 +172,7 @@ public class PackageForProductionMojo extends AbstractMojo {
      * If {@code true}, attempts to detect frontend tools (Node, Yarn) in the
      * system and use them for processing the frontend files.
      */
-    @Parameter(property = "autodetectTools", defaultValue = "true")
+    @Parameter(property = "autodetectTools", defaultValue = "false")
     private boolean autodetectTools;
 
     /**
