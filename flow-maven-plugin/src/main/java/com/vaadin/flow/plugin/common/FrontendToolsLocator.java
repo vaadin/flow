@@ -87,9 +87,8 @@ public class FrontendToolsLocator {
      *         code, {@code false} otherwise
      */
     public boolean verifyTool(File toolPath) {
-        return executeCommand(
-                String.format("\"%s\" -v", toolPath.getAbsolutePath()))
-                        .map(this::omitErrorResult).isPresent();
+        return executeCommand(toolPath.getAbsolutePath() + " -v")
+                .map(this::omitErrorResult).isPresent();
     }
 
     boolean isWindows() {
@@ -122,7 +121,7 @@ public class FrontendToolsLocator {
 
         if (!commandExited) {
             LOGGER.error(
-                    "Could not get a response from '%s' command in 3 seconds",
+                    "Could not get a response from '{}' command in 3 seconds",
                     command);
             return Optional.empty();
         }
@@ -132,7 +131,7 @@ public class FrontendToolsLocator {
                 process.getInputStream(), StandardCharsets.UTF_8))) {
             stdout = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
-            LOGGER.error("Failed to read the command '%s' stdout", command, e);
+            LOGGER.error("Failed to read the command '{}' stdout", command, e);
             return Optional.empty();
         }
 
@@ -141,7 +140,7 @@ public class FrontendToolsLocator {
                 process.getErrorStream(), StandardCharsets.UTF_8))) {
             stderr = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
-            LOGGER.error("Failed to read the command '%s' stderr", command, e);
+            LOGGER.error("Failed to read the command '{}' stderr", command, e);
             return Optional.empty();
         }
 
