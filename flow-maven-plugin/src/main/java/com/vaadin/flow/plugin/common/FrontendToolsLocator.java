@@ -1,9 +1,25 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.plugin.common;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -71,8 +87,9 @@ public class FrontendToolsLocator {
      *         code, {@code false} otherwise
      */
     public boolean verifyTool(File toolPath) {
-        return executeCommand(toolPath.getAbsolutePath() + " -v")
-                .map(this::omitErrorResult).isPresent();
+        return executeCommand(
+                String.format("\"%s\" -v", toolPath.getAbsolutePath()))
+                        .map(this::omitErrorResult).isPresent();
     }
 
     boolean isWindows() {
@@ -111,8 +128,8 @@ public class FrontendToolsLocator {
         }
 
         List<String> stdout;
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                process.getInputStream(), StandardCharsets.UTF_8))) {
             stdout = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
             LOGGER.error("Failed to read the command '%s' stdout", command, e);
@@ -120,8 +137,8 @@ public class FrontendToolsLocator {
         }
 
         List<String> stderr;
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(process.getErrorStream()))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                process.getErrorStream(), StandardCharsets.UTF_8))) {
             stderr = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
             LOGGER.error("Failed to read the command '%s' stderr", command, e);
