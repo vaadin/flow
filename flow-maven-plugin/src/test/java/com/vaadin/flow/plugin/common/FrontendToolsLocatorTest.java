@@ -14,10 +14,8 @@ public class FrontendToolsLocatorTest {
 
     @Test
     public void toolLocated() {
-        Assume.assumeFalse("Cannot run the test on Windows",
-                locator.isWindows());
-        Optional<File> echoLocation = locator.tryLocateTool("echo");
-        assertTrue("Should be able to find 'echo' binary on non-windows hosts",
+        Optional<File> echoLocation = locator.tryLocateTool("mvn");
+        assertTrue("Should be able to find 'mvn' binary",
                 echoLocation.isPresent());
     }
 

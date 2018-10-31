@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -71,8 +72,7 @@ public class FrontendToolsLocator {
      *         such tools
      */
     public Optional<File> tryLocateTool(String toolName) {
-        String locateCommand = isWindows() ? "where" : "which";
-        return executeCommand(locateCommand + " " + toolName)
+        return executeCommand(isWindows() ? "where" : "which", toolName)
                 .map(this::omitErrorResult).map(CommandResult::getStdout)
                 .orElse(Collections.emptyList()).stream().map(File::new)
                 .filter(this::verifyTool).findFirst();
@@ -87,7 +87,7 @@ public class FrontendToolsLocator {
      *         code, {@code false} otherwise
      */
     public boolean verifyTool(File toolPath) {
-        return executeCommand(toolPath.getAbsolutePath() + " -v")
+        return executeCommand(toolPath.getAbsolutePath(), "-v")
                 .map(this::omitErrorResult).isPresent();
     }
 
@@ -96,12 +96,14 @@ public class FrontendToolsLocator {
         return osName != null && osName.toLowerCase().startsWith("windows");
     }
 
-    private Optional<CommandResult> executeCommand(String command) {
+    private Optional<CommandResult> executeCommand(String... commandParts) {
+        String commandString = Arrays.toString(commandParts);
         Process process;
         try {
-            process = Runtime.getRuntime().exec(command);
+            process = new ProcessBuilder(commandParts).start();
         } catch (IOException e) {
-            LOGGER.error("Failed to execute the command '{}'", command, e);
+            LOGGER.error("Failed to execute the command '{}'", commandString,
+                    e);
             return Optional.empty();
         }
 
@@ -111,7 +113,7 @@ public class FrontendToolsLocator {
         } catch (InterruptedException e) {
             LOGGER.error(
                     "Unexpected interruption happened during '{}' command execution",
-                    command, e);
+                    commandString, e);
             return Optional.empty();
         } finally {
             if (!commandExited) {
@@ -122,7 +124,7 @@ public class FrontendToolsLocator {
         if (!commandExited) {
             LOGGER.error(
                     "Could not get a response from '{}' command in 3 seconds",
-                    command);
+                    commandString);
             return Optional.empty();
         }
 
@@ -131,7 +133,8 @@ public class FrontendToolsLocator {
                 process.getInputStream(), StandardCharsets.UTF_8))) {
             stdout = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
-            LOGGER.error("Failed to read the command '{}' stdout", command, e);
+            LOGGER.error("Failed to read the command '{}' stdout",
+                    commandString, e);
             return Optional.empty();
         }
 
@@ -140,11 +143,12 @@ public class FrontendToolsLocator {
                 process.getErrorStream(), StandardCharsets.UTF_8))) {
             stderr = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
-            LOGGER.error("Failed to read the command '{}' stderr", command, e);
+            LOGGER.error("Failed to read the command '{}' stderr",
+                    commandString, e);
             return Optional.empty();
         }
 
-        return Optional.of(new CommandResult(command, process.exitValue(),
+        return Optional.of(new CommandResult(commandString, process.exitValue(),
                 stdout, stderr));
     }
 
