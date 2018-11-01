@@ -38,7 +38,7 @@ import com.vaadin.flow.component.Component;
  * <p>
  * &lt;vaadin-grid-column&gt; &lt;template class=&quot;header&quot;&gt;
  * &lt;vaadin-grid-sorter path=&quot;name.first&quot;&gt;First
- * Name&lt;/vaadin-grid-sorter&gt; &lt;/template&gt;
+ * name&lt;/vaadin-grid-sorter&gt; &lt;/template&gt;
  * &lt;template&gt;[[item.name.first]]&lt;/template&gt;
  * &lt;/vaadin-grid-column&gt;
  * </p>
@@ -87,8 +87,7 @@ import com.vaadin.flow.component.Component;
  * </table>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.GridSorterElement#5.2.0-beta1",
-        "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.GridSorterElement#5.2.1", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-sorter")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-sorter.html")
 public abstract class GeneratedVaadinGridSorter<R extends GeneratedVaadinGridSorter<R>>

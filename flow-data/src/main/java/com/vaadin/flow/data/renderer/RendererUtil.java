@@ -23,9 +23,13 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.server.Command;
 
 /**
  * Class used internally by components that support {@link TemplateRenderer}. It
@@ -76,21 +80,32 @@ public class RendererUtil {
              * the template element must have the "__dataHost" property set with
              * the column element.
              */
-            templateDataHost.getNode().runWhenAttached(
-                    ui -> ui.getInternals().getStateTree().beforeClientResponse(
-                            templateDataHost.getNode(),
-                            context -> processTemplateRendererEventHandlers(
-                                    context.getUI(), templateDataHost,
-                                    eventHandlers, keyMapper)));
+            runOnAttach(templateDataHost.getNode(),
+                    () -> getUI(templateDataHost).getInternals().getStateTree()
+                            .beforeClientResponse(templateDataHost.getNode(),
+                                    context -> processTemplateRendererEventHandlers(
+                                            context.getUI(), templateDataHost,
+                                            eventHandlers, keyMapper)));
 
-            contentTemplate.getNode().runWhenAttached(
-                    ui -> ui.getInternals().getStateTree().beforeClientResponse(
-                            templateDataHost.getNode(),
+            runOnAttach(contentTemplate.getNode(), () -> getUI(contentTemplate)
+                    .getInternals().getStateTree()
+                    .beforeClientResponse(templateDataHost.getNode(),
                             context -> context.getUI().getPage()
                                     .executeJavaScript("$0.__dataHost = $1;",
                                             contentTemplate,
                                             templateDataHost)));
         }
+    }
+
+    private static void runOnAttach(StateNode node, Command command) {
+        node.addAttachListener(command);
+        if (node.isAttached()) {
+            command.execute();
+        }
+    }
+
+    private static UI getUI(Element element) {
+        return ((StateTree) element.getNode().getOwner()).getUI();
     }
 
     private static <T> void processTemplateRendererEventHandlers(UI ui,
@@ -113,9 +128,10 @@ public class RendererUtil {
                 handlerName, eventOrigin.getNode().getId(), handlerName),
                 eventOrigin);
 
-        eventOrigin.addEventListener(handlerName,
-                event -> processEventFromTemplateRenderer(event, handlerName,
-                        consumer, keyMapper));
+        DomListenerRegistration registration = eventOrigin.addEventListener(
+                handlerName, event -> processEventFromTemplateRenderer(event,
+                        handlerName, consumer, keyMapper));
+        eventOrigin.addDetachListener(event -> registration.remove());
     }
 
     private static <T> void processEventFromTemplateRenderer(DomEvent event,

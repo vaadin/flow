@@ -17,6 +17,8 @@ package com.vaadin.flow.client.osgi;
 
 import java.io.InputStream;
 
+import org.osgi.service.component.annotations.Component;
+
 import com.vaadin.flow.client.ClientResources;
 
 /**
@@ -25,7 +27,8 @@ import com.vaadin.flow.client.ClientResources;
  * @author Vaadin Ltd
  *
  */
-class OsgiClientResources implements ClientResources {
+@Component(immediate = true, service = ClientResources.class)
+public class OsgiClientResources implements ClientResources {
 
     @Override
     public InputStream getResource(String path) {

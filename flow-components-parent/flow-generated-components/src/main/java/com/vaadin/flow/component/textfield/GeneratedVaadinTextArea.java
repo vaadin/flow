@@ -142,7 +142,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.TextAreaElement#2.1.2", "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.TextAreaElement#2.1.3", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-text-area")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")
 public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R, T>, T>

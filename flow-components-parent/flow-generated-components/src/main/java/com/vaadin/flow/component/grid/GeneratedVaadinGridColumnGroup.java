@@ -52,7 +52,7 @@ import com.vaadin.flow.component.Component;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.GridColumnGroupElement#5.2.0-beta1",
+        "WebComponent: Vaadin.GridColumnGroupElement#5.2.1",
         "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-grid-column-group")
 @HtmlImport("frontend://bower_components/vaadin-grid/src/vaadin-grid-column-group.html")

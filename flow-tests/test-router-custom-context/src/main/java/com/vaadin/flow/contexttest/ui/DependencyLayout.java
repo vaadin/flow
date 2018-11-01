@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.theme.NoTheme;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
@@ -40,6 +41,7 @@ import java.nio.charset.StandardCharsets;
  * </ul>
  */
 @StyleSheet("context://test-files/css/allred.css")
+@NoTheme
 public abstract class DependencyLayout extends Div {
 
     public static final String RUN_PUSH_ID = "runPush";

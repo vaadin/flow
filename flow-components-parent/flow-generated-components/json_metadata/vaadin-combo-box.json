@@ -2,7 +2,7 @@
   "name": "Vaadin.ComboBoxElement",
   "tag": "vaadin-combo-box",
   "baseUrl": "vaadin-combo-box/src/vaadin-combo-box.html",
-  "version": "4.2.0-alpha4",
+  "version": "4.2.0",
   "properties": [
     {
       "name": "autofocus",
