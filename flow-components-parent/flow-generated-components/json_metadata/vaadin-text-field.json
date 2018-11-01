@@ -2,7 +2,7 @@
   "name": "Vaadin.TextFieldElement",
   "tag": "vaadin-text-field",
   "baseUrl": "vaadin-text-field/src/vaadin-text-field.html",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "properties": [
     {
       "name": "autofocus",
