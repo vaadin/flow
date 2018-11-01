@@ -117,7 +117,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.CheckboxElement#2.2.2", "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.CheckboxElement#2.2.3", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/src/vaadin-checkbox.html")
 public abstract class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R, T>, T>
