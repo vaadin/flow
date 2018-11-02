@@ -66,6 +66,7 @@ public class ExclusionRegistry {
         excludeProperty("vaadin-dialog-overlay", "model");
         excludeEvent("vaadin-combo-box", "change");
         excludeEvent("vaadin-combo-box", "valued-changed");
+        excludeEvent("vaadin-rich-text-editor", "html-value-changed");
         excludeBehaviorOrMixin("vaadin-date-picker",
                 "Polymer.GestureEventListeners");
         excludeInterface("vaadin-dialog", HasStyle.class);
