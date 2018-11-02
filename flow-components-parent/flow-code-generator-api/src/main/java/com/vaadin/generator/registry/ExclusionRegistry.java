@@ -69,6 +69,7 @@ public class ExclusionRegistry {
         excludeEvent("vaadin-text-area", "iron-resize");
         excludeMethod("vaadin-text-field", "clear");
         excludeMethod("vaadin-text-area", "clear");
+        excludeEvent("vaadin-rich-text-editor", "html-value-changed");
         excludeBehaviorOrMixin("vaadin-date-picker",
                 "Polymer.GestureEventListeners");
         excludeInterface("vaadin-dialog", HasStyle.class);
