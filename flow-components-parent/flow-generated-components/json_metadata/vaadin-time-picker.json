@@ -2,7 +2,7 @@
   "name": "Vaadin.TimePickerElement",
   "tag": "vaadin-time-picker",
   "baseUrl": "vaadin-time-picker/src/vaadin-time-picker.html",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "properties": [
     {
       "name": "autofocus",
@@ -150,8 +150,9 @@
   "mixins": [
     "Vaadin.ElementMixin",
     "Vaadin.ControlStateMixin",
-    "Vaadin.ThemableMixin"
+    "Vaadin.ThemableMixin",
+    "Vaadin.ThemePropertyMixin"
   ],
   "variants": {},
-  "description": "`<vaadin-time-picker>` is a Web Component providing a time-selection field.\n\n```html\n<vaadin-time-picker></vaadin-time-picker>\n```\n```js\ntimePicker.value = '14:30';\n```\n\nWhen the selected `value` is changed, a `value-changed` event is triggered."
+  "description": "`<vaadin-time-picker>` is a Web Component providing a time-selection field.\n\n```html\n<vaadin-time-picker></vaadin-time-picker>\n```\n```js\ntimePicker.value = '14:30';\n```\n\nWhen the selected `value` is changed, a `value-changed` event is triggered.\n\n### Styling\n\nThe following custom properties are available for styling:\n\nPart name | Description\n----------------|----------------\n`toggle-button` | The toggle button\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled` | Set to a disabled time picker | :host\n`readonly` | Set to a read only time picker | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n\nIn addition to `<vaadin-time-picker>` itself, the following internal\ncomponents are themable:\n\n- `<vaadin-time-picker-text-field>`, see\n  [`<vaadin-text-field>` documentation](https://vaadin.com/components/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement)\n  for the text field parts.\n- `<vaadin-combo-box-light>`, see\n  [`<vaadin-combo-box>` documentation](https://vaadin.com/components/vaadin-combo-box/html-api/elements/Vaadin.ComboBoxElement)\n  for the combo box parts.\n\nNote: the `theme` attribute value set on `<vaadin-time-picker>` is\npropagated to the internal themable components listed above."
 }

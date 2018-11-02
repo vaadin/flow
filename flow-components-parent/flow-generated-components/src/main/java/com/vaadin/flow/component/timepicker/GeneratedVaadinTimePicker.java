@@ -46,9 +46,85 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * When the selected {@code value} is changed, a {@code value-changed} event is
  * triggered.
  * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * The following custom properties are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code toggle-button}</td>
+ * <td>The toggle button</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
+ * See <a
+ * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
+ * how to apply styles for shadow parts</a>
+ * </p>
+ * <p>
+ * The following state attributes are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * <th>Part name</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code disabled}</td>
+ * <td>Set to a disabled time picker</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code readonly}</td>
+ * <td>Set to a read only time picker</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code invalid}</td>
+ * <td>Set when the element is invalid</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focused}</td>
+ * <td>Set when the element is focused</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focus-ring}</td>
+ * <td>Set when the element is keyboard focused</td>
+ * <td>:host</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
+ * In addition to {@code <vaadin-time-picker>} itself, the following internal
+ * components are themable:
+ * </p>
+ * <ul>
+ * <li>{@code <vaadin-time-picker-text-field>}, see <a href=
+ * "https://vaadin.com/components/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement"
+ * >{@code <vaadin-text-field>} documentation</a> for the text field parts.</li>
+ * <li>{@code <vaadin-combo-box-light>}, see <a href=
+ * "https://vaadin.com/components/vaadin-combo-box/html-api/elements/Vaadin.ComboBoxElement"
+ * >{@code <vaadin-combo-box>} documentation</a> for the combo box parts.</li>
+ * </ul>
+ * <p>
+ * Note: the {@code theme} attribute value set on {@code <vaadin-time-picker>}
+ * is propagated to the internal themable components listed above.
+ * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.TimePickerElement#1.0.0", "Flow#1.2-SNAPSHOT" })
+        "WebComponent: Vaadin.TimePickerElement#1.1.0", "Flow#1.2-SNAPSHOT" })
 @Tag("vaadin-time-picker")
 @HtmlImport("frontend://bower_components/vaadin-time-picker/src/vaadin-time-picker.html")
 public abstract class GeneratedVaadinTimePicker<R extends GeneratedVaadinTimePicker<R, T>, T>

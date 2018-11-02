@@ -2,7 +2,7 @@
   "name": "Vaadin.CheckboxGroupElement",
   "tag": "vaadin-checkbox-group",
   "baseUrl": "vaadin-checkbox/src/vaadin-checkbox-group.html",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "properties": [
     {
       "name": "disabled",
