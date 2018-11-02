@@ -21,19 +21,15 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
@@ -48,8 +44,7 @@ import com.vaadin.flow.server.Constants;
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
-@Import({ VaadinServletConfiguration.class,
-        DispatcherServletRegistrationBeanConfig.class })
+@Import({ VaadinServletConfiguration.class })
 public class SpringBootAutoConfiguration {
 
     @Autowired
@@ -78,47 +73,20 @@ public class SpringBootAutoConfiguration {
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean() {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
-        if (RootMappedCondition.isRootMapping(mapping)) {
+        boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
+        if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
                     VaadinMVCWebAppInitializer
                             .makeContextRelative(mapping.replace("*", "")));
         }
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context), mapping);
+                new SpringServlet(context, rootMapping), mapping);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
         registration.setName(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class));
-        return registration;
-    }
-
-    /**
-     * Creates a {@link DispatcherServletRegistrationBean} instance for a
-     * dispatcher servlet in case Vaadin servlet is mapped to the root.
-     * <p>
-     * This is needed for correct servlet path (and path info) values available
-     * in Vaadin servlet because it works via forwarding controller which is not
-     * properly mapped without this registration.
-     * <p>
-     * In the modern versions of Spring Boot this is done via extra
-     * {@link DispatcherServletRegistrationBeanConfig} configuration because
-     * {@link DispatcherServletRegistrationBean} bean should be used instead of
-     * {@code ServletRegistrationBean<DispatcherServlet>}. So this method works
-     * only if there is no {@link DispatcherServletRegistrationBean} class.
-     *
-     * @return a custom DispatcherServletRegistrationBean instance for
-     *         dispatcher servlet
-     */
-    @Bean
-    @Conditional(RootMappedCondition.class)
-    @ConditionalOnMissingClass("org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean")
-    public ServletRegistrationBean<DispatcherServlet> dispatcherServletRegistration() {
-        DispatcherServlet servlet = context.getBean(DispatcherServlet.class);
-        ServletRegistrationBean<DispatcherServlet> registration = new ServletRegistrationBean<>(
-                servlet, "/*");
-        registration.setName("dispatcher");
         return registration;
     }
 

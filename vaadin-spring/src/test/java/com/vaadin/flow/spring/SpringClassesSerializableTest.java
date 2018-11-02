@@ -58,6 +58,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
     @Override
     protected Stream<String> getExcludedPatterns() {
         return Stream.concat(Stream.of(
+                "com\\.vaadin\\.flow\\.spring\\.ForwardingRequestWrapper",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar\\$VaadinScanPackages",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer",

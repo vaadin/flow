@@ -15,7 +15,12 @@
  */
 package com.vaadin.flow.spring;
 
+import java.io.IOException;
 import java.util.Properties;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
@@ -35,6 +40,7 @@ import com.vaadin.flow.server.VaadinServletService;
 public class SpringServlet extends VaadinServlet {
 
     private final ApplicationContext context;
+    private final boolean forwardingEnforced;
 
     /**
      * Creates a new Vaadin servlet instance with the application
@@ -43,8 +49,16 @@ public class SpringServlet extends VaadinServlet {
      * @param context
      *            the Spring application context
      */
-    public SpringServlet(ApplicationContext context) {
+    public SpringServlet(ApplicationContext context,
+            boolean forwardingEnforced) {
         this.context = context;
+        this.forwardingEnforced = forwardingEnforced;
+    }
+
+    @Override
+    protected void service(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+        super.service(wrapRequest(request), response);
     }
 
     @Override
@@ -63,6 +77,18 @@ public class SpringServlet extends VaadinServlet {
         Properties properties = new Properties(initParameters);
         config(properties);
         return super.createDeploymentConfiguration(properties);
+    }
+
+    private HttpServletRequest wrapRequest(HttpServletRequest request) {
+        if (forwardingEnforced && request.getPathInfo() == null) {
+            /*
+             * We need to apply a workaround in case of forwarding
+             *
+             * see https://jira.spring.io/browse/SPR-17457
+             */
+            return new ForwardingRequestWrapper(request);
+        }
+        return request;
     }
 
     private void config(Properties properties) {

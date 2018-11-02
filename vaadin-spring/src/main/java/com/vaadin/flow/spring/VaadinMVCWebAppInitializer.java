@@ -54,15 +54,19 @@ public abstract class VaadinMVCWebAppInitializer
         servletContext.addListener(new ContextLoaderListener(context));
 
         context.refresh();
-        Environment env = context.getBean(Environment.class);
-        Dynamic registration = servletContext.addServlet(
-                ClassUtils.getShortNameAsProperty(SpringServlet.class),
-                new SpringServlet(context));
 
+        Environment env = context.getBean(Environment.class);
         String mapping = env
                 .getProperty(RootMappedCondition.URL_MAPPING_PROPERTY, "/*");
+
+        boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
+
+        Dynamic registration = servletContext.addServlet(
+                ClassUtils.getShortNameAsProperty(SpringServlet.class),
+                new SpringServlet(context, rootMapping));
+
         Map<String, String> initParameters = new HashMap<>();
-        if (RootMappedCondition.isRootMapping(mapping)) {
+        if (rootMapping) {
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");

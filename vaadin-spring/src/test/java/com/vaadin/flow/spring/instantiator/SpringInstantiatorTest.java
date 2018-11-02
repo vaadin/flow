@@ -143,7 +143,7 @@ public class SpringInstantiatorTest {
 
     public static VaadinServletService getService(ApplicationContext context,
             Properties configProperties) throws ServletException {
-        SpringServlet servlet = new SpringServlet(context) {
+        SpringServlet servlet = new SpringServlet(context, false) {
             @Override
             protected DeploymentConfiguration createDeploymentConfiguration(
                     Properties initParameters) {
