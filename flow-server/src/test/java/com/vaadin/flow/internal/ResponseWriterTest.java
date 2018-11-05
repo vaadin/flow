@@ -19,11 +19,14 @@ package com.vaadin.flow.internal;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPOutputStream;
@@ -41,14 +44,36 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
  * @author Vaadin Ltd
  * @since 1.0.
  */
 public class ResponseWriterTest {
+    private static final String PATH_JS = "/static/file.js";
+    private static final String PATH_GZ = "/static/file.js.gz";
+    private static final String PATH_BR = "/static/file.js.br";
+
+    private static final byte[] fileJsContents = "File.js contents"
+            .getBytes(StandardCharsets.UTF_8);
+    private static final byte[] fileJsGzippedContents = gzip(fileJsContents);
+    // Dummy contents since we don't have a brotli encoder on the test
+    // classpath
+    private static final byte[] fileJsBrotliContents = "Fake brotli".getBytes();
+
+    private static final Map<String, URL> pathToUrl = new HashMap<>();
+    static {
+        pathToUrl.put(PATH_JS,
+                createFileURLWithDataAndLength(PATH_JS, fileJsContents));
+        pathToUrl.put(PATH_GZ,
+                createFileURLWithDataAndLength(PATH_GZ, fileJsGzippedContents));
+        pathToUrl.put(PATH_BR,
+                createFileURLWithDataAndLength(PATH_BR, fileJsBrotliContents));
+    }
+
     private ServletContext servletContext;
     private HttpServletRequest request;
     private HttpServletResponse response;
@@ -57,6 +82,12 @@ public class ResponseWriterTest {
 
     private static class OverrideableResponseWriter extends ResponseWriter {
         private Boolean overrideAcceptsGzippedResource;
+        private Boolean overrideAcceptsBrotliResource;
+
+        public OverrideableResponseWriter(
+                DeploymentConfiguration deploymentConfiguration) {
+            super(deploymentConfiguration);
+        }
 
         @Override
         protected boolean acceptsGzippedResource(HttpServletRequest request) {
@@ -64,6 +95,14 @@ public class ResponseWriterTest {
                 return overrideAcceptsGzippedResource;
             }
             return super.acceptsGzippedResource(request);
+        }
+
+        @Override
+        protected boolean acceptsBrotliResource(HttpServletRequest request) {
+            if (overrideAcceptsBrotliResource != null) {
+                return overrideAcceptsBrotliResource.booleanValue();
+            }
+            return super.acceptsBrotliResource(request);
         }
     }
 
@@ -92,7 +131,11 @@ public class ResponseWriterTest {
 
     @Before
     public void setUp() {
-        responseWriter = new OverrideableResponseWriter();
+        MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
+        deploymentConfiguration.setBrotli(true);
+
+        responseWriter = new OverrideableResponseWriter(
+                deploymentConfiguration);
         servletContext = Mockito.mock(ServletContext.class);
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
@@ -149,6 +192,7 @@ public class ResponseWriterTest {
     @Test
     public void acceptsGzippedResource() {
         Assert.assertTrue(acceptsGzippedResource("compress, gzip"));
+        Assert.assertTrue(acceptsGzippedResource("brotli, gzip"));
         Assert.assertTrue(acceptsGzippedResource("gzip"));
         Assert.assertTrue(acceptsGzippedResource("gzip;"));
         Assert.assertTrue(acceptsGzippedResource("gzip;q"));
@@ -175,105 +219,154 @@ public class ResponseWriterTest {
     }
 
     @Test
+    public void acceptsBrotliResource() {
+        // Not testing all the same cases as for gzip since most of those
+        // variants are effectively testing the same parser functionality
+        Assert.assertTrue(acceptsBrotliResource("compress, brotli"));
+        Assert.assertFalse(acceptsBrotliResource("gzip"));
+
+        Assert.assertTrue(
+                acceptsBrotliResource("compress;q = 0.5, brotli;q=0.6"));
+        Assert.assertTrue(acceptsBrotliResource("*"));
+        Assert.assertFalse(acceptsBrotliResource("*;q=0"));
+    }
+
+    private boolean acceptsBrotliResource(String acceptEncodingHeader) {
+        Mockito.when(request.getHeader("Accept-Encoding"))
+                .thenReturn(acceptEncodingHeader);
+        return responseWriter.acceptsBrotliResource(request);
+    }
+
+    @Test
     public void writeDataGzipped() throws IOException {
         responseWriter.overrideAcceptsGzippedResource = true;
-        String fileJsContents = "File.js contents";
-        byte[] fileJsGzippedContents = gzip(fileJsContents);
 
-        URL fileJsURL = createFileURLWithDataAndLength("/static/file.js",
-                fileJsContents.getBytes(StandardCharsets.UTF_8));
-        URL fileJsGzURL = createFileURLWithDataAndLength("/static/file.js.gz",
-                fileJsGzippedContents);
+        makePathsAvailable(PATH_JS, PATH_GZ);
 
-        Mockito.when(servletContext.getResource("/static/file.js"))
-                .thenReturn(fileJsURL);
-        Mockito.when(servletContext.getResource("/static/file.js.gz"))
-                .thenReturn(fileJsGzURL);
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
-
-        Assert.assertArrayEquals(fileJsGzippedContents, out.getOutput());
-        Assert.assertEquals(fileJsGzippedContents.length,
-                responseContentLength.get());
+        assertResponse(fileJsGzippedContents);
     }
 
     @Test
     public void writeDataNoGzippedVersion() throws IOException {
-        String fileJsContents = "File.js contents";
+        responseWriter.overrideAcceptsGzippedResource = true;
 
-        byte[] fileJsContentsBytes = fileJsContents
-                .getBytes(StandardCharsets.UTF_8);
-        URL fileJsURL = createFileURLWithDataAndLength("/static/file.js",
-                fileJsContentsBytes);
+        makePathsAvailable(PATH_JS);
 
-        Mockito.when(servletContext.getResource("/static/file.js"))
-                .thenReturn(fileJsURL);
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
-
-        Assert.assertArrayEquals(fileJsContentsBytes, out.getOutput());
-        Assert.assertEquals(fileJsContentsBytes.length,
-                responseContentLength.get());
+        assertResponse(fileJsContents);
     }
 
     @Test
     public void writeDataBrowserDoesNotAcceptGzippedVersion()
             throws IOException {
         responseWriter.overrideAcceptsGzippedResource = false;
-        String fileJsContents = "File.js contents";
-        byte[] fileJsContentsBytes = fileJsContents
-                .getBytes(StandardCharsets.UTF_8);
 
-        URL fileJsURL = createFileURLWithDataAndLength("/static/file.js",
-                fileJsContentsBytes);
-        URL fileJsGzURL = createFileURLWithDataAndLength("/static/file.js.gz",
-                gzip(fileJsContents));
+        makePathsAvailable(PATH_JS, PATH_GZ);
 
-        Mockito.when(servletContext.getResource("/static/file.js"))
-                .thenReturn(fileJsURL);
-        Mockito.when(servletContext.getResource("/static/file.js.gz"))
-                .thenReturn(fileJsGzURL);
+        assertResponse(fileJsContents);
+    }
 
+    @Test
+    public void writeDataBrotli() throws IOException {
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+
+        // Enable gzip as well to see that Brotli takes priority over gzip in
+        // case both are accepted and available
+        responseWriter.overrideAcceptsGzippedResource = Boolean.TRUE;
+
+        makePathsAvailable(PATH_JS, PATH_GZ, PATH_BR);
+
+        assertResponse(fileJsBrotliContents);
+    }
+
+    @Test
+    public void writeDataNoBrotliVersion() throws IOException {
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+
+        makePathsAvailable(PATH_JS);
+
+        assertResponse(fileJsContents);
+    }
+
+    @Test
+    public void writeDataBrowserDoesNotAcceptBrotli() throws IOException {
+        responseWriter.overrideAcceptsBrotliResource = Boolean.FALSE;
+
+        makePathsAvailable(PATH_JS, PATH_BR);
+
+        assertResponse(fileJsContents);
+    }
+
+    @Test
+    public void writeDataBrotliDisabled() throws IOException {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setBrotli(false);
+
+        responseWriter = new OverrideableResponseWriter(configuration);
+
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+
+        makePathsAvailable(PATH_JS, PATH_BR);
+
+        assertResponse(fileJsContents);
+    }
+
+    private void assertResponse(byte[] expectedResponse) throws IOException {
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents("/static/file.js", fileJsURL, request, response);
+        responseWriter.writeResponseContents(PATH_JS, pathToUrl.get(PATH_JS),
+                request, response);
 
-        Assert.assertArrayEquals(fileJsContentsBytes, out.getOutput());
-        Assert.assertEquals(fileJsContentsBytes.length,
+        Assert.assertArrayEquals(expectedResponse, out.getOutput());
+        Assert.assertEquals(expectedResponse.length,
                 responseContentLength.get());
     }
 
-    private byte[] gzip(String input) throws IOException {
+    private void makePathsAvailable(String... paths)
+            throws MalformedURLException {
+        for (String path : paths) {
+            URL url = pathToUrl.get(path);
+            if (url == null) {
+                throw new IllegalArgumentException("Unsupported path: " + path);
+            }
+            Mockito.when(servletContext.getResource(path)).thenReturn(url);
+        }
+    }
+
+    private static byte[] gzip(byte[] input) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (GZIPOutputStream stream = new GZIPOutputStream(baos)) {
-            stream.write(input.getBytes(StandardCharsets.UTF_8));
+            stream.write(input);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         return baos.toByteArray();
     }
 
-    private static URL createFileURLWithDataAndLength(String name, byte[] data)
-            throws MalformedURLException {
+    private static URL createFileURLWithDataAndLength(String name,
+            byte[] data) {
         return createFileURLWithDataAndLength(name, data, -1);
     }
 
     private static URL createFileURLWithDataAndLength(String name, byte[] data,
-                                                      long lastModificationTime) throws MalformedURLException {
-        return new URL("file", "", -1, name, new URLStreamHandler() {
-            @Override
-            protected URLConnection openConnection(URL u) throws IOException {
-                URLConnection connection = Mockito.mock(URLConnection.class);
-                Mockito.when(connection.getInputStream())
-                        .thenReturn(new ByteArrayInputStream(data));
-                Mockito.when(connection.getContentLengthLong())
-                        .thenReturn((long) data.length);
-                Mockito.when(connection.getLastModified())
-                        .thenReturn(lastModificationTime);
-                return connection;
-            }
-        });
+            long lastModificationTime) {
+        try {
+            return new URL("file", "", -1, name, new URLStreamHandler() {
+                @Override
+                protected URLConnection openConnection(URL u)
+                        throws IOException {
+                    URLConnection connection = Mockito
+                            .mock(URLConnection.class);
+                    Mockito.when(connection.getInputStream())
+                            .thenReturn(new ByteArrayInputStream(data));
+                    Mockito.when(connection.getContentLengthLong())
+                            .thenReturn((long) data.length);
+                    Mockito.when(connection.getLastModified())
+                            .thenReturn(lastModificationTime);
+                    return connection;
+                }
+            });
+        } catch (MalformedURLException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

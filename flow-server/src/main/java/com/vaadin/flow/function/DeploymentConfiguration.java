@@ -302,4 +302,14 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(
                 Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
     }
+
+    /**
+     * Checks whether precompressed Brotli files should be used if available.
+     *
+     * @return <code>true</code> to serve precompressed Brotli files,
+     *         <code>false</code> to not serve Brotli files.
+     */
+    default boolean isBrotli() {
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_BROTLI, false);
+    }
 }

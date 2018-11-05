@@ -23,6 +23,7 @@ public class MockDeploymentConfiguration
     private Map<String, String> applicationOrSystemProperty = new HashMap<>();
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
+    private boolean brotli = false;
 
     public MockDeploymentConfiguration() {
         this(null);
@@ -127,6 +128,15 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isSendUrlsAsParameters() {
         return sendUrlsAsParameters;
+    }
+
+    @Override
+    public boolean isBrotli() {
+        return brotli;
+    }
+
+    public void setBrotli(boolean brotli) {
+        this.brotli = brotli;
     }
 
 }
