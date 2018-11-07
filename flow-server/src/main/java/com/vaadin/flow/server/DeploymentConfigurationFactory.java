@@ -59,6 +59,28 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 createInitParameters(systemPropertyBaseClass, servletConfig));
     }
 
+    /**
+     * Creates a {@link DeploymentConfiguration} instance that has
+     * all parameters, specified for the current app without doing checks so
+     * property states and only returns default.
+     *
+     * @param systemPropertyBaseClass
+     *            the class to look for properties defined with annotations
+     * @param servletConfig
+     *            the config to get the rest of the properties from
+     * @return {@link DeploymentConfiguration} instance
+     *
+     * @throws ServletException
+     *             if construction of the {@link Properties} for the parameters
+     *             fails
+     */
+    public static DeploymentConfiguration createPropertyDeploymentConfiguration(
+            Class<?> systemPropertyBaseClass, ServletConfig servletConfig)
+            throws ServletException {
+        return new PropertyDeploymentConfiguration(systemPropertyBaseClass,
+                createInitParameters(systemPropertyBaseClass, servletConfig));
+    }
+
     private static Properties createInitParameters(
             Class<?> systemPropertyBaseClass, ServletConfig servletConfig)
             throws ServletException {

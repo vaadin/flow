@@ -145,7 +145,7 @@ public class ServletDeployer implements ServletContextListener {
             ServletConfig servletConfig, Class<?> servletClass) {
         try {
             return DeploymentConfigurationFactory
-                    .createDeploymentConfiguration(servletClass, servletConfig);
+                    .createPropertyDeploymentConfiguration(servletClass, servletConfig);
         } catch (ServletException e) {
             throw new IllegalStateException(String.format(
                     "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",

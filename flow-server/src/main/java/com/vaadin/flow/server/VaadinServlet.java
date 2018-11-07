@@ -126,27 +126,12 @@ public class VaadinServlet extends HttpServlet {
      *
      * @throws ServletException
      *             if construction of the {@link Properties} for
-     *             {@link #createDeploymentConfiguration(Properties)} fails
+     *             {@link DeploymentConfigurationFactory#createInitParameters(Class, ServletConfig)} fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        return createDeploymentConfiguration(DeploymentConfigurationFactory
-                .createDeploymentConfiguration(getClass(), getServletConfig())
-                .getInitParameters());
-    }
-
-    /**
-     * Creates a deployment configuration to be used for the creation of a
-     * {@link VaadinService}. Override this if you want to override certain
-     * properties.
-     *
-     * @param initParameters
-     *            the context-param and init-param values as properties
-     * @return the created deployment configuration
-     */
-    protected DeploymentConfiguration createDeploymentConfiguration(
-            Properties initParameters) {
-        return new DefaultDeploymentConfiguration(getClass(), initParameters);
+        return DeploymentConfigurationFactory
+                .createDeploymentConfiguration(getClass(), getServletConfig());
     }
 
     /**
