@@ -24,8 +24,8 @@ package com.vaadin.flow.component;
  * @see BlurNotifier
  * @see FocusNotifier
  */
-public interface Focusable<T extends Component> extends HasElement,
-        BlurNotifier<T>, FocusNotifier<T>, HasEnabled {
+public interface Focusable<T extends Component>
+        extends HasElement, BlurNotifier<T>, FocusNotifier<T>, HasEnabled {
 
     /**
      * Sets the <code>tabindex</code> attribute in the component. The tabIndex
@@ -102,7 +102,14 @@ public interface Focusable<T extends Component> extends HasElement,
      *      at MDN</a>
      */
     default void focus() {
-        getElement().callFunction("focus");
+        /*
+         * Make sure to call the focus function only after the element is
+         * attached, and after the initial rendering cycle, so webcomponents can
+         * be ready by the time when the function is called.
+         */
+        getElement().getNode()
+                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                        "setTimeout(function(){$0.focus();},0)", getElement()));
     }
 
     /**
