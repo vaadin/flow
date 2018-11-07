@@ -67,7 +67,7 @@ public class ServletDeployer implements ServletContextListener {
     private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
     private static class StubServletConfig
-            implements ServletConfig, Serializable {
+            implements ServletConfig {
         private final ServletContext context;
         private final ServletRegistration registration;
 

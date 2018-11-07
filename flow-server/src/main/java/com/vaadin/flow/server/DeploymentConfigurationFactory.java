@@ -135,36 +135,40 @@ public final class DeploymentConfigurationFactory implements Serializable {
         Optional<VaadinServletConfiguration> optionalConfigAnnotation = AnnotationReader
                 .getAnnotationFor(systemPropertyBaseClass,
                         VaadinServletConfiguration.class);
-        if (optionalConfigAnnotation.isPresent()) {
-            VaadinServletConfiguration configuration = optionalConfigAnnotation
-                    .get();
-            Method[] methods = VaadinServletConfiguration.class
-                    .getDeclaredMethods();
-            for (Method method : methods) {
-                VaadinServletConfiguration.InitParameterName name = method
-                        .getAnnotation(
-                                VaadinServletConfiguration.InitParameterName.class);
-                assert name != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
 
-                try {
-                    Object value = method.invoke(configuration);
+        if (!optionalConfigAnnotation.isPresent()) {
+            return;
+        }
 
-                    String stringValue;
-                    if (value instanceof Class<?>) {
-                        stringValue = ((Class<?>) value).getName();
-                    } else {
-                        stringValue = value.toString();
-                    }
+        VaadinServletConfiguration configuration = optionalConfigAnnotation
+                .get();
+        Method[] methods = VaadinServletConfiguration.class
+                .getDeclaredMethods();
+        for (Method method : methods) {
+            VaadinServletConfiguration.InitParameterName name = method
+                    .getAnnotation(
+                            VaadinServletConfiguration.InitParameterName.class);
+            assert name
+                    != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
 
-                    initParameters.setProperty(name.value(), stringValue);
-                } catch (Exception e) {
-                    // This should never happen
-                    throw new ServletException(
-                            "Could not read @VaadinServletConfiguration value "
-                                    + method.getName(),
-                            e);
+            try {
+                Object value = method.invoke(configuration);
+
+                String stringValue;
+                if (value instanceof Class<?>) {
+                    stringValue = ((Class<?>) value).getName();
+                } else {
+                    stringValue = value.toString();
                 }
+
+                initParameters.setProperty(name.value(), stringValue);
+            } catch (Exception e) {
+                // This should never happen
+                throw new ServletException(
+                        "Could not read @VaadinServletConfiguration value "
+                                + method.getName(), e);
             }
         }
+
     }
 }
