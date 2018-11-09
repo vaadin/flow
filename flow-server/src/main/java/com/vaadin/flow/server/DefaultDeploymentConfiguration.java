@@ -97,16 +97,17 @@ public class DefaultDeploymentConfiguration
             Properties initParameters) {
         super(systemPropertyBaseClass, initParameters);
 
-        checkProductionMode();
+        boolean log = loggWarning.getAndSet(false);
+
+        checkProductionMode(log);
         checkRequestTiming();
-        checkXsrfProtection();
+        checkXsrfProtection(log);
         checkHeartbeatInterval();
         checkCloseIdleSessions();
         checkPushMode();
         checkPushURL();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
-        loggWarning.set(false);
     }
 
     /**
@@ -204,10 +205,10 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
-    private void checkProductionMode() {
+    private void checkProductionMode(boolean loggWarning) {
         productionMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        if (!productionMode && loggWarning.get()) {
+        if (!productionMode && loggWarning) {
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
         }
     }
@@ -223,10 +224,10 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a warning if cross-site request forgery protection is disabled.
      */
-    private void checkXsrfProtection() {
+    private void checkXsrfProtection(boolean loggWarning) {
         xsrfProtectionEnabled = !getBooleanProperty(
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
-        if (!xsrfProtectionEnabled && loggWarning.get()) {
+        if (!xsrfProtectionEnabled && loggWarning) {
             getLogger().warn(WARNING_XSRF_PROTECTION_DISABLED);
         }
     }
