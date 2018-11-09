@@ -17,6 +17,7 @@
 package com.vaadin.flow.server;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,7 @@ public class DefaultDeploymentConfiguration
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
-    private static boolean warningsLogged = false;
+    private static AtomicBoolean loggWarning = new AtomicBoolean(true);
 
     /**
      * Create a new deployment configuration instance.
@@ -105,7 +106,7 @@ public class DefaultDeploymentConfiguration
         checkPushURL();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
-        warningsLogged = true;
+        loggWarning.set(false);
     }
 
     /**
@@ -206,7 +207,7 @@ public class DefaultDeploymentConfiguration
     private void checkProductionMode() {
         productionMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        if (!productionMode && !warningsLogged) {
+        if (!productionMode && loggWarning.get()) {
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
         }
     }
@@ -225,7 +226,7 @@ public class DefaultDeploymentConfiguration
     private void checkXsrfProtection() {
         xsrfProtectionEnabled = !getBooleanProperty(
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
-        if (!xsrfProtectionEnabled && !warningsLogged) {
+        if (!xsrfProtectionEnabled && loggWarning.get()) {
             getLogger().warn(WARNING_XSRF_PROTECTION_DISABLED);
         }
     }
