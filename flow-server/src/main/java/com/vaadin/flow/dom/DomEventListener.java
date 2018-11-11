@@ -26,6 +26,13 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface DomEventListener extends Serializable {
     /**
+     * No-op listener implementation.
+     */
+    DomEventListener NO_OP = event -> {
+        // No op
+    };
+
+    /**
      * Invoked when a DOM event has been fired.
      *
      * @param event
