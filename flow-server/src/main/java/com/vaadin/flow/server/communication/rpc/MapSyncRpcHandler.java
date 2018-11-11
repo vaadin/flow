@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -74,6 +75,14 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
             SynchronizedPropertiesList syncedProps = node
                     .getFeature(SynchronizedPropertiesList.class);
             updateMode = syncedProps.getDisabledUpdateMode(property);
+        }
+
+        if (!DisabledUpdateMode.ALWAYS.equals(updateMode)
+                && node.hasFeature(ElementListenerMap.class)) {
+            ElementListenerMap listenerMap = node
+                    .getFeature(ElementListenerMap.class);
+            updateMode = DisabledUpdateMode.mostPermissive(updateMode,
+                    listenerMap.getUpdateModeForProperty(property));
         }
 
         if (isEnabled) {

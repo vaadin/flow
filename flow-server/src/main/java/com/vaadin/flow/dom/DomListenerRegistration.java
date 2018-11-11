@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Objects;
+
+import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -121,6 +125,23 @@ public interface DomListenerRegistration extends Registration {
             DebouncePhase... rest);
 
     /**
+     * Adds an element property to be synchronized to the server together with
+     * this event.
+     *
+     * @param propertyName
+     *            the name of the property to synchronize, not <code>null</code>
+     * @return this registration, for chaining
+     */
+    public default DomListenerRegistration synchronizeProperty(
+            String propertyName) {
+        String synchronizeInstruction = ElementListenerMap.SYNCHRONIZE_PROPERTY_TOKEN
+                + Objects.requireNonNull(propertyName,
+                        "Property name cannot be null");
+        addEventData(synchronizeInstruction);
+        return this;
+    }
+
+    /**
      * Configures this listener to be notified only when at least
      * <code>timeout</code> milliseconds has passed since the last time the
      * event was triggered. This is useful for cases such as text input where
@@ -160,4 +181,15 @@ public interface DomListenerRegistration extends Registration {
         return debounce(period, DebouncePhase.LEADING,
                 DebouncePhase.INTERMEDIATE);
     }
+
+    /**
+     * Adds a handler that will be run when this registration is removed.
+     *
+     * @param unregisterHandler
+     *            the handler to run when the registration is removed, not
+     *            <code>null</code>
+     * @return this registration, for chaining
+     */
+    DomListenerRegistration onUnregister(
+            SerializableRunnable unregisterHandler);
 }

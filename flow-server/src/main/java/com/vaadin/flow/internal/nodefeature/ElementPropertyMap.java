@@ -134,6 +134,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     public Registration addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
         assert hasElement();
+        Objects.requireNonNull(name, "Property name cannot be null");
+        Objects.requireNonNull(listener, "Listener cannot be null");
 
         List<PropertyChangeListener> propertyListeners;
         if (listeners == null) {
@@ -243,6 +245,12 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         if (getNode().hasFeature(SynchronizedPropertiesList.class)
                 && getNode().getFeature(SynchronizedPropertiesList.class)
                         .getSynchronizedProperties().contains(key)) {
+            return true;
+        }
+
+        if (getNode().hasFeature(ElementListenerMap.class)
+                && getNode().getFeature(ElementListenerMap.class)
+                        .isPropertySynchronized(key)) {
             return true;
         }
 
