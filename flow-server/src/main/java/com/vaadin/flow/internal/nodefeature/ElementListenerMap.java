@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -33,6 +34,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
@@ -50,6 +52,14 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class ElementListenerMap extends NodeMap {
+    /**
+     * Token used in the beginning of event data expressions to represent a
+     * property synchronization. The token is chosen to avoid collisions with
+     * regular even data expressions by choosing a character that cannot be the
+     * start of a valid JS expression.
+     */
+    public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
+
     /**
      * Dummy filter string that always passes.
      */
@@ -108,6 +118,7 @@ public class ElementListenerMap extends NodeMap {
 
         private int debounceTimeout = 0;
         private EnumSet<DebouncePhase> debouncePhases = null;
+        private List<SerializableRunnable> unregisterHandlers;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
                 String type, DomEventListener origin) {
@@ -118,6 +129,9 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public void remove() {
+            if (unregisterHandlers != null) {
+                unregisterHandlers.forEach(SerializableRunnable::run);
+            }
             listenerMap.removeListener(type, this);
         }
 
@@ -213,6 +227,17 @@ public class ElementListenerMap extends NodeMap {
             } else {
                 return debouncePhases.contains(phase);
             }
+        }
+
+        @Override
+        public DomListenerRegistration onUnregister(
+                SerializableRunnable unregisterHandler) {
+            if (unregisterHandlers == null) {
+                unregisterHandlers = new ArrayList<>(1);
+            }
+            unregisterHandlers.add(Objects.requireNonNull(unregisterHandler,
+                    "Unregister handler cannot be null"));
+            return this;
         }
     }
 
