@@ -79,6 +79,14 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * No-op DOM listener implementation used by e.g.
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}.
+     */
+    private static final DomEventListener NO_OP_DOM_LISTENER = event -> {
+        // No op
+    };
+
+    /**
      * Private constructor for initializing with an existing node and state
      * provider.
      *
@@ -707,15 +715,52 @@ public class Element extends Node<Element> {
      *
      * @see #synchronizeProperty(String, String)
      * @param name
-     *            the property name to add the listener for
+     *            the property name to add the listener for, not
+     *            <code>null</code>
      * @param listener
-     *            listener to get notifications about property value changes
+     *            listener to get notifications about property value changes,
+     *            not <code>null</code>
      * @return an event registration handle for removing the listener
      */
     public Registration addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
         return getStateProvider().addPropertyChangeListener(getNode(), name,
                 listener);
+    }
+
+    /**
+     * Adds a property change listener and configures the property to be
+     * synchronized to the server when a given DOM event is fired. Note that the
+     * property will still remain synchronized even after this listener is
+     * unregistered, even though there might not remain any event that triggers
+     * synchroniztaion.
+     *
+     * #see {@link #addPropertyChangeListener(String, PropertyChangeListener)}
+     *
+     * @param propertyName
+     *            the name of the element property to listen to, not
+     *            <code>null</code>
+     * @param domEventName
+     *            the name of the DOM event for which the property should be
+     *            synchronized to the server, not <code>null</code>
+     * @param listener
+     *            the property change listener not add, not <code>null</code>
+     * @return a handle that can be used for configuring or removing the
+     *         listener
+     *
+     * @since
+     */
+    public DomListenerRegistration addPropertyChangeListener(
+            String propertyName, String domEventName,
+            PropertyChangeListener listener) {
+        Registration propertyListenerRegistration = addPropertyChangeListener(
+                propertyName, listener);
+        addSynchronizedProperty(propertyName);
+
+        // No-op DOM listener since we're also listening to property changes
+        return addEventListener(domEventName, NO_OP_DOM_LISTENER)
+                .synchronizeProperties()
+                .onUnregister(propertyListenerRegistration::remove);
     }
 
     private Element setRawProperty(String name, Serializable value) {

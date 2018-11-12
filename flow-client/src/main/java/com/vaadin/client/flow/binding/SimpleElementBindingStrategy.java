@@ -47,6 +47,7 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.shared.JsonConstants;
@@ -1195,8 +1196,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         assert !context.listenerRemovers.has(eventType);
 
         EventRemover remover = context.htmlNode.addEventListener(eventType,
-                event -> handleDomEvent(event, context.htmlNode, context.node),
-                false);
+                event -> handleDomEvent(event, context), false);
 
         context.listenerRemovers.set(eventType, remover);
     }
@@ -1205,8 +1205,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return node.getMap(NodeFeatures.ELEMENT_LISTENERS);
     }
 
-    private void handleDomEvent(Event event, Node element, StateNode node) {
+    private void handleDomEvent(Event event, BindingContext context) {
+        assert context != null;
+
+        Node element = context.htmlNode;
+        StateNode node = context.node;
         assert element instanceof Element : "Cannot handle DOM event for a Node";
+
         String type = event.getType();
 
         NodeMap listenerMap = getDomEventListenerMap(node);
@@ -1223,28 +1228,44 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         String[] expressions = expressionSettings.keys();
 
         JsonObject eventData;
+        boolean synchronizeProperties = false;
+
         if (expressions.length == 0) {
             eventData = null;
         } else {
             eventData = Json.createObject();
 
             for (String expressionString : expressions) {
-                EventExpression expression = getOrCreateExpression(
-                        expressionString);
+                if (expressionString.equals(
+                        ElementListenerMap.SYNCHRONIZE_PROPERTY_TOKEN)) {
+                    synchronizeProperties = true;
+                } else {
+                    EventExpression expression = getOrCreateExpression(
+                            expressionString);
 
-                JsonValue expressionValue = expression.evaluate(event,
-                        (Element) element);
+                    JsonValue expressionValue = expression.evaluate(event,
+                            (Element) element);
 
-                eventData.put(expressionString, expressionValue);
+                    eventData.put(expressionString, expressionValue);
+                }
             }
         }
 
-        boolean sendNow = resolveFilters(element, node, type,
-                expressionSettings, eventData);
+        final boolean finalSynchronizeProperties = synchronizeProperties;
+        Consumer<String> sendCommand = debouncePhase -> {
+            if (finalSynchronizeProperties) {
+                handlePropertySyncDomEvent(context);
+            }
+
+            sendEventToServer(node, type, eventData, debouncePhase);
+        };
+
+        boolean sendNow = resolveFilters(element, type, expressionSettings,
+                eventData, sendCommand);
 
         if (sendNow) {
             // Send if there were not filters or at least one matched
-            sendEventToServer(node, type, eventData, null);
+            sendCommand.accept(null);
         }
     }
 
@@ -1264,9 +1285,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         node.getTree().sendEventToServer(node, type, eventData);
     }
 
-    private static boolean resolveFilters(Node element, StateNode node,
-            String eventType, JsonObject expressionSettings,
-            JsonObject eventData) {
+    private static boolean resolveFilters(Node element, String eventType,
+            JsonObject expressionSettings, JsonObject eventData,
+            Consumer<String> sendCommand) {
 
         boolean noFilters = true;
         boolean atLeastOneFilterMatched = false;
@@ -1288,9 +1309,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
                 // Count as a match only if at least one debounce is eager
                 filterMatched = resolveDebounces(element, debouncerId,
-                        (JsonArray) settings,
-                        triggerdPhase -> sendEventToServer(node, eventType,
-                                eventData, triggerdPhase));
+                        (JsonArray) settings, sendCommand);
             }
 
             atLeastOneFilterMatched |= filterMatched;
