@@ -118,6 +118,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     public Registration addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
         assert hasElement();
+        Objects.requireNonNull(name, "Property name cannot be null");
+        Objects.requireNonNull(listener, "Listener cannot be null");
 
         List<PropertyChangeListener> propertyListeners;
         if (listeners == null) {

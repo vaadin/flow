@@ -27,7 +27,9 @@ import org.junit.Test;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
@@ -175,9 +177,7 @@ public class ElementListenersTest
 
     @Test
     public void serializable() {
-        ns.add("click", event -> {
-            // Ignore
-        }).addEventData("eventdata");
+        ns.add("click", noOp).addEventData("eventdata");
 
         ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
 
@@ -185,8 +185,27 @@ public class ElementListenersTest
         Assert.assertEquals(Collections.singleton("eventdata"), expressions);
     }
 
+    @Test
+    public void synchronized_hasExpressionToken() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+
+        Assert.assertEquals(Collections.emptySet(), getExpressions("foo"));
+
+        registration.synchronizeProperties();
+
+        Assert.assertEquals(
+                Collections.singleton(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN),
+                getExpressions("foo"));
+    }
+
+    // Helper for accessing package private API from other tests
+    public static Set<String> getExpressions(
+            ElementListenerMap elementListenerMap, String eventName) {
+        return elementListenerMap.getExpressions(eventName);
+    }
+
     private Set<String> getExpressions(String name) {
-        return ns.getExpressions(name);
+        return getExpressions(ns, name);
     }
 
     private static DomEvent createEvent(String type) {

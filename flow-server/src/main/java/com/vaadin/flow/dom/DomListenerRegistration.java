@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -159,5 +161,40 @@ public interface DomListenerRegistration extends Registration {
     default DomListenerRegistration throttle(int period) {
         return debounce(period, DebouncePhase.LEADING,
                 DebouncePhase.INTERMEDIATE);
+    }
+
+    /**
+     * Adds a handler that will be run when this registration is removed.
+     *
+     * @param unregisterHandler
+     *            the handler to run when the registration is removed, not
+     *            <code>null</code>
+     * @return this registration, for chaining
+     *
+     * @since
+     */
+    default DomListenerRegistration onUnregister(
+            SerializableRunnable unregisterHandler) {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling, even though custom implementations won't work with the new
+         * addPropertyListener overload that uses this method.
+         */
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Marks that the DOM event of this registration should trigger property
+     * synchronization of all properties returned by
+     * {@link Element#getSynchronizedProperties()}.
+     *
+     * @see Element#addSynchronizedProperty(String)
+     * @return this registration, for chaining
+     *
+     * @since
+     */
+    default DomListenerRegistration synchronizeProperties() {
+        addEventData(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN);
+        return this;
     }
 }
