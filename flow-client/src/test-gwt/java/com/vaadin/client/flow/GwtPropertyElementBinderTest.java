@@ -31,10 +31,12 @@ import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
+import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
@@ -253,6 +255,32 @@ public abstract class GwtPropertyElementBinderTest
         dispatchEvent("event1");
         assertSynchronized();
         tree.clearSynchronizedProperties();
+    }
+
+    public void testDomListenerSynchronization() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+        Binder.bind(node, element);
+
+        setSyncProperties("offsetWidth");
+
+        String constantPoolKey = "expressionsKey";
+
+        JsonObject expressions = Json.createObject();
+        boolean isFilter = false;
+        expressions.put(
+                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "offsetWidth",
+                isFilter);
+
+        GwtBasicElementBinderTest.addToConstantPool(constantPool,
+                constantPoolKey, expressions);
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("event1")
+                .setValue(constantPoolKey);
+        Reactive.flush();
+
+        element.getStyle().setWidth("2px");
+        dispatchEvent("event1");
+        assertSynchronized("offsetWidth");
     }
 
     protected StateNode createNode() {

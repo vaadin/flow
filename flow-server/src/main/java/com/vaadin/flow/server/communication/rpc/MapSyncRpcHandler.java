@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -75,22 +76,28 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
                     .getFeature(SynchronizedPropertiesList.class);
             updateMode = syncedProps.getDisabledUpdateMode(property);
         }
+        if (node.hasFeature(ElementListenerMap.class)) {
+            ElementListenerMap listenerMap = node
+                    .getFeature(ElementListenerMap.class);
+            updateMode = DisabledUpdateMode.mostPermissive(updateMode,
+                    listenerMap.getPropertySynchronizationMode(property));
+        }
 
         if (isEnabled) {
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else if (DisabledUpdateMode.ALWAYS.equals(updateMode)) {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class).trace(
-                    "Property update request for disabled element is received from the client side. "
+            LoggerFactory.getLogger(MapSyncRpcHandler.class)
+                    .trace("Property update request for disabled element is received from the client side. "
                             + "Change will be applied since the property '{}' always allows its update.",
-                    property);
+                            property);
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class).warn(
-                    "Property update request for disabled element is received from the client side. "
+            LoggerFactory.getLogger(MapSyncRpcHandler.class)
+                    .warn("Property update request for disabled element is received from the client side. "
                             + "The property is '{}'. Request is ignored.",
-                    property);
+                            property);
         }
         return Optional.empty();
     }

@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.easymock.EasyMock;
@@ -34,6 +35,7 @@ import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
@@ -41,6 +43,7 @@ import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
@@ -2405,6 +2408,65 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertFalse(child.isVirtualChild());
         Assert.assertTrue(virtualChild.isVirtualChild());
         Assert.assertFalse(grandVirtualChild.isVirtualChild());
+    }
+
+    @Test
+    public void domPropertyListener_registersListenerAndDomTrigger() {
+        Element element = ElementFactory.createDiv();
+
+        AtomicReference<Serializable> listenerValue = new AtomicReference<>();
+
+        element.addPropertyChangeListener("property", "event", event -> {
+            if (listenerValue.getAndSet(event.getValue()) != null) {
+                Assert.fail("Unexpected event");
+            }
+        });
+
+        Assert.assertEquals("The property should be synchronized",
+                DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                element.getNode().getFeature(ElementListenerMap.class)
+                        .getPropertySynchronizationMode("property"));
+
+        Assert.assertEquals(
+                "There should not be any 'conventional' property sync events",
+                0, element.getSynchronizedPropertyEvents().count());
+
+        ElementListenerMap listenerMap = element.getNode()
+                .getFeature(ElementListenerMap.class);
+
+        Assert.assertEquals("A DOM event synchronization should be defined",
+                Collections.singleton(
+                        JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "property"),
+                ElementListenersTest.getExpressions(listenerMap, "event"));
+
+        element.setProperty("property", "value");
+        Assert.assertEquals("Listener shold be registered", listenerValue.get(),
+                "value");
+    }
+
+    @Test
+    public void domPropertyListener_unregisterCleansEverything() {
+        Element element = ElementFactory.createDiv();
+
+        DomListenerRegistration registration = element
+                .addPropertyChangeListener("property", "event", event -> {
+                    Assert.fail("Unexpected event");
+                });
+        registration.remove();
+
+        Assert.assertNull("The property should not be synchronized",
+                element.getNode().getFeature(ElementListenerMap.class)
+                        .getPropertySynchronizationMode("property"));
+
+        ElementListenerMap listenerMap = element.getNode()
+                .getFeature(ElementListenerMap.class);
+
+        Assert.assertEquals("There should be no DOM listener",
+                Collections.emptySet(),
+                ElementListenersTest.getExpressions(listenerMap, "event"));
+
+        // Should not trigger assert in the listener
+        element.setProperty("property", "value");
     }
 
     @Override
