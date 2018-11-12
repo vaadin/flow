@@ -686,6 +686,11 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private void addToConstantPool(String key, JsonValue value) {
+        addToConstantPool(constantPool, key, value);
+    }
+
+    public static void addToConstantPool(ConstantPool constantPool, String key,
+            JsonValue value) {
         // https://github.com/gwtproject/gwt/issues/9225
         value = Json.instance().parse(value.toJson());
 

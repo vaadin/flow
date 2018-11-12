@@ -190,7 +190,7 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void disabledElement_updateIsAllowed_updateIsDone()
+    public void disabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone()
             throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
@@ -206,7 +206,24 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void implicitlyDisabledElement_updateIsAllowed_updateIsDone()
+    public void disabledElement_updateIsAllowedByEventListener_updateIsDone()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        UI ui = new UI();
+        ui.getElement().appendChild(element);
+
+        element.setEnabled(false);
+        element.addEventListener(DUMMY_EVENT, event -> {
+        }).synchronizeProperty(TEST_PROPERTY)
+                .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+
+        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+    }
+
+    @Test
+    public void implicitlyDisabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone()
             throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
@@ -215,6 +232,23 @@ public class MapSyncRpcHandlerTest {
         ui.setEnabled(false);
         element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
                 DisabledUpdateMode.ALWAYS);
+
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+
+        Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
+    }
+
+    @Test
+    public void implicitlyDisabledElement_updateIsAllowedByEventListener_updateIsDone()
+            throws Exception {
+        Element element = ElementFactory.createDiv();
+        UI ui = new UI();
+        ui.getElement().appendChild(element);
+
+        ui.setEnabled(false);
+        element.addEventListener(DUMMY_EVENT, event -> {
+        }).synchronizeProperty(TEST_PROPERTY)
+                .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -238,7 +272,7 @@ public class MapSyncRpcHandlerTest {
     @Test
     public void handleNode_callsElementPropertyMapDeferredUpdateFromClient() {
         AtomicInteger deferredUpdateInvocations = new AtomicInteger();
-        AtomicReference<String> deferredKey = new AtomicReference<String>();
+        AtomicReference<String> deferredKey = new AtomicReference<>();
         StateNode node = new StateNode(ElementPropertyMap.class) {
 
             private ElementPropertyMap map = new ElementPropertyMap(this) {

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -86,6 +88,15 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Configure whether this listener will be called even in cases when the
      * element is disabled.
+     * <p>
+     * When used in combination with {@link #synchronizeProperty(String)}, the
+     * most permissive update mode for the same property will be effective. This
+     * means that there might be unexpected property updates for a disabled
+     * component if multiple parties independently configure different aspects
+     * for the same component. This is based on the assumption that if a
+     * property is explicitly safe to update for disabled components in one
+     * context, then the nature of that property is probably such that it's also
+     * safe to update in other contexts.
      *
      * @param disabledUpdateMode
      *            controls RPC communication from the client side to the server
@@ -159,5 +170,44 @@ public interface DomListenerRegistration extends Registration {
     default DomListenerRegistration throttle(int period) {
         return debounce(period, DebouncePhase.LEADING,
                 DebouncePhase.INTERMEDIATE);
+    }
+
+    /**
+     * Adds a handler that will be run when this registration is removed.
+     *
+     * @param unregisterHandler
+     *            the handler to run when the registration is removed, not
+     *            <code>null</code>
+     * @return this registration, for chaining
+     *
+     * @since
+     */
+    default DomListenerRegistration onUnregister(
+            SerializableRunnable unregisterHandler) {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling, even though custom implementations won't work with the new
+         * addPropertyListener overload that uses this method.
+         */
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Marks that the DOM event of this registration should trigger
+     * synchronization for the given property.
+     *
+     * @return this registration, for chaining
+     *
+     * @param propertyName
+     *            the name of the property to synchronize, not <code>null</code>
+     *            or <code>""</code>
+     * @return this registration, for chaining
+     */
+    default DomListenerRegistration synchronizeProperty(String propertyName) {
+        if (propertyName == null || propertyName.isEmpty()) {
+            throw new IllegalArgumentException("Property name must be given");
+        }
+        return addEventData(
+                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
     }
 }

@@ -59,6 +59,14 @@ public @interface Synchronize {
     /**
      * Controls updates for the property from the client side to the server side
      * when the element is disabled.
+     * <p>
+     * When multiple update mode settings are defined for the same property, the
+     * most permissive mode is used. This means that there might be unexpected
+     * updates for a disabled component if multiple parties independently
+     * configure different aspects for the same component. This is based on the
+     * assumption that if a property is explicitly safe to update for disabled
+     * components in one context, then the nature of that property is probably
+     * such that it's also safe to update in other contexts.
      *
      * @return the property update mode for disabled element
      */
