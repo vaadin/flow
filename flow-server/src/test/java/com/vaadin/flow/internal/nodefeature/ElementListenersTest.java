@@ -27,7 +27,9 @@ import org.junit.Test;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
@@ -175,9 +177,7 @@ public class ElementListenersTest
 
     @Test
     public void serializable() {
-        ns.add("click", event -> {
-            // Ignore
-        }).addEventData("eventdata");
+        ns.add("click", noOp).addEventData("eventdata");
 
         ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
 
@@ -185,8 +185,83 @@ public class ElementListenersTest
         Assert.assertEquals(Collections.singleton("eventdata"), expressions);
     }
 
+    @Test
+    public void synchronizePropery_hasSynchronizedProperty() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+
+        Assert.assertNull(ns.getPropertySynchronizationMode("name"));
+
+        registration.synchronizeProperty("anotherName");
+
+        Assert.assertNull(ns.getPropertySynchronizationMode("name"));
+
+        registration.synchronizeProperty("name");
+
+        Assert.assertSame(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                ns.getPropertySynchronizationMode("name"));
+    }
+
+    @Test
+    public void synchronizePropery_alwaysMode() {
+        DomListenerRegistration registration = ns.add("foo", noOp)
+                .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+
+        registration.synchronizeProperty("name");
+
+        Assert.assertSame(DisabledUpdateMode.ALWAYS,
+                ns.getPropertySynchronizationMode("name"));
+    }
+
+    @Test
+    public void synchronizePropery_bothModes() {
+        DomListenerRegistration registration1 = ns.add("foo", noOp)
+                .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+
+        registration1.synchronizeProperty("name");
+
+        DomListenerRegistration registration2 = ns.add("foo", noOp);
+        registration2.synchronizeProperty("name");
+
+        Assert.assertSame(DisabledUpdateMode.ALWAYS,
+                ns.getPropertySynchronizationMode("name"));
+    }
+
+    @Test
+    public void synchronizePropery_hasExpressionToken() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+
+        Assert.assertEquals(Collections.emptySet(), getExpressions("foo"));
+
+        registration.synchronizeProperty("name");
+
+        Assert.assertEquals(
+                Collections.singleton(
+                        JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "name"),
+                getExpressions("foo"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void synchronizePropery_nullArgument_illegalArgumentException() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+
+        registration.synchronizeProperty(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void synchronizePropery_emptyArgument_illegalArgumentException() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+
+        registration.synchronizeProperty("");
+    }
+
+    // Helper for accessing package private API from other tests
+    public static Set<String> getExpressions(
+            ElementListenerMap elementListenerMap, String eventName) {
+        return elementListenerMap.getExpressions(eventName);
+    }
+
     private Set<String> getExpressions(String name) {
-        return ns.getExpressions(name);
+        return getExpressions(ns, name);
     }
 
     private static DomEvent createEvent(String type) {

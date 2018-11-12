@@ -295,4 +295,12 @@ public class JsonConstants implements Serializable {
      * Character used for representing {@link DebouncePhase#TRAILING}.
      */
     public static final String EVENT_PHASE_TRAILING = "trailing";
+
+    /**
+     * Token used as an event data expression to represent that properties
+     * should be synchronized. The token is chosen to avoid collisions with
+     * regular event data expressions by using a character that cannot be the
+     * start of a valid JS expression.
+     */
+    public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
 }
