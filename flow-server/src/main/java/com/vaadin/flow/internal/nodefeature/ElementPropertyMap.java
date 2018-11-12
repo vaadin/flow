@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -86,7 +87,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             if (updateFromClientFilter != null
                     && !updateFromClientFilter.test(key)) {
                 getLogger().warn("Ignoring model update for {}. "
-                        + "For security reasons, the property must have a two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
+                        + "For security reasons, the property must have a "
+                        + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
                         key, AllowClientUpdates.class.getSimpleName());
                 return () -> {
                     // nop
@@ -250,9 +252,30 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             return true;
         }
 
-        if (updateFromClientFilter != null) {
-            return updateFromClientFilter.test(key);
+        return isUpdateFromClientAllowedByFilter(getNode(), key);
+    }
+
+    private boolean isUpdateFromClientAllowedByFilter(StateNode node,
+            String key) {
+        ElementPropertyMap propertyMap = node
+                .getFeature(ElementPropertyMap.class);
+        if (propertyMap.updateFromClientFilter != null) {
+            return propertyMap.updateFromClientFilter.test(key);
         } else {
+            StateNode parent = getNode().getParent();
+            if (parent == null) {
+                return false;
+            }
+            ElementPropertyMap parentMap = parent
+                    .getFeature(ElementPropertyMap.class);
+            Optional<String> parentProperty = parentMap.getPropertyNames()
+                    .filter(property -> node.equals(parentMap.get(property)))
+                    .findFirst();
+            if (parentProperty.isPresent()) {
+                String property = new StringBuilder(parentProperty.get())
+                        .append('.').append(key).toString();
+                return isUpdateFromClientAllowedByFilter(parent, property);
+            }
             return false;
         }
     }

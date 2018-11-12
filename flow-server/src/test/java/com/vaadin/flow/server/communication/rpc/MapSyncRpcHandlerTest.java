@@ -218,8 +218,8 @@ public class MapSyncRpcHandlerTest {
         Assert.assertEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
-    @Test
-    public void noSyncPropertiesFeature_doesntThrow() {
+    @Test(expected = IllegalArgumentException.class)
+    public void noSyncPropertiesFeature_noExplicitAllow_throws() {
         StateNode noSyncProperties = new StateNode(ElementPropertyMap.class);
 
         ElementPropertyMap map = noSyncProperties
