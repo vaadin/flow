@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -78,18 +77,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value) {
         if (!mayUpdateFromClient(key, value)) {
-            /*
-             * Ignore updates for properties that are rejected because of model
-             * type definitions. Such changes should preferably not be sent by
-             * the client at all, but additional bookkeeping would be needed to
-             * allow the client to know which properties are actually allowed.
-             */
-            if (updateFromClientFilter != null
-                    && !updateFromClientFilter.test(key)) {
-                getLogger().warn("Ignoring model update for {}. "
-                        + "For security reasons, the property must have a "
-                        + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
-                        key, AllowClientUpdates.class.getSimpleName());
+            if (isDisallowedByFilter(key)) {
                 return () -> {
                     // nop
                 };
@@ -191,11 +179,6 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         Serializable oldValue = super.put(key, value, emitChange);
         boolean valueChanged = !Objects.equals(oldValue, value);
 
-        if (valueChanged) {
-            setFilterIfMapNode(oldValue, () -> null);
-            setFilterIfMapNode(value, () -> createChildFilter(key));
-        }
-
         PropertyChangeEvent event;
         if (hasElement() && valueChanged) {
             event = new PropertyChangeEvent(Element.get(getNode()), key,
@@ -214,59 +197,77 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue,
                 true));
 
-        setFilterIfMapNode(oldValue, () -> null);
-
         return oldValue;
-    }
-
-    private SerializablePredicate<String> createChildFilter(String prefix) {
-        return name -> {
-            if (updateFromClientFilter == null) {
-                return false;
-            } else {
-                return updateFromClientFilter.test(prefix + "." + name);
-            }
-        };
-    }
-
-    private static void setFilterIfMapNode(Object maybeNode,
-            Supplier<SerializablePredicate<String>> filterFactory) {
-        if (maybeNode instanceof StateNode) {
-            StateNode node = (StateNode) maybeNode;
-            if (node.hasFeature(ElementPropertyMap.class)) {
-                ElementPropertyMap.getModel(node)
-                        .setUpdateFromClientFilter(filterFactory.get());
-            }
-        }
     }
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
+        Boolean isAllowed = isUpdateFromClientAllowedBeforeFilter(key);
+        if (isAllowed != null) {
+            return isAllowed;
+        }
+
+        isAllowed = isUpdateFromClientAllowedByFilter(getNode(), key, false);
+        if (isAllowed != null) {
+            return isAllowed;
+        }
+        return false;
+    }
+
+    private boolean isDisallowedByFilter(String key) {
+        /*
+         * Ignore updates for properties that are rejected because of model type
+         * definitions. Such changes should preferably not be sent by the client
+         * at all, but additional bookkeeping would be needed to allow the
+         * client to know which properties are actually allowed.
+         */
+        if (isUpdateFromClientAllowedBeforeFilter(key) == null) {
+            // If we are here it means that either there is no filter or the
+            // filter disallows the update
+            Boolean allowed = isUpdateFromClientAllowedByFilter(getNode(), key,
+                    true);
+            if (allowed != null) {
+                // This condition means there is a filter which explicitly
+                // allows or disallows the property
+                assert !allowed : "Implementation error. If update for a property is allowed before the "
+                        + "filter it's expected that the filter disallow it";
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Boolean isUpdateFromClientAllowedBeforeFilter(String key) {
         if (forbiddenProperties.contains(key)) {
             return false;
         }
-
         if (getNode().hasFeature(SynchronizedPropertiesList.class)
                 && getNode().getFeature(SynchronizedPropertiesList.class)
                         .getSynchronizedProperties().contains(key)) {
             return true;
         }
-
-        return isUpdateFromClientAllowedByFilter(getNode(), key);
+        return null;
     }
 
-    private boolean isUpdateFromClientAllowedByFilter(StateNode node,
-            String key) {
+    private Boolean isUpdateFromClientAllowedByFilter(StateNode node,
+            String key, boolean log) {
         if (node.hasFeature(ElementPropertyMap.class)) {
             ElementPropertyMap propertyMap = node
                     .getFeature(ElementPropertyMap.class);
             if (propertyMap.updateFromClientFilter != null) {
-                return propertyMap.updateFromClientFilter.test(key);
+                boolean allow = propertyMap.updateFromClientFilter.test(key);
+                if (!allow && log) {
+                    getLogger().warn("Ignoring model update for {}. "
+                            + "For security reasons, the property must have a "
+                            + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
+                            key, AllowClientUpdates.class.getSimpleName());
+                }
+                return allow;
             }
         }
         StateNode parent = node.getParent();
         if (parent == null) {
-            return false;
+            return null;
         }
         if (parent.hasFeature(ElementPropertyMap.class)) {
             ElementPropertyMap parentMap = parent
@@ -277,16 +278,16 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             if (parentProperty.isPresent()) {
                 String property = new StringBuilder(parentProperty.get())
                         .append('.').append(key).toString();
-                return isUpdateFromClientAllowedByFilter(parent, property);
+                return isUpdateFromClientAllowedByFilter(parent, property, log);
             }
         }
         if (parent.hasFeature(ModelList.class)) {
             ModelList list = parent.getFeature(ModelList.class);
             if (list.contains(node)) {
-                return isUpdateFromClientAllowedByFilter(parent, key);
+                return isUpdateFromClientAllowedByFilter(parent, key, log);
             }
         }
-        return false;
+        return null;
     }
 
     /**

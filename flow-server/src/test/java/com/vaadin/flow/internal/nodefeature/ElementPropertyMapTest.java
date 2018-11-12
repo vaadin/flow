@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -230,6 +231,44 @@ public class ElementPropertyMapTest {
         }
 
         Assert.assertTrue(map.mayUpdateFromClient("property", "foo"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void deferredUpdateFromClient_updateNotAllowed_throw() {
+        ElementPropertyMap map = createSimplePropertyMap();
+
+        map.deferredUpdateFromClient("foo", "value");
+    }
+
+    @Test
+    public void deferredUpdateFromClient_clientFiltersOutUpdate_() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        map.setUpdateFromClientFilter(name -> !name.equals("foo"));
+
+        AtomicReference<PropertyChangeEvent> eventCapture = new AtomicReference<PropertyChangeEvent>();
+        map.addPropertyChangeListener("foo", eventCapture::set);
+
+        Runnable runnable = map.deferredUpdateFromClient("foo", "value");
+        Assert.assertThat(runnable.getClass().getName(), CoreMatchers
+                .startsWith(ElementPropertyMap.class.getName() + "$$Lambda"));
+        runnable.run();
+        Assert.assertNull(eventCapture.get());
+    }
+
+    @Test
+    public void deferredUpdateFromClient_clientFilterAcceptUpdate_putResultRunnable() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        map.setUpdateFromClientFilter(name -> name.equals("foo"));
+
+        AtomicReference<PropertyChangeEvent> eventCapture = new AtomicReference<PropertyChangeEvent>();
+        map.addPropertyChangeListener("foo", eventCapture::set);
+
+        Runnable runnable = map.deferredUpdateFromClient("foo", "value");
+        Assert.assertThat(runnable.getClass().getName(), CoreMatchers
+                .equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
+
+        runnable.run();
+        Assert.assertNotNull(eventCapture.get());
     }
 
     private void listenerIsNotified(boolean clientEvent) {
