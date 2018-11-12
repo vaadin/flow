@@ -257,15 +257,18 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     private boolean isUpdateFromClientAllowedByFilter(StateNode node,
             String key) {
-        ElementPropertyMap propertyMap = node
-                .getFeature(ElementPropertyMap.class);
-        if (propertyMap.updateFromClientFilter != null) {
-            return propertyMap.updateFromClientFilter.test(key);
-        } else {
-            StateNode parent = getNode().getParent();
-            if (parent == null) {
-                return false;
+        if (node.hasFeature(ElementPropertyMap.class)) {
+            ElementPropertyMap propertyMap = node
+                    .getFeature(ElementPropertyMap.class);
+            if (propertyMap.updateFromClientFilter != null) {
+                return propertyMap.updateFromClientFilter.test(key);
             }
+        }
+        StateNode parent = node.getParent();
+        if (parent == null) {
+            return false;
+        }
+        if (parent.hasFeature(ElementPropertyMap.class)) {
             ElementPropertyMap parentMap = parent
                     .getFeature(ElementPropertyMap.class);
             Optional<String> parentProperty = parentMap.getPropertyNames()
@@ -276,8 +279,14 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                         .append('.').append(key).toString();
                 return isUpdateFromClientAllowedByFilter(parent, property);
             }
-            return false;
         }
+        if (parent.hasFeature(ModelList.class)) {
+            ModelList list = parent.getFeature(ModelList.class);
+            if (list.contains(node)) {
+                return isUpdateFromClientAllowedByFilter(parent, key);
+            }
+        }
+        return false;
     }
 
     /**
