@@ -187,6 +187,40 @@ public class ElementPropertyMapTest {
     }
 
     @Test
+    public void deferredUpdateFromClient_filterAllowsUpdate() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        StateNode child = new StateNode(ElementPropertyMap.class);
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        map.setUpdateFromClientFilter("foo.bar"::equals);
+        map.put("foo", child);
+
+        assertDeferredUpdate_putResult(childModel, "bar");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void deferredUpdateFromClient_noFilter_throws() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        StateNode child = new StateNode(ElementPropertyMap.class);
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        map.put("foo", child);
+        childModel.deferredUpdateFromClient("bar", "a");
+    }
+
+    @Test
+    public void deferredUpdateFromClient_filterDisallowsUpdate() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        StateNode child = new StateNode(ElementPropertyMap.class);
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        map.setUpdateFromClientFilter(key -> false);
+        map.put("foo", child);
+
+        assertDeferredUpdate_noOp(childModel, "bar");
+    }
+
+    @Test
     public void listChildPropertyUpdateFilter_setFilterBeforeChild() {
         ElementPropertyMap map = createSimplePropertyMap();
         ModelList list = map.resolveModelList("foo");
@@ -199,6 +233,47 @@ public class ElementPropertyMapTest {
 
         Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
         Assert.assertFalse(childModel.mayUpdateFromClient("baz", "a"));
+    }
+
+    @Test
+    public void deferredUpdateFromClient_listChild_filterAllowsUpdate() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        ModelList list = map.resolveModelList("foo");
+        StateNode child = new StateNode(ElementPropertyMap.class);
+
+        map.setUpdateFromClientFilter("foo.bar"::equals);
+        list.add(child);
+
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        assertDeferredUpdate_putResult(childModel, "bar");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void deferredUpdateFromClient_listItem_noFilter_throws() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        ModelList list = map.resolveModelList("foo");
+        StateNode child = new StateNode(ElementPropertyMap.class);
+
+        list.add(child);
+
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        childModel.deferredUpdateFromClient("bar", "a");
+    }
+
+    @Test
+    public void deferredUpdateFromClient_listChild_filterDisallowsUpdate() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        ModelList list = map.resolveModelList("foo");
+        StateNode child = new StateNode(ElementPropertyMap.class);
+
+        map.setUpdateFromClientFilter(key -> false);
+        list.add(child);
+
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
+
+        assertDeferredUpdate_noOp(childModel, "bar");
     }
 
     @Test
@@ -256,7 +331,28 @@ public class ElementPropertyMapTest {
     }
 
     @Test
-    public void deferredUpdateFromClient_clientFiltersOutUpdate_() {
+    public void deferredUpdateFromClient_filterDisallowUpdate_propertyIsSynchronized() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        map.getNode().getFeature(SynchronizedPropertiesList.class).add("foo");
+
+        map.setUpdateFromClientFilter(key -> false);
+
+        map.deferredUpdateFromClient("foo", "value");
+        assertDeferredUpdate_putResult(map, "foo");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void deferredUpdateFromClient_filterAllowsUpdate_propertyIsForbidden_throw() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        map.put("classList", "a");
+
+        map.setUpdateFromClientFilter(key -> true);
+
+        map.deferredUpdateFromClient("classList", "value");
+    }
+
+    @Test
+    public void deferredUpdateFromClient_clientFiltersOutUpdate_noOpRunnable() {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setUpdateFromClientFilter(name -> !name.equals("foo"));
 
@@ -279,10 +375,7 @@ public class ElementPropertyMapTest {
         AtomicReference<PropertyChangeEvent> eventCapture = new AtomicReference<PropertyChangeEvent>();
         map.addPropertyChangeListener("foo", eventCapture::set);
 
-        Runnable runnable = map.deferredUpdateFromClient("foo", "value");
-        Assert.assertThat(runnable.getClass().getName(), CoreMatchers
-                .equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
-
+        Runnable runnable = assertDeferredUpdate_putResult(map, "foo");
         runnable.run();
         Assert.assertNotNull(eventCapture.get());
     }
@@ -307,6 +400,22 @@ public class ElementPropertyMapTest {
 
         // listener is not called. Otherwise its assertion fails.
         map.setProperty("bar", "foo");
+    }
+
+    private Runnable assertDeferredUpdate_putResult(ElementPropertyMap map,
+            String property) {
+        Runnable runnable = map.deferredUpdateFromClient(property, "a");
+        Assert.assertThat(runnable.getClass().getName(), CoreMatchers
+                .equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
+        return runnable;
+    }
+
+    private void assertDeferredUpdate_noOp(ElementPropertyMap map,
+            String property) {
+        Runnable runnable = map.deferredUpdateFromClient(property, "a");
+        Assert.assertThat(runnable.getClass().getName(),
+                CoreMatchers.not(CoreMatchers.equalTo(
+                        ElementPropertyMap.class.getName() + "$PutResult")));
     }
 
     private static ElementPropertyMap createSimplePropertyMap() {
