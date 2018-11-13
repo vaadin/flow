@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,6 +31,7 @@ import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -230,6 +233,40 @@ public class MapSyncRpcHandlerTest {
                         NEW_VALUE));
 
         Assert.assertEquals(NEW_VALUE, map.getProperty(TEST_PROPERTY));
+    }
+
+    @Test
+    public void handleNode_callsElementPropertyMapDeferredUpdateFromClient() {
+        AtomicInteger deferredUpdateInvocations = new AtomicInteger();
+        AtomicReference<String> deferredKey = new AtomicReference<String>();
+        StateNode node = new StateNode(ElementPropertyMap.class) {
+
+            private ElementPropertyMap map = new ElementPropertyMap(this) {
+                @Override
+                public Runnable deferredUpdateFromClient(String key,
+                        Serializable value) {
+                    deferredUpdateInvocations.incrementAndGet();
+                    deferredKey.set(key);
+                    return () -> {
+                    };
+                }
+            };
+
+            @Override
+            public <F extends NodeFeature> F getFeature(Class<F> featureType) {
+                if (featureType.equals(ElementPropertyMap.class)) {
+                    return featureType.cast(map);
+                }
+                return super.getFeature(featureType);
+            }
+
+        };
+
+        new MapSyncRpcHandler().handleNode(node,
+                createSyncPropertyInvocation(node, TEST_PROPERTY, NEW_VALUE));
+
+        Assert.assertEquals(1, deferredUpdateInvocations.get());
+        Assert.assertEquals(TEST_PROPERTY, deferredKey.get());
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,
