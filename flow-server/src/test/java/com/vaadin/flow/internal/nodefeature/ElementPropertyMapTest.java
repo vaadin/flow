@@ -159,7 +159,7 @@ public class ElementPropertyMapTest {
     }
 
     @Test
-    public void childPropertyUpdateFilter_replaceFilter() {
+    public void updateFromClientFilter_replaceFilter() {
         ElementPropertyMap map = createSimplePropertyMap();
 
         map.setUpdateFromClientFilter("foo"::equals);
@@ -181,6 +181,21 @@ public class ElementPropertyMapTest {
 
         map.setUpdateFromClientFilter("foo.bar"::equals);
         map.put("foo", child);
+
+        Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
+        Assert.assertFalse(childModel.mayUpdateFromClient("baz", "a"));
+    }
+
+    @Test
+    public void listChildPropertyUpdateFilter_setFilterBeforeChild() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        ModelList list = map.resolveModelList("foo");
+        StateNode child = new StateNode(ElementPropertyMap.class);
+
+        map.setUpdateFromClientFilter("foo.bar"::equals);
+        list.add(child);
+
+        ElementPropertyMap childModel = ElementPropertyMap.getModel(child);
 
         Assert.assertTrue(childModel.mayUpdateFromClient("bar", "a"));
         Assert.assertFalse(childModel.mayUpdateFromClient("baz", "a"));
@@ -249,8 +264,9 @@ public class ElementPropertyMapTest {
         map.addPropertyChangeListener("foo", eventCapture::set);
 
         Runnable runnable = map.deferredUpdateFromClient("foo", "value");
-        Assert.assertThat(runnable.getClass().getName(), CoreMatchers
-                .startsWith(ElementPropertyMap.class.getName() + "$$Lambda"));
+        Assert.assertThat(runnable.getClass().getName(),
+                CoreMatchers.not(CoreMatchers.equalTo(
+                        ElementPropertyMap.class.getName() + "$PutResult")));
         runnable.run();
         Assert.assertNull(eventCapture.get());
     }

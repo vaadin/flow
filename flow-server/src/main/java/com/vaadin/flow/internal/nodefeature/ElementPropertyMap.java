@@ -55,6 +55,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     private SerializablePredicate<String> updateFromClientFilter = null;
 
+    private enum AllowUpdate {
+        EXPLICITLY_ALLOW, EXPLICITLY_DISALLOW, NO_EXPLICIT_STATUS
+    }
+
     /**
      * Creates a new element property map for the given node.
      *
@@ -202,14 +206,14 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
-        Boolean isAllowed = isUpdateFromClientAllowedBeforeFilter(key);
-        if (isAllowed != null) {
-            return isAllowed;
+        AllowUpdate isAllowed = isUpdateFromClientAllowedBeforeFilter(key);
+        if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(isAllowed)) {
+            return AllowUpdate.EXPLICITLY_ALLOW.equals(isAllowed);
         }
 
         isAllowed = isUpdateFromClientAllowedByFilter(getNode(), key, false);
-        if (isAllowed != null) {
-            return isAllowed;
+        if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(isAllowed)) {
+            return AllowUpdate.EXPLICITLY_ALLOW.equals(isAllowed);
         }
         return false;
     }
@@ -221,35 +225,37 @@ public class ElementPropertyMap extends AbstractPropertyMap {
          * at all, but additional bookkeeping would be needed to allow the
          * client to know which properties are actually allowed.
          */
-        if (isUpdateFromClientAllowedBeforeFilter(key) == null) {
+        if (AllowUpdate.NO_EXPLICIT_STATUS
+                .equals(isUpdateFromClientAllowedBeforeFilter(key))) {
             // If we are here it means that either there is no filter or the
             // filter disallows the update
-            Boolean allowed = isUpdateFromClientAllowedByFilter(getNode(), key,
-                    true);
-            if (allowed != null) {
+            AllowUpdate allowed = isUpdateFromClientAllowedByFilter(getNode(),
+                    key, true);
+            if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(allowed)) {
                 // This condition means there is a filter which explicitly
                 // allows or disallows the property
-                assert !allowed : "Implementation error. If update for a property is allowed before the "
-                        + "filter it's expected that the filter disallow it";
+                assert AllowUpdate.EXPLICITLY_DISALLOW.equals(
+                        allowed) : "Implementation error. If update for a property is allowed before the "
+                                + "filter it's expected that the filter disallow it";
                 return true;
             }
         }
         return false;
     }
 
-    private Boolean isUpdateFromClientAllowedBeforeFilter(String key) {
+    private AllowUpdate isUpdateFromClientAllowedBeforeFilter(String key) {
         if (forbiddenProperties.contains(key)) {
-            return false;
+            return AllowUpdate.EXPLICITLY_DISALLOW;
         }
         if (getNode().hasFeature(SynchronizedPropertiesList.class)
                 && getNode().getFeature(SynchronizedPropertiesList.class)
                         .getSynchronizedProperties().contains(key)) {
-            return true;
+            return AllowUpdate.EXPLICITLY_ALLOW;
         }
-        return null;
+        return AllowUpdate.NO_EXPLICIT_STATUS;
     }
 
-    private Boolean isUpdateFromClientAllowedByFilter(StateNode node,
+    private AllowUpdate isUpdateFromClientAllowedByFilter(StateNode node,
             String key, boolean log) {
         if (node.hasFeature(ElementPropertyMap.class)) {
             ElementPropertyMap propertyMap = node
@@ -262,12 +268,13 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                             + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
                             key, AllowClientUpdates.class.getSimpleName());
                 }
-                return allow;
+                return allow ? AllowUpdate.EXPLICITLY_ALLOW
+                        : AllowUpdate.EXPLICITLY_DISALLOW;
             }
         }
         StateNode parent = node.getParent();
         if (parent == null) {
-            return null;
+            return AllowUpdate.NO_EXPLICIT_STATUS;
         }
         if (parent.hasFeature(ElementPropertyMap.class)) {
             ElementPropertyMap parentMap = parent
@@ -287,7 +294,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                 return isUpdateFromClientAllowedByFilter(parent, key, log);
             }
         }
-        return null;
+        return AllowUpdate.NO_EXPLICIT_STATUS;
     }
 
     /**
