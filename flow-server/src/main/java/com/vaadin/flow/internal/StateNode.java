@@ -304,14 +304,20 @@ public class StateNode implements Serializable {
      */
     // protected only to get the root node attached
     protected void onAttach() {
-        visitNodeTreeBottomUp(StateNode::handleOnAttach);
+        List<Runnable> eventsToFire = new ArrayList<>();
+        visitNodeTreeBottomUp(node -> eventsToFire.add(node.handleOnAttach()));
+        // events are handled after the entire tree has been visited
+        eventsToFire.forEach(Runnable::run);
     }
 
     /**
      * Called when this node has been detached from its state tree.
      */
     private void onDetach() {
-        visitNodeTreeBottomUp(StateNode::handleOnDetach);
+        List<Runnable> eventsToFire = new ArrayList<>();
+        visitNodeTreeBottomUp(node -> eventsToFire.add(node.handleOnDetach()));
+        // events are handled after the entire tree has been visited
+        eventsToFire.forEach(Runnable::run);
     }
 
     private void forEachChild(Consumer<StateNode> action) {
@@ -639,7 +645,7 @@ public class StateNode implements Serializable {
         owner = tree;
     }
 
-    private void handleOnAttach() {
+    private Runnable handleOnAttach() {
         assert isAttached();
         boolean initialAttach = false;
 
@@ -659,17 +665,22 @@ public class StateNode implements Serializable {
         // Ensure attach change is sent
         markAsDirty();
 
-        fireAttachListeners(initialAttach);
+        // the listeners needs to be triggered only after the tree entire has
+        // been changed
+        final boolean isInitialAttach = initialAttach;
+        return () -> fireAttachListeners(isInitialAttach);
     }
 
-    private void handleOnDetach() {
+    private Runnable handleOnDetach() {
         assert isAttached();
         // Ensure detach change is sent
         markAsDirty();
 
         owner.unregister(this);
 
-        fireDetachListeners();
+        // the listeners needs to be triggered only after the tree entire has
+        // been changed
+        return () -> fireDetachListeners();
     }
 
     /**
