@@ -664,11 +664,28 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
             // Recurse if it's a bean
             ModelType propertyType = unwrapTypes(property.getType());
-            if (propertyType instanceof BeanModelType) {
-                ((BeanModelType<?>) propertyType).collectAllowedProperties(
+            BeanModelType<?> beanType = null;
+            if (propertyType instanceof BeanModelType<?>) {
+                beanType = (BeanModelType<?>) propertyType;
+            } else if (propertyType instanceof ListModelType<?>) {
+                beanType = getListItemBeanModelType(
+                        (ListModelType<?>) propertyType);
+            }
+            if (beanType != null) {
+                ((BeanModelType<?>) beanType).collectAllowedProperties(
                         fullName + ".", allowedProperties, twoWayBindingPaths);
             }
         });
+    }
+
+    private BeanModelType<?> getListItemBeanModelType(ListModelType<?> type) {
+        ComplexModelType<?> itemType = type.getItemType();
+        if (itemType instanceof BeanModelType<?>) {
+            return (BeanModelType<?>) itemType;
+        } else if (itemType instanceof ListModelType<?>) {
+            return getListItemBeanModelType((ListModelType<?>) itemType);
+        }
+        return null;
     }
 
     private static ModelType unwrapTypes(ModelType type) {
