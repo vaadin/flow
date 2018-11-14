@@ -27,7 +27,6 @@ import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
-import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -42,7 +41,7 @@ public class TwoWayListBindingView
 
         void setMessages(List<Message> messages);
 
-        @AllowClientUpdates(ClientUpdateMode.ALLOW)
+        @AllowClientUpdates
         List<Message> getMessages();
 
         void setEnable(boolean enable);
