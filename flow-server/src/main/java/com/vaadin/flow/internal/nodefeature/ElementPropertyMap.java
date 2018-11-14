@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,6 +55,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     private SerializablePredicate<String> updateFromClientFilter = null;
 
+    private enum AllowUpdate {
+        EXPLICITLY_ALLOW, EXPLICITLY_DISALLOW, NO_EXPLICIT_STATUS
+    }
+
     /**
      * Creates a new element property map for the given node.
      *
@@ -76,26 +80,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @return a runnable for firing the deferred change event
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value) {
-        if (!mayUpdateFromClient(key, value)) {
-            /*
-             * Ignore updates for properties that are rejected because of model
-             * type definitions. Such changes should preferably not be sent by
-             * the client at all, but additional bookkeeping would be needed to
-             * allow the client to know which properties are actually allowed.
-             */
-            if (updateFromClientFilter != null
-                    && !updateFromClientFilter.test(key)) {
-                getLogger().warn("Ignoring model update for {}. "
-                        + "For security reasons, the property must have a two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
-                        key, AllowClientUpdates.class.getSimpleName());
-                return () -> {
-                    // nop
-                };
-            }
-
-        }
-
-        return putWithDeferredChangeEvent(key, value, false);
+        return doDeferredUpdateFromClient(key, value);
     }
 
     @Override
@@ -177,11 +162,6 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         Serializable oldValue = super.put(key, value, emitChange);
         boolean valueChanged = !Objects.equals(oldValue, value);
 
-        if (valueChanged) {
-            setFilterIfMapNode(oldValue, () -> null);
-            setFilterIfMapNode(value, () -> createChildFilter(key));
-        }
-
         PropertyChangeEvent event;
         if (hasElement() && valueChanged) {
             event = new PropertyChangeEvent(Element.get(getNode()), key,
@@ -200,49 +180,104 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue,
                 true));
 
-        setFilterIfMapNode(oldValue, () -> null);
-
         return oldValue;
-    }
-
-    private SerializablePredicate<String> createChildFilter(String prefix) {
-        return name -> {
-            if (updateFromClientFilter == null) {
-                return false;
-            } else {
-                return updateFromClientFilter.test(prefix + "." + name);
-            }
-        };
-    }
-
-    private static void setFilterIfMapNode(Object maybeNode,
-            Supplier<SerializablePredicate<String>> filterFactory) {
-        if (maybeNode instanceof StateNode) {
-            StateNode node = (StateNode) maybeNode;
-            if (node.hasFeature(ElementPropertyMap.class)) {
-                ElementPropertyMap.getModel(node)
-                        .setUpdateFromClientFilter(filterFactory.get());
-            }
-        }
     }
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
-        if (forbiddenProperties.contains(key)) {
-            return false;
+        return allowUpdateFromClient(key, value);
+    }
+
+    private boolean allowUpdateFromClient(String key, Serializable value) {
+        AllowUpdate isAllowed = isUpdateFromClientAllowedBeforeFilter(key);
+        if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(isAllowed)) {
+            return AllowUpdate.EXPLICITLY_ALLOW.equals(isAllowed);
         }
 
+        isAllowed = isUpdateFromClientAllowedByFilter(getNode(), key, false);
+        if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(isAllowed)) {
+            return AllowUpdate.EXPLICITLY_ALLOW.equals(isAllowed);
+        }
+        return false;
+    }
+
+    private boolean isDisallowedByFilter(String key) {
+        /*
+         * Ignore updates for properties that are rejected because of model type
+         * definitions. Such changes should preferably not be sent by the client
+         * at all, but additional bookkeeping would be needed to allow the
+         * client to know which properties are actually allowed.
+         */
+        if (AllowUpdate.NO_EXPLICIT_STATUS
+                .equals(isUpdateFromClientAllowedBeforeFilter(key))) {
+            // If we are here it means that either there is no filter or the
+            // filter disallows the update
+            AllowUpdate allowed = isUpdateFromClientAllowedByFilter(getNode(),
+                    key, true);
+            if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(allowed)) {
+                // This condition means there is a filter which explicitly
+                // allows or disallows the property
+                assert AllowUpdate.EXPLICITLY_DISALLOW.equals(
+                        allowed) : "Implementation error. If update for a property is allowed before the "
+                                + "filter it's expected that the filter disallow it";
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private AllowUpdate isUpdateFromClientAllowedBeforeFilter(String key) {
+        if (forbiddenProperties.contains(key)) {
+            return AllowUpdate.EXPLICITLY_DISALLOW;
+        }
         if (getNode().hasFeature(SynchronizedPropertiesList.class)
                 && getNode().getFeature(SynchronizedPropertiesList.class)
                         .getSynchronizedProperties().contains(key)) {
-            return true;
+            return AllowUpdate.EXPLICITLY_ALLOW;
         }
+        return AllowUpdate.NO_EXPLICIT_STATUS;
+    }
 
-        if (updateFromClientFilter != null) {
-            return updateFromClientFilter.test(key);
-        } else {
-            return false;
+    private AllowUpdate isUpdateFromClientAllowedByFilter(StateNode node,
+            String key, boolean log) {
+        if (node.hasFeature(ElementPropertyMap.class)) {
+            ElementPropertyMap propertyMap = node
+                    .getFeature(ElementPropertyMap.class);
+            if (propertyMap.updateFromClientFilter != null) {
+                boolean allow = propertyMap.updateFromClientFilter.test(key);
+                if (!allow && log) {
+                    getLogger().warn("Ignoring model update for {}. "
+                            + "For security reasons, the property must have a "
+                            + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
+                            key, AllowClientUpdates.class.getSimpleName());
+                }
+                return allow ? AllowUpdate.EXPLICITLY_ALLOW
+                        : AllowUpdate.EXPLICITLY_DISALLOW;
+            }
         }
+        StateNode parent = node.getParent();
+        if (parent == null) {
+            return AllowUpdate.NO_EXPLICIT_STATUS;
+        }
+        if (parent.hasFeature(ElementPropertyMap.class)) {
+            ElementPropertyMap parentMap = parent
+                    .getFeature(ElementPropertyMap.class);
+            Optional<String> parentProperty = parentMap.getPropertyNames()
+                    .filter(property -> node.equals(parentMap.get(property)))
+                    .findFirst();
+            if (parentProperty.isPresent()) {
+                String property = new StringBuilder(parentProperty.get())
+                        .append('.').append(key).toString();
+                return isUpdateFromClientAllowedByFilter(parent, property, log);
+            }
+        }
+        if (parent.hasFeature(ModelList.class)) {
+            ModelList list = parent.getFeature(ModelList.class);
+            if (list.contains(node)) {
+                return isUpdateFromClientAllowedByFilter(parent, key, log);
+            }
+        }
+        return AllowUpdate.NO_EXPLICIT_STATUS;
     }
 
     /**
@@ -409,5 +444,103 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ElementPropertyMap.class);
+    }
+
+    /**
+     * The method first checks whether the update from client is allowed using
+     * the method {@link #allowUpdateFromClient(String, Serializable)}. Then if
+     * it's not allowed then it either throws or returns NO OPERATION runnable
+     * in case if {@link #updateFromClientFilter} disallows the update (in this
+     * case it's just an application business logic and we should not throw).
+     *
+     * The logic inside the {@link #allowUpdateFromClient(String, Serializable)}
+     * check block repeats its own logic to make sure that:
+     * <ul>
+     * <li>It's in sync with
+     * {@link #allowUpdateFromClient(String, Serializable)} (and
+     * {@link #mayUpdateFromClient(String, Serializable)}
+     * <li>The update is disallowed by the filter (and not some other checks
+     * that are inside {@link #allowUpdateFromClient(String, Serializable)}
+     * <ul>
+     *
+     * Here is the logic flow:
+     *
+     * <pre>
+
+
+
+                             +--------------------------------+
+                             |                                |
+                             | allowUpdateFromClient  is false|
+                             |                                |
+                             +--------------+-----------------+
+                                            |
+                                            |
+                                            v
+                       +-------------------------------------------------+
+                       |                                                 |
+                       |    isUpdateFromClientAllowedBeforeFilter        |
+                       |                                                 |
+                       +--+-----------------+-------------------------+--+     +----------------------+
+                          |                 |                         |        |                      |
+                          |                 |                         |        | NO_EXPLICIT_STATUS   |
+    +-----------------+   |                 |                         |        |                      |
+    |                 |   |                 v                         +----&gt;   |   The proeprty is    |
+    |  DISALLOW       |&lt;--        +----------------------------------+         |not forbidden and     |
+    |                 |           |           ALLOW                  |         |it is not synhronized |
+    | The property is |           | The property is explicitly       |         |  Check whether       |
+    | forbidden and   |           | synchronized and should allow    |         |updateFromClientFilter|
+    |  filter is not  |           |       update                     |         | exists and disallows |
+    |  involved       |           +----------------------------------+         |   the property update|
+    +-----------------+                    |                                   +----------------------+
+               |                           |                                     |
+               |                           |                                     |
+               |                           |                                     |
+               |                           |                                     |
+               v                           v                                     v
+        +-----------+          +-------------------------+     +-----------------------------------+
+        |           |          |                         |     |                                   |
+        |  throw    |          |  It's no possible since |     |  If there is a filter for the     |
+        |           |          |  the property is        |     |  current node or node parent then |
+        |           |          |    disallowed           |     |  filter result should be false    |
+        +-----------+          +-------------------------+     | (since we already in block where  |
+                                                               |   the property is disallowed).    |
+                                                               |  Otherwise there is no filter at  |
+                                                               |  all and we should throw.         |
+                                                               +-+-----------------+---------------+
+                                                                 |                 |
+                                                                 |                 |
+                                                                 |                 |
+                               +-----------------------------+   |                 |
+                               |   There is a filter         |   |                 |
+                               |                             |&lt;--+                 v
+                               | Return no op runnable       |         +-------------------------------+
+                               |                             |         |    There is no a filter       |
+                               +-----------------------------+         |                               |
+                                                                       |      throw                    |
+                                                                       +-------------------------------+
+     *
+     * </pre>
+     */
+    private Runnable doDeferredUpdateFromClient(String key,
+            Serializable value) {
+        // Use private <code>allowUpdateFromClient</code> method instead of
+        // <code>mayUpdateFromClient</code> which may be overridden
+        // The logic below
+        if (!allowUpdateFromClient(key, value)) {
+            if (isDisallowedByFilter(key)) {
+                return () -> {
+                    // nop
+                };
+            }
+
+            throw new IllegalArgumentException(String.format(
+                    "Feature '%s' doesn't allow the client to update '%s'. "
+                            + "For security reasons, the property must be defined as synchronized through the Element's API.",
+                    getClass().getName(), key));
+
+        }
+
+        return putWithDeferredChangeEvent(key, value, false);
     }
 }

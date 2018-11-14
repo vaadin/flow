@@ -16,8 +16,9 @@
 package com.vaadin.flow.templatemodel;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -96,73 +97,55 @@ public class BeanModelTypeTest {
         void setAge(int age);
     }
 
+    public interface ListPropertyModel extends TemplateModel {
+
+        @AllowClientUpdates()
+        @AllowClientUpdates(path = "intValue", value = ClientUpdateMode.DENY)
+        @AllowClientUpdates(path = "doubleValue", value = ClientUpdateMode.IF_TWO_WAY_BINDING)
+        List<Bean> getList();
+    }
+
+    public interface SubPropertyModel extends TemplateModel {
+
+        @AllowClientUpdates()
+        @AllowClientUpdates(path = "intValue", value = ClientUpdateMode.DENY)
+        @AllowClientUpdates(path = "doubleValue", value = ClientUpdateMode.IF_TWO_WAY_BINDING)
+        Bean getBean();
+    }
+
     @Test
     public void onlyDenyProperty_noAllowedProperties() {
-        ModelDescriptor<? extends DeniedPropertyWithGetterModel> descriptor = ModelDescriptor
-                .get(DeniedPropertyWithGetterModel.class);
+        Assert.assertEquals(0, getClientUpdateAllowedProperties(
+                DeniedPropertyWithGetterModel.class).size());
 
-        DeniedPropertyWithGetterModel model = TemplateModelProxyHandler
-                .createModelProxy(createEmptyModel().getNode(), descriptor);
-
-        BeanModelType<?> modelType = TemplateModelProxyHandler
-                .getModelTypeForProxy(model);
-
-        Assert.assertEquals(0, modelType
-                .getClientUpdateAllowedProperties(Collections.emptySet())
-                .size());
-
-        Assert.assertEquals(0, modelType
-                .getClientUpdateAllowedProperties(Collections.singleton("name"))
-                .size());
+        Assert.assertEquals(0, getClientUpdateAllowedProperties(
+                DeniedPropertyWithGetterModel.class, "name").size());
     }
 
     @Test
     public void twoWayDatabindingPropertyDeclared_propertyIsNotAllowedIfNotTwoWayDataBinding() {
-        ModelDescriptor<? extends TwoWayBindingPropertyModel> descriptor = ModelDescriptor
-                .get(TwoWayBindingPropertyModel.class);
-
-        TwoWayBindingPropertyModel model = TemplateModelProxyHandler
-                .createModelProxy(createEmptyModel().getNode(), descriptor);
-
-        BeanModelType<?> modelType = TemplateModelProxyHandler
-                .getModelTypeForProxy(model);
-
-        Assert.assertEquals(0, modelType
-                .getClientUpdateAllowedProperties(Collections.emptySet())
-                .size());
+        Assert.assertEquals(0, getClientUpdateAllowedProperties(
+                TwoWayBindingPropertyModel.class).size());
 
         // test name property
-        Assert.assertEquals(1, modelType
-                .getClientUpdateAllowedProperties(Collections.singleton("name"))
-                .size());
+        Assert.assertEquals(1, getClientUpdateAllowedProperties(
+                TwoWayBindingPropertyModel.class, "name").size());
         // name property has getter
-        Assert.assertTrue(modelType
-                .getClientUpdateAllowedProperties(Collections.singleton("name"))
-                .get("name"));
+        Assert.assertTrue(getClientUpdateAllowedProperties(
+                TwoWayBindingPropertyModel.class, "name").get("name"));
 
         // test age property
-        Assert.assertEquals(1, modelType
-                .getClientUpdateAllowedProperties(Collections.singleton("age"))
-                .size());
+        Assert.assertEquals(1, getClientUpdateAllowedProperties(
+                TwoWayBindingPropertyModel.class, "age").size());
         // age property has no getter
-        Assert.assertFalse(modelType
-                .getClientUpdateAllowedProperties(Collections.singleton("age"))
-                .get("age"));
+        Assert.assertFalse(getClientUpdateAllowedProperties(
+                TwoWayBindingPropertyModel.class, "age").get("age"));
     }
 
     @Test
     public void allowPropertyDeclared_propertyIsAllowed() {
-        ModelDescriptor<? extends AllowPropertyModel> descriptor = ModelDescriptor
-                .get(AllowPropertyModel.class);
-
-        AllowPropertyModel model = TemplateModelProxyHandler
-                .createModelProxy(createEmptyModel().getNode(), descriptor);
-
-        BeanModelType<?> modelType = TemplateModelProxyHandler
-                .getModelTypeForProxy(model);
-
-        Map<String, Boolean> properties = modelType
-                .getClientUpdateAllowedProperties(Collections.emptySet());
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                AllowPropertyModel.class);
         Assert.assertEquals(2, properties.size());
 
         // name property has getter
@@ -170,6 +153,112 @@ public class BeanModelTypeTest {
 
         // age property has no getter
         Assert.assertFalse(properties.get("age"));
+    }
+
+    @Test
+    public void allowListSubPropertyDeclared_propertyIsAllowed() {
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                ListPropertyModel.class, "list.booleanValue");
+        // Bean has a couple of explicitly allowed properties
+        Assert.assertEquals(4, properties.size());
+
+        // property has getter
+        Assert.assertTrue(properties.get("list.booleanValue"));
+
+        // list property has getter
+        Assert.assertTrue(properties.get("list"));
+    }
+
+    @Test
+    public void denyListSubPropertyDeclared_propertyIsDisallowed() {
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                ListPropertyModel.class, "list.intValue");
+        // Bean has a couple of explicitly allowed properties
+        Assert.assertEquals(3, properties.size());
+
+        Assert.assertFalse(properties.containsKey("list.intValue"));
+
+        // list property has getter
+        Assert.assertTrue(properties.get("list"));
+    }
+
+    @Test
+    public void allowListSubPropertyDeclared_propertyIsTwoWayDataBinding_propertyIsAllowed() {
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                ListPropertyModel.class, "list.doubleValue");
+        // Bean has a couple of explicitly allowed properties
+        Assert.assertEquals(4, properties.size());
+
+        Assert.assertTrue(properties.get("list.doubleValue"));
+
+        // list property has getter
+        Assert.assertTrue(properties.get("list"));
+    }
+
+    @Test
+    public void denyListSubPropertyDeclared_propertyIsNotTwoWayDataBinding_propertyIsDisallowed() {
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                ListPropertyModel.class);
+        // Bean has a couple of explicitly allowed properties
+        Assert.assertEquals(3, properties.size());
+
+        Assert.assertFalse(properties.containsKey("list.doubleValue"));
+
+        // list property has getter
+        Assert.assertTrue(properties.get("list"));
+    }
+
+    @Test
+    public void allowSubPropertyDeclared_propertyIsAllowed() {
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                SubPropertyModel.class, "bean.booleanValue");
+        // Bean has a couple of explicitly allowed properties
+        Assert.assertEquals(4, properties.size());
+
+        // property has getter
+        Assert.assertTrue(properties.get("bean.booleanValue"));
+
+        // list property has getter
+        Assert.assertTrue(properties.get("bean"));
+    }
+
+    @Test
+    public void denySubPropertyDeclared_propertyIsDisallowed() {
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                SubPropertyModel.class, "bean.intValue");
+        // Bean has a couple of explicitly allowed properties
+        Assert.assertEquals(3, properties.size());
+
+        Assert.assertFalse(properties.containsKey("bean.intValue"));
+
+        // list property has getter
+        Assert.assertTrue(properties.get("bean"));
+    }
+
+    @Test
+    public void allowSubPropertyDeclared_propertyIsTwoWayDataBinding_propertyIsAllowed() {
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                SubPropertyModel.class, "bean.doubleValue");
+        // Bean has a couple of explicitly allowed properties
+        Assert.assertEquals(4, properties.size());
+
+        Assert.assertTrue(properties.get("bean.doubleValue"));
+
+        // list property has getter
+        Assert.assertTrue(properties.get("bean"));
+    }
+
+    @Test
+    public void denySubPropertyDeclared_propertyIsNotTwoWayDataBinding_propertyIsDisallowed() {
+        Map<String, Boolean> properties = getClientUpdateAllowedProperties(
+                SubPropertyModel.class);
+        // Bean has a couple of explicitly allowed properties
+        Assert.assertEquals(3, properties.size());
+
+        Assert.assertFalse(properties.containsKey("bean.doubleValue"));
+
+        // list property has getter
+        Assert.assertTrue(properties.get("bean"));
     }
 
     @Test
@@ -389,6 +478,20 @@ public class BeanModelTypeTest {
         Assert.assertEquals(ClientUpdateMode.IF_TWO_WAY_BINDING,
                 bean3Type.getClientUpdateMode(
                         bean3Type.getExistingProperty("doubleObject")));
+    }
+
+    private <T extends TemplateModel> Map<String, Boolean> getClientUpdateAllowedProperties(
+            Class<T> clazz, String... twoWayBindingPaths) {
+        ModelDescriptor<? extends T> descriptor = ModelDescriptor.get(clazz);
+
+        T model = TemplateModelProxyHandler
+                .createModelProxy(createEmptyModel().getNode(), descriptor);
+
+        BeanModelType<?> modelType = TemplateModelProxyHandler
+                .getModelTypeForProxy(model);
+
+        return modelType.getClientUpdateAllowedProperties(
+                new HashSet<>(Arrays.asList(twoWayBindingPaths)));
     }
 
     private static ElementPropertyMap createEmptyModel() {
