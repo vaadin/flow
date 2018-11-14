@@ -679,7 +679,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     private BeanModelType<?> getListItemBeanModelType(ListModelType<?> type) {
-        ComplexModelType<?> itemType = ((ListModelType<?>) type).getItemType();
+        ComplexModelType<?> itemType = type.getItemType();
         if (itemType instanceof BeanModelType<?>) {
             return (BeanModelType<?>) itemType;
         } else if (itemType instanceof ListModelType<?>) {

@@ -80,21 +80,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @return a runnable for firing the deferred change event
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value) {
-        if (!mayUpdateFromClient(key, value)) {
-            if (isDisallowedByFilter(key)) {
-                return () -> {
-                    // nop
-                };
-            }
-
-            throw new IllegalArgumentException(String.format(
-                    "Feature '%s' doesn't allow the client to update '%s'. "
-                            + "For security reasons, the property must be defined as synchronized through the Element's API.",
-                    getClass().getName(), key));
-
-        }
-
-        return putWithDeferredChangeEvent(key, value, false);
+        return doDeferredUpdateFromClient(key, value);
     }
 
     @Override
@@ -206,6 +192,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
+        return allowUpdateFromClient(key, value);
+    }
+
+    private boolean allowUpdateFromClient(String key, Serializable value) {
         AllowUpdate isAllowed = isUpdateFromClientAllowedBeforeFilter(key);
         if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(isAllowed)) {
             return AllowUpdate.EXPLICITLY_ALLOW.equals(isAllowed);
@@ -461,5 +451,103 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ElementPropertyMap.class);
+    }
+
+    /**
+     * The method first checks whether the update from client is allowed using
+     * the method {@link #allowUpdateFromClient(String, Serializable)}. Then if
+     * it's not allowed then it either throws or returns NO OPERATION runnable
+     * in case if {@link #updateFromClientFilter} disallows the update (in this
+     * case it's just an application business logic and we should not throw).
+     *
+     * The logic inside the {@link #allowUpdateFromClient(String, Serializable)}
+     * check block repeats its own logic to make sure that:
+     * <ul>
+     * <li>It's in sync with
+     * {@link #allowUpdateFromClient(String, Serializable)} (and
+     * {@link #mayUpdateFromClient(String, Serializable)}
+     * <li>The update is disallowed by the filter (and not some other checks
+     * that are inside {@link #allowUpdateFromClient(String, Serializable)}
+     * <ul>
+     *
+     * Here is the logic flow:
+     *
+     * <pre>
+    
+    
+    
+                             +--------------------------------+
+                             |                                |
+                             | allowUpdateFromClient  is false|
+                             |                                |
+                             +--------------+-----------------+
+                                            |
+                                            |
+                                            v
+                       +-------------------------------------------------+
+                       |                                                 |
+                       |    isUpdateFromClientAllowedBeforeFilter        |
+                       |                                                 |
+                       +--+-----------------+-------------------------+--+     +----------------------+
+                          |                 |                         |        |                      |
+                          |                 |                         |        | NO_EXPLICIT_STATUS   |
+    +-----------------+   |                 |                         |        |                      |
+    |                 |   |                 v                         +----&gt;   |   The proeprty is    |
+    |  DISALLOW       |&lt;--        +----------------------------------+         |not forbidden and     |
+    |                 |           |           ALLOW                  |         |it is not synhronized |
+    | The property is |           | The property is explicitly       |         |  Check whether       |
+    | forbidden and   |           | synchronized and should allow    |         |updateFromClientFilter|
+    |  filter is not  |           |       update                     |         | exists and disallows |
+    |  involved       |           +----------------------------------+         |   the property update|
+    +-----------------+                    |                                   +----------------------+
+               |                           |                                     |
+               |                           |                                     |
+               |                           |                                     |
+               |                           |                                     |
+               v                           v                                     v
+        +-----------+          +-------------------------+     +-----------------------------------+
+        |           |          |                         |     |                                   |
+        |  throw    |          |  It's no possible since |     |  If there is a filter for the     |
+        |           |          |  the property is        |     |  current node or node parent then |
+        |           |          |    disallowed           |     |  filter result should be false    |
+        +-----------+          +-------------------------+     | (since we already in block where  |
+                                                               |   the property is disallowed).    |
+                                                               |  Otherwise there is no filter at  |
+                                                               |  all and we should throw.         |
+                                                               +-+-----------------+---------------+
+                                                                 |                 |
+                                                                 |                 |
+                                                                 |                 |
+                               +-----------------------------+   |                 |
+                               |   There is a filter         |   |                 |
+                               |                             |&lt;--+                 v
+                               | Return no op runnable       |         +-------------------------------+
+                               |                             |         |    There is no a filter       |
+                               +-----------------------------+         |                               |
+                                                                       |      throw                    |
+                                                                       +-------------------------------+
+     *
+     * </pre>
+     */
+    private Runnable doDeferredUpdateFromClient(String key,
+            Serializable value) {
+        // Use private <code>allowUpdateFromClient</code> method instead of
+        // <code>mayUpdateFromClient</code> which may be overridden
+        // The logic below
+        if (!allowUpdateFromClient(key, value)) {
+            if (isDisallowedByFilter(key)) {
+                return () -> {
+                    // nop
+                };
+            }
+
+            throw new IllegalArgumentException(String.format(
+                    "Feature '%s' doesn't allow the client to update '%s'. "
+                            + "For security reasons, the property must be defined as synchronized through the Element's API.",
+                    getClass().getName(), key));
+
+        }
+
+        return putWithDeferredChangeEvent(key, value, false);
     }
 }
