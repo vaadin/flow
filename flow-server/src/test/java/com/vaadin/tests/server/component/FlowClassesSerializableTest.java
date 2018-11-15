@@ -44,14 +44,17 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
      */
     @Test
     public void streamResource() throws Throwable {
-        UI.setCurrent(new UI());
+        UI ui = new UI();
+        UI.setCurrent(ui);
         try {
             Element element = new Element("dummy-element");
             StreamReceiver streamReceiver = new StreamReceiver(
                     element.getNode(), "upload", new MyStreamVariable());
+            assertEquals(ui, UI.getCurrent());
             element.setAttribute("target", streamReceiver);
             serializeAndDeserialize(element);
-            assertTrue("Basic smoke test with ", element.getAttribute("target").length() > 10);
+            assertTrue("Basic smoke test with ",
+                    element.getAttribute("target").length() > 10);
         } finally {
             UI.setCurrent(null);
         }
