@@ -17,6 +17,9 @@ import java.util.stream.Stream;
 @Tag(Tag.IFRAME)
 public class Iframe extends Component {
 
+  /**
+   * Importance types.
+   */
   public enum ImportanceType {
     AUTO("auto"),
     HIGH("high"),
@@ -37,6 +40,9 @@ public class Iframe extends Component {
     }
   }
 
+  /**
+   * Sandbox types.
+   */
   public enum SandboxType {
     RESTRICT_ALL(""),
     ALLOW_FORMS("allow-forms"),
@@ -69,7 +75,7 @@ public class Iframe extends Component {
   }
 
   /**
-   * Creates a new iframe
+   * Creates a new iframe.
    * @param src Source URL
    */
   public Iframe(String src) {
@@ -77,9 +83,9 @@ public class Iframe extends Component {
   }
 
   /**
-   * Sets the allow property to specify a feature policy. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+   * Sets the allow property to specify a feature policy. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy.
    *
-   * @param allow Allow
+   * @param allow Allow.
    */
   public void setAllow(String allow){
     getElement().setAttribute("allow", allow);
@@ -93,15 +99,15 @@ public class Iframe extends Component {
   }
 
   /**
-   * Sets the height in CSS pixels
-   * @param height Pixels
+   * Sets the height in CSS pixels.
+   * @param height Pixels.
    */
   public void setHeight(Integer height){
     getElement().setAttribute("height", height.toString());
   }
 
   /**
-   * @return the current height attribute
+   * @return the current height attribute.
    */
   public Optional<Integer> getHeight(){
     return optionallyGetAttribute("height")
@@ -126,15 +132,15 @@ public class Iframe extends Component {
   }
 
   /**
-   * Sets the name attribute
-   * @param name name
+   * Sets the name attribute.
+   * @param name name.
    */
   public void setName(String name){
     getElement().setAttribute("name", name);
   }
 
   /**
-   * @return the name attribute
+   * @return the name attribute.
    */
   public Optional<String> getName() {
     return optionallyGetAttribute("name");
@@ -162,7 +168,7 @@ public class Iframe extends Component {
 
   /**
    * Sets the source of the iframe.
-   * @param src Source URL
+   * @param src Source URL.
    */
   public void setSrc(String src) {
     getElement().setAttribute("src", src);
@@ -176,23 +182,23 @@ public class Iframe extends Component {
   }
 
   /**
-   * Sets the srcdoc of the iframe
-   * @param srcdoc srcdoc URL
+   * Sets the srcdoc of the iframe.
+   * @param srcdoc srcdoc URL.
    */
   public void setSrcdoc(String srcdoc){
     getElement().setAttribute("srcdoc", srcdoc);
   }
 
   /**
-   * @return the srcdoc of the iframe
+   * @return the srcdoc of the iframe.
    */
   public Optional<String> getSrcdoc() {
     return optionallyGetAttribute("srcdoc");
   }
 
   /**
-   * Sets the width of the iframe
-   * @param width Width in CSS pixels
+   * Sets the width of the iframe.
+   * @param width Width in CSS pixels.
    */
   public void setWidth(Integer width) {
     getElement().setAttribute("width", width.toString());
