@@ -153,6 +153,9 @@ public class StateNode implements Serializable {
     // Only the root node is attached at this point
     private boolean wasAttached = isAttached();
 
+    private boolean hasBeenAttached;
+    private boolean hasBeenDetached;
+
     private boolean isInactiveSelf;
 
     private boolean isInitialChanges = true;
@@ -241,7 +244,7 @@ public class StateNode implements Serializable {
         if (hasDetached()) {
             return;
         }
-        boolean attachedBefore = isAttached();
+        boolean attachedBefore = isRegistered();
         boolean attachedAfter = false;
 
         if (parent != null) {
@@ -254,7 +257,7 @@ public class StateNode implements Serializable {
                         "Can't set own child as parent");
             }
 
-            attachedAfter = parent.isAttached();
+            attachedAfter = parent.isRegistered();
 
             NodeOwner parentOwner = parent.getOwner();
             if (parentOwner != owner && parentOwner instanceof StateTree) {
@@ -304,20 +307,36 @@ public class StateNode implements Serializable {
      */
     // protected only to get the root node attached
     protected void onAttach() {
-        List<Runnable> eventsToFire = new ArrayList<>();
-        visitNodeTreeBottomUp(node -> eventsToFire.add(node.handleOnAttach()));
-        // events are handled after the entire tree has been visited
-        eventsToFire.forEach(Runnable::run);
+        List<StateNode> nodes = new ArrayList<>();
+        List<Boolean> initialAttaches = new ArrayList<>();
+        visitNodeTreeBottomUp(node -> {
+            nodes.add(node);
+            initialAttaches.add(node.handleOnAttach());
+        });
+        for (int i = 0; i < nodes.size(); i++) {
+            boolean isInitial = initialAttaches.get(i);
+            StateNode node = nodes.get(i);
+            if (node.isRegistered() && (isInitial || node.hasBeenDetached)) {
+                node.hasBeenAttached = true;
+                node.fireAttachListeners(initialAttaches.get(i));
+            }
+        }
     }
 
     /**
      * Called when this node has been detached from its state tree.
      */
     private void onDetach() {
-        List<Runnable> eventsToFire = new ArrayList<>();
-        visitNodeTreeBottomUp(node -> eventsToFire.add(node.handleOnDetach()));
-        // events are handled after the entire tree has been visited
-        eventsToFire.forEach(Runnable::run);
+        List<StateNode> nodes = new ArrayList<>();
+        visitNodeTreeBottomUp(nodes::add);
+        nodes.forEach(StateNode::handleOnDetach);
+        for (int i = 0; i < nodes.size(); i++) {
+            StateNode node = nodes.get(i);
+            if (node.hasBeenAttached) {
+                node.hasBeenDetached = true;
+                node.fireDetachListeners();
+            }
+        }
     }
 
     private void forEachChild(Consumer<StateNode> action) {
@@ -645,7 +664,7 @@ public class StateNode implements Serializable {
         owner = tree;
     }
 
-    private Runnable handleOnAttach() {
+    private boolean handleOnAttach() {
         assert isAttached();
         boolean initialAttach = false;
 
@@ -665,22 +684,15 @@ public class StateNode implements Serializable {
         // Ensure attach change is sent
         markAsDirty();
 
-        // the listeners needs to be triggered only after the tree entire has
-        // been changed
-        final boolean isInitialAttach = initialAttach;
-        return () -> fireAttachListeners(isInitialAttach);
+        return initialAttach;
     }
 
-    private Runnable handleOnDetach() {
+    private void handleOnDetach() {
         assert isAttached();
         // Ensure detach change is sent
         markAsDirty();
 
         owner.unregister(this);
-
-        // the listeners needs to be triggered only after the tree entire has
-        // been changed
-        return () -> fireDetachListeners();
     }
 
     /**
@@ -1023,4 +1035,20 @@ public class StateNode implements Serializable {
     public boolean isEnabledSelf() {
         return enabled;
     }
+
+    /**
+     * This is internal method which may differ from {@link #isAttached()} only
+     * during attach/detach event dispatching (inside listeners) when some node
+     * still has a parent (all the ascendant) but it's already unregistered.
+     *
+     * This is intermediate state which may happen only when tree is changed
+     * inside listeners.
+     *
+     * Outside of the listeners this method is effectively the same as
+     * {@link #isAttached()}.
+     */
+    private boolean isRegistered() {
+        return isAttached() && getOwner().hasNode(this);
+    }
+
 }
