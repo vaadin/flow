@@ -66,6 +66,7 @@ public class ExclusionRegistry {
         excludeProperty("vaadin-dialog-overlay", "model");
         excludeEvent("vaadin-combo-box", "change");
         excludeEvent("vaadin-combo-box", "valued-changed");
+        excludeEvent("vaadin-text-area", "iron-resize");
         excludeMethod("vaadin-text-field", "clear");
         excludeMethod("vaadin-text-area", "clear");
         excludeBehaviorOrMixin("vaadin-date-picker",

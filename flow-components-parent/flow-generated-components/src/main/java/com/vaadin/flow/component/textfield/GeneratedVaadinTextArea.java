@@ -776,28 +776,6 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
                 (ComponentEventListener) listener);
     }
 
-    @DomEvent("iron-resize")
-    public static class IronResizeEvent<R extends GeneratedVaadinTextArea<R, ?>>
-            extends ComponentEvent<R> {
-        public IronResizeEvent(R source, boolean fromClient) {
-            super(source, fromClient);
-        }
-    }
-
-    /**
-     * Adds a listener for {@code iron-resize} events fired by the webcomponent.
-     * 
-     * @param listener
-     *            the listener
-     * @return a {@link Registration} for removing the event listener
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Registration addIronResizeListener(
-            ComponentEventListener<IronResizeEvent<R>> listener) {
-        return addListener(IronResizeEvent.class,
-                (ComponentEventListener) listener);
-    }
-
     public static class InvalidChangeEvent<R extends GeneratedVaadinTextArea<R, ?>>
             extends ComponentEvent<R> {
         private final boolean invalid;
