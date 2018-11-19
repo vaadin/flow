@@ -141,8 +141,9 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.TextAreaElement#2.1.3", "Flow#1.2-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.3-SNAPSHOT",
+        "WebComponent: Vaadin.TextAreaElement#2.3.0-alpha1",
+        "Flow#1.3-SNAPSHOT" })
 @Tag("vaadin-text-area")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")
 public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<R, T>, T>
@@ -354,6 +355,38 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
     protected void setAutocapitalize(String autocapitalize) {
         getElement().setProperty("autocapitalize",
                 autocapitalize == null ? "" : autocapitalize);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Set to true to display the clear icon which clears the input.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     * 
+     * @return the {@code clearButtonVisible} property from the webcomponent
+     */
+    protected boolean isClearButtonVisibleBoolean() {
+        return getElement().getProperty("clearButtonVisible", false);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Set to true to display the clear icon which clears the input.
+     * </p>
+     * 
+     * @param clearButtonVisible
+     *            the boolean value to set
+     */
+    protected void setClearButtonVisible(boolean clearButtonVisible) {
+        getElement().setProperty("clearButtonVisible", clearButtonVisible);
     }
 
     /**
@@ -740,6 +773,28 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
     protected Registration addChangeListener(
             ComponentEventListener<ChangeEvent<R>> listener) {
         return addListener(ChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
+    @DomEvent("iron-resize")
+    public static class IronResizeEvent<R extends GeneratedVaadinTextArea<R, ?>>
+            extends ComponentEvent<R> {
+        public IronResizeEvent(R source, boolean fromClient) {
+            super(source, fromClient);
+        }
+    }
+
+    /**
+     * Adds a listener for {@code iron-resize} events fired by the webcomponent.
+     * 
+     * @param listener
+     *            the listener
+     * @return a {@link Registration} for removing the event listener
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Registration addIronResizeListener(
+            ComponentEventListener<IronResizeEvent<R>> listener) {
+        return addListener(IronResizeEvent.class,
                 (ComponentEventListener) listener);
     }
 

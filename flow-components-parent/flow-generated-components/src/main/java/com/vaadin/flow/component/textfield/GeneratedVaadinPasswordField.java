@@ -81,9 +81,9 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * how to apply styles for shadow parts</a>
  * </p>
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#2.1.3",
-        "Flow#1.2-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.3-SNAPSHOT",
+        "WebComponent: Vaadin.PasswordFieldElement#2.3.0-alpha1",
+        "Flow#1.3-SNAPSHOT" })
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
 public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R, T>, T>
