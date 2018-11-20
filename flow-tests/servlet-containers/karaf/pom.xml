@@ -14,9 +14,11 @@
     <packaging>jar</packaging>
 
     <properties>
+        <is.unix>true</is.unix>
         <karaf.version>4.2.1</karaf.version>
-        <karaf.distribution>http://central.maven.org/maven2/org/apache/karaf/apache-karaf/${karaf.version}/apache-karaf-${karaf.version}.zip</karaf.distribution>
+        <karaf.distribution>http://central.maven.org/maven2/org/apache/karaf/apache-karaf/${karaf.version}/apache-karaf-${karaf.version}.tar.gz</karaf.distribution>
         <karaf.home>apache-karaf-${karaf.version}</karaf.home>
+        <karaf.script>karaf</karaf.script>
         <test.excludegroup>com.vaadin.flow.testcategory.IgnoreOSGi</test.excludegroup>
     </properties>
 
@@ -85,18 +87,60 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <get src="${karaf.distribution}"
-                                    dest="${project.build.directory}/karaf.zip"
+                                    dest="${project.build.directory}/karaf.tar.gz"
                                     verbose="false" usetimestamp="true" />
-                                <unzip
-                                    src="${project.build.directory}/karaf.zip"
-                                    dest="${project.build.directory}"></unzip>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-win</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${is.unix}</skip>
+                            <target>
+                                <gunzip
+                                    src="${project.build.directory}/karaf.tar.gz"
+                                    dest="${project.build.directory}"></gunzip>
+                                <untar
+                                    src="${project.build.directory}/karaf.tar"
+                                    dest="${project.build.directory}"></untar>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>unpack-unix</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>!${is.unix}</skip>
+                            <executable>tar</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <commandlineArgs>-zxf karaf.tar.gz</commandlineArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -118,27 +162,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
-                <executions>
-                    <execution>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>java</executable>
-                            <async>true</async>
-                            <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
-                            <workingDirectory>${project.build.directory}/${karaf.home}</workingDirectory>
-                            <commandlineArgs>-Dgosh.args="-nointeractive -s" -jar bin/felix.jar</commandlineArgs>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -172,5 +195,19 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <is.unix>false</is.unix>
+                <karaf.script>karaf.bat</karaf.script>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
