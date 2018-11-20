@@ -121,6 +121,11 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
+        public String getEventType() {
+            return type;
+        }
+
+        @Override
         public void remove() {
             if (unregisterHandlers != null) {
                 unregisterHandlers.forEach(SerializableRunnable::run);
@@ -212,6 +217,20 @@ public class ElementListenerMap extends NodeMap {
             listenerMap.updateEventSettings(type);
 
             return this;
+        }
+
+        @Override
+        public int getDebounceTimeout() {
+            return debounceTimeout;
+        }
+
+        @Override
+        public Set<DebouncePhase> getDebouncePhases() {
+            if (debouncePhases != null) {
+                return Collections.unmodifiableSet(debouncePhases);
+            } else {
+                return null;
+            }
         }
 
         public boolean matchesPhase(DebouncePhase phase) {
