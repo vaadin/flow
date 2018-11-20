@@ -17,6 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
@@ -44,6 +45,22 @@ public class Anchor extends HtmlContainer {
      */
     public Anchor() {
         super();
+    }
+    
+    /**
+     * Creates an anchor component with the given href and components.
+     *
+     * @see #setHref(String)
+     * @see #add(Component...)
+     *
+     * @param href
+     *            the href to set
+     * @param components
+     *            the components to add
+     */
+    public Anchor(String href, Component... components) {
+    	setHref(href);
+    	add(components);
     }
 
     /**

@@ -18,6 +18,8 @@ package com.vaadin.flow.component.html;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Text;
+
 public class AnchorTest extends ComponentTest {
 
     @Test
@@ -28,6 +30,12 @@ public class AnchorTest extends ComponentTest {
 
         anchor.removeHref();
         Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+    }
+    
+    @Test
+    public void newConstructor() {
+        Anchor anchor = new Anchor("foo", new Text("Text"));
+        Assert.assertTrue(anchor.getElement().getText().equals("Text"));
     }
 
     // Other test methods in super class
