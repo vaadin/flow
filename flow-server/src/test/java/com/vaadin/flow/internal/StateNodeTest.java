@@ -21,13 +21,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -668,7 +671,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_firstAsParent_lastAsChild() {
-        assertAttachDetachEvents(createNodes(), 0, 2, false);
+        assertAttachDetachEvents(createNodes(), "a", "c", false);
     }
 
     /**
@@ -692,7 +695,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_lastAsParent_firstAsChild() {
-        assertAttachDetachEvents(createNodes(), 2, 0, true);
+        assertAttachDetachEvents(createNodes(), "c", "a", true);
     }
 
     /**
@@ -716,7 +719,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_middleAsParent_firstAsChild() {
-        assertAttachDetachEvents(createNodes(), 1, 0, true);
+        assertAttachDetachEvents(createNodes(), "b", "a", true);
     }
 
     /**
@@ -740,7 +743,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_firstAsParent_middleAsChild() {
-        assertAttachDetachEvents(createNodes(), 0, 1, true);
+        assertAttachDetachEvents(createNodes(), "a", "b", true);
     }
 
     /**
@@ -762,7 +765,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_middleAsParent_lastAsChild() {
-        assertAttachDetachEvents(createNodes(), 1, 2, false);
+        assertAttachDetachEvents(createNodes(), "b", "c", false);
     }
 
     /**
@@ -784,7 +787,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_lastAsParent_middleAsChild() {
-        assertAttachDetachEvents(createNodes(), 2, 1, false);
+        assertAttachDetachEvents(createNodes(), "c", "b", false);
     }
 
     @Test
@@ -964,7 +967,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_firstAsParent_lastAsChild() {
-        assertDetachAttachEvents(createNodes(), 0, 2);
+        assertDetachAttachEvents(createNodes(), "a", "c");
     }
 
     /**
@@ -986,7 +989,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_lastAsParent_firstAsChild() {
-        assertDetachAttachEvents(createNodes(), 2, 0);
+        assertDetachAttachEvents(createNodes(), "c", "a");
     }
 
     /**
@@ -1008,7 +1011,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_middleAsParent_firstAsChild() {
-        assertDetachAttachEvents(createNodes(), 1, 0);
+        assertDetachAttachEvents(createNodes(), "b", "a");
     }
 
     /**
@@ -1030,7 +1033,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_firstAsParent_middleAsChild() {
-        assertDetachAttachEvents(createNodes(), 0, 1);
+        assertDetachAttachEvents(createNodes(), "a", "b");
     }
 
     /**
@@ -1052,7 +1055,7 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_middleAsParent_lastAsChild() {
-        assertDetachAttachEvents(createNodes(), 1, 2);
+        assertDetachAttachEvents(createNodes(), "b", "c");
     }
 
     /**
@@ -1074,32 +1077,25 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_lastAsParent_middleAsChild() {
-        assertDetachAttachEvents(createNodes(), 2, 1);
+        assertDetachAttachEvents(createNodes(), "c", "b");
     }
 
-    private void assertAttachDetachEvents(List<StateNode> nodes,
-            int newParentIndex, int childIndex, boolean expectSingleEvent) {
+    private void assertAttachDetachEvents(Map<String, StateNode> nodes,
+            String newParent, String child, boolean expectSingleEvent) {
         TestStateTree tree = new TestStateTree();
 
-        List<StateNode> list = new ArrayList<>(nodes);
-
         // use the order from the list
-        StateNode a = list.get(0);
-        StateNode b = list.get(1);
-        StateNode c = list.get(2);
+        StateNode a = nodes.get("a");
+        StateNode b = nodes.get("b");
+        StateNode c = nodes.get("c");
 
         // those are the same nodes that above but it's easier to have a
         // dedicate variables for them
-        StateNode newParentNode = list.get(newParentIndex);
-        StateNode childNode = list.get(childIndex);
+        StateNode newParentNode = nodes.remove(newParent);
+        StateNode childNode = nodes.remove(child);
 
-        // clear the list to get the remaining node
-        list.remove(newParentIndex);
-        // index has changed after the removal above so remove using an object
-        // reference
-        list.remove(childNode);
-
-        list.get(0).addAttachListener(() -> {
+        StateNode nodeWithListener = nodes.values().iterator().next();
+        nodeWithListener.addAttachListener(() -> {
             addChild(newParentNode, childNode);
         });
 
@@ -1123,41 +1119,34 @@ public class StateNodeTest {
          * ATTACH.
          */
         if (expectSingleEvent) {
-            Assert.assertEquals(newParentNode, attachDetachEvents.get(0));
             Assert.assertEquals(1, attachDetachEvents.size());
+            Assert.assertEquals(newParentNode, attachDetachEvents.get(0));
         } else {
+            Assert.assertEquals(3, attachDetachEvents.size());
             Assert.assertEquals(parent, attachDetachEvents.get(0));
             Assert.assertEquals(Boolean.FALSE, attachDetachEvents.get(1));
             Assert.assertEquals(newParentNode, attachDetachEvents.get(2));
-            Assert.assertEquals(3, attachDetachEvents.size());
         }
 
         Assert.assertEquals(newParentNode, childNode.getParent());
     }
 
-    private void assertDetachAttachEvents(List<StateNode> nodes,
-            int newParentIndex, int childIndex) {
+    private void assertDetachAttachEvents(Map<String, StateNode> nodes,
+            String newParent, String child) {
         TestStateTree tree = new TestStateTree();
 
-        List<StateNode> list = new ArrayList<>(nodes);
-
         // use the order from the list
-        StateNode a = list.get(0);
-        StateNode b = list.get(1);
-        StateNode c = list.get(2);
+        StateNode a = nodes.get("a");
+        StateNode b = nodes.get("b");
+        StateNode c = nodes.get("c");
 
         // those are the same nodes that above but it's easier to have a
         // dedicate variables for them
-        StateNode newParentNode = list.get(newParentIndex);
-        StateNode childNode = list.get(childIndex);
+        StateNode newParentNode = nodes.remove(newParent);
+        StateNode childNode = nodes.remove(child);
 
-        // clear the list to get the remaining node
-        list.remove(newParentIndex);
-        // index has changed after the removal above so remove using an object
-        // reference
-        list.remove(childNode);
-
-        list.get(0).addDetachListener(() -> {
+        StateNode nodeWithListener = nodes.values().iterator().next();
+        nodeWithListener.addDetachListener(() -> {
             addChild(newParentNode, childNode);
         });
 
@@ -1182,9 +1171,12 @@ public class StateNodeTest {
         Assert.assertFalse((Boolean) attachDetachEvents.get(0));
     }
 
-    private List<StateNode> createNodes() {
-        return Arrays.asList(createParentNode("a"), createParentNode("b"),
-                createParentNode("c"));
+    private Map<String, StateNode> createNodes() {
+        return Stream
+                .of(createParentNode("a"), createParentNode("b"),
+                        createParentNode("c"))
+                .collect(Collectors.toMap(node -> node.toString(),
+                        Function.identity()));
     }
 
     private void addChild(StateNode parent, StateNode node) {
