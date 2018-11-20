@@ -307,18 +307,15 @@ public class StateNode implements Serializable {
      */
     // protected only to get the root node attached
     protected void onAttach() {
-        List<StateNode> nodes = new ArrayList<>();
-        List<Boolean> initialAttaches = new ArrayList<>();
-        visitNodeTreeBottomUp(node -> {
-            nodes.add(node);
-            initialAttaches.add(node.handleOnAttach());
-        });
-        for (int i = 0; i < nodes.size(); i++) {
-            boolean isInitial = initialAttaches.get(i);
-            StateNode node = nodes.get(i);
+        List<Pair<StateNode, Boolean>> attachedNodes = new ArrayList<>();
+        visitNodeTreeBottomUp(node -> attachedNodes
+                .add(new Pair<>(node, node.handleOnAttach())));
+        for (Pair<StateNode, Boolean> pair : attachedNodes) {
+            final boolean isInitial = pair.getSecond();
+            final StateNode node = pair.getFirst();
             if (node.isRegistered() && (isInitial || node.hasBeenDetached)) {
                 node.hasBeenAttached = true;
-                node.fireAttachListeners(initialAttaches.get(i));
+                node.fireAttachListeners(isInitial);
             }
         }
     }
@@ -330,8 +327,7 @@ public class StateNode implements Serializable {
         List<StateNode> nodes = new ArrayList<>();
         visitNodeTreeBottomUp(nodes::add);
         nodes.forEach(StateNode::handleOnDetach);
-        for (int i = 0; i < nodes.size(); i++) {
-            StateNode node = nodes.get(i);
+        for (StateNode node : nodes) {
             if (node.hasBeenAttached) {
                 node.hasBeenDetached = true;
                 node.fireDetachListeners();

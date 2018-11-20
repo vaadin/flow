@@ -25,12 +25,9 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class AttachListenerIT extends ChromeBrowserTest {
 
-    private WebElement submit;
-
     @Before
     public void init() {
         open();
-        submit = findElement(By.id("submit"));
     }
 
     @Test
@@ -150,7 +147,8 @@ public class AttachListenerIT extends ChromeBrowserTest {
         hostRadio.click();
         childRadio.click();
         listenerRadio.click();
-        submit.click();
+
+        findElement(By.id("submit")).click();
 
         waitForElementPresent(By.id("result"));
 
