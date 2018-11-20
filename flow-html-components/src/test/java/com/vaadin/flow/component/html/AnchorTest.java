@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.component.Text;
 
 public class AnchorTest extends ComponentTest {
 
@@ -28,6 +33,15 @@ public class AnchorTest extends ComponentTest {
 
         anchor.removeHref();
         Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+    }
+
+    @Test
+    public void createWithComponent() {
+        Text text = new Text("Text");
+        Label label = new Label("Label");
+        Anchor anchor = new Anchor("#", text, label);
+        Assert.assertEquals(anchor.getChildren().collect(Collectors.toList()),
+                Arrays.asList(text, label));
     }
 
     // Other test methods in super class

@@ -31,7 +31,7 @@ public class RouterLinkView extends AbstractDivView {
     }
 
     private void addImageLink() {
-        Anchor anchor = new Anchor("image/link", null);
+        Anchor anchor = new Anchor("image/link", (String) null);
         anchor.getElement().setAttribute("router-link", true);
         anchor.getStyle().set("display", "block");
 
