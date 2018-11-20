@@ -15,13 +15,16 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
+
 /**
  * Represents a pair of two values.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
-class Pair<U, V> {
+class Pair<U extends Serializable, V extends Serializable>
+        implements Serializable {
 
     private final U first;
     private final V second;
