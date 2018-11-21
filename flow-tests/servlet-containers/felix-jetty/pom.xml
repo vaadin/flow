@@ -80,12 +80,6 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
             <version>${jetty.version}</version>
@@ -98,6 +92,20 @@
             <version>${jetty.version}</version>
             <scope>provided</scope>
         </dependency>
+
+<dependency>
+    <groupId>org.apache.felix</groupId>
+    <artifactId>org.apache.felix.http.servlet-api</artifactId>
+    <version>1.1.2</version>
+    <scope>provided</scope>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.felix</groupId>
+    <artifactId>org.apache.felix.http.jetty</artifactId>
+    <version>4.0.6</version>
+        <scope>provided</scope>
+</dependency>
 
         <!-- Those dependencies are need for OSGi container where this bundle 
             will be deployed. They will be copied into the bundle folder of OSGi container 
@@ -151,26 +159,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-plus</artifactId>
-            <version>${jetty.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty.osgi</groupId>
-            <artifactId>jetty-osgi-boot</artifactId>
-            <version>${jetty.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.osgi</groupId>
-                    <artifactId>org.eclipse.osgi</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
 
         <dependency>
             <groupId>javax.transaction</groupId>
@@ -192,7 +180,7 @@
             <version>1_2</version>
             <scope>provided</scope>
         </dependency>
-
+        
     </dependencies>
     <build>
         <plugins>
@@ -244,7 +232,7 @@
                             <outputDirectory>${project.build.directory}/${felix.home}/bundle</outputDirectory>
                             <overWriteIfNewer>true</overWriteIfNewer>
                             <excludeGroupIds>com.google.code.findbugs,
-                                org.seleniumhq.selenium</excludeGroupIds>
+                                org.seleniumhq.selenium, javax.servlet</excludeGroupIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -264,8 +252,7 @@
                             <async>true</async>
                             <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
                             <workingDirectory>${project.build.directory}/${felix.home}</workingDirectory>
-                            <commandlineArgs>-Djetty.home=${basedir}/jettyhome
-                                -Dgosh.args="--nointeractive -s"
+                            <commandlineArgs>-Dgosh.args="--nointeractive -s"
                                 -jar
                                 bin/felix.jar</commandlineArgs>
                         </configuration>
