@@ -5,5 +5,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
 Import-Package: !com.vaadin.flow.dom.impl*, com.vaadin.flow.uitest.servlet*, *
 Export-Package: com.vaadin.flow.uitest*;-noimport:=true
-Web-ContextPath: /
 Vaadin-OSGi-Extender: true
+Bundle-Activator: com.vaadin.flow.osgi.Activator
