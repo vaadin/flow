@@ -194,6 +194,9 @@ public abstract class DemoView extends Component
         case JAVA:
             content.addCode(sourceString);
             break;
+        case HTML:
+            content.addHtml(sourceString);
+            break;
         case UNDEFINED:
         default:
             content.addCode(sourceString);

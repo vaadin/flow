@@ -29,7 +29,7 @@ public class SourceCodeExample implements Serializable {
      * Enum that defines which language the source code is in.
      */
     public enum SourceType {
-        JAVA, CSS, UNDEFINED
+        JAVA, CSS, HTML, UNDEFINED
     }
 
     private String heading;
