@@ -98,7 +98,7 @@ public class Iframe extends Component {
   }
 
   /**
-   * Sets the allow property to specify a feature policy. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy.
+   * Sets the allow property to specify a feature policy. See `https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy`.
    *
    * @param allow Allow.
    */
