@@ -98,7 +98,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     private static class SimpleTemplateParser extends TestTemplateParser {
 
         SimpleTemplateParser() {
-            super(tag -> "<dom-module id='" + tag + "'></dom-module>");
+            super(tag -> "<dom-module id='" + tag + "' someattrtibute></dom-module>");
         }
 
     }
@@ -148,7 +148,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         public IdChildTemplate() {
             this(new TestTemplateParser(tag -> "<dom-module id='" + tag
-                    + "'><template><div id='child'></template></dom-module>"));
+                    + "'><template><div id='child' someattrtibute></template></dom-module>"));
         }
 
         IdChildTemplate(TestTemplateParser parser) {
@@ -196,7 +196,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         public TemplateInTemplate() {
             this(new TestTemplateParser(tag -> "<dom-module id='" + tag
-                    + "'><template><div><ffs></div><span></span><child-template></template></dom-module>"));
+                    + "'><template><div><ffs></div><span></span><child-template someattrtibute></template></dom-module>"));
         }
 
         public TemplateInTemplate(TestTemplateParser parser) {
@@ -218,7 +218,7 @@ public class PolymerTemplateTest extends HasCurrentService {
                             + "<template><ffs></template></dom-module>"
                             + "<dom-module id='ffs'><template></template></dom-module>"
                             + "<dom-module id='" + tag
-                            + "'><template><div><ffs></div><span></span><child-template></template></dom-module>")));
+                            + "'><template><div><ffs someattrtibute></div><span></span><child-template></template></dom-module>")));
         }
 
     }
@@ -246,7 +246,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         public TemplateWithChildInDomRepeat() {
             super((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='" + tag + "'><template><div>"
-                            + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
+                            + "<dom-repeat items='[[messages]]'><template><child-template someattrtibute></template></dom-repeat>"
                             + "</div></template></dom-module>")));
         }
 
@@ -285,7 +285,7 @@ public class PolymerTemplateTest extends HasCurrentService {
                 "      <style>\n"+
                 "      </style>\n"+
                 "      <label></label>\n"+
-                "      <child-template></child-template>\n"+
+                "      <child-template someattrtibute></child-template>\n"+
                 "      \n"+
                 "      <div class='content-wrap'></div><dom-module>";
         // @formatter:on
@@ -310,7 +310,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         public IdElementTemplate() {
             this((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId'></dom-module>")));
+                            + "'><label id='labelId' someattrtibute></dom-module>")));
         }
 
         IdElementTemplate(TemplateParser parser) {
@@ -378,7 +378,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         public ExecutionOrder() {
             super(new TestTemplateParser(tag -> "<dom-module id='" + tag
-                    + "'><template><div id='div'></div><execution-child></execution-child></template></dom-module>"));
+                    + "'><template><div id='div'></div><execution-child someattrtibute></execution-child></template></dom-module>"));
         }
     }
 
@@ -420,8 +420,8 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @SuppressWarnings("serial")
     @Before
-    public void setUp() throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
+    public void setUp() throws SecurityException,
+            IllegalArgumentException {
         executionOrder.clear();
         executionParams.clear();
 
@@ -571,7 +571,7 @@ public class PolymerTemplateTest extends HasCurrentService {
                 parserCallCount.incrementAndGet();
                 if (clazz.equals(TemplateInitialization.class)) {
                     content = "<dom-module id='" + tag + "'><template>"
-                            + "<ffs id='foo'></ffs>"
+                            + "<ffs id='foo' someattrtibute></ffs>"
                             + "<child-template></child-template>"
                             + "</template></dom-module>";
                 } else {
@@ -642,7 +642,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         // Make a new HTML template which contains style on the top
         TemplateInTemplate template = new TemplateInTemplate(
                 new TestTemplateParser(tag -> "<dom-module id='" + tag
-                        + "'><template><style> a { width:100%; } </style><div><ffs></div><span></span>"
+                        + "'><template><style> a { width:100%; } </style><div><ffs someattrtibute></div><span></span>"
                         + "<child-template></template></dom-module>"));
         // Nothing should be changed in the logic
         doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
@@ -788,7 +788,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     private void attachComponentAndVerifyChild(PolymerTemplate<?> template,
-            CustomComponent templateChild) {
+                                               CustomComponent templateChild) {
         VirtualChildrenList feature = template.getStateNode()
                 .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
