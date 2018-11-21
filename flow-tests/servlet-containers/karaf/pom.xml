@@ -1,0 +1,288 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-servlet-containers-test</artifactId>
+        <version>1.3-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>flow-test-karaf-server</artifactId>
+    <name>Flow Tests for Karaf</name>
+    <packaging>jar</packaging>
+
+    <properties>
+        <is.unix>true</is.unix>
+        <karaf.version>4.2.1</karaf.version>
+        <karaf.distribution>http://central.maven.org/maven2/org/apache/karaf/apache-karaf/${karaf.version}/apache-karaf-${karaf.version}.tar.gz</karaf.distribution>
+        <karaf.home>apache-karaf-${karaf.version}</karaf.home>
+        <karaf.script>karaf</karaf.script>
+        <test.excludegroup>com.vaadin.flow.testcategory.IgnoreOSGi</test.excludegroup>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-root-context</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <classifier>ui</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-osgi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-root-context</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>6.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr</artifactId>
+            <version>2.1.10</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        
+        <!-- Those dependencies are need for OSGi container where this bundle 
+            will be deployed. They will be copied into the bundle folder of OSGi container 
+            and automatically installed form there. -->
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.serviceloader</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.aries.spifly</groupId>
+            <artifactId>org.apache.aries.spifly.static.bundle</artifactId>
+            <version>1.0.12</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.aries.spifly</groupId>
+            <artifactId>org.apache.aries.spifly.static.tool</artifactId>
+            <version>1.0.12</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.aries.spifly</groupId>
+            <artifactId>org.apache.aries.spifly.core-internal</artifactId>
+            <version>1.0.12</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.aries.spifly</groupId>
+            <artifactId>org.apache.aries.spifly.weaver-internal</artifactId>
+            <version>1.0.12</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.aries</groupId>
+            <artifactId>org.apache.aries.util</artifactId>
+            <version>1.1.3</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.aries.spifly</groupId>
+            <artifactId>org.apache.aries.spifly.dynamic.bundle</artifactId>
+            <version>1.0.12</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+    <groupId>org.ops4j.pax.web</groupId>
+    <artifactId>pax-web-spi</artifactId>
+    <version>7.2.4</version>
+    <scope>provided</scope>
+</dependency>
+        
+        <dependency>
+    <groupId>org.apache.karaf.webconsole</groupId>
+    <artifactId>org.apache.karaf.webconsole.console</artifactId>
+    <version>4.2.1</version>
+    <scope>provided</scope>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.karaf.http</groupId>
+    <artifactId>org.apache.karaf.http.core</artifactId>
+    <version>4.2.1</version>
+    <scope>provided</scope>
+</dependency>
+
+
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>${bnd.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>download-files</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <get src="${karaf.distribution}"
+                                    dest="${project.build.directory}/karaf.tar.gz"
+                                    verbose="false" usetimestamp="true" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-win</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${is.unix}</skip>
+                            <target>
+                                <gunzip
+                                    src="${project.build.directory}/karaf.tar.gz"
+                                    dest="${project.build.directory}"></gunzip>
+                                <untar
+                                    src="${project.build.directory}/karaf.tar"
+                                    dest="${project.build.directory}"></untar>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>unpack-unix</id>
+                        <!--  we have to preserve the permission to be able to run karaf -->
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>!${is.unix}</skip>
+                            <executable>tar</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <commandlineArgs>-zxf karaf.tar.gz</commandlineArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>compile</includeScope>
+                            <outputDirectory>${project.build.directory}/${karaf.home}/deploy</outputDirectory>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <excludeGroupIds>com.google.code.findbugs,
+                                org.seleniumhq.selenium</excludeGroupIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>test-wait-http</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <test>WaitHttpIT</test>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>**/WaitHttpIT.java</exclude>
+                    </excludes>
+                    <dependenciesToScan>
+                        <dependency>${project.groupId}:flow-test-root-context</dependency>
+                    </dependenciesToScan>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <is.unix>false</is.unix>
+                <karaf.script>karaf.bat</karaf.script>
+            </properties>
+        </profile>
+    </profiles>
+
+</project>
