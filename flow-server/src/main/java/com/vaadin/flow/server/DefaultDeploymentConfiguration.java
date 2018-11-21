@@ -16,9 +16,8 @@
 
 package com.vaadin.flow.server;
 
-import java.util.Locale;
 import java.util.Properties;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * @since 1.0
  */
 public class DefaultDeploymentConfiguration
-        extends AbstractDeploymentConfiguration {
+        extends PropertyDeploymentConfiguration {
     private static final String SEPARATOR = "\n===========================================================";
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
@@ -73,17 +72,16 @@ public class DefaultDeploymentConfiguration
 
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
-    private final Properties initParameters;
     private boolean productionMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private boolean closeIdleSessions;
     private PushMode pushMode;
     private String pushURL;
-    private final Class<?> systemPropertyBaseClass;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
+    private static AtomicBoolean loggWarning = new AtomicBoolean(true);
 
     /**
      * Create a new deployment configuration instance.
@@ -97,102 +95,19 @@ public class DefaultDeploymentConfiguration
      */
     public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass,
             Properties initParameters) {
-        this.initParameters = initParameters;
-        this.systemPropertyBaseClass = systemPropertyBaseClass;
+        super(systemPropertyBaseClass, initParameters);
 
-        checkProductionMode();
+        boolean log = loggWarning.getAndSet(false);
+
+        checkProductionMode(log);
         checkRequestTiming();
-        checkXsrfProtection();
+        checkXsrfProtection(log);
         checkHeartbeatInterval();
         checkCloseIdleSessions();
         checkPushMode();
         checkPushURL();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
-    }
-
-    @Override
-    public <T> T getApplicationOrSystemProperty(String propertyName,
-            T defaultValue, Function<String, T> converter) {
-        // Try system properties
-        String val = getSystemProperty(propertyName);
-        if (val != null) {
-            return converter.apply(val);
-        }
-
-        // Try application properties
-        val = getApplicationProperty(propertyName);
-        if (val != null) {
-            return converter.apply(val);
-        }
-
-        return defaultValue;
-    }
-
-    /**
-     * Gets an system property value.
-     *
-     * @param parameterName
-     *            the Name or the parameter.
-     * @return String value or null if not found
-     */
-    protected String getSystemProperty(String parameterName) {
-        String pkgName;
-        final Package pkg = systemPropertyBaseClass.getPackage();
-        if (pkg != null) {
-            pkgName = pkg.getName();
-        } else {
-            final String className = systemPropertyBaseClass.getName();
-            int index = className.lastIndexOf('.');
-            if (index >= 0) {
-                pkgName = className.substring(0, index);
-            } else {
-                pkgName = null;
-            }
-        }
-        if (pkgName == null) {
-            pkgName = "";
-        } else if (!pkgName.isEmpty()) {
-            pkgName += '.';
-        }
-        String val = System.getProperty(pkgName + parameterName);
-        if (val != null) {
-            return val;
-        }
-
-        // Try lowercased system properties
-        val = System.getProperty(
-                pkgName + parameterName.toLowerCase(Locale.ENGLISH));
-
-        if (val != null) {
-            return val;
-        }
-
-        // version prefixed with just "vaadin."
-        val = System.getProperty("vaadin." + parameterName);
-
-        return val;
-    }
-
-    /**
-     * Gets an application property value.
-     *
-     * @param parameterName
-     *            the Name or the parameter.
-     * @return String value or null if not found
-     */
-    public String getApplicationProperty(String parameterName) {
-
-        String val = initParameters.getProperty(parameterName);
-        if (val != null) {
-            return val;
-        }
-
-        // Try lower case application properties for backward compatibility with
-        // 3.0.2 and earlier
-        val = initParameters.getProperty(parameterName.toLowerCase());
-
-        return val;
     }
 
     /**
@@ -286,18 +201,14 @@ public class DefaultDeploymentConfiguration
         return pushURL;
     }
 
-    @Override
-    public Properties getInitParameters() {
-        return initParameters;
-    }
 
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
-    private void checkProductionMode() {
+    private void checkProductionMode(boolean loggWarning) {
         productionMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        if (!productionMode) {
+        if (!productionMode && loggWarning) {
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
         }
     }
@@ -313,10 +224,10 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a warning if cross-site request forgery protection is disabled.
      */
-    private void checkXsrfProtection() {
+    private void checkXsrfProtection(boolean loggWarning) {
         xsrfProtectionEnabled = !getBooleanProperty(
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
-        if (!xsrfProtectionEnabled) {
+        if (!xsrfProtectionEnabled && loggWarning) {
             getLogger().warn(WARNING_XSRF_PROTECTION_DISABLED);
         }
     }

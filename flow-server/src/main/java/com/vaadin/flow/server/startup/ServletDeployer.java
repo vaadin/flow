@@ -67,7 +67,7 @@ public class ServletDeployer implements ServletContextListener {
     private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
     private static class StubServletConfig
-            implements ServletConfig, Serializable {
+            implements ServletConfig {
         private final ServletContext context;
         private final ServletRegistration registration;
 
@@ -145,7 +145,7 @@ public class ServletDeployer implements ServletContextListener {
             ServletConfig servletConfig, Class<?> servletClass) {
         try {
             return DeploymentConfigurationFactory
-                    .createDeploymentConfiguration(servletClass, servletConfig);
+                    .createPropertyDeploymentConfiguration(servletClass, servletConfig);
         } catch (ServletException e) {
             throw new IllegalStateException(String.format(
                     "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",

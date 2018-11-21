@@ -21,13 +21,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -68,14 +71,6 @@ public class StateNodeTest {
         @Override
         public String toString() {
             return Integer.toString(getData());
-        }
-    }
-
-    private static class RootStateNode extends TestStateNode {
-
-        @Override
-        public boolean isAttached() {
-            return true;
         }
     }
 
@@ -136,7 +131,7 @@ public class StateNodeTest {
     }
 
     @Test
-    public void testAttachDetachChangeCollection() {
+    public void attachDetachChangeCollection() {
         StateNode node = createEmptyNode();
 
         List<NodeChange> changes = new ArrayList<>();
@@ -213,7 +208,7 @@ public class StateNodeTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testSetAsOwnParent() {
+    public void setAsOwnParent() {
         StateNode parent = createParentNode("parent");
 
         setParent(parent, parent);
@@ -300,8 +295,8 @@ public class StateNodeTest {
     }
 
     @Test
-    public void testAttachListener_onSetParent_listenerTriggered() {
-        StateNode root = new RootStateNode();
+    public void attachListener_onSetParent_listenerTriggered() {
+        StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
         Assert.assertFalse(child.isAttached());
@@ -315,8 +310,8 @@ public class StateNodeTest {
     }
 
     @Test
-    public void testAttachListener_listenerRemoved_listenerNotTriggered() {
-        StateNode root = new RootStateNode();
+    public void attachListener_listenerRemoved_listenerNotTriggered() {
+        StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
         Assert.assertFalse(child.isAttached());
@@ -332,8 +327,8 @@ public class StateNodeTest {
     }
 
     @Test
-    public void testDetachListener_onSetParent_listenerTriggered() {
-        StateNode root = new RootStateNode();
+    public void detachListener_onSetParent_listenerTriggered() {
+        StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
@@ -350,8 +345,8 @@ public class StateNodeTest {
     }
 
     @Test
-    public void testDetachListener_listenerRemoved_listenerNotTriggered() {
-        StateNode root = new RootStateNode();
+    public void detachListener_listenerRemoved_listenerNotTriggered() {
+        StateNode root = new TestStateTree().getRootNode();
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
@@ -371,9 +366,9 @@ public class StateNodeTest {
     }
 
     @Test
-    public void testDetachListener_removesNode_notUnregisteredTwice() {
+    public void detachListener_removesNode_notUnregisteredTwice() {
         StateTree tree = createStateTree();
-        StateNode root = new RootStateNode();
+        StateNode root = createParentNode("");
         setParent(root, tree.getRootNode());
 
         TestStateNode child = new TestStateNode();
@@ -655,6 +650,554 @@ public class StateNodeTest {
                     visibility.setVisible(isVisible);
                     parent.updateActiveState();
                 });
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *           ^         |
+     *           |---------+
+     *
+     *         parent is attached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>c</code> goes to <code>a</code> as a child when attach event is fired for <code>b</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInAttachListener_firstAsParent_lastAsChild() {
+        assertAttachDetachEvents(createNodes(), "a", "c", false);
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *           |         ^
+     *           +---------|
+     *
+     *         parent is attached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>a</code> goes to <code>c</code> as a child when attach event is fired for <code>b</code>
+     *  Only one attach event is expected for <code>a</code> because it had not been yet attached when attach event for
+     *  <code>b</code> is fired and it has been detached from <code>parent</code> and attached to <code>c</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInAttachListener_lastAsParent_firstAsChild() {
+        assertAttachDetachEvents(createNodes(), "c", "a", true);
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *           |    ^
+     *           +----|
+     *
+     *         parent is attached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>a</code> goes to <code>b</code> as a child when attach event is fired for <code>c</code>
+     *  Only one attach event is expected for <code>a</code> because it had not been yet attached when attach event for
+     *  <code>c</code> is fired and it has been detached from <code>parent</code> and attached to <code>b</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInAttachListener_middleAsParent_firstAsChild() {
+        assertAttachDetachEvents(createNodes(), "b", "a", true);
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *           ^    |
+     *           |----+
+     *
+     *         parent is attached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>b</code> goes to <code>a</code> as a child when attach event is fired for <code>c</code>
+     *  Only one attach event is expected for <code>b</code> because it had not been yet attached when attach event for
+     *  <code>c</code> is fired and it has been detached from <code>parent</code> and attached to <code>a/code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInAttachListener_firstAsParent_middleAsChild() {
+        assertAttachDetachEvents(createNodes(), "a", "b", true);
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *                ^    |
+     *                |----+
+     *
+     *         parent is attached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>c</code> goes to <code>b</code> as a child when attach event is fired for <code>a</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInAttachListener_middleAsParent_lastAsChild() {
+        assertAttachDetachEvents(createNodes(), "b", "c", false);
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *                |    ^
+     *                +----|
+     *
+     *         parent is attached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>b</code> goes to <code>c</code> as a child when attach event is fired for <code>a</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInAttachListener_lastAsParent_middleAsChild() {
+        assertAttachDetachEvents(createNodes(), "c", "b", false);
+    }
+
+    @Test
+    public void detachParent_detachFirstChildOnDetachLast_oneDetachEvent() {
+        TestStateTree tree = new TestStateTree();
+
+        StateNode a = createEmptyNode("a");
+        StateNode b = createEmptyNode("b");
+
+        StateNode parent = createParentNode("parent");
+
+        addChild(parent, a);
+        addChild(parent, b);
+
+        addChild(tree.getRootNode(), parent);
+
+        AtomicInteger detachEvents = new AtomicInteger();
+        b.addDetachListener(() -> removeFromParent(a));
+        a.addDetachListener(() -> detachEvents.incrementAndGet());
+
+        removeFromParent(parent);
+
+        Assert.assertEquals(1, detachEvents.get());
+    }
+
+    @Test
+    public void detachParent_detachLastChildOnDetachFirst_oneDetachEvent() {
+        TestStateTree tree = new TestStateTree();
+
+        StateNode a = createEmptyNode("a");
+        StateNode b = createEmptyNode("b");
+
+        StateNode parent = createParentNode("parent");
+
+        addChild(parent, a);
+        addChild(parent, b);
+
+        addChild(tree.getRootNode(), parent);
+
+        AtomicInteger detachEvents = new AtomicInteger();
+        a.addDetachListener(() -> removeFromParent(a));
+        b.addDetachListener(() -> detachEvents.incrementAndGet());
+
+        removeFromParent(parent);
+
+        Assert.assertEquals(1, detachEvents.get());
+    }
+
+    @Test
+    public void detachParent_appendChildOnDetach_noEvents() {
+        TestStateTree tree = new TestStateTree();
+
+        StateNode a = createEmptyNode("a");
+
+        StateNode parent = createParentNode("parent");
+
+        addChild(parent, a);
+
+        addChild(tree.getRootNode(), parent);
+
+        AtomicInteger events = new AtomicInteger();
+        a.addDetachListener(() -> {
+            StateNode b = createEmptyNode("b");
+            b.addAttachListener(events::incrementAndGet);
+            b.addDetachListener(events::incrementAndGet);
+            addChild(parent, b);
+        });
+
+        removeFromParent(parent);
+        Assert.assertEquals(0, events.get());
+    }
+
+    @Test
+    public void detachParent_insertChildAsFirstOnDetach_noEvents() {
+        TestStateTree tree = new TestStateTree();
+
+        StateNode a = createEmptyNode("a");
+
+        StateNode parent = createParentNode("parent");
+
+        addChild(parent, a);
+
+        addChild(tree.getRootNode(), parent);
+
+        AtomicInteger events = new AtomicInteger();
+        a.addDetachListener(() -> {
+            StateNode b = createEmptyNode("b");
+            b.addAttachListener(events::incrementAndGet);
+            b.addDetachListener(events::incrementAndGet);
+            ElementChildrenList list = parent
+                    .getFeature(ElementChildrenList.class);
+            list.add(0, b);
+        });
+
+        removeFromParent(parent);
+        Assert.assertEquals(0, events.get());
+    }
+
+    @Test
+    public void attachParent_detachFirstOnAttachLast_noEvents() {
+        TestStateTree tree = new TestStateTree();
+
+        StateNode a = createEmptyNode("a");
+        StateNode b = createEmptyNode("a");
+
+        StateNode parent = createParentNode("parent");
+
+        addChild(parent, a);
+        addChild(parent, b);
+
+        AtomicInteger events = new AtomicInteger();
+        b.addAttachListener(() -> {
+            removeFromParent(a);
+        });
+
+        a.addAttachListener(events::incrementAndGet);
+        a.addDetachListener(events::incrementAndGet);
+
+        addChild(tree.getRootNode(), parent);
+
+        // events are fired from right to left, so <code>b</code> had been
+        // handled first and <code>a</code> had been detached before attach
+        // event has been fired for <code>a</code>. So no events for
+        // <code>a</code>
+        Assert.assertEquals(0, events.get());
+    }
+
+    @Test
+    public void attachParent_detachLastOnAttachFirst_attachDetachEvents() {
+        TestStateTree tree = new TestStateTree();
+
+        StateNode a = createEmptyNode("a");
+        StateNode b = createEmptyNode("a");
+
+        StateNode parent = createParentNode("parent");
+
+        addChild(parent, a);
+        addChild(parent, b);
+
+        a.addAttachListener(() -> {
+            removeFromParent(b);
+        });
+
+        List<Boolean> attachDetachEvents = new ArrayList<>();
+        b.addAttachListener(() -> attachDetachEvents.add(true));
+        b.addDetachListener(() -> attachDetachEvents.add(false));
+
+        addChild(tree.getRootNode(), parent);
+
+        /*
+         * Here attach event for <code>b</code> had been fired first since it
+         * had been handled first. Then on attach event for <code>a</code> the
+         * <code>b</code> has been removed. So we should get also a detach
+         * event.
+         */
+        Assert.assertEquals(2, attachDetachEvents.size());
+        Assert.assertTrue(attachDetachEvents.get(0));
+        Assert.assertFalse(attachDetachEvents.get(1));
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *           ^         |
+     *           |---------+
+     *
+     *         parent is detached,
+     *  detach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>c</code> goes to <code>a</code> as a child when detach event is fired for <code>b</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInDetachListener_firstAsParent_lastAsChild() {
+        assertDetachAttachEvents(createNodes(), "a", "c");
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *           |         ^
+     *           +---------|
+     *
+     *         parent is detached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>a</code> goes to <code>c</code> as a child when detach event is fired for <code>b</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInDetachListener_lastAsParent_firstAsChild() {
+        assertDetachAttachEvents(createNodes(), "c", "a");
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *           |    ^
+     *           +----|
+     *
+     *         parent is detached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>a</code> goes to <code>b</code> as a child when detach event is fired for <code>c</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInDetachListener_middleAsParent_firstAsChild() {
+        assertDetachAttachEvents(createNodes(), "b", "a");
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *           ^    |
+     *           |----+
+     *
+     *         parent is detached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>b</code> goes to <code>a</code> as a child when detach event is fired for <code>c</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInDetachListener_firstAsParent_middleAsChild() {
+        assertDetachAttachEvents(createNodes(), "a", "b");
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *                ^    |
+     *                |----+
+     *
+     *         parent is detached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>c</code> goes to <code>b</code> as a child when detach event is fired for <code>a</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInDetachListener_middleAsParent_lastAsChild() {
+        assertDetachAttachEvents(createNodes(), "b", "c");
+    }
+
+    /**
+     * @formatter:off
+     *
+     *              parent
+     *            /   |   \
+     *           a    b    c
+     *                |    ^
+     *                +----|
+     *
+     *         parent is detached,
+     *  attach events are fired from bottom to up, from right, to left:
+     *  the order of firing events is : c, b, a, parent
+     *
+     *  In this test <code>b</code> goes to <code>c</code> as a child when detach event is fired for <code>a</code>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void modifyNodeTreeInDetachListener_lastAsParent_middleAsChild() {
+        assertDetachAttachEvents(createNodes(), "c", "b");
+    }
+
+    private void assertAttachDetachEvents(Map<String, StateNode> nodes,
+            String newParent, String child, boolean expectSingleEvent) {
+        TestStateTree tree = new TestStateTree();
+
+        // use the order from the list
+        StateNode a = nodes.get("a");
+        StateNode b = nodes.get("b");
+        StateNode c = nodes.get("c");
+
+        // those are the same nodes that above but it's easier to have a
+        // dedicate variables for them
+        StateNode newParentNode = nodes.remove(newParent);
+        StateNode childNode = nodes.remove(child);
+
+        StateNode nodeWithListener = nodes.values().iterator().next();
+        nodeWithListener.addAttachListener(() -> {
+            addChild(newParentNode, childNode);
+        });
+
+        List<Object> attachDetachEvents = new ArrayList<>();
+        childNode.addAttachListener(() -> {
+            attachDetachEvents.add(childNode.getParent());
+        });
+        childNode.addDetachListener(() -> attachDetachEvents.add(false));
+
+        StateNode parent = createParentNode("parent");
+
+        addChild(parent, a);
+        addChild(parent, b);
+        addChild(parent, c);
+
+        addChild(tree.getRootNode(), parent);
+
+        /*
+         * Depending on the order of children there should be either only one
+         * ATTACH event or 3 events: intermediate ATTACH and DETACH and final
+         * ATTACH.
+         */
+        if (expectSingleEvent) {
+            Assert.assertEquals(1, attachDetachEvents.size());
+            Assert.assertEquals(newParentNode, attachDetachEvents.get(0));
+        } else {
+            Assert.assertEquals(3, attachDetachEvents.size());
+            Assert.assertEquals(parent, attachDetachEvents.get(0));
+            Assert.assertEquals(Boolean.FALSE, attachDetachEvents.get(1));
+            Assert.assertEquals(newParentNode, attachDetachEvents.get(2));
+        }
+
+        Assert.assertEquals(newParentNode, childNode.getParent());
+    }
+
+    private void assertDetachAttachEvents(Map<String, StateNode> nodes,
+            String newParent, String child) {
+        TestStateTree tree = new TestStateTree();
+
+        // use the order from the list
+        StateNode a = nodes.get("a");
+        StateNode b = nodes.get("b");
+        StateNode c = nodes.get("c");
+
+        // those are the same nodes that above but it's easier to have a
+        // dedicate variables for them
+        StateNode newParentNode = nodes.remove(newParent);
+        StateNode childNode = nodes.remove(child);
+
+        StateNode nodeWithListener = nodes.values().iterator().next();
+        nodeWithListener.addDetachListener(() -> {
+            addChild(newParentNode, childNode);
+        });
+
+        StateNode parent = createParentNode("parent");
+
+        addChild(parent, a);
+        addChild(parent, b);
+        addChild(parent, c);
+
+        addChild(tree.getRootNode(), parent);
+
+        List<Object> attachDetachEvents = new ArrayList<>();
+        childNode.addAttachListener(() -> {
+            attachDetachEvents.add(childNode.getParent());
+        });
+        childNode.addDetachListener(() -> attachDetachEvents.add(false));
+
+        removeFromParent(parent);
+
+        // Only one DETACH event is expected
+        Assert.assertEquals(1, attachDetachEvents.size());
+        Assert.assertFalse((Boolean) attachDetachEvents.get(0));
+    }
+
+    private Map<String, StateNode> createNodes() {
+        return Stream
+                .of(createParentNode("a"), createParentNode("b"),
+                        createParentNode("c"))
+                .collect(Collectors.toMap(node -> node.toString(),
+                        Function.identity()));
+    }
+
+    private void addChild(StateNode parent, StateNode node) {
+        removeFromParent(node);
+        ElementChildrenList list = parent.getFeature(ElementChildrenList.class);
+        list.add(list.size(), node);
+    }
+
+    private void removeFromParent(StateNode node) {
+        if (node.getParent() == null) {
+            return;
+        }
+        ElementChildrenList list = node.getParent()
+                .getFeature(ElementChildrenList.class);
+        for (int i = 0; i < list.size(); i++) {
+            StateNode child = list.get(i);
+            if (node.equals(child)) {
+                list.remove(i);
+                break;
+            }
+        }
     }
 
     private void assertCollectChanges_initiallyInactive(StateNode stateNode,

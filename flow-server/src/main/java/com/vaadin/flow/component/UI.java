@@ -31,6 +31,7 @@ import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateNode;
@@ -369,12 +370,33 @@ public class UI extends Component
      */
     public void accessSynchronously(Command command)
             throws UIDetachedException {
+        // null detach handler -> throw UIDetachEvent
+        accessSynchronously(command, null);
+    }
+
+    private static void handleAccessDetach(SerializableRunnable detachHandler) {
+        if (detachHandler != null) {
+            detachHandler.run();
+        } else {
+            throw new UIDetachedException();
+        }
+    }
+
+    /*
+     * Yes, we are mixing legacy Command with newer SerializableRunnable. This
+     * is done for this internal method since it helps preserve old APIs as-is
+     * while allowing new APIs to use newer conventions.
+     */
+    private void accessSynchronously(Command command,
+            SerializableRunnable detachHandler) {
+
         Map<Class<?>, CurrentInstance> old = null;
 
         VaadinSession session = getSession();
 
         if (session == null) {
-            throw new UIDetachedException();
+            handleAccessDetach(detachHandler);
+            return;
         }
 
         VaadinService.verifyNoOtherSessionLocked(session);
@@ -384,7 +406,8 @@ public class UI extends Component
             if (getSession() == null) {
                 // UI was detached after fetching the session but before we
                 // acquired the lock.
-                throw new UIDetachedException();
+                handleAccessDetach(detachHandler);
+                return;
             }
             old = CurrentInstance.setCurrent(this);
             command.execute();
@@ -441,16 +464,28 @@ public class UI extends Component
      *         cancel the task
      */
     public Future<Void> access(final Command command) {
+        // null detach handler -> throw UIDetachEvent
+        return access(command, null);
+    }
+
+    /*
+     * Yes, we are mixing legacy Command with newer SerializableRunnable. This
+     * is done for this internal method since it helps preserve old APIs as-is
+     * while allowing new APIs to use newer conventions.
+     */
+    private Future<Void> access(Command command,
+            SerializableRunnable detachHandler) {
         VaadinSession session = getSession();
 
         if (session == null) {
-            throw new UIDetachedException();
+            handleAccessDetach(detachHandler);
+            return null;
         }
 
         return session.access(new ErrorHandlingCommand() {
             @Override
             public void execute() {
-                accessSynchronously(command);
+                accessSynchronously(command, detachHandler);
             }
 
             @Override
@@ -468,6 +503,61 @@ public class UI extends Component
                 }
             }
         });
+    }
+
+    /**
+     * Wraps the given access task as a runnable that runs the given task with
+     * this UI locked. The wrapped task may be run synchronously or
+     * asynchronously. If the UI is detached when the returned runnable is run,
+     * the provided detach handler is run instead. If the provided detach
+     * handler is <code>null</code>, the returned runnable may throw an
+     * {@link UIDetachedException}.
+     * <p>
+     * This method can be used to create a callback that can be passed to an
+     * external notifier that isn't aware of the synchronization needed to
+     * update a UI instance.
+     *
+     * @param accessTask
+     *            the task that updates this UI, not <code>null</code>
+     * @param detachHandler
+     *            the callback that will be invoked if the UI is detached, or
+     *            <code>null</code> as described above
+     * @return a runnable that will run either the access task or the detach
+     *         handler, possibly asynchronously
+     */
+    public SerializableRunnable accessLater(SerializableRunnable accessTask,
+            SerializableRunnable detachHandler) {
+        Objects.requireNonNull(accessTask, "Access task cannot be null");
+
+        return () -> access(accessTask::run, detachHandler);
+    }
+
+    /**
+     * Wraps the given access task as a consumer that passes a value to the
+     * given task with this UI locked. The wrapped task may be run synchronously
+     * or asynchronously. If the UI is detached when the returned consumer is
+     * run, the provided detach handler is run instead. If the provided detach
+     * handler is <code>null</code>, the returned runnable may throw an
+     * {@link UIDetachedException}.
+     * <p>
+     * This method can be used to create a callback that can be passed to an
+     * external notifier that isn't aware of the synchronization needed to
+     * update a UI instance.
+     *
+     * @param accessTask
+     *            the task that updates this UI, not <code>null</code>
+     * @param detachHandler
+     *            the callback that will be invoked if the UI is detached, or
+     *            <code>null</code> as described above
+     * @return a consumer that will run either the access task or the detach
+     *         handler, possibly asynchronously
+     */
+    public <T> SerializableConsumer<T> accessLater(
+            SerializableConsumer<T> accessTask,
+            SerializableRunnable detachHandler) {
+        Objects.requireNonNull(accessTask, "Access task cannot be null");
+
+        return value -> access(() -> accessTask.accept(value), detachHandler);
     }
 
     /**
@@ -686,7 +776,7 @@ public class UI extends Component
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
-     * 
+     *
      * @param navigationTarget
      *            navigation target to navigate to
      */
@@ -706,7 +796,7 @@ public class UI extends Component
      * Note! A {@code null} parameter will be handled the same as
      * navigate(navigationTarget) and will throw an exception if HasUrlParameter
      * is not @OptionalParameter or @WildcardParameter.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to navigate to
      * @param parameter

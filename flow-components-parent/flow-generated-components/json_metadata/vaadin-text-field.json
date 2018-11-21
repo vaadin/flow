@@ -2,7 +2,7 @@
   "name": "Vaadin.TextFieldElement",
   "tag": "vaadin-text-field",
   "baseUrl": "vaadin-text-field/src/vaadin-text-field.html",
-  "version": "2.1.3",
+  "version": "2.3.0-alpha1",
   "properties": [
     {
       "name": "autofocus",
@@ -43,6 +43,14 @@
       ],
       "objectType": [],
       "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.\n         "
+    },
+    {
+      "name": "clearButtonVisible",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to display the clear icon which clears the input.\n         "
     },
     {
       "name": "errorMessage",
@@ -127,6 +135,14 @@
       "notify": true
     },
     {
+      "name": "hasValue",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specifies that the text field has value.\n         "
+    },
+    {
       "name": "preventInvalidInput",
       "type": [
         "BOOLEAN"
@@ -171,6 +187,12 @@
       "description": "Returns true if `value` is valid.\n`<iron-form>` uses this to check the validity or all its elements.",
       "parameters": [],
       "returns": "BOOLEAN"
+    },
+    {
+      "name": "clear",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [

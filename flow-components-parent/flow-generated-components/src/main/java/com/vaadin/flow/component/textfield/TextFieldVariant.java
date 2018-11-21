@@ -20,8 +20,9 @@ import javax.annotation.Generated;
 /**
  * Set of theme variants applicable for {@code vaadin-text-field} component.
  */
-@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.2-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.1.3", "Flow#1.2-SNAPSHOT" })
+@Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.3-SNAPSHOT",
+        "WebComponent: Vaadin.TextFieldElement#2.3.0-alpha1",
+        "Flow#1.3-SNAPSHOT" })
 public enum TextFieldVariant {
     LUMO_SMALL("small"), LUMO_ALIGN_CENTER("align-center"), LUMO_ALIGN_RIGHT(
             "align-right"), MATERIAL_ALWAYS_FLOAT_LABEL("always-float-label");

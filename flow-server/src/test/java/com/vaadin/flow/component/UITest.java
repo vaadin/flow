@@ -1,6 +1,8 @@
 package com.vaadin.flow.component;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -29,6 +31,8 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -49,6 +53,7 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletConfig;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -126,6 +131,12 @@ public class UITest {
         };
 
         return ui;
+    }
+
+    private static MockUI createAccessableTestUI() {
+        // Needs a service to be able to do service.accessSession
+        return new MockUI(
+                new MockVaadinSession(new MockVaadinServletService()));
     }
 
     private static void initUI(UI ui, String initialLocation,
@@ -657,4 +668,119 @@ public class UITest {
         assertTrue(AfterNavigationListeners
                 .get(3) instanceof AfterNavigationListenerThird);
     }
+
+    @Test(expected = NullPointerException.class)
+    public void accessLaterRunnable_nullHandler_exception() {
+        UI ui = createAccessableTestUI();
+
+        ui.accessLater((SerializableRunnable) null, () -> {
+        });
+    }
+
+    @Test
+    public void accessLaterRunnable_attachedUnlockedUi_runnableIsRun() {
+        AtomicInteger runCount = new AtomicInteger();
+
+        UI ui = createAccessableTestUI();
+        CurrentInstance.clearAll();
+
+        SerializableRunnable wrapped = ui.accessLater(() -> {
+            assertSame("Current UI should be defined", ui, UI.getCurrent());
+            runCount.incrementAndGet();
+        }, null);
+
+        assertNull("Should not have a current UI outside the caller",
+                UI.getCurrent());
+        assertEquals("Task should not yet have run", 0, runCount.get());
+
+        wrapped.run();
+
+        assertNull("Should not have a current UI outside the caller",
+                UI.getCurrent());
+        assertEquals("Task should have run once", 1, runCount.get());
+    }
+
+    @Test(expected = UIDetachedException.class)
+    public void accessLaterRunnable_detachedUiNoHandler_throws() {
+        UI ui = createTestUI();
+
+        SerializableRunnable wrapped = ui.accessLater(
+                () -> Assert.fail("Action should never run"), null);
+        wrapped.run();
+    }
+
+    @Test
+    public void accessLaterRunnable_detachedUi_detachHandlerCalled() {
+        AtomicInteger runCount = new AtomicInteger();
+
+        UI ui = createTestUI();
+
+        SerializableRunnable wrapped = ui.accessLater(
+                () -> Assert.fail("Action should never run"),
+                runCount::incrementAndGet);
+
+        assertEquals("Handler should not yet have run", 0, runCount.get());
+
+        wrapped.run();
+
+        assertEquals("Handler should have run once", 1, runCount.get());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void accessLaterConsumer_nullHandler_exception() {
+        UI ui = createAccessableTestUI();
+
+        ui.accessLater((SerializableConsumer<Object>) null, () -> {
+        });
+    }
+
+    @Test
+    public void accessLaterConsumer_attachedUnlockedUi_runnableIsRun() {
+        AtomicInteger sum = new AtomicInteger();
+
+        UI ui = createAccessableTestUI();
+        CurrentInstance.clearAll();
+
+        SerializableConsumer<Integer> wrapped = ui.accessLater(value -> {
+            assertSame("Current UI should be defined", ui, UI.getCurrent());
+            sum.addAndGet(value.intValue());
+        }, null);
+
+        assertNull("Should not have a current UI outside the caller",
+                UI.getCurrent());
+        assertEquals("Task should not yet have run", 0, sum.get());
+
+        wrapped.accept(Integer.valueOf(5));
+
+        assertNull("Should not have a current UI outside the caller",
+                UI.getCurrent());
+        assertEquals("Task should have run once", 5, sum.get());
+    }
+
+    @Test(expected = UIDetachedException.class)
+    public void accessLaterConsumer_detachedUiNoHandler_throws() {
+        UI ui = createTestUI();
+
+        SerializableConsumer<Object> wrapped = ui.accessLater(
+                value -> Assert.fail("Action should never run"), null);
+        wrapped.accept(null);
+    }
+
+    @Test
+    public void accessLaterConsumer_detachedUi_detachHandlerCalled() {
+        AtomicInteger runCount = new AtomicInteger();
+
+        UI ui = createTestUI();
+
+        SerializableConsumer<Object> wrapped = ui.accessLater(
+                value -> Assert.fail("Action should never run"),
+                runCount::incrementAndGet);
+
+        assertEquals("Handler should not yet have run", 0, runCount.get());
+
+        wrapped.accept(null);
+
+        assertEquals("Handler should have run once", 1, runCount.get());
+    }
+
 }
