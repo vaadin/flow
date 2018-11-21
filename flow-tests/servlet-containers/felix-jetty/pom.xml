@@ -93,19 +93,19 @@
             <scope>provided</scope>
         </dependency>
 
-<dependency>
-    <groupId>org.apache.felix</groupId>
-    <artifactId>org.apache.felix.http.servlet-api</artifactId>
-    <version>1.1.2</version>
-    <scope>provided</scope>
-</dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.http.servlet-api</artifactId>
+            <version>1.1.2</version>
+            <scope>provided</scope>
+        </dependency>
 
-<dependency>
-    <groupId>org.apache.felix</groupId>
-    <artifactId>org.apache.felix.http.jetty</artifactId>
-    <version>4.0.6</version>
-        <scope>provided</scope>
-</dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.http.jetty</artifactId>
+            <version>4.0.6</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Those dependencies are need for OSGi container where this bundle 
             will be deployed. They will be copied into the bundle folder of OSGi container 
@@ -180,7 +180,7 @@
             <version>1_2</version>
             <scope>provided</scope>
         </dependency>
-        
+
     </dependencies>
     <build>
         <plugins>
@@ -211,6 +211,8 @@
                                 <unzip
                                     src="${project.build.directory}/felix.zip"
                                     dest="${project.build.directory}"></unzip>
+                                <copy file="${basedir}/config.properties" 
+                                    todir="${project.build.directory}/${felix.home}/conf"></copy>
                             </tasks>
                         </configuration>
                     </execution>
@@ -252,7 +254,8 @@
                             <async>true</async>
                             <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
                             <workingDirectory>${project.build.directory}/${felix.home}</workingDirectory>
-                            <commandlineArgs>-Dgosh.args="--nointeractive -s"
+                            <commandlineArgs>-Dgosh.args="--nointeractive
+                                -s"
                                 -jar
                                 bin/felix.jar</commandlineArgs>
                         </configuration>
