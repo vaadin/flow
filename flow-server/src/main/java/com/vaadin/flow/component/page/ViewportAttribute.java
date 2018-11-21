@@ -16,6 +16,14 @@
 
 package com.vaadin.flow.component.page;
 
+import com.vaadin.flow.component.UI;
+
+/**
+ * Constains all possible attributes for {@link Viewport}.
+ *
+ * @author Vaadin Ltd
+ * @since 1.0
+ */
 public enum ViewportAttribute {
 
     /**
