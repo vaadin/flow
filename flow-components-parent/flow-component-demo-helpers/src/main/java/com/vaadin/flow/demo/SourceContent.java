@@ -43,13 +43,7 @@ public class SourceContent extends Div {
      *            The source code to be shown.
      */
     public void addCode(String text) {
-        Element pre = new Element("pre");
-        Element code = new Element("code");
-        pre.appendChild(code);
-        code.setAttribute("spellcheck", "false");
-        code.getClassList().add("language-java");
-        code.setText(text);
-        getElement().appendChild(pre);
+        addSourceCodeBlock(text, "language-java");
     }
 
     /**
@@ -59,13 +53,17 @@ public class SourceContent extends Div {
      *            The source code to be shown.
      */
     public void addCss(String text) {
-        Element pre = new Element("pre");
-        Element code = new Element("code");
-        pre.appendChild(code);
-        code.setAttribute("spellcheck", "false");
-        code.getClassList().add("language-css");
-        code.setText(text);
-        getElement().appendChild(pre);
+        addSourceCodeBlock(text, "language-css");
+    }
+
+    /**
+     * Adds a text to be rendered as a HTML source code inside the component.
+     *
+     * @param text
+     *            The source code to be shown.
+     */
+    public void addHtml(String text) {
+        addSourceCodeBlock(text, "language-markup");
     }
 
     /**
@@ -77,5 +75,15 @@ public class SourceContent extends Div {
      */
     public void add(Element element) {
         getElement().appendChild(element);
+    }
+
+    private void addSourceCodeBlock(String text, String className) {
+        Element pre = new Element("pre");
+        Element code = new Element("code");
+        pre.appendChild(code);
+        code.setAttribute("spellcheck", "false");
+        code.getClassList().add(className);
+        code.setText(text);
+        getElement().appendChild(pre);
     }
 }
