@@ -50,7 +50,7 @@ public class BootstrapHandlerPushConfigurationTest {
         mocks = new MockServletServiceSessionSetup();
         TestRouteRegistry routeRegistry = new TestRouteRegistry();
 
-        BootstrapHandler.clientEngineFile = "foobar";
+        BootstrapHandler.clientEngineFile = () -> "foobar";
         session = mocks.getSession();
         service = mocks.getService();
         service.setRouteRegistry(routeRegistry);
