@@ -25,7 +25,6 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 
-import com.vaadin.flow.client.ClientResources;
 import com.vaadin.flow.uitest.servlet.Es6UrlViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
@@ -88,20 +87,6 @@ public class Activator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws Exception {
-        new ServiceTracker<ClientResources, Void>(context,
-                ClientResources.class.getName(), null) {
-
-            @Override
-            public Void addingService(
-                    ServiceReference<ClientResources> reference) {
-                doStart(context);
-                return null;
-            }
-
-        }.open();
-    }
-
-    private void doStart(BundleContext context) {
         httpTracker = new ServiceTracker<HttpService, HttpService>(context,
                 HttpService.class.getName(), null) {
             @Override
