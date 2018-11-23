@@ -249,7 +249,17 @@ class TemplateDataAnalyzer {
                 // Two way bindings should only be in property bindings, not
                 // inside text content.
                 for (Attribute attribute : node.attributes()) {
-                    matcher.reset(attribute.getValue());
+                    String value = attribute.getValue();
+
+                    //It is legal for attributes in templates not to have values,
+                    //which is a short form for giving the attribute the value 'true'.
+                    //These attributes don't contain bindings (they're just 'true'), so we
+                    //skip them.
+                    if (value == null) {
+                        continue;
+                    }
+
+                    matcher.reset(value);
                     if (matcher.matches()) {
                         String path = matcher.group(1);
                         addTwoWayBindingPath(path);
