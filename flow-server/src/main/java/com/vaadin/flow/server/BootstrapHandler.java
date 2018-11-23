@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -78,9 +79,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
  * initial GET request.
@@ -117,7 +115,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String MESSAGE = "message";
     private static final String URL = "url";
 
-    static String clientEngineFile = readClientEngine();
+    static Supplier<String> clientEngineFile = () -> LazyClientEngineInit.CLIENT_ENGINE_FILE;
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(BootstrapHandler.class.getName());
@@ -702,8 +700,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .getViewportContent(context).orElse(Viewport.DEFAULT));
 
         if (!BootstrapUtils.getMetaTargets(context).isEmpty()) {
-            BootstrapUtils.getMetaTargets(context).forEach((name,content)->head.appendElement(META_TAG)
-                    .attr("name",name).attr(CONTENT_ATTRIBUTE,content));
+            BootstrapUtils.getMetaTargets(context)
+                    .forEach((name, content) -> head.appendElement(META_TAG)
+                            .attr("name", name)
+                            .attr(CONTENT_ATTRIBUTE, content));
         }
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -1215,19 +1215,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         final boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
 
-        boolean resolveNow = !productionMode || clientEngineFile == null;
+        boolean resolveNow = !productionMode || getClientEngine() == null;
         if (resolveNow && ClientResourcesUtils.getResource(
                 "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
             return context.getUriResolver().resolveVaadinUri(
                     "context://" + CLIENT_ENGINE_NOCACHE_FILE);
         }
 
-        if (clientEngineFile == null) {
+        if (getClientEngine() == null) {
             throw new BootstrapException(
                     "Client engine file name has not been resolved during initialization");
         }
         return context.getUriResolver()
-                .resolveVaadinUri("context://" + clientEngineFile);
+                .resolveVaadinUri("context://" + getClientEngine());
     }
 
     /**
@@ -1307,5 +1307,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             throw new ExceptionInInitializerError(e);
         }
         return null;
+    }
+
+    private static String getClientEngine() {
+        return clientEngineFile.get();
+    }
+
+    private static class LazyClientEngineInit {
+        private static final String CLIENT_ENGINE_FILE = readClientEngine();
     }
 }
