@@ -28,9 +28,25 @@ public class ElementConstants {
      */
     public static final String STYLE_WIDTH = "width";
     /**
+     * The style property for min-width.
+     */
+    public static final String STYLE_MIN_WIDTH = "min-width";
+    /**
+     * The style property for max-width.
+     */
+    public static final String STYLE_MAX_WIDTH = "max-width";
+    /**
      * The style property for height.
      */
     public static final String STYLE_HEIGHT = "height";
+    /**
+     * The style property for min-height.
+     */
+    public static final String STYLE_MIN_HEIGHT = "min-height";
+    /**
+     * The style property for max-height.
+     */
+    public static final String STYLE_MAX_HEIGHT = "max-height";
     /**
      * The style property for color.
      */
