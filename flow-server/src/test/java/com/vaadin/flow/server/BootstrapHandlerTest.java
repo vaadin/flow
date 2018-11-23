@@ -367,7 +367,7 @@ public class BootstrapHandlerTest {
         mocks = new MockServletServiceSessionSetup();
         TestRouteRegistry routeRegistry = new TestRouteRegistry();
 
-        BootstrapHandler.clientEngineFile = "foobar";
+        BootstrapHandler.clientEngineFile = () -> "foobar";
         testUI = new TestUI();
 
         deploymentConfiguration = mocks.getDeploymentConfiguration();
@@ -1321,11 +1321,9 @@ public class BootstrapHandlerTest {
 
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(
-                String.format(
-                        "In development mode, es5 prefix should be equal to '%s' parameter value",
-                        Constants.FRONTEND_URL_ES5),
-                urlES5, is(es5Prefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es5 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
     }
 
     @Test
@@ -1343,11 +1341,9 @@ public class BootstrapHandlerTest {
 
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(
-                String.format(
-                        "In development mode, es6 prefix should be equal to '%s' parameter value",
-                        Constants.FRONTEND_URL_ES6),
-                urlES6, is(es6Prefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es6 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES6), urlES6, is(es6Prefix + urlPart));
     }
 
     @Test

@@ -250,7 +250,7 @@ public class BootstrapHandlerDependenciesTest {
 
     @Before
     public void setup() throws Exception {
-        BootstrapHandler.clientEngineFile = "foobar";
+        BootstrapHandler.clientEngineFile = () -> "foobar";
 
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
@@ -502,8 +502,8 @@ public class BootstrapHandlerDependenciesTest {
                                 both(not(containsString("eager")))
                                         .and(not(containsString("lazy")))
                                         .and(not(containsString("inline"))));
-                        if (elementString
-                                .contains(BootstrapHandler.clientEngineFile)) {
+                        if (elementString.contains(
+                                BootstrapHandler.clientEngineFile.get())) {
                             foundClientEngine = true;
                         }
                     } else {
