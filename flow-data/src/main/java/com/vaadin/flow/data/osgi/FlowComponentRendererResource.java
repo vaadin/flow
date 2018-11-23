@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.osgi;
 
+import java.io.Serializable;
+
 import org.osgi.service.component.annotations.Component;
 
 import com.vaadin.flow.osgi.support.OsgiVaadinStaticResource;
@@ -26,7 +28,8 @@ import com.vaadin.flow.osgi.support.OsgiVaadinStaticResource;
  *
  */
 @Component(immediate = true, service = OsgiVaadinStaticResource.class)
-public class FlowComponentRendererResource implements OsgiVaadinStaticResource {
+public class FlowComponentRendererResource
+        implements OsgiVaadinStaticResource, Serializable {
 
     @Override
     public String getPath() {
