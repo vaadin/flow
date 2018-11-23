@@ -33,6 +33,8 @@ import com.vaadin.flow.shared.BrowserDetails;
  */
 public class WebBrowser implements Serializable {
 
+    private int browserWindowHeight = -1;
+    private int browserWindowWidth = -1;
     private int screenHeight = -1;
     private int screenWidth = -1;
     private String browserApplication = null;
@@ -48,6 +50,26 @@ public class WebBrowser implements Serializable {
 
     private BrowserDetails browserDetails;
     private long clientServerTimeDelta;
+
+    /**
+     * Gets the last known height of the browser window in which this uI
+     * resides.
+     *
+     * @return the browser window width in pixels
+     */
+    public int getBrowserWindowHeight() {
+        return browserWindowHeight;
+    }
+
+    /**
+     * Gets the last known width of the browser window in which this uI
+     * resides.
+     *
+     * @return the browser window width in pixels
+     */
+    public int getBrowserWindowWidth() {
+        return browserWindowWidth;
+    }
 
     /**
      * Gets the height of the screen in pixels. This is the full screen
@@ -425,6 +447,10 @@ public class WebBrowser implements Serializable {
      * For internal use only. Updates all properties in the class according to
      * the given information.
      *
+     * @param ch
+     *            Browser window height
+     * @param cw
+     *            Browser window width
      * @param sw
      *            Screen width
      * @param sh
@@ -441,9 +467,18 @@ public class WebBrowser implements Serializable {
      *            the current date in milliseconds since the epoch
      * @param touchDevice
      */
-    void updateClientSideDetails(String sw, String sh, String tzo, String rtzo,
-            String dstSavings, String dstInEffect, String tzId, String curDate,
-            boolean touchDevice) {
+    void updateClientSideDetails(String ch, String cw, String sw, String sh,
+            String tzo, String rtzo, String dstSavings, String dstInEffect,
+            String tzId, String curDate, boolean touchDevice) {
+        if (ch != null && cw != null) {
+            try {
+                browserWindowHeight = Integer.parseInt(ch);
+                browserWindowWidth = Integer.parseInt(cw);
+            } catch (final NumberFormatException e) {
+                browserWindowHeight = browserWindowWidth = -1;
+            }
+        }
+
         if (sw != null) {
             try {
                 screenHeight = Integer.parseInt(sh);
@@ -519,8 +554,11 @@ public class WebBrowser implements Serializable {
         }
 
         if (request.getParameter("v-sw") != null) {
-            updateClientSideDetails(request.getParameter("v-sw"),
-                    request.getParameter("v-sh"), request.getParameter("v-tzo"),
+            updateClientSideDetails(request.getParameter("v-ch"),
+                    request.getParameter("v-cw"),
+                    request.getParameter("v-sw"),
+                    request.getParameter("v-sh"),
+                    request.getParameter("v-tzo"),
                     request.getParameter("v-rtzo"),
                     request.getParameter("v-dstd"),
                     request.getParameter("v-dston"),
@@ -571,7 +609,7 @@ public class WebBrowser implements Serializable {
     /**
      * Checks if the browser needs `custom-elements-es5-adapter.js` to be
      * loaded.
-     * 
+     *
      * @return <code>true</code> if the browser needs the adapter,
      *         <code>false</code> otherwise.
      */

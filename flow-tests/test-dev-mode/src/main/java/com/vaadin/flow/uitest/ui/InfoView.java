@@ -92,6 +92,8 @@ public class InfoView extends Div {
         info("User-agent", webBrowser.getBrowserApplication());
         info("Browser major", webBrowser.getBrowserMajorVersion());
         info("Browser minor", webBrowser.getBrowserMinorVersion());
+        info("Browser window height", webBrowser.getBrowserWindowHeight());
+        info("Browser window width", webBrowser.getBrowserWindowWidth());
         info("Screen height", webBrowser.getScreenHeight());
         info("Screen width", webBrowser.getScreenWidth());
         info("Locale", webBrowser.getLocale());
