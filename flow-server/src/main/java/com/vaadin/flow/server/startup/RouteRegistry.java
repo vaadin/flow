@@ -175,10 +175,15 @@ public class RouteRegistry implements Serializable {
                 return;
             }
 
-            if (OSGiAccess.getInstance().getOsgiServletContext() != null
-                    && OSGiAccess.getInstance().hasInitializers()) {
-                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                        OSGiAccess.getInstance().getOsgiServletContext());
+            ServletContext osgiServletContext = OSGiAccess.getInstance()
+                    .getOsgiServletContext();
+            if (osgiServletContext == null
+                    || !OSGiAccess.getInstance().hasInitializers()) {
+                return;
+            }
+            OSGiDataCollector registry = (OSGiDataCollector) getInstance(
+                    osgiServletContext);
+            if (registry.errorNavigationTargets.get() != null) {
                 setErrorNavigationTargets(
                         registry.errorNavigationTargets.get());
             }
@@ -190,9 +195,14 @@ public class RouteRegistry implements Serializable {
                     .getOsgiServletContext() == null) {
                 return;
             }
-            if (OSGiAccess.getInstance().hasInitializers()) {
-                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                        OSGiAccess.getInstance().getOsgiServletContext());
+            if (!OSGiAccess.getInstance().hasInitializers()) {
+                return;
+            }
+            ServletContext osgiServletContext = OSGiAccess.getInstance()
+                    .getOsgiServletContext();
+            OSGiDataCollector registry = (OSGiDataCollector) getInstance(
+                    osgiServletContext);
+            if (registry.navigationTargets.get() != null) {
                 setNavigationTargets(registry.navigationTargets.get());
             }
         }
@@ -220,16 +230,18 @@ public class RouteRegistry implements Serializable {
 
     private static class OSGiDataCollector extends RouteRegistry {
 
-        private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>(
-                Collections.emptySet());
+        private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>();
 
-        private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>(
-                Collections.emptySet());
+        private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
 
         @Override
         public void setNavigationTargets(
                 Set<Class<? extends Component>> navigationTargets)
                 throws InvalidRouteConfigurationException {
+            if (navigationTargets.isEmpty()
+                    && this.navigationTargets.get() == null) {
+                return;
+            }
             this.navigationTargets.set(navigationTargets);
             // There is no need to execute this logic here but this method will
             // throw an exception if there are invalid routes
@@ -249,6 +261,10 @@ public class RouteRegistry implements Serializable {
         @Override
         public void setErrorNavigationTargets(
                 Set<Class<? extends Component>> errorNavigationTargets) {
+            if (errorNavigationTargets.isEmpty()
+                    && this.errorNavigationTargets.get() == null) {
+                return;
+            }
             this.errorNavigationTargets.set(errorNavigationTargets);
         }
     }
@@ -363,10 +379,10 @@ public class RouteRegistry implements Serializable {
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
-        errorNavigationTargets.removeAll(defaultErrorHandlers);
         for (Class<? extends Component> target : errorNavigationTargets) {
-            if (!routeFilters.stream().allMatch(
-                    filter -> filter.testErrorNavigationTarget(target))) {
+            if (defaultErrorHandlers.contains(target)
+                    || !routeFilters.stream().allMatch(filter -> filter
+                            .testErrorNavigationTarget(target))) {
                 continue;
             }
 
@@ -391,7 +407,7 @@ public class RouteRegistry implements Serializable {
      */
     public List<RouteData> getRegisteredRoutes() {
         // Build and collect only on first request
-        if (routeData.get() == null) {
+        if (routeData.get() == null && hasRoutes()) {
             List<RouteData> registeredRoutes = new ArrayList<>();
             Map<Class<? extends Component>, String> targetRouteMap = targetRoutes
                     .get();
@@ -411,7 +427,8 @@ public class RouteRegistry implements Serializable {
                     Collections.unmodifiableList(registeredRoutes));
         }
 
-        return routeData.get();
+        List<RouteData> routes = routeData.get();
+        return routes == null ? Collections.emptyList() : routes;
     }
 
     private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
