@@ -240,6 +240,8 @@ public class RouteRegistry implements Serializable {
                 throws InvalidRouteConfigurationException {
             if (navigationTargets.isEmpty()
                     && this.navigationTargets.get() == null) {
+                // ignore initial empty targets avoiding routes initialization
+                // it they are not yet discovered
                 return;
             }
             this.navigationTargets.set(navigationTargets);
@@ -263,6 +265,8 @@ public class RouteRegistry implements Serializable {
                 Set<Class<? extends Component>> errorNavigationTargets) {
             if (errorNavigationTargets.isEmpty()
                     && this.errorNavigationTargets.get() == null) {
+                // ignore initial empty targets avoiding error target
+                // initialization it they are not yet discovered
                 return;
             }
             this.errorNavigationTargets.set(errorNavigationTargets);
@@ -427,8 +431,8 @@ public class RouteRegistry implements Serializable {
                     Collections.unmodifiableList(registeredRoutes));
         }
 
-        List<RouteData> routes = routeData.get();
-        return routes == null ? Collections.emptyList() : routes;
+        List<RouteData> result = routeData.get();
+        return result == null ? Collections.emptyList() : result;
     }
 
     private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
