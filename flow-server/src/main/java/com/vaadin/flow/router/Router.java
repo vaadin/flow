@@ -437,6 +437,13 @@ public class Router implements Serializable {
     }
 
     public RouteRegistry getRegistry() {
+        if (VaadinSession.getCurrent() != null) {
+            SessionRouteRegistry sessionRegistry = VaadinSession.getCurrent()
+                    .getAttribute(SessionRouteRegistry.class);
+            if (sessionRegistry != null) {
+                return sessionRegistry.withGlobalRegistry(registry);
+            }
+        }
         return registry;
     }
 

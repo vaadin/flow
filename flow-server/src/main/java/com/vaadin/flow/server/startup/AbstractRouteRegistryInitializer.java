@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.DynamicRoute;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -63,9 +64,19 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Any navigation target applicable to be registered on startup should be a
+     * Component, contain the Route annotation and not be annotated with
+     * {@link DynamicRoute}
+     *
+     * @param clazz
+     *         class to check for filer
+     * @return true if applicable class
+     */
     private boolean isApplicableClass(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Route.class)
-                && Component.class.isAssignableFrom(clazz);
+        return clazz.isAnnotationPresent(Route.class) && Component.class
+                .isAssignableFrom(clazz) && !clazz
+                .isAnnotationPresent(DynamicRoute.class);
     }
 
     private void checkForConflictingAnnotations(Class<?> route) {

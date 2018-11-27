@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,10 +41,8 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.InternalServerError;
-import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
@@ -56,9 +53,6 @@ import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
@@ -204,8 +198,6 @@ public class GlobalRouteRegistry implements RouteRegistry {
     }
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
-
-    private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
             .of(RouteNotFoundError.class, InternalServerError.class)
             .collect(Collectors.toSet());
@@ -223,28 +215,6 @@ public class GlobalRouteRegistry implements RouteRegistry {
     protected GlobalRouteRegistry() {
         ServiceLoader.load(NavigationTargetFilter.class)
                 .forEach(routeFilters::add);
-    }
-
-    /**
-     * Loads the Lumo theme class from the classpath if it is available.
-     *
-     * @return the Lumo ThemeDefinition, or <code>null</code> if it is not
-     *         available in the classpath
-     */
-    private static final ThemeDefinition loadLumoClassIfAvailable() {
-        try {
-            Class<? extends AbstractTheme> theme = (Class<? extends AbstractTheme>) Class
-                    .forName("com.vaadin.flow.theme.lumo.Lumo");
-            return new ThemeDefinition(theme, "");
-        } catch (ClassNotFoundException e) {
-            // ignore, the Lumo class is not available in the classpath
-            Logger logger = LoggerFactory
-                    .getLogger(GlobalRouteRegistry.class.getName());
-            logger.trace(
-                    "Lumo theme is not present in the classpath. The application will not use any default theme.",
-                    e);
-        }
-        return null;
     }
 
     /**
@@ -529,34 +499,6 @@ public class GlobalRouteRegistry implements RouteRegistry {
         return routes.get() != null;
     }
 
-    /**
-     * Collect the whole route for the navigation target.
-     * <p>
-     * The whole route is composed of the Route annotation and any
-     * ParentLayout:@RoutePrefix that may be in the navigation chain.
-     *
-     * @param navigationTarget
-     *            navigation target to get chain route for
-     * @return full navigation route
-     */
-    private String getNavigationRoute(Class<?> navigationTarget,
-            Collection<String> aliases) {
-        Route annotation = navigationTarget.getAnnotation(Route.class);
-
-        aliases.addAll(getRouteAliases(navigationTarget));
-
-        return RouterUtil.getRoutePath(navigationTarget, annotation);
-    }
-
-    private Collection<String> getRouteAliases(Class<?> navigationTarget) {
-        List<String> aliases = new ArrayList<>();
-        for (RouteAlias alias : navigationTarget
-                .getAnnotationsByType(RouteAlias.class)) {
-            aliases.add(RouterUtil.getRouteAliasPath(navigationTarget, alias));
-        }
-        return aliases;
-    }
-
     private void registerNavigationTargets(
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
@@ -576,7 +518,7 @@ public class GlobalRouteRegistry implements RouteRegistry {
             }
 
             Set<String> paths = new HashSet<>();
-            String route = getNavigationRoute(navigationTarget, paths);
+            String route = RouterUtil.getNavigationRouteAndAliases(navigationTarget, paths);
             paths.add(route);
 
             targetRoutesMap.put(navigationTarget, route);
@@ -611,36 +553,9 @@ public class GlobalRouteRegistry implements RouteRegistry {
                 routesMap.put(path, routeTarget);
             }
             routeTarget.setThemeFor(navigationTarget,
-                    findThemeForNavigationTarget(navigationTarget, path));
+                    RouterUtil.findThemeForNavigationTarget(navigationTarget,
+                            path));
         }
-    }
-
-    private ThemeDefinition findThemeForNavigationTarget(
-            Class<?> navigationTarget, String path) {
-
-        if (navigationTarget == null) {
-            return LUMO_CLASS_IF_AVAILABLE;
-        }
-
-        Class<? extends RouterLayout> topParentLayout = RouterUtil
-                .getTopParentLayout(navigationTarget, path);
-
-        Class<?> target = topParentLayout == null ? navigationTarget
-                : topParentLayout;
-
-        Optional<Theme> themeAnnotation = AnnotationReader
-                .getAnnotationFor(target, Theme.class);
-
-        if (themeAnnotation.isPresent()) {
-            return new ThemeDefinition(themeAnnotation.get());
-        }
-
-        if (!AnnotationReader.getAnnotationFor(target, NoTheme.class)
-                .isPresent()) {
-            return LUMO_CLASS_IF_AVAILABLE;
-        }
-
-        return null;
     }
 
     @Override
@@ -681,7 +596,7 @@ public class GlobalRouteRegistry implements RouteRegistry {
             }
         }
         return Optional.ofNullable(
-                findThemeForNavigationTarget(navigationTarget, path));
+                RouterUtil.findThemeForNavigationTarget(navigationTarget, path));
     }
 
     /**

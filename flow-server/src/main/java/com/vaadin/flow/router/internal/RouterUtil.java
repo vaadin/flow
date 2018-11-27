@@ -25,6 +25,9 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -39,6 +42,10 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Utility class with methods for router layout handling.
@@ -343,5 +350,106 @@ public final class RouterUtil {
             List<HasElement> routeTargetChain) {
         return new LocationChangeEvent(event.getSource(), event.getUI(),
                 event.getTrigger(), event.getLocation(), routeTargetChain);
+    }
+
+    private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
+
+    /**
+     * Loads the Lumo theme class from the classpath if it is available.
+     *
+     * @return the Lumo ThemeDefinition, or <code>null</code> if it is not
+     * available in the classpath
+     */
+    private static final ThemeDefinition loadLumoClassIfAvailable() {
+        try {
+            Class<? extends AbstractTheme> theme = (Class<? extends AbstractTheme>) Class
+                    .forName("com.vaadin.flow.theme.lumo.Lumo");
+            return new ThemeDefinition(theme, "");
+        } catch (ClassNotFoundException e) {
+            // ignore, the Lumo class is not available in the classpath
+            Logger logger = LoggerFactory
+                    .getLogger(RouterUtil.class.getName());
+            logger.trace(
+                    "Lumo theme is not present in the classpath. The application will not use any default theme.",
+                    e);
+        }
+        return null;
+    }
+
+    /**
+     * Find annotated theme for navigationTarget on given path or lumo if
+     * available.
+     *
+     * @param navigationTarget
+     *         navigation target to find theme for
+     * @param path
+     *         path used for navigation
+     * @return found theme or lumo if available
+     */
+    public static ThemeDefinition findThemeForNavigationTarget(
+            Class<?> navigationTarget, String path) {
+
+        if (navigationTarget == null) {
+            return LUMO_CLASS_IF_AVAILABLE;
+        }
+
+        Class<? extends RouterLayout> topParentLayout = RouterUtil
+                .getTopParentLayout(navigationTarget, path);
+
+        Class<?> target =
+                topParentLayout == null ? navigationTarget : topParentLayout;
+
+        Optional<Theme> themeAnnotation = AnnotationReader
+                .getAnnotationFor(target, Theme.class);
+
+        if (themeAnnotation.isPresent()) {
+            return new ThemeDefinition(themeAnnotation.get());
+        }
+
+        if (!AnnotationReader.getAnnotationFor(target, NoTheme.class)
+                .isPresent()) {
+            return LUMO_CLASS_IF_AVAILABLE;
+        }
+
+        return null;
+    }
+
+    /**
+     * Collect the whole route for the navigation target.
+     * <p>
+     * The whole route is composed of the Route annotation and any
+     * ParentLayout:@RoutePrefix that may be in the navigation chain.
+     *
+     * @param navigationTarget
+     *         navigation target to get chain route for
+     * @return full navigation route
+     */
+    public static String getNavigationRouteAndAliases(Class<?> navigationTarget,
+            Collection<String> aliases) {
+        Route annotation = navigationTarget.getAnnotation(Route.class);
+
+        aliases.addAll(getRouteAliases(navigationTarget));
+
+        return RouterUtil.getRoutePath(navigationTarget, annotation);
+    }
+
+    /**
+     * Collect route aliases for given navigation target.
+     * <p>
+     * The whole route is composed of the RouteAlias annotation and any
+     * ParentLayout:@RoutePrefix that may be in the navigation chain.
+     *
+     * @param navigationTarget
+     *         navigation target to get chain route alias for
+     * @return full navigation route
+     */
+    public static Collection<String> getRouteAliases(
+            Class<?> navigationTarget) {
+        List<String> aliases = new ArrayList<>();
+        for (RouteAlias alias : navigationTarget
+                .getAnnotationsByType(RouteAlias.class)) {
+            aliases.add(RouterUtil.getRouteAliasPath(navigationTarget, alias));
+        }
+        return aliases;
     }
 }

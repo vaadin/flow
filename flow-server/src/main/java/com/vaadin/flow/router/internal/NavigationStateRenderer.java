@@ -55,8 +55,10 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         NavigationState navigationState = getNavigationState();
         assert targetType == navigationState.getNavigationTarget();
 
-        return RouterUtil.getParentLayouts(targetType,
-                navigationState.getResolvedPath());
+        if(targetType.isAnnotationPresent(Route.class)) {
+            return RouterUtil.getParentLayouts(targetType, navigationState.getResolvedPath());
+        }
+        return RouterUtil.getParentLayoutsForNonRouteTarget(targetType);
     }
 
     @Override
