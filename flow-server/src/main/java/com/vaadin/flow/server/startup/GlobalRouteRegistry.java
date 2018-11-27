@@ -49,10 +49,12 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.RouterUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
@@ -63,55 +65,9 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * Registry for holding navigation target components found on servlet
  * initialization.
  */
-public class RouteRegistry implements Serializable {
+public class GlobalRouteRegistry implements RouteRegistry {
 
-    /**
-     * A pair of a navigation target for handling exceptions and the exception
-     * type handled by the navigation target.
-     */
-    public static class ErrorTargetEntry implements Serializable {
-        private final Class<? extends Component> navigationTarget;
-        private final Class<? extends Exception> handledExceptionType;
-
-        /**
-         * Creates a new new entry with the given navigation target type and
-         * exception type.
-         *
-         * @param navigationTarget
-         *            the navigation target type, not <code>null</code>
-         * @param handledExceptionType
-         *            the exception type handled by the navigation target, not
-         *            <code>null</code>
-         */
-        public ErrorTargetEntry(Class<? extends Component> navigationTarget,
-                Class<? extends Exception> handledExceptionType) {
-            assert navigationTarget != null;
-            assert handledExceptionType != null;
-
-            this.navigationTarget = navigationTarget;
-            this.handledExceptionType = handledExceptionType;
-        }
-
-        /**
-         * Gets the navigation target type.
-         *
-         * @return the navigation target type, not <code>null</code>
-         */
-        public Class<? extends Component> getNavigationTarget() {
-            return navigationTarget;
-        }
-
-        /**
-         * Gets the exception type handled by the navigation target.
-         *
-         * @return the exception type, not <code>null</code>
-         */
-        public Class<? extends Exception> getHandledExceptionType() {
-            return handledExceptionType;
-        }
-    }
-
-    private static class OSGiRouteRegistry extends RouteRegistry {
+    private static class OSGiRouteRegistry extends GlobalRouteRegistry {
         @Override
         public Class<?> getPwaConfigurationClass() {
             initPwa();
@@ -164,12 +120,6 @@ public class RouteRegistry implements Serializable {
             return super.hasNavigationTargets();
         }
 
-        @Override
-        public boolean hasRoutes() {
-            initRoutes();
-            return super.hasRoutes();
-        }
-
         private void initErrorTargets() {
             if (errorNavigationTargetsInitialized()) {
                 return;
@@ -218,7 +168,7 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private static class OSGiDataCollector extends RouteRegistry {
+    private static class OSGiDataCollector extends GlobalRouteRegistry {
 
         private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>(
                 Collections.emptySet());
@@ -270,7 +220,7 @@ public class RouteRegistry implements Serializable {
     /**
      * Creates a new uninitialized route registry.
      */
-    protected RouteRegistry() {
+    protected GlobalRouteRegistry() {
         ServiceLoader.load(NavigationTargetFilter.class)
                 .forEach(routeFilters::add);
     }
@@ -289,7 +239,7 @@ public class RouteRegistry implements Serializable {
         } catch (ClassNotFoundException e) {
             // ignore, the Lumo class is not available in the classpath
             Logger logger = LoggerFactory
-                    .getLogger(RouteRegistry.class.getName());
+                    .getLogger(GlobalRouteRegistry.class.getName());
             logger.trace(
                     "Lumo theme is not present in the classpath. The application will not use any default theme.",
                     e);
@@ -309,7 +259,7 @@ public class RouteRegistry implements Serializable {
      * @return a registry instance for the given servlet context, not
      *         <code>null</code>
      */
-    public static RouteRegistry getInstance(ServletContext servletContext) {
+    public static GlobalRouteRegistry getInstance(ServletContext servletContext) {
         assert servletContext != null;
 
         Object attribute;
@@ -324,8 +274,8 @@ public class RouteRegistry implements Serializable {
             }
         }
 
-        if (attribute instanceof RouteRegistry) {
-            return (RouteRegistry) attribute;
+        if (attribute instanceof GlobalRouteRegistry) {
+            return (GlobalRouteRegistry) attribute;
         } else {
             throw new IllegalStateException(
                     "Unknown servlet context attribute value: " + attribute);
@@ -343,6 +293,7 @@ public class RouteRegistry implements Serializable {
      * @throws InvalidRouteConfigurationException
      *             if routing has been configured incorrectly
      */
+    @Override
     public void setNavigationTargets(
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
@@ -354,12 +305,7 @@ public class RouteRegistry implements Serializable {
         registerNavigationTargets(navigationTargets);
     }
 
-    /**
-     * Set error handler navigation targets.
-     *
-     * @param errorNavigationTargets
-     *            error handler navigation targets
-     */
+    @Override
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
@@ -384,11 +330,7 @@ public class RouteRegistry implements Serializable {
         initErrorTargets(exceptionTargetsMap);
     }
 
-    /**
-     * Get the {@link RouteData} for all registered navigation targets.
-     *
-     * @return list of routes available for this registry
-     */
+    @Override
     public List<RouteData> getRegisteredRoutes() {
         // Build and collect only on first request
         if (routeData.get() == null) {
@@ -525,38 +467,14 @@ public class RouteRegistry implements Serializable {
         return null;
     }
 
-    /**
-     * Gets the optional navigation target class for a given Location. Returns
-     * an empty optional if no navigation target corresponds to the given
-     * Location.
-     *
-     * @see Location
-     *
-     * @param pathString
-     *            the path to get the navigation target for, not {@code null}
-     * @return optional of the navigation target corresponding to the given
-     *         location
-     */
+    @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
         return getNavigationTarget(pathString, new ArrayList<>());
     }
 
-    /**
-     * Gets the optional navigation target class for a given Location matching
-     * with path segments.
-     *
-     *
-     * @see Location
-     *
-     * @param pathString
-     *            path to get navigation target for, not {@code null}
-     * @param segments
-     *            segments given for path
-     * @return optional navigation target corresponding to the given location
-     *         with given segments if any applicable targets found.
-     */
+    @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
         if (hasRouteTo(pathString)) {
@@ -566,28 +484,14 @@ public class RouteRegistry implements Serializable {
         return Optional.empty();
     }
 
-    /**
-     * Checks if the registry contains a route to the given path.
-     *
-     * @param pathString
-     *            path to get navigation target for, not {@code null}
-     * @return true if the registry contains a route to the given path, false
-     *         otherwise.
-     */
+    @Override
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
 
         return getRoutes().containsKey(pathString);
     }
 
-    /**
-     * Get the url string for given navigation target.
-     *
-     * @param navigationTarget
-     *            navigation target to get registered route for, not
-     *            {@code null}
-     * @return optional navigation target url string
-     */
+    @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
@@ -692,7 +596,7 @@ public class RouteRegistry implements Serializable {
             Class<? extends Component> navigationTarget,
             Collection<String> paths)
             throws InvalidRouteConfigurationException {
-        Logger logger = LoggerFactory.getLogger(RouteRegistry.class.getName());
+        Logger logger = LoggerFactory.getLogger(GlobalRouteRegistry.class.getName());
         for (String path : paths) {
             RouteTarget routeTarget;
             if (routesMap.containsKey(path)) {
@@ -739,12 +643,7 @@ public class RouteRegistry implements Serializable {
         return null;
     }
 
-    /**
-     * Checks whether any navigation targets have been registered.
-     *
-     * @return <code>true</code> if at least one navigation target is
-     *         registered; otherwise <code>false</code>
-     */
+    @Override
     public boolean hasNavigationTargets() {
         return !getRoutes().isEmpty();
     }
@@ -757,33 +656,7 @@ public class RouteRegistry implements Serializable {
         return map;
     }
 
-    /**
-     * Check if there are any registered routes.
-     *
-     * @return true if we have registered routes
-     */
-    public boolean hasRoutes() {
-        return navigationTargetsInitialized() && !routes.get().isEmpty();
-    }
-
-    /**
-     * Gets the {@link ThemeDefinition} associated with the given navigation
-     * target, if any. The theme is defined by using the {@link Theme}
-     * annotation on the navigation target class.
-     * <p>
-     * If no {@link Theme} and {@link NoTheme} annotation are used, by default
-     * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
-     * the classpath).
-     *
-     * @param navigationTarget
-     *            the navigation target class
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
-     * @return the associated ThemeDefinition, or empty if none is defined and
-     *         the Lumo class is not in the classpath, or if the NoTheme
-     *         annotation is being used.
-     */
+    @Override
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
 
@@ -859,12 +732,12 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private static RouteRegistry createRegistry(ServletContext context) {
+    private static GlobalRouteRegistry createRegistry(ServletContext context) {
         if (context != null && context == OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
             return new OSGiDataCollector();
         } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
-            return new RouteRegistry();
+            return new GlobalRouteRegistry();
         }
         return new OSGiRouteRegistry();
     }

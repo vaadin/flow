@@ -40,14 +40,14 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             throws ServletException {
         try {
             if (classSet == null) {
-                RouteRegistry.getInstance(servletContext)
+                GlobalRouteRegistry.getInstance(servletContext)
                         .setNavigationTargets(Collections.emptySet());
                 return;
             }
             Set<Class<? extends Component>> routes = validateRouteClasses(
                     classSet.stream());
 
-            RouteRegistry routeRegistry = RouteRegistry
+            GlobalRouteRegistry routeRegistry = GlobalRouteRegistry
                     .getInstance(servletContext);
             routeRegistry.setNavigationTargets(routes);
             routeRegistry.setPwaConfigurationClass(validatePwaClass(

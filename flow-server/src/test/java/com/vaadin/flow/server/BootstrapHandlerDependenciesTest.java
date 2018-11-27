@@ -37,7 +37,6 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 import net.jcip.annotations.NotThreadSafe;

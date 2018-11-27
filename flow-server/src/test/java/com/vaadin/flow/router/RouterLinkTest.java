@@ -34,7 +34,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.GlobalRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -42,7 +42,7 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class RouterLinkTest extends HasCurrentService {
 
-    private RouteRegistry registry;
+    private GlobalRouteRegistry registry;
 
     private Router router;
 

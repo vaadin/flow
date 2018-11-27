@@ -56,11 +56,12 @@ import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterTest.FileNotFound;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -136,10 +137,12 @@ public class RouteRegistryInitializerTest {
     public void routeRegistry_routes_can_only_be_set_once()
             throws InvalidRouteConfigurationException {
         Assert.assertFalse("RouteRegistry should not be initialized",
-                registry.navigationTargetsInitialized());
+                ((GlobalRouteRegistry) registry)
+                        .navigationTargetsInitialized());
         registry.setNavigationTargets(new HashSet<>());
         Assert.assertTrue("RouteRegistry should be initialized",
-                registry.navigationTargetsInitialized());
+                ((GlobalRouteRegistry) registry)
+                        .navigationTargetsInitialized());
         registry.setNavigationTargets(new HashSet<>());
     }
 

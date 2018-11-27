@@ -58,7 +58,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.GlobalRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -759,7 +759,7 @@ public class UI extends Component
      * @return the associated ThemeDefinition, or empty if none is defined and
      *         the Lumo class is not in the classpath, or if the NoTheme
      *         annotation is being used.
-     * @see RouteRegistry#getThemeFor(Class, String)
+     * @see GlobalRouteRegistry#getThemeFor(Class, String)
      */
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {

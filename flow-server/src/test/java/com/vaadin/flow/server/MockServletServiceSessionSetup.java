@@ -29,7 +29,6 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class MockServletServiceSessionSetup {

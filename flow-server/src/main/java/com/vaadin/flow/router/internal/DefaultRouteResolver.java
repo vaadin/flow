@@ -32,7 +32,7 @@ import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.RouteResolver;
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.
