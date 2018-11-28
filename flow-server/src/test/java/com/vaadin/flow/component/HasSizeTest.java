@@ -54,6 +54,8 @@ public class HasSizeTest {
     public void removeWidth() {
         HasSizeComponent c = new HasSizeComponent();
         c.setWidth("100px");
+        Assert.assertEquals("100px", c.getWidth());
+
         c.setWidth(null);
         Assert.assertNull(c.getWidth());
     }
@@ -62,6 +64,8 @@ public class HasSizeTest {
     public void removeMinWidth() {
         HasSizeComponent c = new HasSizeComponent();
         c.setMinWidth("100px");
+        Assert.assertEquals("100px", c.getMinWidth());
+
         c.setMinWidth(null);
         Assert.assertNull(c.getMinWidth());
     }
@@ -70,6 +74,8 @@ public class HasSizeTest {
     public void removeMaxWidth() {
         HasSizeComponent c = new HasSizeComponent();
         c.setMaxWidth("100px");
+        Assert.assertEquals("100px", c.getMaxWidth());
+
         c.setMaxWidth(null);
         Assert.assertNull(c.getMaxWidth());
     }
@@ -99,6 +105,8 @@ public class HasSizeTest {
     public void removeHeight() {
         HasSizeComponent c = new HasSizeComponent();
         c.setHeight("100px");
+        Assert.assertEquals("100px", c.getHeight());
+
         c.setHeight(null);
         Assert.assertNull(c.getHeight());
     }
@@ -107,6 +115,8 @@ public class HasSizeTest {
     public void removeMinHeight() {
         HasSizeComponent c = new HasSizeComponent();
         c.setMinHeight("100px");
+        Assert.assertEquals("100px", c.getMinHeight());
+
         c.setMinHeight(null);
         Assert.assertNull(c.getMinHeight());
     }
@@ -115,6 +125,8 @@ public class HasSizeTest {
     public void removeMaxHeight() {
         HasSizeComponent c = new HasSizeComponent();
         c.setMaxHeight("100px");
+        Assert.assertEquals("100px", c.getMaxHeight());
+
         c.setMaxHeight(null);
         Assert.assertNull(c.getMaxHeight());
     }
