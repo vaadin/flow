@@ -112,7 +112,7 @@
         <npm.version>6.1.0</npm.version>
 
         <!-- Used in OSGi manifests -->
-        <jsoup.version>1.11.2</jsoup.version>
+        <jsoup.version>1.10.3</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
         <atmosphere.runtime.version>2.4.30.vaadin1</atmosphere.runtime.version>
 

@@ -163,7 +163,7 @@ public final class DefaultTemplateParser implements TemplateParser {
 
     private static void removeCommentsRecursively(Node node) {
         int i = 0;
-        while (i < node.childNodes().size()) {
+        while (i < node.childNodeSize()) {
             Node child = node.childNode(i);
             if (child instanceof Comment) {
                 child.remove();
