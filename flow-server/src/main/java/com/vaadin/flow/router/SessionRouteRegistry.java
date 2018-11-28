@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.internal;
+package com.vaadin.flow.router;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,15 +24,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.ParentLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionDestroyEvent;
@@ -39,7 +36,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.RouteTarget;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * SessionRouteRegistry is a mutable route registry that is valid in the scope
@@ -49,13 +45,13 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 public class SessionRouteRegistry implements RouteRegistry {
 
-    private RouteRegistry globalRegistry;
+    // SessionRegistry can not be used without a parentRegistry
+    private RouteRegistry parentRegistry;
 
     private final Map<String, RouteTarget> routes = new HashMap<>();
     private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
+    private final Map<String, List<Class<? extends RouterLayout>>> manualLayouts = new HashMap<>();
 
-    private final AtomicReference<Map<Class<? extends Exception>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
-    private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
     private final Registration registration;
     private final VaadinSession session;
 
@@ -77,8 +73,10 @@ public class SessionRouteRegistry implements RouteRegistry {
      * Clear all registered routes from this SessionRouteRegistry.
      */
     public void clear() {
-        routes.clear();
-        targetRoutes.clear();
+        synchronized (routes) {
+            routes.clear();
+            targetRoutes.clear();
+        }
     }
 
     public static SessionRouteRegistry getSessionRegistry() {
@@ -122,43 +120,15 @@ public class SessionRouteRegistry implements RouteRegistry {
             throw new InvalidRouteConfigurationException(exceptionMessage);
         }
 
-        Map<String, RouteTarget> routesMap = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-
         for (Class<? extends Component> navigationTarget : navigationTargets) {
-            Set<String> routeAndRouteAliasPaths = new HashSet<>();
-
-            String route = RouterUtil
-                    .getNavigationRouteAndAliases(navigationTarget,
-                            routeAndRouteAliasPaths);
-            routeAndRouteAliasPaths.add(route);
-
-            targetRoutesMap.put(navigationTarget, route);
-
-            for (String path : routeAndRouteAliasPaths) {
-                RouteTarget routeTarget;
-                if (routesMap.containsKey(path)) {
-                    routeTarget = routesMap.get(path);
-                    routeTarget.addRoute(navigationTarget);
-                } else {
-                    routeTarget = new RouteTarget(navigationTarget);
-                    routesMap.put(path, routeTarget);
-                }
-                routeTarget.setThemeFor(navigationTarget, RouterUtil
-                        .findThemeForNavigationTarget(navigationTarget, path));
-            }
-        }
-        synchronized (routes) {
-            routes.putAll(routesMap);
-            targetRoutes.putAll(targetRoutesMap);
+            setRoute(navigationTarget);
         }
     }
 
     /**
      * Giving a navigation target here will handle the {@link Route} annotation
-     * to get
-     * the path and also register any {@link RouteAlias} that may be on the
-     * class.
+     * to get the path and also register any {@link RouteAlias} that may be on
+     * the class.
      *
      * @param navigationTarget
      *         navigation target to register into the session route scope
@@ -169,7 +139,7 @@ public class SessionRouteRegistry implements RouteRegistry {
             throws InvalidRouteConfigurationException {
         Set<String> routeAndRouteAliasPaths = new HashSet<>();
 
-        String route = RouterUtil.getNavigationRouteAndAliases(navigationTarget,
+        String route = RouteUtil.getNavigationRouteAndAliases(navigationTarget,
                 routeAndRouteAliasPaths);
         routeAndRouteAliasPaths.add(route);
 
@@ -228,9 +198,12 @@ public class SessionRouteRegistry implements RouteRegistry {
 
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
-            Iterable<Class<? extends RouterLayout>> parentChain)
+            List<Class<? extends RouterLayout>> parentChain)
             throws InvalidRouteConfigurationException {
         setRoute(path, navigationTarget);
+        synchronized (manualLayouts) {
+            manualLayouts.put(path, Collections.unmodifiableList(parentChain));
+        }
     }
 
     @Override
@@ -254,7 +227,7 @@ public class SessionRouteRegistry implements RouteRegistry {
         if (navigationTarget.isPresent()) {
             return navigationTarget;
         }
-        return globalRegistry.getNavigationTarget(pathString);
+        return parentRegistry.getNavigationTarget(pathString);
     }
 
     @Override
@@ -268,45 +241,73 @@ public class SessionRouteRegistry implements RouteRegistry {
                 return target;
             }
         }
-        return globalRegistry.getNavigationTarget(pathString, segments);
+        return parentRegistry.getNavigationTarget(pathString, segments);
     }
 
     @Override
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
-        return globalRegistry.getErrorNavigationTarget(exception);
+        // TODO:
+        return parentRegistry.getErrorNavigationTarget(exception);
     }
 
     @Override
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
 
-        return routes.containsKey(pathString) || globalRegistry
+        return routes.containsKey(pathString) || parentRegistry
                 .hasRouteTo(pathString);
     }
 
     @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
-        return Optional.empty();
+
+        return parentRegistry.getTargetUrl(navigationTarget);
     }
 
     @Override
     public boolean hasNavigationTargets() {
-        return false;
+        return !routes.isEmpty() || parentRegistry.hasNavigationTargets();
     }
 
     @Override
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
-        return Optional.empty();
+    public List<Class<? extends RouterLayout>> getRouteLayouts(
+            Class<? extends Component> navigationTarget) {
+        // TODO:
+        return parentRegistry.getRouteLayouts(navigationTarget);
     }
 
-    public SessionRouteRegistry withGlobalRegistry(
-            RouteRegistry globalRegistry) {
-        if (this.globalRegistry == null)
-            this.globalRegistry = globalRegistry;
-        else if (!this.globalRegistry.equals(globalRegistry))
+    @Override
+    public List<Class<? extends RouterLayout>> getRouteLayouts(
+            Class<? extends Component> navigationTarget, String path) {
+        // TODO:
+        if (routes.containsKey(path) && (
+                !navigationTarget.isAnnotationPresent(Route.class)
+                        || manualLayouts.containsKey(path))) {
+            // User has defined parent layouts manually use those
+            if (manualLayouts.containsKey(path)) {
+                return manualLayouts.get(path);
+            }
+            // not a route layout use non route layout collection of parent layouts.
+            return getNonRouteLayouts(navigationTarget);
+        }
+        return parentRegistry.getRouteLayouts(navigationTarget, path);
+    }
+
+    @Override
+    public List<Class<? extends RouterLayout>> getNonRouteLayouts(
+            Class<? extends Component> nonRouteTarget) {
+        // TODO:
+        // No changes to the error layouts as of now.
+        return RouteUtil.getParentLayoutsForNonRouteTarget(nonRouteTarget);
+    }
+
+    public SessionRouteRegistry withParentRegistry(
+            RouteRegistry routeRegistry) {
+        if (this.parentRegistry == null)
+            this.parentRegistry = routeRegistry;
+        else if (!this.parentRegistry.equals(routeRegistry))
             throw new RuntimeException(
                     "Session registry got a new GlobalRouteRegistry which should not be possible!");
         return this;

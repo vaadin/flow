@@ -41,7 +41,6 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
-import com.vaadin.flow.router.internal.SessionRouteRegistry;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -443,7 +442,7 @@ public class Router implements Serializable {
             SessionRouteRegistry sessionRegistry = VaadinSession.getCurrent()
                     .getAttribute(SessionRouteRegistry.class);
             if (sessionRegistry != null) {
-                return sessionRegistry.withGlobalRegistry(registry);
+                return sessionRegistry.withParentRegistry(registry);
             }
         }
         return registry;
@@ -499,5 +498,33 @@ public class Router implements Serializable {
             return simpleName.toLowerCase();
         }
         return route.value();
+    }
+
+    /**
+     * Get the route target parent component chain from which to construct the
+     * view.
+     *
+     * @param navigationTarget
+     *         target to collect chain for
+     * @param resolvedPath
+     *         path to use for resolving chain
+     * @return parent component chain
+     */
+    public List<Class<? extends RouterLayout>> getRouteLayouts(
+            Class<? extends Component> navigationTarget, String resolvedPath) {
+        return getRegistry().getRouteLayouts(navigationTarget, resolvedPath);
+    }
+
+    /**
+     * Get the route target parent component chain for constructing the error
+     * view.
+     *
+     * @param errorTarget
+     *         error target to get chain for
+     * @return parent component chain
+     */
+    public List<Class<? extends RouterLayout>> getErrorLayouts(
+            Class<? extends Component> errorTarget) {
+        return getRegistry().getNonRouteLayouts(errorTarget);
     }
 }

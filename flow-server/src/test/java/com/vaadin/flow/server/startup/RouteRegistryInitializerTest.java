@@ -65,6 +65,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.flow.theme.ThemeUtil;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -1358,23 +1359,6 @@ public class RouteRegistryInitializerTest {
         routeRegistryInitializer.onStartup(
                 Stream.of(ThemeAliasView.class).collect(Collectors.toSet()),
                 servletContext);
-    }
-
-    @Test
-    public void registerNavigationTargetWithTheme_subclassGetsTheme()
-            throws ServletException {
-        routeRegistryInitializer
-                .onStartup(Stream.of(ThemeSingleNavigationTarget.class)
-                        .collect(Collectors.toSet()), servletContext);
-
-        Optional<ThemeDefinition> theme = registry.getThemeFor(
-                ThemeSingleNavigationTargetSubclass.class, "single");
-        Assert.assertTrue(
-                "Subclass should have a theme when the superclass has",
-                theme.isPresent());
-        Assert.assertEquals(
-                "Subclass should have the same theme as its superclass",
-                MyTheme.class, theme.get().getTheme());
     }
 
     @Route("ignored")

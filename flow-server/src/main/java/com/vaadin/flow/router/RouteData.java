@@ -22,7 +22,7 @@ import java.util.List;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.internal.RouterUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Data collection of information for a specific registered route target.
@@ -112,7 +112,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
         AnnotationReader.getAnnotationsFor(navigationTarget, RouteAlias.class)
                 .forEach(alias -> routeAliases
-                        .add(new AliasData(alias.layout(), RouterUtil
+                        .add(new AliasData(alias.layout(), RouteUtil
                                 .getRouteAliasPath(navigationTarget, alias))));
         Collections.sort(routeAliases);
     }

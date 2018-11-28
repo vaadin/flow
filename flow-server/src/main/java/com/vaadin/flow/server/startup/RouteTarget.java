@@ -37,7 +37,6 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> parameter;
     private Class<? extends Component> optionalParameter;
     private Class<? extends Component> wildCardParameter;
-    private Map<Class<?>, ThemeDefinition> routeThemes;
 
     /**
      * Create a new Route target holder.
@@ -161,33 +160,4 @@ public class RouteTarget implements Serializable {
                         WildcardParameter.class);
     }
 
-    /**
-     * Sets the theme used by this RouteTarget for a given navigation target.
-     * 
-     * @param target
-     *            navigation target
-     * @param theme
-     *            themeDefinition to be used when the navigation target is used
-     */
-    public void setThemeFor(Class<?> target, ThemeDefinition theme) {
-        if (routeThemes == null) {
-            routeThemes = new HashMap<>();
-        }
-        routeThemes.put(target, theme);
-    }
-
-    /**
-     * Gets the theme that should be used for the given navigation target.
-     * 
-     * @param target
-     *            navigation target
-     * @return theme class to be used when the navigation target is used, or
-     *         <code>null</code> if no theme was set for it
-     */
-    public ThemeDefinition getThemeFor(Class<?> target) {
-        if (routeThemes == null) {
-            return null;
-        }
-        return routeThemes.get(target);
-    }
 }

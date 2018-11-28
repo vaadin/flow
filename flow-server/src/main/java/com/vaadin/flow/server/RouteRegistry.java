@@ -23,10 +23,8 @@ import java.util.Set;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 public interface RouteRegistry extends Serializable {
 
@@ -124,23 +122,38 @@ public interface RouteRegistry extends Serializable {
     boolean hasNavigationTargets();
 
     /**
-     * Gets the {@link ThemeDefinition} associated with the given navigation
-     * target, if any. The theme is defined by using the {@link Theme}
-     * annotation on the navigation target class.
+     * Get the layout chain for given navigation target.
      * <p>
-     * If no {@link Theme} and {@link NoTheme} annotation are used, by default
-     * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
-     * the classpath).
+     * This chain may be pre-defined or generated from annotation data.
      *
      * @param navigationTarget
-     *         the navigation target class
-     * @param path
-     *         the resolved route path so we can determine what the rendered
-     *         target is for
-     * @return the associated ThemeDefinition, or empty if none is defined and
-     * the Lumo class is not in the classpath, or if the NoTheme
-     * annotation is being used.
+     *         navigation target to get layout chain for
+     * @return layout chain of target
      */
-    Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path);
+    List<Class<? extends RouterLayout>> getRouteLayouts(
+            Class<? extends Component> navigationTarget);
+
+    /**
+     * Get the layout chain for given navigation target on the targeted path.
+     * <p>
+     * This chain may be pre-defined or generated from annotation data.
+     *
+     * @param navigationTarget
+     *         navigation target to get layout chain for
+     * @param path
+     *         path to use for resolving chain
+     * @return layout chain of target
+     */
+    List<Class<? extends RouterLayout>> getRouteLayouts(
+            Class<? extends Component> navigationTarget, String path);
+
+    /**
+     * Get the layout chain for an navigation target without a route annotation.
+     *
+     * @param nonRouteTarget
+     *         target to get layouts for
+     * @return layout chain for target
+     */
+    List<Class<? extends RouterLayout>> getNonRouteLayouts(
+            Class<? extends Component> nonRouteTarget);
 }

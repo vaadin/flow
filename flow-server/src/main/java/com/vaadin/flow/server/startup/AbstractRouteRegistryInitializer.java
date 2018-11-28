@@ -33,7 +33,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouterUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
@@ -131,15 +131,15 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
-                                RouterUtil.getTopParentLayout(route,
+                                RouteUtil.getTopParentLayout(route,
                                         Router.resolve(route, annotation))
                                         .getName(),
                                 route.getName()));
             }
 
-            List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+            List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                     .getParentLayouts(route, Router.resolve(route, annotation));
-            Class<? extends RouterLayout> topParentLayout = RouterUtil
+            Class<? extends RouterLayout> topParentLayout = RouteUtil
                     .getTopParentLayout(route,
                             Router.resolve(route, annotation));
 
@@ -155,14 +155,14 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
-                                RouterUtil.getTopParentLayout(route,
+                                RouteUtil.getTopParentLayout(route,
                                         alias.value()).getName(),
                                 route.getName()));
             }
 
-            List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+            List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                     .getParentLayouts(route, alias.value());
-            Class<? extends RouterLayout> topParentLayout = RouterUtil
+            Class<? extends RouterLayout> topParentLayout = RouteUtil
                     .getTopParentLayout(route, alias.value());
 
             validateParentImplementation(parentLayouts, topParentLayout,
@@ -204,7 +204,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
                                 annotation.getSimpleName(),
-                                RouterUtil
+                                RouteUtil
                                         .getTopParentLayout(route,
                                                 Router.resolve(route,
                                                         routeAnnotation))
@@ -212,10 +212,10 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                                 route.getName()));
             }
 
-            List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+            List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                     .getParentLayouts(route,
                             Router.resolve(route, routeAnnotation));
-            Class<? extends RouterLayout> topParentLayout = RouterUtil
+            Class<? extends RouterLayout> topParentLayout = RouteUtil
                     .getTopParentLayout(route,
                             Router.resolve(route, routeAnnotation));
 
@@ -231,14 +231,14 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
                                 annotation.getSimpleName(),
-                                RouterUtil.getTopParentLayout(route,
+                                RouteUtil.getTopParentLayout(route,
                                         alias.value()).getName(),
                                 route.getName()));
             }
 
-            List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+            List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                     .getParentLayouts(route, alias.value());
-            Class<? extends RouterLayout> topParentLayout = RouterUtil
+            Class<? extends RouterLayout> topParentLayout = RouteUtil
                     .getTopParentLayout(route, alias.value());
 
             validateParentAnnotation(parentLayouts, topParentLayout,
@@ -288,7 +288,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
             Route routeAnnotation = route.getAnnotation(Route.class);
             if (!UI.class.equals(routeAnnotation.layout())) {
-                Class<? extends RouterLayout> topParentLayout = RouterUtil
+                Class<? extends RouterLayout> topParentLayout = RouteUtil
                         .getTopParentLayout(route,
                                 Router.resolve(route, routeAnnotation));
                 // check and validate top parent layout pwa annotation

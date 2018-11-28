@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,8 +30,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,13 +46,12 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.RouterUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -223,13 +221,13 @@ public class GlobalRouteRegistry implements RouteRegistry {
      * the context.
      *
      * @param servletContext
-     *            the servlet context for which to get a route registry, not
-     *            <code>null</code>
-     *
-     * @return a registry instance for the given servlet context, not
+     *         the servlet context for which to get a route registry, not
      *         <code>null</code>
+     * @return a registry instance for the given servlet context, not
+     * <code>null</code>
      */
-    public static GlobalRouteRegistry getInstance(ServletContext servletContext) {
+    public static GlobalRouteRegistry getInstance(
+            ServletContext servletContext) {
         assert servletContext != null;
 
         Object attribute;
@@ -239,8 +237,8 @@ public class GlobalRouteRegistry implements RouteRegistry {
 
             if (attribute == null) {
                 attribute = createRegistry(servletContext);
-                servletContext.setAttribute(RouteRegistry.class.getName(),
-                        attribute);
+                servletContext
+                        .setAttribute(RouteRegistry.class.getName(), attribute);
             }
         }
 
@@ -259,9 +257,9 @@ public class GlobalRouteRegistry implements RouteRegistry {
      * {@link #navigationTargetsInitialized()} is {@code false}.
      *
      * @param navigationTargets
-     *            set of navigation target components
+     *         set of navigation target components
      * @throws InvalidRouteConfigurationException
-     *             if routing has been configured incorrectly
+     *         if routing has been configured incorrectly
      */
     @Override
     public void setNavigationTargets(
@@ -348,7 +346,7 @@ public class GlobalRouteRegistry implements RouteRegistry {
      * targets.
      *
      * @return whether this registry has been initialized with error navigation
-     *         targets
+     * targets
      */
     public boolean errorNavigationTargetsInitialized() {
         return exceptionTargets.get() != null;
@@ -363,9 +361,9 @@ public class GlobalRouteRegistry implements RouteRegistry {
      * allowed.
      *
      * @param target
-     *            target being handled
+     *         target being handled
      * @param exceptionType
-     *            type of the handled exception
+     *         type of the handled exception
      */
     private void handleRegisteredExceptionType(
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
@@ -377,10 +375,10 @@ public class GlobalRouteRegistry implements RouteRegistry {
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
-            String msg = String.format(
-                    "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                    target.getName(), registered.getName(),
-                    exceptionType.getName());
+            String msg = String
+                    .format("Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                            target.getName(), registered.getName(),
+                            exceptionType.getName());
             throw new InvalidRouteLayoutConfigurationException(msg);
         }
     }
@@ -391,7 +389,7 @@ public class GlobalRouteRegistry implements RouteRegistry {
      * found search by extended type.
      *
      * @param exception
-     *            exception to search error view for
+     *         exception to search error view for
      * @return optional error target entry corresponding to the given exception
      */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
@@ -423,8 +421,8 @@ public class GlobalRouteRegistry implements RouteRegistry {
 
     private ErrorTargetEntry searchBySuperType(Throwable exception) {
         Class<?> superClass = exception.getClass().getSuperclass();
-        while (superClass != null
-                && Exception.class.isAssignableFrom(superClass)) {
+        while (superClass != null && Exception.class
+                .isAssignableFrom(superClass)) {
             Class<? extends Component> targetClass = exceptionTargets.get()
                     .get(superClass);
             if (targetClass != null) {
@@ -472,7 +470,7 @@ public class GlobalRouteRegistry implements RouteRegistry {
      * Append any required parameters as /{param_class} to the route.
      *
      * @param navigationTarget
-     *            navigation target to generate url for
+     *         navigation target to generate url for
      * @return route with required parameters
      */
     private String collectRequiredParameters(
@@ -483,8 +481,9 @@ public class GlobalRouteRegistry implements RouteRegistry {
         List<Class<?>> routeParameters = getRouteParameters(navigationTarget);
 
         if (!routeParameters.isEmpty()) {
-            routeParameters.forEach(param -> route.append("/{")
-                    .append(param.getSimpleName()).append("}"));
+            routeParameters.forEach(
+                    param -> route.append("/{").append(param.getSimpleName())
+                            .append("}"));
         }
         return route.toString();
     }
@@ -518,14 +517,15 @@ public class GlobalRouteRegistry implements RouteRegistry {
             }
 
             Set<String> paths = new HashSet<>();
-            String route = RouterUtil.getNavigationRouteAndAliases(navigationTarget, paths);
+            String route = RouteUtil
+                    .getNavigationRouteAndAliases(navigationTarget, paths);
             paths.add(route);
 
             targetRoutesMap.put(navigationTarget, route);
             addRoute(routesMap, navigationTarget, paths);
         }
-        if (!routes.compareAndSet(null,
-                Collections.unmodifiableMap(routesMap))) {
+        if (!routes
+                .compareAndSet(null, Collections.unmodifiableMap(routesMap))) {
             handleInitializedRegistry();
         }
         if (!targetRoutes.compareAndSet(null,
@@ -538,7 +538,8 @@ public class GlobalRouteRegistry implements RouteRegistry {
             Class<? extends Component> navigationTarget,
             Collection<String> paths)
             throws InvalidRouteConfigurationException {
-        Logger logger = LoggerFactory.getLogger(GlobalRouteRegistry.class.getName());
+        Logger logger = LoggerFactory
+                .getLogger(GlobalRouteRegistry.class.getName());
         for (String path : paths) {
             RouteTarget routeTarget;
             if (routesMap.containsKey(path)) {
@@ -552,9 +553,6 @@ public class GlobalRouteRegistry implements RouteRegistry {
                 routeTarget = new RouteTarget(navigationTarget);
                 routesMap.put(path, routeTarget);
             }
-            routeTarget.setThemeFor(navigationTarget,
-                    RouterUtil.findThemeForNavigationTarget(navigationTarget,
-                            path));
         }
     }
 
@@ -572,31 +570,21 @@ public class GlobalRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
+    public List<Class<? extends RouterLayout>> getRouteLayouts(
+            Class<? extends Component> navigationTarget) {
+        return RouteUtil.getParentLayouts(navigationTarget);
+    }
 
-        if (navigationTarget != null && navigationTargetsInitialized()) {
-            RouteTarget routeTarget = null;
-            if (path != null) {
-                routeTarget = routes.get().get(path);
-            }
-            Map<Class<? extends Component>, String> targetRoutesMap = targetRoutes
-                    .get();
-            if (routeTarget == null
-                    && targetRoutesMap.containsKey(navigationTarget)) {
-                String routePath = targetRoutesMap.get(navigationTarget);
-                routeTarget = routes.get().get(routePath);
-            }
-            if (routeTarget != null) {
-                ThemeDefinition theme = routeTarget
-                        .getThemeFor(navigationTarget);
-                if (theme != null) {
-                    return Optional.of(theme);
-                }
-            }
-        }
-        return Optional.ofNullable(
-                RouterUtil.findThemeForNavigationTarget(navigationTarget, path));
+    @Override
+    public List<Class<? extends RouterLayout>> getRouteLayouts(
+            Class<? extends Component> navigationTarget, String path) {
+        return RouteUtil.getParentLayouts(navigationTarget, path);
+    }
+
+    @Override
+    public List<Class<? extends RouterLayout>> getNonRouteLayouts(
+            Class<? extends Component> errorTarget) {
+        return RouteUtil.getParentLayoutsForNonRouteTarget(errorTarget);
     }
 
     /**
@@ -616,8 +604,8 @@ public class GlobalRouteRegistry implements RouteRegistry {
      * {@link AbstractRouteRegistryInitializer}.
      *
      * @param pwaClass
-     *            a class that has PWA -annotation, that's to be used in service
-     *            initialization.
+     *         a class that has PWA -annotation, that's to be used in service
+     *         initialization.
      */
     public void setPwaConfigurationClass(Class<?> pwaClass) {
         if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {

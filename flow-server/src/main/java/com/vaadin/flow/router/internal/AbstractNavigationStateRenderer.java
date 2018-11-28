@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -123,13 +122,13 @@ public abstract class AbstractNavigationStateRenderer
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
         List<Class<? extends RouterLayout>> routeLayoutTypes = getRouterLayoutTypes(
-                routeTargetType);
+                routeTargetType, ui.getRouter());
 
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
 
         clearContinueNavigationAction(ui);
-        RouterUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
+        RouteUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         if (eventActionsSupported()) {
 
@@ -175,7 +174,7 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType);
 
-        LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event,
+        LocationChangeEvent locationChangeEvent = RouteUtil.createEvent(event,
                 chain);
 
         notifyNavigationTarget(componentInstance, event,
@@ -205,7 +204,7 @@ public abstract class AbstractNavigationStateRenderer
                 navigationState.getResolvedPath(), componentInstance,
                 routerLayouts);
 
-        RouterUtil.updatePageTitle(event, componentInstance);
+        RouteUtil.updatePageTitle(event, componentInstance);
 
         int statusCode = locationChangeEvent.getStatusCode();
         validateStatusCode(statusCode, routeTargetType);
@@ -247,12 +246,14 @@ public abstract class AbstractNavigationStateRenderer
      *
      * @param routeTargetType
      *            component type that will be shown
+     * @param router
+     *            used router instance
      *
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
      */
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            Class<? extends Component> routeTargetType);
+            Class<? extends Component> routeTargetType, Router router);
 
     /**
      * Checks whether this renderer should reroute or postpone navigation based

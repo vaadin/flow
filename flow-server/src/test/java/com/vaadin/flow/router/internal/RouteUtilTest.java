@@ -30,10 +30,10 @@ import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 
 /**
- * Test that {@link RouterUtil} route resolving works as intended for both
+ * Test that {@link RouteUtil} route resolving works as intended for both
  * simple and complex cases.
  */
-public class RouterUtilTest {
+public class RouteUtilTest {
 
     @Tag(Tag.DIV)
     public static class Parent extends Component implements RouterLayout {
@@ -116,7 +116,7 @@ public class RouterUtilTest {
 
     @Test
     public void route_path_should_contain_parent_prefix() {
-        String routePath = RouterUtil.getRoutePath(
+        String routePath = RouteUtil.getRoutePath(
                 BaseRouteWithParentPrefixAndRouteAlias.class,
                 BaseRouteWithParentPrefixAndRouteAlias.class
                         .getAnnotation(Route.class));
@@ -127,7 +127,7 @@ public class RouterUtilTest {
 
     @Test
     public void absolute_route_should_not_contain_parent_prefix() {
-        String routePath = RouterUtil.getRoutePath(AbsoluteRoute.class,
+        String routePath = RouteUtil.getRoutePath(AbsoluteRoute.class,
                 AbsoluteRoute.class.getAnnotation(Route.class));
         Assert.assertEquals("No parent prefix should have been added.",
                 "single", routePath);
@@ -135,7 +135,7 @@ public class RouterUtilTest {
 
     @Test
     public void absolute_middle_parent_route_should_not_contain_parent_prefix() {
-        String routePath = RouterUtil.getRoutePath(AbsoluteRoute.class,
+        String routePath = RouteUtil.getRoutePath(AbsoluteRoute.class,
                 AbsoluteCenterRoute.class.getAnnotation(Route.class));
         Assert.assertEquals("No parent prefix should have been added.",
                 "absolute/child", routePath);
@@ -143,7 +143,7 @@ public class RouterUtilTest {
 
     @Test
     public void absolute_route_alias_should_not_contain_parent_prefix() {
-        String routePath = RouterUtil.getRouteAliasPath(AbsoluteRoute.class,
+        String routePath = RouteUtil.getRouteAliasPath(AbsoluteRoute.class,
                 AbsoluteRoute.class.getAnnotation(RouteAlias.class));
         Assert.assertEquals("No parent prefix should have been added.", "alias",
                 routePath);
@@ -151,7 +151,7 @@ public class RouterUtilTest {
 
     @Test
     public void absolute_middle_parent_for_route_alias_should_not_contain_parent_prefix() {
-        String routePath = RouterUtil.getRouteAliasPath(AbsoluteRoute.class,
+        String routePath = RouteUtil.getRouteAliasPath(AbsoluteRoute.class,
                 AbsoluteCenterRoute.class.getAnnotation(RouteAlias.class));
         Assert.assertEquals("No parent prefix should have been added.",
                 "absolute/alias", routePath);
@@ -159,7 +159,7 @@ public class RouterUtilTest {
 
     @Test
     public void route_path_should_contain_route_and_parent_prefix() {
-        String routePath = RouterUtil.getRoutePath(
+        String routePath = RouteUtil.getRoutePath(
                 RouteWithParentPrefixAndRouteAlias.class,
                 RouteWithParentPrefixAndRouteAlias.class
                         .getAnnotation(Route.class));
@@ -170,14 +170,14 @@ public class RouterUtilTest {
 
     @Test
     public void route_alias_path_should_not_contain_parent_prefix() {
-        String routePath = RouterUtil.getRouteAliasPath(
+        String routePath = RouteUtil.getRouteAliasPath(
                 BaseRouteWithParentPrefixAndRouteAlias.class,
                 BaseRouteWithParentPrefixAndRouteAlias.class
                         .getAnnotation(RouteAlias.class));
         Assert.assertEquals(
                 "Expected path should only have been parent RoutePrefix",
                 "alias", routePath);
-        routePath = RouterUtil.getRouteAliasPath(
+        routePath = RouteUtil.getRouteAliasPath(
                 RouteWithParentPrefixAndRouteAlias.class,
                 RouteWithParentPrefixAndRouteAlias.class
                         .getAnnotation(RouteAlias.class));
@@ -188,7 +188,7 @@ public class RouterUtilTest {
 
     @Test
     public void route_alias_should_contain_parent_prefix() {
-        String routePath = RouterUtil.getRouteAliasPath(
+        String routePath = RouteUtil.getRouteAliasPath(
                 RouteAliasWithParentPrefix.class,
                 RouteAliasWithParentPrefix.class
                         .getAnnotation(RouteAlias.class));
@@ -199,7 +199,7 @@ public class RouterUtilTest {
 
     @Test
     public void top_parent_layout_should_be_found_for_base_route() {
-        Class<? extends RouterLayout> parent = RouterUtil.getTopParentLayout(
+        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 BaseRouteWithParentPrefixAndRouteAlias.class, "parent");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
@@ -209,7 +209,7 @@ public class RouterUtilTest {
 
     @Test
     public void top_parent_layout_should_be_found_for_non_base_route() {
-        Class<? extends RouterLayout> parent = RouterUtil.getTopParentLayout(
+        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 RouteWithParentPrefixAndRouteAlias.class, "parent/flow");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
@@ -219,7 +219,7 @@ public class RouterUtilTest {
 
     @Test
     public void no_top_parent_layout_for_route_alias() {
-        Class<? extends RouterLayout> parent = RouterUtil.getTopParentLayout(
+        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 BaseRouteWithParentPrefixAndRouteAlias.class, "alias");
 
         Assert.assertNull("Found parent for RouteAlias without parent.",
@@ -228,7 +228,7 @@ public class RouterUtilTest {
 
     @Test
     public void top_parent_layout_for_route_alias() {
-        Class<? extends RouterLayout> parent = RouterUtil.getTopParentLayout(
+        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 RouteAliasWithParentPrefix.class, "aliasparent/alias");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
@@ -238,7 +238,7 @@ public class RouterUtilTest {
 
     @Test
     public void top_parent_layout_for_absolute_route() {
-        Class<? extends RouterLayout> parent = RouterUtil
+        Class<? extends RouterLayout> parent = RouteUtil
                 .getTopParentLayout(AbsoluteRoute.class, "single");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
@@ -248,7 +248,7 @@ public class RouterUtilTest {
 
     @Test
     public void top_parent_layout_for_absolute_route_parent() {
-        Class<? extends RouterLayout> parent = RouterUtil.getTopParentLayout(
+        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 AbsoluteCenterRoute.class, "absolute/child");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
@@ -258,7 +258,7 @@ public class RouterUtilTest {
 
     @Test
     public void top_parent_layout_for_absolute_route_alias() {
-        Class<? extends RouterLayout> parent = RouterUtil
+        Class<? extends RouterLayout> parent = RouteUtil
                 .getTopParentLayout(AbsoluteRoute.class, "alias");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
@@ -268,7 +268,7 @@ public class RouterUtilTest {
 
     @Test
     public void top_parent_layout_for_absolute_route_alias_parent() {
-        Class<? extends RouterLayout> parent = RouterUtil.getTopParentLayout(
+        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
                 AbsoluteCenterRoute.class, "absolute/alias");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
@@ -278,7 +278,7 @@ public class RouterUtilTest {
 
     @Test
     public void expected_parent_layouts_are_found_for_route() {
-        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(BaseRouteWithParentPrefixAndRouteAlias.class);
 
         Assert.assertThat(
@@ -286,7 +286,7 @@ public class RouterUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouterUtil.getParentLayouts(
+        parentLayouts = RouteUtil.getParentLayouts(
                 BaseRouteWithParentPrefixAndRouteAlias.class, "parent");
 
         Assert.assertThat(
@@ -294,7 +294,7 @@ public class RouterUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouterUtil.getParentLayouts(RootWithParents.class, "");
+        parentLayouts = RouteUtil.getParentLayouts(RootWithParents.class, "");
 
         Assert.assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
@@ -304,7 +304,7 @@ public class RouterUtilTest {
 
     @Test
     public void expected_to_get_parent_layout() {
-        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayoutsForNonRouteTarget(
                         NonRouteTargetWithParents.class);
 
@@ -319,7 +319,7 @@ public class RouterUtilTest {
 
     @Test
     public void expected_parent_layouts_are_found_for_route_alias() {
-        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(RouteAliasWithParentPrefix.class,
                         "aliasparent/alias");
 
@@ -331,7 +331,7 @@ public class RouterUtilTest {
 
     @Test
     public void absolute_route_gets_expected_parent_layouts() {
-        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(AbsoluteRoute.class);
 
         Assert.assertThat(
@@ -339,7 +339,7 @@ public class RouterUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouterUtil.getParentLayouts(AbsoluteRoute.class,
+        parentLayouts = RouteUtil.getParentLayouts(AbsoluteRoute.class,
                 "single");
 
         Assert.assertThat(
@@ -347,7 +347,7 @@ public class RouterUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouterUtil.getParentLayouts(AbsoluteCenterRoute.class,
+        parentLayouts = RouteUtil.getParentLayouts(AbsoluteCenterRoute.class,
                 "absolute/child");
 
         Assert.assertThat(
@@ -359,7 +359,7 @@ public class RouterUtilTest {
 
     @Test
     public void abolute_route_alias_gets_expected_parent_layouts() {
-        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(AbsoluteRoute.class, "alias");
 
         Assert.assertThat(
@@ -367,7 +367,7 @@ public class RouterUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouterUtil.getParentLayouts(AbsoluteCenterRoute.class,
+        parentLayouts = RouteUtil.getParentLayouts(AbsoluteCenterRoute.class,
                 "absolute/alias");
 
         Assert.assertThat(
@@ -380,7 +380,7 @@ public class RouterUtilTest {
 
     @Test
     public void also_non_routes_can_be_used_to_get_top_parent_layout() {
-        Class<? extends RouterLayout> topParentLayout = RouterUtil
+        Class<? extends RouterLayout> topParentLayout = RouteUtil
                 .getTopParentLayout(MiddleParent.class, null);
         Assert.assertEquals(
                 "Middle parent should have gotten Parent as top parent layout",
@@ -389,19 +389,19 @@ public class RouterUtilTest {
 
     @Test // 3424
     public void top_layout_resolves_correctly_for_route_parent() {
-        Class<? extends RouterLayout> topParentLayout = RouterUtil
+        Class<? extends RouterLayout> topParentLayout = RouteUtil
                 .getTopParentLayout(MultiTarget.class, "");
         Assert.assertEquals(
                 "@Route path should have gotten Parent as top parent layout",
                 Parent.class, topParentLayout);
 
-        topParentLayout = RouterUtil
+        topParentLayout = RouteUtil
                 .getTopParentLayout(MultiTarget.class, "alias");
         Assert.assertEquals(
                 "@RouteAlias path should have gotten Parent as top parent layout",
                 Parent.class, topParentLayout);
 
-        topParentLayout = RouterUtil
+        topParentLayout = RouteUtil
                 .getTopParentLayout(SubLayout.class, "parent/sub");
         Assert.assertEquals(
                 "SubLayout using MultiTarget as parent should have gotten RoutePrefixParent as top parent layout",
@@ -411,7 +411,7 @@ public class RouterUtilTest {
 
     @Test // 3424
     public void parent_layouts_resolve_correctly_for_route_parent() {
-        List<Class<? extends RouterLayout>> parentLayouts = RouterUtil
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(MultiTarget.class, "");
 
         Assert.assertThat(
@@ -419,7 +419,7 @@ public class RouterUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { Parent.class }));
 
-        parentLayouts = RouterUtil.getParentLayouts(MultiTarget.class,
+        parentLayouts = RouteUtil.getParentLayouts(MultiTarget.class,
                 "alias");
 
         Assert.assertThat(
@@ -428,7 +428,7 @@ public class RouterUtilTest {
                 IsIterableContainingInOrder.contains(new Class[] {
                         MiddleParent.class, Parent.class }));
 
-        parentLayouts = RouterUtil.getParentLayouts(SubLayout.class,
+        parentLayouts = RouteUtil.getParentLayouts(SubLayout.class,
                 "parent/sub");
 
         Assert.assertThat(

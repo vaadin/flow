@@ -46,13 +46,14 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.flow.theme.ThemeUtil;
 
 /**
- * Utility class with methods for router layout handling.
+ * Utility class with methods for route handling.
  */
-public final class RouterUtil {
+public final class RouteUtil {
 
-    private RouterUtil() {
+    private RouteUtil() {
     }
 
     /**
@@ -352,68 +353,6 @@ public final class RouterUtil {
                 event.getTrigger(), event.getLocation(), routeTargetChain);
     }
 
-    private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
-
-    /**
-     * Loads the Lumo theme class from the classpath if it is available.
-     *
-     * @return the Lumo ThemeDefinition, or <code>null</code> if it is not
-     * available in the classpath
-     */
-    private static final ThemeDefinition loadLumoClassIfAvailable() {
-        try {
-            Class<? extends AbstractTheme> theme = (Class<? extends AbstractTheme>) Class
-                    .forName("com.vaadin.flow.theme.lumo.Lumo");
-            return new ThemeDefinition(theme, "");
-        } catch (ClassNotFoundException e) {
-            // ignore, the Lumo class is not available in the classpath
-            Logger logger = LoggerFactory
-                    .getLogger(RouterUtil.class.getName());
-            logger.trace(
-                    "Lumo theme is not present in the classpath. The application will not use any default theme.",
-                    e);
-        }
-        return null;
-    }
-
-    /**
-     * Find annotated theme for navigationTarget on given path or lumo if
-     * available.
-     *
-     * @param navigationTarget
-     *         navigation target to find theme for
-     * @param path
-     *         path used for navigation
-     * @return found theme or lumo if available
-     */
-    public static ThemeDefinition findThemeForNavigationTarget(
-            Class<?> navigationTarget, String path) {
-
-        if (navigationTarget == null) {
-            return LUMO_CLASS_IF_AVAILABLE;
-        }
-
-        Class<? extends RouterLayout> topParentLayout = RouterUtil
-                .getTopParentLayout(navigationTarget, path);
-
-        Class<?> target =
-                topParentLayout == null ? navigationTarget : topParentLayout;
-
-        Optional<Theme> themeAnnotation = AnnotationReader
-                .getAnnotationFor(target, Theme.class);
-
-        if (themeAnnotation.isPresent()) {
-            return new ThemeDefinition(themeAnnotation.get());
-        }
-
-        if (!AnnotationReader.getAnnotationFor(target, NoTheme.class)
-                .isPresent()) {
-            return LUMO_CLASS_IF_AVAILABLE;
-        }
-
-        return null;
-    }
-
     /**
      * Collect the whole route for the navigation target.
      * <p>
@@ -430,7 +369,7 @@ public final class RouterUtil {
 
         aliases.addAll(getRouteAliases(navigationTarget));
 
-        return RouterUtil.getRoutePath(navigationTarget, annotation);
+        return RouteUtil.getRoutePath(navigationTarget, annotation);
     }
 
     /**
@@ -448,7 +387,7 @@ public final class RouterUtil {
         List<String> aliases = new ArrayList<>();
         for (RouteAlias alias : navigationTarget
                 .getAnnotationsByType(RouteAlias.class)) {
-            aliases.add(RouterUtil.getRouteAliasPath(navigationTarget, alias));
+            aliases.add(RouteUtil.getRouteAliasPath(navigationTarget, alias));
         }
         return aliases;
     }
