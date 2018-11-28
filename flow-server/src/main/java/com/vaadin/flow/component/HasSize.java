@@ -55,7 +55,7 @@ public interface HasSize extends HasElement {
      * removed.
      *
      * @param minWidth
-     *            the min-width to set, may be {@code null}
+     *            the min-width value (if <code>null</code>, the property will be removed)
      */
     default void setMinWidth(String minWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MIN_WIDTH, minWidth);
@@ -71,7 +71,7 @@ public interface HasSize extends HasElement {
      * removed.
      *
      * @param maxWidth
-     *            the max-width to set, may be {@code null}
+     *            the max-width value (if <code>null</code>, the property will be removed)
      */
     default void setMaxWidth(String maxWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_WIDTH, maxWidth);
@@ -142,7 +142,7 @@ public interface HasSize extends HasElement {
      * removed.
      *
      * @param minHeight
-     *            the min-height to set, may be {@code null}
+     *            the min-height value (if <code>null</code>, the property will be removed)
      */
     default void setMinHeight(String minHeight) {
         getElement().getStyle().set(ElementConstants.STYLE_MIN_HEIGHT, minHeight);
@@ -158,7 +158,7 @@ public interface HasSize extends HasElement {
      * removed.
      *
      * @param maxHeight
-     *            the max-height to set, may be {@code null}
+     *            the max-height value (if <code>null</code>, the property will be removed)
      */
     default void setMaxHeight(String maxHeight) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT, maxHeight);
