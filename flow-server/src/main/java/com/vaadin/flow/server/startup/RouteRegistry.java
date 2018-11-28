@@ -175,10 +175,15 @@ public class RouteRegistry implements Serializable {
                 return;
             }
 
-            if (OSGiAccess.getInstance().getOsgiServletContext() != null
-                    && OSGiAccess.getInstance().hasInitializers()) {
-                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                        OSGiAccess.getInstance().getOsgiServletContext());
+            ServletContext osgiServletContext = OSGiAccess.getInstance()
+                    .getOsgiServletContext();
+            if (osgiServletContext == null
+                    || !OSGiAccess.getInstance().hasInitializers()) {
+                return;
+            }
+            OSGiDataCollector registry = (OSGiDataCollector) getInstance(
+                    osgiServletContext);
+            if (registry.errorNavigationTargets.get() != null) {
                 setErrorNavigationTargets(
                         registry.errorNavigationTargets.get());
             }
@@ -190,9 +195,14 @@ public class RouteRegistry implements Serializable {
                     .getOsgiServletContext() == null) {
                 return;
             }
-            if (OSGiAccess.getInstance().hasInitializers()) {
-                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                        OSGiAccess.getInstance().getOsgiServletContext());
+            if (!OSGiAccess.getInstance().hasInitializers()) {
+                return;
+            }
+            ServletContext osgiServletContext = OSGiAccess.getInstance()
+                    .getOsgiServletContext();
+            OSGiDataCollector registry = (OSGiDataCollector) getInstance(
+                    osgiServletContext);
+            if (registry.navigationTargets.get() != null) {
                 setNavigationTargets(registry.navigationTargets.get());
             }
         }
@@ -220,16 +230,20 @@ public class RouteRegistry implements Serializable {
 
     private static class OSGiDataCollector extends RouteRegistry {
 
-        private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>(
-                Collections.emptySet());
+        private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>();
 
-        private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>(
-                Collections.emptySet());
+        private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
 
         @Override
         public void setNavigationTargets(
                 Set<Class<? extends Component>> navigationTargets)
                 throws InvalidRouteConfigurationException {
+            if (navigationTargets.isEmpty()
+                    && this.navigationTargets.get() == null) {
+                // ignore initial empty targets avoiding routes initialization
+                // it they are not yet discovered
+                return;
+            }
             this.navigationTargets.set(navigationTargets);
             // There is no need to execute this logic here but this method will
             // throw an exception if there are invalid routes
@@ -249,6 +263,12 @@ public class RouteRegistry implements Serializable {
         @Override
         public void setErrorNavigationTargets(
                 Set<Class<? extends Component>> errorNavigationTargets) {
+            if (errorNavigationTargets.isEmpty()
+                    && this.errorNavigationTargets.get() == null) {
+                // ignore initial empty targets avoiding error target
+                // initialization it they are not yet discovered
+                return;
+            }
             this.errorNavigationTargets.set(errorNavigationTargets);
         }
     }
@@ -265,7 +285,6 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Exception>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
-    private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
     /**
      * Creates a new uninitialized route registry.
@@ -363,10 +382,10 @@ public class RouteRegistry implements Serializable {
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
-        errorNavigationTargets.removeAll(defaultErrorHandlers);
         for (Class<? extends Component> target : errorNavigationTargets) {
-            if (!routeFilters.stream().allMatch(
-                    filter -> filter.testErrorNavigationTarget(target))) {
+            if (defaultErrorHandlers.contains(target)
+                    || !routeFilters.stream().allMatch(filter -> filter
+                            .testErrorNavigationTarget(target))) {
                 continue;
             }
 
@@ -390,28 +409,22 @@ public class RouteRegistry implements Serializable {
      * @return list of routes available for this registry
      */
     public List<RouteData> getRegisteredRoutes() {
-        // Build and collect only on first request
-        if (routeData.get() == null) {
-            List<RouteData> registeredRoutes = new ArrayList<>();
-            Map<Class<? extends Component>, String> targetRouteMap = targetRoutes
-                    .get();
-            if (targetRouteMap != null) {
-                targetRouteMap.forEach((target, url) -> {
-                    List<Class<?>> parameters = getRouteParameters(target);
+        List<RouteData> registeredRoutes = new ArrayList<>();
+        Map<Class<? extends Component>, String> targetRouteMap = targetRoutes
+                .get();
+        if (targetRouteMap != null) {
+            targetRouteMap.forEach((target, url) -> {
+                List<Class<?>> parameters = getRouteParameters(target);
 
-                    RouteData route = new RouteData(getParentLayout(target),
-                            url, parameters, target);
-                    registeredRoutes.add(route);
-                });
-            }
-
-            Collections.sort(registeredRoutes);
-
-            routeData.compareAndSet(null,
-                    Collections.unmodifiableList(registeredRoutes));
+                RouteData route = new RouteData(getParentLayout(target), url,
+                        parameters, target);
+                registeredRoutes.add(route);
+            });
         }
 
-        return routeData.get();
+        Collections.sort(registeredRoutes);
+
+        return Collections.unmodifiableList(registeredRoutes);
     }
 
     private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
