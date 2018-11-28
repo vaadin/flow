@@ -409,7 +409,6 @@ public class RouteRegistry implements Serializable {
      * @return list of routes available for this registry
      */
     public List<RouteData> getRegisteredRoutes() {
-        // Build and collect only on first request
         List<RouteData> registeredRoutes = new ArrayList<>();
         Map<Class<? extends Component>, String> targetRouteMap = targetRoutes
                 .get();
