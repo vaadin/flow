@@ -285,7 +285,6 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<? extends Exception>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
-    private final AtomicReference<List<RouteData>> routeData = new AtomicReference<>();
 
     /**
      * Creates a new uninitialized route registry.
@@ -411,28 +410,22 @@ public class RouteRegistry implements Serializable {
      */
     public List<RouteData> getRegisteredRoutes() {
         // Build and collect only on first request
-        if (routeData.get() == null && hasRoutes()) {
-            List<RouteData> registeredRoutes = new ArrayList<>();
-            Map<Class<? extends Component>, String> targetRouteMap = targetRoutes
-                    .get();
-            if (targetRouteMap != null) {
-                targetRouteMap.forEach((target, url) -> {
-                    List<Class<?>> parameters = getRouteParameters(target);
+        List<RouteData> registeredRoutes = new ArrayList<>();
+        Map<Class<? extends Component>, String> targetRouteMap = targetRoutes
+                .get();
+        if (targetRouteMap != null) {
+            targetRouteMap.forEach((target, url) -> {
+                List<Class<?>> parameters = getRouteParameters(target);
 
-                    RouteData route = new RouteData(getParentLayout(target),
-                            url, parameters, target);
-                    registeredRoutes.add(route);
-                });
-            }
-
-            Collections.sort(registeredRoutes);
-
-            routeData.compareAndSet(null,
-                    Collections.unmodifiableList(registeredRoutes));
+                RouteData route = new RouteData(getParentLayout(target), url,
+                        parameters, target);
+                registeredRoutes.add(route);
+            });
         }
 
-        List<RouteData> result = routeData.get();
-        return result == null ? Collections.emptyList() : result;
+        Collections.sort(registeredRoutes);
+
+        return Collections.unmodifiableList(registeredRoutes);
     }
 
     private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
