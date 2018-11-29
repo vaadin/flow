@@ -17,8 +17,6 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,21 +29,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -223,10 +215,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
 
     private final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
 
-    private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
-    private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
-    private final AtomicReference<Map<Class<? extends Exception>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
-
     /**
      * Creates a new uninitialized route registry.
      */
@@ -294,65 +282,41 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public void setErrorNavigationTargets(
-            Set<Class<? extends Component>> errorNavigationTargets) {
-        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
-        for (Class<? extends Component> target : errorNavigationTargets) {
-            if (defaultErrorHandlers.contains(target)
-                    || !routeFilters.stream().allMatch(filter -> filter
-                            .testErrorNavigationTarget(target))) {
-                continue;
-            }
-
-            Class<? extends Exception> exceptionType = ReflectTools
-                    .getGenericInterfaceType(target, HasErrorParameter.class)
-                    .asSubclass(Exception.class);
-
-            if (exceptionTargetsMap.containsKey(exceptionType)) {
-                handleRegisteredExceptionType(exceptionTargetsMap, target,
-                        exceptionType);
-            } else {
-                exceptionTargetsMap.put(exceptionType, target);
-            }
-        }
-        initErrorTargets(exceptionTargetsMap);
+    public void setRoute(Class<? extends Component> navigationTarget)
+            throws InvalidRouteConfigurationException {
+        configure(configuration -> {
+            setRoute(navigationTarget, configuration);
+        });
     }
 
     @Override
-    public List<RouteData> getRegisteredRoutes() {
-        List<RouteData> registeredRoutes = new ArrayList<>();
-        Map<Class<? extends Component>, String> targetRouteMap = targetRoutes
-                .get();
-        if (targetRouteMap != null) {
-            targetRouteMap.forEach((target, url) -> {
-                List<Class<?>> parameters = getRouteParameters(target);
+    public void setErrorNavigationTargets(
+            Set<Class<? extends Component>> errorNavigationTargets) {
+        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
+        errorNavigationTargets.stream().filter(defaultErrorHandlers::contains)
+                .filter(target -> !allFiltersMatch(target))
+                .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
-                RouteData route = new RouteData(getParentLayout(target), url,
-                        parameters, target);
-                registeredRoutes.add(route);
-            });
-        }
-
-        Collections.sort(registeredRoutes);
-
-        return Collections.unmodifiableList(registeredRoutes);
+        initErrorTargets(exceptionTargetsMap);
     }
 
-    private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
-        return AnnotationReader.getAnnotationFor(target, Route.class)
-                .map(Route::layout).orElse(null);
+    private boolean allFiltersMatch(Class<? extends Component> target) {
+        return routeFilters.stream().allMatch(
+                filter -> filter.testErrorNavigationTarget(target));
     }
 
-    private List<Class<?>> getRouteParameters(
-            Class<? extends Component> target) {
-        List<Class<?>> parameters = new ArrayList<>();
-        if (HasUrlParameter.class.isAssignableFrom(target)) {
-            Class<?> genericInterfaceType = ReflectTools
-                    .getGenericInterfaceType(target, HasUrlParameter.class);
-            parameters.add(genericInterfaceType);
-        }
+    private void addErrorTarget(Class<? extends Component> target,
+            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
+        Class<? extends Exception> exceptionType = ReflectTools
+                .getGenericInterfaceType(target, HasErrorParameter.class)
+                .asSubclass(Exception.class);
 
-        return parameters;
+        if (exceptionTargetsMap.containsKey(exceptionType)) {
+            handleRegisteredExceptionType(exceptionTargetsMap, target,
+                    exceptionType);
+        } else {
+            exceptionTargetsMap.put(exceptionType, target);
+        }
     }
 
     /**
@@ -363,7 +327,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
      * targets
      */
     public boolean errorNavigationTargetsInitialized() {
-        return exceptionTargets.get() != null;
+        return routeConfiguration.hasExceptionTargets();
     }
 
     /**
@@ -419,8 +383,8 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     }
 
     private ErrorTargetEntry searchByCause(Exception exception) {
-        Class<? extends Component> targetClass = exceptionTargets.get()
-                .get(exception.getClass());
+        Class<? extends Component> targetClass = routeConfiguration
+                .getExceptionHandlerByClass(exception.getClass());
 
         if (targetClass != null) {
             return new ErrorTargetEntry(targetClass, exception.getClass());
@@ -437,8 +401,8 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         Class<?> superClass = exception.getClass().getSuperclass();
         while (superClass != null && Exception.class
                 .isAssignableFrom(superClass)) {
-            Class<? extends Component> targetClass = exceptionTargets.get()
-                    .get(superClass);
+            Class<? extends Component> targetClass = routeConfiguration
+                    .getExceptionHandlerByClass(superClass);
             if (targetClass != null) {
                 return new ErrorTargetEntry(targetClass,
                         superClass.asSubclass(Exception.class));
@@ -459,9 +423,8 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
-        if (hasRouteTo(pathString)) {
-            return Optional.ofNullable(
-                    getRoutes().get(pathString).getTarget(segments));
+        if (routeConfiguration.hasRoute(pathString, segments)) {
+            return routeConfiguration.getRoute(pathString, segments);
         }
         return Optional.empty();
     }
@@ -470,36 +433,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
 
-        return getRoutes().containsKey(pathString);
-    }
-
-    @Override
-    public Optional<String> getTargetUrl(
-            Class<? extends Component> navigationTarget) {
-        Objects.requireNonNull(navigationTarget, "Target must not be null.");
-        return Optional.ofNullable(collectRequiredParameters(navigationTarget));
-    }
-
-    /**
-     * Append any required parameters as /{param_class} to the route.
-     *
-     * @param navigationTarget
-     *         navigation target to generate url for
-     * @return route with required parameters
-     */
-    private String collectRequiredParameters(
-            Class<? extends Component> navigationTarget) {
-        StringBuilder route = new StringBuilder(
-                targetRoutes.get().get(navigationTarget));
-
-        List<Class<?>> routeParameters = getRouteParameters(navigationTarget);
-
-        if (!routeParameters.isEmpty()) {
-            routeParameters.forEach(
-                    param -> route.append("/{").append(param.getSimpleName())
-                            .append("}"));
-        }
-        return route.toString();
+        return routeConfiguration.hasRoute(pathString);
     }
 
     /**
@@ -509,78 +443,49 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
      * @return whether this registry has been initialized
      */
     public boolean navigationTargetsInitialized() {
-        return routes.get() != null;
+        return !routeConfiguration.isEmpty();
     }
 
     private void registerNavigationTargets(
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
-        Map<String, RouteTarget> routesMap = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-        for (Class<? extends Component> navigationTarget : navigationTargets) {
-            if (!navigationTarget.isAnnotationPresent(Route.class)) {
-                throw new InvalidRouteConfigurationException(String.format(
-                        "No Route annotation is present for the given "
-                                + "navigation target component '%s'.",
-                        navigationTarget.getName()));
+
+        List<Class<? extends Component>> faulty = navigationTargets.stream()
+                .filter(target -> !target.isAnnotationPresent(Route.class))
+                .filter(target -> Component.class.isAssignableFrom(target))
+                .collect(Collectors.toList());
+        if (!faulty.isEmpty()) {
+            final StringBuilder faultyClasses = new StringBuilder();
+            faulty.forEach(
+                    clazz -> faultyClasses.append(clazz.getName()).append(" "));
+            String exceptionMessage = String
+                    .format("No Route annotation is present for the given navigation target components [%s].",
+                            faultyClasses.toString());
+            throw new InvalidRouteConfigurationException(exceptionMessage);
+        }
+
+        configure(configuration -> {
+            for (Class<? extends Component> navigationTarget : navigationTargets) {
+                if (!routeFilters.stream().allMatch(filter -> filter
+                        .testNavigationTarget(navigationTarget))) {
+                    continue;
+                }
+
+                Set<String> routeAndRouteAliasPaths = new HashSet<>();
+
+                String route = RouteUtil
+                        .getNavigationRouteAndAliases(navigationTarget,
+                                routeAndRouteAliasPaths);
+                routeAndRouteAliasPaths.add(route);
+
+                setRoute(navigationTarget, configuration);
             }
-
-            if (!routeFilters.stream().allMatch(
-                    filter -> filter.testNavigationTarget(navigationTarget))) {
-                continue;
-            }
-
-            Set<String> paths = new HashSet<>();
-            String route = RouteUtil
-                    .getNavigationRouteAndAliases(navigationTarget, paths);
-            paths.add(route);
-
-            targetRoutesMap.put(navigationTarget, route);
-            addRoute(routesMap, navigationTarget, paths);
-        }
-        if (!routes
-                .compareAndSet(null, Collections.unmodifiableMap(routesMap))) {
-            handleInitializedRegistry();
-        }
-        if (!targetRoutes.compareAndSet(null,
-                Collections.unmodifiableMap(targetRoutesMap))) {
-            handleInitializedRegistry();
-        }
-    }
-
-    private void addRoute(Map<String, RouteTarget> routesMap,
-            Class<? extends Component> navigationTarget,
-            Collection<String> paths)
-            throws InvalidRouteConfigurationException {
-        Logger logger = LoggerFactory
-                .getLogger(GlobalRouteRegistry.class.getName());
-        for (String path : paths) {
-            RouteTarget routeTarget;
-            if (routesMap.containsKey(path)) {
-                routeTarget = routesMap.get(path);
-                routeTarget.addRoute(navigationTarget);
-            } else {
-                logger.debug(
-                        "Registering route '{}' to navigation target '{}'.",
-                        path, navigationTarget.getName());
-
-                routeTarget = new RouteTarget(navigationTarget);
-                routesMap.put(path, routeTarget);
-            }
-        }
+        });
     }
 
     @Override
     public boolean hasNavigationTargets() {
-        return !getRoutes().isEmpty();
-    }
-
-    private Map<String, RouteTarget> getRoutes() {
-        Map<String, RouteTarget> map = routes.get();
-        if (map == null) {
-            return Collections.emptyMap();
-        }
-        return map;
+        return !routeConfiguration.isEmpty();
     }
 
     /**
@@ -625,10 +530,10 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         if (!map.containsKey(Exception.class)) {
             map.put(Exception.class, InternalServerError.class);
         }
-        if (!exceptionTargets.compareAndSet(null, map)) {
-            throw new IllegalStateException(
-                    "Exception targets has been already initialized");
-        }
+        configure(configuration -> {
+            map.forEach((exception, handler) -> configuration
+                    .setErrorRoute(exception, handler));
+        });
     }
 
     private static GlobalRouteRegistry createRegistry(ServletContext context) {

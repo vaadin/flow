@@ -22,6 +22,8 @@ import java.util.Set;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -37,6 +39,19 @@ public interface RouteRegistry extends Serializable {
      *         if routing has been configured incorrectly
      */
     void setNavigationTargets(Set<Class<? extends Component>> navigationTargets)
+            throws InvalidRouteConfigurationException;
+
+    /**
+     * Giving a navigation target here will handle the {@link Route} annotation
+     * to get the path and also register any {@link RouteAlias} that may be on
+     * the class.
+     *
+     * @param navigationTarget
+     *         navigation target to register into the session route scope
+     * @throws InvalidRouteConfigurationException
+     *         thrown if exact route already defined in this scope
+     */
+    void setRoute(Class<? extends Component> navigationTarget)
             throws InvalidRouteConfigurationException;
 
     /**

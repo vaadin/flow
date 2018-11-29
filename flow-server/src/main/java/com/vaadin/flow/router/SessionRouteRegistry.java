@@ -18,7 +18,6 @@ package com.vaadin.flow.router;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +29,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.RouteConfiguration;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionDestroyEvent;
@@ -60,11 +58,27 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
                         .putAll(((SessionConfiguration) configuration).manualLayouts);
             }
         }
+
+        @Override
+        public void clear() {
+            super.clear();
+            manualLayouts.clear();
+        }
     }
 
     private final Registration registration;
     private final VaadinSession session;
 
+    /**
+     * Override the RouteConfiguration to use the SessionConfiguration instead
+     * as we have some extra information that we want to store.
+     *
+     * @param original
+     *         the latest route configuration
+     * @param mutable
+     *         set the configuration as mutable or immutable
+     * @return extended RouteConfiguration.
+     */
     @Override
     protected RouteConfiguration getRouteConfiguration(
             RouteConfiguration original, boolean mutable) {
@@ -137,44 +151,19 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
         configure(configuration -> {
             for (Class<? extends Component> navigationTarget : navigationTargets) {
-                setRoute(navigationTarget);
+                setRoute(navigationTarget, configuration);
             }
         });
     }
 
-    /**
-     * Giving a navigation target here will handle the {@link Route} annotation
-     * to get the path and also register any {@link RouteAlias} that may be on
-     * the class.
-     *
-     * @param navigationTarget
-     *         navigation target to register into the session route scope
-     * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
-     */
+    @Override
     public void setRoute(Class<? extends Component> navigationTarget)
             throws InvalidRouteConfigurationException {
-        Set<String> routeAndRouteAliasPaths = new HashSet<>();
-
-        String route = RouteUtil.getNavigationRouteAndAliases(navigationTarget,
-                routeAndRouteAliasPaths);
-        routeAndRouteAliasPaths.add(route);
-
-        configure(configuration -> {
-            for (String path : routeAndRouteAliasPaths) {
-                if (configuration.hasRoute(path)) {
-                    configuration.addRouteTarget(path, navigationTarget);
-                } else {
-                    RouteTarget routeTarget = new RouteTarget(navigationTarget);
-                    configuration.setRouteTarget(path, routeTarget);
-                }
-            }
-            configuration.putTargetRoute(navigationTarget, route);
-        });
+        configure(configuration -> setRoute(navigationTarget, configuration));
     }
 
     /**
-     * Regiser a navigation target on the specified path. Any {@link
+     * Register a navigation target on the specified path. Any {@link
      * ParentLayout} annotation on class will be used to populate layout chain,
      * but {@link Route} and {@link RouteAlias} will not be taken into
      * consideration.
@@ -194,6 +183,21 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         });
     }
 
+    /**
+     * Register a navigation target with specified path and given parent layout
+     * chain.
+     * Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will be
+     * ignored in route handling.
+     *
+     * @param path
+     *         path to register navigation target to
+     * @param navigationTarget
+     *         navigation target to register into session scope
+     * @param parentChain
+     *         chain of parent layouts that should be used with this target
+     * @throws InvalidRouteConfigurationException
+     *         thrown if exact route already defined in this scope
+     */
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain)
@@ -242,11 +246,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
 
-    }
-
-    @Override
-    public List<RouteData> getRegisteredRoutes() {
-        return null;
     }
 
     @Override

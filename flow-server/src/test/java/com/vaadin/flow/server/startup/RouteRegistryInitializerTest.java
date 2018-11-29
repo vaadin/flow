@@ -140,11 +140,11 @@ public class RouteRegistryInitializerTest {
         Assert.assertFalse("RouteRegistry should not be initialized",
                 ((GlobalRouteRegistry) registry)
                         .navigationTargetsInitialized());
-        registry.setNavigationTargets(new HashSet<>());
+        registry.setNavigationTargets(new HashSet<>(Collections.singleton(NavigationTargetFoo.class)));
         Assert.assertTrue("RouteRegistry should be initialized",
                 ((GlobalRouteRegistry) registry)
                         .navigationTargetsInitialized());
-        registry.setNavigationTargets(new HashSet<>());
+        registry.setNavigationTargets(new HashSet<>(Collections.singleton(NavigationTargetFoo.class)));
     }
 
     @Test
