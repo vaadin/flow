@@ -27,12 +27,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.RouteConfiguration;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionDestroyEvent;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.RouteTarget;
 import com.vaadin.flow.shared.Registration;
@@ -43,22 +44,37 @@ import com.vaadin.flow.shared.Registration;
  * overlap with the registered routes between session and global scope will be
  * handled so that session scope paths overrides global paths.
  */
-public class SessionRouteRegistry implements RouteRegistry {
+public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     // SessionRegistry can not be used without a parentRegistry
     private RouteRegistry parentRegistry;
 
-    private final Map<String, RouteTarget> routes = new HashMap<>();
-    private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
-    private final Map<String, List<Class<? extends RouterLayout>>> manualLayouts = new HashMap<>();
+    private static class SessionConfiguration extends RouteConfiguration {
+        private final Map<String, List<Class<? extends RouterLayout>>> manualLayouts = new HashMap<>();
+
+        public SessionConfiguration(RouteConfiguration configuration,
+                boolean mutable) {
+            super(configuration, mutable);
+            if (configuration instanceof SessionConfiguration) {
+                manualLayouts
+                        .putAll(((SessionConfiguration) configuration).manualLayouts);
+            }
+        }
+    }
 
     private final Registration registration;
     private final VaadinSession session;
 
+    @Override
+    protected RouteConfiguration getRouteConfiguration(
+            RouteConfiguration original, boolean mutable) {
+        return new SessionConfiguration(original, mutable);
+    }
+
     private SessionRouteRegistry(VaadinSession session) {
         this.session = session;
 
-        registration = VaadinService.getCurrent()
+        registration = session.getService()
                 .addSessionDestroyListener(this::sessionDestroy);
     }
 
@@ -73,10 +89,9 @@ public class SessionRouteRegistry implements RouteRegistry {
      * Clear all registered routes from this SessionRouteRegistry.
      */
     public void clear() {
-        synchronized (routes) {
-            routes.clear();
-            targetRoutes.clear();
-        }
+        configure((configuration) -> {
+            configuration.clear();
+        });
     }
 
     public static SessionRouteRegistry getSessionRegistry() {
@@ -120,9 +135,11 @@ public class SessionRouteRegistry implements RouteRegistry {
             throw new InvalidRouteConfigurationException(exceptionMessage);
         }
 
-        for (Class<? extends Component> navigationTarget : navigationTargets) {
-            setRoute(navigationTarget);
-        }
+        configure(configuration -> {
+            for (Class<? extends Component> navigationTarget : navigationTargets) {
+                setRoute(navigationTarget);
+            }
+        });
     }
 
     /**
@@ -143,34 +160,24 @@ public class SessionRouteRegistry implements RouteRegistry {
                 routeAndRouteAliasPaths);
         routeAndRouteAliasPaths.add(route);
 
-        Map<String, RouteTarget> routesMap = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-
-        for (String path : routeAndRouteAliasPaths) {
-            RouteTarget routeTarget;
-            if (routesMap.containsKey(path)) {
-                routeTarget = routesMap.get(path);
-                routeTarget.addRoute(navigationTarget);
-            } else {
-                routeTarget = new RouteTarget(navigationTarget);
-                routesMap.put(path, routeTarget);
+        configure(configuration -> {
+            for (String path : routeAndRouteAliasPaths) {
+                if (configuration.hasRoute(path)) {
+                    configuration.addRouteTarget(path, navigationTarget);
+                } else {
+                    RouteTarget routeTarget = new RouteTarget(navigationTarget);
+                    configuration.setRouteTarget(path, routeTarget);
+                }
             }
-
-        }
-        targetRoutesMap.put(navigationTarget, route);
-
-        synchronized (routes) {
-            routes.putAll(routesMap);
-            targetRoutes.putAll(targetRoutesMap);
-        }
-
+            configuration.putTargetRoute(navigationTarget, route);
+        });
     }
 
     /**
      * Regiser a navigation target on the specified path. Any {@link
      * ParentLayout} annotation on class will be used to populate layout chain,
-     * but {@link Route} and {@link RouteAlias} should not be present on class.
-     * (as for this implementation version)
+     * but {@link Route} and {@link RouteAlias} will not be taken into
+     * consideration.
      *
      * @param path
      *         path to register navigation target to
@@ -182,28 +189,53 @@ public class SessionRouteRegistry implements RouteRegistry {
     public void setRoute(String path,
             Class<? extends Component> navigationTarget)
             throws InvalidRouteConfigurationException {
-        synchronized (routes) {
-            RouteTarget routeTarget;
-            if (routes.containsKey(path)) {
-                routeTarget = routes.get(path);
-                routeTarget.addRoute(navigationTarget);
-            } else {
-                routeTarget = new RouteTarget(navigationTarget);
-                routes.put(path, routeTarget);
-            }
-
-            targetRoutes.put(navigationTarget, path);
-        }
+        configure(configuration -> {
+            addRouteToConfiguration(path, navigationTarget, configuration);
+        });
     }
 
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain)
             throws InvalidRouteConfigurationException {
-        setRoute(path, navigationTarget);
-        synchronized (manualLayouts) {
-            manualLayouts.put(path, Collections.unmodifiableList(parentChain));
+        configure(configuration -> {
+            addRouteToConfiguration(path, navigationTarget, configuration);
+            ((SessionConfiguration) configuration).manualLayouts
+                    .put(path, Collections.unmodifiableList(parentChain));
+        });
+    }
+
+    /**
+     * This adds a new route path to the configuration.
+     * <p>
+     * Note! this should only be called from a configure() for thread safety.
+     *
+     * @param path
+     *         path for the navigation target
+     * @param navigationTarget
+     *         navigation target for given path
+     * @param configuration
+     *         mutable configuration object
+     */
+    private void addRouteToConfiguration(String path,
+            Class<? extends Component> navigationTarget,
+            RouteConfiguration configuration) {
+        if (configuration.hasRoute(path)) {
+            configuration.addRouteTarget(path, navigationTarget);
+        } else {
+            RouteTarget routeTarget = new RouteTarget(navigationTarget);
+            configuration.setRouteTarget(path, routeTarget);
         }
+
+        configuration.putTargetRoute(navigationTarget, path);
+    }
+
+    public void removeRoute(String path) {
+
+    }
+
+    public void removeRoute(Class<? extends Component> routeTarget) {
+
     }
 
     @Override
@@ -234,12 +266,8 @@ public class SessionRouteRegistry implements RouteRegistry {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
-        if (routes.containsKey(pathString)) {
-            Optional<Class<? extends Component>> target = Optional
-                    .ofNullable(routes.get(pathString).getTarget(segments));
-            if (target.isPresent()) {
-                return target;
-            }
+        if (routeConfiguration.hasRoute(pathString, segments)) {
+            return routeConfiguration.getRoute(pathString, segments);
         }
         return parentRegistry.getNavigationTarget(pathString, segments);
     }
@@ -255,7 +283,7 @@ public class SessionRouteRegistry implements RouteRegistry {
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
 
-        return routes.containsKey(pathString) || parentRegistry
+        return routeConfiguration.hasRoute(pathString) || parentRegistry
                 .hasRouteTo(pathString);
     }
 
@@ -268,39 +296,28 @@ public class SessionRouteRegistry implements RouteRegistry {
 
     @Override
     public boolean hasNavigationTargets() {
-        return !routes.isEmpty() || parentRegistry.hasNavigationTargets();
-    }
-
-    @Override
-    public List<Class<? extends RouterLayout>> getRouteLayouts(
-            Class<? extends Component> navigationTarget) {
-        // TODO:
-        return parentRegistry.getRouteLayouts(navigationTarget);
+        return !routeConfiguration.isEmpty() || parentRegistry
+                .hasNavigationTargets();
     }
 
     @Override
     public List<Class<? extends RouterLayout>> getRouteLayouts(
             Class<? extends Component> navigationTarget, String path) {
-        // TODO:
-        if (routes.containsKey(path) && (
+        if (routeConfiguration.hasRoute(path) && (
                 !navigationTarget.isAnnotationPresent(Route.class)
-                        || manualLayouts.containsKey(path))) {
+                        || ((SessionConfiguration) routeConfiguration).manualLayouts
+                        .containsKey(path))) {
+
             // User has defined parent layouts manually use those
-            if (manualLayouts.containsKey(path)) {
-                return manualLayouts.get(path);
+            if (((SessionConfiguration) routeConfiguration).manualLayouts
+                    .containsKey(path)) {
+                return ((SessionConfiguration) routeConfiguration).manualLayouts
+                        .get(path);
             }
             // not a route layout use non route layout collection of parent layouts.
             return getNonRouteLayouts(navigationTarget);
         }
         return parentRegistry.getRouteLayouts(navigationTarget, path);
-    }
-
-    @Override
-    public List<Class<? extends RouterLayout>> getNonRouteLayouts(
-            Class<? extends Component> nonRouteTarget) {
-        // TODO:
-        // No changes to the error layouts as of now.
-        return RouteUtil.getParentLayoutsForNonRouteTarget(nonRouteTarget);
     }
 
     public SessionRouteRegistry withParentRegistry(

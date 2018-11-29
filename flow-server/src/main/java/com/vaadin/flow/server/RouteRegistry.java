@@ -122,18 +122,6 @@ public interface RouteRegistry extends Serializable {
     boolean hasNavigationTargets();
 
     /**
-     * Get the layout chain for given navigation target.
-     * <p>
-     * This chain may be pre-defined or generated from annotation data.
-     *
-     * @param navigationTarget
-     *         navigation target to get layout chain for
-     * @return layout chain of target
-     */
-    List<Class<? extends RouterLayout>> getRouteLayouts(
-            Class<? extends Component> navigationTarget);
-
-    /**
      * Get the layout chain for given navigation target on the targeted path.
      * <p>
      * This chain may be pre-defined or generated from annotation data.

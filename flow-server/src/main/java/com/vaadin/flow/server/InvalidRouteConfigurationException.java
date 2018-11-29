@@ -19,7 +19,7 @@ package com.vaadin.flow.server;
  * Exception indicating that the application's routes have been configured
  * incorrectly.
  */
-public class InvalidRouteConfigurationException extends Exception {
+public class InvalidRouteConfigurationException extends RuntimeException {
 
     /**
      * Constructs a new invalid route configuration runtime exception with the

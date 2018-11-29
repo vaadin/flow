@@ -16,9 +16,7 @@
 package com.vaadin.flow.server.startup;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -26,7 +24,6 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Route target holder that handles getting the correct type of has parameter
@@ -37,6 +34,9 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> parameter;
     private Class<? extends Component> optionalParameter;
     private Class<? extends Component> wildCardParameter;
+
+    private RouteTarget() {
+    }
 
     /**
      * Create a new Route target holder.
@@ -160,4 +160,17 @@ public class RouteTarget implements Serializable {
                         WildcardParameter.class);
     }
 
+    /**
+     * Create a copy of this RouteTarget.
+     *
+     * @return copy of this RouteTarget
+     */
+    public RouteTarget copy() {
+        RouteTarget copy = new RouteTarget();
+        copy.normal = normal;
+        copy.parameter = parameter;
+        copy.optionalParameter = optionalParameter;
+        copy.wildCardParameter = wildCardParameter;
+        return copy;
+    }
 }

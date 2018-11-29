@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.InternalServerError;
@@ -57,7 +58,7 @@ import com.vaadin.flow.server.osgi.OSGiAccess;
  * Registry for holding navigation target components found on servlet
  * initialization.
  */
-public class GlobalRouteRegistry implements RouteRegistry {
+public class GlobalRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiRouteRegistry extends GlobalRouteRegistry {
         @Override
@@ -567,24 +568,6 @@ public class GlobalRouteRegistry implements RouteRegistry {
             return Collections.emptyMap();
         }
         return map;
-    }
-
-    @Override
-    public List<Class<? extends RouterLayout>> getRouteLayouts(
-            Class<? extends Component> navigationTarget) {
-        return RouteUtil.getParentLayouts(navigationTarget);
-    }
-
-    @Override
-    public List<Class<? extends RouterLayout>> getRouteLayouts(
-            Class<? extends Component> navigationTarget, String path) {
-        return RouteUtil.getParentLayouts(navigationTarget, path);
-    }
-
-    @Override
-    public List<Class<? extends RouterLayout>> getNonRouteLayouts(
-            Class<? extends Component> errorTarget) {
-        return RouteUtil.getParentLayoutsForNonRouteTarget(errorTarget);
     }
 
     /**
