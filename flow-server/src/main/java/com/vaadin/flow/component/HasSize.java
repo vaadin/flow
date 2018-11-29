@@ -46,6 +46,38 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the min-width of the component.
+     * <p>
+     * The width should be in a format understood by the browser, e.g. "100px"
+     * or "2.5em".
+     * <p>
+     * If the provided {@code minWidth} value is {@literal null} then min-width is
+     * removed.
+     *
+     * @param minWidth
+     *            the min-width value (if <code>null</code>, the property will be removed)
+     */
+    default void setMinWidth(String minWidth) {
+        getElement().getStyle().set(ElementConstants.STYLE_MIN_WIDTH, minWidth);
+    }
+
+    /**
+     * Sets the max-width of the component.
+     * <p>
+     * The width should be in a format understood by the browser, e.g. "100px"
+     * or "2.5em".
+     * <p>
+     * If the provided {@code maxWidth} value is {@literal null} then max-width is
+     * removed.
+     *
+     * @param maxWidth
+     *            the max-width value (if <code>null</code>, the property will be removed)
+     */
+    default void setMaxWidth(String maxWidth) {
+        getElement().getStyle().set(ElementConstants.STYLE_MAX_WIDTH, maxWidth);
+    }
+
+    /**
      *
      * Gets the width defined for the component.
      * <p>
@@ -56,6 +88,32 @@ public interface HasSize extends HasElement {
      */
     default String getWidth() {
         return getElement().getStyle().get(ElementConstants.STYLE_WIDTH);
+    }
+
+    /**
+     *
+     * Gets the min-width defined for the component.
+     * <p>
+     * Note that this does not return the actual size of the component but the
+     * min-width which has been set using {@link #setMinWidth(String)}.
+     *
+     * @return the min-width which has been set for the component
+     */
+    default String getMinWidth() {
+        return getElement().getStyle().get(ElementConstants.STYLE_MIN_WIDTH);
+    }
+
+    /**
+     *
+     * Gets the max-width defined for the component.
+     * <p>
+     * Note that this does not return the actual size of the component but the
+     * max-width which has been set using {@link #setMaxWidth(String)}.
+     *
+     * @return the max-width which has been set for the component
+     */
+    default String getMaxWidth() {
+        return getElement().getStyle().get(ElementConstants.STYLE_MAX_WIDTH);
     }
 
     /**
@@ -75,6 +133,38 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the min-height of the component.
+     * <p>
+     * The height should be in a format understood by the browser, e.g. "100px"
+     * or "2.5em".
+     * <p>
+     * If the provided {@code minHeight} value is {@literal null} then min-height is
+     * removed.
+     *
+     * @param minHeight
+     *            the min-height value (if <code>null</code>, the property will be removed)
+     */
+    default void setMinHeight(String minHeight) {
+        getElement().getStyle().set(ElementConstants.STYLE_MIN_HEIGHT, minHeight);
+    }
+
+    /**
+     * Sets the max-height of the component.
+     * <p>
+     * The height should be in a format understood by the browser, e.g. "100px"
+     * or "2.5em".
+     * <p>
+     * If the provided {@code maxHeight} value is {@literal null} then max-height is
+     * removed.
+     *
+     * @param maxHeight
+     *            the max-height value (if <code>null</code>, the property will be removed)
+     */
+    default void setMaxHeight(String maxHeight) {
+        getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT, maxHeight);
+    }
+
+    /**
      * Gets the height defined for the component.
      * <p>
      * Note that this does not return the actual size of the component but the
@@ -87,6 +177,30 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Gets the min-height defined for the component.
+     * <p>
+     * Note that this does not return the actual size of the component but the
+     * min-height which has been set using {@link #setMinHeight(String)}.
+     *
+     * @return the min-height which has been set for the component
+     */
+    default String getMinHeight() {
+        return getElement().getStyle().get(ElementConstants.STYLE_MIN_HEIGHT);
+    }
+
+    /**
+     * Gets the max-height defined for the component.
+     * <p>
+     * Note that this does not return the actual size of the component but the
+     * max-height which has been set using {@link #setMaxHeight(String)}.
+     *
+     * @return the max-height which has been set for the component
+     */
+    default String getMaxHeight() {
+        return getElement().getStyle().get(ElementConstants.STYLE_MAX_HEIGHT);
+    }
+
+    /**
      * Sets the width and the height of the component to "100%".
      * <p>
      * This is just a convenience method which delegates its call to the
@@ -95,6 +209,28 @@ public interface HasSize extends HasElement {
      */
     default void setSizeFull() {
         setWidth("100%");
+        setHeight("100%");
+    }
+
+    /**
+     * Sets the width of the component to "100%".
+     * <p>
+     * This is just a convenience method which delegates its call to the
+     * {@link #setWidth(String)} with
+     * {@literal "100%"} as the argument value
+     */
+    default void setWidthFull() {
+        setWidth("100%");
+    }
+
+    /**
+     * Sets the height of the component to "100%".
+     * <p>
+     * This is just a convenience method which delegates its call to the
+     * {@link #setHeight(String)} with
+     * {@literal "100%"} as the argument value
+     */
+    default void setHeightFull() {
         setHeight("100%");
     }
 
