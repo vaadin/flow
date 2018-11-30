@@ -8,7 +8,10 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.server.startup.RouteTarget;
 
@@ -85,9 +88,49 @@ public class RouteConfigurationTest {
     }
 
     @Test
-    public void emptyConfiguration_allGetMethodsWork() {
-        //        RouteConfiguration configuration = new RouteConfiguration();
+    public void mutableConfiguration_canSetErrorTargets() {
+        RouteConfiguration mutable = new RouteConfiguration(configuration,
+                true);
 
+        mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
+
+        Assert.assertTrue("Exception targets should be available",
+                mutable.hasExceptionTargets());
+        Assert.assertEquals("Given exception returned unexpected handler class",
+                BaseError.class, mutable.getExceptionHandlerByClass(
+                        IndexOutOfBoundsException.class));
+    }
+
+    @Test
+    public void populatedMutableConfiguration_clearRemovesAllContent() {
+        RouteConfiguration mutable = new RouteConfiguration(configuration,
+                true);
+
+        RouteTarget target = new RouteTarget(BaseTarget.class);
+        mutable.setRouteTarget("", target);
+        mutable.setTargetRoute(BaseTarget.class, "");
+
+        mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
+
+        Assert.assertFalse("Configuration should have routes.",
+                mutable.isEmpty());
+        Assert.assertTrue("Configuration should have exceptions.",
+                mutable.hasExceptionTargets());
+
+        mutable.clear();
+
+        Assert.assertTrue("After clear all routes should have been removed.",
+                mutable.isEmpty());
+        Assert.assertTrue(
+                "After clear all targetRoutes should have been removed. ",
+                configuration.getTargetRoutes().isEmpty());
+        Assert.assertFalse(
+                "After clear all exception targets should have been removed.",
+                mutable.hasExceptionTargets());
+    }
+
+    @Test
+    public void emptyConfiguration_allGetMethodsWork() {
         Assert.assertFalse("No routes should be configured",
                 configuration.hasRoute(""));
         Assert.assertFalse("No routes should be configured",
@@ -113,8 +156,6 @@ public class RouteConfigurationTest {
 
     @Test
     public void immutableConfiguration_allSetMethodsThrow() {
-        //        RouteConfiguration configuration = new RouteConfiguration();
-
         try {
             configuration.clear();
             Assert.fail(
@@ -182,6 +223,17 @@ public class RouteConfigurationTest {
             implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
+        }
+    }
+
+    @Tag("div")
+    public static class BaseError extends Component
+            implements HasErrorParameter<IndexOutOfBoundsException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<IndexOutOfBoundsException> parameter) {
+            return 0;
         }
     }
 }

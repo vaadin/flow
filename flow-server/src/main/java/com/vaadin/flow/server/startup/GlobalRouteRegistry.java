@@ -123,9 +123,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         }
 
         private void doInitOSGiRoutes() {
-            if (navigationTargetsInitialized()
-                    || OSGiAccess.getInstance().getOsgiServletContext()
-                    == null) {
+            if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
                 return;
             }
             if (!OSGiAccess.getInstance().hasInitializers()) {
@@ -151,7 +149,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         }
 
         private void initPwa() {
-            if (navigationTargetsInitialized()) {
+            if (!getConfiguration().isEmpty()) {
                 return;
             }
             if (OSGiAccess.getInstance().hasInitializers()) {
@@ -181,11 +179,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
             // There is no need to execute this logic here but this method will
             // throw an exception if there are invalid routes
             super.setNavigationTargets(navigationTargets);
-        }
-
-        @Override
-        public boolean navigationTargetsInitialized() {
-            return false;
         }
 
         @Override
@@ -256,26 +249,41 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         }
     }
 
-    /**
-     * Registers a set of components as navigation targets.
-     * <p>
-     * <strong>Note:</strong> Navigation targets can only be set once, i.e. when
-     * {@link #navigationTargetsInitialized()} is {@code false}.
-     *
-     * @param navigationTargets
-     *         set of navigation target components
-     * @throws InvalidRouteConfigurationException
-     *         if routing has been configured incorrectly
-     */
     @Override
     public void setNavigationTargets(
             Set<Class<? extends Component>> navigationTargets) {
 
-        if (navigationTargetsInitialized()) {
-            throw new InvalidRouteConfigurationException(
-                    "Routes have already been initialized");
+        List<Class<? extends Component>> faulty = navigationTargets.stream()
+                .filter(target -> !target.isAnnotationPresent(Route.class))
+                .filter(Component.class::isAssignableFrom)
+                .collect(Collectors.toList());
+        if (!faulty.isEmpty()) {
+            final StringBuilder faultyClasses = new StringBuilder();
+            faulty.forEach(
+                    clazz -> faultyClasses.append(clazz.getName()).append(" "));
+            String exceptionMessage = String
+                    .format("No Route annotation is present for the given navigation target components [%s].",
+                            faultyClasses.toString());
+            throw new InvalidRouteConfigurationException(exceptionMessage);
         }
-        registerNavigationTargets(navigationTargets);
+
+        configure(configuration -> {
+            for (Class<? extends Component> navigationTarget : navigationTargets) {
+                if (!routeFilters.stream().allMatch(filter -> filter
+                        .testNavigationTarget(navigationTarget))) {
+                    continue;
+                }
+
+                Set<String> routeAndRouteAliasPaths = new HashSet<>();
+
+                String route = RouteUtil
+                        .getNavigationRouteAndAliases(navigationTarget,
+                                routeAndRouteAliasPaths);
+                routeAndRouteAliasPaths.add(route);
+
+                setRoute(navigationTarget, configuration);
+            }
+        });
     }
 
     @Override
@@ -364,52 +372,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
             return;
         }
         configure(configuration -> configuration.removeRoute(path));
-    }
-
-    /**
-     * Returns whether this registry has been initialized with navigation
-     * targets.
-     *
-     * @return whether this registry has been initialized
-     */
-    public boolean navigationTargetsInitialized() {
-        return !getConfiguration().isEmpty();
-    }
-
-    private void registerNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets) {
-
-        List<Class<? extends Component>> faulty = navigationTargets.stream()
-                .filter(target -> !target.isAnnotationPresent(Route.class))
-                .filter(Component.class::isAssignableFrom)
-                .collect(Collectors.toList());
-        if (!faulty.isEmpty()) {
-            final StringBuilder faultyClasses = new StringBuilder();
-            faulty.forEach(
-                    clazz -> faultyClasses.append(clazz.getName()).append(" "));
-            String exceptionMessage = String
-                    .format("No Route annotation is present for the given navigation target components [%s].",
-                            faultyClasses.toString());
-            throw new InvalidRouteConfigurationException(exceptionMessage);
-        }
-
-        configure(configuration -> {
-            for (Class<? extends Component> navigationTarget : navigationTargets) {
-                if (!routeFilters.stream().allMatch(filter -> filter
-                        .testNavigationTarget(navigationTarget))) {
-                    continue;
-                }
-
-                Set<String> routeAndRouteAliasPaths = new HashSet<>();
-
-                String route = RouteUtil
-                        .getNavigationRouteAndAliases(navigationTarget,
-                                routeAndRouteAliasPaths);
-                routeAndRouteAliasPaths.add(route);
-
-                setRoute(navigationTarget, configuration);
-            }
-        });
     }
 
     @Override

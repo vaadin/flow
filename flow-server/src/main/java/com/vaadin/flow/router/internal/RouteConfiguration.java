@@ -88,6 +88,7 @@ public class RouteConfiguration implements Serializable {
         throwIfImmutable();
         routes.clear();
         targetRoutes.clear();
+        exceptionTargets.clear();
     }
 
     /**
