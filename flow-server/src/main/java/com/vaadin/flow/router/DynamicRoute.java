@@ -22,10 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.component.UI;
-
 /**
- * Defines the {@link Route} annotated component to be ignored during initial route registration.
+ * Defines the {@link Route} annotated component to be ignored during initial
+ * route registration.
  *
  * @see Route
  * @see RouteAlias

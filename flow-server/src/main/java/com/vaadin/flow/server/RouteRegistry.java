@@ -25,9 +25,17 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 
+/**
+ * The RouteRegistry interface class that gives the out facing usage needs for a
+ * route registry implementation.
+ * <p>
+ * This is used by {@link Router} when resolving navigation and
+ * layout chain population.
+ */
 public interface RouteRegistry extends Serializable {
 
     /**
@@ -38,8 +46,7 @@ public interface RouteRegistry extends Serializable {
      * @throws InvalidRouteConfigurationException
      *         if routing has been configured incorrectly
      */
-    void setNavigationTargets(Set<Class<? extends Component>> navigationTargets)
-            throws InvalidRouteConfigurationException;
+    void setNavigationTargets(Set<Class<? extends Component>> navigationTargets);
 
     /**
      * Giving a navigation target here will handle the {@link Route} annotation
@@ -51,8 +58,7 @@ public interface RouteRegistry extends Serializable {
      * @throws InvalidRouteConfigurationException
      *         thrown if exact route already defined in this scope
      */
-    void setRoute(Class<? extends Component> navigationTarget)
-            throws InvalidRouteConfigurationException;
+    void setRoute(Class<? extends Component> navigationTarget);
 
     /**
      * Remove the given navigation target route registration. Path where the
@@ -63,7 +69,7 @@ public interface RouteRegistry extends Serializable {
      * Note! this will remove target route and if possible any {@link
      * RouteAlias} route that can be found for the class.
      *
-     * @param navigationTarget
+     * @param navigationTarget navigation target class to remove
      */
     void removeRoute(Class<? extends Component> navigationTarget);
 
@@ -76,7 +82,7 @@ public interface RouteRegistry extends Serializable {
      * E.g. path "home" contains HomeView and DetailsView[String path param]
      * both will be removed.
      *
-     * @param path
+     * @param path path for which to remove all navigation targets
      */
     void removeRoute(String path);
 

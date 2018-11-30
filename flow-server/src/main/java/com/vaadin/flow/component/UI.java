@@ -58,7 +58,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
-import com.vaadin.flow.server.startup.GlobalRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;

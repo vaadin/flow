@@ -122,8 +122,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
             }
         }
 
-        private void doInitOSGiRoutes()
-                throws InvalidRouteConfigurationException {
+        private void doInitOSGiRoutes() {
             if (navigationTargetsInitialized()
                     || OSGiAccess.getInstance().getOsgiServletContext()
                     == null) {
@@ -270,8 +269,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
      */
     @Override
     public void setNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets)
-            throws InvalidRouteConfigurationException {
+            Set<Class<? extends Component>> navigationTargets) {
 
         if (navigationTargetsInitialized()) {
             throw new InvalidRouteConfigurationException(
@@ -281,11 +279,8 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public void setRoute(Class<? extends Component> navigationTarget)
-            throws InvalidRouteConfigurationException {
-        configure(configuration -> {
-            setRoute(navigationTarget, configuration);
-        });
+    public void setRoute(Class<? extends Component> navigationTarget) {
+        configure(configuration -> setRoute(navigationTarget, configuration));
     }
 
     @Override
@@ -464,10 +459,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         if (!map.containsKey(Exception.class)) {
             map.put(Exception.class, InternalServerError.class);
         }
-        configure(configuration -> {
-            map.forEach((exception, handler) -> configuration
-                    .setErrorRoute(exception, handler));
-        });
+        configure(configuration -> map.forEach(configuration::setErrorRoute));
     }
 
     private static GlobalRouteRegistry createRegistry(ServletContext context) {

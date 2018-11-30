@@ -107,7 +107,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      * Clear all registered routes from this SessionRouteRegistry.
      */
     public void clear() {
-        configure((configuration) -> configuration.clear());
+        configure(RouteConfiguration::clear);
     }
 
     /**
@@ -142,6 +142,16 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         return registry;
     }
 
+    /**
+     * Check if a session registry exists for given {@link VaadinSession}.
+     * <p>
+     * This is a shorthand for users so they don't need to look into where the
+     * registry is stored.
+     *
+     * @param session
+     *         the session that we want to know if there is a registry for it
+     * @return true if a SessionRouteRegistry is found
+     */
     public static boolean sessionRegistryExists(VaadinSession session) {
         return session.getAttribute(SessionRouteRegistry.class) != null;
     }
@@ -271,9 +281,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         errorNavigationTargets
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
-        configure(configuration -> exceptionTargetsMap.forEach(
-                (exception, handler) -> configuration
-                        .setErrorRoute(exception, handler)));
+        configure(configuration -> exceptionTargetsMap
+                .forEach(configuration::setErrorRoute));
     }
 
     @Override

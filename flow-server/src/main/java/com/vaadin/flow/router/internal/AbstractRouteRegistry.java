@@ -49,7 +49,7 @@ import com.vaadin.flow.server.startup.RouteTarget;
 public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     /**
-     * Configuration interface to use for updating the configuration entity
+     * Configuration interface to use for updating the configuration entity.
      */
     @FunctionalInterface
     public interface Configuration extends Serializable {
@@ -211,8 +211,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *         if a exact match route exists already
      */
     protected void setRoute(Class<? extends Component> navigationTarget,
-            RouteConfiguration configuration)
-            throws InvalidRouteConfigurationException {
+            RouteConfiguration configuration) {
         Logger logger = LoggerFactory
                 .getLogger(GlobalRouteRegistry.class.getName());
 
@@ -252,8 +251,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *         handler already exists
      */
     protected void addErrorTarget(Class<? extends Component> target,
-            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap)
-            throws InvalidRouteLayoutConfigurationException {
+            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
         Class<? extends Exception> exceptionType = ReflectTools
                 .getGenericInterfaceType(target, HasErrorParameter.class)
                 .asSubclass(Exception.class);

@@ -39,7 +39,7 @@ public class RouteConfiguration implements Serializable {
     private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets = new HashMap<>();
 
     /**
-     * Create an immutable RouteConfiguration
+     * Create an immutable RouteConfiguration.
      */
     public RouteConfiguration() {
         mutable = false;
@@ -206,18 +206,20 @@ public class RouteConfiguration implements Serializable {
     public void removeRoute(String route) {
         throwIfImmutable();
 
-        if (hasRoute(route)) {
-            RouteTarget removedRoute = routes.remove(route);
-            for (Class<? extends Component> targetRoute : removedRoute
-                    .getRoutes()) {
-                targetRoutes.remove(targetRoute);
+        if (!hasRoute(route)) {
+            return;
+        }
 
-                // Update Class-to-string map with a new mapping if removed route exists for another path
-                for (Map.Entry<String, RouteTarget> entry : routes.entrySet()) {
-                    if (entry.getValue().containsTarget(targetRoute)) {
-                        targetRoutes.put(targetRoute, entry.getKey());
-                        return;
-                    }
+        RouteTarget removedRoute = routes.remove(route);
+        for (Class<? extends Component> targetRoute : removedRoute
+                .getRoutes()) {
+            targetRoutes.remove(targetRoute);
+
+            // Update Class-to-string map with a new mapping if removed route exists for another path
+            for (Map.Entry<String, RouteTarget> entry : routes.entrySet()) {
+                if (entry.getValue().containsTarget(targetRoute)) {
+                    targetRoutes.put(targetRoute, entry.getKey());
+                    return;
                 }
             }
         }
