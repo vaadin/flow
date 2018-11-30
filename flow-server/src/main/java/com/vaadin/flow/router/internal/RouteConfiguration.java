@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -64,15 +65,6 @@ public class RouteConfiguration implements Serializable {
         this.mutable = mutable;
     }
 
-    /**
-     * Clear all maps from this configuration.
-     */
-    public void clear() {
-        throwIfImmutable();
-        routes.clear();
-        targetRoutes.clear();
-    }
-
     private void throwIfImmutable() {
         if (!mutable) {
             throw new IllegalStateException(
@@ -80,15 +72,22 @@ public class RouteConfiguration implements Serializable {
         }
     }
 
+    public boolean isMutable() {
+        return mutable;
+    }
+
+    /*-----------------------------------*/
+    /* Mutation functions                */
+    /* !All should throw is not mutable! */
+    /*-----------------------------------*/
+
     /**
-     * See if configuration contains a registered route for given path.
-     *
-     * @param path
-     *         path to check
-     * @return true if configuration contains route
+     * Clear all maps from this configuration.
      */
-    public boolean hasRoute(String path) {
-        return routes.containsKey(path);
+    public void clear() {
+        throwIfImmutable();
+        routes.clear();
+        targetRoutes.clear();
     }
 
     /**
@@ -132,13 +131,16 @@ public class RouteConfiguration implements Serializable {
 
     /**
      * Put a new target route for Class-to-path mapping.
+     * <p>
+     * This is a reverse mapping to RouteTarget, which also handles any HasUrl
+     * parameters, for the main route of this navigation target.
      *
      * @param navigationTarget
      *         navigation target to map
      * @param path
      *         path for given navigation target
      */
-    public void putTargetRoute(Class<? extends Component> navigationTarget,
+    public void setTargetRoute(Class<? extends Component> navigationTarget,
             String path) {
         throwIfImmutable();
         targetRoutes.put(navigationTarget, path);
@@ -146,6 +148,9 @@ public class RouteConfiguration implements Serializable {
 
     /**
      * Set a error route to the configuration.
+     * <p>
+     * Any exception handler set for a existing error will override the old
+     * exception handler.
      *
      * @param exception
      *         exception handled by error route
@@ -158,9 +163,80 @@ public class RouteConfiguration implements Serializable {
         exceptionTargets.put(exception, errorTarget);
     }
 
+    /**
+     * Remove the targetRoute completely from the configuration.
+     *
+     * @param targetRoute
+     *         target registered route to remove
+     */
+    public void removeRoute(Class<? extends Component> targetRoute) {
+        throwIfImmutable();
+
+        if (!hasRouteTarget(targetRoute)) {
+            return;
+        }
+
+        // Remove target route from class-to-string map
+        targetRoutes.remove(targetRoute);
+
+        List<String> emptyRoutes = new ArrayList<>(0);
+        // Remove all instances of the route class for any path
+        // that it may be registered to
+        routes.forEach((route, routeTarget) -> {
+            routeTarget.remove(targetRoute);
+
+            if (routeTarget.isEmpty()) {
+                emptyRoutes.add(route);
+            }
+        });
+        emptyRoutes.forEach(routes::remove);
+    }
+
+    /**
+     * Remove route for given path. This will remove all targets registered for
+     * given path.
+     * <p>
+     * In case there exists another path mapping for any of the removed route
+     * targets the main class-to-string mapping will be updated to the first
+     * found
+     *
+     * @param route
+     *         path from which to remove routes from
+     */
+    public void removeRoute(String route) {
+        throwIfImmutable();
+
+        if (hasRoute(route)) {
+            RouteTarget removedRoute = routes.remove(route);
+            for (Class<? extends Component> targetRoute : removedRoute
+                    .getRoutes()) {
+                targetRoutes.remove(targetRoute);
+
+                // Update Class-to-string map with a new mapping if removed route exists for another path
+                for (Map.Entry<String, RouteTarget> entry : routes.entrySet()) {
+                    if (entry.getValue().containsTarget(targetRoute)) {
+                        targetRoutes.put(targetRoute, entry.getKey());
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     /*---------------------------------*/
     /* Getters and other read methods. */
     /*---------------------------------*/
+
+    /**
+     * See if configuration contains a registered route for given path.
+     *
+     * @param path
+     *         path to check
+     * @return true if configuration contains route
+     */
+    public boolean hasRoute(String path) {
+        return routes.containsKey(path);
+    }
 
     /**
      * Check if configuration holds a route for given path with possible path
@@ -177,6 +253,26 @@ public class RouteConfiguration implements Serializable {
             return routes.get(pathString).getTarget(segments) != null;
         }
         return false;
+    }
+
+    /**
+     * Check it the given route target has been registered to the configuration.
+     *
+     * @param targetRoute
+     *         target to check registration status for
+     * @return true if target is found in configuration
+     */
+    public boolean hasRouteTarget(Class<? extends Component> targetRoute) {
+        return targetRoutes.containsKey(targetRoute);
+    }
+
+    /**
+     * Get if we have any exception targets stored.
+     *
+     * @return true if there are exception targets
+     */
+    public boolean hasExceptionTargets() {
+        return !exceptionTargets.isEmpty();
     }
 
     /**
@@ -206,17 +302,13 @@ public class RouteConfiguration implements Serializable {
         return routes.isEmpty();
     }
 
+    /**
+     * Get all registered target routes for this configuration.
+     *
+     * @return component-to-path map of all target routes
+     */
     public Map<Class<? extends Component>, String> getTargetRoutes() {
         return Collections.unmodifiableMap(targetRoutes);
-    }
-
-    /**
-     * Get if we have any exception targets stored.
-     *
-     * @return true if there are exception targets
-     */
-    public boolean hasExceptionTargets() {
-        return !exceptionTargets.isEmpty();
     }
 
     /**
@@ -240,5 +332,14 @@ public class RouteConfiguration implements Serializable {
      */
     public String getTargetRoute(Class<? extends Component> navigationTarget) {
         return targetRoutes.get(navigationTarget);
+    }
+
+    /**
+     * Get all registered exception handlers as a exception-to-handler map.
+     *
+     * @return all registered exception handlers
+     */
+    public Map<Class<? extends Exception>, Class<? extends Component>> getExceptionHandlers() {
+        return Collections.unmodifiableMap(exceptionTargets);
     }
 }

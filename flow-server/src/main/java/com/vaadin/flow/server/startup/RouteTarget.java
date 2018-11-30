@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.startup;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
@@ -42,11 +43,10 @@ public class RouteTarget implements Serializable {
      * Create a new Route target holder.
      *
      * @param target
-     *            navigation target
-     *
+     *         navigation target
      * @throws InvalidRouteConfigurationException
-     *             exception for miss configured routes where navigation targets
-     *             can not be clearly selected
+     *         exception for miss configured routes where navigation targets
+     *         can not be clearly selected
      */
     public RouteTarget(Class<? extends Component> target)
             throws InvalidRouteConfigurationException {
@@ -60,10 +60,10 @@ public class RouteTarget implements Serializable {
      * add with the already existing navigation targets.
      *
      * @param target
-     *            navigation target to add
+     *         navigation target to add
      * @throws InvalidRouteConfigurationException
-     *             exception for miss configured routes where navigation targets
-     *             can not be clearly selected
+     *         exception for miss configured routes where navigation targets
+     *         can not be clearly selected
      */
     public void addRoute(Class<? extends Component> target)
             throws InvalidRouteConfigurationException {
@@ -72,12 +72,12 @@ public class RouteTarget implements Serializable {
             validateNormalTarget(target);
             normal = target;
         } else {
-            if (ParameterDeserializer.isAnnotatedParameter(target,
-                    OptionalParameter.class)) {
+            if (ParameterDeserializer
+                    .isAnnotatedParameter(target, OptionalParameter.class)) {
                 validateOptionalParameter(target);
                 optionalParameter = target;
-            } else if (ParameterDeserializer.isAnnotatedParameter(target,
-                    WildcardParameter.class)) {
+            } else if (ParameterDeserializer
+                    .isAnnotatedParameter(target, WildcardParameter.class)) {
                 validateWildcard(target);
                 wildCardParameter = target;
             } else {
@@ -112,9 +112,9 @@ public class RouteTarget implements Serializable {
                     "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
                     normal.getName(), target.getName(), target.getName()));
         } else if (optionalParameter != null) {
-            String message = String.format(
-                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                    optionalParameter.getName(), target.getName());
+            String message = String
+                    .format("Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
+                            optionalParameter.getName(), target.getName());
             throw new InvalidRouteConfigurationException(message);
         }
     }
@@ -137,7 +137,7 @@ public class RouteTarget implements Serializable {
      * Get route target for given segments.
      *
      * @param segments
-     *            route segments
+     *         route segments
      * @return navigation target corresponding to given segments
      */
     public Class<? extends Component> getTarget(List<String> segments) {
@@ -154,10 +154,10 @@ public class RouteTarget implements Serializable {
     }
 
     private boolean isAnnotatedParameter(Class<?> target) {
-        return ParameterDeserializer.isAnnotatedParameter(target,
-                OptionalParameter.class)
-                || ParameterDeserializer.isAnnotatedParameter(target,
-                        WildcardParameter.class);
+        return ParameterDeserializer
+                .isAnnotatedParameter(target, OptionalParameter.class)
+                || ParameterDeserializer
+                .isAnnotatedParameter(target, WildcardParameter.class);
     }
 
     /**
@@ -172,5 +172,65 @@ public class RouteTarget implements Serializable {
         copy.optionalParameter = optionalParameter;
         copy.wildCardParameter = wildCardParameter;
         return copy;
+    }
+
+    /**
+     * Remove target route from this RouteTarget.
+     *
+     * @param targetRoute
+     *         route to remove
+     */
+    public void remove(Class<? extends Component> targetRoute) {
+        if (targetRoute.equals(normal)) {
+            normal = null;
+        } else if (targetRoute.equals(parameter)) {
+            parameter = null;
+        } else if (targetRoute.equals(optionalParameter)) {
+            optionalParameter = null;
+        } else if (targetRoute.equals(wildCardParameter)) {
+            wildCardParameter = null;
+        }
+    }
+
+    /**
+     * Check if navigation target is present in current target.
+     *
+     * @param target
+     *         navigation target to check for
+     * @return true if navigation target is found in some position
+     */
+    public boolean containsTarget(Class<? extends Component> target) {
+        return getRoutes().contains(target);
+    }
+
+    /**
+     * Check if this RouteTarget is empty. This means that it no longer contains
+     * any route classes.
+     *
+     * @return true is no targets are found
+     */
+    public boolean isEmpty() {
+        return normal == null && parameter == null && optionalParameter == null
+                && wildCardParameter == null;
+    }
+
+    /**
+     * Get all registered targets for this routeTarget as a iterable.
+     *
+     * @return all registered route classes
+     */
+    public List<Class<? extends Component>> getRoutes() {
+        List<Class<? extends Component>> registrations = new ArrayList<>(4);
+        if (normal != null) {
+            registrations.add(normal);
+        } else if (parameter != null) {
+            registrations.add(parameter);
+        } else if (optionalParameter != null) {
+            registrations.add(optionalParameter);
+        } else if (wildCardParameter != null) {
+            registrations.add(wildCardParameter);
+        }
+
+        return registrations;
     }
 }

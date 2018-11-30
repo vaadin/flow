@@ -55,7 +55,37 @@ public interface RouteRegistry extends Serializable {
             throws InvalidRouteConfigurationException;
 
     /**
+     * Remove the given navigation target route registration. Path where the
+     * navigation target was may still be usable, e.g. we remove target with url
+     * param and there is left a non param target, but will not return the
+     * removed target.
+     * <p>
+     * Note! this will remove target route and if possible any {@link
+     * RouteAlias} route that can be found for the class.
+     *
+     * @param navigationTarget
+     */
+    void removeRoute(Class<? extends Component> navigationTarget);
+
+    /**
+     * Remove all registrations for given path.
+     * This means that any navigation target registered on the given path will
+     * be removed. But if a removed navigationTarget for the path exists it is
+     * then stored with a new main path so it can still get a resolved url.
+     * <p>
+     * E.g. path "home" contains HomeView and DetailsView[String path param]
+     * both will be removed.
+     *
+     * @param path
+     */
+    void removeRoute(String path);
+
+    /**
      * Set error handler navigation targets.
+     * <p>
+     * This can also be used to add error navigation targets that override
+     * existing targets. Note! The overriding targets need to be extending
+     * the existing target or they will throw.
      *
      * @param errorNavigationTargets
      *         error handler navigation targets

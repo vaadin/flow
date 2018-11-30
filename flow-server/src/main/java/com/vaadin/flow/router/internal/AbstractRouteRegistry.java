@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -31,11 +32,13 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.startup.GlobalRouteRegistry;
 import com.vaadin.flow.server.startup.RouteTarget;
@@ -66,8 +69,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      */
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
-    // The live configuration for this route registry
-    protected volatile RouteConfiguration routeConfiguration = new RouteConfiguration();
+    /**
+     * The live configuration for this route registry.
+     * This can only be updated through {@link #configure(Configuration)} for
+     * concurrency reasons.
+     */
+    private volatile RouteConfiguration routeConfiguration = new RouteConfiguration();
 
     /**
      * Thread-safe update of the RouteConfiguration.
@@ -101,6 +108,19 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     protected RouteConfiguration getRouteConfiguration(
             RouteConfiguration original, boolean mutable) {
         return new RouteConfiguration(original, mutable);
+    }
+
+    /**
+     * Get the current valid configuration.
+     * <p>
+     * Note! there may exist a possibility that someone updates this while it's
+     * being read, but the given configuration is valid at the given point in
+     * time.
+     *
+     * @return current route configuration
+     */
+    protected RouteConfiguration getConfiguration() {
+        return routeConfiguration;
     }
 
     @Override
@@ -214,6 +234,115 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 configuration.setRouteTarget(path, routeTarget);
             }
         }
-        configuration.putTargetRoute(navigationTarget, route);
+        configuration.setTargetRoute(navigationTarget, route);
+    }
+
+    /**
+     * Add the given error target to the exceptionTargetMap. This will handle
+     * existing overlapping exception types by assigning the correct error
+     * target according to inheritance or throw if existing and new are not
+     * related.
+     *
+     * @param target
+     *         error handler target
+     * @param exceptionTargetsMap
+     *         map of existing error handlers
+     * @throws InvalidRouteConfigurationException
+     *         if trying to add a non related exception handler for which a
+     *         handler already exists
+     */
+    protected void addErrorTarget(Class<? extends Component> target,
+            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap)
+            throws InvalidRouteLayoutConfigurationException {
+        Class<? extends Exception> exceptionType = ReflectTools
+                .getGenericInterfaceType(target, HasErrorParameter.class)
+                .asSubclass(Exception.class);
+
+        if (exceptionTargetsMap.containsKey(exceptionType)) {
+            handleRegisteredExceptionType(exceptionTargetsMap, target,
+                    exceptionType);
+        } else {
+            exceptionTargetsMap.put(exceptionType, target);
+        }
+    }
+
+    /**
+     * Register a child handler if parent registered or leave as is if child
+     * registered.
+     * <p>
+     * If the target is not related to the registered handler then throw
+     * configuration exception as only one handler for each exception type is
+     * allowed.
+     *
+     * @param target
+     *         target being handled
+     * @param exceptionType
+     *         type of the handled exception
+     */
+    private void handleRegisteredExceptionType(
+            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
+            Class<? extends Component> target,
+            Class<? extends Exception> exceptionType) {
+        Class<? extends Component> registered = exceptionTargetsMap
+                .get(exceptionType);
+
+        if (registered.isAssignableFrom(target)) {
+            exceptionTargetsMap.put(exceptionType, target);
+        } else if (!target.isAssignableFrom(registered)) {
+            String msg = String
+                    .format("Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                            target.getName(), registered.getName(),
+                            exceptionType.getName());
+            throw new InvalidRouteLayoutConfigurationException(msg);
+        }
+    }
+
+    /**
+     * Get the exception handler for given exception or recurse by exception
+     * cause until possible exception with handler found.
+     *
+     * @param exception
+     *         exception to get handler for
+     * @return Optional containing found handler or empty if none found
+     */
+    protected Optional<ErrorTargetEntry> searchByCause(Exception exception) {
+        Class<? extends Component> targetClass = routeConfiguration
+                .getExceptionHandlerByClass(exception.getClass());
+
+        if (targetClass != null) {
+            return Optional.of(new ErrorTargetEntry(targetClass,
+                    exception.getClass()));
+        }
+
+        Throwable cause = exception.getCause();
+        if (cause instanceof Exception) {
+            return searchByCause((Exception) cause);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Search given exception super classes to get exception handler for if any
+     * exist.
+     *
+     * @param exception
+     *         exception to get handler for
+     * @return Optional containing found handler or empty if none found
+     */
+    protected Optional<ErrorTargetEntry> searchBySuperType(
+            Throwable exception) {
+        Class<?> superClass = exception.getClass().getSuperclass();
+        while (superClass != null && Exception.class
+                .isAssignableFrom(superClass)) {
+            Class<? extends Component> targetClass = routeConfiguration
+                    .getExceptionHandlerByClass(superClass);
+            if (targetClass != null) {
+                return Optional.of(new ErrorTargetEntry(targetClass,
+                        superClass.asSubclass(Exception.class)));
+            }
+            superClass = superClass.getSuperclass();
+        }
+
+        return Optional.empty();
     }
 }

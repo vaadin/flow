@@ -17,6 +17,7 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,8 +31,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
@@ -41,7 +40,6 @@ import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
@@ -112,8 +110,8 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
 
             ServletContext osgiServletContext = OSGiAccess.getInstance()
                     .getOsgiServletContext();
-            if (osgiServletContext == null
-                    || !OSGiAccess.getInstance().hasInitializers()) {
+            if (osgiServletContext == null || !OSGiAccess.getInstance()
+                    .hasInitializers()) {
                 return;
             }
             OSGiDataCollector registry = (OSGiDataCollector) getInstance(
@@ -126,8 +124,9 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
 
         private void doInitOSGiRoutes()
                 throws InvalidRouteConfigurationException {
-            if (navigationTargetsInitialized() || OSGiAccess.getInstance()
-                    .getOsgiServletContext() == null) {
+            if (navigationTargetsInitialized()
+                    || OSGiAccess.getInstance().getOsgiServletContext()
+                    == null) {
                 return;
             }
             if (!OSGiAccess.getInstance().hasInitializers()) {
@@ -146,8 +145,9 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
             try {
                 doInitOSGiRoutes();
             } catch (InvalidRouteConfigurationException exception) {
-                assert false : "Exception may not be thrown here since it should have been thrown by "
-                        + OSGiDataCollector.class;
+                assert false :
+                        "Exception may not be thrown here since it should have been thrown by "
+                                + OSGiDataCollector.class;
             }
         }
 
@@ -293,30 +293,20 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
-        errorNavigationTargets.stream().filter(defaultErrorHandlers::contains)
-                .filter(target -> !allFiltersMatch(target))
+
+        exceptionTargetsMap.putAll(getConfiguration().getExceptionHandlers());
+
+        errorNavigationTargets.stream()
+                .filter(target -> !defaultErrorHandlers.contains(target))
+                .filter(target -> allErrorFiltersMatch(target))
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
         initErrorTargets(exceptionTargetsMap);
     }
 
-    private boolean allFiltersMatch(Class<? extends Component> target) {
-        return routeFilters.stream().allMatch(
-                filter -> filter.testErrorNavigationTarget(target));
-    }
-
-    private void addErrorTarget(Class<? extends Component> target,
-            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
-        Class<? extends Exception> exceptionType = ReflectTools
-                .getGenericInterfaceType(target, HasErrorParameter.class)
-                .asSubclass(Exception.class);
-
-        if (exceptionTargetsMap.containsKey(exceptionType)) {
-            handleRegisteredExceptionType(exceptionTargetsMap, target,
-                    exceptionType);
-        } else {
-            exceptionTargetsMap.put(exceptionType, target);
-        }
+    private boolean allErrorFiltersMatch(Class<? extends Component> target) {
+        return routeFilters.stream()
+                .allMatch(filter -> filter.testErrorNavigationTarget(target));
     }
 
     /**
@@ -327,104 +317,34 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
      * targets
      */
     public boolean errorNavigationTargetsInitialized() {
-        return routeConfiguration.hasExceptionTargets();
+        return getConfiguration().hasExceptionTargets();
     }
 
-    /**
-     * Register a child handler if parent registered or leave as is if child
-     * registered.
-     * <p>
-     * If the target is not related to the registered handler then throw
-     * configuration exception as only one handler for each exception type is
-     * allowed.
-     *
-     * @param target
-     *         target being handled
-     * @param exceptionType
-     *         type of the handled exception
-     */
-    private void handleRegisteredExceptionType(
-            Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
-            Class<? extends Component> target,
-            Class<? extends Exception> exceptionType) {
-        Class<? extends Component> registered = exceptionTargetsMap
-                .get(exceptionType);
-
-        if (registered.isAssignableFrom(target)) {
-            exceptionTargetsMap.put(exceptionType, target);
-        } else if (!target.isAssignableFrom(registered)) {
-            String msg = String
-                    .format("Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                            target.getName(), registered.getName(),
-                            exceptionType.getName());
-            throw new InvalidRouteLayoutConfigurationException(msg);
-        }
-    }
-
-    /**
-     * Get a registered navigation target for given exception. First we will
-     * search for a matching cause for in the exception chain and if no match
-     * found search by extended type.
-     *
-     * @param exception
-     *         exception to search error view for
-     * @return optional error target entry corresponding to the given exception
-     */
+    @Override
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (!errorNavigationTargetsInitialized()) {
             initErrorTargets(new HashMap<>());
         }
-        ErrorTargetEntry result = searchByCause(exception);
-        if (result == null) {
+        Optional<ErrorTargetEntry> result = searchByCause(exception);
+        if (!result.isPresent()) {
             result = searchBySuperType(exception);
         }
-        return Optional.ofNullable(result);
-    }
-
-    private ErrorTargetEntry searchByCause(Exception exception) {
-        Class<? extends Component> targetClass = routeConfiguration
-                .getExceptionHandlerByClass(exception.getClass());
-
-        if (targetClass != null) {
-            return new ErrorTargetEntry(targetClass, exception.getClass());
-        }
-
-        Throwable cause = exception.getCause();
-        if (cause instanceof Exception) {
-            return searchByCause((Exception) cause);
-        }
-        return null;
-    }
-
-    private ErrorTargetEntry searchBySuperType(Throwable exception) {
-        Class<?> superClass = exception.getClass().getSuperclass();
-        while (superClass != null && Exception.class
-                .isAssignableFrom(superClass)) {
-            Class<? extends Component> targetClass = routeConfiguration
-                    .getExceptionHandlerByClass(superClass);
-            if (targetClass != null) {
-                return new ErrorTargetEntry(targetClass,
-                        superClass.asSubclass(Exception.class));
-            }
-            superClass = superClass.getSuperclass();
-        }
-
-        return null;
+        return result;
     }
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
-        return getNavigationTarget(pathString, new ArrayList<>());
+        return getNavigationTarget(pathString, Collections.emptyList());
     }
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
-        if (routeConfiguration.hasRoute(pathString, segments)) {
-            return routeConfiguration.getRoute(pathString, segments);
+        if (getConfiguration().hasRoute(pathString, segments)) {
+            return getConfiguration().getRoute(pathString, segments);
         }
         return Optional.empty();
     }
@@ -433,7 +353,27 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
 
-        return routeConfiguration.hasRoute(pathString);
+        return getConfiguration().hasRoute(pathString);
+    }
+
+    @Override
+    public void removeRoute(Class<? extends Component> routeTarget) {
+        if (!getConfiguration().hasRouteTarget(routeTarget)) {
+            return;
+        }
+        configure(configuration -> {
+            configuration.removeRoute(routeTarget);
+        });
+    }
+
+    @Override
+    public void removeRoute(String path) {
+        if (!getConfiguration().hasRoute(path)) {
+            return;
+        }
+        configure(configuration -> {
+            configuration.removeRoute(path);
+        });
     }
 
     /**
@@ -443,7 +383,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
      * @return whether this registry has been initialized
      */
     public boolean navigationTargetsInitialized() {
-        return !routeConfiguration.isEmpty();
+        return !getConfiguration().isEmpty();
     }
 
     private void registerNavigationTargets(
@@ -485,7 +425,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public boolean hasNavigationTargets() {
-        return !routeConfiguration.isEmpty();
+        return !getConfiguration().isEmpty();
     }
 
     /**

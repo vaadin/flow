@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -83,6 +82,11 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     protected RouteConfiguration getRouteConfiguration(
             RouteConfiguration original, boolean mutable) {
         return new SessionConfiguration(original, mutable);
+    }
+
+    @Override
+    protected SessionConfiguration getConfiguration() {
+        return (SessionConfiguration) super.getConfiguration();
     }
 
     private SessionRouteRegistry(VaadinSession session) {
@@ -231,21 +235,41 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             configuration.setRouteTarget(path, routeTarget);
         }
 
-        configuration.putTargetRoute(navigationTarget, path);
+        configuration.setTargetRoute(navigationTarget, path);
     }
 
-    public void removeRoute(String path) {
-
-    }
-
+    @Override
     public void removeRoute(Class<? extends Component> routeTarget) {
+        if (!getConfiguration().hasRouteTarget(routeTarget)) {
+            return;
+        }
+        configure(configuration -> {
+            configuration.removeRoute(routeTarget);
+        });
+    }
 
+    @Override
+    public void removeRoute(String path) {
+        if (!getConfiguration().hasRoute(path)) {
+            return;
+        }
+        configure(configuration -> {
+            configuration.removeRoute(path);
+        });
     }
 
     @Override
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
+        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
+        exceptionTargetsMap.putAll(getConfiguration().getExceptionHandlers());
+        errorNavigationTargets
+                .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
+        configure(configuration -> {
+            exceptionTargetsMap.forEach((exception, handler) -> configuration
+                    .setErrorRoute(exception, handler));
+        });
     }
 
     @Override
@@ -253,7 +277,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
         Optional<Class<? extends Component>> navigationTarget = getNavigationTarget(
-                pathString, new ArrayList<>());
+                pathString, Collections.emptyList());
 
         if (navigationTarget.isPresent()) {
             return navigationTarget;
@@ -265,8 +289,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
-        if (routeConfiguration.hasRoute(pathString, segments)) {
-            return routeConfiguration.getRoute(pathString, segments);
+        if (getConfiguration().hasRoute(pathString, segments)) {
+            return getConfiguration().getRoute(pathString, segments);
         }
         return parentRegistry.getNavigationTarget(pathString, segments);
     }
@@ -274,7 +298,16 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     @Override
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
-        // TODO:
+        if (getConfiguration().hasExceptionTargets()) {
+            Optional<ErrorTargetEntry> result = searchByCause(exception);
+
+            if (!result.isPresent()) {
+                result = searchBySuperType(exception);
+            }
+            if (result.isPresent()) {
+                return result;
+            }
+        }
         return parentRegistry.getErrorNavigationTarget(exception);
     }
 
@@ -282,7 +315,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
 
-        return routeConfiguration.hasRoute(pathString) || parentRegistry
+        return getConfiguration().hasRoute(pathString) || parentRegistry
                 .hasRouteTo(pathString);
     }
 
@@ -295,22 +328,22 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public boolean hasNavigationTargets() {
-        return !routeConfiguration.isEmpty() || parentRegistry
+        return !getConfiguration().isEmpty() || parentRegistry
                 .hasNavigationTargets();
     }
 
     @Override
     public List<Class<? extends RouterLayout>> getRouteLayouts(
             Class<? extends Component> navigationTarget, String path) {
-        if (routeConfiguration.hasRoute(path) && (
+        if (getConfiguration().hasRoute(path) && (
                 !navigationTarget.isAnnotationPresent(Route.class)
-                        || ((SessionConfiguration) routeConfiguration).manualLayouts
+                        ||  getConfiguration().manualLayouts
                         .containsKey(path))) {
 
             // User has defined parent layouts manually use those
-            if (((SessionConfiguration) routeConfiguration).manualLayouts
+            if ( getConfiguration().manualLayouts
                     .containsKey(path)) {
-                return ((SessionConfiguration) routeConfiguration).manualLayouts
+                return  getConfiguration().manualLayouts
                         .get(path);
             }
             // not a route layout use non route layout collection of parent layouts.
