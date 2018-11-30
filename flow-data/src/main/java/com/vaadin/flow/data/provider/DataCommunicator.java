@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
@@ -78,6 +79,7 @@ public class DataCommunicator<T> implements Serializable {
 
     private boolean resendEntireRange = true;
     private boolean assumeEmptyClient = true;
+    private boolean needsSizeRecheck = false;
 
     private int nextUpdateId = 0;
 
@@ -440,21 +442,28 @@ public class DataCommunicator<T> implements Serializable {
     private void flush() {
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
-        if (resendEntireRange) {
-            assumedSize = getDataProviderSize();
-        }
-
+        Range effectiveRequested;
         final Range previousActive = Range.withLength(activeStart,
                 activeKeyOrder.size());
-        final Range effectiveRequested = requestedRange
-                .restrictTo(Range.withLength(0, assumedSize));
-
-        resendEntireRange |= !(previousActive.intersects(effectiveRequested)
-                || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
         // Phase 1: Find all items that the client should have
-        List<String> newActiveKeyOrder = collectKeysToFlush(previousActive,
-                effectiveRequested);
+        List<String> newActiveKeyOrder;
+
+        do {
+            if (resendEntireRange || needsSizeRecheck) {
+                assumedSize = getDataProviderSize();
+                needsSizeRecheck = false;
+            }
+            effectiveRequested = requestedRange
+                    .restrictTo(Range.withLength(0, assumedSize));
+
+            resendEntireRange |= !(previousActive.intersects(effectiveRequested)
+                    || (previousActive.isEmpty()
+                            && effectiveRequested.isEmpty()));
+
+            newActiveKeyOrder = collectKeysToFlush(previousActive,
+                    effectiveRequested);
+        } while (needsSizeRecheck);
 
         activeKeyOrder = newActiveKeyOrder;
         activeStart = effectiveRequested.getStart();
@@ -593,7 +602,9 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private List<JsonValue> getJsonItems(Range range) {
-        return range.stream()
+        return IntStream
+                .range(range.getStart(),
+                        Math.min(range.getEnd(), activeKeyOrder.size()))
                 .mapToObj(index -> activeKeyOrder.get(index - activeStart))
                 .map(keyMapper::get).map(this::generateJson)
                 .collect(Collectors.toList());
@@ -632,6 +643,7 @@ public class DataCommunicator<T> implements Serializable {
             }
             activeKeys.add(key);
         });
+        needsSizeRecheck |= activeKeys.isEmpty();
         return activeKeys;
     }
 
