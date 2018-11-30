@@ -48,8 +48,7 @@ public class RouteTarget implements Serializable {
      *         exception for miss configured routes where navigation targets
      *         can not be clearly selected
      */
-    public RouteTarget(Class<? extends Component> target)
-            throws InvalidRouteConfigurationException {
+    public RouteTarget(Class<? extends Component> target) {
         addRoute(target);
     }
 
@@ -65,8 +64,7 @@ public class RouteTarget implements Serializable {
      *         exception for miss configured routes where navigation targets
      *         can not be clearly selected
      */
-    public void addRoute(Class<? extends Component> target)
-            throws InvalidRouteConfigurationException {
+    public void addRoute(Class<? extends Component> target) {
         if (!HasUrlParameter.class.isAssignableFrom(target)
                 && !isAnnotatedParameter(target)) {
             validateNormalTarget(target);

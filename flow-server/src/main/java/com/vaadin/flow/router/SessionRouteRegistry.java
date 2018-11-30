@@ -68,6 +68,13 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     private final Registration registration;
     private final VaadinSession session;
 
+    private SessionRouteRegistry(VaadinSession session) {
+        this.session = session;
+
+        registration = session.getService()
+                .addSessionDestroyListener(this::sessionDestroy);
+    }
+
     /**
      * Override the RouteConfiguration to use the SessionConfiguration instead
      * as we have some extra information that we want to store.
@@ -89,13 +96,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         return (SessionConfiguration) super.getConfiguration();
     }
 
-    private SessionRouteRegistry(VaadinSession session) {
-        this.session = session;
-
-        registration = session.getService()
-                .addSessionDestroyListener(this::sessionDestroy);
-    }
-
     private void sessionDestroy(SessionDestroyEvent sessionDestroyEvent) {
         if (sessionDestroyEvent.getSession().equals(session)) {
             registration.remove();
@@ -107,15 +107,28 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      * Clear all registered routes from this SessionRouteRegistry.
      */
     public void clear() {
-        configure((configuration) -> {
-            configuration.clear();
-        });
+        configure((configuration) -> configuration.clear());
     }
 
+    /**
+     * Get the session registry for current VaadinSession.
+     * <p>
+     * Same as calling getSessionRegistry(VaadinSession.getCurrent());
+     *
+     * @return session registry for current session
+     */
     public static SessionRouteRegistry getSessionRegistry() {
         return getSessionRegistry(VaadinSession.getCurrent());
     }
 
+    /**
+     * Get the session registry for VaadinSession. If no SessionRegistry exists
+     * then one will be created for given VaadinSession.
+     *
+     * @param session
+     *         vaadin session to get registry for
+     * @return session registry for given session
+     */
     public static SessionRouteRegistry getSessionRegistry(
             VaadinSession session) {
         Objects.requireNonNull(session,
@@ -135,11 +148,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public void setNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets)
-            throws InvalidRouteConfigurationException {
+            Set<Class<? extends Component>> navigationTargets) {
         List<Class<? extends Component>> faulty = navigationTargets.stream()
                 .filter(target -> !target.isAnnotationPresent(Route.class))
-                .filter(target -> Component.class.isAssignableFrom(target))
+                .filter(Component.class::isAssignableFrom)
                 .collect(Collectors.toList());
         if (!faulty.isEmpty()) {
             final StringBuilder faultyClasses = new StringBuilder();
@@ -161,8 +173,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public void setRoute(Class<? extends Component> navigationTarget)
-            throws InvalidRouteConfigurationException {
+    public void setRoute(Class<? extends Component> navigationTarget) {
         configure(configuration -> setRoute(navigationTarget, configuration));
     }
 
@@ -180,11 +191,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      *         thrown if exact route already defined in this scope
      */
     public void setRoute(String path,
-            Class<? extends Component> navigationTarget)
-            throws InvalidRouteConfigurationException {
-        configure(configuration -> {
-            addRouteToConfiguration(path, navigationTarget, configuration);
-        });
+            Class<? extends Component> navigationTarget) {
+        configure(
+                configuration -> addRouteToConfiguration(path, navigationTarget,
+                        configuration));
     }
 
     /**
@@ -204,8 +214,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      */
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
-            List<Class<? extends RouterLayout>> parentChain)
-            throws InvalidRouteConfigurationException {
+            List<Class<? extends RouterLayout>> parentChain) {
         configure(configuration -> {
             addRouteToConfiguration(path, navigationTarget, configuration);
             ((SessionConfiguration) configuration).manualLayouts
@@ -243,9 +252,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         if (!getConfiguration().hasRouteTarget(routeTarget)) {
             return;
         }
-        configure(configuration -> {
-            configuration.removeRoute(routeTarget);
-        });
+        configure(configuration -> configuration.removeRoute(routeTarget));
     }
 
     @Override
@@ -253,9 +260,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         if (!getConfiguration().hasRoute(path)) {
             return;
         }
-        configure(configuration -> {
-            configuration.removeRoute(path);
-        });
+        configure(configuration -> configuration.removeRoute(path));
     }
 
     @Override
@@ -266,10 +271,9 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         errorNavigationTargets
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
-        configure(configuration -> {
-            exceptionTargetsMap.forEach((exception, handler) -> configuration
-                    .setErrorRoute(exception, handler));
-        });
+        configure(configuration -> exceptionTargetsMap.forEach(
+                (exception, handler) -> configuration
+                        .setErrorRoute(exception, handler)));
     }
 
     @Override
@@ -313,7 +317,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public boolean hasRouteTo(String pathString) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
+        Objects.requireNonNull(pathString, "Can not search for null.");
 
         return getConfiguration().hasRoute(pathString) || parentRegistry
                 .hasRouteTo(pathString);
@@ -337,14 +341,12 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             Class<? extends Component> navigationTarget, String path) {
         if (getConfiguration().hasRoute(path) && (
                 !navigationTarget.isAnnotationPresent(Route.class)
-                        ||  getConfiguration().manualLayouts
+                        || getConfiguration().manualLayouts
                         .containsKey(path))) {
 
             // User has defined parent layouts manually use those
-            if ( getConfiguration().manualLayouts
-                    .containsKey(path)) {
-                return  getConfiguration().manualLayouts
-                        .get(path);
+            if (getConfiguration().manualLayouts.containsKey(path)) {
+                return getConfiguration().manualLayouts.get(path);
             }
             // not a route layout use non route layout collection of parent layouts.
             return getNonRouteLayouts(navigationTarget);
@@ -352,12 +354,20 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         return parentRegistry.getRouteLayouts(navigationTarget, path);
     }
 
+    /**
+     * Set the next level registry that we should fallback to in cases where we
+     * don't have requested data, but the parent might.
+     *
+     * @param routeRegistry
+     *         registry that is on a higher scope than this registry
+     * @return this
+     */
     public SessionRouteRegistry withParentRegistry(
             RouteRegistry routeRegistry) {
         if (this.parentRegistry == null)
             this.parentRegistry = routeRegistry;
         else if (!this.parentRegistry.equals(routeRegistry))
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Session registry got a new GlobalRouteRegistry which should not be possible!");
         return this;
     }

@@ -171,8 +171,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
 
         @Override
         public void setNavigationTargets(
-                Set<Class<? extends Component>> navigationTargets)
-                throws InvalidRouteConfigurationException {
+                Set<Class<? extends Component>> navigationTargets) {
             if (navigationTargets.isEmpty()
                     && this.navigationTargets.get() == null) {
                 // ignore initial empty targets avoiding routes initialization
@@ -298,7 +297,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
 
         errorNavigationTargets.stream()
                 .filter(target -> !defaultErrorHandlers.contains(target))
-                .filter(target -> allErrorFiltersMatch(target))
+                .filter(this::allErrorFiltersMatch)
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
         initErrorTargets(exceptionTargetsMap);
@@ -361,9 +360,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         if (!getConfiguration().hasRouteTarget(routeTarget)) {
             return;
         }
-        configure(configuration -> {
-            configuration.removeRoute(routeTarget);
-        });
+        configure(configuration -> configuration.removeRoute(routeTarget));
     }
 
     @Override
@@ -371,9 +368,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         if (!getConfiguration().hasRoute(path)) {
             return;
         }
-        configure(configuration -> {
-            configuration.removeRoute(path);
-        });
+        configure(configuration -> configuration.removeRoute(path));
     }
 
     /**
@@ -387,12 +382,11 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     }
 
     private void registerNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets)
-            throws InvalidRouteConfigurationException {
+            Set<Class<? extends Component>> navigationTargets) {
 
         List<Class<? extends Component>> faulty = navigationTargets.stream()
                 .filter(target -> !target.isAnnotationPresent(Route.class))
-                .filter(target -> Component.class.isAssignableFrom(target))
+                .filter(Component.class::isAssignableFrom)
                 .collect(Collectors.toList());
         if (!faulty.isEmpty()) {
             final StringBuilder faultyClasses = new StringBuilder();

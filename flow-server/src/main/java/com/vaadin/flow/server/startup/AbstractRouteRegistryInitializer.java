@@ -67,7 +67,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     /**
      * Any navigation target applicable to be registered on startup should be a
      * Component, contain the Route annotation and not be annotated with
-     * {@link DynamicRoute}
+     * {@link DynamicRoute}.
      *
      * @param clazz
      *         class to check for filer

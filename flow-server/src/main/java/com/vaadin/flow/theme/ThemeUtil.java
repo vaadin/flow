@@ -31,13 +31,16 @@ public final class ThemeUtil {
 
     public static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
 
+    private ThemeUtil() {
+    }
+
     /**
      * Loads the Lumo theme class from the classpath if it is available.
      *
      * @return the Lumo ThemeDefinition, or <code>null</code> if it is not
      * available in the classpath
      */
-    private static final ThemeDefinition loadLumoClassIfAvailable() {
+    private static ThemeDefinition loadLumoClassIfAvailable() {
         try {
             Class<? extends AbstractTheme> theme = (Class<? extends AbstractTheme>) Class
                     .forName("com.vaadin.flow.theme.lumo.Lumo");
@@ -50,9 +53,6 @@ public final class ThemeUtil {
                     e);
         }
         return null;
-    }
-
-    private ThemeUtil() {
     }
 
     /**
