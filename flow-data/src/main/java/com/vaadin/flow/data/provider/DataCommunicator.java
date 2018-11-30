@@ -613,6 +613,8 @@ public class DataCommunicator<T> implements Serializable {
             boolean mapperHasKey = keyMapper.has(bean);
             String key = keyMapper.key(bean);
             if (mapperHasKey) {
+                // Ensure latest instance from provider is used
+                keyMapper.refresh(bean);
                 passivatedByUpdate.values().stream()
                         .forEach(set -> set.remove(key));
             }
