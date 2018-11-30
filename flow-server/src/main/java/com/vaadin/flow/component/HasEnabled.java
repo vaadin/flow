@@ -15,28 +15,42 @@
  */
 package com.vaadin.flow.component;
 
+import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
+
 /**
  * A generic interface for components and other user interface objects that may
- * be enabled or disabled.
+ * be enabled or disabled. The server will ignore incoming events for a disabled
+ * element unless the listener has been explicitly configured to allow events in
+ * a disabled state using e.g.
+ * {@link DomListenerRegistration#setDisabledUpdateMode(DisabledUpdateMode)} or
+ * {@link Element#addSynchronizedProperty(String, DisabledUpdateMode)}.
  * <p>
- * Element may be implicitly or explicitly disabled.
+ * Implementing classes should <b>not</b> define their own implementations of
+ * the methods defined in this interface since the framework's overall security
+ * capabilities are dependent on a correct implementation. Instead, the visual
+ * representation of a disabled component can be configured by overriding
+ * {@link Component#onEnabledStateChanged(boolean)}.
+ * <p>
+ * An element may be implicitly or explicitly disabled.
  * <ul>
- * <li>Element is explicitly disabled if it's disabled via the
+ * <li>It is explicitly disabled if it's disabled via the
  * {@code setEnabled(false)} call.
- * <li>Element is implicitly disabled if it has an ascendant which is explicitly
+ * <li>It is implicitly disabled if it has an ascendant which is explicitly
  * disabled.
  * </ul>
  *
- * Element is enabled if it's not explicitly disabled and there is no disabled
- * ascendant.
+ * An element is enabled if it's not explicitly disabled and there is no
+ * disabled ascendant.
  * <p>
  * An implicitly disabled element becomes enabled automatically if its disabled
  * ascendant becomes enabled.
  * <p>
- * Element may be explicitly disabled being in a disabled parent. Such element
- * remains disabled when its parent becomes enabled.
+ * An element may be explicitly disabled when it is only implicitly disabled.
+ * Such element remains disabled when its ascendant becomes enabled.
  * <p>
- * Note that an element may change its enabled state if it's inside disabled
+ * Note that an element may change its enabled state if it's inside a disabled
  * parent and it becomes detached from it. In this case if it has not been
  * explicitly disabled then it becomes enabled until it's attached. If the new
  * parent is enabled then the element remains enabled. Otherwise it becomes
@@ -58,6 +72,11 @@ public interface HasEnabled extends HasElement {
      *            on parent
      */
     default void setEnabled(boolean enabled) {
+        /*
+         * XXX WARNING Do not override this method. Propagating the enabled
+         * state to the element in this way is critical to fulfill generic
+         * assumptions with regards to application security.
+         */
         getElement().setEnabled(enabled);
     }
 
@@ -70,6 +89,11 @@ public interface HasEnabled extends HasElement {
      * @return enabled state of the object
      */
     default boolean isEnabled() {
+        /*
+         * XXX WARNING Do not override this method. Reading the enabled state
+         * from the element in this way is critical to fulfill generic
+         * assumptions with regards to application security.
+         */
         return getElement().isEnabled();
     }
 }
