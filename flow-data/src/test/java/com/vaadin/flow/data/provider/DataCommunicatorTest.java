@@ -42,14 +42,50 @@ import com.vaadin.flow.server.VaadinSession;
 import elemental.json.JsonValue;
 
 public class DataCommunicatorTest {
+    /**
+     * Test item that uses id for identity.
+     */
+    private static class Item {
+        private final int id;
+        private String value;
+
+        public Item(int id) {
+            this(id, "Item " + id);
+        }
+
+        public Item(int id, String value) {
+            this.id = id;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return id + ": " + value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Item) {
+                Item that = (Item) obj;
+                return that.id == id;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return id;
+        }
+    }
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    private DataCommunicator<String> dataCommunicator;
+    private DataCommunicator<Item> dataCommunicator;
 
     @Mock
-    private DataGenerator<String> dataGenerator;
+    private DataGenerator<Item> dataGenerator;
     @Mock
     private ArrayUpdater arrayUpdater;
 
@@ -184,7 +220,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("0", dataCommunicator.getKeyMapper().get("1"));
+        Assert.assertEquals(0, dataCommunicator.getKeyMapper().get("1").id);
 
         dataCommunicator.setDataProvider(createDataProvider(), null);
         Assert.assertNull(
@@ -194,11 +230,11 @@ public class DataCommunicatorTest {
 
     @Test
     public void dataProviderBreaksContract_limitIsNotCalled_throw() {
-        List<String> items = new ArrayList<>();
+        List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            items.add(String.valueOf(i));
+            items.add(new Item(i));
         }
-        DataProvider<String, Void> dataProvider = DataProvider
+        DataProvider<Item, Void> dataProvider = DataProvider
                 .fromCallbacks(query -> {
                     return items.stream();
                 }, query -> {
@@ -214,11 +250,11 @@ public class DataCommunicatorTest {
 
     @Test
     public void dataProviderBreaksContract_offsetIsNotCalled_throw() {
-        List<String> items = new ArrayList<>();
+        List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            items.add(String.valueOf(i));
+            items.add(new Item(i));
         }
-        DataProvider<String, Void> dataProvider = DataProvider
+        DataProvider<Item, Void> dataProvider = DataProvider
                 .fromCallbacks(query -> {
                     query.getLimit();
                     return items.stream();
@@ -235,11 +271,11 @@ public class DataCommunicatorTest {
 
     @Test
     public void dataProviderBreaksContract_tooManyItems_throw() {
-        List<String> items = new ArrayList<>();
+        List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            items.add(String.valueOf(i));
+            items.add(new Item(i));
         }
-        DataProvider<String, Void> dataProvider = DataProvider
+        DataProvider<Item, Void> dataProvider = DataProvider
                 .fromCallbacks(query -> {
                     query.getOffset();
                     query.getLimit();
@@ -249,7 +285,7 @@ public class DataCommunicatorTest {
                 });
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        Stream<String> stream = dataCommunicator.fetchFromProvider(0, 1);
+        Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 1);
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
@@ -259,30 +295,59 @@ public class DataCommunicatorTest {
         });
     }
 
+    @Test
+    public void sameKeyDifferentInstance_latestInstanceUsed() {
+        List<Item> items = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            items.add(new Item(i));
+        }
+        // Abusing the fact that ListDataProvider doesn't copy the backing store
+        ListDataProvider<Item> dataProvider = new ListDataProvider<>(items);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Item originalItem = items.get(0);
+        String key = dataCommunicator.getKeyMapper().key(originalItem);
+
+        Assert.assertSame(originalItem,
+                dataCommunicator.getKeyMapper().get(key));
+
+        Item updatedItem = new Item(originalItem.id, "Updated");
+        items.set(0, updatedItem);
+        dataProvider.refreshAll();
+
+        fakeClientCommunication();
+
+        Assert.assertSame(updatedItem,
+                dataCommunicator.getKeyMapper().get(key));
+    }
+
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().getStateTree().collectChanges(ignore -> {
         });
     }
 
-    private AbstractDataProvider<String, Object> createDataProvider() {
-        return new AbstractDataProvider<String, Object>() {
+    private AbstractDataProvider<Item, Object> createDataProvider() {
+        return new AbstractDataProvider<Item, Object>() {
             @Override
             public boolean isInMemory() {
                 return true;
             }
 
             @Override
-            public int size(Query<String, Object> query) {
+            public int size(Query<Item, Object> query) {
                 return 100;
             }
 
             @Override
-            public Stream<String> fetch(Query<String, Object> query) {
+            public Stream<Item> fetch(Query<Item, Object> query) {
                 return IntStream
                         .range(query.getOffset(),
                                 query.getLimit() + query.getOffset())
-                        .mapToObj(Integer::toString);
+                        .mapToObj(Item::new);
             }
         };
     }
