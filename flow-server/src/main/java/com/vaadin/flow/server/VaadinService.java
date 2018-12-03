@@ -2087,7 +2087,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Called when the VaadinSession should be loaded from the underlying HTTP
-     * session
+     * session.
      *
      * @param wrappedSession
      *            the underlying HTTP session
@@ -2121,7 +2121,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Called when the VaadinSession should be removed from the underlying HTTP
-     * session
+     * session.
      *
      * @param wrappedSession
      *            the underlying HTTP session
@@ -2133,7 +2133,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Performs the actual removal of the VaadinSession from the underlying HTTP
-     * session after sanity checks have been performed
+     * session after sanity checks have been performed.
      *
      * @param wrappedSession
      *            the underlying HTTP session
@@ -2145,7 +2145,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Returns the name used for storing the VaadinSession in the underlying
-     * HTTP session
+     * HTTP session.
      *
      * @return the attribute name used for storing the VaadinSession
      */

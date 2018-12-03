@@ -156,6 +156,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             registry = new SessionRouteRegistry(session);
             // Update RouteConfiguration to be SessionConfiguration
             registry.configure(command -> {
+                // NO-OP
             });
             session.setAttribute(SessionRouteRegistry.class, registry);
         }

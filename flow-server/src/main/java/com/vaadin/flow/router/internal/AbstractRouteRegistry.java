@@ -135,10 +135,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             List<RouteData.AliasData> routeAliases = new ArrayList<>();
 
             routeConfiguration.getRoutePaths(target).stream()
-                    .filter(route -> !route.equals(url)).forEach(route -> {
-                routeAliases.add(new RouteData.AliasData(
-                        getRouteAliasLayout(target, route), route));
-            });
+                    .filter(route -> !route.equals(url)).forEach(
+                    route -> routeAliases.add(new RouteData.AliasData(
+                            getRouteAliasLayout(target, route), route)));
 
             RouteData route = new RouteData(getParentLayout(target), url,
                     parameters, target, routeAliases);
@@ -154,7 +153,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             Class<? extends Component> target, String route) {
         Optional<RouteAlias> matchinAlias = Arrays
                 .stream(target.getAnnotationsByType(RouteAlias.class))
-                .filter(alias -> RouteUtil.getRouteAliasPath(target, alias).equals(route)).findFirst();
+                .filter(alias -> RouteUtil.getRouteAliasPath(target, alias)
+                        .equals(route)).findFirst();
         if (matchinAlias.isPresent()) {
             return matchinAlias.get().layout();
         }

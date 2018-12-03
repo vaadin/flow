@@ -99,6 +99,8 @@ public class RouteData implements Comparable<RouteData>, Serializable {
      *         navigation target path parameters
      * @param navigationTarget
      *         route navigation target
+     * @param routeAliases
+     *         list of aliases for this route
      */
     public RouteData(Class<? extends RouterLayout> parentLayout, String url,
             List<Class<?>> parameters,

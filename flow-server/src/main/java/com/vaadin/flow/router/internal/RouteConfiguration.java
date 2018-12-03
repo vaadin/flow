@@ -243,10 +243,9 @@ public class RouteConfiguration implements Serializable {
      */
     protected List<String> getRoutePaths(
             Class<? extends Component> routeTarget) {
-        List<String> collection = routes.entrySet().stream()
+        return routes.entrySet().stream()
                 .filter(entry -> entry.getValue().containsTarget(routeTarget))
-                .map(entry -> entry.getKey()).collect(Collectors.toList());
-        return collection;
+                .map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
     /**
