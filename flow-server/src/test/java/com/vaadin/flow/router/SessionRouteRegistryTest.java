@@ -327,6 +327,57 @@ public class SessionRouteRegistryTest {
     }
 
     @Test
+    public void registeredRouteWithAliasGlobally_sessionRegistryReturnsFromGlobal() {
+        registry.setRoute(MyRouteWithAliases.class);
+
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        Assert.assertTrue(
+                "Registry didn't contain routes even though 3 should have been registered",
+                sessionRegistry.hasNavigationTargets());
+
+        Assert.assertTrue("Path for main route 'MyRoute' returned empty",
+                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
+        Assert.assertTrue("RouteAlias 'info' returned empty.",
+                sessionRegistry.getNavigationTarget("info").isPresent());
+        Assert.assertTrue("RouteAlias 'version' returned empty.",
+                sessionRegistry.getNavigationTarget("version").isPresent());
+
+        Assert.assertEquals(
+                "Both route aliases should be found for Route",
+                2,
+                sessionRegistry.getRegisteredRoutes().get(0).getRouteAliases()
+                        .size());
+    }
+
+    @Test
+    public void registeredRouteWithAliasGlobally_sessionRegistryOverridesMainUrl() {
+        registry.setRoute(MyRouteWithAliases.class);
+
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        sessionRegistry.setRoute("MyRoute", Secondary.class);
+
+        Assert.assertTrue(
+                "Registry didn't contain routes.",
+                sessionRegistry.hasNavigationTargets());
+
+        Assert.assertTrue("Path for main route 'MyRoute' returned empty",
+                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
+        Assert.assertEquals("Navigation target for route 'MyRoute' was not the expected one.",
+                Secondary.class, sessionRegistry.getNavigationTarget("MyRoute").get());
+
+        Assert.assertTrue("RouteAlias 'info' returned empty.",
+                sessionRegistry.getNavigationTarget("info").isPresent());
+        Assert.assertTrue("RouteAlias 'version' returned empty.",
+                sessionRegistry.getNavigationTarget("version").isPresent());
+
+        Assert.assertTrue(
+                "Both route aliases should be found for Route",
+                sessionRegistry.getRegisteredRoutes().get(0).getRouteAliases().isEmpty());
+    }
+
+    @Test
     public void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
             throws InterruptedException, ExecutionException {
         final int THREADS = 5;

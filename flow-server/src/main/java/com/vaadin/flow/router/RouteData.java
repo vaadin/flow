@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Data collection of information for a specific registered route target.

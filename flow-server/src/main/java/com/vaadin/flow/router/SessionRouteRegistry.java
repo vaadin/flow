@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +74,22 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
         registration = session.getService()
                 .addSessionDestroyListener(this::sessionDestroy);
+    }
+
+    @Override
+    public List<RouteData> getRegisteredRoutes() {
+        List<RouteData> routes = new ArrayList<>(super.getRegisteredRoutes());
+
+        List<RouteData> registeredRoutes = parentRegistry.getRegisteredRoutes();
+        if (!registeredRoutes.isEmpty()) {
+            Set<String> collect = routes.stream().map(RouteData::getUrl)
+                    .collect(Collectors.toSet());
+            registeredRoutes.stream()
+                    .filter(data -> !collect.contains(data.getUrl()))
+                    .forEach(routes::add);
+        }
+
+        return routes;
     }
 
     /**
