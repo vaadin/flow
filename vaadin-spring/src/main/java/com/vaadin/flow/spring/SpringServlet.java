@@ -16,6 +16,8 @@
 package com.vaadin.flow.spring;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
@@ -38,6 +40,24 @@ import com.vaadin.flow.server.VaadinServletService;
  *
  */
 public class SpringServlet extends VaadinServlet {
+
+    private static final List<String> PROPERTY_NAMES = Arrays.asList(
+            Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+            Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+            Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
+            Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+            Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+            Constants.SERVLET_PARAMETER_PUSH_MODE,
+            Constants.SERVLET_PARAMETER_PUSH_URL,
+            Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
+            Constants.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+            Constants.SERVLET_PARAMETER_REQUEST_TIMING,
+            Constants.DISABLE_WEBJARS, Constants.SERVLET_PARAMETER_BROTLI,
+            Constants.LOAD_ES5_ADAPTERS,
+            Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
+            Constants.FRONTEND_URL_ES5, Constants.FRONTEND_URL_ES6,
+            Constants.I18N_PROVIDER,
+            Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION);
 
     private final ApplicationContext context;
     private final boolean forwardingEnforced;
@@ -92,25 +112,13 @@ public class SpringServlet extends VaadinServlet {
     }
 
     private void config(Properties properties) {
-        setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, properties);
-        setProperty(Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
-                properties);
-        setProperty(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
-                properties);
-        setProperty(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL, properties);
-        setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
-                properties);
-        setProperty(Constants.SERVLET_PARAMETER_PUSH_MODE, properties);
-        setProperty(
-                Constants.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
-                properties);
-        setProperty(Constants.SERVLET_PARAMETER_REQUEST_TIMING, properties);
+        setProperties(PROPERTY_NAMES, properties);
+    }
 
-        setProperty(Constants.DISABLE_WEBJARS, properties);
-        setProperty(Constants.FRONTEND_URL_ES5, properties);
-        setProperty(Constants.FRONTEND_URL_ES6, properties);
-
-        setProperty(Constants.I18N_PROVIDER, properties);
+    private void setProperties(List<String> propertyNames,
+            Properties properties) {
+        propertyNames.stream()
+                .forEach(property -> setProperty(property, properties));
     }
 
     private void setProperty(String property, Properties properties) {
