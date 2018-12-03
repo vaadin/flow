@@ -332,7 +332,7 @@ public class PwaRegistry implements Serializable {
                 .min((icon1, icon2) -> icon2.getWidth() - icon1.getWidth())
                 .orElse(null);
         return BootstrapHandler.readResource("default-pwa-prompt.html")
-                .replace("%%%ADD_HOME_SCREEN%%%", "Add to home screen")
+                .replace("%%%INSTALL%%%", "Install")
                 .replace("%%%LOGO_PATH%%%",
                         largest == null ? ""
                                 : pwaConfiguration.getRootUrl()

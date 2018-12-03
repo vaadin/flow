@@ -97,7 +97,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.9.0</version>
+            <version>1.9.3</version>
         </dependency>
 
         <!-- Small reflection library -->
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
-            <version>6.0.0</version>
+            <version>${osgi.core.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
