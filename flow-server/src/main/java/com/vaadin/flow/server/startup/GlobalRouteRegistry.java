@@ -428,7 +428,9 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         if (context != null && context == OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
             return new OSGiDataCollector();
-        } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
+        } else if (OSGiAccess.getInstance().getOsgiServletContext() == null
+                || context != OSGiAccess.getInstance()
+                .getOsgiServletContext()) {
             return new GlobalRouteRegistry();
         }
         return new OSGiRouteRegistry();

@@ -49,7 +49,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     private static class SessionConfiguration extends RouteConfiguration {
         private final Map<String, List<Class<? extends RouterLayout>>> manualLayouts = new HashMap<>();
 
-        public SessionConfiguration(RouteConfiguration configuration,
+        SessionConfiguration(RouteConfiguration configuration,
                 boolean mutable) {
             super(configuration, mutable);
             if (configuration instanceof SessionConfiguration) {
@@ -137,6 +137,9 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
                 .getAttribute(SessionRouteRegistry.class);
         if (registry == null) {
             registry = new SessionRouteRegistry(session);
+            // Update RouteConfiguration to be SessionConfiguration
+            registry.configure(command -> {
+            });
             session.setAttribute(SessionRouteRegistry.class, registry);
         }
         return registry;
@@ -153,7 +156,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      * @return true if a SessionRouteRegistry is found
      */
     public static boolean sessionRegistryExists(VaadinSession session) {
-        return session.getAttribute(SessionRouteRegistry.class) != null;
+        return session != null
+                && session.getAttribute(SessionRouteRegistry.class) != null;
     }
 
     @Override
@@ -335,6 +339,11 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
+
+        Optional<String> targetUrl = super.getTargetUrl(navigationTarget);
+        if (targetUrl.isPresent()) {
+            return targetUrl;
+        }
 
         return parentRegistry.getTargetUrl(navigationTarget);
     }

@@ -17,6 +17,7 @@ package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -30,11 +31,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -129,14 +132,38 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         routeConfiguration.getTargetRoutes().forEach((target, url) -> {
             List<Class<?>> parameters = getRouteParameters(target);
 
+            List<RouteData.AliasData> routeAliases = new ArrayList<>();
+
+            routeConfiguration.getRoutePaths(target).stream()
+                    .filter(route -> !route.equals(url)).forEach(route -> {
+                routeAliases.add(new RouteData.AliasData(
+                        getRouteAliasLayout(target, route), route));
+            });
+
             RouteData route = new RouteData(getParentLayout(target), url,
-                    parameters, target);
+                    parameters, target, routeAliases);
             registeredRoutes.add(route);
         });
 
         Collections.sort(registeredRoutes);
 
         return Collections.unmodifiableList(registeredRoutes);
+    }
+
+    private Class<? extends RouterLayout> getRouteAliasLayout(
+            Class<? extends Component> target, String route) {
+        Optional<RouteAlias> matchinAlias = Arrays
+                .stream(target.getAnnotationsByType(RouteAlias.class))
+                .filter(alias -> alias.value().equals(route)).findFirst();
+        if (matchinAlias.isPresent()) {
+            return matchinAlias.get().layout();
+        }
+        try {
+            return (Class<? extends RouterLayout>) RouteAlias.class
+                    .getDeclaredMethod("layout").getDefaultValue();
+        } catch (NoSuchMethodException e) {
+            return UI.class;
+        }
     }
 
     @Override
@@ -184,6 +211,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      */
     private String collectRequiredParameters(
             Class<? extends Component> navigationTarget) {
+        if (!routeConfiguration.hasRouteTarget(navigationTarget)) {
+            return null;
+        }
         StringBuilder route = new StringBuilder(
                 routeConfiguration.getTargetRoute(navigationTarget));
 

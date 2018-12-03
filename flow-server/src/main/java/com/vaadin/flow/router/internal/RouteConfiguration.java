@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.startup.RouteTarget;
@@ -229,6 +230,24 @@ public class RouteConfiguration implements Serializable {
     /*---------------------------------*/
     /* Getters and other read methods. */
     /*---------------------------------*/
+
+    /**
+     * Collect all routes for which given routeTarget is registered.
+     * This is mainly for handling route aliases as reading from the class
+     * annotations doesn't specifically return the actual registartions as they
+     * can change during runtime.
+     *
+     * @param routeTarget
+     *         route target to collect registered paths for
+     * @return list of routes this routeTarget is registered for
+     */
+    protected List<String> getRoutePaths(
+            Class<? extends Component> routeTarget) {
+        List<String> collection = routes.entrySet().stream()
+                .filter(entry -> entry.getValue().containsTarget(routeTarget))
+                .map(entry -> entry.getKey()).collect(Collectors.toList());
+        return collection;
+    }
 
     /**
      * See if configuration contains a registered route for given path.

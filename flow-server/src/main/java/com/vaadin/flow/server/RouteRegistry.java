@@ -46,12 +46,15 @@ public interface RouteRegistry extends Serializable {
      * @throws InvalidRouteConfigurationException
      *         if routing has been configured incorrectly
      */
-    void setNavigationTargets(Set<Class<? extends Component>> navigationTargets);
+    void setNavigationTargets(
+            Set<Class<? extends Component>> navigationTargets);
 
     /**
      * Giving a navigation target here will handle the {@link Route} annotation
      * to get the path and also register any {@link RouteAlias} that may be on
      * the class.
+     * <p>
+     * Note! A RouteAlias that is targeting an existing Route will throw.
      *
      * @param navigationTarget
      *         navigation target to register into the session route scope
@@ -69,7 +72,8 @@ public interface RouteRegistry extends Serializable {
      * Note! this will remove target route and if possible any {@link
      * RouteAlias} route that can be found for the class.
      *
-     * @param navigationTarget navigation target class to remove
+     * @param navigationTarget
+     *         navigation target class to remove
      */
     void removeRoute(Class<? extends Component> navigationTarget);
 
@@ -81,8 +85,12 @@ public interface RouteRegistry extends Serializable {
      * <p>
      * E.g. path "home" contains HomeView and DetailsView[String path param]
      * both will be removed.
+     * <p>
+     * Note! The restored path will be the first found match for all paths that
+     * are registered.
      *
-     * @param path path for which to remove all navigation targets
+     * @param path
+     *         path for which to remove all navigation targets
      */
     void removeRoute(String path);
 
@@ -156,6 +164,8 @@ public interface RouteRegistry extends Serializable {
 
     /**
      * Get the url string for given navigation target.
+     * <p>
+     * Will return Optional.empty is navigation target was not found.
      *
      * @param navigationTarget
      *         navigation target to get registered route for, not

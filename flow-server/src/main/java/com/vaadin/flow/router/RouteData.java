@@ -37,17 +37,18 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     /**
      * Data class with information pertaining to the {@link RouteAlias}.
      */
-    public static class AliasData implements Comparable<AliasData>, Serializable {
+    public static class AliasData
+            implements Comparable<AliasData>, Serializable {
         private final Class<? extends RouterLayout> parentLayout;
         private final String url;
 
         /**
          * Data class constructor.
-         * 
+         *
          * @param parentLayout
-         *            parent layout for alias
+         *         parent layout for alias
          * @param url
-         *            target url for alias
+         *         target url for alias
          */
         public AliasData(Class<? extends RouterLayout> parentLayout,
                 String url) {
@@ -57,7 +58,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
         /**
          * Getter for the {@link RouteAlias} parent layout.
-         * 
+         *
          * @return parent layout for alias
          */
         public Class<? extends RouterLayout> getParentLayout() {
@@ -66,7 +67,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
         /**
          * Getter for the {@link RouteAlias} url.
-         * 
+         *
          * @return url of the alias
          */
         public String getUrl() {
@@ -82,8 +83,8 @@ public class RouteData implements Comparable<RouteData>, Serializable {
         public boolean equals(Object obj) {
             if (obj instanceof AliasData) {
                 AliasData other = (AliasData) obj;
-                return other.parentLayout.equals(this.parentLayout)
-                        && other.url.equals(this.url);
+                return other.parentLayout.equals(this.parentLayout) && other.url
+                        .equals(this.url);
             }
             return false;
         }
@@ -91,35 +92,32 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
     /**
      * RouteData constructor.
-     * 
+     *
      * @param parentLayout
-     *            route parent layout class
+     *         route parent layout class
      * @param url
-     *            full route url
+     *         full route url
      * @param parameters
-     *            navigation target path parameters
+     *         navigation target path parameters
      * @param navigationTarget
-     *            route navigation target
+     *         route navigation target
      */
     public RouteData(Class<? extends RouterLayout> parentLayout, String url,
             List<Class<?>> parameters,
-            Class<? extends Component> navigationTarget) {
+            Class<? extends Component> navigationTarget,
+            List<AliasData> routeAliases) {
         this.parentLayout = parentLayout;
         this.url = url;
-        this.parameters = parameters;
+        this.parameters = Collections.unmodifiableList(parameters);
         this.navigationTarget = navigationTarget;
-        this.routeAliases = new ArrayList<>();
+        this.routeAliases = new ArrayList<>(routeAliases);
 
-        AnnotationReader.getAnnotationsFor(navigationTarget, RouteAlias.class)
-                .forEach(alias -> routeAliases
-                        .add(new AliasData(alias.layout(), RouteUtil
-                                .getRouteAliasPath(navigationTarget, alias))));
         Collections.sort(routeAliases);
     }
 
     /**
      * Get the parent layout of {@link Route}.
-     * 
+     *
      * @return route parent layout
      */
     public Class<? extends RouterLayout> getParentLayout() {
@@ -128,7 +126,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
     /**
      * Get the full route url of {@link Route}.
-     * 
+     *
      * @return route url
      */
     public String getUrl() {
@@ -137,7 +135,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
     /**
      * Get {@link Route} url parameters if any.
-     * 
+     *
      * @return url parameters (by type and in order)
      */
     public List<Class<?>> getParameters() {
@@ -146,7 +144,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
     /**
      * Get {@link Route} navigation target.
-     * 
+     *
      * @return navigation target
      */
     public Class<? extends Component> getNavigationTarget() {
@@ -155,7 +153,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
     /**
      * Get all {@link RouteAlias}es for this registered {@link Route}.
-     * 
+     *
      * @return list of route aliases
      */
     public List<AliasData> getRouteAliases() {
@@ -171,21 +169,17 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof RouteData) {
             RouteData other = (RouteData) obj;
-            return other.parentLayout.equals(this.parentLayout)
-                    && other.url.equals(this.url)
-                    && other.navigationTarget.equals(navigationTarget);
+            return other.parentLayout.equals(this.parentLayout) && other.url
+                    .equals(this.url) && other.navigationTarget
+                    .equals(navigationTarget);
         }
         return false;
     }
 
     @Override
     public String toString() {
-        return "RouteData{" +
-                "parentLayout=" + parentLayout +
-                ", url='" + url + '\'' +
-                ", parameters=" + parameters +
-                ", navigationTarget=" + navigationTarget +
-                ", routeAliases=" + routeAliases +
-                '}';
+        return "RouteData{" + "parentLayout=" + parentLayout + ", url='" + url
+                + '\'' + ", parameters=" + parameters + ", navigationTarget="
+                + navigationTarget + ", routeAliases=" + routeAliases + '}';
     }
 }
