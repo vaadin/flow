@@ -25,10 +25,13 @@ import java.lang.annotation.Target;
 /**
  * Defines the {@link Route} annotated component to be ignored during initial
  * route registration.
+ * <p>
+ * The annotation will have no function on its own if not coupled with a {@link
+ * Route} as it is currently only for escaping initial registration, while still
+ * enabling setting up the route target chain using the default  {@link Route}
+ * annotation.
  *
  * @see Route
- * @see RouteAlias
- * @see RouterLayout
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

@@ -128,17 +128,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     /**
-     * Get the session registry for current VaadinSession.
-     * <p>
-     * Same as calling getSessionRegistry(VaadinSession.getCurrent());
-     *
-     * @return session registry for current session
-     */
-    public static SessionRouteRegistry getSessionRegistry() {
-        return getSessionRegistry(VaadinSession.getCurrent());
-    }
-
-    /**
      * Get the session registry for VaadinSession. If no SessionRegistry exists
      * then one will be created for given VaadinSession.
      *
@@ -150,6 +139,9 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             VaadinSession session) {
         Objects.requireNonNull(session,
                 "Null session is not supported for session route registry");
+
+        session.checkHasLock();
+
         SessionRouteRegistry registry = session
                 .getAttribute(SessionRouteRegistry.class);
         if (registry == null) {
@@ -173,7 +165,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      *         the session that we want to know if there is a registry for it
      * @return true if a SessionRouteRegistry is found
      */
-    public static boolean sessionRegistryExists(VaadinSession session) {
+    protected static boolean sessionRegistryExists(VaadinSession session) {
         return session != null
                 && session.getAttribute(SessionRouteRegistry.class) != null;
     }
