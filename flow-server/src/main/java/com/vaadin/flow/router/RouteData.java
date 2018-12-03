@@ -110,7 +110,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
         this.navigationTarget = navigationTarget;
         this.routeAliases = new ArrayList<>(routeAliases);
 
-        Collections.sort(routeAliases);
+        Collections.sort(this.routeAliases);
     }
 
     /**

@@ -154,7 +154,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             Class<? extends Component> target, String route) {
         Optional<RouteAlias> matchinAlias = Arrays
                 .stream(target.getAnnotationsByType(RouteAlias.class))
-                .filter(alias -> alias.value().equals(route)).findFirst();
+                .filter(alias -> RouteUtil.getRouteAliasPath(target, alias).equals(route)).findFirst();
         if (matchinAlias.isPresent()) {
             return matchinAlias.get().layout();
         }
