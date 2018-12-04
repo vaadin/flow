@@ -391,7 +391,7 @@ public class BootstrapHandlerTest {
         // Update sessionRegistry due to after init change of global registry
         SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(session,
                 service);
-        Mockito.when(session.getRegistry()).thenReturn(sessionRegistry);
+        Mockito.when(session.getAttribute(SessionRouteRegistry.class)).thenReturn(sessionRegistry);
 
         testUI.getInternals().setSession(session);
 

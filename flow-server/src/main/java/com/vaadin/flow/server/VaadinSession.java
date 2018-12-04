@@ -131,8 +131,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final StreamResourceRegistry resourceRegistry;
 
-    private final SessionRouteRegistry registry;
-
     /**
      * Creates a new VaadinSession tied to a VaadinService.
      *
@@ -142,7 +140,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public VaadinSession(VaadinService service) {
         this.service = service;
         resourceRegistry = new StreamResourceRegistry(this);
-        registry = new SessionRouteRegistry(this, service);
     }
 
     /**
@@ -1017,14 +1014,4 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return resourceRegistry;
     }
 
-    /**
-     * Get the SessionRouteRegistry instance for this session.
-     * <p>
-     * This is used for handling session scoped dynamic routes.
-     *
-     * @return session route registry
-     */
-    public SessionRouteRegistry getRegistry() {
-        return registry;
-    }
 }

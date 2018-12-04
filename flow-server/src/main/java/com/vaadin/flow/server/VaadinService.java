@@ -906,6 +906,10 @@ public abstract class VaadinService implements Serializable {
 
         session.setConfiguration(getDeploymentConfiguration());
 
+        // Create SessionRouteRegistry
+        session.setAttribute(SessionRouteRegistry.class,
+                new SessionRouteRegistry(session, this));
+
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
             setLocale(request, session);

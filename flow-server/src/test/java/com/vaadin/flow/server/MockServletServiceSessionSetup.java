@@ -244,9 +244,10 @@ public class MockServletServiceSessionSetup {
                     .thenReturn(new LinkedBlockingDeque<>());
             Mockito.when(request.getWrappedSession())
                     .thenReturn(wrappedSession);
-            SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(session,
-                    service);
-            Mockito.when(session.getRegistry()).thenReturn(sessionRegistry);
+            SessionRouteRegistry sessionRegistry = SessionRouteRegistry
+                    .getSessionRegistry(session);
+            Mockito.when(session.getAttribute(SessionRouteRegistry.class))
+                    .thenReturn(sessionRegistry);
         } else {
             session = null;
         }

@@ -17,23 +17,17 @@ package com.vaadin.flow.server;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteConfiguration;
-import com.vaadin.flow.server.startup.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -76,6 +70,27 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             registration = service
                     .addSessionDestroyListener(this::sessionDestroy);
         }
+    }
+
+    /**
+     * Get the session registry for VaadinSession. If no SessionRegistry exists
+     * then one will be created for given VaadinSession.
+     *
+     * @param session
+     *         vaadin session to get registry for
+     * @return session registry for given session
+     */
+    public static SessionRouteRegistry getSessionRegistry(
+            VaadinSession session) {
+        Objects.requireNonNull(session,
+                "Null session is not supported for session route registry");
+        SessionRouteRegistry registry = session
+                .getAttribute(SessionRouteRegistry.class);
+        if (registry == null) {
+            registry = new SessionRouteRegistry(session, session.getService());
+            session.setAttribute(SessionRouteRegistry.class, registry);
+        }
+        return registry;
     }
 
     @Override

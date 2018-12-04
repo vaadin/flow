@@ -81,7 +81,7 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
             Class<? extends Component> targetType, Router router) {
         assert targetType == getNavigationState().getNavigationTarget();
 
-        return router.getErrorLayouts(targetType);
+        return router.getRegistry().getNonRouteLayouts(targetType);
     }
 
     @Override
