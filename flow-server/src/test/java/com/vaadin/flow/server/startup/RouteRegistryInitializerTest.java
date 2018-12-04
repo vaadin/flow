@@ -70,7 +70,7 @@ import com.vaadin.flow.theme.Theme;
 public class RouteRegistryInitializerTest {
 
     private RouteRegistryInitializer routeRegistryInitializer;
-    private RouteRegistry registry;
+    private GlobalRouteRegistry registry;
     private ServletContext servletContext;
 
     @Before

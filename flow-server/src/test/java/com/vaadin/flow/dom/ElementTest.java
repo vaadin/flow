@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,17 +39,17 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {
@@ -2054,13 +2055,8 @@ public class ElementTest extends AbstractNodeTest {
 
     @SuppressWarnings("serial")
     private UI createUI() {
-        VaadinSession session = new VaadinSession(
-                EasyMock.createMock(VaadinService.class)) {
-            @Override
-            public boolean hasLock() {
-                return true;
-            }
-        };
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService());
         UI ui = new UI() {
             @Override
             public VaadinSession getSession() {

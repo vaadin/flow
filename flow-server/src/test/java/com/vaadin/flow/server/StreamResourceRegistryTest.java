@@ -45,17 +45,18 @@ public class StreamResourceRegistryTest {
 
     @Before
     public void setUp() throws ServletException {
-        UI ui = Mockito.mock(UI.class);
-        UI.setCurrent(ui);
-        Mockito.when(ui.getUIId()).thenReturn(1);
+        servlet.init(new MockServletConfig());
         service = servlet.getService();
         session = new VaadinSession(service) {
-
             @Override
             public boolean hasLock() {
                 return true;
             }
         };
+
+        UI ui = Mockito.mock(UI.class);
+        Mockito.when(ui.getUIId()).thenReturn(1);
+        UI.setCurrent(ui);
     }
 
     @After

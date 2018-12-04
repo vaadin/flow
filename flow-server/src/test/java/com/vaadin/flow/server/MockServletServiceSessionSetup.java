@@ -1,5 +1,10 @@
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,12 +18,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -225,6 +224,9 @@ public class MockServletServiceSessionSetup {
         deploymentConfiguration.setXsrfProtectionEnabled(false);
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
+
+        servlet.init(servletConfig);
+
         if (sessionAvailable) {
             Mockito.when(session.getConfiguration())
                     .thenReturn(deploymentConfiguration);
@@ -242,10 +244,12 @@ public class MockServletServiceSessionSetup {
                     .thenReturn(new LinkedBlockingDeque<>());
             Mockito.when(request.getWrappedSession())
                     .thenReturn(wrappedSession);
+            SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(session,
+                    service);
+            Mockito.when(session.getRegistry()).thenReturn(sessionRegistry);
         } else {
             session = null;
         }
-        servlet.init(servletConfig);
 
         CurrentInstance.set(VaadinRequest.class, request);
         CurrentInstance.set(VaadinService.class, service);
@@ -255,7 +259,6 @@ public class MockServletServiceSessionSetup {
 
         Mockito.when(request.getServletPath()).thenReturn("");
         Mockito.when(browser.isEs6Supported()).thenReturn(true);
-
     }
 
     public TestVaadinServletService getService() {

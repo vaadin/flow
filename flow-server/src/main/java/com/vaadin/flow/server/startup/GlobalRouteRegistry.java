@@ -85,12 +85,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         }
 
         @Override
-        public boolean hasRouteTo(String pathString) {
-            initRoutes();
-            return super.hasRouteTo(pathString);
-        }
-
-        @Override
         public Optional<String> getTargetUrl(
                 Class<? extends Component> navigationTarget) {
             initRoutes();
@@ -291,7 +285,16 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         configure(configuration -> setRoute(navigationTarget, configuration));
     }
 
-    @Override
+    /**
+     * Set error handler navigation targets.
+     * <p>
+     * This can also be used to add error navigation targets that override
+     * existing targets. Note! The overriding targets need to be extending
+     * the existing target or they will throw.
+     *
+     * @param errorNavigationTargets
+     *         error handler navigation targets
+     */
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
@@ -322,7 +325,15 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         return getConfiguration().hasExceptionTargets();
     }
 
-    @Override
+    /**
+     * Get a registered navigation target for given exception. First we will
+     * search for a matching cause for in the exception chain and if no match
+     * found search by extended type.
+     *
+     * @param exception
+     *         exception to search error view for
+     * @return optional error target entry corresponding to the given exception
+     */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (!errorNavigationTargetsInitialized()) {
@@ -352,13 +363,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public boolean hasRouteTo(String pathString) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-
-        return getConfiguration().hasRoute(pathString);
-    }
-
-    @Override
     public void removeRoute(Class<? extends Component> routeTarget) {
         if (!getConfiguration().hasRouteTarget(routeTarget)) {
             return;
@@ -374,7 +378,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         configure(configuration -> configuration.removeRoute(path));
     }
 
-    @Override
     public boolean hasNavigationTargets() {
         return !getConfiguration().isEmpty();
     }

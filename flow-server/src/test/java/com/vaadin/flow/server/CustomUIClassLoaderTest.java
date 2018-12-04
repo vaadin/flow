@@ -104,7 +104,7 @@ public class CustomUIClassLoaderTest extends TestCase {
     }
 
     private VaadinSession createStubApplication() {
-        return new AlwaysLockedVaadinSession(null) {
+        return new AlwaysLockedVaadinSession(new MockVaadinServletService()) {
             @Override
             public DeploymentConfiguration getConfiguration() {
                 return createConfigurationMock();

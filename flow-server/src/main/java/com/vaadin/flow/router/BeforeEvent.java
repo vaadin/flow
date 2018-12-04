@@ -223,15 +223,15 @@ public abstract class BeforeEvent extends EventObject {
 
     private Class<? extends Component> getTargetOrThrow(String route,
             List<String> segments) {
-        if (!getSource().getRegistry().hasRouteTo(route)) {
+        Optional<Class<? extends Component>> navigationTarget = getSource()
+                .getRegistry().getNavigationTarget(route, segments);
+
+        if (!navigationTarget.isPresent()) {
             throw new IllegalArgumentException(
-                    String.format("No navigation target found for route '%s'",
-                            route));
+                        String.format("No route '%s' accepting the parameters %s was found.",
+                            route, segments));
         }
-        return getSource().getRegistry().getNavigationTarget(route, segments)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(
-                        "The navigation target for route '%s' doesn't accept the parameters %s.",
-                        route, segments)));
+        return navigationTarget.get();
     }
 
     private <T> void checkUrlParameterType(T routeParam,
@@ -302,7 +302,7 @@ public abstract class BeforeEvent extends EventObject {
      *         custom message to send to error target
      */
     public void rerouteToError(Exception exception, String customMessage) {
-        Optional<ErrorTargetEntry> maybeLookupResult = getSource().getRegistry()
+        Optional<ErrorTargetEntry> maybeLookupResult = getSource()
                 .getErrorNavigationTarget(exception);
 
         if (maybeLookupResult.isPresent()) {

@@ -23,9 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.RouteResolver;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -39,14 +37,15 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
             IllegalArgumentException, IllegalAccessException {
         super.init();
         resolver = new DefaultRouteResolver();
+        CurrentInstance.clearAll();
     }
 
     @Test
     public void basic_route_navigation_target_resolved_correctly()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        FooNavigationTarget.class, FooBarNavigationTarget.class,
+        router.getRegistry().setNavigationTargets(
+                Stream.of(RootNavigationTarget.class, FooNavigationTarget.class,
+                        FooBarNavigationTarget.class,
                         GreetingNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
@@ -80,10 +79,9 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
     @Test
     public void route_precedence_with_parameters()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(GreetingNavigationTarget.class,
-                                OtherGreetingNavigationTarget.class)
+        router.getRegistry().setNavigationTargets(
+                Stream.of(GreetingNavigationTarget.class,
+                        OtherGreetingNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
         Assert.assertEquals(GreetingNavigationTarget.class,

@@ -84,7 +84,7 @@ public class GlobalRouteRegistryTest {
 
         Assert.assertTrue(
                 "Registry didn't contain routes even though 3 should have been registered",
-                registry.hasNavigationTargets());
+                !registry.getRegisteredRoutes().isEmpty());
 
         Assert.assertTrue("Path for main route 'withAliases' returned empty",
                 registry.getNavigationTarget("withAliases").isPresent());
@@ -97,7 +97,7 @@ public class GlobalRouteRegistryTest {
 
         Assert.assertFalse(
                 "Registry should be empty after removing the only registered Class.",
-                registry.hasNavigationTargets());
+                !registry.getRegisteredRoutes().isEmpty());
     }
 
     @Test
@@ -107,7 +107,7 @@ public class GlobalRouteRegistryTest {
 
         Assert.assertTrue(
                 "Registry didn't contain routes even though 3 should have been registered",
-                registry.hasNavigationTargets());
+                !registry.getRegisteredRoutes().isEmpty());
 
         Assert.assertTrue("Path for main route 'withAliases' returned empty",
                 registry.getNavigationTarget("withAliases").isPresent());
@@ -119,7 +119,7 @@ public class GlobalRouteRegistryTest {
         registry.removeRoute("withAliases");
 
         Assert.assertTrue("Registry should contain alias routes",
-                registry.hasNavigationTargets());
+                !registry.getRegisteredRoutes().isEmpty());
 
         Assert.assertEquals(
                 "One RouteAlias should be the main url so only 1 route alias should be marked as an alias",

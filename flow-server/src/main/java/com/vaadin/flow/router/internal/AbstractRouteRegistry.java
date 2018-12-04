@@ -88,29 +88,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     protected void configure(Configuration command) {
         configurationLock.lock();
         try {
-            RouteConfiguration mutableCopy = getRouteConfiguration(
+            RouteConfiguration mutableCopy = new RouteConfiguration(
                     routeConfiguration, true);
 
             command.configure(mutableCopy);
 
-            routeConfiguration = getRouteConfiguration(mutableCopy, false);
+            routeConfiguration = new RouteConfiguration(mutableCopy, false);
         } finally {
             configurationLock.unlock();
         }
-    }
-
-    /**
-     * Get a copy of the RouteConfiguration as mutable ot immutable.
-     *
-     * @param original
-     *         the latest route configuration
-     * @param mutable
-     *         set the configuration as mutable or immutable
-     * @return new router configuration object
-     */
-    protected RouteConfiguration getRouteConfiguration(
-            RouteConfiguration original, boolean mutable) {
-        return new RouteConfiguration(original, mutable);
     }
 
     /**
@@ -169,6 +155,17 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public List<Class<? extends RouterLayout>> getRouteLayouts(
             Class<? extends Component> navigationTarget, String path) {
+        if (getConfiguration().hasRoute(path) && (
+                !navigationTarget.isAnnotationPresent(Route.class)
+                        || getConfiguration().hasManualLayout(path))) {
+
+            // User has defined parent layouts manually use those
+            if (getConfiguration().hasManualLayout(path)) {
+                return getConfiguration().getManualLayouts(path);
+            }
+            // not a route layout use non route layout collection of parent layouts.
+            return getNonRouteLayouts(navigationTarget);
+        }
         return RouteUtil.getParentLayouts(navigationTarget, path);
     }
 
@@ -264,6 +261,54 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             }
         }
         configuration.setTargetRoute(navigationTarget, route);
+    }
+
+    @Override
+    public void setRoute(Class<? extends Component> navigationTarget) {
+        configure(configuration -> setRoute(navigationTarget, configuration));
+    }
+
+    @Override
+    public void setRoute(String path,
+            Class<? extends Component> navigationTarget) {
+        configure(
+                configuration -> addRouteToConfiguration(path, navigationTarget,
+                        configuration));
+    }
+
+    @Override
+    public void setRoute(String path,
+            Class<? extends Component> navigationTarget,
+            List<Class<? extends RouterLayout>> parentChain) {
+        configure(configuration -> {
+            addRouteToConfiguration(path, navigationTarget, configuration);
+            configuration.setManualLayouts(path, parentChain);
+        });
+    }
+
+    /**
+     * This adds a new route path to the configuration.
+     * <p>
+     * Note! this should only be called from a configure() for thread safety.
+     *
+     * @param path
+     *         path for the navigation target
+     * @param navigationTarget
+     *         navigation target for given path
+     * @param configuration
+     *         mutable configuration object
+     */
+    private void addRouteToConfiguration(String path,
+            Class<? extends Component> navigationTarget,
+            RouteConfiguration configuration) {
+        if (configuration.hasRoute(path)) {
+            configuration.addRouteTarget(path, navigationTarget);
+        } else {
+            RouteTarget routeTarget = new RouteTarget(navigationTarget);
+            configuration.setRouteTarget(path, routeTarget);
+        }
+
+        configuration.setTargetRoute(navigationTarget, path);
     }
 
     /**

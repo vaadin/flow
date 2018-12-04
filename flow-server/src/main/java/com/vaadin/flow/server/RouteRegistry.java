@@ -22,12 +22,12 @@ import java.util.Set;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.ErrorTargetEntry;
 
 /**
  * The RouteRegistry interface class that gives the out facing usage needs for a
@@ -64,6 +64,40 @@ public interface RouteRegistry extends Serializable {
     void setRoute(Class<? extends Component> navigationTarget);
 
     /**
+     * Register a navigation target on the specified path. Any {@link
+     * ParentLayout} annotation on class will be used to populate layout chain,
+     * but {@link Route} and {@link RouteAlias} will not be taken into
+     * consideration.
+     *
+     * @param path
+     *         path to register navigation target to
+     * @param navigationTarget
+     *         navigation target to register into the session route scope
+     * @throws InvalidRouteConfigurationException
+     *         thrown if exact route already defined in this scope
+     */
+    void setRoute(String path,
+            Class<? extends Component> navigationTarget);
+
+    /**
+     * Register a navigation target with specified path and given parent layout
+     * chain.
+     * Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will be
+     * ignored in route handling.
+     *
+     * @param path
+     *         path to register navigation target to
+     * @param navigationTarget
+     *         navigation target to register into session scope
+     * @param parentChain
+     *         chain of parent layouts that should be used with this target
+     * @throws InvalidRouteConfigurationException
+     *         thrown if exact route already defined in this scope
+     */
+    void setRoute(String path,
+            Class<? extends Component> navigationTarget,
+            List<Class<? extends RouterLayout>> parentChain);
+    /**
      * Remove the given navigation target route registration. Path where the
      * navigation target was may still be usable, e.g. we remove target with url
      * param and there is left a non param target, but will not return the
@@ -93,19 +127,6 @@ public interface RouteRegistry extends Serializable {
      *         path for which to remove all navigation targets
      */
     void removeRoute(String path);
-
-    /**
-     * Set error handler navigation targets.
-     * <p>
-     * This can also be used to add error navigation targets that override
-     * existing targets. Note! The overriding targets need to be extending
-     * the existing target or they will throw.
-     *
-     * @param errorNavigationTargets
-     *         error handler navigation targets
-     */
-    void setErrorNavigationTargets(
-            Set<Class<? extends Component>> errorNavigationTargets);
 
     /**
      * Get the {@link RouteData} for all registered navigation targets.
@@ -142,27 +163,6 @@ public interface RouteRegistry extends Serializable {
             List<String> segments);
 
     /**
-     * Get a registered navigation target for given exception. First we will
-     * search for a matching cause for in the exception chain and if no match
-     * found search by extended type.
-     *
-     * @param exception
-     *         exception to search error view for
-     * @return optional error target entry corresponding to the given exception
-     */
-    Optional<ErrorTargetEntry> getErrorNavigationTarget(Exception exception);
-
-    /**
-     * Checks if the registry contains a route to the given path.
-     *
-     * @param pathString
-     *         path to get navigation target for, not {@code null}
-     * @return true if the registry contains a route to the given path, false
-     * otherwise.
-     */
-    boolean hasRouteTo(String pathString);
-
-    /**
      * Get the url string for given navigation target.
      * <p>
      * Will return Optional.empty is navigation target was not found.
@@ -173,14 +173,6 @@ public interface RouteRegistry extends Serializable {
      * @return optional navigation target url string
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget);
-
-    /**
-     * Checks whether any navigation targets have been registered.
-     *
-     * @return <code>true</code> if at least one navigation target is
-     * registered; otherwise <code>false</code>
-     */
-    boolean hasNavigationTargets();
 
     /**
      * Get the layout chain for given navigation target on the targeted path.

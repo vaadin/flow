@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
@@ -35,9 +36,13 @@ public class RouteConfiguration implements Serializable {
 
     private final boolean mutable;
 
-    private final Map<String, RouteTarget> routes = new HashMap<>();
-    private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
-    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets = new HashMap<>();
+    private final Map<String, RouteTarget> routes = new HashMap<>(0);
+    private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>(
+            0);
+    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets = new HashMap<>(
+            0);
+    private final Map<String, List<Class<? extends RouterLayout>>> manualLayouts = new HashMap<>(
+            0);
 
     /**
      * Create an immutable RouteConfiguration.
@@ -63,6 +68,11 @@ public class RouteConfiguration implements Serializable {
         targetRoutes.putAll(original.targetRoutes);
         exceptionTargets.putAll(original.exceptionTargets);
 
+        for (Map.Entry<String, List<Class<? extends RouterLayout>>> manual : original.manualLayouts
+                .entrySet()) {
+            manualLayouts.put(manual.getKey(),
+                    Collections.unmodifiableList(manual.getValue()));
+        }
         this.mutable = mutable;
     }
 
@@ -90,6 +100,7 @@ public class RouteConfiguration implements Serializable {
         routes.clear();
         targetRoutes.clear();
         exceptionTargets.clear();
+        manualLayouts.clear();
     }
 
     /**
@@ -362,5 +373,19 @@ public class RouteConfiguration implements Serializable {
      */
     public Map<Class<? extends Exception>, Class<? extends Component>> getExceptionHandlers() {
         return Collections.unmodifiableMap(exceptionTargets);
+    }
+
+    public boolean hasManualLayout(String path) {
+        return manualLayouts.containsKey(path);
+    }
+
+    public List<Class<? extends RouterLayout>> getManualLayouts(String path) {
+        return manualLayouts.get(path);
+    }
+
+    public void setManualLayouts(String path,
+            List<Class<? extends RouterLayout>> parentChain) {
+        throwIfImmutable();
+        manualLayouts.put(path, Collections.unmodifiableList(parentChain));
     }
 }

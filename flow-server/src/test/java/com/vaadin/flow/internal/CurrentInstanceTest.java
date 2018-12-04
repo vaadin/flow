@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -124,8 +125,7 @@ public class CurrentInstanceTest {
 
         // Then store a new session in there
         Map<Class<?>, CurrentInstance> old = CurrentInstance
-                .setCurrent(new SessionStoredInCurrentInstance(
-                        EasyMock.createNiceMock(VaadinService.class)));
+                .setCurrent(new SessionStoredInCurrentInstance(new MockVaadinServletService()));
 
         // Restore the old values and assert that the session is null again
         CurrentInstance.restoreInstances(old);
@@ -136,13 +136,13 @@ public class CurrentInstanceTest {
     @Test
     public void testRestoreWithGarbageCollectedValue()
             throws InterruptedException {
-        VaadinSession session1 = new VaadinSession(null) {
+        VaadinSession session1 = new VaadinSession(new MockVaadinServletService()) {
             @Override
             public String toString() {
                 return "First session";
             }
         };
-        VaadinSession session2 = new VaadinSession(null) {
+        VaadinSession session2 = new VaadinSession(new MockVaadinServletService()) {
             @Override
             public String toString() {
                 return "Second session";

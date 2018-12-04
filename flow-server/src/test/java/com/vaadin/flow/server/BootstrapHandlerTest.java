@@ -387,6 +387,12 @@ public class BootstrapHandlerTest {
         });
 
         session = mocks.getSession();
+
+        // Update sessionRegistry due to after init change of global registry
+        SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(session,
+                service);
+        Mockito.when(session.getRegistry()).thenReturn(sessionRegistry);
+
         testUI.getInternals().setSession(session);
 
         mocks.setBrowserEs6(false);
