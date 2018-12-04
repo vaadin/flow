@@ -32,7 +32,7 @@ import com.vaadin.flow.server.RouteRegistry;
 
 public class GlobalRouteRegistryTest {
 
-    private RouteRegistry registry;
+    private GlobalRouteRegistry registry;
 
     @Before
     public void init() {

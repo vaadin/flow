@@ -124,32 +124,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public void setNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets) {
-        List<Class<? extends Component>> faulty = navigationTargets.stream()
-                .filter(target -> !target.isAnnotationPresent(Route.class))
-                .filter(Component.class::isAssignableFrom)
-                .collect(Collectors.toList());
-        if (!faulty.isEmpty()) {
-            final StringBuilder faultyClasses = new StringBuilder();
-            faulty.forEach(
-                    clazz -> faultyClasses.append(clazz.getName()).append(" "));
-            String exceptionMessage = String
-                    .format("Classes [%s] given as navigation targets were not valid. "
-                                    + "Use SessionRouteRegistry method "
-                                    + "setRoute(String ,Class<? extends Component>, List<Class<? extends RouterLayout>>) instead.",
-                            faultyClasses.toString());
-            throw new InvalidRouteConfigurationException(exceptionMessage);
-        }
-
-        configure(configuration -> {
-            for (Class<? extends Component> navigationTarget : navigationTargets) {
-                setRoute(navigationTarget, configuration);
-            }
-        });
-    }
-
-    @Override
     public void removeRoute(Class<? extends Component> routeTarget) {
         if (!getConfiguration().hasRouteTarget(routeTarget)) {
             return;

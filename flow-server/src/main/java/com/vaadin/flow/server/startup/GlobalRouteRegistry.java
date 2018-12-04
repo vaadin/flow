@@ -19,7 +19,6 @@ import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,12 +32,10 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
@@ -243,46 +240,23 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         }
     }
 
-    @Override
+    /**
+     * Registers a set of components as navigation targets.
+     *
+     * @param navigationTargets
+     *         set of navigation target components
+     * @throws InvalidRouteConfigurationException
+     *         if routing has been configured incorrectly
+     */
     public void setNavigationTargets(
             Set<Class<? extends Component>> navigationTargets) {
+        Set<Class<? extends Component>> filteredTargets = navigationTargets
+                .stream().filter(navigationTarget -> routeFilters.stream()
+                        .allMatch(filter -> filter
+                                .testNavigationTarget(navigationTarget)))
+                .collect(Collectors.toSet());
 
-        List<Class<? extends Component>> faulty = navigationTargets.stream()
-                .filter(target -> !target.isAnnotationPresent(Route.class))
-                .filter(Component.class::isAssignableFrom)
-                .collect(Collectors.toList());
-        if (!faulty.isEmpty()) {
-            final StringBuilder faultyClasses = new StringBuilder();
-            faulty.forEach(
-                    clazz -> faultyClasses.append(clazz.getName()).append(" "));
-            String exceptionMessage = String
-                    .format("No Route annotation is present for the given navigation target components [%s].",
-                            faultyClasses.toString());
-            throw new InvalidRouteConfigurationException(exceptionMessage);
-        }
-
-        configure(configuration -> {
-            for (Class<? extends Component> navigationTarget : navigationTargets) {
-                if (!routeFilters.stream().allMatch(filter -> filter
-                        .testNavigationTarget(navigationTarget))) {
-                    continue;
-                }
-
-                Set<String> routeAndRouteAliasPaths = new HashSet<>();
-
-                String route = RouteUtil
-                        .getNavigationRouteAndAliases(navigationTarget,
-                                routeAndRouteAliasPaths);
-                routeAndRouteAliasPaths.add(route);
-
-                setRoute(navigationTarget, configuration);
-            }
-        });
-    }
-
-    @Override
-    public void setRoute(Class<? extends Component> navigationTarget) {
-        configure(configuration -> setRoute(navigationTarget, configuration));
+        super.setNavigationTargets(filteredTargets);
     }
 
     /**

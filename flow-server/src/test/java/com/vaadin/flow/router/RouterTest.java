@@ -52,6 +52,7 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -2600,7 +2601,7 @@ public class RouterTest extends RoutingTestBase {
     @Test // #2754
     public void manually_registered_listeners_should_fire_for_every_navigation()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
+        ((AbstractRouteRegistry) router.getRegistry()).setNavigationTargets(
                 Stream.of(RootNavigationTarget.class, FooNavigationTarget.class,
                         FooBarNavigationTarget.class)
                         .collect(Collectors.toSet()));
@@ -2647,7 +2648,7 @@ public class RouterTest extends RoutingTestBase {
     @Test // #2754
     public void after_navigation_listener_is_only_invoked_once_for_redirect()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
+        ((AbstractRouteRegistry) router.getRegistry()).setNavigationTargets(
                 Stream.of(ReroutingNavigationTarget.class,
                         FooBarNavigationTarget.class)
                         .collect(Collectors.toSet()));
@@ -2667,7 +2668,7 @@ public class RouterTest extends RoutingTestBase {
     @Test // #2754
     public void before_leave_listener_is_invoked_for_each_redirect()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
+        ((AbstractRouteRegistry) router.getRegistry()).setNavigationTargets(
                 Stream.of(ReroutingNavigationTarget.class,
                         FooBarNavigationTarget.class)
                         .collect(Collectors.toSet()));
@@ -2686,7 +2687,7 @@ public class RouterTest extends RoutingTestBase {
     @Test // #2754
     public void before_enter_listener_is_invoked_for_each_redirect_when_redirecting_on_before_enter()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
+        ((AbstractRouteRegistry) router.getRegistry()).setNavigationTargets(
                 Stream.of(ReroutingNavigationTarget.class,
                         FooBarNavigationTarget.class)
                         .collect(Collectors.toSet()));
@@ -2707,7 +2708,7 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         ReroutingOnLeaveNavigationTarget.events.clear();
 
-        router.getRegistry().setNavigationTargets(
+        ((AbstractRouteRegistry) router.getRegistry()).setNavigationTargets(
                 Stream.of(ReroutingOnLeaveNavigationTarget.class,
                         FooBarNavigationTarget.class, FooNavigationTarget.class)
                         .collect(Collectors.toSet()));
@@ -2735,7 +2736,7 @@ public class RouterTest extends RoutingTestBase {
     public void manual_before_listeners_are_fired_before_observers()
             throws InvalidRouteConfigurationException {
         ManualNavigationTarget.events.clear();
-        router.getRegistry().setNavigationTargets(
+        ((AbstractRouteRegistry) router.getRegistry()).setNavigationTargets(
                 Stream.of(ManualNavigationTarget.class,
                         FooNavigationTarget.class).collect(Collectors.toSet()));
 
@@ -2774,7 +2775,7 @@ public class RouterTest extends RoutingTestBase {
     public void manual_after_listener_is_fired_before_observer()
             throws InvalidRouteConfigurationException {
         AfterNavigationTarget.events.clear();
-        router.getRegistry().setNavigationTargets(
+        ((AbstractRouteRegistry) router.getRegistry()).setNavigationTargets(
                 Collections.singleton(AfterNavigationTarget.class));
 
         ui.addAfterNavigationListener(
@@ -2967,7 +2968,7 @@ public class RouterTest extends RoutingTestBase {
     private void setNavigationTargets(
             Class<? extends Component>... navigationTargets)
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
+        ((AbstractRouteRegistry) router.getRegistry()).setNavigationTargets(
                 new HashSet<>(Arrays.asList(navigationTargets)));
     }
 

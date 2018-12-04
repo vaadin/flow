@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,15 +165,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 return getConfiguration().getManualLayouts(path);
             }
             // not a route layout use non route layout collection of parent layouts.
-            return getNonRouteLayouts(navigationTarget);
+            return RouteUtil.getParentLayoutsForNonRouteTarget(navigationTarget);
         }
         return RouteUtil.getParentLayouts(navigationTarget, path);
-    }
-
-    @Override
-    public List<Class<? extends RouterLayout>> getNonRouteLayouts(
-            Class<? extends Component> errorTarget) {
-        return RouteUtil.getParentLayoutsForNonRouteTarget(errorTarget);
     }
 
     private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
@@ -225,6 +220,38 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     /**
+     * Registers a set of components as navigation targets.
+     *
+     * @param navigationTargets
+     *         set of navigation target components
+     * @throws InvalidRouteConfigurationException
+     *         if routing has been configured incorrectly
+     */
+    public void setNavigationTargets(
+            Set<Class<? extends Component>> navigationTargets) {
+        List<Class<? extends Component>> faulty = navigationTargets.stream()
+                .filter(target -> !target.isAnnotationPresent(Route.class))
+                .filter(Component.class::isAssignableFrom)
+                .collect(Collectors.toList());
+        if (!faulty.isEmpty()) {
+            final StringBuilder faultyClasses = new StringBuilder();
+            faulty.forEach(
+                    clazz -> faultyClasses.append(clazz.getName()).append(" "));
+            String exceptionMessage = String
+                    .format("Classes [%s] given as navigation targets were not valid. "
+                                    + "Use SessionRouteRegistry method "
+                                    + "setRoute(String ,Class<? extends Component>, List<Class<? extends RouterLayout>>) instead.",
+                            faultyClasses.toString());
+            throw new InvalidRouteConfigurationException(exceptionMessage);
+        }
+
+        configure(configuration -> {
+            for (Class<? extends Component> navigationTarget : navigationTargets) {
+                setRoute(navigationTarget, configuration);
+            }
+        });
+    }
+    /**
      * Add the given navigation target as a route to the configuration.
      * <p>
      * Note! This is a helper class and requires that the caller gives a mutable
@@ -263,7 +290,19 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         configuration.setTargetRoute(navigationTarget, route);
     }
 
-    @Override
+
+    /**
+     * Giving a navigation target here will handle the {@link Route} annotation
+     * to get the path and also register any {@link RouteAlias} that may be on
+     * the class.
+     * <p>
+     * Note! A RouteAlias that is targeting an existing Route will throw.
+     *
+     * @param navigationTarget
+     *         navigation target to register into the session route scope
+     * @throws InvalidRouteConfigurationException
+     *         thrown if exact route already defined in this scope
+     */
     public void setRoute(Class<? extends Component> navigationTarget) {
         configure(configuration -> setRoute(navigationTarget, configuration));
     }

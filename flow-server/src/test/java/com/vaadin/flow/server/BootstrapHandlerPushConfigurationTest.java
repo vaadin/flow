@@ -31,6 +31,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -176,7 +177,7 @@ public class BootstrapHandlerPushConfigurationTest {
             throws InvalidRouteConfigurationException {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinResponse response = mock(VaadinResponse.class);
-        service.getRouteRegistry()
+        ((AbstractRouteRegistry)service.getRouteRegistry())
                 .setNavigationTargets(Collections.singleton(annotatedClazz));
 
         final BootstrapHandler.BootstrapContext context = bootstrapHandler

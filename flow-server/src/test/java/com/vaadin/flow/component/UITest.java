@@ -1,10 +1,7 @@
 package com.vaadin.flow.component;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,9 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -48,6 +42,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -62,6 +57,11 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -173,9 +173,10 @@ public class UITest {
 
             ui.getInternals().setSession(session);
 
-            ui.getRouter().getRegistry().setNavigationTargets(
-                    new HashSet<>(Arrays.asList(RootNavigationTarget.class,
-                            FooBarNavigationTarget.class)));
+            ((AbstractRouteRegistry) ui.getRouter().getRegistry())
+                    .setNavigationTargets(new HashSet<>(
+                            Arrays.asList(RootNavigationTarget.class,
+                                    FooBarNavigationTarget.class)));
 
             ui.doInit(request, 0);
             ui.getRouter().initializeUI(ui, request);
@@ -193,8 +194,7 @@ public class UITest {
     @Test
     public void scrollAttribute() {
         UI ui = new UI();
-        Assert.assertNull(
-                "'scroll' attribute shouldn't be set for the "
+        Assert.assertNull("'scroll' attribute shouldn't be set for the "
                         + "UI element which represents 'body' tag",
                 ui.getElement().getAttribute("scroll"));
     }
@@ -259,8 +259,8 @@ public class UITest {
 
         History history = ui.getPage().getHistory();
 
-        history.getHistoryStateChangeHandler()
-                .onHistoryStateChange(new HistoryStateChangeEvent(history, null,
+        history.getHistoryStateChangeHandler().onHistoryStateChange(
+                new HistoryStateChangeEvent(history, null,
                         new Location("foo/bar"), NavigationTrigger.HISTORY));
 
         assertEquals("foo/bar",
@@ -704,8 +704,9 @@ public class UITest {
     public void accessLaterRunnable_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
-        SerializableRunnable wrapped = ui.accessLater(
-                () -> Assert.fail("Action should never run"), null);
+        SerializableRunnable wrapped = ui
+                .accessLater(() -> Assert.fail("Action should never run"),
+                        null);
         wrapped.run();
     }
 
@@ -715,9 +716,9 @@ public class UITest {
 
         UI ui = createTestUI();
 
-        SerializableRunnable wrapped = ui.accessLater(
-                () -> Assert.fail("Action should never run"),
-                runCount::incrementAndGet);
+        SerializableRunnable wrapped = ui
+                .accessLater(() -> Assert.fail("Action should never run"),
+                        runCount::incrementAndGet);
 
         assertEquals("Handler should not yet have run", 0, runCount.get());
 
@@ -761,8 +762,9 @@ public class UITest {
     public void accessLaterConsumer_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
-        SerializableConsumer<Object> wrapped = ui.accessLater(
-                value -> Assert.fail("Action should never run"), null);
+        SerializableConsumer<Object> wrapped = ui
+                .accessLater(value -> Assert.fail("Action should never run"),
+                        null);
         wrapped.accept(null);
     }
 
@@ -772,9 +774,9 @@ public class UITest {
 
         UI ui = createTestUI();
 
-        SerializableConsumer<Object> wrapped = ui.accessLater(
-                value -> Assert.fail("Action should never run"),
-                runCount::incrementAndGet);
+        SerializableConsumer<Object> wrapped = ui
+                .accessLater(value -> Assert.fail("Action should never run"),
+                        runCount::incrementAndGet);
 
         assertEquals("Handler should not yet have run", 0, runCount.get());
 

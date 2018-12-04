@@ -51,6 +51,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -422,7 +423,7 @@ public class BootstrapHandlerTest {
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
 
-        service.getRouteRegistry().setNavigationTargets(navigationTargets);
+        ((AbstractRouteRegistry)service.getRouteRegistry()).setNavigationTargets(navigationTargets);
 
         this.request = request;
 

@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
@@ -39,31 +38,6 @@ import com.vaadin.flow.router.RouterLayout;
 public interface RouteRegistry extends Serializable {
 
     /**
-     * Registers a set of components as navigation targets.
-     *
-     * @param navigationTargets
-     *         set of navigation target components
-     * @throws InvalidRouteConfigurationException
-     *         if routing has been configured incorrectly
-     */
-    void setNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets);
-
-    /**
-     * Giving a navigation target here will handle the {@link Route} annotation
-     * to get the path and also register any {@link RouteAlias} that may be on
-     * the class.
-     * <p>
-     * Note! A RouteAlias that is targeting an existing Route will throw.
-     *
-     * @param navigationTarget
-     *         navigation target to register into the session route scope
-     * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
-     */
-    void setRoute(Class<? extends Component> navigationTarget);
-
-    /**
      * Register a navigation target on the specified path. Any {@link
      * ParentLayout} annotation on class will be used to populate layout chain,
      * but {@link Route} and {@link RouteAlias} will not be taken into
@@ -76,8 +50,7 @@ public interface RouteRegistry extends Serializable {
      * @throws InvalidRouteConfigurationException
      *         thrown if exact route already defined in this scope
      */
-    void setRoute(String path,
-            Class<? extends Component> navigationTarget);
+    void setRoute(String path, Class<? extends Component> navigationTarget);
 
     /**
      * Register a navigation target with specified path and given parent layout
@@ -94,9 +67,9 @@ public interface RouteRegistry extends Serializable {
      * @throws InvalidRouteConfigurationException
      *         thrown if exact route already defined in this scope
      */
-    void setRoute(String path,
-            Class<? extends Component> navigationTarget,
+    void setRoute(String path, Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain);
+
     /**
      * Remove the given navigation target route registration. Path where the
      * navigation target was may still be usable, e.g. we remove target with url
@@ -187,14 +160,4 @@ public interface RouteRegistry extends Serializable {
      */
     List<Class<? extends RouterLayout>> getRouteLayouts(
             Class<? extends Component> navigationTarget, String path);
-
-    /**
-     * Get the layout chain for an navigation target without a route annotation.
-     *
-     * @param nonRouteTarget
-     *         target to get layouts for
-     * @return layout chain for target
-     */
-    List<Class<? extends RouterLayout>> getNonRouteLayouts(
-            Class<? extends Component> nonRouteTarget);
 }

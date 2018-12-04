@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -375,14 +376,36 @@ public class RouteConfiguration implements Serializable {
         return Collections.unmodifiableMap(exceptionTargets);
     }
 
+    /**
+     * Check if path contains manually defined layouts.
+     *
+     * @param path
+     *         path to check
+     * @return true if user has manually defined layouts
+     */
     public boolean hasManualLayout(String path) {
         return manualLayouts.containsKey(path);
     }
 
+    /**
+     * Get the user defined parent layouts chain for given path.
+     *
+     * @param path
+     *         path to get parent chain for
+     * @return parent layout chain
+     */
     public List<Class<? extends RouterLayout>> getManualLayouts(String path) {
         return manualLayouts.get(path);
     }
 
+    /**
+     * Add user defined parent layout chain for given path.
+     *
+     * @param path
+     *         path to add parent chain for
+     * @param parentChain
+     *         parent layout chain
+     */
     public void setManualLayouts(String path,
             List<Class<? extends RouterLayout>> parentChain) {
         throwIfImmutable();
