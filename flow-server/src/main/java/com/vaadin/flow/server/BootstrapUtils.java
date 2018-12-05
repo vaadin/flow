@@ -41,6 +41,7 @@ import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.component.page.ViewportUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
@@ -110,8 +111,21 @@ class BootstrapUtils {
      */
     static Optional<String> getViewportContent(
             BootstrapHandler.BootstrapContext context) {
-        return context.getPageConfigurationAnnotation(Viewport.class)
-                .map(Viewport::value);
+
+        Optional<Viewport> viewportAnnotation = context
+                .getPageConfigurationAnnotation(Viewport.class);
+
+        Optional<String> primaryViewport = viewportAnnotation
+                .map(Viewport::value); // here is important
+
+        if (primaryViewport.isPresent()) {
+            return primaryViewport;
+        }
+
+        Optional<String> secondaryViewport = viewportAnnotation
+                .map(viewport -> ViewportUtils.generateViewport(viewport));
+        return secondaryViewport.isPresent() ? secondaryViewport
+                : primaryViewport;
     }
 
     /**
@@ -119,7 +133,7 @@ class BootstrapUtils {
      * tag for the target route chain that was navigated to, specified with
      * {@link Meta} on the {@link Route} class or the {@link ParentLayout} of
      * the route.
-     * 
+     *
      * @param context
      *            the bootstrap context
      * @return the map contains name and content value string for the customized
