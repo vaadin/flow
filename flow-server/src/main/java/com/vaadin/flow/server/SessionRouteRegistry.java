@@ -40,9 +40,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     // SessionRegistry can not be used without a parentRegistry
     private RouteRegistry parentRegistry;
 
-    // Transient due to the fact that the registration will bring in
-    // org.eclipse.jetty.webapp.WebAppClassLoader which fails serialization test
-    private transient final Registration registration;
     private final VaadinSession session;
 
     /**
@@ -58,18 +55,11 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      */
     SessionRouteRegistry(VaadinSession session, VaadinService service) {
         this.session = session;
-        if (service == null) {
+        if (service != null) {
             // this is here only due to SerializationTest#testVaadinSession which
             // doesn't accept mocks or service parts as they bring in sun.misc.Launcher$AppClassLoader
-            registration = () -> {
-                // NO-OP
-            };
-        } else {
             // Get the global route registry from the service
             this.parentRegistry = service.getRouteRegistry();
-            // Register a session destroy listener where we clear this registry
-            registration = service
-                    .addSessionDestroyListener(this::sessionDestroy);
         }
     }
 
@@ -108,13 +98,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         }
 
         return routes;
-    }
-
-    private void sessionDestroy(SessionDestroyEvent sessionDestroyEvent) {
-        if (sessionDestroyEvent.getSession().equals(session)) {
-            registration.remove();
-            clear();
-        }
     }
 
     /**
