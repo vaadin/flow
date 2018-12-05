@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteConfiguration;
@@ -41,7 +40,9 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     // SessionRegistry can not be used without a parentRegistry
     private RouteRegistry parentRegistry;
 
-    private final Registration registration;
+    // Transient due to the fact that the registration will bring in
+    // org.eclipse.jetty.webapp.WebAppClassLoader which fails serialization test
+    private transient final Registration registration;
     private final VaadinSession session;
 
     /**
@@ -121,22 +122,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      */
     public void clear() {
         configure(RouteConfiguration::clear);
-    }
-
-    @Override
-    public void removeRoute(Class<? extends Component> routeTarget) {
-        if (!getConfiguration().hasRouteTarget(routeTarget)) {
-            return;
-        }
-        configure(configuration -> configuration.removeRoute(routeTarget));
-    }
-
-    @Override
-    public void removeRoute(String path) {
-        if (!getConfiguration().hasRoute(path)) {
-            return;
-        }
-        configure(configuration -> configuration.removeRoute(path));
     }
 
     @Override

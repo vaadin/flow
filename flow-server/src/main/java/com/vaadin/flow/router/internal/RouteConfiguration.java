@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -214,17 +213,17 @@ public class RouteConfiguration implements Serializable {
      * targets the main class-to-string mapping will be updated to the first
      * found
      *
-     * @param route
+     * @param path
      *         path from which to remove routes from
      */
-    public void removeRoute(String route) {
+    public void removeRoute(String path) {
         throwIfImmutable();
 
-        if (!hasRoute(route)) {
+        if (!hasRoute(path)) {
             return;
         }
 
-        RouteTarget removedRoute = routes.remove(route);
+        RouteTarget removedRoute = routes.remove(path);
         for (Class<? extends Component> targetRoute : removedRoute
                 .getRoutes()) {
             targetRoutes.remove(targetRoute);
@@ -237,6 +236,63 @@ public class RouteConfiguration implements Serializable {
                 }
             }
         }
+    }
+
+    /**
+     * Remove specific navigation target for given route. The path will still
+     * exist if there is another target with different parameters registered to
+     * it. If no targets remain the path will be removed completely.
+     * <p>
+     * In case there exists another path mapping for the removed route
+     * target the main class-to-string mapping will be updated to the first
+     * found.
+     *
+     * @param path
+     *         path to remove target from
+     * @param targetRoute
+     *         target route to remove from path
+     */
+    public void removeRoute(String path,
+            Class<? extends Component> targetRoute) {
+        throwIfImmutable();
+
+        if (!hasRoute(path) || !routes.get(path).containsTarget(targetRoute)) {
+            return;
+        }
+
+        RouteTarget routeTarget = routes.get(path);
+        routeTarget.remove(targetRoute);
+
+        if (routeTarget.isEmpty()) {
+            routes.remove(path);
+        }
+
+        if (targetRoutes.containsKey(targetRoute) && targetRoutes
+                .get(targetRoute).equals(path)) {
+            targetRoutes.remove(targetRoute);
+
+            // Update Class-to-string map with a new mapping if removed route exists for another path
+            for (Map.Entry<String, RouteTarget> entry : routes.entrySet()) {
+                if (entry.getValue().containsTarget(targetRoute)) {
+                    targetRoutes.put(targetRoute, entry.getKey());
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Add user defined parent layout chain for given path.
+     *
+     * @param path
+     *         path to add parent chain for
+     * @param parentChain
+     *         parent layout chain
+     */
+    public void setManualLayouts(String path,
+            List<Class<? extends RouterLayout>> parentChain) {
+        throwIfImmutable();
+        manualLayouts.put(path, Collections.unmodifiableList(parentChain));
     }
 
     /*---------------------------------*/
@@ -395,20 +451,9 @@ public class RouteConfiguration implements Serializable {
      * @return parent layout chain
      */
     public List<Class<? extends RouterLayout>> getManualLayouts(String path) {
-        return manualLayouts.get(path);
-    }
-
-    /**
-     * Add user defined parent layout chain for given path.
-     *
-     * @param path
-     *         path to add parent chain for
-     * @param parentChain
-     *         parent layout chain
-     */
-    public void setManualLayouts(String path,
-            List<Class<? extends RouterLayout>> parentChain) {
-        throwIfImmutable();
-        manualLayouts.put(path, Collections.unmodifiableList(parentChain));
+        if(!manualLayouts.containsKey(path)) {
+            return Collections.EMPTY_LIST;
+        }
+        return Collections.unmodifiableList(manualLayouts.get(path));
     }
 }

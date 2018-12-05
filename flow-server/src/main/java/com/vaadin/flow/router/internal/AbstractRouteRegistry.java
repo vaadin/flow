@@ -325,6 +325,33 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         });
     }
 
+
+    @Override
+    public void removeRoute(Class<? extends Component> routeTarget) {
+        if (!getConfiguration().hasRouteTarget(routeTarget)) {
+            return;
+        }
+        configure(configuration -> configuration.removeRoute(routeTarget));
+    }
+
+    @Override
+    public void removeRoute(String path) {
+        if (!getConfiguration().hasRoute(path)) {
+            return;
+        }
+        configure(configuration -> configuration.removeRoute(path));
+    }
+
+    @Override
+    public void removeRoute(String path, Class<? extends Component> navigationTarget){
+        if(!getConfiguration().hasRoute(path)) {
+            return;
+        }
+        configure(configuration -> {
+            configuration.removeRoute(path, navigationTarget);
+        });
+    }
+
     /**
      * This adds a new route path to the configuration.
      * <p>

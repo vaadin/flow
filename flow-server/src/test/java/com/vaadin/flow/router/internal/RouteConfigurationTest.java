@@ -1,5 +1,6 @@
 package com.vaadin.flow.router.internal;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Assert;
@@ -130,6 +131,75 @@ public class RouteConfigurationTest {
     }
 
     @Test
+    public void twoTargetsRegisteredForPath_removingSingleTargetLeavesSecond() {
+        RouteConfiguration mutable = new RouteConfiguration(configuration,
+                true);
+
+        RouteTarget target = new RouteTarget(BaseTarget.class);
+        mutable.setRouteTarget("", target);
+        mutable.setTargetRoute(BaseTarget.class, "");
+
+        target.addRoute(ParamTarget.class);
+        mutable.setTargetRoute(ParamTarget.class, "");
+
+        Assert.assertEquals(
+                "Path '' with no parameters should return BaseTarget",
+                BaseTarget.class,
+                mutable.getRoute("", Collections.EMPTY_LIST).get());
+        Assert.assertEquals(
+                "Path '' with a String parameter should return ParamTarget",
+                ParamTarget.class,
+                mutable.getRoute("", Arrays.asList("parameter")).get());
+
+        mutable.removeRoute("", BaseTarget.class);
+
+        Assert.assertTrue("HasRoute for path '' should be available",
+                mutable.hasRoute(""));
+        Assert.assertFalse(
+                "HasRoute for path '' with no parameters should return false",
+                mutable.hasRoute("", Collections.EMPTY_LIST));
+        Assert.assertTrue(
+                "HasRoute for path '' with String parameter should return false",
+                mutable.hasRoute("", Arrays.asList("parameter")));
+    }
+
+    @Test
+    public void twoTargetsRegisteredForPath_removingBothRoutesWillRemovePath() {
+        RouteConfiguration mutable = new RouteConfiguration(configuration,
+                true);
+
+        RouteTarget target = new RouteTarget(BaseTarget.class);
+        mutable.setRouteTarget("", target);
+        mutable.setTargetRoute(BaseTarget.class, "");
+
+        target.addRoute(ParamTarget.class);
+        mutable.setTargetRoute(ParamTarget.class, "");
+
+        Assert.assertEquals(
+                "Path '' with no parameters should return BaseTarget",
+                BaseTarget.class,
+                mutable.getRoute("", Collections.EMPTY_LIST).get());
+        Assert.assertEquals(
+                "Path '' with a String parameter should return ParamTarget",
+                ParamTarget.class,
+                mutable.getRoute("", Arrays.asList("parameter")).get());
+
+        Assert.assertTrue("HasRoute for path '' should be available",
+                mutable.hasRoute(""));
+
+        mutable.removeRoute("", BaseTarget.class);
+
+        Assert.assertTrue(
+                "HasRoute for path '' should be available after removing one of two targets",
+                mutable.hasRoute(""));
+
+        mutable.removeRoute("", ParamTarget.class);
+
+        Assert.assertFalse("No route for path '' should exist",
+                mutable.hasRoute(""));
+    }
+
+    @Test
     public void emptyConfiguration_allGetMethodsWork() {
         Assert.assertFalse("No routes should be configured",
                 configuration.hasRoute(""));
@@ -152,6 +222,10 @@ public class RouteConfigurationTest {
                 configuration.getExceptionHandlers().isEmpty());
         Assert.assertFalse("No route should be found",
                 configuration.hasRouteTarget(BaseTarget.class));
+        Assert.assertFalse("No manual layouts should be found",
+                configuration.hasManualLayout("manual"));
+        Assert.assertTrue("No manual layouts should be returned",
+                configuration.getManualLayouts("manual").isEmpty());
     }
 
     @Test
@@ -159,14 +233,14 @@ public class RouteConfigurationTest {
         try {
             configuration.clear();
             Assert.fail(
-                    "Configuration could be cleared even if it should throw in immutable state!");
+                    "Configuration could be cleared even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
 
         }
         try {
             configuration.addRouteTarget("home", BaseTarget.class);
             Assert.fail(
-                    "Configuration could add a new target route even if it should throw in immutable state!");
+                    "Configuration could add a new target route even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
 
         }
@@ -175,7 +249,7 @@ public class RouteConfigurationTest {
             configuration
                     .setRouteTarget("home", new RouteTarget(BaseTarget.class));
             Assert.fail(
-                    "Configuration could add a RouteTarget even if it should throw in immutable state!");
+                    "Configuration could add a RouteTarget even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
 
         }
@@ -183,7 +257,7 @@ public class RouteConfigurationTest {
         try {
             configuration.setTargetRoute(BaseTarget.class, "home");
             Assert.fail(
-                    "Configuration could add a RouteTarget even if it should throw in immutable state!");
+                    "Configuration could add a RouteTarget even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
 
         }
@@ -192,7 +266,7 @@ public class RouteConfigurationTest {
             configuration.setErrorRoute(UnsupportedOperationException.class,
                     BaseTarget.class);
             Assert.fail(
-                    "Configuration could add a exception handler even if it should throw in immutable state!");
+                    "Configuration could add a exception handler even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
 
         }
@@ -200,7 +274,7 @@ public class RouteConfigurationTest {
         try {
             configuration.removeRoute(BaseTarget.class);
             Assert.fail(
-                    "Configuration could remove route by class even if it should throw in immutable state!");
+                    "Configuration could remove route by class even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
 
         }
@@ -208,7 +282,21 @@ public class RouteConfigurationTest {
         try {
             configuration.removeRoute("home");
             Assert.fail(
-                    "Configuration could remove route by string even if it should throw in immutable state!");
+                    "Configuration could remove route by string even if it should throw immutable state!");
+        } catch (IllegalStateException ise) {
+
+        }
+        try {
+            configuration.removeRoute("home", BaseTarget.class);
+            Assert.fail(
+                    "Configuration could remove route by String,Class even if it should throw immutable state!");
+        } catch (IllegalStateException ise) {
+
+        }
+        try {
+            configuration.setManualLayouts("home", Collections.EMPTY_LIST);
+            Assert.fail(
+                    "Configuration could set manual layouts even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
 
         }
