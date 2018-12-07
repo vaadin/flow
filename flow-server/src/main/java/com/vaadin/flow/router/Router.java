@@ -501,7 +501,7 @@ public class Router implements Serializable {
         return route.value();
     }
 
-    public Optional<ErrorTargetEntry> getErrorNavigationTarget(
+    protected Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (registry instanceof GlobalRouteRegistry) {
             return ((GlobalRouteRegistry) registry)

@@ -17,12 +17,16 @@ package com.vaadin.flow.server.startup;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.ParameterDeserializer;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
@@ -35,6 +39,9 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> parameter;
     private Class<? extends Component> optionalParameter;
     private Class<? extends Component> wildCardParameter;
+
+    private final Map<Class<? extends Component>, List<Class<? extends RouterLayout>>> parentLayouts = new HashMap<>(
+            0);
 
     private RouteTarget() {
     }
@@ -169,11 +176,14 @@ public class RouteTarget implements Serializable {
         copy.parameter = parameter;
         copy.optionalParameter = optionalParameter;
         copy.wildCardParameter = wildCardParameter;
+        parentLayouts.keySet().forEach(key -> copy.parentLayouts.put(key,
+                Collections.unmodifiableList(parentLayouts.get(key))));
         return copy;
     }
 
     /**
      * Remove target route from this RouteTarget.
+     * This will also clear the parent layout chain for the target.
      *
      * @param targetRoute
      *         route to remove
@@ -188,6 +198,8 @@ public class RouteTarget implements Serializable {
         } else if (targetRoute.equals(wildCardParameter)) {
             wildCardParameter = null;
         }
+
+        parentLayouts.remove(targetRoute);
     }
 
     /**
@@ -221,14 +233,54 @@ public class RouteTarget implements Serializable {
         List<Class<? extends Component>> registrations = new ArrayList<>(4);
         if (normal != null) {
             registrations.add(normal);
-        } else if (parameter != null) {
+        }
+        if (parameter != null) {
             registrations.add(parameter);
-        } else if (optionalParameter != null) {
+        }
+        if (optionalParameter != null) {
             registrations.add(optionalParameter);
-        } else if (wildCardParameter != null) {
+        }
+        if (wildCardParameter != null) {
             registrations.add(wildCardParameter);
         }
 
         return registrations;
+    }
+
+    /**
+     * Set the parent layout chain for target component. This will override any
+     * existing parent layout chain for the target.
+     * <p>
+     * Note! if adding parents for a non registered target an
+     * IllegalArgumentException will be thrown.
+     *
+     * @param target
+     *         target to add chain for
+     * @param parents
+     *         parent layout chain
+     */
+    public void setParentLayouts(Class<? extends Component> target,
+            List<Class<? extends RouterLayout>> parents) {
+        if (!containsTarget(target)) {
+            throw new IllegalArgumentException(
+                    "Tried to add parent layouts for a non existing target "
+                            + target.getName());
+        }
+        parentLayouts.put(target, new ArrayList<>(parents));
+    }
+
+    /**
+     * Get the parent layout chain defined for the given target.
+     *
+     * @param target
+     *         target to get parent layout chain for
+     * @return parent layout chain
+     */
+    public List<Class<? extends RouterLayout>> getParentLayouts(
+            Class<? extends Component> target) {
+        if (!parentLayouts.containsKey(target)) {
+            return Collections.EMPTY_LIST;
+        }
+        return Collections.unmodifiableList(parentLayouts.get(target));
     }
 }

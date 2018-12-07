@@ -19,9 +19,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -41,8 +43,7 @@ public class RouteConfiguration implements Serializable {
             0);
     private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets = new HashMap<>(
             0);
-    private final Map<String, List<Class<? extends RouterLayout>>> manualLayouts = new HashMap<>(
-            0);
+    private final Set<String> removedRoutes = new HashSet<>(0);
 
     /**
      * Create an immutable RouteConfiguration.
@@ -67,12 +68,8 @@ public class RouteConfiguration implements Serializable {
         }
         targetRoutes.putAll(original.targetRoutes);
         exceptionTargets.putAll(original.exceptionTargets);
+        removedRoutes.addAll(original.removedRoutes);
 
-        for (Map.Entry<String, List<Class<? extends RouterLayout>>> manual : original.manualLayouts
-                .entrySet()) {
-            manualLayouts.put(manual.getKey(),
-                    Collections.unmodifiableList(manual.getValue()));
-        }
         this.mutable = mutable;
     }
 
@@ -100,7 +97,7 @@ public class RouteConfiguration implements Serializable {
         routes.clear();
         targetRoutes.clear();
         exceptionTargets.clear();
-        manualLayouts.clear();
+        removedRoutes.clear();
     }
 
     /**
@@ -211,13 +208,17 @@ public class RouteConfiguration implements Serializable {
      * <p>
      * In case there exists another path mapping for any of the removed route
      * targets the main class-to-string mapping will be updated to the first
-     * found
+     * found.
+     * <p>
+     * Note! If the path is not registered it will still be marked as removed.
      *
      * @param path
      *         path from which to remove routes from
      */
     public void removeRoute(String path) {
         throwIfImmutable();
+
+        removedRoutes.add(path);
 
         if (!hasRoute(path)) {
             return;
@@ -279,20 +280,6 @@ public class RouteConfiguration implements Serializable {
                 }
             }
         }
-    }
-
-    /**
-     * Add user defined parent layout chain for given path.
-     *
-     * @param path
-     *         path to add parent chain for
-     * @param parentChain
-     *         parent layout chain
-     */
-    public void setManualLayouts(String path,
-            List<Class<? extends RouterLayout>> parentChain) {
-        throwIfImmutable();
-        manualLayouts.put(path, Collections.unmodifiableList(parentChain));
     }
 
     /*---------------------------------*/
@@ -433,27 +420,40 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Check if path contains manually defined layouts.
+     * Return the parent layout chain for given navigation target on the target
+     * path.
      *
      * @param path
-     *         path to check
-     * @return true if user has manually defined layouts
+     *         path to get parent layout chain for
+     * @param navigationTarget
+     *         navigation target on path to get parent layout chain for
+     * @return list of parent layout chain
      */
-    public boolean hasManualLayout(String path) {
-        return manualLayouts.containsKey(path);
+    public List<Class<? extends RouterLayout>> getParentLayouts(String path,
+            Class<? extends Component> navigationTarget) {
+        return routes.get(path).getParentLayouts(navigationTarget);
     }
 
     /**
-     * Get the user defined parent layouts chain for given path.
+     * Get the RouteTarget stored for the given path.
      *
      * @param path
-     *         path to get parent chain for
-     * @return parent layout chain
+     *         path to get route target for
+     * @return route target for path, <code>null</code> if nothing registered
      */
-    public List<Class<? extends RouterLayout>> getManualLayouts(String path) {
-        if(!manualLayouts.containsKey(path)) {
-            return Collections.EMPTY_LIST;
-        }
-        return Collections.unmodifiableList(manualLayouts.get(path));
+    protected RouteTarget getRouteTarget(String path) {
+        return routes.get(path);
+    }
+
+    /**
+     * Get if path has been specifically removed from the configuration through
+     * {@link #removeRoute(String)}.
+     *
+     * @param path
+     *         path to check
+     * @return true if path has been explicitly removed
+     */
+    public boolean isPathRemoved(String path) {
+        return removedRoutes.contains(path);
     }
 }

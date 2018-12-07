@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,9 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -44,7 +40,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.startup.GlobalRouteRegistry;
 import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
@@ -154,19 +149,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public List<Class<? extends RouterLayout>> getRouteLayouts(
-            Class<? extends Component> navigationTarget, String path) {
-        if (getConfiguration().hasRoute(path) && (
-                !navigationTarget.isAnnotationPresent(Route.class)
-                        || getConfiguration().hasManualLayout(path))) {
-
-            // User has defined parent layouts manually use those
-            if (getConfiguration().hasManualLayout(path)) {
-                return getConfiguration().getManualLayouts(path);
-            }
-            // not a route layout use non route layout collection of parent layouts.
-            return RouteUtil.getParentLayoutsForNonRouteTarget(navigationTarget);
+    public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
+            Class<? extends Component> navigationTarget) {
+        if (getConfiguration().hasRoute(path)) {
+            return getConfiguration().getParentLayouts(path, navigationTarget);
         }
+        // For unregistered paths use "legacy" resolution.
         return RouteUtil.getParentLayouts(navigationTarget, path);
     }
 
@@ -219,112 +207,17 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return route.toString();
     }
 
-    /**
-     * Registers a set of components as navigation targets.
-     *
-     * @param navigationTargets
-     *         set of navigation target components
-     * @throws InvalidRouteConfigurationException
-     *         if routing has been configured incorrectly
-     */
-    public void setNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets) {
-        List<Class<? extends Component>> faulty = navigationTargets.stream()
-                .filter(target -> !target.isAnnotationPresent(Route.class))
-                .filter(Component.class::isAssignableFrom)
-                .collect(Collectors.toList());
-        if (!faulty.isEmpty()) {
-            final StringBuilder faultyClasses = new StringBuilder();
-            faulty.forEach(
-                    clazz -> faultyClasses.append(clazz.getName()).append(" "));
-            String exceptionMessage = String
-                    .format("Classes [%s] given as navigation targets were not valid. "
-                                    + "Use SessionRouteRegistry method "
-                                    + "setRoute(String ,Class<? extends Component>, List<Class<? extends RouterLayout>>) instead.",
-                            faultyClasses.toString());
-            throw new InvalidRouteConfigurationException(exceptionMessage);
-        }
-
-        configure(configuration -> {
-            for (Class<? extends Component> navigationTarget : navigationTargets) {
-                setRoute(navigationTarget, configuration);
-            }
-        });
-    }
-    /**
-     * Add the given navigation target as a route to the configuration.
-     * <p>
-     * Note! This is a helper class and requires that the caller gives a mutable
-     * {@link RouteConfiguration} and has the configuration lock.
-     *
-     * @param navigationTarget
-     *         navigation target to register
-     * @param configuration
-     *         configuration to add route to
-     * @throws InvalidRouteConfigurationException
-     *         if a exact match route exists already
-     */
-    protected void setRoute(Class<? extends Component> navigationTarget,
-            RouteConfiguration configuration) {
-        Logger logger = LoggerFactory
-                .getLogger(GlobalRouteRegistry.class.getName());
-
-        Set<String> routeAndRouteAliasPaths = new HashSet<>();
-
-        String route = RouteUtil.getNavigationRouteAndAliases(navigationTarget,
-                routeAndRouteAliasPaths);
-        routeAndRouteAliasPaths.add(route);
-
-        for (String path : routeAndRouteAliasPaths) {
-            if (configuration.hasRoute(path)) {
-                configuration.addRouteTarget(path, navigationTarget);
-            } else {
-                logger.debug(
-                        "Registering route '{}' to navigation target '{}'.",
-                        path, navigationTarget.getName());
-
-                RouteTarget routeTarget = new RouteTarget(navigationTarget);
-                configuration.setRouteTarget(path, routeTarget);
-            }
-        }
-        configuration.setTargetRoute(navigationTarget, route);
-    }
-
-
-    /**
-     * Giving a navigation target here will handle the {@link Route} annotation
-     * to get the path and also register any {@link RouteAlias} that may be on
-     * the class.
-     * <p>
-     * Note! A RouteAlias that is targeting an existing Route will throw.
-     *
-     * @param navigationTarget
-     *         navigation target to register into the session route scope
-     * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
-     */
-    public void setRoute(Class<? extends Component> navigationTarget) {
-        configure(configuration -> setRoute(navigationTarget, configuration));
-    }
-
-    @Override
-    public void setRoute(String path,
-            Class<? extends Component> navigationTarget) {
-        configure(
-                configuration -> addRouteToConfiguration(path, navigationTarget,
-                        configuration));
-    }
 
     @Override
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
         configure(configuration -> {
-            addRouteToConfiguration(path, navigationTarget, configuration);
-            configuration.setManualLayouts(path, parentChain);
+            RouteTarget routeTarget = addRouteToConfiguration(path,
+                    navigationTarget, configuration);
+            routeTarget.setParentLayouts(navigationTarget, parentChain);
         });
     }
-
 
     @Override
     public void removeRoute(Class<? extends Component> routeTarget) {
@@ -343,8 +236,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void removeRoute(String path, Class<? extends Component> navigationTarget){
-        if(!getConfiguration().hasRoute(path)) {
+    public void removeRoute(String path,
+            Class<? extends Component> navigationTarget) {
+        if (!getConfiguration().hasRoute(path)) {
             return;
         }
         configure(configuration -> {
@@ -363,8 +257,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *         navigation target for given path
      * @param configuration
      *         mutable configuration object
+     * @return the route target to which the target was added
      */
-    private void addRouteToConfiguration(String path,
+    private RouteTarget addRouteToConfiguration(String path,
             Class<? extends Component> navigationTarget,
             RouteConfiguration configuration) {
         if (configuration.hasRoute(path)) {
@@ -373,8 +268,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             RouteTarget routeTarget = new RouteTarget(navigationTarget);
             configuration.setRouteTarget(path, routeTarget);
         }
-
-        configuration.setTargetRoute(navigationTarget, path);
+        if (!configuration.hasRouteTarget(navigationTarget)) {
+            configuration.setTargetRoute(navigationTarget, path);
+        }
+        return configuration.getRouteTarget(path);
     }
 
     /**

@@ -74,7 +74,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
         @Override
         public int compareTo(AliasData otherAlias) {
-            return this.getUrl().compareToIgnoreCase(otherAlias.getUrl());
+            return this.url.compareToIgnoreCase(otherAlias.url);
         }
 
         @Override
@@ -152,7 +152,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     }
 
     /**
-     * Get all {@link RouteAlias}es for this registered {@link Route}.
+     * Get all RouteAliases for this registered path.
      *
      * @return list of route aliases
      */

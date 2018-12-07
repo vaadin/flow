@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,7 +28,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteConfiguration;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * SessionRouteRegistry is a mutable route registry that is valid in the scope
@@ -71,7 +71,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      *         vaadin session to get registry for
      * @return session registry for given session
      */
-    public static SessionRouteRegistry getSessionRegistry(
+    public static RouteRegistry getSessionRegistry(
             VaadinSession session) {
         Objects.requireNonNull(session,
                 "Null session is not supported for session route registry");
@@ -117,8 +117,13 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         if (navigationTarget.isPresent()) {
             return navigationTarget;
         }
+
+        if (getConfiguration().isPathRemoved(pathString)) {
+            return Optional.empty();
+        }
         return parentRegistry.getNavigationTarget(pathString);
     }
+
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
@@ -126,6 +131,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         Objects.requireNonNull(pathString, "pathString must not be null.");
         if (getConfiguration().hasRoute(pathString, segments)) {
             return getConfiguration().getRoute(pathString, segments);
+        }
+
+        if (getConfiguration().isPathRemoved(pathString)) {
+            return Optional.empty();
         }
         return parentRegistry.getNavigationTarget(pathString, segments);
     }

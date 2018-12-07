@@ -36,6 +36,7 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
@@ -256,7 +257,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
                                 .testNavigationTarget(navigationTarget)))
                 .collect(Collectors.toSet());
 
-        super.setNavigationTargets(filteredTargets);
+        RouteUtil.setNavigationTargets(filteredTargets, this);
     }
 
     /**

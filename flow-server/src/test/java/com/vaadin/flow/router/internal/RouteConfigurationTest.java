@@ -222,10 +222,6 @@ public class RouteConfigurationTest {
                 configuration.getExceptionHandlers().isEmpty());
         Assert.assertFalse("No route should be found",
                 configuration.hasRouteTarget(BaseTarget.class));
-        Assert.assertFalse("No manual layouts should be found",
-                configuration.hasManualLayout("manual"));
-        Assert.assertTrue("No manual layouts should be returned",
-                configuration.getManualLayouts("manual").isEmpty());
     }
 
     @Test
@@ -290,13 +286,6 @@ public class RouteConfigurationTest {
             configuration.removeRoute("home", BaseTarget.class);
             Assert.fail(
                     "Configuration could remove route by String,Class even if it should throw immutable state!");
-        } catch (IllegalStateException ise) {
-
-        }
-        try {
-            configuration.setManualLayouts("home", Collections.EMPTY_LIST);
-            Assert.fail(
-                    "Configuration could set manual layouts even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
 
         }

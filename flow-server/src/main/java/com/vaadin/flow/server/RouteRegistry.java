@@ -38,21 +38,6 @@ import com.vaadin.flow.router.RouterLayout;
 public interface RouteRegistry extends Serializable {
 
     /**
-     * Register a navigation target on the specified path. Any {@link
-     * ParentLayout} annotation on class will be used to populate layout chain,
-     * but {@link Route} and {@link RouteAlias} will not be taken into
-     * consideration.
-     *
-     * @param path
-     *         path to register navigation target to
-     * @param navigationTarget
-     *         navigation target to register into the session route scope
-     * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
-     */
-    void setRoute(String path, Class<? extends Component> navigationTarget);
-
-    /**
      * Register a navigation target with specified path and given parent layout
      * chain.
      * Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will be
@@ -131,6 +116,9 @@ public interface RouteRegistry extends Serializable {
      * Gets the optional navigation target class for a given path. Returns
      * an empty optional if no navigation target corresponds to the given
      * path.
+     * <p>
+     * Note! If a path has been specifically removed from a registry
+     * it will not be served from possible higher lever registries either.
      *
      * @param pathString
      *         the path to get the navigation target for, not {@code null}
@@ -142,6 +130,9 @@ public interface RouteRegistry extends Serializable {
     /**
      * Gets the optional navigation target class for a given Location matching
      * with path segments.
+     * <p>
+     * Note! If a path has been specifically removed from a registry
+     * it will not be served from possible higher lever registries either.
      *
      * @param pathString
      *         path to get navigation target for, not {@code null}
@@ -171,12 +162,12 @@ public interface RouteRegistry extends Serializable {
      * <p>
      * This chain may be pre-defined or generated from annotation data.
      *
-     * @param navigationTarget
-     *         navigation target to get layout chain for
      * @param path
      *         path to use for resolving chain
+     * @param navigationTarget
+     *         navigation target to get layout chain for
      * @return layout chain of target
      */
-    List<Class<? extends RouterLayout>> getRouteLayouts(
-            Class<? extends Component> navigationTarget, String path);
+    List<Class<? extends RouterLayout>> getRouteLayouts(String path,
+            Class<? extends Component> navigationTarget);
 }

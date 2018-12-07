@@ -28,7 +28,7 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.router.internal.RouteUtil;
 
 public class GlobalRouteRegistryTest {
 
@@ -54,7 +54,7 @@ public class GlobalRouteRegistryTest {
         Assert.assertEquals("All new routes should have been registered", 4,
                 registry.getRegisteredRoutes().size());
 
-        registry.setRoute(MyRouteWithAliases.class);
+        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
 
         Assert.assertEquals("The new route should have registered", 5,
                 registry.getRegisteredRoutes().size());
@@ -65,7 +65,7 @@ public class GlobalRouteRegistryTest {
 
         registry.setNavigationTargets(Stream.of(MyRoute.class, MyInfo.class)
                 .collect(Collectors.toSet()));
-        registry.setRoute(MyRouteWithAliases.class);
+        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
 
         Optional<RouteData> first = registry.getRegisteredRoutes().stream()
                 .filter(route -> route.getNavigationTarget()
@@ -80,7 +80,7 @@ public class GlobalRouteRegistryTest {
     @Test
     public void registeredRouteWithAlias_removingClassRemovesAliases() {
 
-        registry.setRoute(MyRouteWithAliases.class);
+        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
 
         Assert.assertTrue(
                 "Registry didn't contain routes even though 3 should have been registered",
@@ -103,7 +103,7 @@ public class GlobalRouteRegistryTest {
     @Test
     public void registeredRouteWithAlias_removingPathLeavesAliases() {
 
-        registry.setRoute(MyRouteWithAliases.class);
+        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
 
         Assert.assertTrue(
                 "Registry didn't contain routes even though 3 should have been registered",
@@ -134,7 +134,7 @@ public class GlobalRouteRegistryTest {
         List<Callable<Result>> callables = new ArrayList<>();
         callables.add(() -> {
             try {
-                registry.setRoute(MyRoute.class);
+                RouteUtil.setAnnotatedRoute(MyRoute.class, registry);
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -143,7 +143,7 @@ public class GlobalRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                registry.setRoute(MyInfo.class);
+                RouteUtil.setAnnotatedRoute(MyInfo.class, registry);
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -152,7 +152,7 @@ public class GlobalRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                registry.setRoute(MyPalace.class);
+                RouteUtil.setAnnotatedRoute(MyPalace.class, registry);
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -189,8 +189,8 @@ public class GlobalRouteRegistryTest {
     public void updateAndRemoveFromMultipleThreads_endResultAsExpected()
             throws InterruptedException, ExecutionException {
 
-        registry.setRoute(MyRoute.class);
-        registry.setRoute(MyInfo.class);
+        RouteUtil.setAnnotatedRoute(MyRoute.class, registry);
+        RouteUtil.setAnnotatedRoute(MyInfo.class, registry);
 
         List<Callable<Result>> callables = new ArrayList<>();
         callables.add(() -> {
@@ -204,7 +204,7 @@ public class GlobalRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                registry.setRoute(MyModular.class);
+                RouteUtil.setAnnotatedRoute(MyModular.class, registry);
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -213,7 +213,7 @@ public class GlobalRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                registry.setRoute(MyPalace.class);
+                RouteUtil.setAnnotatedRoute(MyPalace.class, registry);
                 registry.removeRoute("home");
             } catch (Exception e) {
                 return new Result(e.getMessage());
