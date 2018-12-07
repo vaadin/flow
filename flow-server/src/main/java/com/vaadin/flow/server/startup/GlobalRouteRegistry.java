@@ -125,9 +125,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
                     .getOsgiServletContext();
             OSGiDataCollector registry = (OSGiDataCollector) getInstance(
                     osgiServletContext);
-            if (registry.navigationTargets.get() != null) {
-                setNavigationTargets(registry.navigationTargets.get());
-            }
+            RouteUtil.setNavigationTargets(registry.navigationTargets.get(), this);
         }
 
         private void initRoutes() {
@@ -159,21 +157,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
 
         @Override
-        public void setNavigationTargets(
-                Set<Class<? extends Component>> navigationTargets) {
-            if (navigationTargets.isEmpty()
-                    && this.navigationTargets.get() == null) {
-                // ignore initial empty targets avoiding routes initialization
-                // it they are not yet discovered
-                return;
-            }
-            this.navigationTargets.set(navigationTargets);
-            // There is no need to execute this logic here but this method will
-            // throw an exception if there are invalid routes
-            super.setNavigationTargets(navigationTargets);
-        }
-
-        @Override
         protected void handleInitializedRegistry() {
             // Don't do anything in this fake internal registry
         }
@@ -196,7 +179,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
             .of(RouteNotFoundError.class, InternalServerError.class)
             .collect(Collectors.toSet());
 
-    private final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
+    protected final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
 
     /**
      * Creates a new uninitialized route registry.
@@ -239,25 +222,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
             throw new IllegalStateException(
                     "Unknown servlet context attribute value: " + attribute);
         }
-    }
-
-    /**
-     * Registers a set of components as navigation targets.
-     *
-     * @param navigationTargets
-     *         set of navigation target components
-     * @throws InvalidRouteConfigurationException
-     *         if routing has been configured incorrectly
-     */
-    public void setNavigationTargets(
-            Set<Class<? extends Component>> navigationTargets) {
-        Set<Class<? extends Component>> filteredTargets = navigationTargets
-                .stream().filter(navigationTarget -> routeFilters.stream()
-                        .allMatch(filter -> filter
-                                .testNavigationTarget(navigationTarget)))
-                .collect(Collectors.toSet());
-
-        RouteUtil.setNavigationTargets(filteredTargets, this);
     }
 
     /**

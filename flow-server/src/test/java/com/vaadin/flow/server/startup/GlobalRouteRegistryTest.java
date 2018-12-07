@@ -42,14 +42,14 @@ public class GlobalRouteRegistryTest {
 
     @Test
     public void initalizedRoutes_routesCanBeAdded() {
-        registry.setNavigationTargets(Stream.of(MyRoute.class, MyInfo.class)
-                .collect(Collectors.toSet()));
+        RouteUtil.setNavigationTargets(Stream.of(MyRoute.class, MyInfo.class)
+                .collect(Collectors.toSet()), registry);
         Assert.assertEquals(
                 "Initial registration of routes should have succeeded.", 2,
                 registry.getRegisteredRoutes().size());
 
-        registry.setNavigationTargets(Stream.of(MyPalace.class, MyModular.class)
-                .collect(Collectors.toSet()));
+        RouteUtil.setNavigationTargets(Stream.of(MyPalace.class, MyModular.class)
+                .collect(Collectors.toSet()), registry);
 
         Assert.assertEquals("All new routes should have been registered", 4,
                 registry.getRegisteredRoutes().size());
@@ -63,8 +63,8 @@ public class GlobalRouteRegistryTest {
     @Test
     public void registeringRouteWithAlias_RouteDataIsPopulatedCorrectly() {
 
-        registry.setNavigationTargets(Stream.of(MyRoute.class, MyInfo.class)
-                .collect(Collectors.toSet()));
+        RouteUtil.setNavigationTargets(Stream.of(MyRoute.class, MyInfo.class)
+                .collect(Collectors.toSet()), registry);
         RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
 
         Optional<RouteData> first = registry.getRegisteredRoutes().stream()

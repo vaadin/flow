@@ -43,7 +43,6 @@ import com.vaadin.flow.server.PageConfigurator;
  *
  * @author Vaadin Ltd
  * @since 1.0
- *
  */
 public abstract class AbstractRouteRegistryInitializer implements Serializable {
     private Class<?> pwaClass = null;
@@ -52,14 +51,21 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * Validate the potential route classes stream and return them as a set.
      *
      * @param routeClasses
-     *            potential route classes
+     *         potential route classes
+     * @param routeFilters
      * @return a resulting set of the route component classes
      */
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Component>> validateRouteClasses(
-            Stream<Class<?>> routeClasses) {
+            Stream<Class<?>> routeClasses,
+            List<NavigationTargetFilter> routeFilters) {
+
         return routeClasses.peek(this::checkForConflictingAnnotations)
                 .filter(this::isApplicableClass)
+                .map(target -> (Class<? extends Component>) target)
+                .filter(navigationTarget -> routeFilters.stream().allMatch(
+                        filter -> filter
+                                .testNavigationTarget(navigationTarget)))
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
     }
@@ -80,8 +86,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     }
 
     private void checkForConflictingAnnotations(Class<?> route) {
-        if (route.isAnnotationPresent(RouteAlias.class)
-                && !route.isAnnotationPresent(Route.class)) {
+        if (route.isAnnotationPresent(RouteAlias.class) && !route
+                .isAnnotationPresent(Route.class)) {
             throw new InvalidRouteLayoutConfigurationException(String.format(
                     "'%s'" + " declares '@%s' but doesn't declare '@%s'. "
                             + "The '%s' may not be used without '%s'",
@@ -92,8 +98,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
         }
 
-        if (route.isAnnotationPresent(PageTitle.class)
-                && HasDynamicTitle.class.isAssignableFrom(route)) {
+        if (route.isAnnotationPresent(PageTitle.class) && HasDynamicTitle.class
+                .isAssignableFrom(route)) {
             throw new DuplicateNavigationTitleException(String.format(
                     "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
                     route.getName()));
@@ -102,16 +108,16 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         /* Validate annotation usage */
         Stream.of(AnnotationValidator.class.getAnnotation(HandlesTypes.class)
                 .value()).forEach(type -> {
-                    Class<? extends Annotation> annotation = type
-                            .asSubclass(Annotation.class);
+            Class<? extends Annotation> annotation = type
+                    .asSubclass(Annotation.class);
 
-                    validateRouteAnnotation(route, annotation);
+            validateRouteAnnotation(route, annotation);
 
-                    for (RouteAlias alias : route
-                            .getAnnotationsByType(RouteAlias.class)) {
-                        validateRouteAliasAnnotation(route, alias, annotation);
-                    }
-                });
+            for (RouteAlias alias : route
+                    .getAnnotationsByType(RouteAlias.class)) {
+                validateRouteAliasAnnotation(route, alias, annotation);
+            }
+        });
 
         /* Validate PageConfigurator usage */
         validateRouteImplementation(route, PageConfigurator.class);
@@ -128,12 +134,13 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         Route annotation = route.getAnnotation(Route.class);
         if (!UI.class.equals(annotation.layout())) {
             if (implementation.isAssignableFrom(route)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s needs to be the top parent layout '%s' not '%s'",
-                                implementation.getSimpleName(),
-                                RouteUtil.getTopParentLayout(route,
-                                        Router.resolve(route, annotation))
-                                        .getName(),
+                throw new InvalidRouteLayoutConfigurationException(
+                        String.format(
+                                "%s needs to be the top parent layout '%s' not '%s'",
+                                implementation.getSimpleName(), RouteUtil
+                                        .getTopParentLayout(route,
+                                                Router.resolve(route,
+                                                        annotation)).getName(),
                                 route.getName()));
             }
 
@@ -152,11 +159,12 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             RouteAlias alias, Class<?> implementation) {
         if (!UI.class.equals(alias.layout())) {
             if (PageConfigurator.class.isAssignableFrom(route)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s needs to be the top parent layout '%s' not '%s'",
-                                implementation.getSimpleName(),
-                                RouteUtil.getTopParentLayout(route,
-                                        alias.value()).getName(),
+                throw new InvalidRouteLayoutConfigurationException(
+                        String.format(
+                                "%s needs to be the top parent layout '%s' not '%s'",
+                                implementation.getSimpleName(), RouteUtil
+                                        .getTopParentLayout(route,
+                                                alias.value()).getName(),
                                 route.getName()));
             }
 
@@ -177,17 +185,18 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         Supplier<Stream<Class<? extends RouterLayout>>> streamSupplier = () -> parentLayouts
                 .stream().filter(implementation::isAssignableFrom);
         if (streamSupplier.get().count() > 1) {
-            throw new InvalidRouteLayoutConfigurationException("Only one "
-                    + implementation.getSimpleName()
-                    + " implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                    + streamSupplier.get().map(Class::getName)
+            throw new InvalidRouteLayoutConfigurationException(
+                    "Only one " + implementation.getSimpleName()
+                            + " implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                            + streamSupplier.get().map(Class::getName)
                             .collect(Collectors.joining(", ")));
         }
 
         streamSupplier.get().findFirst().ifPresent(layout -> {
             if (!layout.equals(topParentLayout)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s implementation should be the top most route layout '%s'. Offending class: '%s'",
+                throw new InvalidRouteLayoutConfigurationException(
+                        String.format(
+                                "%s implementation should be the top most route layout '%s'. Offending class: '%s'",
                                 implementation.getSimpleName(),
                                 topParentLayout.getName(), layout.getName()));
             }
@@ -201,15 +210,14 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         Route routeAnnotation = route.getAnnotation(Route.class);
         if (!UI.class.equals(routeAnnotation.layout())) {
             if (route.isAnnotationPresent(annotation)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
-                                annotation.getSimpleName(),
-                                RouteUtil
+                throw new InvalidRouteLayoutConfigurationException(
+                        String.format(
+                                "%s annotation needs to be on the top parent layout '%s' not on '%s'",
+                                annotation.getSimpleName(), RouteUtil
                                         .getTopParentLayout(route,
                                                 Router.resolve(route,
                                                         routeAnnotation))
-                                        .getName(),
-                                route.getName()));
+                                        .getName(), route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
@@ -228,11 +236,12 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             Class<? extends Annotation> annotation) {
         if (!UI.class.equals(alias.layout())) {
             if (route.isAnnotationPresent(annotation)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
-                                annotation.getSimpleName(),
-                                RouteUtil.getTopParentLayout(route,
-                                        alias.value()).getName(),
+                throw new InvalidRouteLayoutConfigurationException(
+                        String.format(
+                                "%s annotation needs to be on the top parent layout '%s' not on '%s'",
+                                annotation.getSimpleName(), RouteUtil
+                                        .getTopParentLayout(route,
+                                                alias.value()).getName(),
                                 route.getName()));
             }
 
@@ -254,17 +263,18 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 .stream()
                 .filter(layout -> layout.isAnnotationPresent(annotation));
         if (streamSupplier.get().count() > 1) {
-            throw new InvalidRouteLayoutConfigurationException("Only one "
-                    + annotation.getSimpleName()
-                    + " annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                    + streamSupplier.get().map(Class::getName)
+            throw new InvalidRouteLayoutConfigurationException(
+                    "Only one " + annotation.getSimpleName()
+                            + " annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                            + streamSupplier.get().map(Class::getName)
                             .collect(Collectors.joining(", ")));
         }
 
         streamSupplier.get().findFirst().ifPresent(layout -> {
             if (!layout.equals(topParentLayout)) {
-                throw new InvalidRouteLayoutConfigurationException(String
-                        .format("%s annotation should be on the top most route layout '%s'. Offending class: '%s'",
+                throw new InvalidRouteLayoutConfigurationException(
+                        String.format(
+                                "%s annotation should be on the top most route layout '%s'. Offending class: '%s'",
                                 annotation.getSimpleName(),
                                 topParentLayout.getName(), layout.getName()));
             }
@@ -276,7 +286,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * for properly annotated PWA class and return it, or null if none existing.
      *
      * @param routeClasses
-     *            potential route classes
+     *         potential route classes
      * @return a PWA -annotated class, or null if none exist.
      */
     @SuppressWarnings("unchecked")
@@ -299,17 +309,16 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     }
 
     private void validatePwa(Class<?> pwaClassCandidate) {
-        if (pwaClassCandidate == null ||
-                !pwaClassCandidate.isAnnotationPresent(PWA.class)) {
+        if (pwaClassCandidate == null || !pwaClassCandidate
+                .isAnnotationPresent(PWA.class)) {
             return;
         } else if (pwaClass == null || pwaClass == pwaClassCandidate) {
             pwaClass = pwaClassCandidate;
         } else {
-            throw new InvalidRouteLayoutConfigurationException(String
-                    .format("Expected only one '%s' annotation that is placed on the main layout of the application. Got multiple annotations in '%s' and '%s'",
-                            PWA.class.getSimpleName(),
-                            pwaClass.getSimpleName(),
-                            pwaClassCandidate.getSimpleName()));
+            throw new InvalidRouteLayoutConfigurationException(String.format(
+                    "Expected only one '%s' annotation that is placed on the main layout of the application. Got multiple annotations in '%s' and '%s'",
+                    PWA.class.getSimpleName(), pwaClass.getSimpleName(),
+                    pwaClassCandidate.getSimpleName()));
         }
     }
 

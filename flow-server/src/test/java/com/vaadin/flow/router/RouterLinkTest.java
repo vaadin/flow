@@ -32,6 +32,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.HasCurrentService;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.GlobalRouteRegistry;
@@ -63,9 +64,9 @@ public class RouterLinkTest extends HasCurrentService {
     public void setUp() throws NoSuchFieldException, IllegalAccessException,
             InvalidRouteConfigurationException {
         registry = new TestRouteRegistry();
-        registry.setNavigationTargets(new HashSet<>(
+        RouteUtil.setNavigationTargets(new HashSet<>(
                 Arrays.asList(TestView.class, FooNavigationTarget.class,
-                        GreetingNavigationTarget.class)));
+                        GreetingNavigationTarget.class)), registry);
         router = new Router(registry);
 
         ui = new UI() {
