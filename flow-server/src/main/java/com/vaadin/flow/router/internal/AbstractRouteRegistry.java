@@ -17,24 +17,18 @@ package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -119,10 +113,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             routeConfiguration.getRoutePaths(target).stream()
                     .filter(route -> !route.equals(url)).forEach(
                     route -> routeAliases.add(new RouteData.AliasData(
-                            getRouteAliasLayout(target, route), route)));
-
-            RouteData route = new RouteData(getParentLayout(target), url,
-                    parameters, target, routeAliases);
+                            getParentLayout(target, route), route)));
+            Class<? extends RouterLayout> parentLayout = getParentLayout(target,
+                    url);
+            RouteData route = new RouteData(parentLayout, url, parameters,
+                    target, routeAliases);
             registeredRoutes.add(route);
         });
 
@@ -131,21 +126,14 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Collections.unmodifiableList(registeredRoutes);
     }
 
-    private Class<? extends RouterLayout> getRouteAliasLayout(
-            Class<? extends Component> target, String route) {
-        Optional<RouteAlias> matchinAlias = Arrays
-                .stream(target.getAnnotationsByType(RouteAlias.class))
-                .filter(alias -> RouteUtil.getRouteAliasPath(target, alias)
-                        .equals(route)).findFirst();
-        if (matchinAlias.isPresent()) {
-            return matchinAlias.get().layout();
+    private Class<? extends RouterLayout> getParentLayout(
+            Class<? extends Component> target, String url) {
+        List<Class<? extends RouterLayout>> parentLayouts = routeConfiguration
+                .getRouteTarget(url).getParentLayouts(target);
+        if (!parentLayouts.isEmpty()) {
+            return parentLayouts.get(0);
         }
-        try {
-            return (Class<? extends RouterLayout>) RouteAlias.class
-                    .getDeclaredMethod("layout").getDefaultValue();
-        } catch (NoSuchMethodException e) {
-            return UI.class;
-        }
+        return UI.class;
     }
 
     @Override
@@ -156,11 +144,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         }
         // For unregistered paths use "legacy" resolution.
         return RouteUtil.getParentLayouts(navigationTarget, path);
-    }
-
-    private Class<? extends RouterLayout> getParentLayout(Class<?> target) {
-        return AnnotationReader.getAnnotationFor(target, Route.class)
-                .map(Route::layout).orElse(null);
     }
 
     private List<Class<?>> getRouteParameters(
@@ -206,7 +189,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         }
         return route.toString();
     }
-
 
     @Override
     public void setRoute(String path,
