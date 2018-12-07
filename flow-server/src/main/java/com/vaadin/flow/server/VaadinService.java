@@ -887,7 +887,7 @@ public abstract class VaadinService implements Serializable {
 
         // Create SessionRouteRegistry
         session.setAttribute(SessionRouteRegistry.class,
-                new SessionRouteRegistry(this));
+                new SessionRouteRegistry(session,this));
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {

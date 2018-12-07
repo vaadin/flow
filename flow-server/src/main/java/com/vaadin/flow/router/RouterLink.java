@@ -181,10 +181,10 @@ public class RouterLink extends Component
     }
 
     private void validateRouteParameters(com.vaadin.flow.router.Router router,
-            Class<?> navigationTarget) {
+            Class<? extends Component> navigationTarget) {
         if (router == null) {
             throw new IllegalArgumentException("Router must not be null");
-        } else if (!navigationTarget.isAnnotationPresent(Route.class)) {
+        } else if (!router.getRegistry().getTargetUrl(navigationTarget).isPresent()) {
             throw new IllegalArgumentException(
                     "Given navigation target is not an @Route target!");
         }
