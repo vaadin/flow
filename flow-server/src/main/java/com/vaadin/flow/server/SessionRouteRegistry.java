@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -71,8 +70,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      *         vaadin session to get registry for
      * @return session registry for given session
      */
-    public static RouteRegistry getSessionRegistry(
-            VaadinSession session) {
+    public static RouteRegistry getSessionRegistry(VaadinSession session) {
         Objects.requireNonNull(session,
                 "Null session is not supported for session route registry");
         SessionRouteRegistry registry = session
@@ -80,6 +78,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         if (registry == null) {
             registry = new SessionRouteRegistry(session, session.getService());
             session.setAttribute(SessionRouteRegistry.class, registry);
+        }
+        if (!registry.session.equals(session)) {
+            throw new IllegalStateException(
+                    "Session has as the attribute a route registered to another session");
         }
         return registry;
     }
@@ -123,7 +125,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         }
         return parentRegistry.getNavigationTarget(pathString);
     }
-
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(

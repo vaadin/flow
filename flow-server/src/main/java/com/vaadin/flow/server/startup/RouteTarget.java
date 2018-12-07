@@ -279,7 +279,7 @@ public class RouteTarget implements Serializable {
     public List<Class<? extends RouterLayout>> getParentLayouts(
             Class<? extends Component> target) {
         if (!parentLayouts.containsKey(target)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         return Collections.unmodifiableList(parentLayouts.get(target));
     }

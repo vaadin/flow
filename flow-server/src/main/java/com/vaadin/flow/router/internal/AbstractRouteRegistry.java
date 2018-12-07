@@ -223,9 +223,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasRoute(path)) {
             return;
         }
-        configure(configuration -> {
-            configuration.removeRoute(path, navigationTarget);
-        });
+        configure(configuration -> configuration
+                .removeRoute(path, navigationTarget));
     }
 
     /**

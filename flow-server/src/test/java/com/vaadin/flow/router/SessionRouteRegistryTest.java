@@ -576,6 +576,34 @@ public class SessionRouteRegistryTest {
                 getRegistry(session).getNavigationTarget("palace").isPresent());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void settingSessionRouteRegistryOfAnotherSession_getRegistryFails() {
+        SessionRouteRegistry registry = getRegistry(session);
+
+        VaadinSession anotherSession = new MockVaadinSession(vaadinService) {
+            @Override
+            public VaadinService getService() {
+                return vaadinService;
+            }
+        };
+
+        SessionRouteRegistry anotherRegistry = getRegistry(anotherSession);
+        Assert.assertNotEquals("Another session should receive another session",
+                registry, anotherRegistry);
+
+        session.lock();
+        try {
+            session.setAttribute(SessionRouteRegistry.class, anotherRegistry);
+        } finally {
+            session.unlock();
+        }
+
+        getRegistry(session);
+
+        Assert.fail(
+                "Setting anotherRegistry to session should fail when getting the registry!");
+    }
+
     private static class Result {
         final String value;
 
