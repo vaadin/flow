@@ -27,6 +27,8 @@ import java.lang.annotation.Target;
  * UI class. If no viewport tag has been defined, a default of
  * <code>width=device-width, initial-scale=1.0</code> is used.
  * <p>
+ * Viewport can not contain a string value and individual attributes together.
+ * <p>
  * Note: Methods' names are mapped into viewport attributes.
  *       E.g. initialScale to initial-scale
  *
@@ -45,6 +47,7 @@ public @interface Viewport {
      *
      * @return the viewport tag content
      */
+    @Deprecated
     String value();
 
     /**

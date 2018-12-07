@@ -116,14 +116,18 @@ class BootstrapUtils {
                 .getPageConfigurationAnnotation(Viewport.class);
 
         Optional<String> primaryViewport = viewportAnnotation
-                .map(Viewport::value); // here is important
-
-        if (primaryViewport.isPresent()) {
-            return primaryViewport;
-        }
+                .map(Viewport::value);
 
         Optional<String> secondaryViewport = viewportAnnotation
                 .map(viewport -> ViewportUtils.generateViewport(viewport));
+
+        if (primaryViewport.isPresent()){
+            if (secondaryViewport.isPresent()) {
+                throw new IllegalArgumentException("Viewport can not contain a string value and individual attributes together");
+            }
+            return primaryViewport;
+        }
+
         return secondaryViewport.isPresent() ? secondaryViewport
                 : primaryViewport;
     }

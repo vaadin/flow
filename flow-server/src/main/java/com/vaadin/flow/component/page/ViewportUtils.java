@@ -18,6 +18,8 @@ package com.vaadin.flow.component.page;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,56 +40,29 @@ public class ViewportUtils {
     public static String generateViewport(Viewport viewportAnnotation) {
         Objects.requireNonNull(viewportAnnotation);
 
-        StringBuilder viewport = new StringBuilder();
-
-        final String delimiter = ", ";
+        List<String> viewportAttributes = new ArrayList<>();
 
         Method[] methods = viewportAnnotation.getClass().getMethods();
-        for (Method method : methods) {
-            String attributeName = convertMethodNameToViewportAttributeName(
-                    method.getName());
-            String attributeValue = null;
+        String attributeName, attributeValue;
 
-            // TODO: treat the reflection exception properly
+        for (Method method : methods) {
+            attributeName = converFromCamelToHiphenStyle(
+                    method.getName());
             try {
                 attributeValue = String
                         .valueOf(method.invoke(viewportAnnotation));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-
-            if (attributeValue != null && !attributeValue.isEmpty()) {
-                viewport.append(attributeName);
-                viewport.append("=");
-                viewport.append(attributeValue);
-                viewport.append(delimiter);
+                viewportAttributes.add(attributeName + "=" + attributeValue);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
             }
         }
 
-        if (viewport.length() >= delimiter.length()) {
-            viewport.delete(viewport.length() - delimiter.length(),
-                    viewport.length());
-        }
-
-        return viewport.toString();
+        return String.join(", ", viewportAttributes);
     }
 
-    private static String convertMethodNameToViewportAttributeName(
-            final String methodName) {
-        StringBuilder viewPortAttributeName = new StringBuilder();
+    private static String converFromCamelToHiphenStyle(
+            final String camel) {
 
-        for (int i = 0, n = methodName.length(); i < n; i++) {
-            char c = methodName.charAt(i);
-            if (Character.isUpperCase(c)) {
-                viewPortAttributeName.append('-');
-                viewPortAttributeName.append(Character.toLowerCase(c));
-            } else {
-                viewPortAttributeName.append(c);
-            }
-        }
-
-        return viewPortAttributeName.toString();
+        return camel.replaceAll("(?=[A-Z][a-z])","-").toLowerCase();
     }
 }
