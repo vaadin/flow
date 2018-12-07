@@ -46,7 +46,7 @@ public class ViewportUtils {
         String attributeName, attributeValue;
 
         for (Method method : methods) {
-            attributeName = converFromCamelToHiphenStyle(
+            attributeName = convertFromCamelToHyphenStyle(
                     method.getName());
             try {
                 attributeValue = String
@@ -60,7 +60,7 @@ public class ViewportUtils {
         return String.join(", ", viewportAttributes);
     }
 
-    private static String converFromCamelToHiphenStyle(
+    private static String convertFromCamelToHyphenStyle(
             final String camel) {
 
         return camel.replaceAll("(?=[A-Z][a-z])","-").toLowerCase();
