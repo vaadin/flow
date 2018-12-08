@@ -131,6 +131,93 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
+     * Forward the navigation to use the provided navigation handler instead of
+     * the currently used handler.
+     *
+     * @param forwardTarget
+     *            the navigation handler to use, or {@code null} to clear a
+     *            previously set forward target
+     * @param targetState
+     *            the target navigation state of the rerouting
+     */
+    public void forwardTo(NavigationHandler forwardTarget,
+                          NavigationState targetState) {
+        final Class<?> routeTargetType = targetState.getNavigationTarget();
+        Location forwardLocation = new Location(Router.resolve(routeTargetType, routeTargetType
+                .getAnnotation(Route.class)));
+
+        getUI().getPage().getHistory().replaceState(null, forwardLocation);
+        rerouteTo(forwardTarget, targetState);
+    }
+
+    /**
+     * Forward the navigation to the given navigation state.
+     *
+     * @param targetState
+     *            the target navigation state, not {@code null}
+     */
+    public void forwardTo(NavigationState targetState) {
+        Objects.requireNonNull(targetState, "targetState cannot be null");
+        forwardTo(new NavigationStateRenderer(targetState), targetState);
+    }
+
+    /**
+     * Forward the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
+     *
+     * @param forwardTargetComponent
+     *            the component type to display, not {@code null}
+     */
+    public void forwardTo(Class<? extends Component> forwardTargetComponent) {
+        Objects.requireNonNull(forwardTargetComponent,
+                "forwardTargetComponent cannot be null");
+        forwardTo(new NavigationStateBuilder().withTarget(forwardTargetComponent)
+                .build());
+    }
+
+    /**
+     * Forward to navigation component registered for given location string
+     * instead of the component about to be displayed.
+     *
+     * @param location
+     *            forward target location string
+     */
+    public void forwardTo(String location) {
+        getSource().getRegistry().getNavigationTarget(location)
+                .ifPresent(this::forwardTo);
+    }
+
+    /**
+     * Forward to navigation component registered for given location string with
+     * given location parameter instead of the component about to be displayed.
+     *
+     * @param location
+     *            reroute target location string
+     * @param locationParam
+     *            location parameter
+     * @param <T>
+     *            location parameter type
+     */
+    public <T> void forwardTo(String location, T locationParam) {
+        forwardTo(location, Collections.singletonList(locationParam));
+    }
+
+    /**
+     * Forward to navigation component registered for given location string with
+     * given location parameters instead of the component about to be displayed.
+     *
+     * @param location
+     *            reroute target location string
+     * @param locationParams
+     *            location parameters
+     * @param <T>
+     *            location parameters type
+     */
+    public <T> void forwardTo(String location, List<T> locationParams) {
+        forwardTo(getNavigationState(location, locationParams));
+    }
+
+    /**
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
      *
@@ -210,15 +297,7 @@ public abstract class BeforeEvent extends EventObject {
      *            route parameters type
      */
     public <T> void rerouteTo(String route, List<T> routeParams) {
-        List<String> segments = routeParams.stream().map(Object::toString)
-                .collect(Collectors.toList());
-        Class<? extends Component> target = getTargetOrThrow(route, segments);
-
-        if (!routeParams.isEmpty()) {
-            checkUrlParameterType(routeParams.get(0), target);
-        }
-        rerouteTo(new NavigationStateBuilder().withTarget(target, segments)
-                .build());
+        rerouteTo(getNavigationState(route, routeParams));
     }
 
     private Class<? extends Component> getTargetOrThrow(String route,
@@ -242,6 +321,18 @@ public abstract class BeforeEvent extends EventObject {
                     "Given route parameter '%s' is of the wrong type. Required '%s'.",
                     routeParam.getClass(), genericInterfaceType));
         }
+    }
+
+    private <T> NavigationState getNavigationState(String route, List<T> routeParams) {
+        List<String> segments = routeParams.stream().map(Object::toString)
+                .collect(Collectors.toList());
+        Class<? extends Component> target = getTargetOrThrow(route, segments);
+
+        if (!routeParams.isEmpty()) {
+            checkUrlParameterType(routeParams.get(0), target);
+        }
+
+        return new NavigationStateBuilder().withTarget(target, segments).build();
     }
 
     /**
