@@ -53,8 +53,10 @@ import com.vaadin.flow.shared.Registration;
  * @see #ofCollection(Collection)
  * @see #ofItems(Object...)
  * @see #fromStream(Stream)
- * @see #fromCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)
- * @see #fromFilteringCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)
+ * @see #fromCallbacks(CallbackDataProvider.FetchCallback,
+ *      CallbackDataProvider.CountCallback)
+ * @see #fromFilteringCallbacks(CallbackDataProvider.FetchCallback,
+ *      CallbackDataProvider.CountCallback)
  * @see ListDataProvider
  * @see BackEndDataProvider
  */
@@ -185,7 +187,7 @@ public interface DataProvider<T, F> extends Serializable {
         return new DataProviderWrapper<T, C, F>(this) {
             @Override
             protected F getFilter(Query<T, C> query) {
-                return query.getFilter().map(filterConverter).orElse(null);
+                return FilterUtils.convertFilter(filterConverter, query);
             }
         };
     }
@@ -217,7 +219,8 @@ public interface DataProvider<T, F> extends Serializable {
         return new ConfigurableFilterDataProviderWrapper<T, Q, C, F>(this) {
             @Override
             protected F combineFilters(Q queryFilter, C configuredFilter) {
-                return filterCombiner.apply(queryFilter, configuredFilter);
+                return FilterUtils.combineFilters(filterCombiner, queryFilter,
+                        configuredFilter);
             }
         };
     }
@@ -283,8 +286,8 @@ public interface DataProvider<T, F> extends Serializable {
      * <p>
      * <strong>Using big streams is not recommended, you should instead use a
      * lazy data provider.</strong> See
-     * {@link #fromCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)} or
-     * {@link BackEndDataProvider} for more info.
+     * {@link #fromCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)}
+     * or {@link BackEndDataProvider} for more info.
      *
      * @param <T>
      *            the data item type
