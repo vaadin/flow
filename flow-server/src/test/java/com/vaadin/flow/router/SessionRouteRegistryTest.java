@@ -172,24 +172,6 @@ public class SessionRouteRegistryTest {
     }
 
     @Test
-    public void sessionRegistryOverridesParentRegistryWithOwnClass_globalRouteNotReturnedAfterPathRemoval() {
-        RouteUtil.setAnnotatedRoute(MyRoute.class, registry);
-        SessionRouteRegistry sessionRegistry = getRegistry(session);
-        RouteUtil.setRoute("MyRoute", Secondary.class, sessionRegistry);
-
-        Assert.assertEquals(
-                "Route 'MyRoute' should return Secondary as registered to SessionRegistry.",
-                Secondary.class,
-                sessionRegistry.getNavigationTarget("MyRoute").get());
-
-        sessionRegistry.removeRoute("MyRoute");
-
-        Assert.assertFalse(
-                "Route 'MyRoute' should not return anything as the path was removed.",
-                sessionRegistry.getNavigationTarget("MyRoute").isPresent());
-    }
-
-    @Test
     public void registerRouteWithAliases_routeAliasesRegisteredAsExpected() {
 
         SessionRouteRegistry sessionRegistry = getRegistry(session);

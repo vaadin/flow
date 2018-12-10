@@ -383,6 +383,9 @@ public final class RouteUtil {
 
     /**
      * Registers a set of components as navigation targets.
+     * <p>
+     * Given navigation targets need to have the {@link Route} annotation an
+     * be {@link Component}s.
      *
      * @param navigationTargets
      *         set of navigation target components
@@ -404,8 +407,8 @@ public final class RouteUtil {
                     clazz -> faultyClasses.append(clazz.getName()).append(" "));
             String exceptionMessage = String
                     .format("Classes [%s] given as navigation targets were not valid. "
-                                    + "Use SessionRouteRegistry method "
-                                    + "setRoute(String ,Class<? extends Component>, List<Class<? extends RouterLayout>>) instead.",
+                                    + "Add correct annotations or use RouteRegistry#"
+                                    + "setRoute(String ,Class<? extends Component>, List<Class<? extends RouterLayout>>).",
                             faultyClasses.toString());
             throw new InvalidRouteConfigurationException(exceptionMessage);
         }
@@ -416,10 +419,7 @@ public final class RouteUtil {
     }
 
     /**
-     * Add the given navigation target as a route to the configuration.
-     * <p>
-     * Note! This is a helper class and requires that the caller gives a mutable
-     * {@link RouteConfiguration} and has the configuration lock.
+     * Add the given navigation target as a route to the given route registry.
      *
      * @param navigationTarget
      *         navigation target to register

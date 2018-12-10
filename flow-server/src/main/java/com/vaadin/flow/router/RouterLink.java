@@ -113,7 +113,7 @@ public class RouterLink extends Component
      * @param navigationTarget
      *         navigation target
      */
-    public RouterLink(com.vaadin.flow.router.Router router, String text,
+    public RouterLink(Router router, String text,
             Class<? extends Component> navigationTarget) {
         this();
         setText(text);
@@ -138,8 +138,8 @@ public class RouterLink extends Component
      *         navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
-            com.vaadin.flow.router.Router router, String text,
-            Class<? extends C> navigationTarget, T parameter) {
+            Router router, String text, Class<? extends C> navigationTarget,
+            T parameter) {
         this();
         setText(text);
         setRoute(router, navigationTarget, parameter);
@@ -153,7 +153,7 @@ public class RouterLink extends Component
      * @param navigationTarget
      *         navigation target
      */
-    public void setRoute(com.vaadin.flow.router.Router router,
+    public void setRoute(Router router,
             Class<? extends Component> navigationTarget) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget);
@@ -175,14 +175,13 @@ public class RouterLink extends Component
      *         navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
-            com.vaadin.flow.router.Router router,
-            Class<? extends C> navigationTarget, T parameter) {
+            Router router, Class<? extends C> navigationTarget, T parameter) {
         validateRouteParameters(router, navigationTarget);
         String url = router.getUrl(navigationTarget, parameter);
         updateHref(url);
     }
 
-    private void validateRouteParameters(com.vaadin.flow.router.Router router,
+    private void validateRouteParameters(Router router,
             Class<? extends Component> navigationTarget) {
         if (router == null) {
             throw new IllegalArgumentException("Router must not be null");

@@ -121,9 +121,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             return navigationTarget;
         }
 
-        if (getConfiguration().isPathRemoved(pathString)) {
-            return Optional.empty();
-        }
         return parentRegistry.getNavigationTarget(pathString);
     }
 
@@ -135,9 +132,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             return getConfiguration().getRoute(pathString, segments);
         }
 
-        if (getConfiguration().isPathRemoved(pathString)) {
-            return Optional.empty();
-        }
         return parentRegistry.getNavigationTarget(pathString, segments);
     }
 
@@ -156,8 +150,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     @Override
     public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget) {
-        if (getConfiguration().hasRoute(path) && !getConfiguration()
-                .isPathRemoved(path)) {
+        if (getConfiguration().hasRoute(path)) {
             return super.getRouteLayouts(path, navigationTarget);
         }
         return parentRegistry.getRouteLayouts(path, navigationTarget);
