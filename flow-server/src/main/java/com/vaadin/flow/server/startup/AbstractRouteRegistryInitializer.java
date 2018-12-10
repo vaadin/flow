@@ -61,7 +61,6 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         return routeClasses.peek(this::checkForConflictingAnnotations)
                 .filter(this::isApplicableClass)
                 .map(target -> (Class<? extends Component>) target)
-                .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
     }
 
