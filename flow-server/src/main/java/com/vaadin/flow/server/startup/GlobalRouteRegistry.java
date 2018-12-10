@@ -235,7 +235,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         if (routeFilters.stream().allMatch(
                 filter -> filter.testNavigationTarget(navigationTarget))) {
             super.setRoute(path, navigationTarget, parentChain);
-        } else{
+        } else {
             LoggerFactory.getLogger(GlobalRouteRegistry.class)
                     .info("Not registering route {} because it's not valid for all registered routeFilters.",
                             navigationTarget.getName());
@@ -319,6 +319,11 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         return Optional.empty();
     }
 
+    /**
+     * Check if any routes has been configured for this registry.
+     *
+     * @return true if any routes are registered
+     */
     public boolean hasNavigationTargets() {
         return !getConfiguration().isEmpty();
     }

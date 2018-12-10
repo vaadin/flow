@@ -171,6 +171,8 @@ public class RouteTarget implements Serializable {
     /**
      * Create a copy of this RouteTarget.
      *
+     * @param mutable
+     *         if created copy is mutable or not
      * @return copy of this RouteTarget
      */
     public RouteTarget copy(boolean mutable) {

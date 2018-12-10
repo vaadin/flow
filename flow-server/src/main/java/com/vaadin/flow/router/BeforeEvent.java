@@ -223,15 +223,15 @@ public abstract class BeforeEvent extends EventObject {
 
     private Class<? extends Component> getTargetOrThrow(String route,
             List<String> segments) {
-        Optional<Class<? extends Component>> navigationTarget = getSource()
+        Optional<Class<? extends Component>> target = getSource()
                 .getRegistry().getNavigationTarget(route, segments);
 
-        if (!navigationTarget.isPresent()) {
+        if (!target.isPresent()) {
             throw new IllegalArgumentException(
                         String.format("No route '%s' accepting the parameters %s was found.",
                             route, segments));
         }
-        return navigationTarget.get();
+        return target.get();
     }
 
     private <T> void checkUrlParameterType(T routeParam,
