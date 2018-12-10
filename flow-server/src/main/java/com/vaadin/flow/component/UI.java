@@ -897,7 +897,7 @@ public class UI extends Component
     }
 
     /**
-     * Get all registered listener of given navigation handler type.
+     * Get all the registered listeners of the given navigation handler type.
      *
      * @param navigationHandler
      *            navigation handler type to get listeners for
