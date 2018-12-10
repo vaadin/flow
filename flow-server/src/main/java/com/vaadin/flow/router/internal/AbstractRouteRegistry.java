@@ -89,6 +89,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         }
     }
 
+    protected boolean hasLock() {
+        return configurationLock.isHeldByCurrentThread();
+    }
+
     /**
      * Get the current valid configuration.
      * <p>
@@ -142,8 +146,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (getConfiguration().hasRoute(path)) {
             return getConfiguration().getParentLayouts(path, navigationTarget);
         }
-        // For unregistered paths use "legacy" resolution.
-        return RouteUtil.getParentLayouts(navigationTarget, path);
+        return Collections.emptyList();
     }
 
     private List<Class<?>> getRouteParameters(
@@ -243,11 +246,16 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private RouteTarget addRouteToConfiguration(String path,
             Class<? extends Component> navigationTarget,
             RouteConfiguration configuration) {
+        if (!hasLock() || !configuration.isMutable()) {
+            throw new IllegalStateException(
+                    "addRouteToConfiguration requires the registry lock and a mutable configuration.");
+        }
+
         if (configuration.hasRoute(path)) {
             configuration.addRouteTarget(path, navigationTarget);
         } else {
             RouteTarget routeTarget = new RouteTarget(navigationTarget);
-            configuration.setRouteTarget(path, routeTarget);
+            configuration.setRoute(path, routeTarget);
         }
         if (!configuration.hasRouteTarget(navigationTarget)) {
             configuration.setTargetRoute(navigationTarget, path);

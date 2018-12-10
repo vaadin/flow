@@ -105,7 +105,7 @@ public class RouteConfiguration implements Serializable {
      * <p>
      * Note! Before using this it should be certain that {@link
      * #hasRoute(String)} returns true. If not then {@link
-     * #setRouteTarget(String, RouteTarget)} should be used.
+     * #setRoute(String, RouteTarget)} should be used.
      *
      * @param path
      *         path to add route to
@@ -134,7 +134,7 @@ public class RouteConfiguration implements Serializable {
      * @param routeTarget
      *         route target to set
      */
-    public void setRouteTarget(String path, RouteTarget routeTarget) {
+    public void setRoute(String path, RouteTarget routeTarget) {
         throwIfImmutable();
         routes.put(path, routeTarget);
     }
@@ -227,15 +227,7 @@ public class RouteConfiguration implements Serializable {
         RouteTarget removedRoute = routes.remove(path);
         for (Class<? extends Component> targetRoute : removedRoute
                 .getRoutes()) {
-            targetRoutes.remove(targetRoute);
-
-            // Update Class-to-string map with a new mapping if removed route exists for another path
-            for (Map.Entry<String, RouteTarget> entry : routes.entrySet()) {
-                if (entry.getValue().containsTarget(targetRoute)) {
-                    targetRoutes.put(targetRoute, entry.getKey());
-                    return;
-                }
-            }
+            updateMainRouteTarget(targetRoute);
         }
     }
 
@@ -270,14 +262,26 @@ public class RouteConfiguration implements Serializable {
 
         if (targetRoutes.containsKey(targetRoute) && targetRoutes
                 .get(targetRoute).equals(path)) {
-            targetRoutes.remove(targetRoute);
+            updateMainRouteTarget(targetRoute);
+        }
+    }
 
-            // Update Class-to-string map with a new mapping if removed route exists for another path
-            for (Map.Entry<String, RouteTarget> entry : routes.entrySet()) {
-                if (entry.getValue().containsTarget(targetRoute)) {
-                    targetRoutes.put(targetRoute, entry.getKey());
-                    return;
-                }
+    /**
+     * Update the main route target for the navigationTarget if another route
+     * for the class is found.
+     *
+     * @param navigationTarget
+     *         navigation target to update the main route for
+     */
+    private void updateMainRouteTarget(
+            Class<? extends Component> navigationTarget) {
+        targetRoutes.remove(navigationTarget);
+
+        // Update Class-to-string map with a new mapping if removed route exists for another path
+        for (Map.Entry<String, RouteTarget> entry : routes.entrySet()) {
+            if (entry.getValue().containsTarget(navigationTarget)) {
+                targetRoutes.put(navigationTarget, entry.getKey());
+                return;
             }
         }
     }

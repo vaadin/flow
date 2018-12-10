@@ -37,6 +37,7 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouterTest;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -75,6 +76,7 @@ public class NavigationStateRendererTest {
     public void getRouterLayoutForSingleParent() throws Exception {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(SingleView.class));
+        RouteUtil.setAnnotatedRoute(SingleView.class, router.getRegistry());
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(SingleView.class, router);
@@ -89,6 +91,7 @@ public class NavigationStateRendererTest {
     public void getRouterLayoutForMulipleLayers() throws Exception {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
+        RouteUtil.setAnnotatedRoute(ChildConfiguration.class, router.getRegistry());
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(ChildConfiguration.class, router);
