@@ -35,7 +35,7 @@ public class RouteConfigurationTest {
                 mutable.isMutable());
 
         RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRouteTarget("", target);
+        mutable.setRoute("", target);
 
         Assert.assertTrue("Configuration should have \"\" route registered",
                 mutable.hasRoute(""));
@@ -67,7 +67,7 @@ public class RouteConfigurationTest {
                 true);
 
         RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRouteTarget("", target);
+        mutable.setRoute("", target);
         mutable.setTargetRoute(BaseTarget.class, "");
 
         RouteConfiguration immutable = new RouteConfiguration(mutable, false);
@@ -108,7 +108,7 @@ public class RouteConfigurationTest {
                 true);
 
         RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRouteTarget("", target);
+        mutable.setRoute("", target);
         mutable.setTargetRoute(BaseTarget.class, "");
 
         mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
@@ -136,7 +136,7 @@ public class RouteConfigurationTest {
                 true);
 
         RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRouteTarget("", target);
+        mutable.setRoute("", target);
         mutable.setTargetRoute(BaseTarget.class, "");
 
         target.addRoute(ParamTarget.class);
@@ -169,7 +169,7 @@ public class RouteConfigurationTest {
                 true);
 
         RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRouteTarget("", target);
+        mutable.setRoute("", target);
         mutable.setTargetRoute(BaseTarget.class, "");
 
         target.addRoute(ParamTarget.class);
@@ -243,7 +243,7 @@ public class RouteConfigurationTest {
 
         try {
             configuration
-                    .setRouteTarget("home", new RouteTarget(BaseTarget.class));
+                    .setRoute("home", new RouteTarget(BaseTarget.class));
             Assert.fail(
                     "Configuration could add a RouteTarget even if it should throw immutable state!");
         } catch (IllegalStateException ise) {

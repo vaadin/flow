@@ -179,11 +179,6 @@ public class RouterLinkTest extends HasCurrentService {
         new RouterLink("Show something", TestView.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void invalidRoute_notRouteTarget() {
-        new RouterLink(router, "Show something", Component.class);
-    }
-
     private void triggerNavigationEvent(com.vaadin.flow.router.Router router,
             RouterLink link, String location) {
         AfterNavigationEvent event = new AfterNavigationEvent(
