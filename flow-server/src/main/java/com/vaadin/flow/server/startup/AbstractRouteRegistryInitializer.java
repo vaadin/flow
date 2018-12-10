@@ -52,20 +52,15 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      *
      * @param routeClasses
      *         potential route classes
-     * @param routeFilters
      * @return a resulting set of the route component classes
      */
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Component>> validateRouteClasses(
-            Stream<Class<?>> routeClasses,
-            List<NavigationTargetFilter> routeFilters) {
+            Stream<Class<?>> routeClasses) {
 
         return routeClasses.peek(this::checkForConflictingAnnotations)
                 .filter(this::isApplicableClass)
                 .map(target -> (Class<? extends Component>) target)
-                .filter(navigationTarget -> routeFilters.stream().allMatch(
-                        filter -> filter
-                                .testNavigationTarget(navigationTarget)))
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
     }

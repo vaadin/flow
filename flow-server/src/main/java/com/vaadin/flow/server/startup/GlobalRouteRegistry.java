@@ -29,11 +29,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -125,7 +128,8 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
                     .getOsgiServletContext();
             OSGiDataCollector registry = (OSGiDataCollector) getInstance(
                     osgiServletContext);
-            RouteUtil.setNavigationTargets(registry.navigationTargets.get(), this);
+            RouteUtil.setNavigationTargets(registry.navigationTargets.get(),
+                    this);
         }
 
         private void initRoutes() {
@@ -221,6 +225,20 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         } else {
             throw new IllegalStateException(
                     "Unknown servlet context attribute value: " + attribute);
+        }
+    }
+
+    @Override
+    public void setRoute(String path,
+            Class<? extends Component> navigationTarget,
+            List<Class<? extends RouterLayout>> parentChain) {
+        if (routeFilters.stream().allMatch(
+                filter -> filter.testNavigationTarget(navigationTarget))) {
+            super.setRoute(path, navigationTarget, parentChain);
+        } else{
+            LoggerFactory.getLogger(GlobalRouteRegistry.class)
+                    .info("Not registering route {} because it's not valid for all registered routeFilters.",
+                            navigationTarget.getName());
         }
     }
 

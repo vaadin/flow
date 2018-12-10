@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteConfiguration;
 
@@ -150,5 +151,15 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         }
 
         return parentRegistry.getTargetUrl(navigationTarget);
+    }
+
+    @Override
+    public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
+            Class<? extends Component> navigationTarget) {
+        if (getConfiguration().hasRoute(path) && !getConfiguration()
+                .isPathRemoved(path)) {
+            return super.getRouteLayouts(path, navigationTarget);
+        }
+        return parentRegistry.getRouteLayouts(path, navigationTarget);
     }
 }

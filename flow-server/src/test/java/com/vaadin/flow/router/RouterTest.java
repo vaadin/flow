@@ -2925,6 +2925,28 @@ public class RouterTest extends RoutingTestBase {
                         .get().getNavigationTarget());
     }
 
+
+    @Tag("div")
+    @Route("noParent")
+    @RouteAlias(value = "twoParents", layout = BaseLayout.class)
+    public static class AliasLayout extends Component {
+
+    }
+
+    @Test
+    public void alias_has_two_parents_even_if_route_doesnt() {
+        RouteUtil.setAnnotatedRoute(AliasLayout.class, router.getRegistry());
+
+        List<Class<? extends RouterLayout>> parents = router.getRegistry()
+                .getRouteLayouts("noParent", AliasLayout.class);
+
+        Assert.assertTrue("Main route should have no parents.",parents.isEmpty());
+
+        parents = router.getRegistry().getRouteLayouts("twoParents", AliasLayout.class);
+
+        Assert.assertEquals("Route alias should have two parents", 2, parents.size());
+    }
+
     @Test
     public void verify_collisions_not_allowed_with_naming_convention() {
         InvalidRouteConfigurationException exception = null;

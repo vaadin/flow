@@ -44,12 +44,12 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
                         GlobalRouteRegistry.getInstance(servletContext));
                 return;
             }
-            GlobalRouteRegistry routeRegistry = GlobalRouteRegistry
-                    .getInstance(servletContext);
 
             Set<Class<? extends Component>> routes = validateRouteClasses(
-                    classSet.stream(), routeRegistry.routeFilters);
+                    classSet.stream());
 
+            GlobalRouteRegistry routeRegistry = GlobalRouteRegistry
+                    .getInstance(servletContext);
             RouteUtil.setNavigationTargets(routes, routeRegistry);
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
