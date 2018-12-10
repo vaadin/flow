@@ -40,6 +40,8 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> optionalParameter;
     private Class<? extends Component> wildCardParameter;
 
+    private boolean mutable = true;
+
     private final Map<Class<? extends Component>, List<Class<? extends RouterLayout>>> parentLayouts = new HashMap<>(
             0);
 
@@ -72,6 +74,7 @@ public class RouteTarget implements Serializable {
      *         can not be clearly selected
      */
     public void addRoute(Class<? extends Component> target) {
+        throwIfImmutable();
         if (!HasUrlParameter.class.isAssignableFrom(target)
                 && !isAnnotatedParameter(target)) {
             validateNormalTarget(target);
@@ -170,7 +173,7 @@ public class RouteTarget implements Serializable {
      *
      * @return copy of this RouteTarget
      */
-    public RouteTarget copy() {
+    public RouteTarget copy(boolean mutable) {
         RouteTarget copy = new RouteTarget();
         copy.normal = normal;
         copy.parameter = parameter;
@@ -178,6 +181,7 @@ public class RouteTarget implements Serializable {
         copy.wildCardParameter = wildCardParameter;
         parentLayouts.keySet().forEach(key -> copy.parentLayouts.put(key,
                 Collections.unmodifiableList(parentLayouts.get(key))));
+        copy.mutable = mutable;
         return copy;
     }
 
@@ -189,6 +193,7 @@ public class RouteTarget implements Serializable {
      *         route to remove
      */
     public void remove(Class<? extends Component> targetRoute) {
+        throwIfImmutable();
         if (targetRoute.equals(normal)) {
             normal = null;
         } else if (targetRoute.equals(parameter)) {
@@ -261,6 +266,7 @@ public class RouteTarget implements Serializable {
      */
     public void setParentLayouts(Class<? extends Component> target,
             List<Class<? extends RouterLayout>> parents) {
+        throwIfImmutable();
         if (!containsTarget(target)) {
             throw new IllegalArgumentException(
                     "Tried to add parent layouts for a non existing target "
@@ -282,5 +288,12 @@ public class RouteTarget implements Serializable {
             return Collections.emptyList();
         }
         return Collections.unmodifiableList(parentLayouts.get(target));
+    }
+
+    private void throwIfImmutable() {
+        if (!mutable) {
+            throw new IllegalStateException(
+                    "Tried to mutate immutable configuration.");
+        }
     }
 }

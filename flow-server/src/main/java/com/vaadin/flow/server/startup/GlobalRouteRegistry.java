@@ -183,7 +183,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
             .of(RouteNotFoundError.class, InternalServerError.class)
             .collect(Collectors.toSet());
 
-    protected final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
+    private final ArrayList<NavigationTargetFilter> routeFilters = new ArrayList<>();
 
     /**
      * Creates a new uninitialized route registry.

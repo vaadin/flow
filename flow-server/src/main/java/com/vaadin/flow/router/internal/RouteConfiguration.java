@@ -61,7 +61,7 @@ public class RouteConfiguration implements Serializable {
     public RouteConfiguration(RouteConfiguration original, boolean mutable) {
         for (Map.Entry<String, RouteTarget> route : original.routes
                 .entrySet()) {
-            routes.put(route.getKey(), route.getValue().copy());
+            routes.put(route.getKey(), route.getValue().copy(mutable));
         }
         targetRoutes.putAll(original.targetRoutes);
         exceptionTargets.putAll(original.exceptionTargets);
@@ -96,42 +96,24 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Add a navigation target for the given path.
-     * <p>
-     * Note! Before using this it should be certain that {@link
-     * #hasRoute(String)} returns true. If not then {@link
-     * #setRoute(String, RouteTarget)} should be used.
-     *
-     * @param path
-     *         path to add route to
-     * @param navigationTarget
-     *         navigation target to add
-     */
-    public void addRouteTarget(String path,
-            Class<? extends Component> navigationTarget) {
-        throwIfImmutable();
-        if (routes.get(path) == null) {
-            throw new IllegalArgumentException(
-                    "No RouteTarget initialized for path");
-        }
-        routes.get(path).addRoute(navigationTarget);
-    }
-
-    /**
      * Set a new {@link RouteTarget} for the given path.
      * <p></p>
-     * Note! this will override any previous value. It's recommended to use
-     * {@link #addRouteTarget(String, Class)} if {@link #hasRoute(String)}
-     * returns true
+     * Note! this will override any previous value.
      *
      * @param path
      *         path for which to set route target for
-     * @param routeTarget
-     *         route target to set
+     * @param navigationTarget
+     *         navigation target to add
      */
-    public void setRoute(String path, RouteTarget routeTarget) {
+    public void setRoute(String path,
+            Class<? extends Component> navigationTarget) {
         throwIfImmutable();
-        routes.put(path, routeTarget);
+        if (hasRoute(path)) {
+            routes.get(path).addRoute(navigationTarget);
+        } else {
+            RouteTarget routeTarget = new RouteTarget(navigationTarget);
+            routes.put(path, routeTarget);
+        }
     }
 
     /**

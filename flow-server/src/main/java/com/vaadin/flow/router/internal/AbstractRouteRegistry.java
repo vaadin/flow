@@ -251,12 +251,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                     "addRouteToConfiguration requires the registry lock and a mutable configuration.");
         }
 
-        if (configuration.hasRoute(path)) {
-            configuration.addRouteTarget(path, navigationTarget);
-        } else {
-            RouteTarget routeTarget = new RouteTarget(navigationTarget);
-            configuration.setRoute(path, routeTarget);
-        }
+        configuration.setRoute(path, navigationTarget);
+
         if (!configuration.hasRouteTarget(navigationTarget)) {
             configuration.setTargetRoute(navigationTarget, path);
         }

@@ -34,8 +34,7 @@ public class RouteConfigurationTest {
         Assert.assertTrue("Configuration should be mutable.",
                 mutable.isMutable());
 
-        RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRoute("", target);
+        mutable.setRoute("", BaseTarget.class);
 
         Assert.assertTrue("Configuration should have \"\" route registered",
                 mutable.hasRoute(""));
@@ -66,8 +65,7 @@ public class RouteConfigurationTest {
         RouteConfiguration mutable = new RouteConfiguration(configuration,
                 true);
 
-        RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRoute("", target);
+        mutable.setRoute("", BaseTarget.class);
         mutable.setTargetRoute(BaseTarget.class, "");
 
         RouteConfiguration immutable = new RouteConfiguration(mutable, false);
@@ -107,8 +105,7 @@ public class RouteConfigurationTest {
         RouteConfiguration mutable = new RouteConfiguration(configuration,
                 true);
 
-        RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRoute("", target);
+        mutable.setRoute("", BaseTarget.class);
         mutable.setTargetRoute(BaseTarget.class, "");
 
         mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
@@ -135,11 +132,10 @@ public class RouteConfigurationTest {
         RouteConfiguration mutable = new RouteConfiguration(configuration,
                 true);
 
-        RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRoute("", target);
+        mutable.setRoute("", BaseTarget.class);
         mutable.setTargetRoute(BaseTarget.class, "");
 
-        target.addRoute(ParamTarget.class);
+        mutable.setRoute("", ParamTarget.class);
         mutable.setTargetRoute(ParamTarget.class, "");
 
         Assert.assertEquals(
@@ -168,11 +164,10 @@ public class RouteConfigurationTest {
         RouteConfiguration mutable = new RouteConfiguration(configuration,
                 true);
 
-        RouteTarget target = new RouteTarget(BaseTarget.class);
-        mutable.setRoute("", target);
+        mutable.setRoute("", BaseTarget.class);
         mutable.setTargetRoute(BaseTarget.class, "");
 
-        target.addRoute(ParamTarget.class);
+        mutable.getRouteTarget("").addRoute(ParamTarget.class);
         mutable.setTargetRoute(ParamTarget.class, "");
 
         Assert.assertEquals(
@@ -234,7 +229,7 @@ public class RouteConfigurationTest {
 
         }
         try {
-            configuration.addRouteTarget("home", BaseTarget.class);
+            configuration.setRoute("home", BaseTarget.class);
             Assert.fail(
                     "Configuration could add a new target route even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
@@ -243,7 +238,7 @@ public class RouteConfigurationTest {
 
         try {
             configuration
-                    .setRoute("home", new RouteTarget(BaseTarget.class));
+                    .setRoute("home", BaseTarget.class);
             Assert.fail(
                     "Configuration could add a RouteTarget even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
