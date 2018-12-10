@@ -179,8 +179,8 @@ public class RouteTarget implements Serializable {
         copy.parameter = parameter;
         copy.optionalParameter = optionalParameter;
         copy.wildCardParameter = wildCardParameter;
-        parentLayouts.keySet().forEach(key -> copy.parentLayouts.put(key,
-                Collections.unmodifiableList(parentLayouts.get(key))));
+        parentLayouts.keySet().forEach(
+                key -> copy.parentLayouts.put(key, parentLayouts.get(key)));
         copy.mutable = mutable;
         return copy;
     }
@@ -272,7 +272,7 @@ public class RouteTarget implements Serializable {
                     "Tried to add parent layouts for a non existing target "
                             + target.getName());
         }
-        parentLayouts.put(target, new ArrayList<>(parents));
+        parentLayouts.put(target, Collections.unmodifiableList(parents));
     }
 
     /**
@@ -287,7 +287,7 @@ public class RouteTarget implements Serializable {
         if (!parentLayouts.containsKey(target)) {
             return Collections.emptyList();
         }
-        return Collections.unmodifiableList(parentLayouts.get(target));
+        return parentLayouts.get(target);
     }
 
     private void throwIfImmutable() {
