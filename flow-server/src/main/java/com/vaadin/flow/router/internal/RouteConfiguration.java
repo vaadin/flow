@@ -36,17 +36,18 @@ public class RouteConfiguration implements Serializable {
 
     private final boolean mutable;
 
-    private final Map<String, RouteTarget> routes = new HashMap<>(0);
-    private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>(
-            0);
-    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets = new HashMap<>(
-            0);
+    private final Map<String, RouteTarget> routes;
+    private final Map<Class<? extends Component>, String> targetRoutes;
+    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets;
 
     /**
      * Create an immutable RouteConfiguration.
      */
     public RouteConfiguration() {
         mutable = false;
+        routes = Collections.emptyMap();
+        targetRoutes = Collections.emptyMap();
+        exceptionTargets = Collections.emptyMap();
     }
 
     /**
@@ -59,12 +60,27 @@ public class RouteConfiguration implements Serializable {
      *         true for mutable configuration and false for immutable
      */
     public RouteConfiguration(RouteConfiguration original, boolean mutable) {
+        Map<String, RouteTarget> routes = new HashMap<>();
+        Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
+        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets = new HashMap<>();
+
         for (Map.Entry<String, RouteTarget> route : original.routes
                 .entrySet()) {
             routes.put(route.getKey(), route.getValue().copy(mutable));
         }
         targetRoutes.putAll(original.targetRoutes);
         exceptionTargets.putAll(original.exceptionTargets);
+
+        if (!mutable) {
+            this.routes = Collections.unmodifiableMap(routes);
+            this.targetRoutes = Collections.unmodifiableMap(targetRoutes);
+            this.exceptionTargets = Collections
+                    .unmodifiableMap(exceptionTargets);
+        } else {
+            this.routes = routes;
+            this.targetRoutes = targetRoutes;
+            this.exceptionTargets = exceptionTargets;
+        }
 
         this.mutable = mutable;
     }
@@ -111,8 +127,8 @@ public class RouteConfiguration implements Serializable {
         if (hasRoute(path)) {
             routes.get(path).addRoute(navigationTarget);
         } else {
-            RouteTarget routeTarget = new RouteTarget(navigationTarget);
-            routes.put(path, routeTarget);
+            routes.computeIfAbsent(path,
+                    key -> new RouteTarget(navigationTarget, isMutable()));
         }
     }
 
@@ -166,7 +182,7 @@ public class RouteConfiguration implements Serializable {
         // Remove target route from class-to-string map
         targetRoutes.remove(targetRoute);
 
-        List<String> emptyRoutes = new ArrayList<>(0);
+        List<String> emptyRoutes = new ArrayList<>();
         // Remove all instances of the route class for any path
         // that it may be registered to
         routes.forEach((route, routeTarget) -> {
@@ -361,7 +377,7 @@ public class RouteConfiguration implements Serializable {
      * @return component-to-path map of all target routes
      */
     public Map<Class<? extends Component>, String> getTargetRoutes() {
-        return Collections.unmodifiableMap(targetRoutes);
+        return targetRoutes;
     }
 
     /**
@@ -393,7 +409,7 @@ public class RouteConfiguration implements Serializable {
      * @return all registered exception handlers
      */
     public Map<Class<? extends Exception>, Class<? extends Component>> getExceptionHandlers() {
-        return Collections.unmodifiableMap(exceptionTargets);
+        return exceptionTargets;
     }
 
     /**

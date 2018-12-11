@@ -40,16 +40,20 @@ public class RouteTarget implements Serializable {
     private Class<? extends Component> optionalParameter;
     private Class<? extends Component> wildCardParameter;
 
-    private boolean mutable = true;
+    private final boolean mutable;
 
     private final Map<Class<? extends Component>, List<Class<? extends RouterLayout>>> parentLayouts = new HashMap<>(
             0);
 
-    private RouteTarget() {
+    private RouteTarget(boolean mutable) {
+        this.mutable = mutable;
     }
 
+
     /**
-     * Create a new Route target holder.
+     * Create a new Route target holder with the given target registered.
+     * <p>
+     * Note! This will create a mutable RouteTarget by default.
      *
      * @param target
      *         navigation target
@@ -58,7 +62,23 @@ public class RouteTarget implements Serializable {
      *         can not be clearly selected
      */
     public RouteTarget(Class<? extends Component> target) {
-        addRoute(target);
+        this(target, true);
+    }
+
+    /**
+     * Create a new Route target holder with the given target registered.
+     *
+     * @param target
+     *         navigation target
+     * @param mutable
+     *         if this should be mutable
+     * @throws InvalidRouteConfigurationException
+     *         exception for miss configured routes where navigation targets
+     *         can not be clearly selected
+     */
+    public RouteTarget(Class<? extends Component> target, boolean mutable) {
+        this.mutable = mutable;
+        addTargetByType(target);
     }
 
     /**
@@ -75,6 +95,10 @@ public class RouteTarget implements Serializable {
      */
     public void addRoute(Class<? extends Component> target) {
         throwIfImmutable();
+        addTargetByType(target);
+    }
+
+    private void addTargetByType(Class<? extends Component> target) {
         if (!HasUrlParameter.class.isAssignableFrom(target)
                 && !isAnnotatedParameter(target)) {
             validateNormalTarget(target);
@@ -176,14 +200,13 @@ public class RouteTarget implements Serializable {
      * @return copy of this RouteTarget
      */
     public RouteTarget copy(boolean mutable) {
-        RouteTarget copy = new RouteTarget();
+        RouteTarget copy = new RouteTarget(mutable);
         copy.normal = normal;
         copy.parameter = parameter;
         copy.optionalParameter = optionalParameter;
         copy.wildCardParameter = wildCardParameter;
         parentLayouts.keySet().forEach(
                 key -> copy.parentLayouts.put(key, parentLayouts.get(key)));
-        copy.mutable = mutable;
         return copy;
     }
 
