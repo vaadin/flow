@@ -37,6 +37,10 @@ import java.lang.annotation.Target;
 public @interface Viewport {
     String DEFAULT = "width=device-width, initial-scale=1.0";
 
+    String FULL_SCREEN_MOBILE = "width=device-width, initial-scale=1";
+
+    String MOBILE_FIXED_ZOOM = "initial-scale=1, maximum-scale=1";
+
     /**
      * Gets the viewport tag content.
      *
