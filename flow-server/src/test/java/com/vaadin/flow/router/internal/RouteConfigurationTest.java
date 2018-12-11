@@ -14,7 +14,6 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 public class RouteConfigurationTest {
 
@@ -167,7 +166,7 @@ public class RouteConfigurationTest {
         mutable.setRoute("", BaseTarget.class);
         mutable.setTargetRoute(BaseTarget.class, "");
 
-        mutable.getRouteTarget("").addRoute(ParamTarget.class);
+        mutable.setRoute("",ParamTarget.class);
         mutable.setTargetRoute(ParamTarget.class, "");
 
         Assert.assertEquals(
@@ -192,6 +191,27 @@ public class RouteConfigurationTest {
 
         Assert.assertFalse("No route for path '' should exist",
                 mutable.hasRoute(""));
+    }
+
+    @Test
+    public void routesRegistered_getRouteTargetReturnsExpectedRouteTarget() {
+        RouteConfiguration mutable = new RouteConfiguration(configuration,
+                true);
+        mutable.setRoute("MyPath", BaseTarget.class);
+
+        Assert.assertNotNull(
+                "Expected a RouteTarget to be returned for 'MyPath'",
+                mutable.getRouteTarget("MyPath"));
+
+        mutable.setRoute("Another", BaseTarget.class);
+
+        Assert.assertNotNull("Expected a RouteTarget to be returned for 'Another'",
+                mutable.getRouteTarget("Another"));
+
+        mutable.setRoute("Another", ParamTarget.class);
+
+        Assert.assertEquals("Expected single target for route 'MyPath'", 1, mutable.getRouteTarget("MyPath").getRoutes().size());
+        Assert.assertEquals("Expected 2 targets for route 'Another'", 2, mutable.getRouteTarget("Another").getRoutes().size());
     }
 
     @Test
@@ -235,8 +255,7 @@ public class RouteConfigurationTest {
         }
 
         try {
-            configuration
-                    .setRoute("home", BaseTarget.class);
+            configuration.setRoute("home", BaseTarget.class);
             Assert.fail(
                     "Configuration could add a RouteTarget even if it should throw immutable state!");
         } catch (IllegalStateException ise) {
