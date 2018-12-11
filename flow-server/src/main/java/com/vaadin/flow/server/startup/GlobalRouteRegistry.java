@@ -99,7 +99,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         }
 
         private void initErrorTargets() {
-            if (errorNavigationTargetsInitialized()) {
+            if (!getConfiguration().getExceptionHandlers().isEmpty()) {
                 return;
             }
 
@@ -143,7 +143,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         }
 
         private void initPwa() {
-            if (!getConfiguration().isEmpty()) {
+            if (getConfiguration().getRoutes().isEmpty()) {
                 return;
             }
             if (OSGiAccess.getInstance().hasInitializers()) {
@@ -272,17 +272,6 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     }
 
     /**
-     * Returns whether this registry has been initialized with error navigation
-     * targets.
-     *
-     * @return whether this registry has been initialized with error navigation
-     * targets
-     */
-    public boolean errorNavigationTargetsInitialized() {
-        return getConfiguration().hasExceptionTargets();
-    }
-
-    /**
      * Get a registered navigation target for given exception. First we will
      * search for a matching cause for in the exception chain and if no match
      * found search by extended type.
@@ -293,7 +282,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
      */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
-        if (!errorNavigationTargetsInitialized()) {
+        if (getConfiguration().getExceptionHandlers().isEmpty()) {
             initErrorTargets(new HashMap<>());
         }
         Optional<ErrorTargetEntry> result = searchByCause(exception);
@@ -325,7 +314,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
      * @return true if any routes are registered
      */
     public boolean hasNavigationTargets() {
-        return !getConfiguration().isEmpty();
+        return !getConfiguration().getRoutes().isEmpty();
     }
 
     /**

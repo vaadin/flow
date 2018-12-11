@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -72,10 +73,15 @@ public class RouteConfiguration implements Serializable {
         exceptionTargets.putAll(original.exceptionTargets);
 
         if (!mutable) {
-            this.routes = Collections.unmodifiableMap(routes);
-            this.targetRoutes = Collections.unmodifiableMap(targetRoutes);
-            this.exceptionTargets = Collections
-                    .unmodifiableMap(exceptionTargets);
+            this.routes = routes.isEmpty() ?
+                    Collections.emptyMap() :
+                    Collections.unmodifiableMap(routes);
+            this.targetRoutes = targetRoutes.isEmpty() ?
+                    Collections.emptyMap() :
+                    Collections.unmodifiableMap(targetRoutes);
+            this.exceptionTargets = exceptionTargets.isEmpty() ?
+                    Collections.emptyMap() :
+                    Collections.unmodifiableMap(exceptionTargets);
         } else {
             this.routes = routes;
             this.targetRoutes = targetRoutes;
@@ -108,7 +114,6 @@ public class RouteConfiguration implements Serializable {
         throwIfImmutable();
         routes.clear();
         targetRoutes.clear();
-        exceptionTargets.clear();
     }
 
     /**
@@ -336,15 +341,6 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Get if we have any exception targets stored.
-     *
-     * @return true if there are exception targets
-     */
-    public boolean hasExceptionTargets() {
-        return !exceptionTargets.isEmpty();
-    }
-
-    /**
      * Get the route class matching the given path and path segments.
      *
      * @param pathString
@@ -363,12 +359,12 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Configuration is empty if no routes have been registered.
+     * Get all registered paths that have been registered.
      *
-     * @return if there are registered routes
+     * @return Set containing all the registered paths
      */
-    public boolean isEmpty() {
-        return routes.isEmpty();
+    public Set<String> getRoutes() {
+        return Collections.unmodifiableSet(routes.keySet());
     }
 
     /**

@@ -93,8 +93,8 @@ public class RouteConfigurationTest {
 
         mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
 
-        Assert.assertTrue("Exception targets should be available",
-                mutable.hasExceptionTargets());
+        Assert.assertFalse("Exception targets should be available",
+                mutable.getExceptionHandlers().isEmpty());
         Assert.assertEquals("Given exception returned unexpected handler class",
                 BaseError.class, mutable.getExceptionHandlerByClass(
                         IndexOutOfBoundsException.class));
@@ -111,20 +111,20 @@ public class RouteConfigurationTest {
         mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
 
         Assert.assertFalse("Configuration should have routes.",
-                mutable.isEmpty());
-        Assert.assertTrue("Configuration should have exceptions.",
-                mutable.hasExceptionTargets());
+                mutable.getRoutes().isEmpty());
+        Assert.assertFalse("Configuration should have exceptions.",
+                mutable.getExceptionHandlers().isEmpty());
 
         mutable.clear();
 
         Assert.assertTrue("After clear all routes should have been removed.",
-                mutable.isEmpty());
+                mutable.getRoutes().isEmpty());
         Assert.assertTrue(
                 "After clear all targetRoutes should have been removed. ",
                 configuration.getTargetRoutes().isEmpty());
         Assert.assertFalse(
-                "After clear all exception targets should have been removed.",
-                mutable.hasExceptionTargets());
+                "After clear  exception targets should still be available.",
+                mutable.getExceptionHandlers().isEmpty());
     }
 
     @Test
@@ -204,11 +204,9 @@ public class RouteConfigurationTest {
                 configuration.getRoute("", Collections.emptyList())
                         .isPresent());
         Assert.assertTrue("Configuration should be empty",
-                configuration.isEmpty());
+                configuration.getRoutes().isEmpty());
         Assert.assertTrue("Configuration should be empty",
                 configuration.getTargetRoutes().isEmpty());
-        Assert.assertFalse("Configuration should be empty",
-                configuration.hasExceptionTargets());
         Assert.assertNull("No exception handler should be found.", configuration
                 .getExceptionHandlerByClass(RuntimeException.class));
         Assert.assertNull("No target route should be found",

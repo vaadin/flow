@@ -1310,10 +1310,6 @@ public class RouteRegistryInitializerTest {
     public static class ThemeAliasView extends Component {
     }
 
-    public static class ThemeSingleNavigationTargetSubclass
-            extends ThemeSingleNavigationTarget {
-    }
-
     @Test
     public void onStartUp_wrong_position_theme_view_layout_throws()
             throws ServletException {
