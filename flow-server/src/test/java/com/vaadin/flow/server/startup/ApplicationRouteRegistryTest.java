@@ -2,6 +2,7 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -9,8 +10,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,42 +18,41 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.internal.RouteUtil;
 
-public class GlobalRouteRegistryTest {
+public class ApplicationRouteRegistryTest {
 
-    private GlobalRouteRegistry registry;
+    private ApplicationRouteRegistry registry;
 
     @Before
     public void init() {
-        registry = GlobalRouteRegistry
+        registry = ApplicationRouteRegistry
                 .getInstance(Mockito.mock(ServletContext.class));
     }
 
     @Test
     public void initalizedRoutes_routesCanBeAdded() {
-        RouteUtil.setNavigationTargets(Stream.of(MyRoute.class, MyInfo.class)
-                .collect(Collectors.toSet()), registry);
+        registry.setRoute("home", MyRoute.class, Collections.emptyList());
+        registry.setRoute("info", MyInfo.class, Collections.emptyList());
+
         Assert.assertEquals(
                 "Initial registration of routes should have succeeded.", 2,
                 registry.getRegisteredRoutes().size());
 
-        RouteUtil.setNavigationTargets(Stream.of(MyPalace.class, MyModular.class)
-                .collect(Collectors.toSet()), registry);
+        registry.setRoute("palace", MyPalace.class, Collections.emptyList());
+        registry.setRoute("modular", MyModular.class, Collections.emptyList());
 
         Assert.assertEquals("All new routes should have been registered", 4,
                 registry.getRegisteredRoutes().size());
 
-        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
+        registry.setRoute("withAliases", MyRouteWithAliases.class,
+                Collections.emptyList());
+        registry.setRoute("version", MyRouteWithAliases.class,
+                Collections.emptyList());
+        registry.setRoute("person", MyRouteWithAliases.class,
+                Collections.emptyList());
 
         Assert.assertEquals("The new route should have registered", 5,
                 registry.getRegisteredRoutes().size());
@@ -63,9 +61,15 @@ public class GlobalRouteRegistryTest {
     @Test
     public void registeringRouteWithAlias_RouteDataIsPopulatedCorrectly() {
 
-        RouteUtil.setNavigationTargets(Stream.of(MyRoute.class, MyInfo.class)
-                .collect(Collectors.toSet()), registry);
-        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
+        registry.setRoute("home", MyRoute.class, Collections.emptyList());
+        registry.setRoute("info", MyInfo.class, Collections.emptyList());
+
+        registry.setRoute("withAliases", MyRouteWithAliases.class,
+                Collections.emptyList());
+        registry.setRoute("version", MyRouteWithAliases.class,
+                Collections.emptyList());
+        registry.setRoute("person", MyRouteWithAliases.class,
+                Collections.emptyList());
 
         Optional<RouteData> first = registry.getRegisteredRoutes().stream()
                 .filter(route -> route.getNavigationTarget()
@@ -80,7 +84,12 @@ public class GlobalRouteRegistryTest {
     @Test
     public void registeredRouteWithAlias_removingClassRemovesAliases() {
 
-        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
+        registry.setRoute("withAliases", MyRouteWithAliases.class,
+                Collections.emptyList());
+        registry.setRoute("version", MyRouteWithAliases.class,
+                Collections.emptyList());
+        registry.setRoute("person", MyRouteWithAliases.class,
+                Collections.emptyList());
 
         Assert.assertTrue(
                 "Registry didn't contain routes even though 3 should have been registered",
@@ -103,7 +112,12 @@ public class GlobalRouteRegistryTest {
     @Test
     public void registeredRouteWithAlias_removingPathLeavesAliases() {
 
-        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
+        registry.setRoute("withAliases", MyRouteWithAliases.class,
+                Collections.emptyList());
+        registry.setRoute("version", MyRouteWithAliases.class,
+                Collections.emptyList());
+        registry.setRoute("person", MyRouteWithAliases.class,
+                Collections.emptyList());
 
         Assert.assertTrue(
                 "Registry didn't contain routes even though 3 should have been registered",
@@ -134,7 +148,8 @@ public class GlobalRouteRegistryTest {
         List<Callable<Result>> callables = new ArrayList<>();
         callables.add(() -> {
             try {
-                RouteUtil.setAnnotatedRoute(MyRoute.class, registry);
+                registry.setRoute("home", MyRoute.class,
+                        Collections.emptyList());
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -143,7 +158,8 @@ public class GlobalRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                RouteUtil.setAnnotatedRoute(MyInfo.class, registry);
+                registry.setRoute("info", MyInfo.class,
+                        Collections.emptyList());
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -152,7 +168,8 @@ public class GlobalRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                RouteUtil.setAnnotatedRoute(MyPalace.class, registry);
+                registry.setRoute("palace", MyPalace.class,
+                        Collections.emptyList());
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -189,8 +206,8 @@ public class GlobalRouteRegistryTest {
     public void updateAndRemoveFromMultipleThreads_endResultAsExpected()
             throws InterruptedException, ExecutionException {
 
-        RouteUtil.setAnnotatedRoute(MyRoute.class, registry);
-        RouteUtil.setAnnotatedRoute(MyInfo.class, registry);
+        registry.setRoute("home", MyRoute.class, Collections.emptyList());
+        registry.setRoute("info", MyInfo.class, Collections.emptyList());
 
         List<Callable<Result>> callables = new ArrayList<>();
         callables.add(() -> {
@@ -204,7 +221,8 @@ public class GlobalRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                RouteUtil.setAnnotatedRoute(MyModular.class, registry);
+                registry.setRoute("modular", MyModular.class,
+                        Collections.emptyList());
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -213,7 +231,8 @@ public class GlobalRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                RouteUtil.setAnnotatedRoute(MyPalace.class, registry);
+                registry.setRoute("palace", MyPalace.class,
+                        Collections.emptyList());
                 registry.removeRoute("home");
             } catch (Exception e) {
                 return new Result(e.getMessage());
@@ -286,27 +305,5 @@ public class GlobalRouteRegistryTest {
     @RouteAlias("version")
     @RouteAlias("person")
     private static class MyRouteWithAliases extends Component {
-    }
-
-    @Tag("div")
-    private static class Secondary extends Component {
-    }
-
-    @Tag("div")
-    private static class Parameter extends Component
-            implements HasUrlParameter<String> {
-        @Override
-        public void setParameter(BeforeEvent event, String parameter) {
-        }
-    }
-
-    @Tag("div")
-    private static class ErrorView extends Component
-            implements HasErrorParameter<NotFoundException> {
-        @Override
-        public int setErrorParameter(BeforeEnterEvent event,
-                ErrorParameter<NotFoundException> parameter) {
-            return 404;
-        }
     }
 }

@@ -153,7 +153,7 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     private void createAppServlet(ServletContext context) {
-        if (!GlobalRouteRegistry.getInstance(context).hasNavigationTargets()) {
+        if (!ApplicationRouteRegistry.getInstance(context).hasNavigationTargets()) {
             getLogger().info(
                     "{} there are no navigation targets registered to the registry",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);

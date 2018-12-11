@@ -49,9 +49,9 @@ import com.vaadin.flow.server.osgi.OSGiAccess;
  * Registry for holding navigation target components found on servlet
  * initialization.
  */
-public class GlobalRouteRegistry extends AbstractRouteRegistry {
+public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
-    private static class OSGiRouteRegistry extends GlobalRouteRegistry {
+    private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
         @Override
         public Class<?> getPwaConfigurationClass() {
             initPwa();
@@ -154,7 +154,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         }
     }
 
-    private static class OSGiDataCollector extends GlobalRouteRegistry {
+    private static class OSGiDataCollector extends ApplicationRouteRegistry {
 
         private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>();
 
@@ -188,7 +188,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     /**
      * Creates a new uninitialized route registry.
      */
-    protected GlobalRouteRegistry() {
+    protected ApplicationRouteRegistry() {
         ServiceLoader.load(NavigationTargetFilter.class)
                 .forEach(routeFilters::add);
     }
@@ -204,7 +204,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
      * @return a registry instance for the given servlet context, not
      * <code>null</code>
      */
-    public static GlobalRouteRegistry getInstance(
+    public static ApplicationRouteRegistry getInstance(
             ServletContext servletContext) {
         assert servletContext != null;
 
@@ -220,8 +220,8 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
             }
         }
 
-        if (attribute instanceof GlobalRouteRegistry) {
-            return (GlobalRouteRegistry) attribute;
+        if (attribute instanceof ApplicationRouteRegistry) {
+            return (ApplicationRouteRegistry) attribute;
         } else {
             throw new IllegalStateException(
                     "Unknown servlet context attribute value: " + attribute);
@@ -236,7 +236,7 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
                 filter -> filter.testNavigationTarget(navigationTarget))) {
             super.setRoute(path, navigationTarget, parentChain);
         } else {
-            LoggerFactory.getLogger(GlobalRouteRegistry.class)
+            LoggerFactory.getLogger(ApplicationRouteRegistry.class)
                     .info("Not registering route {} because it's not valid for all registered routeFilters.",
                             navigationTarget.getName());
         }
@@ -362,14 +362,14 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
         configure(configuration -> map.forEach(configuration::setErrorRoute));
     }
 
-    private static GlobalRouteRegistry createRegistry(ServletContext context) {
+    private static ApplicationRouteRegistry createRegistry(ServletContext context) {
         if (context != null && context == OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
             return new OSGiDataCollector();
         } else if (OSGiAccess.getInstance().getOsgiServletContext() == null
                 || context != OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
-            return new GlobalRouteRegistry();
+            return new ApplicationRouteRegistry();
         }
         return new OSGiRouteRegistry();
     }

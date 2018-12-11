@@ -37,14 +37,13 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.RouterTest;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.startup.GlobalRouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.MockUI;
 
 @NotThreadSafe
@@ -54,7 +53,7 @@ public class NavigationStateRendererTest {
 
     @Before
     public void init() {
-        RouteRegistry registry = GlobalRouteRegistry
+        RouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(Mockito.mock(ServletContext.class));
         router = new Router(registry);
     }

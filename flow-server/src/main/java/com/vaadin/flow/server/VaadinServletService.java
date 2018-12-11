@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
-import com.vaadin.flow.server.startup.GlobalRouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
@@ -176,7 +176,7 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return GlobalRouteRegistry.getInstance(getServlet().getServletContext());
+        return ApplicationRouteRegistry.getInstance(getServlet().getServletContext());
     }
 
     @Override

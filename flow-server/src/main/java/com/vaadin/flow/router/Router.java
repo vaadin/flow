@@ -47,7 +47,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.GlobalRouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -503,8 +503,8 @@ public class Router implements Serializable {
 
     protected Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
-        if (registry instanceof GlobalRouteRegistry) {
-            return ((GlobalRouteRegistry) registry)
+        if (registry instanceof ApplicationRouteRegistry) {
+            return ((ApplicationRouteRegistry) registry)
                     .getErrorNavigationTarget(exception);
         }
         return Optional.empty();

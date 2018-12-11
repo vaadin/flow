@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import com.vaadin.flow.server.startup.GlobalRouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * Route registry with a public constructor for testing purposes.
@@ -23,7 +23,7 @@ import com.vaadin.flow.server.startup.GlobalRouteRegistry;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class TestRouteRegistry extends GlobalRouteRegistry {
+public class TestRouteRegistry extends ApplicationRouteRegistry {
     /**
      * Creates a new test route registry.
      */

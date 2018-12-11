@@ -251,7 +251,7 @@ public class ServletDeployerTest {
         if (addRoutes) {
             expect(contextMock.getAttribute(RouteRegistry.class.getName()))
                     .andAnswer(() -> {
-                        GlobalRouteRegistry registry = new GlobalRouteRegistry();
+                        ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
                         RouteUtil.setNavigationTargets(Collections
                                 .singleton(ComponentWithRoute.class), registry);
                         return registry;

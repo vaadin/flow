@@ -58,7 +58,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.GlobalRouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
@@ -2984,7 +2984,7 @@ public class RouterTest extends RoutingTestBase {
 
     private void setErrorNavigationTargets(
             Class<? extends Component>... errorNavigationTargets) {
-        ((GlobalRouteRegistry) router.getRegistry()).setErrorNavigationTargets(
+        ((ApplicationRouteRegistry) router.getRegistry()).setErrorNavigationTargets(
                 new HashSet<>(Arrays.asList(errorNavigationTargets)));
     }
 
