@@ -309,9 +309,9 @@ public class GlobalRouteRegistry extends AbstractRouteRegistry {
     }
 
     /**
-     * Check if any routes has been configured for this registry.
+     * Check if there are registered navigation targets in the registry.
      *
-     * @return true if any routes are registered
+     * @return true if any navigation are registered
      */
     public boolean hasNavigationTargets() {
         return !getConfiguration().getRoutes().isEmpty();
