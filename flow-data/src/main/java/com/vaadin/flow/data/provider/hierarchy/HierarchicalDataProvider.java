@@ -17,7 +17,6 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.stream.Stream;
 
-import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.FilterUtils;
 import com.vaadin.flow.data.provider.Query;
@@ -112,8 +111,9 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      */
     public boolean hasChildren(T item);
 
+    @SuppressWarnings("serial")
     @Override
-    default <Q, C> ConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
+    default <Q, C> HierarchicalConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
             SerializableBiFunction<Q, C, F> filterCombiner) {
         return new HierarchialConfigurableFilterDataProviderWrapper<T, Q, C, F>(
                 this, filterCombiner) {
@@ -126,7 +126,8 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     }
 
     @Override
-    default <C> DataProvider<T, C> withConvertedFilter(
+    @SuppressWarnings("serial")
+    default <C> HierarchicalDataProvider<T, C> withConvertedFilter(
             SerializableFunction<C, F> filterConverter) {
         return new HierarchicalFilterDataProviderWrapper<T, C, F>(this) {
             @Override
