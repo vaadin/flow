@@ -15,15 +15,9 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.ServletContext;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,11 +31,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistryTest;
+import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Test that {@link RouteUtil} route resolving works as intended for both
@@ -130,10 +122,10 @@ public class RouteUtilTest {
 
     @Test
     public void route_path_should_contain_parent_prefix() {
-        String routePath = RouteUtil.getRoutePath(
-                BaseRouteWithParentPrefixAndRouteAlias.class,
-                BaseRouteWithParentPrefixAndRouteAlias.class
-                        .getAnnotation(Route.class));
+        String routePath = RouteUtil
+                .getRoutePath(BaseRouteWithParentPrefixAndRouteAlias.class,
+                        BaseRouteWithParentPrefixAndRouteAlias.class
+                                .getAnnotation(Route.class));
         Assert.assertEquals(
                 "Expected path should only have been parent RoutePrefix",
                 "parent", routePath);
@@ -173,10 +165,10 @@ public class RouteUtilTest {
 
     @Test
     public void route_path_should_contain_route_and_parent_prefix() {
-        String routePath = RouteUtil.getRoutePath(
-                RouteWithParentPrefixAndRouteAlias.class,
-                RouteWithParentPrefixAndRouteAlias.class
-                        .getAnnotation(Route.class));
+        String routePath = RouteUtil
+                .getRoutePath(RouteWithParentPrefixAndRouteAlias.class,
+                        RouteWithParentPrefixAndRouteAlias.class
+                                .getAnnotation(Route.class));
         Assert.assertEquals(
                 "Expected path should only have been parent RoutePrefix",
                 "parent/flow", routePath);
@@ -184,17 +176,17 @@ public class RouteUtilTest {
 
     @Test
     public void route_alias_path_should_not_contain_parent_prefix() {
-        String routePath = RouteUtil.getRouteAliasPath(
-                BaseRouteWithParentPrefixAndRouteAlias.class,
-                BaseRouteWithParentPrefixAndRouteAlias.class
-                        .getAnnotation(RouteAlias.class));
+        String routePath = RouteUtil
+                .getRouteAliasPath(BaseRouteWithParentPrefixAndRouteAlias.class,
+                        BaseRouteWithParentPrefixAndRouteAlias.class
+                                .getAnnotation(RouteAlias.class));
         Assert.assertEquals(
                 "Expected path should only have been parent RoutePrefix",
                 "alias", routePath);
-        routePath = RouteUtil.getRouteAliasPath(
-                RouteWithParentPrefixAndRouteAlias.class,
-                RouteWithParentPrefixAndRouteAlias.class
-                        .getAnnotation(RouteAlias.class));
+        routePath = RouteUtil
+                .getRouteAliasPath(RouteWithParentPrefixAndRouteAlias.class,
+                        RouteWithParentPrefixAndRouteAlias.class
+                                .getAnnotation(RouteAlias.class));
         Assert.assertEquals(
                 "Expected path should only have been parent RoutePrefix",
                 "alias", routePath);
@@ -202,10 +194,10 @@ public class RouteUtilTest {
 
     @Test
     public void route_alias_should_contain_parent_prefix() {
-        String routePath = RouteUtil.getRouteAliasPath(
-                RouteAliasWithParentPrefix.class,
-                RouteAliasWithParentPrefix.class
-                        .getAnnotation(RouteAlias.class));
+        String routePath = RouteUtil
+                .getRouteAliasPath(RouteAliasWithParentPrefix.class,
+                        RouteAliasWithParentPrefix.class
+                                .getAnnotation(RouteAlias.class));
         Assert.assertEquals(
                 "Expected path should only have been parent RoutePrefix",
                 "aliasparent/alias", routePath);
@@ -223,8 +215,9 @@ public class RouteUtilTest {
 
     @Test
     public void top_parent_layout_should_be_found_for_non_base_route() {
-        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
-                RouteWithParentPrefixAndRouteAlias.class, "parent/flow");
+        Class<? extends RouterLayout> parent = RouteUtil
+                .getTopParentLayout(RouteWithParentPrefixAndRouteAlias.class,
+                        "parent/flow");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
         Assert.assertEquals("Received wrong parent class.",
@@ -242,8 +235,9 @@ public class RouteUtilTest {
 
     @Test
     public void top_parent_layout_for_route_alias() {
-        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
-                RouteAliasWithParentPrefix.class, "aliasparent/alias");
+        Class<? extends RouterLayout> parent = RouteUtil
+                .getTopParentLayout(RouteAliasWithParentPrefix.class,
+                        "aliasparent/alias");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
         Assert.assertEquals("Received wrong parent class.",
@@ -262,8 +256,9 @@ public class RouteUtilTest {
 
     @Test
     public void top_parent_layout_for_absolute_route_parent() {
-        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
-                AbsoluteCenterRoute.class, "absolute/child");
+        Class<? extends RouterLayout> parent = RouteUtil
+                .getTopParentLayout(AbsoluteCenterRoute.class,
+                        "absolute/child");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
         Assert.assertEquals("Received wrong parent class.",
@@ -282,8 +277,9 @@ public class RouteUtilTest {
 
     @Test
     public void top_parent_layout_for_absolute_route_alias_parent() {
-        Class<? extends RouterLayout> parent = RouteUtil.getTopParentLayout(
-                AbsoluteCenterRoute.class, "absolute/alias");
+        Class<? extends RouterLayout> parent = RouteUtil
+                .getTopParentLayout(AbsoluteCenterRoute.class,
+                        "absolute/alias");
 
         Assert.assertNotNull("Didn't find any parent for route", parent);
         Assert.assertEquals("Received wrong parent class.",
@@ -300,8 +296,9 @@ public class RouteUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouteUtil.getParentLayouts(
-                BaseRouteWithParentPrefixAndRouteAlias.class, "parent");
+        parentLayouts = RouteUtil
+                .getParentLayouts(BaseRouteWithParentPrefixAndRouteAlias.class,
+                        "parent");
 
         Assert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
@@ -353,22 +350,22 @@ public class RouteUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouteUtil.getParentLayouts(AbsoluteRoute.class,
-                "single");
+        parentLayouts = RouteUtil
+                .getParentLayouts(AbsoluteRoute.class, "single");
 
         Assert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouteUtil.getParentLayouts(AbsoluteCenterRoute.class,
-                "absolute/child");
+        parentLayouts = RouteUtil
+                .getParentLayouts(AbsoluteCenterRoute.class, "absolute/child");
 
         Assert.assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
-                parentLayouts,
-                IsIterableContainingInOrder.contains(new Class[] {
-                        AbsoluteCenterParent.class, RoutePrefixParent.class }));
+                parentLayouts, IsIterableContainingInOrder.contains(
+                        new Class[] { AbsoluteCenterParent.class,
+                                RoutePrefixParent.class }));
     }
 
     @Test
@@ -381,14 +378,14 @@ public class RouteUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
-        parentLayouts = RouteUtil.getParentLayouts(AbsoluteCenterRoute.class,
-                "absolute/alias");
+        parentLayouts = RouteUtil
+                .getParentLayouts(AbsoluteCenterRoute.class, "absolute/alias");
 
         Assert.assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
-                parentLayouts,
-                IsIterableContainingInOrder.contains(new Class[] {
-                        AbsoluteCenterParent.class, RoutePrefixParent.class }));
+                parentLayouts, IsIterableContainingInOrder.contains(
+                        new Class[] { AbsoluteCenterParent.class,
+                                RoutePrefixParent.class }));
 
     }
 
@@ -433,276 +430,88 @@ public class RouteUtilTest {
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { Parent.class }));
 
-        parentLayouts = RouteUtil.getParentLayouts(MultiTarget.class,
-                "alias");
+        parentLayouts = RouteUtil.getParentLayouts(MultiTarget.class, "alias");
 
         Assert.assertThat(
                 "Get parent layouts for routeAlias \"alias\" gave wrong result.",
-                parentLayouts,
-                IsIterableContainingInOrder.contains(new Class[] {
-                        MiddleParent.class, Parent.class }));
+                parentLayouts, IsIterableContainingInOrder.contains(
+                        new Class[] { MiddleParent.class, Parent.class }));
 
-        parentLayouts = RouteUtil.getParentLayouts(SubLayout.class,
-                "parent/sub");
+        parentLayouts = RouteUtil
+                .getParentLayouts(SubLayout.class, "parent/sub");
 
         Assert.assertThat(
                 "Get parent layouts for route \"parent/sub\" with parent Route + ParentLayout gave wrong result.",
-                parentLayouts,
-                IsIterableContainingInOrder.contains(new Class[] {
-                        MultiTarget.class, RoutePrefixParent.class }));
+                parentLayouts, IsIterableContainingInOrder.contains(
+                        new Class[] { MultiTarget.class,
+                                RoutePrefixParent.class }));
     }
 
     /*  */
 
     @Test
-    public void initalizedRoutes_routesCanBeAdded() {
+    public void setNavigationTargets_allExpectedRoutesAreSet() {
 
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+
         RouteUtil.setNavigationTargets(
-                Stream.of(MyRoute.class, MyInfo.class)
-                        .collect(Collectors.toSet()), registry);
-        Assert.assertEquals(
-                "Initial registration of routes should have succeeded.", 2,
-                registry.getRegisteredRoutes().size());
+                Stream.of(MyRoute.class, MyInfo.class, MyPalace.class,
+                        MyModular.class).collect(Collectors.toSet()), registry);
 
-        RouteUtil.setNavigationTargets(Stream.of(
-                MyPalace.class, MyModular.class)
-                .collect(Collectors.toSet()), registry);
+        Mockito.verify(registry)
+                .setRoute("home", MyRoute.class, Collections.emptyList());
 
-        Assert.assertEquals("All new routes should have been registered", 4,
-                registry.getRegisteredRoutes().size());
+        Mockito.verify(registry)
+                .setRoute("info", MyInfo.class, Collections.emptyList());
 
-        RouteUtil.setAnnotatedRoute(
-                MyRouteWithAliases.class, registry);
+        Mockito.verify(registry)
+                .setRoute("palace", MyPalace.class, Collections.emptyList());
 
-        Assert.assertEquals("The new route should have registered", 5,
-                registry.getRegisteredRoutes().size());
+        Mockito.verify(registry)
+                .setRoute("modular", MyModular.class, Collections.emptyList());
     }
 
     @Test
-    public void registeringRouteWithAlias_RouteDataIsPopulatedCorrectly() {
+    public void registeredRouteWithAlias_allPathsAreRegistered() {
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
 
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        RouteUtil.setAnnotatedRoute(MyRouteWithAliases.class, registry);
 
-        RouteUtil.setNavigationTargets(Stream.of(
-                MyRoute.class, MyInfo.class)
-                .collect(Collectors.toSet()), registry);
-        RouteUtil.setAnnotatedRoute(
-                MyRouteWithAliases.class, registry);
+        Mockito.verify(registry)
+                .setRoute("withAliases", MyRouteWithAliases.class,
+                        Collections.emptyList());
+        Mockito.verify(registry).setRoute("version", MyRouteWithAliases.class,
+                Collections.emptyList());
+        Mockito.verify(registry).setRoute("person", MyRouteWithAliases.class,
+                Collections.emptyList());
 
-        Optional<RouteData> first = registry.getRegisteredRoutes().stream()
-                .filter(route -> route.getNavigationTarget()
-                        .equals(MyRouteWithAliases.class)).findFirst();
-        Assert.assertTrue("Didn't get RouteData for MyRouteWithAliases.",
-                first.isPresent());
-
-        Assert.assertEquals("Expected two route aliases to be registered", 2,
-                first.get().getRouteAliases().size());
     }
 
     @Test
-    public void registeredRouteWithAlias_removingClassRemovesAliases() {
+    public void routeWithParent_parentsAreCollectedCorrectly() {
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
 
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        RouteUtil.setAnnotatedRoute(SingleLayout.class, registry);
 
-        RouteUtil.setAnnotatedRoute(
-                MyRouteWithAliases.class, registry);
+        Mockito.verify(registry).setRoute("single", SingleLayout.class,
+                Collections.singletonList(MainLayout.class));
 
-        Assert.assertTrue(
-                "Registry didn't contain routes even though 3 should have been registered",
-                !registry.getRegisteredRoutes().isEmpty());
+        RouteUtil.setAnnotatedRoute(DoubleLayout.class, registry);
 
-        Assert.assertTrue("Path for main route 'withAliases' returned empty",
-                registry.getNavigationTarget("withAliases").isPresent());
-        Assert.assertTrue("RouteAlias 'version' returned empty.",
-                registry.getNavigationTarget("version").isPresent());
-        Assert.assertTrue("RouteAlias 'person' returned empty.",
-                registry.getNavigationTarget("person").isPresent());
-
-        registry.removeRoute(MyRouteWithAliases.class);
-
-        Assert.assertFalse(
-                "Registry should be empty after removing the only registered Class.",
-                !registry.getRegisteredRoutes().isEmpty());
+        Mockito.verify(registry).setRoute("double", DoubleLayout.class,
+                Arrays.asList(MiddleLayout.class, MainLayout.class));
     }
 
     @Test
-    public void registeredRouteWithAlias_removingPathLeavesAliases() {
+    public void parentLayoutAnnotatedClass_parentsCorrecltCollected() {
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
 
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        RouteUtil.setRoute("middle", MiddleLayout.class, registry);
 
-        RouteUtil.setAnnotatedRoute(
-                MyRouteWithAliases.class, registry);
-
-        Assert.assertTrue(
-                "Registry didn't contain routes even though 3 should have been registered",
-                !registry.getRegisteredRoutes().isEmpty());
-
-        Assert.assertTrue("Path for main route 'withAliases' returned empty",
-                registry.getNavigationTarget("withAliases").isPresent());
-        Assert.assertTrue("RouteAlias 'version' returned empty.",
-                registry.getNavigationTarget("version").isPresent());
-        Assert.assertTrue("RouteAlias 'person' returned empty.",
-                registry.getNavigationTarget("person").isPresent());
-
-        registry.removeRoute("withAliases");
-
-        Assert.assertTrue("Registry should contain alias routes",
-                !registry.getRegisteredRoutes().isEmpty());
-
-        Assert.assertEquals(
-                "One RouteAlias should be the main url so only 1 route alias should be marked as an alias",
-                1,
-                registry.getRegisteredRoutes().get(0).getRouteAliases().size());
+        Mockito.verify(registry).setRoute("middle", MiddleLayout.class,
+                Collections.singletonList(MainLayout.class));
     }
 
-    @Test
-    public void updateRoutesFromMultipleThreads_allRoutesAreRegistered()
-            throws InterruptedException, ExecutionException {
-
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
-
-        List<Callable<Result>> callables = new ArrayList<>();
-        callables.add(() -> {
-            try {
-                RouteUtil.setAnnotatedRoute(
-                        MyRoute.class, registry);
-            } catch (Exception e) {
-                return new Result(e.getMessage());
-            }
-            return new Result(null);
-        });
-
-        callables.add(() -> {
-            try {
-                RouteUtil.setAnnotatedRoute(MyInfo.class, registry);
-            } catch (Exception e) {
-                return new Result(e.getMessage());
-            }
-            return new Result(null);
-        });
-
-        callables.add(() -> {
-            try {
-                RouteUtil.setAnnotatedRoute(
-                        MyPalace.class, registry);
-            } catch (Exception e) {
-                return new Result(e.getMessage());
-            }
-            return new Result(null);
-        });
-
-        ExecutorService executorService = Executors.newFixedThreadPool(5);
-        List<Future<Result>> futures = executorService.invokeAll(callables);
-
-        executorService.shutdown();
-
-        List<String> exceptions = new ArrayList<>();
-
-        for (Future<Result> resultFuture : futures) {
-            Result result = resultFuture.get();
-            if (result.value != null) {
-                exceptions.add(result.value);
-            }
-        }
-
-        Assert.assertEquals(
-                "No exceptions should have been thrown for threaded updates.",
-                0, exceptions.size());
-
-        Assert.assertTrue("Route 'home' was not registered into the scope.",
-                registry.getNavigationTarget("home").isPresent());
-        Assert.assertTrue("Route 'info' was not registered into the scope.",
-                registry.getNavigationTarget("info").isPresent());
-        Assert.assertTrue("Route 'palace' was not registered into the scope.",
-                registry.getNavigationTarget("palace").isPresent());
-    }
-
-    @Test
-    public void updateAndRemoveFromMultipleThreads_endResultAsExpected()
-            throws InterruptedException, ExecutionException {
-
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
-
-        RouteUtil.setAnnotatedRoute(MyRoute.class, registry);
-        RouteUtil.setAnnotatedRoute(MyInfo.class, registry);
-
-        List<Callable<Result>> callables = new ArrayList<>();
-        callables.add(() -> {
-            try {
-                registry.removeRoute("info");
-            } catch (Exception e) {
-                return new Result(e.getMessage());
-            }
-            return new Result(null);
-        });
-
-        callables.add(() -> {
-            try {
-                RouteUtil.setAnnotatedRoute(
-                        MyModular.class, registry);
-            } catch (Exception e) {
-                return new Result(e.getMessage());
-            }
-            return new Result(null);
-        });
-
-        callables.add(() -> {
-            try {
-                RouteUtil.setAnnotatedRoute(
-                        MyPalace.class, registry);
-                registry.removeRoute("home");
-            } catch (Exception e) {
-                return new Result(e.getMessage());
-            }
-            return new Result(null);
-        });
-
-        ExecutorService executorService = Executors.newFixedThreadPool(5);
-        List<Future<Result>> futures = executorService.invokeAll(callables);
-
-        executorService.shutdown();
-
-        List<String> exceptions = new ArrayList<>();
-
-        for (Future<Result> resultFuture : futures) {
-            Result result = resultFuture.get();
-            if (result.value != null) {
-                exceptions.add(result.value);
-            }
-        }
-
-        Assert.assertEquals(
-                "No exceptions should have been thrown for threaded updates.",
-                0, exceptions.size());
-
-        Assert.assertFalse(
-                "Route 'home' was still registered even though it should have been removed.",
-                registry.getNavigationTarget("home").isPresent());
-
-        Assert.assertFalse(
-                "Route 'info' was still registered even though it should have been removed.",
-                registry.getNavigationTarget("info").isPresent());
-
-        Assert.assertTrue("Route 'modular' was not registered into the scope.",
-                registry.getNavigationTarget("modular").isPresent());
-        Assert.assertTrue("Route 'palace' was not registered into the scope.",
-                registry.getNavigationTarget("palace").isPresent());
-    }
-
-    private static class Result {
-        final String value;
-
-        Result(String value) {
-            this.value = value;
-        }
-    }
     @Tag("div")
     @Route("home")
     private static class MyRoute extends Component {
@@ -728,5 +537,25 @@ public class RouteUtilTest {
     @RouteAlias("version")
     @RouteAlias("person")
     private static class MyRouteWithAliases extends Component {
+    }
+
+    @Tag("div")
+    @Route(value = "single", layout = MainLayout.class)
+    private static class SingleLayout extends Component {
+    }
+
+    @Tag("div")
+    @Route(value = "double", layout = MiddleLayout.class)
+    private static class DoubleLayout extends Component {
+    }
+
+    @Tag("div")
+    private static class MainLayout extends Component implements RouterLayout {
+    }
+
+    @Tag("div")
+    @ParentLayout(MainLayout.class)
+    private static class MiddleLayout extends Component
+            implements RouterLayout {
     }
 }

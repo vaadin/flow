@@ -197,6 +197,60 @@ public class SessionRouteRegistryTest {
     }
 
     @Test
+    public void routesWithParentLayouts_parentLayoutReturnsAsExpected() {
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        sessionRegistry.setRoute("MyRoute", MyRouteWithAliases.class,
+                Collections.singletonList(MainLayout.class));
+        sessionRegistry.setRoute("info", MyRouteWithAliases.class,
+                Collections.emptyList());
+        sessionRegistry.setRoute("version", MyRouteWithAliases.class,
+                Arrays.asList(MiddleLayout.class, MainLayout.class));
+
+        Assert.assertFalse("'MyRoute' should have a single parent",
+                sessionRegistry
+                        .getRouteLayouts("MyRoute", MyRouteWithAliases.class)
+                        .isEmpty());
+        Assert.assertTrue("'info' should have no parents.", sessionRegistry
+                .getRouteLayouts("info", MyRouteWithAliases.class).isEmpty());
+        Assert.assertEquals("'version' should return two parents", 2,
+                sessionRegistry
+                        .getRouteLayouts("version", MyRouteWithAliases.class)
+                        .size());
+    }
+
+    @Test
+    public void registeredParentLayouts_changingListDoesntChangeRegistration() {
+        SessionRouteRegistry registry = getRegistry(session);
+
+        List<Class<? extends RouterLayout>> parentChain = new ArrayList<>(
+                Arrays.asList(MiddleLayout.class, MainLayout.class));
+
+        registry.setRoute("version", MyRoute.class, parentChain);
+
+        parentChain.remove(MainLayout.class);
+
+        Assert.assertEquals(
+                "'version' should return two parents even when original list is changed",
+                2, registry.getRouteLayouts("version", MyRoute.class).size());
+    }
+
+    @Test
+    public void registeredParentLayouts_returnedListInSameOrder() {
+        SessionRouteRegistry registry = getRegistry(session);
+
+        List<Class<? extends RouterLayout>> parentChain = new ArrayList<>(
+                Arrays.asList(MiddleLayout.class, MainLayout.class));
+
+        registry.setRoute("version", MyRoute.class, parentChain);
+
+        Assert.assertArrayEquals(
+                "Registry should return parent layouts in the same order as set.",
+                parentChain.toArray(),
+                registry.getRouteLayouts("version", MyRoute.class).toArray());
+    }
+
+    @Test
     public void routeRegisteredOnMultiplePaths_removalOfDefaultPathUpdatesDefaultPath() {
         SessionRouteRegistry sessionRegistry = getRegistry(session);
 
@@ -637,6 +691,15 @@ public class SessionRouteRegistryTest {
 
     @Tag("div")
     private static class Secondary extends Component {
+    }
+
+    @Tag("div")
+    private static class MainLayout extends Component implements RouterLayout {
+    }
+
+    @Tag("div")
+    private static class MiddleLayout extends Component
+            implements RouterLayout {
     }
 
     @Tag("div")

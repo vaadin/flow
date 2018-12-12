@@ -49,7 +49,6 @@ public class RouteTarget implements Serializable {
         this.mutable = mutable;
     }
 
-
     /**
      * Create a new Route target holder with the given target registered.
      * <p>
@@ -297,7 +296,8 @@ public class RouteTarget implements Serializable {
                     "Tried to add parent layouts for a non existing target "
                             + target.getName());
         }
-        parentLayouts.put(target, Collections.unmodifiableList(parents));
+        parentLayouts.put(target,
+                Collections.unmodifiableList(new ArrayList<>(parents)));
     }
 
     /**
