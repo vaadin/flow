@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * Route registry with a public constructor for testing purposes.
@@ -23,21 +23,11 @@ import com.vaadin.flow.server.startup.RouteRegistry;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class TestRouteRegistry extends RouteRegistry {
+public class TestRouteRegistry extends ApplicationRouteRegistry {
     /**
      * Creates a new test route registry.
      */
     public TestRouteRegistry() {
         super();
     }
-
-    @Override
-    public boolean hasRoutes() {
-        /*
-         * Always pretend there are routes even though they might actually be
-         * injected later on.
-         */
-        return true;
-    }
-
 }

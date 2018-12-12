@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
@@ -427,12 +428,14 @@ public class UidlWriterTest {
         session.lock();
         ui.getInternals().setSession(session);
 
-        ui.getRouter().getRegistry().setNavigationTargets(
-                new HashSet<>(Arrays.asList(BaseClass.class)));
+        RouteUtil.setNavigationTargets(
+                new HashSet<>(Arrays.asList(BaseClass.class)),
+                ui.getRouter().getRegistry());
 
         for (String type : new String[] { "html", "js", "css" }) {
-            mocks.getServlet().addServletContextResource(
-                    "/frontend/inline." + type, "/frontend/inline." + type);
+            mocks.getServlet()
+                    .addServletContextResource("/frontend/inline." + type,
+                            "/frontend/inline." + type);
         }
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);

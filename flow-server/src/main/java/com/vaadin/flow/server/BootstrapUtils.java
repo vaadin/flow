@@ -51,7 +51,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouterUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -197,7 +197,7 @@ class BootstrapUtils {
                 .collect(Collectors.toList());
 
         AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
-                RouterUtil.createEvent(navigationEvent, components));
+                RouteUtil.createEvent(navigationEvent, components));
 
         return new InitialPageSettings(request, ui, afterNavigationEvent,
                 browser);
@@ -441,7 +441,7 @@ class BootstrapUtils {
         }
         return ui.getRouter().resolveNavigationTarget(request.getPathInfo(),
                 request.getParameterMap()).map(navigationState -> {
-                    Class<? extends RouterLayout> parentLayout = RouterUtil
+                    Class<? extends RouterLayout> parentLayout = RouteUtil
                             .getTopParentLayout(
                                     navigationState.getNavigationTarget(),
                                     navigationState.getResolvedPath());

@@ -21,7 +21,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -154,9 +153,9 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     private void createAppServlet(ServletContext context) {
-        if (!RouteRegistry.getInstance(context).hasNavigationTargets()) {
+        if (!ApplicationRouteRegistry.getInstance(context).hasNavigationTargets()) {
             getLogger().info(
-                    "{} there are no navigation targets annotated with @Route",
+                    "{} there are no navigation targets registered to the registry",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
             return;
         }

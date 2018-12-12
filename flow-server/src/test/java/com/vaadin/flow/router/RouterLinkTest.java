@@ -32,9 +32,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.HasCurrentService;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -42,7 +43,7 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class RouterLinkTest extends HasCurrentService {
 
-    private RouteRegistry registry;
+    private ApplicationRouteRegistry registry;
 
     private Router router;
 
@@ -63,9 +64,9 @@ public class RouterLinkTest extends HasCurrentService {
     public void setUp() throws NoSuchFieldException, IllegalAccessException,
             InvalidRouteConfigurationException {
         registry = new TestRouteRegistry();
-        registry.setNavigationTargets(new HashSet<>(
+        RouteUtil.setNavigationTargets(new HashSet<>(
                 Arrays.asList(TestView.class, FooNavigationTarget.class,
-                        GreetingNavigationTarget.class)));
+                        GreetingNavigationTarget.class)), registry);
         router = new Router(registry);
 
         ui = new UI() {
@@ -176,11 +177,6 @@ public class RouterLinkTest extends HasCurrentService {
         VaadinService service = VaadinService.getCurrent();
         Mockito.when(service.getRouter()).thenReturn(null);
         new RouterLink("Show something", TestView.class);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void invalidRoute_notRouteTarget() {
-        new RouterLink(router, "Show something", Component.class);
     }
 
     private void triggerNavigationEvent(com.vaadin.flow.router.Router router,

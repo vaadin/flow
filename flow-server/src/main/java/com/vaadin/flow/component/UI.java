@@ -58,11 +58,11 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
-import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.flow.theme.ThemeUtil;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -759,15 +759,11 @@ public class UI extends Component
      * @return the associated ThemeDefinition, or empty if none is defined and
      *         the Lumo class is not in the classpath, or if the NoTheme
      *         annotation is being used.
-     * @see RouteRegistry#getThemeFor(Class, String)
+     * @see ThemeUtil#findThemeForNavigationTarget(Class, String)
      */
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
-        if (getRouter() == null) {
-            return Optional.empty();
-        }
-
-        return getRouter().getRegistry().getThemeFor(navigationTarget, path);
+        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(navigationTarget, path));
     }
 
     /**

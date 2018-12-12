@@ -29,6 +29,8 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -99,8 +101,7 @@ public class LocationObserverTest {
         router = new Router(new TestRouteRegistry());
         ui = new RouterTestUI(router);
 
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(Translations.class));
+        RouteUtil.setAnnotatedRoute(Translations.class, router.getRegistry());
 
         ui.navigate("");
 

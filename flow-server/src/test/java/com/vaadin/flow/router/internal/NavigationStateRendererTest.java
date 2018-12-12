@@ -15,10 +15,14 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.ServletContext;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -34,17 +38,25 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.MockUI;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class NavigationStateRendererTest {
+
+    Router router;
+
+    @Before
+    public void init() {
+        RouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(Mockito.mock(ServletContext.class));
+        router = new Router(registry);
+    }
 
     @Test
     public void getRouterLayoutForSingle() throws Exception {
@@ -52,7 +64,7 @@ public class NavigationStateRendererTest {
                 navigationStateFromTarget(RouteParentLayout.class));
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(RouteParentLayout.class);
+                .getRouterLayoutTypes(RouteParentLayout.class, router);
 
         Assert.assertEquals(
                 "Found layout even though RouteParentLayout doesn't have any parents.",
@@ -63,9 +75,10 @@ public class NavigationStateRendererTest {
     public void getRouterLayoutForSingleParent() throws Exception {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(SingleView.class));
+        RouteUtil.setAnnotatedRoute(SingleView.class, router.getRegistry());
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(SingleView.class);
+                .getRouterLayoutTypes(SingleView.class, router);
 
         Assert.assertEquals("Not all expected layouts were found", 1,
                 routerLayoutTypes.size());
@@ -77,9 +90,10 @@ public class NavigationStateRendererTest {
     public void getRouterLayoutForMulipleLayers() throws Exception {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
+        RouteUtil.setAnnotatedRoute(ChildConfiguration.class, router.getRegistry());
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(ChildConfiguration.class);
+                .getRouterLayoutTypes(ChildConfiguration.class, router);
 
         Assert.assertEquals("Not all expected layouts were found", 2,
                 routerLayoutTypes.size());

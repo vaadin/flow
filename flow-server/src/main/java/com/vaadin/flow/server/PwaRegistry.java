@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
 
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -264,7 +264,7 @@ public class PwaRegistry implements Serializable {
                     .getAttribute(PwaRegistry.class.getName());
 
             if (attribute == null) {
-                RouteRegistry reg = RouteRegistry.getInstance(servletContext);
+                ApplicationRouteRegistry reg = ApplicationRouteRegistry.getInstance(servletContext);
 
                 // Initialize PwaRegistry with found PWA settings
                 PWA pwa = reg.getPwaConfigurationClass() != null ? reg

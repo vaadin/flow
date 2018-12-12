@@ -15,8 +15,11 @@
  */
 package com.vaadin.tests.util;
 
+import org.mockito.Mockito;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 public class MockUI extends UI {
@@ -38,7 +41,7 @@ public class MockUI extends UI {
     private static VaadinSession findOrcreateSession() {
         VaadinSession session = VaadinSession.getCurrent();
         if (session == null) {
-            session = new AlwaysLockedVaadinSession(null);
+            session = new AlwaysLockedVaadinSession(Mockito.mock(VaadinService.class));
             VaadinSession.setCurrent(session);
         }
         return session;

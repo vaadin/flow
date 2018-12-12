@@ -1,5 +1,10 @@
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,12 +19,6 @@ import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -29,7 +28,6 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class MockServletServiceSessionSetup {
@@ -226,6 +224,9 @@ public class MockServletServiceSessionSetup {
         deploymentConfiguration.setXsrfProtectionEnabled(false);
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
+
+        servlet.init(servletConfig);
+
         if (sessionAvailable) {
             Mockito.when(session.getConfiguration())
                     .thenReturn(deploymentConfiguration);
@@ -243,10 +244,13 @@ public class MockServletServiceSessionSetup {
                     .thenReturn(new LinkedBlockingDeque<>());
             Mockito.when(request.getWrappedSession())
                     .thenReturn(wrappedSession);
+            SessionRouteRegistry sessionRegistry = (SessionRouteRegistry) SessionRouteRegistry
+                    .getSessionRegistry(session);
+            Mockito.when(session.getAttribute(SessionRouteRegistry.class))
+                    .thenReturn(sessionRegistry);
         } else {
             session = null;
         }
-        servlet.init(servletConfig);
 
         CurrentInstance.set(VaadinRequest.class, request);
         CurrentInstance.set(VaadinService.class, service);
@@ -256,7 +260,6 @@ public class MockServletServiceSessionSetup {
 
         Mockito.when(request.getServletPath()).thenReturn("");
         Mockito.when(browser.isEs6Supported()).thenReturn(true);
-
     }
 
     public TestVaadinServletService getService() {

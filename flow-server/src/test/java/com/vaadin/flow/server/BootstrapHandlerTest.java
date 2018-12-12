@@ -51,6 +51,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -387,6 +388,12 @@ public class BootstrapHandlerTest {
         });
 
         session = mocks.getSession();
+
+        // Update sessionRegistry due to after init change of global registry
+        SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(session,
+                service);
+        Mockito.when(session.getAttribute(SessionRouteRegistry.class)).thenReturn(sessionRegistry);
+
         testUI.getInternals().setSession(session);
 
         mocks.setBrowserEs6(false);
@@ -416,7 +423,7 @@ public class BootstrapHandlerTest {
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
 
-        service.getRouteRegistry().setNavigationTargets(navigationTargets);
+        RouteUtil.setNavigationTargets(navigationTargets, service.getRouteRegistry());
 
         this.request = request;
 
