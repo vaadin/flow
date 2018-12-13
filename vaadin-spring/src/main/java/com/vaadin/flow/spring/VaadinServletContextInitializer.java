@@ -45,11 +45,13 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
 
@@ -79,25 +81,22 @@ public class VaadinServletContextInitializer
         @SuppressWarnings("unchecked")
         @Override
         public void contextInitialized(ServletContextEvent event) {
-            RouteRegistry registry = RouteRegistry
+            ApplicationRouteRegistry registry = ApplicationRouteRegistry
                     .getInstance(event.getServletContext());
-            if (registry.navigationTargetsInitialized()) {
-                return;
-            }
 
-            try {
-                List<Class<?>> routeClasses =
-                        findByAnnotation(getRoutePackages(), Route.class,
-                                RouteAlias.class).collect(Collectors.toList());
+            if (registry.getRegisteredRoutes().isEmpty()) {
+                try {
+                    List<Class<?>> routeClasses = findByAnnotation(
+                            getRoutePackages(), Route.class, RouteAlias.class).collect(Collectors.toList());
 
-                Set<Class<? extends Component>> navigationTargets =
-                        validateRouteClasses(routeClasses.stream());
+                    Set<Class<? extends Component>> navigationTargets = validateRouteClasses(
+                            routeClasses.stream());
 
-                registry.setNavigationTargets(navigationTargets);
-                registry.setPwaConfigurationClass(
-                        validatePwaClass(routeClasses.stream()));
-            } catch (InvalidRouteConfigurationException e) {
-                throw new IllegalStateException(e);
+                    RouteUtil.setNavigationTargets(navigationTargets, registry);
+                    registry.setPwaConfigurationClass(validatePwaClass(routeClasses.stream()));
+                } catch (InvalidRouteConfigurationException e) {
+                    throw new IllegalStateException(e);
+                }
             }
         }
 
@@ -114,11 +113,8 @@ public class VaadinServletContextInitializer
         @Override
         @SuppressWarnings("unchecked")
         public void contextInitialized(ServletContextEvent event) {
-            RouteRegistry registry = RouteRegistry
+            ApplicationRouteRegistry registry = ApplicationRouteRegistry
                     .getInstance(event.getServletContext());
-            if (registry.errorNavigationTargetsInitialized()) {
-                return;
-            }
 
             Stream<Class<? extends Component>> hasErrorComponents = findBySuperType(
                     getErrorParameterPackages(), HasErrorParameter.class)
@@ -178,10 +174,11 @@ public class VaadinServletContextInitializer
         // Verify servlet version also for SpringBoot.
         ServletVerifier.verifyServletVersion();
 
-        RouteRegistry registry = RouteRegistry.getInstance(servletContext);
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(servletContext);
         // If the registry is already initialized then RouteRegistryInitializer
         // has done its job already, skip the custom routes search
-        if (!registry.navigationTargetsInitialized()) {
+        if (registry.getRegisteredRoutes().isEmpty()) {
             /*
              * Don't rely on RouteRegistry.isInitialized() negative return value
              * here because it's not known whether RouteRegistryInitializer has
@@ -194,12 +191,7 @@ public class VaadinServletContextInitializer
             servletContext.addListener(new RouteServletContextListener());
         }
 
-        if (!registry.errorNavigationTargetsInitialized()) {
-            // Same thing: don't rely on hasNavigationTargets() negative return
-            // value
-            servletContext
-                    .addListener(new ErrorParameterServletContextListener());
-        }
+        servletContext.addListener(new ErrorParameterServletContextListener());
 
         servletContext
                 .addListener(new AnnotationValidatorServletContextListener());
