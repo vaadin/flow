@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -68,6 +69,7 @@ import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.startup.BundleFilterFactory;
 import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -259,8 +261,10 @@ public abstract class VaadinService implements Serializable {
 
         requestHandlers = Collections.unmodifiableCollection(handlers);
 
-        dependencyFilters = instantiator
-                .getDependencyFilters(event.getAddedDependencyFilters())
+        dependencyFilters = Stream
+                .concat(instantiator.getDependencyFilters(
+                        event.getAddedDependencyFilters()),
+                        new BundleFilterFactory().createFilters(this))
                 .collect(Collectors.toList());
         bootstrapListeners = instantiator
                 .getBootstrapListeners(event.getAddedBootstrapListeners())

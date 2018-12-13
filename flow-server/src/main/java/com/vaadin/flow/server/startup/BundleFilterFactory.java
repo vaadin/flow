@@ -17,6 +17,7 @@ package com.vaadin.flow.server.startup;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -24,16 +25,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -42,44 +41,59 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
- * An initializer for a bundle filter.
+ * Factory for bundle filters.
  *
  * @author Vaadin Ltd
- * @since 1.0.
+ * @since
  */
-public class BundleFilterInitializer implements VaadinServiceInitListener {
+public class BundleFilterFactory implements Serializable {
     static final String MAIN_BUNDLE_NAME_PREFIX = "vaadin-flow-bundle";
     static final String FLOW_BUNDLE_MANIFEST = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
             + "vaadin-flow-bundle-manifest.json";
 
-    @Override
-    public void serviceInit(ServiceInitEvent event) {
-
-        VaadinService service = event.getSource();
-        if (!service.getDeploymentConfiguration().useCompiledFrontendResources()) {
-            return;
+    /**
+     * Creates bundle filters for the given service.
+     *
+     * @param service
+     *            the Vaadin service for which to create filters, not
+     *            <code>null</code>
+     * @return a stream of bundle filters, or an empty stream if no bundle
+     *         filter should be used
+     */
+    public Stream<BundleDependencyFilter> createFilters(VaadinService service) {
+        if (!service.getDeploymentConfiguration()
+                .useCompiledFrontendResources()) {
+            return Stream.empty();
         }
-        addBundleFilterForBrowser(FakeBrowser.getEs6(), event);
-        addBundleFilterForBrowser(FakeBrowser.getEs5(), event);
+
+        return Stream
+                .of(createBundleFilterForBrowser(FakeBrowser.getEs6(), service),
+                        createBundleFilterForBrowser(FakeBrowser.getEs5(),
+                                service))
+                .flatMap(maybeFilter -> maybeFilter.map(Stream::of)
+                        .orElseGet(Stream::empty));
     }
 
-    private void addBundleFilterForBrowser(WebBrowser browser, ServiceInitEvent event) {
-        VaadinService service = event.getSource();
-        readBundleManifest(browser, service).flatMap(
-                bundleData -> createDependencyFilter(browser, bundleData, service))
-                .ifPresent(event::addDependencyFilter);
+    private Optional<BundleDependencyFilter> createBundleFilterForBrowser(
+            WebBrowser browser, VaadinService service) {
+        return readBundleManifest(browser, service)
+                .flatMap(bundleData -> createDependencyFilter(browser,
+                        bundleData, service));
     }
 
-    private Optional<JsonObject> readBundleManifest(WebBrowser browser, VaadinService service) {
-        try (InputStream bundleManifestStream = service.getResourceAsStream(
-                FLOW_BUNDLE_MANIFEST, browser, null)) {
+    private Optional<JsonObject> readBundleManifest(WebBrowser browser,
+            VaadinService service) {
+        try (InputStream bundleManifestStream = service
+                .getResourceAsStream(FLOW_BUNDLE_MANIFEST, browser, null)) {
             if (bundleManifestStream == null) {
                 throw new IllegalArgumentException(String.format(
                         "Failed to find the bundle manifest file '%s' in the servlet context for '%s' browsers."
-                        + " If you are running a dev-mode servlet container in maven e.g. `jetty:run` change it to `jetty:run-exploded`."
-                        + " If you are not compiling frontend resources, include the 'vaadin-maven-plugin' in your build script."
-                        + " Otherwise, you can skip this error either by disabling production mode, or by setting the servlet parameter '%s=true'.",
-                        FLOW_BUNDLE_MANIFEST, browser.isEs6Supported() ? "ES6" : "ES5", Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
+                                + " If you are running a dev-mode servlet container in maven e.g. `jetty:run` change it to `jetty:run-exploded`."
+                                + " If you are not compiling frontend resources, include the 'vaadin-maven-plugin' in your build script."
+                                + " Otherwise, you can skip this error either by disabling production mode, or by setting the servlet parameter '%s=true'.",
+                        FLOW_BUNDLE_MANIFEST,
+                        browser.isEs6Supported() ? "ES6" : "ES5",
+                        Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
             }
             return Optional.of(Json.parse(IOUtils.toString(bundleManifestStream,
                     StandardCharsets.UTF_8)));
@@ -90,8 +104,9 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
         }
     }
 
-    private Optional<DependencyFilter> createDependencyFilter(WebBrowser browser,
-            JsonObject bundlesToUrlsContained, VaadinService service) {
+    private Optional<BundleDependencyFilter> createDependencyFilter(
+            WebBrowser browser, JsonObject bundlesToUrlsContained,
+            VaadinService service) {
         Map<String, Set<String>> importToBundle = new HashMap<>();
         String mainBundle = null;
 
@@ -134,12 +149,12 @@ public class BundleFilterInitializer implements VaadinServiceInitListener {
                         "Flow bundle manifest '%s' contains no main bundle: the single file prefixed with '%s' and having common code for all the fragments",
                         FLOW_BUNDLE_MANIFEST, MAIN_BUNDLE_NAME_PREFIX));
             }
-            return Optional
-                    .of(new BundleDependencyFilter(browser, mainBundle, importToBundle));
+            return Optional.of(new BundleDependencyFilter(browser, mainBundle,
+                    importToBundle));
         }
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(BundleFilterInitializer.class.getName());
+        return LoggerFactory.getLogger(BundleFilterFactory.class.getName());
     }
 }
