@@ -40,7 +40,6 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.RouteConfiguration;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
@@ -134,21 +133,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             configure(configuration -> {
                 configuration.clear();
 
-                RouteConfiguration dataCollector = registry.getConfiguration();
-                for (String route : dataCollector.getRoutes()) {
-                    RouteTarget routeTarget = dataCollector
-                            .getRouteTarget(route);
-                    for (Class<? extends Component> target : routeTarget
-                            .getRoutes()) {
-                        configuration.setRoute(route, target);
-                        if (!configuration.hasRouteTarget(target)) {
-                            configuration.setTargetRoute(target, route);
-                        }
-                        configuration.getRouteTarget(route)
-                                .setParentLayouts(target,
-                                        routeTarget.getParentLayouts(target));
-                    }
-                }
+                configuration.copyFromTarget(registry.getConfiguration());
             });
         }
 

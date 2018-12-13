@@ -166,7 +166,7 @@ public class RouteConfigurationTest {
         mutable.setRoute("", BaseTarget.class);
         mutable.setTargetRoute(BaseTarget.class, "");
 
-        mutable.setRoute("",ParamTarget.class);
+        mutable.setRoute("", ParamTarget.class);
         mutable.setTargetRoute(ParamTarget.class, "");
 
         Assert.assertEquals(
@@ -205,13 +205,16 @@ public class RouteConfigurationTest {
 
         mutable.setRoute("Another", BaseTarget.class);
 
-        Assert.assertNotNull("Expected a RouteTarget to be returned for 'Another'",
+        Assert.assertNotNull(
+                "Expected a RouteTarget to be returned for 'Another'",
                 mutable.getRouteTarget("Another"));
 
         mutable.setRoute("Another", ParamTarget.class);
 
-        Assert.assertEquals("Expected single target for route 'MyPath'", 1, mutable.getRouteTarget("MyPath").getRoutes().size());
-        Assert.assertEquals("Expected 2 targets for route 'Another'", 2, mutable.getRouteTarget("Another").getRoutes().size());
+        Assert.assertEquals("Expected single target for route 'MyPath'", 1,
+                mutable.getRouteTarget("MyPath").getRoutes().size());
+        Assert.assertEquals("Expected 2 targets for route 'Another'", 2,
+                mutable.getRouteTarget("Another").getRoutes().size());
     }
 
     @Test
@@ -301,6 +304,74 @@ public class RouteConfigurationTest {
         } catch (IllegalStateException ise) {
 
         }
+        try {
+            configuration.copyFromTarget(new RouteConfiguration());
+            Assert.fail(
+                    "Configuration could copy data from another configuration even if it should throw immutable state!");
+        } catch (IllegalStateException ise) {
+
+        }
+    }
+
+    @Test
+    public void copyFromTarget_contentsAreGottenCorrectly() {
+        RouteConfiguration mutable = new RouteConfiguration(configuration,
+                true);
+
+        mutable.setRoute("", BaseTarget.class);
+        mutable.setTargetRoute(BaseTarget.class, "");
+
+        mutable.setRoute("", ParamTarget.class);
+        mutable.setTargetRoute(ParamTarget.class, "");
+
+        RouteConfiguration copy = new RouteConfiguration(configuration, true);
+        copy.clear();
+
+        copy.copyFromTarget(mutable);
+
+        Assert.assertEquals("Copy should have gotten one route path", 1,
+                copy.getRoutes().size());
+        Assert.assertEquals(
+                "Copy should have gotten two routes for the single registered path",
+                2, copy.getRouteTarget("").getRoutes().size());
+
+        Assert.assertEquals(BaseTarget.class,
+                copy.getRoute("", Collections.emptyList()).get());
+        Assert.assertEquals(ParamTarget.class,
+                copy.getRoute("", Collections.singletonList("single")).get());
+    }
+
+    @Test
+    public void copyFromTarget_contentsAreAddedCorrectly() {
+        RouteConfiguration mutable = new RouteConfiguration(configuration,
+                true);
+
+        mutable.setRoute("", BaseTarget.class);
+        mutable.setTargetRoute(BaseTarget.class, "");
+
+        mutable.setRoute("", ParamTarget.class);
+        mutable.setTargetRoute(ParamTarget.class, "");
+
+        RouteConfiguration copy = new RouteConfiguration(configuration, true);
+
+        copy.setRoute("other", ParamTarget.class);
+        copy.setTargetRoute(ParamTarget.class, "other");
+
+        copy.copyFromTarget(mutable);
+
+        Assert.assertEquals("Copy should have gotten one new route path", 2,
+                copy.getRoutes().size());
+        Assert.assertEquals(
+                "Copy should have gotten two routes for the single registered path",
+                2, copy.getRouteTarget("").getRoutes().size());
+
+        Assert.assertEquals(BaseTarget.class,
+                copy.getRoute("", Collections.emptyList()).get());
+        Assert.assertEquals(ParamTarget.class,
+                copy.getRoute("", Collections.singletonList("single")).get());
+
+        Assert.assertEquals(ParamTarget.class,
+                copy.getRoute("other", Collections.singletonList("single")).get());
     }
 
     @Tag("div")

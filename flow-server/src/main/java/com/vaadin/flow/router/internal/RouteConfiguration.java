@@ -434,4 +434,24 @@ public class RouteConfiguration implements Serializable {
         return routes.get(path);
     }
 
+    /**
+     * Copy routes from given target configuration.
+     * <p>
+     * Note! It is suggested to only copy to empty configurations as the main
+     * and alias paths may be overridden for some cases.
+     *
+     * @param configuration
+     *         configuration from which to copy the contents
+     */
+    public void copyFromTarget(RouteConfiguration configuration) {
+        throwIfImmutable();
+
+        for (Map.Entry<String, RouteTarget> route : configuration.routes
+                .entrySet()) {
+            routes.put(route.getKey(), route.getValue().copy(mutable));
+        }
+        targetRoutes.putAll(configuration.targetRoutes);
+        exceptionTargets.putAll(configuration.exceptionTargets);
+
+    }
 }
