@@ -430,7 +430,7 @@ public class RouteConfiguration implements Serializable {
      *         path to get route target for
      * @return route target for path, <code>null</code> if nothing registered
      */
-    protected RouteTarget getRouteTarget(String path) {
+    public RouteTarget getRouteTarget(String path) {
         return routes.get(path);
     }
 
