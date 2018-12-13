@@ -68,6 +68,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * concurrency reasons.
      */
     private volatile RouteConfiguration routeConfiguration = new RouteConfiguration();
+    private volatile RouteConfiguration editing = null;
 
     /**
      * Thread-safe update of the RouteConfiguration.
@@ -76,17 +77,31 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *         command that will mutate the configuration copy.
      */
     protected void configure(Configuration command) {
-        configurationLock.lock();
+        lock();
         try {
-            RouteConfiguration mutableCopy = new RouteConfiguration(
-                    routeConfiguration, true);
+            if (editing == null) {
+                editing = new RouteConfiguration(routeConfiguration, true);
+            }
 
-            command.configure(mutableCopy);
+            command.configure(editing);
 
-            routeConfiguration = new RouteConfiguration(mutableCopy, false);
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
+    }
+
+    @Override
+    public void lock() {
+        configurationLock.lock();
+    }
+
+    @Override
+    public void unlock() {
+        if (configurationLock.getHoldCount() == 1 && editing != null) {
+            routeConfiguration = new RouteConfiguration(editing, false);
+            editing = null;
+        }
+        configurationLock.unlock();
     }
 
     protected boolean hasLock() {

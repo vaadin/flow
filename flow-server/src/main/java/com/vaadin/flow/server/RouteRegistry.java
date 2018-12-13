@@ -170,4 +170,20 @@ public interface RouteRegistry extends Serializable {
      */
     List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget);
+
+    /**
+     * Lock the configuration for the current thread.
+     * <p>
+     * Any other thread trying to configure current registry will be blocked
+     * until all locks have been released by the holding thread.
+     */
+    void lock();
+
+    /**
+     * Unlock configuration so other threads can configure the registry.
+     * <p>
+     * This will also set the route configuration if a edit configuration is
+     * open and this is the last lock before releasing.
+     */
+    void unlock();
 }
