@@ -386,6 +386,9 @@ public final class RouteUtil {
      * <p>
      * Given navigation targets need to have the {@link Route} annotation an
      * be {@link Component}s.
+     * <p></p>
+     * Note! all routes in the registry will be removed and the given targets
+     * are set.
      *
      * @param navigationTargets
      *         set of navigation target components
@@ -412,6 +415,8 @@ public final class RouteUtil {
                             faultyClasses.toString());
             throw new InvalidRouteConfigurationException(exceptionMessage);
         }
+
+        registry.clean();
 
         for (Class<? extends Component> navigationTarget : navigationTargets) {
             setRoute(navigationTarget, registry);

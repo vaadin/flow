@@ -170,4 +170,9 @@ public interface RouteRegistry extends Serializable {
      */
     List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget);
+
+    /**
+     * Clear all registered routes from the registry.
+     */
+    void clean();
 }

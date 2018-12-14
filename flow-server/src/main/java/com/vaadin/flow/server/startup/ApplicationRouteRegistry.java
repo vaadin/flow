@@ -39,8 +39,6 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
@@ -54,128 +52,154 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
         @Override
         public Class<?> getPwaConfigurationClass() {
-            initPwa();
+            Optional<RouteRegistry> osgiRegistry = getOSGiRegistry();
+            if (osgiRegistry.isPresent()) {
+                return ((ApplicationRouteRegistry) osgiRegistry.get())
+                        .getPwaConfigurationClass();
+            }
+
             return super.getPwaConfigurationClass();
         }
 
         @Override
         public List<RouteData> getRegisteredRoutes() {
-            initRoutes();
-            return super.getRegisteredRoutes();
+            List<RouteData> routes = new ArrayList<>(
+                    super.getRegisteredRoutes());
+            Optional<RouteRegistry> osgiRegistry = getOSGiRegistry();
+            if (osgiRegistry.isPresent()) {
+                List<RouteData> registeredRoutes = osgiRegistry.get()
+                        .getRegisteredRoutes();
+                if (!registeredRoutes.isEmpty()) {
+                    Set<String> collect = routes.stream().map(RouteData::getUrl)
+                            .collect(Collectors.toSet());
+                    registeredRoutes.stream()
+                            .filter(data -> !collect.contains(data.getUrl()))
+                            .forEach(routes::add);
+                }
+            }
+
+            return routes;
         }
 
         @Override
         public Optional<ErrorTargetEntry> getErrorNavigationTarget(
                 Exception exception) {
-            initErrorTargets();
-            return super.getErrorNavigationTarget(exception);
+
+            Optional<ErrorTargetEntry> errorNavigationTarget = super
+                    .getErrorNavigationTarget(exception);
+            Optional<ErrorTargetEntry> osgiErrorNavigationTarget = Optional
+                    .empty();
+
+            Optional<RouteRegistry> osgiRegistry = getOSGiRegistry();
+            if (osgiRegistry.isPresent()) {
+                osgiErrorNavigationTarget = ((ApplicationRouteRegistry) osgiRegistry
+                        .get()).getErrorNavigationTarget(exception);
+            }
+            if (errorNavigationTarget.isPresent() || osgiErrorNavigationTarget
+                    .isPresent()) {
+                if (errorNavigationTarget.isPresent() && errorNavigationTarget
+                        .get().getHandledExceptionType()
+                        .equals(exception.getClass())) {
+                    return errorNavigationTarget;
+                } else if (osgiErrorNavigationTarget.isPresent()
+                        && osgiErrorNavigationTarget.get()
+                        .getHandledExceptionType()
+                        .equals(exception.getClass())) {
+                    return osgiErrorNavigationTarget;
+                }
+
+                if (errorNavigationTarget.isPresent()) {
+                    return errorNavigationTarget;
+                }
+                return osgiErrorNavigationTarget;
+            }
+            return Optional.empty();
         }
 
         @Override
         public Optional<Class<? extends Component>> getNavigationTarget(
                 String pathString) {
-            initRoutes();
-            return super.getNavigationTarget(pathString);
+
+            Optional<Class<? extends Component>> navigationTarget = super
+                    .getNavigationTarget(pathString);
+            if (navigationTarget.isPresent()) {
+                return navigationTarget;
+            }
+
+            Optional<RouteRegistry> osgiRegistry = getOSGiRegistry();
+            if (osgiRegistry.isPresent()) {
+                return osgiRegistry.get().getNavigationTarget(pathString);
+            }
+            return Optional.empty();
         }
 
         @Override
         public Optional<Class<? extends Component>> getNavigationTarget(
                 String pathString, List<String> segments) {
-            initRoutes();
-            return super.getNavigationTarget(pathString, segments);
+            Optional<Class<? extends Component>> navigationTarget = super
+                    .getNavigationTarget(pathString, segments);
+            if (navigationTarget.isPresent()) {
+                return navigationTarget;
+            }
+
+            Optional<RouteRegistry> osgiRegistry = getOSGiRegistry();
+            if (osgiRegistry.isPresent()) {
+                return osgiRegistry.get()
+                        .getNavigationTarget(pathString, segments);
+            }
+            return Optional.empty();
         }
 
         @Override
         public Optional<String> getTargetUrl(
                 Class<? extends Component> navigationTarget) {
-            initRoutes();
-            return super.getTargetUrl(navigationTarget);
+            Optional<String> targetUrl = super.getTargetUrl(navigationTarget);
+            if (targetUrl.isPresent()) {
+                return targetUrl;
+            }
+            Optional<RouteRegistry> osgiRegistry = getOSGiRegistry();
+            if (osgiRegistry.isPresent()) {
+                return osgiRegistry.get().getTargetUrl(navigationTarget);
+            }
+            return Optional.empty();
         }
 
         @Override
         public boolean hasNavigationTargets() {
-            initRoutes();
+            Optional<RouteRegistry> osgiRegistry = getOSGiRegistry();
+            if (osgiRegistry.isPresent()) {
+                return super.hasNavigationTargets()
+                        || ((ApplicationRouteRegistry) osgiRegistry.get())
+                        .hasNavigationTargets();
+            }
             return super.hasNavigationTargets();
         }
 
-        private void initErrorTargets() {
-            if (!getConfiguration().getExceptionHandlers().isEmpty()) {
-                return;
+        @Override
+        public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
+                Class<? extends Component> navigationTarget) {
+            if (getConfiguration().hasRoute(path)) {
+                return super.getRouteLayouts(path, navigationTarget);
             }
 
+            Optional<RouteRegistry> osgiRegistry = getOSGiRegistry();
+            if (osgiRegistry.isPresent()) {
+                return osgiRegistry.get()
+                        .getRouteLayouts(path, navigationTarget);
+            }
+            return Collections.emptyList();
+        }
+
+        private Optional<RouteRegistry> getOSGiRegistry() {
             ServletContext osgiServletContext = OSGiAccess.getInstance()
                     .getOsgiServletContext();
             if (osgiServletContext == null || !OSGiAccess.getInstance()
                     .hasInitializers()) {
-                return;
+                return Optional.empty();
             }
-            OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                    osgiServletContext);
-            if (registry.errorNavigationTargets.get() != null) {
-                setErrorNavigationTargets(
-                        registry.errorNavigationTargets.get());
-            }
+            return Optional.ofNullable(getInstance(osgiServletContext));
         }
 
-        private void doInitOSGiRoutes() {
-            if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
-                return;
-            }
-            if (!OSGiAccess.getInstance().hasInitializers()) {
-                return;
-            }
-            ServletContext osgiServletContext = OSGiAccess.getInstance()
-                    .getOsgiServletContext();
-            OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                    osgiServletContext);
-            RouteUtil.setNavigationTargets(registry.navigationTargets.get(),
-                    this);
-        }
-
-        private void initRoutes() {
-            try {
-                doInitOSGiRoutes();
-            } catch (InvalidRouteConfigurationException exception) {
-                assert false :
-                        "Exception may not be thrown here since it should have been thrown by "
-                                + OSGiDataCollector.class;
-            }
-        }
-
-        private void initPwa() {
-            if (getConfiguration().getRoutes().isEmpty()) {
-                return;
-            }
-            if (OSGiAccess.getInstance().hasInitializers()) {
-                OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                        OSGiAccess.getInstance().getOsgiServletContext());
-                setPwaConfigurationClass(registry.getPwaConfigurationClass());
-            }
-        }
-    }
-
-    private static class OSGiDataCollector extends ApplicationRouteRegistry {
-
-        private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>();
-
-        private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
-
-        @Override
-        protected void handleInitializedRegistry() {
-            // Don't do anything in this fake internal registry
-        }
-
-        @Override
-        public void setErrorNavigationTargets(
-                Set<Class<? extends Component>> errorNavigationTargets) {
-            if (errorNavigationTargets.isEmpty()
-                    && this.errorNavigationTargets.get() == null) {
-                // ignore initial empty targets avoiding error target
-                // initialization it they are not yet discovered
-                return;
-            }
-            this.errorNavigationTargets.set(errorNavigationTargets);
-        }
     }
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
@@ -343,14 +367,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
     }
 
-    /**
-     * Handles an attempt to initialize already initialized route registry.
-     */
-    protected void handleInitializedRegistry() {
-        throw new IllegalStateException(
-                "Route registry has been already initialized");
-    }
-
     private void initErrorTargets(
             Map<Class<? extends Exception>, Class<? extends Component>> map) {
         if (!map.containsKey(NotFoundException.class)) {
@@ -362,15 +378,13 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         configure(configuration -> map.forEach(configuration::setErrorRoute));
     }
 
-    private static ApplicationRouteRegistry createRegistry(ServletContext context) {
-        if (context != null && context == OSGiAccess.getInstance()
+    private static ApplicationRouteRegistry createRegistry(
+            ServletContext context) {
+        if (OSGiAccess.getInstance().getOsgiServletContext() != null
+                && context != OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
-            return new OSGiDataCollector();
-        } else if (OSGiAccess.getInstance().getOsgiServletContext() == null
-                || context != OSGiAccess.getInstance()
-                .getOsgiServletContext()) {
-            return new ApplicationRouteRegistry();
+            return new OSGiRouteRegistry();
         }
-        return new OSGiRouteRegistry();
+        return new ApplicationRouteRegistry();
     }
 }

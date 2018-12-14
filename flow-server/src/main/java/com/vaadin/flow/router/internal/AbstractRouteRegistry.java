@@ -106,6 +106,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return routeConfiguration;
     }
 
+    public void clean() {
+        configurationLock.lock();
+        try {
+            configure(RouteConfiguration::clear);
+        } finally {
+            configurationLock.unlock();
+        }
+    }
+
     @Override
     public List<RouteData> getRegisteredRoutes() {
         List<RouteData> registeredRoutes = new ArrayList<>();
