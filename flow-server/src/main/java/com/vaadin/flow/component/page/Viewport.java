@@ -51,43 +51,9 @@ public @interface Viewport {
     String DEVICE_DIMENSIONS = "width=device-width, height=device-height, initial-scale=1.0";
 
     /**
-     * Sets the viewport at the width of the device and sets the minimum-scale
-     * to 1.0.
-     */
-    String DEVICE_WIDTH_NO_ZOOM_OUT = "width=device-width, initial-scale=1.0, minimum-scale=1.0";
-
-    /**
-     * Sets the viewport at the width of the device and sets the maximum-scale
-     * to 1.0.
-     */
-    String DEVICE_WIDTH_NO_ZOOM_IN = "width=device-width, initial-scale=1.0, maximum-scale=1.0";
-
-    /**
-     * Sets the viewport at the height of the device and sets the minimum-scale
-     * to 1.0.
-     */
-    String DEVICE_HEIGHT_NO_ZOOM_OUT = "height=device-height, initial-scale=1.0, minimum-scale=1.0";
-
-    /**
-     * Sets the viewport at the height of the device and sets the maximum-scale
-     * to 1.0.
-     */
-    String DEVICE_HEIGHT_NO_ZOOM_IN = "height=device-height, initial-scale=1.0, maximum-scale=1.0";
-
-    /**
-     * Sets the viewport at the width and height of the device and sets the
-     * minimum-scale to 1.0.
-     */
-    String DEVICE_DIMENSIONS_NO_ZOOM_OUT = "width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0";
-
-    /**
-     * Sets the viewport at the width and height of the device and sets the
-     * maximum-scale to 1.0.
-     */
-    String DEVICE_DIMENSIONS_NO_ZOOM_IN = "width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0";
-
-    /**
      * Prevents scaling and prevent the user from being able to zoom.
+     * <p>
+     * Sets the viewport at the width of the device.
      */
     String NO_SCALABLE = "width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no";
 
