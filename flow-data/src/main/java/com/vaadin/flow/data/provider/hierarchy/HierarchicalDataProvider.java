@@ -116,7 +116,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     default <Q, C> HierarchicalConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
             SerializableBiFunction<Q, C, F> filterCombiner) {
         return new HierarchialConfigurableFilterDataProviderWrapper<T, Q, C, F>(
-                this, filterCombiner) {
+                this) {
             @Override
             protected F combineFilters(Q queryFilter, C configuredFilter) {
                 return FilterUtils.combineFilters(filterCombiner, queryFilter,

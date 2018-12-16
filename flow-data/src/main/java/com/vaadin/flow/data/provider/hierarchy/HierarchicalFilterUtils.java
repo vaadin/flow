@@ -24,7 +24,7 @@ import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * Filter based utility methods for {@link HierarchicalDataProvider}
+ * Filter based utility methods for {@link HierarchicalDataProvider}.
  *
  * @author Vaadin Ltd
  *
@@ -32,13 +32,12 @@ import com.vaadin.flow.function.SerializableFunction;
 final class HierarchicalFilterUtils {
 
     @SuppressWarnings("serial")
-    static abstract class HierarchialConfigurableFilterDataProviderWrapper<T, Q, C, F>
+    abstract static class HierarchialConfigurableFilterDataProviderWrapper<T, Q, C, F>
             extends ConfigurableFilterDataProviderWrapper<T, Q, C, F>
             implements HierarchicalConfigurableFilterDataProvider<T, Q, C> {
 
         HierarchialConfigurableFilterDataProviderWrapper(
-                HierarchicalDataProvider<T, F> dataProvider,
-                SerializableBiFunction<Q, C, F> filterCombiner) {
+                HierarchicalDataProvider<T, F> dataProvider) {
             super(dataProvider);
         }
 
@@ -96,7 +95,7 @@ final class HierarchicalFilterUtils {
     }
 
     @SuppressWarnings("serial")
-    static abstract class HierarchicalFilterDataProviderWrapper<T, F, M>
+    abstract static class HierarchicalFilterDataProviderWrapper<T, F, M>
             extends DataProviderWrapper<T, F, M>
             implements HierarchicalDataProvider<T, F> {
 
