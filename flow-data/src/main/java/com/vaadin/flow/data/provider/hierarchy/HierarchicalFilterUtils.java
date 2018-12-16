@@ -19,7 +19,9 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProviderWrapper;
 import com.vaadin.flow.data.provider.DataProviderWrapper;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * Filter based utility methods for {@link HierarchicalDataProvider}
@@ -57,6 +59,31 @@ final class HierarchicalFilterUtils {
             return getDataProvider().hasChildren(item);
         }
 
+        @Override
+        public int size(Query<T, Q> t) {
+            return HierarchicalConfigurableFilterDataProvider.super.size(t);
+        }
+
+        @Override
+        public Stream<T> fetch(Query<T, Q> query) {
+            return HierarchicalConfigurableFilterDataProvider.super.fetch(
+                    query);
+        }
+
+        @Override
+        public <U, V> HierarchicalConfigurableFilterDataProvider<T, U, V> withConfigurableFilter(
+                SerializableBiFunction<U, V, Q> filterCombiner) {
+            return HierarchicalConfigurableFilterDataProvider.super.withConfigurableFilter(
+                    filterCombiner);
+        }
+
+        @Override
+        public <U> HierarchicalDataProvider<T, U> withConvertedFilter(
+                SerializableFunction<U, Q> filterConverter) {
+            return HierarchicalConfigurableFilterDataProvider.super.withConvertedFilter(
+                    filterConverter);
+        }
+
         private HierarchicalDataProvider<T, F> getDataProvider() {
             return (HierarchicalDataProvider<T, F>) dataProvider;
         }
@@ -88,6 +115,30 @@ final class HierarchicalFilterUtils {
         @Override
         public boolean hasChildren(T item) {
             return getDataProvider().hasChildren(item);
+        }
+
+        @Override
+        public int size(Query<T, F> query) {
+            return HierarchicalDataProvider.super.size(query);
+        }
+
+        @Override
+        public Stream<T> fetch(Query<T, F> query) {
+            return HierarchicalDataProvider.super.fetch(query);
+        }
+
+        @Override
+        public <U, V> HierarchicalConfigurableFilterDataProvider<T, U, V> withConfigurableFilter(
+                SerializableBiFunction<U, V, F> filterCombiner) {
+            return HierarchicalDataProvider.super.withConfigurableFilter(
+                    filterCombiner);
+        }
+
+        @Override
+        public <U> HierarchicalDataProvider<T, U> withConvertedFilter(
+                SerializableFunction<U, F> filterConverter) {
+            return HierarchicalDataProvider.super.withConvertedFilter(
+                    filterConverter);
         }
 
         private HierarchicalDataProvider<T, M> getDataProvider() {

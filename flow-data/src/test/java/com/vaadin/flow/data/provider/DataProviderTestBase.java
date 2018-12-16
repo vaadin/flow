@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,8 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.function.SerializablePredicate;
-
-import static org.junit.Assert.assertTrue;
 
 public abstract class DataProviderTestBase<D extends DataProvider<StrBean, SerializablePredicate<StrBean>>> {
 
@@ -60,7 +60,7 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
 
     protected abstract D createDataProvider();
 
-    protected final D getDataProvider() {
+    protected D getDataProvider() {
         return dataProvider;
     }
 
