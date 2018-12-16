@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.DataProviderTestBase;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.StrBean;
@@ -250,7 +249,7 @@ public class TreeDataProviderTest
 
     @Override
     public void filteringListDataProvider_convertFilter() {
-        DataProvider<StrBean, String> strFilterDataProvider = getDataProvider()
+        HierarchicalDataProvider<StrBean, String> strFilterDataProvider = getDataProvider()
                 .withConvertedFilter(
                         text -> strBean -> strBean.getValue().contains(text));
         assertEquals("Only one item should match 'Xyz'", 1,
@@ -264,6 +263,40 @@ public class TreeDataProviderTest
         assertEquals("No items should've been filtered out", rootData.size(),
                 strFilterDataProvider
                         .size(new HierarchicalQuery<>(null, null)));
+    }
+
+    @Override
+    public void filteringListDataProvider_configurableFilter() {
+        HierarchicalConfigurableFilterDataProvider<StrBean, Void, SerializablePredicate<StrBean>> configurableFilterDataProvider = getDataProvider()
+                .withConfigurableFilter();
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Xyz"));
+
+        assertEquals("Only one item should match 'Xyz'", 1,
+                configurableFilterDataProvider.size(
+                        new HierarchicalQuery<StrBean, Void>(null, null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Zyx"));
+
+        assertEquals("No item should match 'Zyx'", 0,
+                configurableFilterDataProvider.size(
+                        new HierarchicalQuery<StrBean, Void>(null, null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Foo"));
+
+        assertEquals("Unexpected number of matches for 'Foo'", 3,
+                configurableFilterDataProvider.size(
+                        new HierarchicalQuery<StrBean, Void>(null, null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue() == null);
+
+        assertEquals("No items should've been filtered out", 0,
+                configurableFilterDataProvider.size(
+                        new HierarchicalQuery<StrBean, Void>(null, null)));
     }
 
     @Override

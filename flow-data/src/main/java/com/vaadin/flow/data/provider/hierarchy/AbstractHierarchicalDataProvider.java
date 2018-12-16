@@ -46,4 +46,9 @@ public abstract class AbstractHierarchicalDataProvider<T, F> extends
         return HierarchicalDataProvider.super.withConvertedFilter(
                 filterConverter);
     }
+
+    @Override
+    public HierarchicalConfigurableFilterDataProvider<T, Void, F> withConfigurableFilter() {
+        return (HierarchicalConfigurableFilterDataProvider<T, Void, F>) super.withConfigurableFilter();
+    }
 }

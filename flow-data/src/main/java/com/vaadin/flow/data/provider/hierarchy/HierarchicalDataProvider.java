@@ -136,4 +136,9 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
             }
         };
     }
+
+    @Override
+    default HierarchicalConfigurableFilterDataProvider<T, Void, F> withConfigurableFilter() {
+        return (HierarchicalConfigurableFilterDataProvider<T, Void, F>) DataProvider.super.withConfigurableFilter();
+    }
 }

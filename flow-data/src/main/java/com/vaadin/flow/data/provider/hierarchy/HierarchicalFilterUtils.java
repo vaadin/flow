@@ -84,6 +84,11 @@ final class HierarchicalFilterUtils {
                     filterConverter);
         }
 
+        @Override
+        public HierarchicalConfigurableFilterDataProvider<T, Void, Q> withConfigurableFilter() {
+            return (HierarchicalConfigurableFilterDataProvider<T, Void, Q>) super.withConfigurableFilter();
+        }
+
         private HierarchicalDataProvider<T, F> getDataProvider() {
             return (HierarchicalDataProvider<T, F>) dataProvider;
         }
@@ -139,6 +144,11 @@ final class HierarchicalFilterUtils {
                 SerializableFunction<U, F> filterConverter) {
             return HierarchicalDataProvider.super.withConvertedFilter(
                     filterConverter);
+        }
+
+        @Override
+        public HierarchicalConfigurableFilterDataProvider<T, Void, F> withConfigurableFilter() {
+            return (HierarchicalConfigurableFilterDataProvider<T, Void, F>) super.withConfigurableFilter();
         }
 
         private HierarchicalDataProvider<T, M> getDataProvider() {
