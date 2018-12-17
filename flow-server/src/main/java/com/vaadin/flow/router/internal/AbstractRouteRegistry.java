@@ -31,6 +31,7 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
@@ -68,6 +69,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * concurrency reasons.
      */
     private volatile RouteConfiguration routeConfiguration = new RouteConfiguration();
+    private volatile RouteConfiguration editing = null;
 
     /**
      * Thread-safe update of the RouteConfiguration.
@@ -76,17 +78,42 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *         command that will mutate the configuration copy.
      */
     protected void configure(Configuration command) {
-        configurationLock.lock();
+        lock();
         try {
-            RouteConfiguration mutableCopy = new RouteConfiguration(
-                    routeConfiguration, true);
+            if (editing == null) {
+                editing = new RouteConfiguration(routeConfiguration, true);
+            }
 
-            command.configure(mutableCopy);
+            command.configure(editing);
 
-            routeConfiguration = new RouteConfiguration(mutableCopy, false);
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
+    }
+
+    @Override
+    public void update(Command command) {
+        lock();
+        try {
+            command.execute();
+        } finally {
+            unlock();
+        }
+    }
+
+    private void lock() {
+        configurationLock.lock();
+    }
+
+    private void unlock() {
+        if (configurationLock.getHoldCount() == 1 && editing != null) {
+            try {
+                routeConfiguration = new RouteConfiguration(editing, false);
+            } finally {
+                editing = null;
+            }
+        }
+        configurationLock.unlock();
     }
 
     protected boolean hasLock() {

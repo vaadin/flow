@@ -677,6 +677,27 @@ public class SessionRouteRegistryTest {
         }
     }
 
+    @Test
+    public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
+        SessionRouteRegistry registry = getRegistry(session);
+
+        registry.update(() -> {
+            registry.setRoute("", MyRoute.class, Collections.emptyList());
+
+            Assert.assertTrue("Registry should still remain empty",
+                    getRegistry(session).getRegisteredRoutes().isEmpty());
+
+            registry.setRoute("path", Secondary.class, Collections.emptyList());
+
+            Assert.assertTrue("Registry should still remain empty",
+                    getRegistry(session).getRegisteredRoutes().isEmpty());
+        });
+
+        Assert.assertEquals(
+                "After unlock registry should be updated for others to configure with new data",
+                2, getRegistry(session).getRegisteredRoutes().size());
+    }
+
     @Tag("div")
     @Route("MyRoute")
     private static class MyRoute extends Component {

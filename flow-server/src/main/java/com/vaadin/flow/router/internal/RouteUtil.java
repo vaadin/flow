@@ -412,10 +412,11 @@ public final class RouteUtil {
                             faultyClasses.toString());
             throw new InvalidRouteConfigurationException(exceptionMessage);
         }
-
-        for (Class<? extends Component> navigationTarget : navigationTargets) {
-            setRoute(navigationTarget, registry);
-        }
+        registry.update(() -> {
+            for (Class<? extends Component> navigationTarget : navigationTargets) {
+                setRoute(navigationTarget, registry);
+            }
+        });
     }
 
     /**

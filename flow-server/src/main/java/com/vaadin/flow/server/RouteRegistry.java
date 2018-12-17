@@ -170,4 +170,18 @@ public interface RouteRegistry extends Serializable {
      */
     List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget);
+
+    /**
+     * Block updates to the registry configuration from other threads until
+     * update command has completed.
+     * This makes the command changes atomic for the registry as no one else can
+     * change the registry state during the command.
+     * <p>
+     * Any other thread trying to configure current registry will be blocked
+     * until the update has released all the locks.
+     *
+     * @param command
+     *         command to execute for the update
+     */
+    void update(Command command);
 }
