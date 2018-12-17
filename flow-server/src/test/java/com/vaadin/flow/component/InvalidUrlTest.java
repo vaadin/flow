@@ -20,6 +20,8 @@ import javax.servlet.ServletException;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import com.vaadin.flow.internal.CurrentInstance;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -54,8 +56,13 @@ public class InvalidUrlTest {
                 Integer.valueOf(404), statusCodeCaptor.getValue());
     }
 
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
+    }
+
     private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor)
+                               ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         try {
             VaadinServletRequest request = Mockito
