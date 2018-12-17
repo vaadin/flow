@@ -177,6 +177,9 @@ public interface RouteRegistry extends Serializable {
      * <p>
      * Any other thread trying to configure current registry will be blocked
      * until the update has released all the locks.
+     *
+     * @param command
+     *         command to execute for the update
      */
     void update(Command command);
 }
