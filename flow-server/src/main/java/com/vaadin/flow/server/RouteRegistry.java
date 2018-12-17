@@ -172,8 +172,10 @@ public interface RouteRegistry extends Serializable {
             Class<? extends Component> navigationTarget);
 
     /**
-     * Lock the configuration for the current thread until the command has been
-     * executed.
+     * Block updates to the registry configuration from other threads until
+     * update command has completed.
+     * This makes the command changes atomic for the registry as no one else can
+     * change the registry state during the command.
      * <p>
      * Any other thread trying to configure current registry will be blocked
      * until the update has released all the locks.
