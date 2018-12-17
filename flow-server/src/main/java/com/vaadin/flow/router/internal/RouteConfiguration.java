@@ -118,7 +118,7 @@ public class RouteConfiguration implements Serializable {
 
     /**
      * Set a new {@link RouteTarget} for the given path.
-     * <p></p>
+     * <p>
      * Note! this will override any previous value.
      *
      * @param path

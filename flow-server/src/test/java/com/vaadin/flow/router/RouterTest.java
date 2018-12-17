@@ -3062,11 +3062,11 @@ public class RouterTest extends RoutingTestBase {
 
         try {
             // We need the current session for when we request
-            // Registries on addRoutesChangeListener.
+            // Registries on addRoutesChangedListener.
             // If not available we only have the ApplicationRegistry
             router = new Router(registry);
 
-            router.addRoutesChangeListener(events::add);
+            router.addRoutesChangedListener(events::add);
 
         } finally {
             CurrentInstance.restoreInstances(old);

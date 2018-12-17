@@ -520,7 +520,7 @@ public class Router implements Serializable {
      *         listener to register for route changes
      * @return listener registration
      */
-    public Registration addRoutesChangeListener(RoutesChangedListener listener) {
+    public Registration addRoutesChangedListener(RoutesChangedListener listener) {
         List<Registration> registrationList = new ArrayList<>(2);
         if (VaadinSession.getCurrent() != null) {
             registrationList.add(SessionRouteRegistry
