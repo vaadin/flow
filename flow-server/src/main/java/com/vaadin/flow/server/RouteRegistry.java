@@ -27,6 +27,8 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutesChangedListener;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * The RouteRegistry interface class that gives the out facing usage needs for a
@@ -184,4 +186,13 @@ public interface RouteRegistry extends Serializable {
      *         command to execute for the update
      */
     void update(Command command);
+
+    /**
+     * Registers a new route change listener.
+     *
+     * @param listener
+     *         listener to be informed on route changes
+     * @return a registration for the listener
+     */
+    Registration addRoutesChangeListener(RoutesChangedListener listener);
 }

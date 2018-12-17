@@ -48,6 +48,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -508,5 +509,26 @@ public class Router implements Serializable {
                     .getErrorNavigationTarget(exception);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Add a routes change listener to Router. Listener will be added to all
+     * registries for the router and any changes to either registry will fire an
+     * event for the listener.
+     *
+     * @param listener
+     *         listener to register for route changes
+     * @return listener registration
+     */
+    public Registration addRoutesChangeListener(RoutesChangedListener listener) {
+        List<Registration> registrationList = new ArrayList<>(2);
+        if (VaadinSession.getCurrent() != null) {
+            registrationList.add(SessionRouteRegistry
+                    .getSessionRegistry(VaadinSession.getCurrent())
+                    .addRoutesChangeListener(listener));
+        }
+        registrationList.add(registry.addRoutesChangeListener(listener));
+
+        return () -> registrationList.forEach(Registration::remove);
     }
 }

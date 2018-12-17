@@ -26,7 +26,7 @@ import com.vaadin.flow.component.Component;
  * Data collection of information for a specific registered route target.
  */
 public class RouteData implements Comparable<RouteData>, Serializable {
-    private final Class<? extends RouterLayout> parentLayout;
+    private final List<Class<? extends RouterLayout>> parentLayouts;
     private final String url;
     private final List<Class<?>> parameters;
     private final Class<? extends Component> navigationTarget;
@@ -37,7 +37,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
      */
     public static class AliasData
             implements Comparable<AliasData>, Serializable {
-        private final Class<? extends RouterLayout> parentLayout;
+        private final List<Class<? extends RouterLayout>> parentLayouts;
         private final String url;
 
         /**
@@ -48,9 +48,9 @@ public class RouteData implements Comparable<RouteData>, Serializable {
          * @param url
          *         target url for alias
          */
-        public AliasData(Class<? extends RouterLayout> parentLayout,
+        public AliasData(List<Class<? extends RouterLayout>> parentLayout,
                 String url) {
-            this.parentLayout = parentLayout;
+            this.parentLayouts = parentLayout;
             this.url = url;
         }
 
@@ -60,7 +60,10 @@ public class RouteData implements Comparable<RouteData>, Serializable {
          * @return parent layout for alias
          */
         public Class<? extends RouterLayout> getParentLayout() {
-            return parentLayout;
+            if (parentLayouts.isEmpty()) {
+                return null;
+            }
+            return parentLayouts.get(0);
         }
 
         /**
@@ -81,8 +84,8 @@ public class RouteData implements Comparable<RouteData>, Serializable {
         public boolean equals(Object obj) {
             if (obj instanceof AliasData) {
                 AliasData other = (AliasData) obj;
-                return other.parentLayout.equals(this.parentLayout) && other.url
-                        .equals(this.url);
+                return other.getParentLayout().equals(this.getParentLayout())
+                        && other.url.equals(this.url);
             }
             return false;
         }
@@ -91,8 +94,8 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     /**
      * RouteData constructor.
      *
-     * @param parentLayout
-     *         route parent layout class
+     * @param parentLayouts
+     *         route parent layout class chain
      * @param url
      *         full route url
      * @param parameters
@@ -102,11 +105,11 @@ public class RouteData implements Comparable<RouteData>, Serializable {
      * @param routeAliases
      *         list of aliases for this route
      */
-    public RouteData(Class<? extends RouterLayout> parentLayout, String url,
-            List<Class<?>> parameters,
+    public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
+            String url, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget,
             List<AliasData> routeAliases) {
-        this.parentLayout = parentLayout;
+        this.parentLayouts = parentLayouts;
         this.url = url;
         this.parameters = Collections.unmodifiableList(parameters);
         this.navigationTarget = navigationTarget;
@@ -121,7 +124,10 @@ public class RouteData implements Comparable<RouteData>, Serializable {
      * @return route parent layout
      */
     public Class<? extends RouterLayout> getParentLayout() {
-        return parentLayout;
+        if (parentLayouts.isEmpty()) {
+            return null;
+        }
+        return parentLayouts.get(0);
     }
 
     /**
@@ -169,8 +175,8 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof RouteData) {
             RouteData other = (RouteData) obj;
-            return other.parentLayout.equals(this.parentLayout) && other.url
-                    .equals(this.url) && other.navigationTarget
+            return other.getParentLayout().equals(this.getParentLayout())
+                    && other.url.equals(this.url) && other.navigationTarget
                     .equals(navigationTarget);
         }
         return false;
@@ -178,8 +184,9 @@ public class RouteData implements Comparable<RouteData>, Serializable {
 
     @Override
     public String toString() {
-        return "RouteData{" + "parentLayout=" + parentLayout + ", url='" + url
-                + '\'' + ", parameters=" + parameters + ", navigationTarget="
-                + navigationTarget + ", routeAliases=" + routeAliases + '}';
+        return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
+                + url + '\'' + ", parameters=" + parameters
+                + ", navigationTarget=" + navigationTarget + ", routeAliases="
+                + routeAliases + '}';
     }
 }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -48,6 +50,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
@@ -56,7 +59,10 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
@@ -2925,7 +2931,6 @@ public class RouterTest extends RoutingTestBase {
                         .get().getNavigationTarget());
     }
 
-
     @Tag("div")
     @Route("noParent")
     @RouteAlias(value = "twoParents", layout = BaseLayout.class)
@@ -2940,11 +2945,14 @@ public class RouterTest extends RoutingTestBase {
         List<Class<? extends RouterLayout>> parents = router.getRegistry()
                 .getRouteLayouts("noParent", AliasLayout.class);
 
-        Assert.assertTrue("Main route should have no parents.",parents.isEmpty());
+        Assert.assertTrue("Main route should have no parents.",
+                parents.isEmpty());
 
-        parents = router.getRegistry().getRouteLayouts("twoParents", AliasLayout.class);
+        parents = router.getRegistry()
+                .getRouteLayouts("twoParents", AliasLayout.class);
 
-        Assert.assertEquals("Route alias should have two parents", 2, parents.size());
+        Assert.assertEquals("Route alias should have two parents", 2,
+                parents.size());
     }
 
     @Test
@@ -2984,8 +2992,9 @@ public class RouterTest extends RoutingTestBase {
 
     private void setErrorNavigationTargets(
             Class<? extends Component>... errorNavigationTargets) {
-        ((ApplicationRouteRegistry) router.getRegistry()).setErrorNavigationTargets(
-                new HashSet<>(Arrays.asList(errorNavigationTargets)));
+        ((ApplicationRouteRegistry) router.getRegistry())
+                .setErrorNavigationTargets(
+                        new HashSet<>(Arrays.asList(errorNavigationTargets)));
     }
 
     private Class<? extends Component> getUIComponent() {
@@ -3023,6 +3032,84 @@ public class RouterTest extends RoutingTestBase {
             return ((Html) errorContent).getInnerHtml().toString();
         } else {
             return routeNotFoundError.getElement().getText();
+        }
+    }
+
+    @Test
+    public void addingRouteChangeListener_correctRegistryReportsChange() {
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(Mockito.mock(ServletContext.class));
+
+        MockService vaadinService = Mockito.mock(MockService.class);
+        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
+
+        VaadinSession session = new MockVaadinSession(vaadinService) {
+            @Override
+            public VaadinService getService() {
+                return vaadinService;
+            }
+
+            @Override
+            public boolean hasLock() {
+                return true;
+            }
+        };
+
+        Map<Class<?>, CurrentInstance> old = CurrentInstance.getInstances();
+        CurrentInstance.set(VaadinSession.class, session);
+
+        List<RoutesChangedEvent> events = new ArrayList<>();
+
+        try {
+            // We need the current session for when we request
+            // Registries on addRoutesChangeListener.
+            // If not available we only have the ApplicationRegistry
+            router = new Router(registry);
+
+            router.addRoutesChangeListener(events::add);
+
+        } finally {
+            CurrentInstance.restoreInstances(old);
+        }
+        RouteRegistry sessionRegistry = SessionRouteRegistry
+                .getSessionRegistry(session);
+
+        sessionRegistry.update(() -> {
+            sessionRegistry.setRoute("", BaseLayout.class,
+                    Collections.singletonList(MainLayout.class));
+            sessionRegistry.setRoute("", WildRootParameter.class,
+                    Collections.emptyList());
+
+        });
+        registry.setRoute("home", MainLayout.class, Collections.emptyList());
+
+        Assert.assertEquals("Two event should have been sent.", 2,
+                events.size());
+        Assert.assertEquals("First event should have been for session registry",
+                sessionRegistry, events.get(0).getSource());
+        Assert.assertEquals("Event should contain 2 additions to routes", 2,
+                events.get(0).getAddedRoutes().size());
+        Assert.assertTrue("Event should not remove a route",
+                events.get(0).getRemovedRoutes().isEmpty());
+
+        Assert.assertEquals(
+                "Second event should have come from application registry",
+                registry, events.get(1).getSource());
+        Assert.assertEquals(1, events.get(1).getAddedRoutes().size());
+        Assert.assertEquals("Event should contain a single added route", 1,
+                events.get(1).getAddedRoutes().size());
+        Assert.assertTrue("Event should not remove a route",
+                events.get(1).getRemovedRoutes().isEmpty());
+    }
+
+    /**
+     * Extending class to let us mock the getRouteRegistry method for testing.
+     */
+    private static class MockService extends VaadinServletService {
+
+        @Override
+        public RouteRegistry getRouteRegistry() {
+            return super.getRouteRegistry();
         }
     }
 }
