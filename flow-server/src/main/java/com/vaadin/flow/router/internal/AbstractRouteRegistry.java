@@ -31,6 +31,7 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
@@ -91,15 +92,26 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void lock() {
+    public void update(Command command) {
+        lock();
+        try {
+            command.execute();
+        } finally {
+            unlock();
+        }
+    }
+
+    private void lock() {
         configurationLock.lock();
     }
 
-    @Override
-    public void unlock() {
+    private void unlock() {
         if (configurationLock.getHoldCount() == 1 && editing != null) {
-            routeConfiguration = new RouteConfiguration(editing, false);
-            editing = null;
+            try {
+                routeConfiguration = new RouteConfiguration(editing, false);
+            } finally {
+                editing = null;
+            }
         }
         configurationLock.unlock();
     }

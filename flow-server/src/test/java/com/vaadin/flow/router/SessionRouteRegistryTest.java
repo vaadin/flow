@@ -681,8 +681,7 @@ public class SessionRouteRegistryTest {
     public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
         SessionRouteRegistry registry = getRegistry(session);
 
-        registry.lock();
-        try {
+        registry.update(() -> {
             registry.setRoute("", MyRoute.class, Collections.emptyList());
 
             Assert.assertTrue("Registry should still remain empty",
@@ -692,9 +691,7 @@ public class SessionRouteRegistryTest {
 
             Assert.assertTrue("Registry should still remain empty",
                     getRegistry(session).getRegisteredRoutes().isEmpty());
-        } finally {
-            registry.unlock();
-        }
+        });
 
         Assert.assertEquals(
                 "After unlock registry should be updated for others to configure with new data",

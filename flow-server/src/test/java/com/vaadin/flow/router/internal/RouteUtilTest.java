@@ -33,6 +33,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.RouteRegistry;
 
 /**
@@ -453,10 +454,17 @@ public class RouteUtilTest {
     public void setNavigationTargets_allExpectedRoutesAreSet() {
 
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        Mockito.doAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            ((Command) args[0]).execute();
+            return null;
+        }).when(registry).update(Mockito.any(Command.class));
 
         RouteUtil.setNavigationTargets(
                 Stream.of(MyRoute.class, MyInfo.class, MyPalace.class,
                         MyModular.class).collect(Collectors.toSet()), registry);
+
+        Mockito.verify(registry).update(Mockito.any());
 
         Mockito.verify(registry)
                 .setRoute("home", MyRoute.class, Collections.emptyList());
