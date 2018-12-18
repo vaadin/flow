@@ -57,7 +57,7 @@ import com.vaadin.flow.router.RouterLayout;
 public abstract class AbstractNavigationStateRenderer
         implements NavigationHandler {
     private enum TransitionOutcome {
-        FINISHED, REROUTED, POSTPONED
+        FORWARDED, FINISHED, REROUTED, POSTPONED
     }
 
     private static List<Integer> statusCodes = ReflectTools
@@ -152,9 +152,15 @@ public abstract class AbstractNavigationStateRenderer
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
                     beforeNavigationDeactivating, leaveHandlers);
 
+            if (transitionOutcome == TransitionOutcome.FORWARDED) {
+                return forward(event, beforeNavigationDeactivating);
+            }
+
             if (transitionOutcome == TransitionOutcome.REROUTED) {
                 return reroute(event, beforeNavigationDeactivating);
-            } else if (transitionOutcome == TransitionOutcome.POSTPONED) {
+            }
+
+            if (transitionOutcome == TransitionOutcome.POSTPONED) {
                 ContinueNavigationAction currentAction = beforeNavigationDeactivating
                         .getContinueNavigationAction();
                 currentAction.setReferences(this, event);
@@ -195,6 +201,11 @@ public abstract class AbstractNavigationStateRenderer
                 ui.getInternals().getActiveRouterTargetsChain(), chain));
         TransitionOutcome transitionOutcome = executeBeforeEnterNavigation(
                 beforeNavigationActivating, enterHandlers);
+
+        if (eventActionsSupported()
+                && TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
+            return forward(event, beforeNavigationActivating);
+        }
 
         if (eventActionsSupported()
                 && TransitionOutcome.REROUTED.equals(transitionOutcome)) {
@@ -302,6 +313,10 @@ public abstract class AbstractNavigationStateRenderer
             BeforeLeaveHandler listener = leaveHandlers.remove();
             listener.beforeLeave(beforeNavigation);
 
+            if (beforeNavigation.hasForwardTarget()) {
+                return TransitionOutcome.FORWARDED;
+            }
+
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             } else if (beforeNavigation.isPostponed()) {
@@ -329,11 +344,26 @@ public abstract class AbstractNavigationStateRenderer
         for (BeforeEnterHandler eventHandler : enterHandlers) {
             eventHandler.beforeEnter(beforeNavigation);
 
+            if (beforeNavigation.hasForwardTarget()) {
+                return TransitionOutcome.FORWARDED;
+            }
+
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             }
         }
         return TransitionOutcome.FINISHED;
+    }
+
+    private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
+        NavigationHandler handler = beforeNavigation.getForwardTarget();
+
+        NavigationEvent newNavigationEvent = getForwardNavigationEvent(event,
+                beforeNavigation);
+        newNavigationEvent.getUI().getPage().getHistory()
+                .replaceState(null, newNavigationEvent.getLocation());
+
+        return handler.handle(newNavigationEvent);
     }
 
     private int reroute(NavigationEvent event, BeforeEvent beforeNavigation) {
@@ -343,6 +373,16 @@ public abstract class AbstractNavigationStateRenderer
                 beforeNavigation);
 
         return handler.handle(newNavigationEvent);
+    }
+
+    private NavigationEvent getForwardNavigationEvent(NavigationEvent event,
+                                                      BeforeEvent beforeNavigation) {
+        final Class<?> forwardTargetType = beforeNavigation.getForwardTargetType();
+        Location location = new Location(Router.resolve(forwardTargetType, forwardTargetType
+                .getAnnotation(Route.class)));
+
+        return new NavigationEvent(event.getSource(), location, event.getUI(),
+                NavigationTrigger.PROGRAMMATIC);
     }
 
     private NavigationEvent getNavigationEvent(NavigationEvent event,

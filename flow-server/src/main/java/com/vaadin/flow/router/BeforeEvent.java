@@ -38,9 +38,11 @@ public abstract class BeforeEvent extends EventObject {
     private final NavigationTrigger trigger;
     private final UI ui;
 
+    private NavigationHandler forwardTarget;
     private NavigationHandler rerouteTarget;
 
     private final Class<?> navigationTarget;
+    private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
 
@@ -112,12 +114,31 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
+     * Check if we have a forward target.
+     *
+     * @return forward target exists
+     */
+    public boolean hasForwardTarget() {
+        return forwardTarget != null;
+    }
+
+    /**
      * Check if we have a reroute target.
      *
      * @return reroute target exists
      */
     public boolean hasRerouteTarget() {
         return rerouteTarget != null;
+    }
+
+    /**
+     * Gets the forward target to use if the user should be forwarded to some
+     * other view.
+     *
+     * @return navigation handler
+     */
+    public NavigationHandler getForwardTarget() {
+        return forwardTarget;
     }
 
     /**
@@ -142,12 +163,8 @@ public abstract class BeforeEvent extends EventObject {
      */
     public void forwardTo(NavigationHandler forwardTarget,
                           NavigationState targetState) {
-        final Class<?> routeTargetType = targetState.getNavigationTarget();
-        Location forwardLocation = new Location(Router.resolve(routeTargetType, routeTargetType
-                .getAnnotation(Route.class)));
-
-        getUI().getPage().getHistory().replaceState(null, forwardLocation);
-        rerouteTo(forwardTarget, targetState);
+        this.forwardTargetState = targetState;
+        this.forwardTarget = forwardTarget;
     }
 
     /**
@@ -333,6 +350,15 @@ public abstract class BeforeEvent extends EventObject {
         }
 
         return new NavigationStateBuilder().withTarget(target, segments).build();
+    }
+
+    /**
+     * Get the forward target for forwarding.
+     *
+     * @return forward target
+     */
+    public Class<?> getForwardTargetType() {
+        return forwardTargetState.getNavigationTarget();
     }
 
     /**
