@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.data.provider;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,8 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.function.SerializablePredicate;
-
-import static org.junit.Assert.assertTrue;
 
 public abstract class DataProviderTestBase<D extends DataProvider<StrBean, SerializablePredicate<StrBean>>> {
 
@@ -60,7 +61,7 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
 
     protected abstract D createDataProvider();
 
-    protected final D getDataProvider() {
+    protected D getDataProvider() {
         return dataProvider;
     }
 
@@ -184,6 +185,36 @@ public abstract class DataProviderTestBase<D extends DataProvider<StrBean, Seria
 
         Assert.assertEquals("No items should've been filtered out", data.size(),
                 strFilterDataProvider.size(new Query<>()));
+    }
+
+    @Test
+    public void filteringListDataProvider_configurableFilter() {
+        ConfigurableFilterDataProvider<StrBean, Void, SerializablePredicate<StrBean>> configurableFilterDataProvider = getDataProvider()
+                .withConfigurableFilter();
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Xyz"));
+
+        assertEquals("Only one item should match 'Xyz'", 1,
+                configurableFilterDataProvider.size(new Query<>(null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Zyx"));
+
+        assertEquals("No item should match 'Zyx'", 0,
+                configurableFilterDataProvider.size(new Query<>(null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Foo"));
+
+        assertEquals("Unexpected number of matches for 'Foo'", 36,
+                configurableFilterDataProvider.size(new Query<>(null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue() == null);
+
+        assertEquals("No items should've been filtered out", 0,
+                configurableFilterDataProvider.size(new Query<>(null)));
     }
 
     @Test

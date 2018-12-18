@@ -4,21 +4,26 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
- * the License. 
+ * the License.
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.FilterUtils;
 import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalFilterUtils.HierarchialConfigurableFilterDataProviderWrapper;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalFilterUtils.HierarchicalFilterDataProviderWrapper;
+import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * A common interface for fetching hierarchical data from a data source, such as
@@ -106,4 +111,34 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      */
     public boolean hasChildren(T item);
 
+    @SuppressWarnings("serial")
+    @Override
+    default <Q, C> HierarchicalConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
+            SerializableBiFunction<Q, C, F> filterCombiner) {
+        return new HierarchialConfigurableFilterDataProviderWrapper<T, Q, C, F>(
+                this) {
+            @Override
+            protected F combineFilters(Q queryFilter, C configuredFilter) {
+                return FilterUtils.combineFilters(filterCombiner, queryFilter,
+                        configuredFilter);
+            }
+        };
+    }
+
+    @Override
+    @SuppressWarnings("serial")
+    default <C> HierarchicalDataProvider<T, C> withConvertedFilter(
+            SerializableFunction<C, F> filterConverter) {
+        return new HierarchicalFilterDataProviderWrapper<T, C, F>(this) {
+            @Override
+            protected F getFilter(Query<T, C> query) {
+                return FilterUtils.convertFilter(filterConverter, query);
+            }
+        };
+    }
+
+    @Override
+    default HierarchicalConfigurableFilterDataProvider<T, Void, F> withConfigurableFilter() {
+        return (HierarchicalConfigurableFilterDataProvider<T, Void, F>) DataProvider.super.withConfigurableFilter();
+    }
 }

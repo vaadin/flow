@@ -4,16 +4,21 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
- * the License. 
+ * the License.
  */
 package com.vaadin.flow.data.provider.hierarchy;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,16 +29,10 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.DataProviderTestBase;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.StrBean;
 import com.vaadin.flow.function.SerializablePredicate;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class TreeDataProviderTest
         extends DataProviderTestBase<TreeDataProvider<StrBean>> {
@@ -250,7 +249,7 @@ public class TreeDataProviderTest
 
     @Override
     public void filteringListDataProvider_convertFilter() {
-        DataProvider<StrBean, String> strFilterDataProvider = getDataProvider()
+        HierarchicalDataProvider<StrBean, String> strFilterDataProvider = getDataProvider()
                 .withConvertedFilter(
                         text -> strBean -> strBean.getValue().contains(text));
         assertEquals("Only one item should match 'Xyz'", 1,
@@ -264,6 +263,40 @@ public class TreeDataProviderTest
         assertEquals("No items should've been filtered out", rootData.size(),
                 strFilterDataProvider
                         .size(new HierarchicalQuery<>(null, null)));
+    }
+
+    @Override
+    public void filteringListDataProvider_configurableFilter() {
+        HierarchicalConfigurableFilterDataProvider<StrBean, Void, SerializablePredicate<StrBean>> configurableFilterDataProvider = getDataProvider()
+                .withConfigurableFilter();
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Xyz"));
+
+        assertEquals("Only one item should match 'Xyz'", 1,
+                configurableFilterDataProvider.size(
+                        new HierarchicalQuery<StrBean, Void>(null, null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Zyx"));
+
+        assertEquals("No item should match 'Zyx'", 0,
+                configurableFilterDataProvider.size(
+                        new HierarchicalQuery<StrBean, Void>(null, null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue().contains("Foo"));
+
+        assertEquals("Unexpected number of matches for 'Foo'", 3,
+                configurableFilterDataProvider.size(
+                        new HierarchicalQuery<StrBean, Void>(null, null)));
+
+        configurableFilterDataProvider
+                .setFilter(bean -> bean.getValue() == null);
+
+        assertEquals("No items should've been filtered out", 0,
+                configurableFilterDataProvider.size(
+                        new HierarchicalQuery<StrBean, Void>(null, null)));
     }
 
     @Override
