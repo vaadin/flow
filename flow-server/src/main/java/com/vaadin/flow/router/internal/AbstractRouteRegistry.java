@@ -114,12 +114,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (configurationLock.getHoldCount() == 1 && editing != null) {
             RoutesChangedEvent routeChangedEvent = new RoutesChangedEvent(this);
             try {
-                List<RouteData> oldRegistrations = getRegisteredRoutes();
+                RouteConfiguration oldConfiguration = routeConfiguration;
 
                 routeConfiguration = new RouteConfiguration(editing, false);
 
                 if (!listeners.isEmpty()) {
-                    List<RouteData> oldRoutes = flattenRoutes(oldRegistrations);
+                    List<RouteData> oldRoutes = flattenRoutes(
+                            getRegisteredRoutes(oldConfiguration));
                     List<RouteData> newRoutes = flattenRoutes(
                             getRegisteredRoutes(editing));
                     oldRoutes.stream()
