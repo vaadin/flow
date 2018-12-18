@@ -303,12 +303,11 @@ public class SessionRouteRegistryTest {
 
         SessionRouteRegistry sessionRegistry = getRegistry(session);
         sessionRegistry
+                .setRoute("main", Secondary.class, Collections.emptyList());
+        sessionRegistry
                 .setRoute("Alias1", Secondary.class, Collections.emptyList());
         sessionRegistry
                 .setRoute("Alias2", Secondary.class, Collections.emptyList());
-
-        sessionRegistry
-                .setRoute("main", Secondary.class, Collections.emptyList());
 
         List<RouteData> registeredRoutes = sessionRegistry
                 .getRegisteredRoutes();
@@ -789,6 +788,43 @@ public class SessionRouteRegistryTest {
                 MyRoute.class, removed.get(0).getNavigationTarget());
         Assert.assertEquals("Removed version should not have a parent layout",
                 UI.class, removed.get(0).getParentLayout());
+    }
+
+    @Test
+    public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        List<RouteData> added = new ArrayList<>();
+        List<RouteData> removed = new ArrayList<>();
+
+        sessionRegistry.addRoutesChangeListener(event -> {
+            added.clear();
+            removed.clear();
+            added.addAll(event.getAddedRoutes());
+            removed.addAll(event.getRemovedRoutes());
+        });
+
+        sessionRegistry.update(() -> {
+            sessionRegistry
+                    .setRoute("main", Secondary.class, Collections.emptyList());
+            sessionRegistry.setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+            sessionRegistry.setRoute("Alias2", Secondary.class,
+                    Collections.emptyList());
+        });
+
+        Assert.assertEquals(
+                "Main route and aliases should all be seen as added.", 3,
+                added.size());
+        Assert.assertTrue("No routes should have been removed",
+                removed.isEmpty());
+
+        sessionRegistry.removeRoute("Alias2");
+
+        Assert.assertTrue("No routes should have been added", added.isEmpty());
+        Assert.assertEquals(
+                "Removing the alias route should be seen in the event", 1,
+                removed.size());
     }
 
     @Tag("div")

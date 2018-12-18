@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
-import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.RouteRegistry;
 
 /**
@@ -48,18 +47,40 @@ public class RoutesChangedEvent extends EventObject {
         return (RouteRegistry) super.getSource();
     }
 
+    /**
+     * Add a route that has been added to the event.
+     *
+     * @param addedRoute
+     *         route that has been added
+     */
     public void addRoute(RouteData addedRoute) {
         added.add(addedRoute);
     }
 
+    /**
+     * Add a route that has been removed to the event.
+     *
+     * @param removedRoute
+     *         route that has been removed
+     */
     public void removeRoute(RouteData removedRoute) {
         removed.add(removedRoute);
     }
 
+    /**
+     * Get all routes added for this change.
+     *
+     * @return list of all added routes
+     */
     public List<RouteData> getAddedRoutes() {
         return added;
     }
 
+    /**
+     * Get all routes removed in this change.
+     *
+     * @return list of all removed routes
+     */
     public List<RouteData> getRemovedRoutes() {
         return removed;
     }

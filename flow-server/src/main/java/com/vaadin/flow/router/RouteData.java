@@ -67,6 +67,15 @@ public class RouteData implements Comparable<RouteData>, Serializable {
         }
 
         /**
+         * Return the whole parent layout chain of alias.
+         *
+         * @return alias parent layout chain
+         */
+        public List<Class<? extends RouterLayout>> getParentLayouts() {
+            return parentLayouts;
+        }
+
+        /**
          * Getter for the {@link RouteAlias} url.
          *
          * @return url of the alias
@@ -84,7 +93,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
         public boolean equals(Object obj) {
             if (obj instanceof AliasData) {
                 AliasData other = (AliasData) obj;
-                return other.getParentLayout().equals(this.getParentLayout())
+                return other.parentLayouts.equals(this.parentLayouts)
                         && other.url.equals(this.url);
             }
             return false;
@@ -128,6 +137,15 @@ public class RouteData implements Comparable<RouteData>, Serializable {
             return null;
         }
         return parentLayouts.get(0);
+    }
+
+    /**
+     * Return the whole parent layout chain of route target.
+     *
+     * @return route parent layout chain
+     */
+    public List<Class<? extends RouterLayout>> getParentLayouts() {
+        return parentLayouts;
     }
 
     /**
@@ -175,8 +193,8 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof RouteData) {
             RouteData other = (RouteData) obj;
-            return other.getParentLayout().equals(this.getParentLayout())
-                    && other.url.equals(this.url) && other.navigationTarget
+            return other.parentLayouts.equals(this.parentLayouts) && other.url
+                    .equals(this.url) && other.navigationTarget
                     .equals(navigationTarget);
         }
         return false;

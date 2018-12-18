@@ -114,12 +114,14 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (configurationLock.getHoldCount() == 1 && editing != null) {
             RoutesChangedEvent routeChangedEvent = new RoutesChangedEvent(this);
             try {
-                List<RouteData> oldRoutes = getRegisteredRoutes();
+                List<RouteData> oldRegistrations = getRegisteredRoutes();
 
                 routeConfiguration = new RouteConfiguration(editing, false);
 
                 if (!listeners.isEmpty()) {
-                    List<RouteData> newRoutes = getRegisteredRoutes(editing);
+                    List<RouteData> oldRoutes = flattenRoutes(oldRegistrations);
+                    List<RouteData> newRoutes = flattenRoutes(
+                            getRegisteredRoutes(editing));
                     oldRoutes.stream()
                             .filter(route -> !newRoutes.contains(route))
                             .forEach(routeChangedEvent::removeRoute);
@@ -183,9 +185,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                     route -> routeAliases.add(new RouteData.AliasData(
                             getParentLayouts(configuration, target, route),
                             route)));
-            List<Class<? extends RouterLayout>> parentLayout = getParentLayouts(
+            List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
                     configuration, target, url);
-            RouteData route = new RouteData(parentLayout, url, parameters,
+            RouteData route = new RouteData(parentLayouts, url, parameters,
                     target, routeAliases);
             registeredRoutes.add(route);
         });
@@ -193,6 +195,31 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         Collections.sort(registeredRoutes);
 
         return Collections.unmodifiableList(registeredRoutes);
+    }
+
+    /**
+     * Flatten route data so that all route aliases are also as their own
+     * entries in the list.
+     *
+     * @param routeData
+     *         route data to flatten.
+     * @return flattened list of routes and aliases
+     */
+    private List<RouteData> flattenRoutes(List<RouteData> routeData) {
+        List<RouteData> flatRoutes = new ArrayList<>();
+        for (RouteData route : routeData) {
+            flatRoutes.add(route);
+            List<RouteData.AliasData> routeAliases = route.getRouteAliases();
+            for (RouteData.AliasData alias : routeAliases) {
+                RouteData aliasToRouteData = new RouteData(
+                        alias.getParentLayouts(), alias.getUrl(),
+                        route.getParameters(), route.getNavigationTarget(),
+                        Collections.emptyList());
+                flatRoutes.add(aliasToRouteData);
+            }
+        }
+
+        return flatRoutes;
     }
 
     private List<Class<? extends RouterLayout>> getParentLayouts(

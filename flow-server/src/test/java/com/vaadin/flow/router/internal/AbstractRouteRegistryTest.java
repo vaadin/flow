@@ -157,6 +157,41 @@ public class AbstractRouteRegistryTest {
         Assert.assertEquals("Removed version should not have a parent layout", UI.class, removed.get(0).getParentLayout());
     }
 
+    @Test
+    public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
+        List<RouteData> added = new ArrayList<>();
+        List<RouteData> removed = new ArrayList<>();
+
+        registry.addRoutesChangeListener(event -> {
+            added.clear();
+            removed.clear();
+            added.addAll(event.getAddedRoutes());
+            removed.addAll(event.getRemovedRoutes());
+        });
+
+        registry.update(() -> {
+            registry
+                    .setRoute("main", Secondary.class, Collections.emptyList());
+            registry.setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+            registry.setRoute("Alias2", Secondary.class,
+                    Collections.emptyList());
+        });
+
+        Assert.assertEquals(
+                "Main route and aliases should all be seen as added.", 3,
+                added.size());
+        Assert.assertTrue("No routes should have been removed",
+                removed.isEmpty());
+
+        registry.removeRoute("Alias2");
+
+        Assert.assertTrue("No routes should have been added", added.isEmpty());
+        Assert.assertEquals(
+                "Removing the alias route should be seen in the event", 1,
+                removed.size());
+    }
+
     @Tag("div")
     @Route("MyRoute")
     private static class MyRoute extends Component {
