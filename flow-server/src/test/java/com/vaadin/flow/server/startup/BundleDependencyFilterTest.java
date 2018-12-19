@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.startup.BundleFilterInitializer.MAIN_BUNDLE_NAME_PREFIX;
+import static com.vaadin.flow.server.startup.BundleFilterFactory.MAIN_BUNDLE_NAME_PREFIX;
 
 import java.util.Arrays;
 import java.util.Collections;
