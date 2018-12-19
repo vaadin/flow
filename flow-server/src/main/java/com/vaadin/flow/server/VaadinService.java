@@ -29,6 +29,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +68,7 @@ import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.startup.BundleDependencyFilter;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -256,6 +258,16 @@ public abstract class VaadinService implements Serializable {
 
         dependencyFilters = instantiator
                 .getDependencyFilters(event.getAddedDependencyFilters())
+                /*
+                 * Put the built-in bundle filters last in the list. In newer
+                 * Flow versions, the bundle filters are explicitly created by
+                 * the service instead of relying on an internal
+                 * VaadinServiceInit listener for which ordering is not
+                 * deterministic.
+                 */
+                .sorted(Comparator.comparingInt(
+                        filter -> filter instanceof BundleDependencyFilter ? 1
+                                : 0))
                 .collect(Collectors.toList());
         bootstrapListeners = instantiator
                 .getBootstrapListeners(event.getAddedBootstrapListeners())
