@@ -847,6 +847,24 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("forwardAndReroute/exception")
+    @Tag(Tag.DIV)
+    public static class ForwardingAndReroutingNavigationTarget extends Component
+            implements BeforeEnterObserver {
+
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            events.add(event);
+            event.forwardTo(new NavigationStateBuilder()
+                    .withTarget(FooBarNavigationTarget.class).build());
+
+            event.rerouteTo(new NavigationStateBuilder()
+                    .withTarget(FooBarNavigationTarget.class).build());
+        }
+    }
+
     @Route("beforeToError/exception")
     @Tag(Tag.DIV)
     public static class RerouteToError extends Component
@@ -2117,6 +2135,30 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(RouteNotFoundError.class, getUIComponent());
     }
+
+    @Test
+    public void forward_and_reroute_at_the_same_time_exception()
+            throws InvalidRouteConfigurationException {
+        String location = "forwardAndReroute/exception";
+
+        FooBarNavigationTarget.events.clear();
+        ForwardingAndReroutingNavigationTarget.events.clear();
+        RootNavigationTarget.events.clear();
+        setNavigationTargets(RootNavigationTarget.class,
+                ForwardingAndReroutingNavigationTarget.class, FooBarNavigationTarget.class);
+
+        router.navigate(ui, new Location(location),
+                NavigationTrigger.PROGRAMMATIC);
+
+        String validationMessage = "Error forward & reroute can not be set at the same time";
+
+        String errorMessage = String.format(
+                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+                location, validationMessage);
+
+        assertExceptionComponent(InternalServerError.class, errorMessage);
+    }
+
 
     @Test
     public void faulty_error_response_code_should_throw_exception()
