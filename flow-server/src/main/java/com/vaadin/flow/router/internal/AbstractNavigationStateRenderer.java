@@ -135,7 +135,6 @@ public abstract class AbstractNavigationStateRenderer
 
             BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
                     event, routeTargetType);
-            validateBeforeEvent(beforeNavigationDeactivating);
 
             Deque<BeforeLeaveHandler> leaveHandlers;
             if (postponed != null) {
@@ -181,7 +180,6 @@ public abstract class AbstractNavigationStateRenderer
 
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType);
-        validateBeforeEvent(beforeNavigationActivating);
 
         LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event,
                 chain);
@@ -315,6 +313,7 @@ public abstract class AbstractNavigationStateRenderer
             BeforeLeaveHandler listener = leaveHandlers.remove();
             listener.beforeLeave(beforeNavigation);
 
+            validateBeforeEvent(beforeNavigation);
             if (beforeNavigation.hasForwardTarget()) {
                 return TransitionOutcome.FORWARDED;
             }
@@ -345,6 +344,7 @@ public abstract class AbstractNavigationStateRenderer
 
         for (BeforeEnterHandler eventHandler : enterHandlers) {
             eventHandler.beforeEnter(beforeNavigation);
+            validateBeforeEvent(beforeNavigation);
 
             if (beforeNavigation.hasForwardTarget()) {
                 return TransitionOutcome.FORWARDED;
