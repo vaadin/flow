@@ -37,6 +37,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
+import org.osgi.framework.Bundle;
 import org.slf4j.LoggerFactory;
 
 import com.googlecode.gentyref.GenericTypeReflector;
@@ -268,5 +269,20 @@ public final class OSGiAccess {
                 return false;
             }
         }
+    }
+
+    /**
+     * Tries to detect the version of the OSGi framework used.
+     *
+     * @return the used OSGi version or {@code null} if not able to detect it
+     */
+    public static String getOSGiVersion() {
+        try {
+            Bundle osgiBundle = org.osgi.framework.FrameworkUtil.getBundle(Bundle.class);
+            return osgiBundle.getVersion().toString();
+        } catch (Exception e) {
+            // just eat it
+        }
+        return null;
     }
 }
