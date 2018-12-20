@@ -29,7 +29,7 @@ import com.vaadin.flow.server.RouteRegistry;
 @FunctionalInterface
 public interface RoutesChangedListener extends Serializable {
     /**
-     * Invoked when this listener receives a route changechange event from a
+     * Invoked when this listener receives a route change event from a
      * RouteRegistry.
      *
      * @param event

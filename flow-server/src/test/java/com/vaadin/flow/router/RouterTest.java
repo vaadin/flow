@@ -3087,18 +3087,18 @@ public class RouterTest extends RoutingTestBase {
                 events.size());
         Assert.assertEquals("First event should have been for session registry",
                 sessionRegistry, events.get(0).getSource());
-        Assert.assertEquals("Event should contain 2 additions to routes", 2,
+        Assert.assertEquals("First event should contain 2 additions to routes", 2,
                 events.get(0).getAddedRoutes().size());
-        Assert.assertTrue("Event should not remove a route",
+        Assert.assertTrue("First event should not remove a route",
                 events.get(0).getRemovedRoutes().isEmpty());
 
         Assert.assertEquals(
                 "Second event should have come from application registry",
                 registry, events.get(1).getSource());
         Assert.assertEquals(1, events.get(1).getAddedRoutes().size());
-        Assert.assertEquals("Event should contain a single added route", 1,
+        Assert.assertEquals("Second event should contain a single added route", 1,
                 events.get(1).getAddedRoutes().size());
-        Assert.assertTrue("Event should not remove a route",
+        Assert.assertTrue("Second event should not remove a route",
                 events.get(1).getRemovedRoutes().isEmpty());
     }
 

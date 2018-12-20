@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 
@@ -27,44 +27,31 @@ import com.vaadin.flow.server.RouteRegistry;
  */
 public class RoutesChangedEvent extends EventObject {
 
-    private final List<RouteData> added = new ArrayList<>();
-    private final List<RouteData> removed = new ArrayList<>();
+    private final List<RouteData> added;
+    private final List<RouteData> removed;
 
     /**
      * Constructs a prototypical Event.
      *
      * @param source
      *         The object on which the Event initially occurred.
+     * @param added
+     *         list of all the added routes
+     * @param removed
+     *         list of all the removed routes
      * @throws IllegalArgumentException
      *         if source is null.
      */
-    public RoutesChangedEvent(RouteRegistry source) {
+    public RoutesChangedEvent(RouteRegistry source, List<RouteData> added,
+            List<RouteData> removed) {
         super(source);
+        this.added = Collections.unmodifiableList(added);
+        this.removed = Collections.unmodifiableList(removed);
     }
 
     @Override
     public RouteRegistry getSource() {
         return (RouteRegistry) super.getSource();
-    }
-
-    /**
-     * Add a route that has been added to the event.
-     *
-     * @param addedRoute
-     *         route that has been added
-     */
-    public void addRoute(RouteData addedRoute) {
-        added.add(addedRoute);
-    }
-
-    /**
-     * Add a route that has been removed to the event.
-     *
-     * @param removedRoute
-     *         route that has been removed
-     */
-    public void removeRoute(RouteData removedRoute) {
-        removed.add(removedRoute);
     }
 
     /**

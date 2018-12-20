@@ -1210,7 +1210,7 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Not all registered routes were returned", 5,
                 routeData.getRouteAliases().size());
 
-        List<RouteData.AliasData> routeAliases = routeData.getRouteAliases();
+        List<RouteData> routeAliases = routeData.getRouteAliases();
 
         Assert.assertEquals("Sort order was not the one expected",
                 "absolute/alias2", routeAliases.get(0).getUrl());

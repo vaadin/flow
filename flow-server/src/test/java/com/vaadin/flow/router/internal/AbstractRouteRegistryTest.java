@@ -21,7 +21,7 @@ import com.vaadin.flow.server.SessionRouteRegistry;
 
 public class AbstractRouteRegistryTest {
 
-    AbstractRouteRegistry registry;
+    private AbstractRouteRegistry registry;
 
     @Before
     public void init() {
@@ -204,5 +204,4 @@ public class AbstractRouteRegistryTest {
     @Tag("div")
     private static class MainLayout extends Component implements RouterLayout {
     }
-
 }

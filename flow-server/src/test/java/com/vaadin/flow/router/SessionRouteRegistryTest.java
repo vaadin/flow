@@ -735,7 +735,7 @@ public class SessionRouteRegistryTest {
         registry.removeRoute("home");
 
         Assert.assertTrue("No routes should have been added", added.isEmpty());
-        Assert.assertFalse("One route should have gotten removed",
+        Assert.assertEquals("One route should have gotten removed",1,
                 removed.isEmpty());
 
         Assert.assertEquals(Secondary.class,
@@ -784,7 +784,7 @@ public class SessionRouteRegistryTest {
             }
         }
 
-        Assert.assertEquals("MyRoute should have been both removed and added",
+        Assert.assertEquals("One MyRoute should have been removed",
                 MyRoute.class, removed.get(0).getNavigationTarget());
         Assert.assertEquals("Removed version should not have a parent layout",
                 UI.class, removed.get(0).getParentLayout());

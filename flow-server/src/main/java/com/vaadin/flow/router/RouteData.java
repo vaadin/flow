@@ -30,75 +30,8 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     private final String url;
     private final List<Class<?>> parameters;
     private final Class<? extends Component> navigationTarget;
-    private final List<AliasData> routeAliases;
+    private final List<RouteData> routeAliases;
 
-    /**
-     * Data class with information pertaining to the {@link RouteAlias}.
-     */
-    public static class AliasData
-            implements Comparable<AliasData>, Serializable {
-        private final List<Class<? extends RouterLayout>> parentLayouts;
-        private final String url;
-
-        /**
-         * Data class constructor.
-         *
-         * @param parentLayout
-         *         parent layout for alias
-         * @param url
-         *         target url for alias
-         */
-        public AliasData(List<Class<? extends RouterLayout>> parentLayout,
-                String url) {
-            this.parentLayouts = parentLayout;
-            this.url = url;
-        }
-
-        /**
-         * Getter for the {@link RouteAlias} parent layout.
-         *
-         * @return parent layout for alias
-         */
-        public Class<? extends RouterLayout> getParentLayout() {
-            if (parentLayouts.isEmpty()) {
-                return null;
-            }
-            return parentLayouts.get(0);
-        }
-
-        /**
-         * Return the whole parent layout chain of alias.
-         *
-         * @return alias parent layout chain
-         */
-        public List<Class<? extends RouterLayout>> getParentLayouts() {
-            return parentLayouts;
-        }
-
-        /**
-         * Getter for the {@link RouteAlias} url.
-         *
-         * @return url of the alias
-         */
-        public String getUrl() {
-            return url;
-        }
-
-        @Override
-        public int compareTo(AliasData otherAlias) {
-            return this.url.compareToIgnoreCase(otherAlias.url);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof AliasData) {
-                AliasData other = (AliasData) obj;
-                return other.parentLayouts.equals(this.parentLayouts)
-                        && other.url.equals(this.url);
-            }
-            return false;
-        }
-    }
 
     /**
      * RouteData constructor.
@@ -117,8 +50,8 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget,
-            List<AliasData> routeAliases) {
-        this.parentLayouts = parentLayouts;
+            List<RouteData> routeAliases) {
+        this.parentLayouts = Collections.unmodifiableList(parentLayouts);
         this.url = url;
         this.parameters = Collections.unmodifiableList(parameters);
         this.navigationTarget = navigationTarget;
@@ -180,7 +113,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
      *
      * @return list of route aliases
      */
-    public List<AliasData> getRouteAliases() {
+    public List<RouteData> getRouteAliases() {
         return Collections.unmodifiableList(routeAliases);
     }
 
