@@ -449,21 +449,26 @@ public class DataCommunicator<T> implements Serializable {
         // Phase 1: Find all items that the client should have
         List<String> newActiveKeyOrder;
 
-        do {
-            if (resendEntireRange || needsSizeRecheck) {
-                assumedSize = getDataProviderSize();
-                needsSizeRecheck = false;
-            }
+        if (resendEntireRange) {
+            assumedSize = getDataProviderSize();
+        }
+        effectiveRequested = requestedRange
+                .restrictTo(Range.withLength(0, assumedSize));
+
+        resendEntireRange |= !(previousActive.intersects(effectiveRequested)
+                || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
+
+        newActiveKeyOrder = collectKeysToFlush(previousActive,
+                effectiveRequested);
+
+        // If the returned stream from the DataProvider is smaller than it
+        // should, a new query for the actual size needs to be done
+        if (needsSizeRecheck) {
+            assumedSize = getDataProviderSize();
+            needsSizeRecheck = false;
             effectiveRequested = requestedRange
                     .restrictTo(Range.withLength(0, assumedSize));
-
-            resendEntireRange |= !(previousActive.intersects(effectiveRequested)
-                    || (previousActive.isEmpty()
-                            && effectiveRequested.isEmpty()));
-
-            newActiveKeyOrder = collectKeysToFlush(previousActive,
-                    effectiveRequested);
-        } while (needsSizeRecheck);
+        }
 
         activeKeyOrder = newActiveKeyOrder;
         activeStart = effectiveRequested.getStart();
@@ -602,12 +607,17 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private List<JsonValue> getJsonItems(Range range) {
-        return IntStream
-                .range(range.getStart(),
-                        Math.min(range.getEnd(), activeKeyOrder.size()))
+        return IntStream.range(range.getStart(), range.getEnd())
                 .mapToObj(index -> activeKeyOrder.get(index - activeStart))
-                .map(keyMapper::get).map(this::generateJson)
-                .collect(Collectors.toList());
+                .map(this::keyToJson).collect(Collectors.toList());
+    }
+
+    private JsonValue keyToJson(String key) {
+        T item = keyMapper.get(key);
+        if (item == null) {
+            throw new IllegalStateException("WTF");
+        }
+        return generateJson(item);
     }
 
     private static final void withMissing(Range expected, Range actual,
@@ -643,7 +653,7 @@ public class DataCommunicator<T> implements Serializable {
             }
             activeKeys.add(key);
         });
-        needsSizeRecheck |= activeKeys.isEmpty();
+        needsSizeRecheck |= activeKeys.size() < range.length();
         return activeKeys;
     }
 
