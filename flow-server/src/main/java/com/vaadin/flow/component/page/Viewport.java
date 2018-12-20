@@ -60,8 +60,6 @@ public @interface Viewport {
     /**
      * Prevents scaling and prevent the user from being able to zoom. It causes
      * the zoom to be fixed.
-     * <p>
-     * It might cause usage problems.
      */
     String NO_SCALABLE = "width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no";
 
