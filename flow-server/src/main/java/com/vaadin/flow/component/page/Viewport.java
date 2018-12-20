@@ -39,6 +39,8 @@ public @interface Viewport {
      * Sets the viewport at the width of the device. It makes the page match the
      * screen’s width in device-independent pixels, allowing its content to
      * reflow to match different screen sizes.
+     * <p>
+     * Recommended for responsive Web Design.
      */
     String DEFAULT = "width=device-width, initial-scale=1.0";
 
