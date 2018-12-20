@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
