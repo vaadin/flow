@@ -58,12 +58,6 @@ public @interface Viewport {
     String DEVICE_DIMENSIONS = "width=device-width, height=device-height, initial-scale=1.0";
 
     /**
-     * Prevents scaling and prevent the user from being able to zoom. It causes
-     * the zoom to be fixed.
-     */
-    String NO_SCALABLE = "width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no";
-
-    /**
      * Gets the viewport tag content.
      *
      * @return the viewport tag content
