@@ -736,7 +736,7 @@ public class SessionRouteRegistryTest {
 
         Assert.assertTrue("No routes should have been added", added.isEmpty());
         Assert.assertEquals("One route should have gotten removed",1,
-                removed.isEmpty());
+                removed.size());
 
         Assert.assertEquals(Secondary.class,
                 removed.get(0).getNavigationTarget());
@@ -767,9 +767,8 @@ public class SessionRouteRegistryTest {
                     Collections.singletonList(MainLayout.class));
         });
 
-        Assert.assertFalse("", added.isEmpty());
-        Assert.assertEquals("", 2, added.size());
-        Assert.assertFalse("", removed.isEmpty());
+        Assert.assertEquals("Two ne paths should have been added", 2, added.size());
+        Assert.assertEquals("One path should have been removed",1,  removed.size());
 
         for (RouteData data : added) {
             if (data.getUrl().equals("")) {
