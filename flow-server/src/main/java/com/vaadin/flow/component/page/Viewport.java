@@ -40,7 +40,7 @@ public @interface Viewport {
      * screen’s width in device-independent pixels, allowing its content to
      * reflow to match different screen sizes.
      * <p>
-     * Recommended for responsive Web Design.
+     * Recommended for a Responsive Web Design.
      */
     String DEFAULT = "width=device-width, initial-scale=1.0";
 
