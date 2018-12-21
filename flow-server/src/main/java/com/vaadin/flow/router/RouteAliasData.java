@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 
@@ -44,4 +45,20 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
         super(parentLayouts, url, parameters, navigationTarget);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RouteAliasData) {
+            RouteAliasData other = (RouteAliasData) obj;
+            return other.getParentLayouts().equals(this.getParentLayouts())
+                    && other.getUrl().equals(this.getUrl()) && other
+                    .getNavigationTarget().equals(getNavigationTarget());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects
+                .hash(getParentLayouts(), getUrl(), getNavigationTarget());
+    }
 }

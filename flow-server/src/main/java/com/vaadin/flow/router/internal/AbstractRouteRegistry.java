@@ -121,12 +121,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 routeConfiguration = new RouteConfiguration(editing, false);
 
                 if (!routesChangedListeners.isEmpty()) {
-                    List<RouteBaseData> oldRoutes = flattenRoutes(
+                    List<RouteBaseData<?>> oldRoutes = flattenRoutes(
                             getRegisteredRoutes(oldConfiguration));
-                    List<RouteBaseData> newRoutes = flattenRoutes(
+                    List<RouteBaseData<?>> newRoutes = flattenRoutes(
                             getRegisteredRoutes(editing));
-                    List<RouteBaseData> added = new ArrayList<>();
-                    List<RouteBaseData> removed = new ArrayList<>();
+                    List<RouteBaseData<?>> added = new ArrayList<>();
+                    List<RouteBaseData<?>> removed = new ArrayList<>();
 
                     oldRoutes.stream()
                             .filter(route -> !newRoutes.contains(route))
@@ -213,8 +213,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *         route data to flatten.
      * @return flattened list of routes and aliases
      */
-    private List<RouteBaseData> flattenRoutes(List<RouteData> routeData) {
-        List<RouteBaseData> flatRoutes = new ArrayList<>();
+    private List<RouteBaseData<?>> flattenRoutes(List<RouteData> routeData) {
+        List<RouteBaseData<?>> flatRoutes = new ArrayList<>();
         for (RouteData route : routeData) {
             flatRoutes.add(route);
             route.getRouteAliases().forEach(flatRoutes::add);
