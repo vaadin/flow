@@ -510,25 +510,4 @@ public class Router implements Serializable {
         }
         return Optional.empty();
     }
-
-    /**
-     * Add a routes change listener to Router. Listener will be added to all
-     * registries for the router and any changes to either registry will fire an
-     * event for the listener.
-     *
-     * @param listener
-     *         listener to register for route changes
-     * @return listener registration
-     */
-    public Registration addRoutesChangedListener(RoutesChangedListener listener) {
-        List<Registration> registrationList = new ArrayList<>(2);
-        if (VaadinSession.getCurrent() != null) {
-            registrationList.add(SessionRouteRegistry
-                    .getSessionRegistry(VaadinSession.getCurrent())
-                    .addRoutesChangeListener(listener));
-        }
-        registrationList.add(registry.addRoutesChangeListener(listener));
-
-        return () -> registrationList.forEach(Registration::remove);
-    }
 }

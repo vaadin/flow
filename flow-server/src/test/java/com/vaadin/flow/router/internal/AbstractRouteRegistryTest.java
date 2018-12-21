@@ -192,6 +192,44 @@ public class AbstractRouteRegistryTest {
                 removed.size());
     }
 
+    @Test
+    public void changeListenerAddedDuringUpdate_eventIsFiredForListener() {
+        List<RouteData> added = new ArrayList<>();
+        List<RouteData> removed = new ArrayList<>();
+
+
+        registry.update(() -> {
+            registry
+                    .setRoute("main", Secondary.class, Collections.emptyList());
+            registry.setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+
+            // Long running task was done here and another thread added a listener
+            registry.addRoutesChangeListener(event -> {
+                added.clear();
+                removed.clear();
+                added.addAll(event.getAddedRoutes());
+                removed.addAll(event.getRemovedRoutes());
+            });
+
+            registry.setRoute("Alias2", Secondary.class,
+                    Collections.emptyList());
+        });
+
+        Assert.assertEquals(
+                "Main route and aliases should all be seen as added.", 3,
+                added.size());
+        Assert.assertTrue("No routes should have been removed",
+                removed.isEmpty());
+
+        registry.removeRoute("Alias2");
+
+        Assert.assertTrue("No routes should have been added", added.isEmpty());
+        Assert.assertEquals(
+                "Removing the alias route should be seen in the event", 1,
+                removed.size());
+    }
+
     @Tag("div")
     @Route("MyRoute")
     private static class MyRoute extends Component {

@@ -30,8 +30,33 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     private final String url;
     private final List<Class<?>> parameters;
     private final Class<? extends Component> navigationTarget;
-    private final List<RouteData> routeAliases;
+    private final List<AliasData> routeAliases;
 
+    /**
+     * Route data for an 'alias' route. This class is a RouteData class, but
+     * will never have any route aliases.
+     */
+    public static class AliasData extends RouteData {
+
+        /**
+         * AliasData constructor.
+         *
+         * @param parentLayouts
+         *         route parent layout class chain
+         * @param url
+         *         full route url
+         * @param parameters
+         *         navigation target path parameters
+         * @param navigationTarget
+         *         route navigation target
+         */
+        public AliasData(List<Class<? extends RouterLayout>> parentLayouts,
+                String url, List<Class<?>> parameters,
+                Class<? extends Component> navigationTarget) {
+            super(parentLayouts, url, parameters, navigationTarget,
+                    Collections.emptyList());
+        }
+    }
 
     /**
      * RouteData constructor.
@@ -50,7 +75,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget,
-            List<RouteData> routeAliases) {
+            List<AliasData> routeAliases) {
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
         this.url = url;
         this.parameters = Collections.unmodifiableList(parameters);
@@ -113,7 +138,7 @@ public class RouteData implements Comparable<RouteData>, Serializable {
      *
      * @return list of route aliases
      */
-    public List<RouteData> getRouteAliases() {
+    public List<AliasData> getRouteAliases() {
         return Collections.unmodifiableList(routeAliases);
     }
 

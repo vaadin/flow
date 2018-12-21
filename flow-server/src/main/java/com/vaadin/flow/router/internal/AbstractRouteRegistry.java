@@ -18,12 +18,12 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.component.Component;
@@ -76,7 +76,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private volatile RouteConfiguration routeConfiguration = new RouteConfiguration();
     private volatile RouteConfiguration editing = null;
 
-    private CopyOnWriteArrayList<RoutesChangedListener> routesChangedListeners;
+    private Set<RoutesChangedListener> routesChangedListeners = new HashSet<>();
 
     /**
      * Thread-safe update of the RouteConfiguration.
@@ -119,8 +119,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
                 routeConfiguration = new RouteConfiguration(editing, false);
 
-                if (routesChangedListeners != null && !routesChangedListeners
-                        .isEmpty()) {
+                if (!routesChangedListeners.isEmpty()) {
                     List<RouteData> oldRoutes = flattenRoutes(
                             getRegisteredRoutes(oldConfiguration));
                     List<RouteData> newRoutes = flattenRoutes(
@@ -147,8 +146,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     private void fireEvent(RoutesChangedEvent routeChangedEvent) {
-        assert hasLock() : "Expected to have the lock while firing listeners";
-        if (routesChangedListeners != null) {
+        synchronized (routesChangedListeners) {
             routesChangedListeners.forEach(
                     listener -> listener.routesChanged(routeChangedEvent));
         }
@@ -157,11 +155,14 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Registration addRoutesChangeListener(
             RoutesChangedListener listener) {
-        if (routesChangedListeners == null) {
-            routesChangedListeners = new CopyOnWriteArrayList<>();
+        synchronized (routesChangedListeners) {
+            routesChangedListeners.add(listener);
         }
-        routesChangedListeners.add(listener);
-        return () -> routesChangedListeners.remove(listener);
+        return () -> {
+            synchronized (routesChangedListeners) {
+                routesChangedListeners.remove(listener);
+            }
+        };
     }
 
     protected boolean hasLock() {
@@ -192,14 +193,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         configuration.getTargetRoutes().forEach((target, url) -> {
             List<Class<?>> parameters = getRouteParameters(target);
 
-            List<RouteData> routeAliases = new ArrayList<>();
+            List<RouteData.AliasData> routeAliases = new ArrayList<>();
 
             configuration.getRoutePaths(target).stream()
                     .filter(route -> !route.equals(url)).forEach(
-                    route -> routeAliases.add(new RouteData(
+                    route -> routeAliases.add(new RouteData.AliasData(
                             getParentLayouts(configuration, target, route),
-                            route, parameters, target,
-                            Collections.emptyList())));
+                            route, parameters, target)));
             List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
                     configuration, target, url);
             RouteData route = new RouteData(parentLayouts, url, parameters,
