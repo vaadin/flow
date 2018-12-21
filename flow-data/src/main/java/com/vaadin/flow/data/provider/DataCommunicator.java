@@ -428,23 +428,32 @@ public class DataCommunicator<T> implements Serializable {
     private void flush() {
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
+        Range effectiveRequested;
+        final Range previousActive = Range.withLength(activeStart,
+                activeKeyOrder.size());
+
+        // Phase 1: Find all items that the client should have
         if (resendEntireRange) {
             assumedSize = getDataProviderSize();
         }
-
-        final Range previousActive = Range.withLength(activeStart,
-                activeKeyOrder.size());
-        final Range effectiveRequested = requestedRange
+        effectiveRequested = requestedRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
         resendEntireRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
-        // Phase 1: Find all items that the client should have
-        List<String> newActiveKeyOrder = collectKeysToFlush(previousActive,
+        Activation activation = collectKeysToFlush(previousActive,
                 effectiveRequested);
 
-        activeKeyOrder = newActiveKeyOrder;
+        // If the returned stream from the DataProvider is smaller than it
+        // should, a new query for the actual size needs to be done
+        if (activation.isSizeRecheckNeeded()) {
+            assumedSize = getDataProviderSize();
+            effectiveRequested = requestedRange
+                    .restrictTo(Range.withLength(0, assumedSize));
+        }
+
+        activeKeyOrder = activation.getActiveKeys();
         activeStart = effectiveRequested.getStart();
 
         // Phase 2: Collect changes to send
@@ -456,7 +465,7 @@ public class DataCommunicator<T> implements Serializable {
         assumeEmptyClient = false;
 
         // Phase 3: passivate anything that isn't longer active
-        passivateInactiveKeys(oldActive, newActiveKeyOrder, update, updated);
+        passivateInactiveKeys(oldActive, update, updated);
 
         // Phase 4: unregister passivated and updated items
         unregisterPassivatedKeys();
@@ -495,8 +504,8 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private void passivateInactiveKeys(Set<String> oldActive,
-            List<String> newActiveKeyOrder, Update update, boolean updated) {
+    private void passivateInactiveKeys(Set<String> oldActive, Update update,
+            boolean updated) {
         /*
          * We cannot immediately unregister keys that we have asked the client
          * to remove, since the client might send a message using that key
@@ -508,7 +517,7 @@ public class DataCommunicator<T> implements Serializable {
             update.commit(updateId);
 
             // Finally clear any passivated items that have now been confirmed
-            oldActive.removeAll(newActiveKeyOrder);
+            oldActive.removeAll(activeKeyOrder);
             if (!oldActive.isEmpty()) {
                 passivatedByUpdate.put(Integer.valueOf(updateId), oldActive);
             }
@@ -553,31 +562,36 @@ public class DataCommunicator<T> implements Serializable {
         return updated;
     }
 
-    private List<String> collectKeysToFlush(final Range previousActive,
+    private Activation collectKeysToFlush(final Range previousActive,
             final Range effectiveRequested) {
-        List<String> newActiveKeyOrder;
         /*
          * Collecting all items even though only some small sub range would
          * actually be useful can be optimized away once we have some actual
          * test coverage for the logic here.
          */
         if (resendEntireRange) {
-            newActiveKeyOrder = activate(effectiveRequested);
+            return activate(effectiveRequested);
         } else {
+            List<String> newActiveKeyOrder = new ArrayList<>();
+            boolean sizeRecheckNeeded = false;
+
             Range[] partitionWith = effectiveRequested
                     .partitionWith(previousActive);
 
-            newActiveKeyOrder = new ArrayList<>();
-            newActiveKeyOrder.addAll(activate(partitionWith[0]));
+            Activation activation = activate(partitionWith[0]);
+            newActiveKeyOrder.addAll(activation.getActiveKeys());
+            sizeRecheckNeeded |= activation.isSizeRecheckNeeded();
 
             // Pick existing items from the current list
             Range overlap = partitionWith[1].offsetBy(-activeStart);
             newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(),
                     overlap.getEnd()));
 
-            newActiveKeyOrder.addAll(activate(partitionWith[2]));
+            activation = activate(partitionWith[2]);
+            newActiveKeyOrder.addAll(activation.getActiveKeys());
+            sizeRecheckNeeded |= activation.isSizeRecheckNeeded();
+            return new Activation(newActiveKeyOrder, sizeRecheckNeeded);
         }
-        return newActiveKeyOrder;
     }
 
     private List<JsonValue> getJsonItems(Range range) {
@@ -602,9 +616,9 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private List<String> activate(Range range) {
+    private Activation activate(Range range) {
         if (range.isEmpty()) {
-            return Collections.emptyList();
+            return Activation.empty();
         }
 
         // XXX Explicitly refresh anything that is updated
@@ -620,7 +634,8 @@ public class DataCommunicator<T> implements Serializable {
             }
             activeKeys.add(key);
         });
-        return activeKeys;
+        boolean needsSizeRecheck = activeKeys.size() < range.length();
+        return new Activation(activeKeys, needsSizeRecheck);
     }
 
     private JsonValue generateJson(T item) {
@@ -628,5 +643,27 @@ public class DataCommunicator<T> implements Serializable {
         json.put("key", getKeyMapper().key(item));
         dataGenerator.generateData(item, json);
         return json;
+    }
+
+    private static class Activation implements Serializable {
+        private final List<String> activeKeys;
+        private final boolean sizeRecheckNeeded;
+
+        public Activation(List<String> activeKeys, boolean sizeRecheckNeeded) {
+            this.activeKeys = activeKeys;
+            this.sizeRecheckNeeded = sizeRecheckNeeded;
+        }
+
+        public List<String> getActiveKeys() {
+            return activeKeys;
+        }
+
+        public boolean isSizeRecheckNeeded() {
+            return sizeRecheckNeeded;
+        }
+
+        public static Activation empty() {
+            return new Activation(Collections.emptyList(), false);
+        }
     }
 }
