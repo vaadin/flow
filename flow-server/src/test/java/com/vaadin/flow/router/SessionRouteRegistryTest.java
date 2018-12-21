@@ -21,6 +21,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
@@ -41,9 +42,6 @@ public class SessionRouteRegistryTest {
                 .getInstance(Mockito.mock(ServletContext.class));
 
         vaadinService = Mockito.mock(MockService.class);
-        Mockito.when(vaadinService.addSessionDestroyListener(Mockito.any()))
-                .thenReturn(() -> {
-                });
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
@@ -305,12 +303,11 @@ public class SessionRouteRegistryTest {
 
         SessionRouteRegistry sessionRegistry = getRegistry(session);
         sessionRegistry
+                .setRoute("main", Secondary.class, Collections.emptyList());
+        sessionRegistry
                 .setRoute("Alias1", Secondary.class, Collections.emptyList());
         sessionRegistry
                 .setRoute("Alias2", Secondary.class, Collections.emptyList());
-
-        sessionRegistry
-                .setRoute("main", Secondary.class, Collections.emptyList());
 
         List<RouteData> registeredRoutes = sessionRegistry
                 .getRegisteredRoutes();
@@ -696,6 +693,139 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals(
                 "After unlock registry should be updated for others to configure with new data",
                 2, getRegistry(session).getRegisteredRoutes().size());
+    }
+
+    @Test
+    public void routeChangeListener_correctChangesAreReturned() {
+        SessionRouteRegistry registry = getRegistry(session);
+
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
+
+        registry.addRoutesChangeListener(event -> {
+            added.clear();
+            removed.clear();
+            added.addAll(event.getAddedRoutes());
+            removed.addAll(event.getRemovedRoutes());
+        });
+
+        registry.setRoute("", MyRoute.class, Collections.emptyList());
+
+        Assert.assertFalse("Added should contain data for one entry",
+                added.isEmpty());
+        Assert.assertTrue("No routes should have been removed",
+                removed.isEmpty());
+
+        Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
+        Assert.assertEquals("", added.get(0).getUrl());
+
+        registry.setRoute("home", Secondary.class, Collections.emptyList());
+
+        Assert.assertFalse("Added should contain data for one entry",
+                added.isEmpty());
+        Assert.assertEquals("Only latest change should be available", 1,
+                added.size());
+        Assert.assertTrue("No routes should have been removed",
+                removed.isEmpty());
+
+        Assert.assertEquals(Secondary.class,
+                added.get(0).getNavigationTarget());
+        Assert.assertEquals("home", added.get(0).getUrl());
+
+        registry.removeRoute("home");
+
+        Assert.assertTrue("No routes should have been added", added.isEmpty());
+        Assert.assertEquals("One route should have gotten removed", 1,
+                removed.size());
+
+        Assert.assertEquals(Secondary.class,
+                removed.get(0).getNavigationTarget());
+        Assert.assertEquals("The 'home' route should have been removed", "home",
+                removed.get(0).getUrl());
+    }
+
+    @Test
+    public void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
+        SessionRouteRegistry registry = getRegistry(session);
+
+        registry.setRoute("", MyRoute.class, Collections.emptyList());
+
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
+
+        registry.addRoutesChangeListener(event -> {
+            added.clear();
+            removed.clear();
+            added.addAll(event.getAddedRoutes());
+            removed.addAll(event.getRemovedRoutes());
+        });
+
+        registry.update(() -> {
+            registry.removeRoute("");
+            registry.setRoute("path", Secondary.class, Collections.emptyList());
+            registry.setRoute("", MyRoute.class,
+                    Collections.singletonList(MainLayout.class));
+        });
+
+        Assert.assertEquals("Two ne paths should have been added", 2,
+                added.size());
+        Assert.assertEquals("One path should have been removed", 1,
+                removed.size());
+
+        for (RouteBaseData data : added) {
+            if (data.getUrl().equals("")) {
+                Assert.assertEquals("MyRoute should have been added",
+                        MyRoute.class, data.getNavigationTarget());
+                Assert.assertEquals(
+                        "MyRoute should have been seen as a update as the parent layouts changed.",
+                        MainLayout.class, data.getParentLayout());
+            } else {
+                Assert.assertEquals("", Secondary.class,
+                        data.getNavigationTarget());
+            }
+        }
+
+        Assert.assertEquals("One MyRoute should have been removed",
+                MyRoute.class, removed.get(0).getNavigationTarget());
+        Assert.assertEquals("Removed version should not have a parent layout",
+                UI.class, removed.get(0).getParentLayout());
+    }
+
+    @Test
+    public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
+
+        sessionRegistry.addRoutesChangeListener(event -> {
+            added.clear();
+            removed.clear();
+            added.addAll(event.getAddedRoutes());
+            removed.addAll(event.getRemovedRoutes());
+        });
+
+        sessionRegistry.update(() -> {
+            sessionRegistry
+                    .setRoute("main", Secondary.class, Collections.emptyList());
+            sessionRegistry.setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+            sessionRegistry.setRoute("Alias2", Secondary.class,
+                    Collections.emptyList());
+        });
+
+        Assert.assertEquals(
+                "Main route and aliases should all be seen as added.", 3,
+                added.size());
+        Assert.assertTrue("No routes should have been removed",
+                removed.isEmpty());
+
+        sessionRegistry.removeRoute("Alias2");
+
+        Assert.assertTrue("No routes should have been added", added.isEmpty());
+        Assert.assertEquals(
+                "Removing the alias route should be seen in the event", 1,
+                removed.size());
     }
 
     @Tag("div")

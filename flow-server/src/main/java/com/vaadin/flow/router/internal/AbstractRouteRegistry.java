@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.component.Component;
@@ -29,13 +30,18 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.RouteAliasData;
+import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutesChangedEvent;
+import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.startup.RouteTarget;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * AbstractRouteRegistry with locking support and configuration.
@@ -70,6 +76,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      */
     private volatile RouteConfiguration routeConfiguration = new RouteConfiguration();
     private volatile RouteConfiguration editing = null;
+
+    private CopyOnWriteArrayList<RoutesChangedListener> routesChangedListeners = new CopyOnWriteArrayList<>();
 
     /**
      * Thread-safe update of the RouteConfiguration.
@@ -108,12 +116,46 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private void unlock() {
         if (configurationLock.getHoldCount() == 1 && editing != null) {
             try {
+                RouteConfiguration oldConfiguration = routeConfiguration;
+
                 routeConfiguration = new RouteConfiguration(editing, false);
+
+                if (!routesChangedListeners.isEmpty()) {
+                    List<RouteBaseData<?>> oldRoutes = flattenRoutes(
+                            getRegisteredRoutes(oldConfiguration));
+                    List<RouteBaseData<?>> newRoutes = flattenRoutes(
+                            getRegisteredRoutes(editing));
+                    List<RouteBaseData<?>> added = new ArrayList<>();
+                    List<RouteBaseData<?>> removed = new ArrayList<>();
+
+                    oldRoutes.stream()
+                            .filter(route -> !newRoutes.contains(route))
+                            .forEach(removed::add);
+                    newRoutes.stream()
+                            .filter(route -> !oldRoutes.contains(route))
+                            .forEach(added::add);
+
+                    fireEvent(new RoutesChangedEvent(this, added, removed));
+                }
             } finally {
                 editing = null;
+                configurationLock.unlock();
             }
+        } else {
+            configurationLock.unlock();
         }
-        configurationLock.unlock();
+    }
+
+    private void fireEvent(RoutesChangedEvent routeChangedEvent) {
+        routesChangedListeners
+                .forEach(listener -> listener.routesChanged(routeChangedEvent));
+    }
+
+    @Override
+    public Registration addRoutesChangeListener(
+            RoutesChangedListener listener) {
+        routesChangedListeners.add(listener);
+        return () -> routesChangedListeners.remove(listener);
     }
 
     protected boolean hasLock() {
@@ -135,19 +177,25 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     @Override
     public List<RouteData> getRegisteredRoutes() {
+        return getRegisteredRoutes(routeConfiguration);
+    }
+
+    private List<RouteData> getRegisteredRoutes(
+            RouteConfiguration configuration) {
         List<RouteData> registeredRoutes = new ArrayList<>();
-        routeConfiguration.getTargetRoutes().forEach((target, url) -> {
+        configuration.getTargetRoutes().forEach((target, url) -> {
             List<Class<?>> parameters = getRouteParameters(target);
 
-            List<RouteData.AliasData> routeAliases = new ArrayList<>();
+            List<RouteAliasData> routeAliases = new ArrayList<>();
 
-            routeConfiguration.getRoutePaths(target).stream()
+            configuration.getRoutePaths(target).stream()
                     .filter(route -> !route.equals(url)).forEach(
-                    route -> routeAliases.add(new RouteData.AliasData(
-                            getParentLayout(target, route), route)));
-            Class<? extends RouterLayout> parentLayout = getParentLayout(target,
-                    url);
-            RouteData route = new RouteData(parentLayout, url, parameters,
+                    route -> routeAliases.add(new RouteAliasData(
+                            getParentLayouts(configuration, target, route),
+                            route, parameters, target)));
+            List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
+                    configuration, target, url);
+            RouteData route = new RouteData(parentLayouts, url, parameters,
                     target, routeAliases);
             registeredRoutes.add(route);
         });
@@ -157,14 +205,41 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Collections.unmodifiableList(registeredRoutes);
     }
 
-    private Class<? extends RouterLayout> getParentLayout(
-            Class<? extends Component> target, String url) {
-        List<Class<? extends RouterLayout>> parentLayouts = routeConfiguration
-                .getRouteTarget(url).getParentLayouts(target);
-        if (!parentLayouts.isEmpty()) {
-            return parentLayouts.get(0);
+    /**
+     * Flatten route data so that all route aliases are also as their own
+     * entries in the list. Removes any route aliases as the route is the same
+     * even if aliases change.
+     *
+     * @param routeData
+     *         route data to flatten.
+     * @return flattened list of routes and aliases
+     */
+    private List<RouteBaseData<?>> flattenRoutes(List<RouteData> routeData) {
+        List<RouteBaseData<?>> flatRoutes = new ArrayList<>();
+        for (RouteData route : routeData) {
+            RouteData nonAliasCollection = new RouteData(
+                    route.getParentLayouts(), route.getUrl(),
+                    route.getParameters(), route.getNavigationTarget(),
+                    Collections.emptyList());
+
+            flatRoutes.add(nonAliasCollection);
+            route.getRouteAliases().forEach(flatRoutes::add);
         }
-        return UI.class;
+
+        return flatRoutes;
+    }
+
+    private List<Class<? extends RouterLayout>> getParentLayouts(
+            RouteConfiguration configuration, Class<? extends Component> target,
+            String url) {
+        if (configuration.getRouteTarget(url) != null) {
+            List<Class<? extends RouterLayout>> parentLayouts = configuration
+                    .getRouteTarget(url).getParentLayouts(target);
+            if (!parentLayouts.isEmpty()) {
+                return parentLayouts;
+            }
+        }
+        return Collections.singletonList(UI.class);
     }
 
     @Override

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -48,6 +50,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
@@ -56,7 +59,10 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
@@ -2967,7 +2973,6 @@ public class RouterTest extends RoutingTestBase {
                         .get().getNavigationTarget());
     }
 
-
     @Tag("div")
     @Route("noParent")
     @RouteAlias(value = "twoParents", layout = BaseLayout.class)
@@ -2982,11 +2987,14 @@ public class RouterTest extends RoutingTestBase {
         List<Class<? extends RouterLayout>> parents = router.getRegistry()
                 .getRouteLayouts("noParent", AliasLayout.class);
 
-        Assert.assertTrue("Main route should have no parents.",parents.isEmpty());
+        Assert.assertTrue("Main route should have no parents.",
+                parents.isEmpty());
 
-        parents = router.getRegistry().getRouteLayouts("twoParents", AliasLayout.class);
+        parents = router.getRegistry()
+                .getRouteLayouts("twoParents", AliasLayout.class);
 
-        Assert.assertEquals("Route alias should have two parents", 2, parents.size());
+        Assert.assertEquals("Route alias should have two parents", 2,
+                parents.size());
     }
 
     @Test
@@ -3026,8 +3034,9 @@ public class RouterTest extends RoutingTestBase {
 
     private void setErrorNavigationTargets(
             Class<? extends Component>... errorNavigationTargets) {
-        ((ApplicationRouteRegistry) router.getRegistry()).setErrorNavigationTargets(
-                new HashSet<>(Arrays.asList(errorNavigationTargets)));
+        ((ApplicationRouteRegistry) router.getRegistry())
+                .setErrorNavigationTargets(
+                        new HashSet<>(Arrays.asList(errorNavigationTargets)));
     }
 
     private Class<? extends Component> getUIComponent() {

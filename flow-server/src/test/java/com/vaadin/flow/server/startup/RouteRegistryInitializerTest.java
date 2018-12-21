@@ -39,6 +39,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -1210,7 +1211,7 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Not all registered routes were returned", 5,
                 routeData.getRouteAliases().size());
 
-        List<RouteData.AliasData> routeAliases = routeData.getRouteAliases();
+        List<RouteAliasData> routeAliases = routeData.getRouteAliases();
 
         Assert.assertEquals("Sort order was not the one expected",
                 "absolute/alias2", routeAliases.get(0).getUrl());

@@ -15,22 +15,22 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 
 /**
- * Data collection of information for a specific registered route target.
+ * Route data for an 'alias' route. An alias route is a route that will get
+ * another path than this when it is resolved. The same target will still be
+ * resolved for this path, but the parent layouts may differ.
  * <p>
  * Only for read as data is immutable.
  */
-public class RouteData extends RouteBaseData<RouteData> {
-    private final List<RouteAliasData> routeAliases;
+public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 
     /**
-     * RouteData constructor.
+     * AliasData constructor.
      *
      * @param parentLayouts
      *         route parent layout class chain
@@ -40,51 +40,34 @@ public class RouteData extends RouteBaseData<RouteData> {
      *         navigation target path parameters
      * @param navigationTarget
      *         route navigation target
-     * @param routeAliases
-     *         list of aliases for this route
      */
-    public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
+    public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
-            Class<? extends Component> navigationTarget,
-            List<RouteAliasData> routeAliases) {
+            Class<? extends Component> navigationTarget) {
         super(parentLayouts, url, parameters, navigationTarget);
-
-        Collections.sort(routeAliases);
-        this.routeAliases = Collections.unmodifiableList(routeAliases);
     }
 
-    /**
-     * Get all RouteAliases for this registered path.
-     *
-     * @return list of route aliases
-     */
-    public List<RouteAliasData> getRouteAliases() {
-        return routeAliases;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RouteAliasData) {
+            RouteAliasData other = (RouteAliasData) obj;
+            return other.getParentLayouts().equals(this.getParentLayouts())
+                    && other.getUrl().equals(this.getUrl()) && other
+                    .getNavigationTarget().equals(getNavigationTarget());
+        }
+        return false;
     }
 
     @Override
     public String toString() {
         return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
                 + getUrl() + '\'' + ", parameters=" + getParameters()
-                + ", navigationTarget=" + getNavigationTarget()
-                + ", routeAliases=" + routeAliases + '}';
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof RouteData) {
-            RouteData other = (RouteData) obj;
-            return other.getParentLayouts().equals(this.getParentLayouts())
-                    && other.getUrl().equals(this.getUrl()) && other
-                    .getNavigationTarget().equals(getNavigationTarget())
-                    && routeAliases.containsAll(other.routeAliases);
-        }
-        return false;
+                + ", navigationTarget=" + getNavigationTarget() + '}';
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getParentLayouts(), getUrl(), getNavigationTarget(),
-                routeAliases);
+        return Objects
+                .hash(getParentLayouts(), getUrl(), getNavigationTarget());
     }
 }
