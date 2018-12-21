@@ -35,11 +35,27 @@ import java.lang.annotation.Target;
 @Inherited
 @Documented
 public @interface Viewport {
+    /**
+     * Sets the viewport at the width of the device. It makes the page match the
+     * screen’s width in device-independent pixels, allowing its content to
+     * reflow to match different screen sizes.
+     * <p>
+     * Recommended for a Responsive Web Design.
+     */
     String DEFAULT = "width=device-width, initial-scale=1.0";
 
-    String FULL_SCREEN_MOBILE = "width=device-width, initial-scale=1";
+    /**
+     * Sets the viewport to the height of the device rather than the rendered
+     * space.
+     */
+    String DEVICE_HEIGHT = "height=device-height, initial-scale=1.0";
 
-    String MOBILE_FIXED_ZOOM = "initial-scale=1, maximum-scale=1";
+    /**
+     * Sets the viewport at the width and height of the device. The device-width
+     * and device-height properties are translated to 100vw and 100vh
+     * respectively.
+     */
+    String DEVICE_DIMENSIONS = "width=device-width, height=device-height, initial-scale=1.0";
 
     /**
      * Gets the viewport tag content.
