@@ -57,7 +57,7 @@ public class RoutesChangedEvent extends EventObject {
     /**
      * Get all routes added for this change.
      *
-     * @return list of all added routes
+     * @return immutable list of all added routes
      */
     public List<RouteBaseData<?>> getAddedRoutes() {
         return added;
@@ -66,7 +66,7 @@ public class RoutesChangedEvent extends EventObject {
     /**
      * Get all routes removed in this change.
      *
-     * @return list of all removed routes
+     * @return immutable list of all removed routes
      */
     public List<RouteBaseData<?>> getRemovedRoutes() {
         return removed;

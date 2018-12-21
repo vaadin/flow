@@ -24,6 +24,8 @@ import com.vaadin.flow.component.Component;
  * Route data for an 'alias' route. An alias route is a route that will get
  * another path than this when it is resolved. The same target will still be
  * resolved for this path, but the parent layouts may differ.
+ * <p>
+ * Only for read as data is immutable.
  */
 public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 

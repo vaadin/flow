@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +23,8 @@ import com.vaadin.flow.component.Component;
 
 /**
  * Data collection of information for a specific registered route target.
+ * <p>
+ * Only for read as data is immutable.
  */
 public class RouteData extends RouteBaseData<RouteData> {
     private final List<RouteAliasData> routeAliases;
@@ -47,9 +48,9 @@ public class RouteData extends RouteBaseData<RouteData> {
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
         super(parentLayouts, url, parameters, navigationTarget);
-        this.routeAliases = new ArrayList<>(routeAliases);
 
-        Collections.sort(this.routeAliases);
+        Collections.sort(routeAliases);
+        this.routeAliases = Collections.unmodifiableList(routeAliases);
     }
 
     /**
@@ -58,7 +59,7 @@ public class RouteData extends RouteBaseData<RouteData> {
      * @return list of route aliases
      */
     public List<RouteAliasData> getRouteAliases() {
-        return Collections.unmodifiableList(routeAliases);
+        return routeAliases;
     }
 
     @Override

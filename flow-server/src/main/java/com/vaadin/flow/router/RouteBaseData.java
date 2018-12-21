@@ -23,7 +23,9 @@ import java.util.Objects;
 import com.vaadin.flow.component.Component;
 
 /**
- * Abstract base data class for route and route alias data.
+ * Abstract base class for route and route alias data.
+ * <p>
+ * Only for read as data is immutable.
  *
  * @param <T>
  *         base data implementation
@@ -93,7 +95,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * @return url parameters (by type and in order)
      */
     public List<Class<?>> getParameters() {
-        return Collections.unmodifiableList(parameters);
+        return parameters;
     }
 
     /**
