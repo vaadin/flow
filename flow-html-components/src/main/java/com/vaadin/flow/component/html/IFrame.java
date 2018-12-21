@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
 
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.stream.Stream;
  * @since 1.3
  */
 @Tag(Tag.IFRAME)
-public class Iframe extends Component {
+public class IFrame extends HtmlComponent {
 
   /**
    * Importance types.
@@ -93,7 +93,7 @@ public class Iframe extends Component {
    * Creates a new iframe.
    * @param src Source URL
    */
-  public Iframe(String src) {
+  public IFrame(String src) {
     setSrc(src);
   }
 
@@ -112,23 +112,6 @@ public class Iframe extends Component {
   public Optional<String> getAllow(){
     return optionallyGetAttribute("allow");
   }
-
-  /**
-   * Sets the height in CSS pixels.
-   * @param height Pixels.
-   */
-  public void setHeight(Integer height){
-    getElement().setAttribute("height", height.toString());
-  }
-
-  /**
-   * @return the current height attribute.
-   */
-  public Optional<Integer> getHeight(){
-    return optionallyGetAttribute("height")
-        .map(Integer::valueOf);
-  }
-
 
   /**
    * Sets the importance attribute to the specified {@link ImportanceType} value.
@@ -212,19 +195,35 @@ public class Iframe extends Component {
   }
 
   /**
-   * Sets the width of the iframe.
+   * Sets the attribute width of the iframe tag.
    * @param width Width in CSS pixels.
    */
-  public void setWidth(Integer width) {
+  public void setIFrameWidth(Integer width) {
     getElement().setAttribute("width", width.toString());
   }
 
   /**
-   * @return the width of the iframe.
+   * @return the width of the iframe as specified in the tag's width attribute.
    */
-  public Optional<Integer> getWidth() {
+  public Optional<Integer> getIFrameWidth() {
     return optionallyGetAttribute("width")
         .map(Integer::valueOf);
+  }
+
+  /**
+   * Sets the attribute height in CSS pixels.
+   * @param height Pixels.
+   */
+  public void setIFrameHeight(Integer height) {
+    getElement().setAttribute("height", height.toString());
+  }
+
+  /**
+   * @return the current height of the iframe as specified by the tag's height attribute.
+   */
+  public Optional<Integer> getIFrameHeight() {
+    return optionallyGetAttribute("height")
+            .map(Integer::valueOf);
   }
 
 
@@ -233,7 +232,7 @@ public class Iframe extends Component {
    * @param attributeName Name of attribute
    * @return Optional containing value, or empty optional
    */
-  private Optional<String> optionallyGetAttribute(String attributeName){
+  private Optional<String> optionallyGetAttribute(String attributeName) {
     String value = getElement().getAttribute(attributeName);
 
     if(value!=null){
