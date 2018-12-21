@@ -3034,15 +3034,4 @@ public class RouterTest extends RoutingTestBase {
             return routeNotFoundError.getElement().getText();
         }
     }
-
-    /**
-     * Extending class to let us mock the getRouteRegistry method for testing.
-     */
-    private static class MockService extends VaadinServletService {
-
-        @Override
-        public RouteRegistry getRouteRegistry() {
-            return super.getRouteRegistry();
-        }
-    }
 }
