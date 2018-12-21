@@ -57,6 +57,13 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
     }
 
     @Override
+    public String toString() {
+        return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
+                + getUrl() + '\'' + ", parameters=" + getParameters()
+                + ", navigationTarget=" + getNavigationTarget() + '}';
+    }
+
+    @Override
     public int hashCode() {
         return Objects
                 .hash(getParentLayouts(), getUrl(), getNavigationTarget());

@@ -63,7 +63,10 @@ public class RouteData extends RouteBaseData<RouteData> {
 
     @Override
     public String toString() {
-        return super.toString() + ", routeAliases=" + routeAliases + '}';
+        return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
+                + getUrl() + '\'' + ", parameters=" + getParameters()
+                + ", navigationTarget=" + getNavigationTarget()
+                + ", routeAliases=" + routeAliases + '}';
     }
 
     @Override
@@ -80,7 +83,7 @@ public class RouteData extends RouteBaseData<RouteData> {
 
     @Override
     public int hashCode() {
-        return Objects
-                .hash(getParentLayouts(), getUrl(), getNavigationTarget(), routeAliases);
+        return Objects.hash(getParentLayouts(), getUrl(), getNavigationTarget(),
+                routeAliases);
     }
 }
