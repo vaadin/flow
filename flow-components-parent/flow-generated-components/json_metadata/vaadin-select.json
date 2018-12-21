@@ -1,0 +1,150 @@
+{
+  "name": "Vaadin.SelectElement",
+  "tag": "vaadin-select",
+  "baseUrl": "vaadin-select/src/vaadin-select.html",
+  "version": "2.0.2",
+  "properties": [
+    {
+      "name": "autofocus",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specify that this control should have input focus when the page loads.\n         "
+    },
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the user cannot interact with this element.\n         "
+    },
+    {
+      "name": "opened",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set when the select is open\n             ",
+      "notify": true
+    },
+    {
+      "name": "renderer",
+      "type": [
+        "FUNCTION"
+      ],
+      "objectType": [],
+      "description": "Custom function for rendering the content of the `<vaadin-select>`.\nReceives two arguments:\n\n- `root` The `<vaadin-select-overlay>` internal container\n  DOM element. Append your content to it.\n- `select` The reference to the `<vaadin-select>` element.\n             "
+    },
+    {
+      "name": "errorMessage",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The error message to display when the select value is invalid\n             "
+    },
+    {
+      "name": "label",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "String used for the label element.\n             "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "It stores the the `value` property of the selected item, providing the\nvalue for iron-form.\nWhen there’s an item selected, it's the value of that item, otherwise\nit's an empty string.\nOn change or initialization, the component finds the item which matches the\nvalue and displays it.\nIf no value is provided to the component, it selects the first item without\nvalue or empty value.\nHint: If you do not want to select any item by default, you can either set all\nthe values of inner vaadin-items, or set the vaadin-select value to\nan inexistent value in the items list.\n             ",
+      "notify": true
+    },
+    {
+      "name": "required",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "The current required state of the select. True if required.\n             "
+    },
+    {
+      "name": "invalid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true if the value is invalid.\n             ",
+      "notify": true
+    },
+    {
+      "name": "name",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of this element.\n             "
+    },
+    {
+      "name": "placeholder",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "A hint to the user of what can be entered in the control.\nThe placeholder will be displayed in the case that there\nis no item selected, or the selected item has an empty\nstring label, or the selected item has no label and it's\nDOM content is empty.\n             "
+    },
+    {
+      "name": "readonly",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When present, it specifies that the element is read-only.\n             "
+    }
+  ],
+  "methods": [
+    {
+      "name": "render",
+      "description": "Manually invoke existing renderer.\n         ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "validate",
+      "description": "Returns true if `value` is valid, and sets the `invalid` flag appropriately.",
+      "parameters": [],
+      "returns": "BOOLEAN"
+    }
+  ],
+  "events": [
+    {
+      "name": "opened-changed",
+      "description": "Fired when the `opened` property changes.",
+      "properties": []
+    },
+    {
+      "name": "value-changed",
+      "description": "Fired when the `value` property changes.",
+      "properties": []
+    },
+    {
+      "name": "invalid-changed",
+      "description": "Fired when the `invalid` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [
+    "prefix"
+  ],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ElementMixin",
+    "Vaadin.ControlStateMixin",
+    "Vaadin.ThemableMixin",
+    "Vaadin.ThemePropertyMixin"
+  ],
+  "variants": {},
+  "description": "`<vaadin-select>` is a Web Component for selecting values from a list of items. The content of the\nthe select can be populated in two ways: imperatively by using renderer callback function and\ndeclaratively by using Polymer's Templates.\n\n### Rendering\n\nBy default, the select uses the content provided by using the renderer callback function.\n\nThe renderer function provides `root`, `select` arguments.\nGenerate DOM content, append it to the `root` element and control the state\nof the host element by accessing `select`.\n\n```html\n<vaadin-select id=\"select\"></vaadin-select>\n```\n```js\nconst select = document.querySelector('#select');\nselect.renderer = function(root, select) {\n  const listBox = document.createElement('vaadin-list-box');\n  // append 3 <vaadin-item> elements\n  ['Jose', 'Manolo', 'Pedro'].forEach(function(name) {\n    const item = document.createElement('vaadin-item');\n    item.textContent = name;\n    listBox.appendChild(item);\n  });\n\n  // update the content\n  root.appendChild(listBox);\n};\n```\n\nRenderer is called on initialization of new select and on its opening.\nDOM generated during the renderer call can be reused\nin the next renderer call and will be provided with the `root` argument.\nOn first call it will be empty.\n\n### Polymer Templates\n\nAlternatively, the content can be provided with Polymer's Template.\nSelect finds the first child template and uses that in case renderer callback function\nis not provided. You can also set a custom template using the `template` property.\n\n```\n<vaadin-select>\n  <template>\n    <vaadin-list-box>\n      <vaadin-item label=\"foo\">Foo</vaadin-item>\n      <vaadin-item>Bar</vaadin-item>\n      <vaadin-item>Baz</vaadin-item>\n    </vaadin-list-box>\n  </template>\n</vaadin-select>\n```\n\nHint: By setting the `label` property of inner vaadin-items you will\nbe able to change the visual representation of the selected value in the input part.\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`toggle-button` | The toggle button\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`opened` | Set when the select is open | :host\n`invalid` | Set when the element is invalid | :host\n`focused` | Set when the element is focused | :host\n`focus-ring` | Set when the element is keyboard focused | :host\n`readonly` | Set when the select is read only | :host\n\n`<vaadin-select>` element sets these custom CSS properties:\n\nProperty name | Description | Theme for element\n--- | --- | ---\n`--vaadin-select-text-field-width` | Width of the select text field | `vaadin-select-overlay`\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)\n\nIn addition to `<vaadin-select>` itself, the following internal\ncomponents are themable:\n\n- `<vaadin-select-text-field>`\n- `<vaadin-select-overlay>`\n\nNote: the `theme` attribute value set on `<vaadin-select>` is\npropagated to the internal themable components listed above."
+}
