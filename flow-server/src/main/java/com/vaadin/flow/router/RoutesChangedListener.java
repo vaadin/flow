@@ -23,7 +23,6 @@ import com.vaadin.flow.server.RouteRegistry;
  * Listener that gets notified when the registered routes for a {@link
  * RouteRegistry} are changed in some way.
  *
- * @see Router#addRoutesChangedListener(RoutesChangedListener)
  * @see RouteRegistry#addRoutesChangeListener(RoutesChangedListener)
  */
 @FunctionalInterface
