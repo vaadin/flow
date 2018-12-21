@@ -18,9 +18,16 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 
+/**
+ * Abstract base data class for route and route alias data.
+ *
+ * @param <T>
+ *         base data implementation
+ */
 public abstract class RouteBaseData<T extends RouteBaseData>
         implements Comparable<T>, Serializable {
 
@@ -29,6 +36,18 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     private final List<Class<?>> parameters;
     private final Class<? extends Component> navigationTarget;
 
+    /**
+     * RouteBaseData constructor.
+     *
+     * @param parentLayouts
+     *         route parent layout class chain
+     * @param url
+     *         full route url
+     * @param parameters
+     *         navigation target path parameters
+     * @param navigationTarget
+     *         route navigation target
+     */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {
@@ -100,5 +119,10 @@ public abstract class RouteBaseData<T extends RouteBaseData>
                     .equals(navigationTarget);
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parentLayouts, url, navigationTarget);
     }
 }
