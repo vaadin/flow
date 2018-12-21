@@ -48,7 +48,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * The router takes care of serving content when the user navigates within a

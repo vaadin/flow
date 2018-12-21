@@ -15,20 +15,19 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
 
 /**
- * Data collection of information for a specific registered route target.
+ * Route data for an 'alias' route. An alias route is a route that will get
+ * another path than this when it is resolved. The same target will still be
+ * resolved for this path, but the parent layouts may differ.
  */
-public class RouteData extends RouteBaseData<RouteData> {
-    private final List<RouteAliasData> routeAliases;
+public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 
     /**
-     * RouteData constructor.
+     * AliasData constructor.
      *
      * @param parentLayouts
      *         route parent layout class chain
@@ -38,30 +37,11 @@ public class RouteData extends RouteBaseData<RouteData> {
      *         navigation target path parameters
      * @param navigationTarget
      *         route navigation target
-     * @param routeAliases
-     *         list of aliases for this route
      */
-    public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
+    public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
-            Class<? extends Component> navigationTarget,
-            List<RouteAliasData> routeAliases) {
+            Class<? extends Component> navigationTarget) {
         super(parentLayouts, url, parameters, navigationTarget);
-        this.routeAliases = new ArrayList<>(routeAliases);
-
-        Collections.sort(this.routeAliases);
     }
 
-    /**
-     * Get all RouteAliases for this registered path.
-     *
-     * @return list of route aliases
-     */
-    public List<RouteAliasData> getRouteAliases() {
-        return Collections.unmodifiableList(routeAliases);
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + ", routeAliases=" + routeAliases + '}';
-    }
 }

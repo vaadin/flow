@@ -20,6 +20,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
@@ -351,8 +352,8 @@ public class ApplicationRouteRegistryTest {
 
     @Test
     public void routeChangeListener_correctChangesAreReturned() {
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.addRoutesChangeListener(event -> {
             added.clear();
@@ -400,8 +401,8 @@ public class ApplicationRouteRegistryTest {
     public void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
         registry.setRoute("", MyRoute.class, Collections.emptyList());
 
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.addRoutesChangeListener(event -> {
             added.clear();
@@ -421,7 +422,7 @@ public class ApplicationRouteRegistryTest {
         Assert.assertEquals("", 2, added.size());
         Assert.assertFalse("", removed.isEmpty());
 
-        for (RouteData data : added) {
+        for (RouteBaseData data : added) {
             if (data.getUrl().equals("")) {
                 Assert.assertEquals("MyRoute should have been added",
                         MyRoute.class, data.getNavigationTarget());
@@ -442,8 +443,8 @@ public class ApplicationRouteRegistryTest {
 
     @Test
     public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.addRoutesChangeListener(event -> {
             added.clear();

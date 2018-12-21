@@ -27,8 +27,8 @@ import com.vaadin.flow.server.RouteRegistry;
  */
 public class RoutesChangedEvent extends EventObject {
 
-    private final List<RouteData> added;
-    private final List<RouteData> removed;
+    private final List<RouteBaseData> added;
+    private final List<RouteBaseData> removed;
 
     /**
      * Constructs a prototypical Event.
@@ -42,8 +42,8 @@ public class RoutesChangedEvent extends EventObject {
      * @throws IllegalArgumentException
      *         if source is null.
      */
-    public RoutesChangedEvent(RouteRegistry source, List<RouteData> added,
-            List<RouteData> removed) {
+    public RoutesChangedEvent(RouteRegistry source, List<RouteBaseData> added,
+            List<RouteBaseData> removed) {
         super(source);
         this.added = Collections.unmodifiableList(added);
         this.removed = Collections.unmodifiableList(removed);
@@ -59,7 +59,7 @@ public class RoutesChangedEvent extends EventObject {
      *
      * @return list of all added routes
      */
-    public List<RouteData> getAddedRoutes() {
+    public List<RouteBaseData> getAddedRoutes() {
         return added;
     }
 
@@ -68,7 +68,7 @@ public class RoutesChangedEvent extends EventObject {
      *
      * @return list of all removed routes
      */
-    public List<RouteData> getRemovedRoutes() {
+    public List<RouteBaseData> getRemovedRoutes() {
         return removed;
     }
 

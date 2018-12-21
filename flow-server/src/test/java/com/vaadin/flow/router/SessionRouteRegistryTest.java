@@ -699,8 +699,8 @@ public class SessionRouteRegistryTest {
     public void routeChangeListener_correctChangesAreReturned() {
         SessionRouteRegistry registry = getRegistry(session);
 
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.addRoutesChangeListener(event -> {
             added.clear();
@@ -735,7 +735,7 @@ public class SessionRouteRegistryTest {
         registry.removeRoute("home");
 
         Assert.assertTrue("No routes should have been added", added.isEmpty());
-        Assert.assertEquals("One route should have gotten removed",1,
+        Assert.assertEquals("One route should have gotten removed", 1,
                 removed.size());
 
         Assert.assertEquals(Secondary.class,
@@ -750,8 +750,8 @@ public class SessionRouteRegistryTest {
 
         registry.setRoute("", MyRoute.class, Collections.emptyList());
 
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.addRoutesChangeListener(event -> {
             added.clear();
@@ -767,10 +767,12 @@ public class SessionRouteRegistryTest {
                     Collections.singletonList(MainLayout.class));
         });
 
-        Assert.assertEquals("Two ne paths should have been added", 2, added.size());
-        Assert.assertEquals("One path should have been removed",1,  removed.size());
+        Assert.assertEquals("Two ne paths should have been added", 2,
+                added.size());
+        Assert.assertEquals("One path should have been removed", 1,
+                removed.size());
 
-        for (RouteData data : added) {
+        for (RouteBaseData data : added) {
             if (data.getUrl().equals("")) {
                 Assert.assertEquals("MyRoute should have been added",
                         MyRoute.class, data.getNavigationTarget());
@@ -793,8 +795,8 @@ public class SessionRouteRegistryTest {
     public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
         SessionRouteRegistry sessionRegistry = getRegistry(session);
 
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         sessionRegistry.addRoutesChangeListener(event -> {
             added.clear();

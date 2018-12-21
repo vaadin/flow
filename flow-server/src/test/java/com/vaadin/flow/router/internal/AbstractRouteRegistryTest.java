@@ -13,11 +13,9 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.SessionRouteRegistryTest;
-import com.vaadin.flow.server.SessionRouteRegistry;
 
 public class AbstractRouteRegistryTest {
 
@@ -67,8 +65,8 @@ public class AbstractRouteRegistryTest {
 
     @Test
     public void routeChangeListener_correctChangesAreReturned() {
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.addRoutesChangeListener(event -> {
             added.clear();
@@ -84,8 +82,7 @@ public class AbstractRouteRegistryTest {
         Assert.assertTrue("No routes should have been removed",
                 removed.isEmpty());
 
-        Assert.assertEquals(
-                MyRoute.class, added.get(0).getNavigationTarget());
+        Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
         Assert.assertEquals("", added.get(0).getUrl());
 
         registry.setRoute("home", Secondary.class, Collections.emptyList());
@@ -117,8 +114,8 @@ public class AbstractRouteRegistryTest {
     public void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
         registry.setRoute("", MyRoute.class, Collections.emptyList());
 
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.addRoutesChangeListener(event -> {
             added.clear();
@@ -131,15 +128,14 @@ public class AbstractRouteRegistryTest {
             registry.removeRoute("");
             registry.setRoute("path", Secondary.class, Collections.emptyList());
             registry.setRoute("", MyRoute.class,
-                    Collections.singletonList(
-                            MainLayout.class));
+                    Collections.singletonList(MainLayout.class));
         });
 
         Assert.assertFalse("", added.isEmpty());
         Assert.assertEquals("", 2, added.size());
         Assert.assertFalse("", removed.isEmpty());
 
-        for (RouteData data : added) {
+        for (RouteBaseData data : added) {
             if (data.getUrl().equals("")) {
                 Assert.assertEquals("MyRoute should have been added",
                         MyRoute.class, data.getNavigationTarget());
@@ -152,15 +148,16 @@ public class AbstractRouteRegistryTest {
             }
         }
 
-        Assert.assertEquals("MyRoute should have been both removed and added", MyRoute.class,
-                removed.get(0).getNavigationTarget());
-        Assert.assertEquals("Removed version should not have a parent layout", UI.class, removed.get(0).getParentLayout());
+        Assert.assertEquals("MyRoute should have been both removed and added",
+                MyRoute.class, removed.get(0).getNavigationTarget());
+        Assert.assertEquals("Removed version should not have a parent layout",
+                UI.class, removed.get(0).getParentLayout());
     }
 
     @Test
     public void routeWithAliases_eventShowsCorrectlyAsRemoved() {
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.addRoutesChangeListener(event -> {
             added.clear();
@@ -170,8 +167,7 @@ public class AbstractRouteRegistryTest {
         });
 
         registry.update(() -> {
-            registry
-                    .setRoute("main", Secondary.class, Collections.emptyList());
+            registry.setRoute("main", Secondary.class, Collections.emptyList());
             registry.setRoute("Alias1", Secondary.class,
                     Collections.emptyList());
             registry.setRoute("Alias2", Secondary.class,
@@ -194,13 +190,11 @@ public class AbstractRouteRegistryTest {
 
     @Test
     public void changeListenerAddedDuringUpdate_eventIsFiredForListener() {
-        List<RouteData> added = new ArrayList<>();
-        List<RouteData> removed = new ArrayList<>();
-
+        List<RouteBaseData> added = new ArrayList<>();
+        List<RouteBaseData> removed = new ArrayList<>();
 
         registry.update(() -> {
-            registry
-                    .setRoute("main", Secondary.class, Collections.emptyList());
+            registry.setRoute("main", Secondary.class, Collections.emptyList());
             registry.setRoute("Alias1", Secondary.class,
                     Collections.emptyList());
 
