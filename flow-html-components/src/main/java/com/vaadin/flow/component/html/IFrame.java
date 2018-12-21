@@ -195,39 +195,6 @@ public class IFrame extends HtmlComponent {
   }
 
   /**
-   * Sets the attribute width of the iframe tag.
-   * @param width Width in CSS pixels.
-   */
-  public void setIFrameWidth(Integer width) {
-    getElement().setAttribute("width", width.toString());
-  }
-
-  /**
-   * @return the width of the iframe as specified in the tag's width attribute.
-   */
-  public Optional<Integer> getIFrameWidth() {
-    return optionallyGetAttribute("width")
-        .map(Integer::valueOf);
-  }
-
-  /**
-   * Sets the attribute height in CSS pixels.
-   * @param height Pixels.
-   */
-  public void setIFrameHeight(Integer height) {
-    getElement().setAttribute("height", height.toString());
-  }
-
-  /**
-   * @return the current height of the iframe as specified by the tag's height attribute.
-   */
-  public Optional<Integer> getIFrameHeight() {
-    return optionallyGetAttribute("height")
-            .map(Integer::valueOf);
-  }
-
-
-  /**
    * Tries to get an attribute value.
    * @param attributeName Name of attribute
    * @return Optional containing value, or empty optional
