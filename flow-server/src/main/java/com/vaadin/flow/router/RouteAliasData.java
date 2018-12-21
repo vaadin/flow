@@ -47,11 +47,18 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if (obj instanceof RouteAliasData) {
+            RouteAliasData other = (RouteAliasData) obj;
+            return other.getParentLayouts().equals(this.getParentLayouts())
+                    && other.getUrl().equals(this.getUrl()) && other
+                    .getNavigationTarget().equals(getNavigationTarget());
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return Objects
+                .hash(getParentLayouts(), getUrl(), getNavigationTarget());
     }
 }

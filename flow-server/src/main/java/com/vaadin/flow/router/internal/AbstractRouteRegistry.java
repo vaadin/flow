@@ -207,7 +207,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     /**
      * Flatten route data so that all route aliases are also as their own
-     * entries in the list.
+     * entries in the list. Removes any route aliases as the route is the same
+     * even if aliases change.
      *
      * @param routeData
      *         route data to flatten.
@@ -216,7 +217,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private List<RouteBaseData<?>> flattenRoutes(List<RouteData> routeData) {
         List<RouteBaseData<?>> flatRoutes = new ArrayList<>();
         for (RouteData route : routeData) {
-            flatRoutes.add(route);
+            RouteData nonAliasCollection = new RouteData(
+                    route.getParentLayouts(), route.getUrl(),
+                    route.getParameters(), route.getNavigationTarget(),
+                    Collections.emptyList());
+
+            flatRoutes.add(nonAliasCollection);
             route.getRouteAliases().forEach(flatRoutes::add);
         }
 
