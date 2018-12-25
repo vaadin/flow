@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContext;
+
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -39,8 +41,6 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
@@ -52,6 +52,9 @@ import com.vaadin.flow.server.osgi.OSGiAccess;
 public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
+
+        private boolean hasRoutes;
+
         @Override
         public Class<?> getPwaConfigurationClass() {
             initPwa();
@@ -98,6 +101,16 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             return super.hasNavigationTargets();
         }
 
+        @Override
+        public void setRoute(String path,
+                Class<? extends Component> navigationTarget,
+                List<Class<? extends RouterLayout>> parentChain) {
+            update(() -> {
+                super.setRoute(path, navigationTarget, parentChain);
+                hasRoutes = true;
+            });
+        }
+
         private void initErrorTargets() {
             if (!getConfiguration().getExceptionHandlers().isEmpty()) {
                 return;
@@ -105,8 +118,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
             ServletContext osgiServletContext = OSGiAccess.getInstance()
                     .getOsgiServletContext();
-            if (osgiServletContext == null || !OSGiAccess.getInstance()
-                    .hasInitializers()) {
+            if (osgiServletContext == null
+                    || !OSGiAccess.getInstance().hasInitializers()) {
                 return;
             }
             OSGiDataCollector registry = (OSGiDataCollector) getInstance(
@@ -117,7 +130,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             }
         }
 
-        private void doInitOSGiRoutes() {
+        private void initRoutes() {
             if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
                 return;
             }
@@ -128,18 +141,18 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                     .getOsgiServletContext();
             OSGiDataCollector registry = (OSGiDataCollector) getInstance(
                     osgiServletContext);
-            RouteUtil.setNavigationTargets(registry.navigationTargets.get(),
-                    this);
-        }
-
-        private void initRoutes() {
-            try {
-                doInitOSGiRoutes();
-            } catch (InvalidRouteConfigurationException exception) {
-                assert false :
-                        "Exception may not be thrown here since it should have been thrown by "
-                                + OSGiDataCollector.class;
+            if (registry.collectedRouteData == null) {
+                return;
             }
+            update(() -> {
+                if (hasRoutes) {
+                    // routes has been already set e.g. by web container which
+                    // is able to run ServletContainerInitializer
+                    return;
+                }
+                registry.collectedRouteData.forEach(data -> setRoute(data.path,
+                        data.navigationTarget, data.parentChain));
+            });
         }
 
         private void initPwa() {
@@ -154,11 +167,29 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
     }
 
+    private static class CollectedRouteData {
+
+        private String path;
+        private Class<? extends Component> navigationTarget;
+        private List<Class<? extends RouterLayout>> parentChain;
+    }
+
     private static class OSGiDataCollector extends ApplicationRouteRegistry {
 
-        private AtomicReference<Set<Class<? extends Component>>> navigationTargets = new AtomicReference<>();
+        private Collection<CollectedRouteData> collectedRouteData;
 
         private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
+
+        @Override
+        public void setRoute(String path,
+                Class<? extends Component> navigationTarget,
+                List<Class<? extends RouterLayout>> parentChain) {
+            CollectedRouteData data = new CollectedRouteData();
+            data.path = path;
+            data.navigationTarget = navigationTarget;
+            data.parentChain = parentChain;
+            collectedRouteData.add(data);
+        }
 
         @Override
         protected void handleInitializedRegistry() {
@@ -175,6 +206,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 return;
             }
             this.errorNavigationTargets.set(errorNavigationTargets);
+        }
+
+        @Override
+        public void clean() {
+            collectedRouteData = new ArrayList<>();
         }
     }
 
@@ -199,10 +235,10 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * the context.
      *
      * @param servletContext
-     *         the servlet context for which to get a route registry, not
-     *         <code>null</code>
+     *            the servlet context for which to get a route registry, not
+     *            <code>null</code>
      * @return a registry instance for the given servlet context, not
-     * <code>null</code>
+     *         <code>null</code>
      */
     public static ApplicationRouteRegistry getInstance(
             ServletContext servletContext) {
@@ -215,8 +251,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
             if (attribute == null) {
                 attribute = createRegistry(servletContext);
-                servletContext
-                        .setAttribute(RouteRegistry.class.getName(), attribute);
+                servletContext.setAttribute(RouteRegistry.class.getName(),
+                        attribute);
             }
         }
 
@@ -236,9 +272,9 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 filter -> filter.testNavigationTarget(navigationTarget))) {
             super.setRoute(path, navigationTarget, parentChain);
         } else {
-            LoggerFactory.getLogger(ApplicationRouteRegistry.class)
-                    .info("Not registering route {} because it's not valid for all registered routeFilters.",
-                            navigationTarget.getName());
+            LoggerFactory.getLogger(ApplicationRouteRegistry.class).info(
+                    "Not registering route {} because it's not valid for all registered routeFilters.",
+                    navigationTarget.getName());
         }
     }
 
@@ -246,11 +282,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * Set error handler navigation targets.
      * <p>
      * This can also be used to add error navigation targets that override
-     * existing targets. Note! The overriding targets need to be extending
-     * the existing target or they will throw.
+     * existing targets. Note! The overriding targets need to be extending the
+     * existing target or they will throw.
      *
      * @param errorNavigationTargets
-     *         error handler navigation targets
+     *            error handler navigation targets
      */
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
@@ -277,7 +313,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * found search by extended type.
      *
      * @param exception
-     *         exception to search error view for
+     *            exception to search error view for
      * @return optional error target entry corresponding to the given exception
      */
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
@@ -334,8 +370,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * {@link AbstractRouteRegistryInitializer}.
      *
      * @param pwaClass
-     *         a class that has PWA -annotation, that's to be used in service
-     *         initialization.
+     *            a class that has PWA -annotation, that's to be used in service
+     *            initialization.
      */
     public void setPwaConfigurationClass(Class<?> pwaClass) {
         if (pwaClass != null && pwaClass.isAnnotationPresent(PWA.class)) {
@@ -362,13 +398,14 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         configure(configuration -> map.forEach(configuration::setErrorRoute));
     }
 
-    private static ApplicationRouteRegistry createRegistry(ServletContext context) {
+    private static ApplicationRouteRegistry createRegistry(
+            ServletContext context) {
         if (context != null && context == OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
             return new OSGiDataCollector();
         } else if (OSGiAccess.getInstance().getOsgiServletContext() == null
                 || context != OSGiAccess.getInstance()
-                .getOsgiServletContext()) {
+                        .getOsgiServletContext()) {
             return new ApplicationRouteRegistry();
         }
         return new OSGiRouteRegistry();
