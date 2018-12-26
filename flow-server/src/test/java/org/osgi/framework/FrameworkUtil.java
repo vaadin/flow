@@ -13,20 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.startup;
+package org.osgi.framework;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+public class FrameworkUtil {
 
-@RunWith(DisableOSGiRunner.class)
-public class ApplicationRouteRegistryTest
-        extends OSGiApplicationRouteRegistryTest {
-
-    @Override
-    @Test
-    public void assertApplicationRegistry() {
-        Assert.assertEquals(ApplicationRouteRegistry.class,
-                getTestedRegistry().getClass());
+    public static Bundle getBundle(Class<?> class1) {
+        return null;
     }
+
 }

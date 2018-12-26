@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -86,6 +87,13 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 String pathString, List<String> segments) {
             initRoutes();
             return super.getNavigationTarget(pathString, segments);
+        }
+
+        @Override
+        public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
+                Class<? extends Component> navigationTarget) {
+            initRoutes();
+            return super.getRouteLayouts(path, navigationTarget);
         }
 
         @Override
@@ -167,7 +175,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
     }
 
-    private static class CollectedRouteData {
+    private static class CollectedRouteData implements Serializable {
 
         private String path;
         private Class<? extends Component> navigationTarget;
@@ -187,7 +195,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             CollectedRouteData data = new CollectedRouteData();
             data.path = path;
             data.navigationTarget = navigationTarget;
-            data.parentChain = parentChain;
+            data.parentChain = new ArrayList<>(parentChain);
             collectedRouteData.add(data);
         }
 
@@ -403,9 +411,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         if (context != null && context == OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
             return new OSGiDataCollector();
-        } else if (OSGiAccess.getInstance().getOsgiServletContext() == null
-                || context != OSGiAccess.getInstance()
-                        .getOsgiServletContext()) {
+        } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return new ApplicationRouteRegistry();
         }
         return new OSGiRouteRegistry();
