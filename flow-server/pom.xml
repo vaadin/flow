@@ -148,6 +148,7 @@
             <version>${osgi.core.version}</version>
             <scope>provided</scope>
         </dependency>
+        
     </dependencies>
 
     <build>
@@ -197,6 +198,9 @@
                 <configuration>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
                     <enableAssertions>true</enableAssertions>
+                    <classpathDependencyExcludes>
+                        <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
+                    </classpathDependencyExcludes>
                 </configuration>
             </plugin>
 

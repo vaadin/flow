@@ -54,13 +54,13 @@ public final class RouteUtil {
      * Get parent layouts for navigation target {@link Route} annotation.
      *
      * @param component
-     *         navigation target to get parents for
+     *            navigation target to get parents for
      * @return parent layouts for target
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             Class<?> component) {
-        Optional<Route> route = AnnotationReader
-                .getAnnotationFor(component, Route.class);
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
         if (route.isPresent() && !route.get().layout().equals(UI.class)) {
             return collectRouteParentLayouts(route.get().layout());
         }
@@ -72,23 +72,23 @@ public final class RouteUtil {
      * or {@link RouteAlias} annotation.
      *
      * @param component
-     *         navigation target to get parents for
+     *            navigation target to get parents for
      * @param path
-     *         path used to get navigation target so we know which annotation
-     *         to handle
+     *            path used to get navigation target so we know which annotation
+     *            to handle
      * @return parent layouts for target
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             Class<?> component, String path) {
         final List<Class<? extends RouterLayout>> list = new ArrayList<>();
 
-        Optional<Route> route = AnnotationReader
-                .getAnnotationFor(component, Route.class);
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent() && path
-                .equals(getRoutePath(component, route.get())) && !route.get()
-                .layout().equals(UI.class)) {
+        if (route.isPresent()
+                && path.equals(getRoutePath(component, route.get()))
+                && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
 
@@ -108,9 +108,9 @@ public final class RouteUtil {
      * {@link RoutePrefix}.
      *
      * @param component
-     *         navigation target component to get route path for
+     *            navigation target component to get route path for
      * @param route
-     *         route annotation to check
+     *            route annotation to check
      * @return actual path for given route target
      */
     public static String getRoutePath(Class<?> component, Route route) {
@@ -127,9 +127,9 @@ public final class RouteUtil {
      * {@link RoutePrefix}.
      *
      * @param component
-     *         navigation target component to get route path for
+     *            navigation target component to get route path for
      * @param alias
-     *         route alias annotation to check
+     *            route alias annotation to check
      * @return actual path for given route alias target
      */
     public static String getRouteAliasPath(Class<?> component,
@@ -183,9 +183,10 @@ public final class RouteUtil {
 
     private static Optional<RouteAlias> getMatchingRouteAlias(
             Class<?> component, String path, List<RouteAlias> routeAliases) {
-        return routeAliases.stream().filter(alias ->
-                path.equals(getRouteAliasPath(component, alias)) && !alias
-                        .layout().equals(UI.class)).findFirst();
+        return routeAliases.stream().filter(
+                alias -> path.equals(getRouteAliasPath(component, alias))
+                        && !alias.layout().equals(UI.class))
+                .findFirst();
     }
 
     private static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
@@ -208,7 +209,7 @@ public final class RouteUtil {
      * contain {@link ParentLayout}. Mainly error navigation targets.
      *
      * @param navigationTarget
-     *         route to check parent layouts for
+     *            route to check parent layouts for
      * @return list of parent layouts
      */
     public static List<Class<? extends RouterLayout>> getParentLayoutsForNonRouteTarget(
@@ -230,10 +231,10 @@ public final class RouteUtil {
      * targets with {@link ParentLayout}.
      *
      * @param component
-     *         navigation target to get top most parent for
+     *            navigation target to get top most parent for
      * @param path
-     *         path used to get navigation target so we know which annotation
-     *         to handle or null for error views.
+     *            path used to get navigation target so we know which annotation
+     *            to handle or null for error views.
      * @return top parent layout for target or null if none found
      */
     public static Class<? extends RouterLayout> getTopParentLayout(
@@ -248,13 +249,13 @@ public final class RouteUtil {
             return null;
         }
 
-        Optional<Route> route = AnnotationReader
-                .getAnnotationFor(component, Route.class);
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent() && path
-                .equals(getRoutePath(component, route.get())) && !route.get()
-                .layout().equals(UI.class)) {
+        if (route.isPresent()
+                && path.equals(getRoutePath(component, route.get()))
+                && !route.get().layout().equals(UI.class)) {
             return recuseToTopLayout(route.get().layout());
         } else {
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
@@ -285,9 +286,9 @@ public final class RouteUtil {
      * {@link PageTitle} annotation, to resolve the title.
      *
      * @param navigationEvent
-     *         the event object about the navigation
+     *            the event object about the navigation
      * @param routeTarget
-     *         the currently visible component
+     *            the currently visible component
      */
     public static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget) {
@@ -314,9 +315,9 @@ public final class RouteUtil {
      * route chain.
      *
      * @param routeTargetType
-     *         the actual component in the route chain
+     *            the actual component in the route chain
      * @param routeLayoutTypes
-     *         the parent types in the route chain
+     *            the parent types in the route chain
      */
     public static void checkForDuplicates(
             Class<? extends Component> routeTargetType,
@@ -335,9 +336,9 @@ public final class RouteUtil {
      * Create a new location change event for given navigation event and chain.
      *
      * @param event
-     *         current navigation event
+     *            current navigation event
      * @param routeTargetChain
-     *         chain of route targets
+     *            chain of route targets
      * @return new LocationChangeEvent
      */
     public static LocationChangeEvent createEvent(NavigationEvent event,
@@ -353,7 +354,7 @@ public final class RouteUtil {
      * ParentLayout:@RoutePrefix that may be in the navigation chain.
      *
      * @param navigationTarget
-     *         navigation target to get chain route for
+     *            navigation target to get chain route for
      * @return full navigation route
      */
     public static String getNavigationRoute(Class<?> navigationTarget) {
@@ -368,7 +369,7 @@ public final class RouteUtil {
      * ParentLayout:@RoutePrefix that may be in the navigation chain.
      *
      * @param navigationTarget
-     *         navigation target to get chain route alias for
+     *            navigation target to get chain route alias for
      * @return full navigation route
      */
     public static Collection<String> getRouteAliases(
@@ -384,15 +385,18 @@ public final class RouteUtil {
     /**
      * Registers a set of components as navigation targets.
      * <p>
-     * Given navigation targets need to have the {@link Route} annotation an
-     * be {@link Component}s.
+     * Given navigation targets need to have the {@link Route} annotation an be
+     * {@link Component}s.
+     * <p>
+     * Note! all routes in the registry will be removed and the given targets
+     * are set.
      *
      * @param navigationTargets
-     *         set of navigation target components
+     *            set of navigation target components
      * @param registry
-     *         RouteRegistry to add route to
+     *            RouteRegistry to add route to
      * @throws InvalidRouteConfigurationException
-     *         if routing has been configured incorrectly
+     *             if routing has been configured incorrectly
      */
     public static void setNavigationTargets(
             Set<Class<? extends Component>> navigationTargets,
@@ -405,14 +409,15 @@ public final class RouteUtil {
             final StringBuilder faultyClasses = new StringBuilder();
             faulty.forEach(
                     clazz -> faultyClasses.append(clazz.getName()).append(" "));
-            String exceptionMessage = String
-                    .format("Classes [%s] given as navigation targets were not valid. "
-                                    + "Add correct annotations or use RouteRegistry#"
-                                    + "setRoute(String ,Class<? extends Component>, List<Class<? extends RouterLayout>>).",
-                            faultyClasses.toString());
+            String exceptionMessage = String.format(
+                    "Classes [%s] given as navigation targets were not valid. "
+                            + "Add correct annotations or use RouteRegistry#"
+                            + "setRoute(String ,Class<? extends Component>, List<Class<? extends RouterLayout>>).",
+                    faultyClasses.toString());
             throw new InvalidRouteConfigurationException(exceptionMessage);
         }
         registry.update(() -> {
+            registry.clean();
             for (Class<? extends Component> navigationTarget : navigationTargets) {
                 setRoute(navigationTarget, registry);
             }
@@ -423,11 +428,11 @@ public final class RouteUtil {
      * Add the given navigation target as a route to the given route registry.
      *
      * @param navigationTarget
-     *         navigation target to register
+     *            navigation target to register
      * @param registry
-     *         RouteRegistry to add route to
+     *            RouteRegistry to add route to
      * @throws InvalidRouteConfigurationException
-     *         if a exact match route exists already
+     *             if a exact match route exists already
      */
     private static void setRoute(Class<? extends Component> navigationTarget,
             RouteRegistry registry) {
@@ -450,11 +455,11 @@ public final class RouteUtil {
      * Note! A RouteAlias that is targeting an existing Route will throw.
      *
      * @param navigationTarget
-     *         navigation target to register into the session route scope
+     *            navigation target to register into the session route scope
      * @param registry
-     *         RouteRegistry to add route to
+     *            RouteRegistry to add route to
      * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
+     *             thrown if exact route already defined in this scope
      */
     public static void setAnnotatedRoute(
             Class<? extends Component> navigationTarget,
@@ -463,17 +468,17 @@ public final class RouteUtil {
     }
 
     /**
-     * Register a navigation target on the specified path. Any {@link
-     * ParentLayout} annotation on class will be used to populate layout chain,
-     * but {@link Route} and {@link RouteAlias} will not be taken into
+     * Register a navigation target on the specified path. Any
+     * {@link ParentLayout} annotation on class will be used to populate layout
+     * chain, but {@link Route} and {@link RouteAlias} will not be taken into
      * consideration.
      *
      * @param path
-     *         path to register navigation target to
+     *            path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register into the session route scope
+     *            navigation target to register into the session route scope
      * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
+     *             thrown if exact route already defined in this scope
      */
     public static void setRoute(String path,
             Class<? extends Component> navigationTarget,

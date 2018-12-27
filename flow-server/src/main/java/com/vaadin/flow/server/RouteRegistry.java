@@ -34,25 +34,24 @@ import com.vaadin.flow.shared.Registration;
  * The RouteRegistry interface class that gives the out facing usage needs for a
  * route registry implementation.
  * <p>
- * This is used by {@link Router} when resolving navigation and
- * layout chain population.
+ * This is used by {@link Router} when resolving navigation and layout chain
+ * population.
  */
 public interface RouteRegistry extends Serializable {
 
     /**
      * Register a navigation target with specified path and given parent layout
-     * chain.
-     * Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will be
-     * ignored in route handling.
+     * chain. Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will
+     * be ignored in route handling.
      *
      * @param path
-     *         path to register navigation target to
+     *            path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register into session scope
+     *            navigation target to register into session scope
      * @param parentChain
-     *         chain of parent layouts that should be used with this target
+     *            chain of parent layouts that should be used with this target
      * @throws InvalidRouteConfigurationException
-     *         thrown if exact route already defined in this scope
+     *             thrown if exact route already defined in this scope
      */
     void setRoute(String path, Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain);
@@ -63,19 +62,19 @@ public interface RouteRegistry extends Serializable {
      * param and there is left a non param target, but will not return the
      * removed target.
      * <p>
-     * Note! this will remove target route and if possible any {@link
-     * RouteAlias} route that can be found for the class.
+     * Note! this will remove target route and if possible any
+     * {@link RouteAlias} route that can be found for the class.
      *
      * @param navigationTarget
-     *         navigation target class to remove
+     *            navigation target class to remove
      */
     void removeRoute(Class<? extends Component> navigationTarget);
 
     /**
-     * Remove all registrations for given path.
-     * This means that any navigation target registered on the given path will
-     * be removed. But if a removed navigationTarget for the path exists it is
-     * then stored with a new main path so it can still get a resolved url.
+     * Remove all registrations for given path. This means that any navigation
+     * target registered on the given path will be removed. But if a removed
+     * navigationTarget for the path exists it is then stored with a new main
+     * path so it can still get a resolved url.
      * <p>
      * E.g. path "home" contains HomeView and DetailsView[String path param]
      * both will be removed.
@@ -84,7 +83,7 @@ public interface RouteRegistry extends Serializable {
      * are registered.
      *
      * @param path
-     *         path for which to remove all navigation targets
+     *            path for which to remove all navigation targets
      */
     void removeRoute(String path);
 
@@ -101,9 +100,9 @@ public interface RouteRegistry extends Serializable {
      * will be the first found match for all paths that are registered.
      *
      * @param path
-     *         path to remove from registry
+     *            path to remove from registry
      * @param navigationTarget
-     *         path navigation target to remove
+     *            path navigation target to remove
      */
     void removeRoute(String path, Class<? extends Component> navigationTarget);
 
@@ -115,17 +114,15 @@ public interface RouteRegistry extends Serializable {
     List<RouteData> getRegisteredRoutes();
 
     /**
-     * Gets the optional navigation target class for a given path. Returns
-     * an empty optional if no navigation target corresponds to the given
-     * path.
+     * Gets the optional navigation target class for a given path. Returns an
+     * empty optional if no navigation target corresponds to the given path.
      * <p>
-     * Note! If a path has been specifically removed from a registry
-     * it will not be served from possible higher lever registries either.
+     * Note! If a path has been specifically removed from a registry it will not
+     * be served from possible higher lever registries either.
      *
      * @param pathString
-     *         the path to get the navigation target for, not {@code null}
-     * @return optional of the navigation target corresponding to the given
-     * path
+     *            the path to get the navigation target for, not {@code null}
+     * @return optional of the navigation target corresponding to the given path
      */
     Optional<Class<? extends Component>> getNavigationTarget(String pathString);
 
@@ -133,15 +130,15 @@ public interface RouteRegistry extends Serializable {
      * Gets the optional navigation target class for a given Location matching
      * with path segments.
      * <p>
-     * Note! If a path has been specifically removed from a registry
-     * it will not be served from possible higher lever registries either.
+     * Note! If a path has been specifically removed from a registry it will not
+     * be served from possible higher lever registries either.
      *
      * @param pathString
-     *         path to get navigation target for, not {@code null}
+     *            path to get navigation target for, not {@code null}
      * @param segments
-     *         segments given for path
+     *            segments given for path
      * @return optional navigation target corresponding to the given location
-     * with given segments if any applicable targets found.
+     *         with given segments if any applicable targets found.
      * @see Location
      */
     Optional<Class<? extends Component>> getNavigationTarget(String pathString,
@@ -153,8 +150,8 @@ public interface RouteRegistry extends Serializable {
      * Will return Optional.empty is navigation target was not found.
      *
      * @param navigationTarget
-     *         navigation target to get registered route for, not
-     *         {@code null}
+     *            navigation target to get registered route for, not
+     *            {@code null}
      * @return optional navigation target url string
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget);
@@ -165,9 +162,9 @@ public interface RouteRegistry extends Serializable {
      * This chain may be pre-defined or generated from annotation data.
      *
      * @param path
-     *         path to use for resolving chain
+     *            path to use for resolving chain
      * @param navigationTarget
-     *         navigation target to get layout chain for
+     *            navigation target to get layout chain for
      * @return layout chain of target
      */
     List<Class<? extends RouterLayout>> getRouteLayouts(String path,
@@ -175,15 +172,15 @@ public interface RouteRegistry extends Serializable {
 
     /**
      * Block updates to the registry configuration from other threads until
-     * update command has completed.
-     * This makes the command changes atomic for the registry as no one else can
-     * change the registry state during the command.
+     * update command has completed. This makes the command changes atomic for
+     * the registry as no one else can change the registry state during the
+     * command.
      * <p>
      * Any other thread trying to configure current registry will be blocked
      * until the update has released all the locks.
      *
      * @param command
-     *         command to execute for the update
+     *            command to execute for the update
      */
     void update(Command command);
 
@@ -191,8 +188,13 @@ public interface RouteRegistry extends Serializable {
      * Registers a new route change listener.
      *
      * @param listener
-     *         listener to be informed on route changes
+     *            listener to be informed on route changes
      * @return a registration for the listener
      */
     Registration addRoutesChangeListener(RoutesChangedListener listener);
+
+    /**
+     * Clear all registered routes from the registry.
+     */
+    void clean();
 }

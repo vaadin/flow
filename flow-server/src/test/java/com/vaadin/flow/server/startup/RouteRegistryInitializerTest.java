@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,6 +23,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,7 +40,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -51,6 +51,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
@@ -120,7 +121,8 @@ public class RouteRegistryInitializerTest {
     public void onStartUp_duplicate_routes_throws() throws ServletException {
         routeRegistryInitializer.onStartup(
                 Stream.of(NavigationTargetFoo.class, NavigationTargetFoo2.class)
-                        .collect(Collectors.toSet()), servletContext);
+                        .collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test(expected = ServletException.class)
@@ -128,11 +130,12 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         routeRegistryInitializer.onStartup(
                 Stream.of(NavigationTargetBar.class, NavigationTargetBar2.class)
-                        .collect(Collectors.toSet()), servletContext);
+                        .collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
-    public void routeRegistry_routes_can_be_set_multiple_times() {
+    public void routeRegistry_setNavigationTargets_routesAreClearedAndNewDataIsSet() {
         Assert.assertFalse("RouteRegistry should not be initialized",
                 registry.hasNavigationTargets());
 
@@ -142,17 +145,19 @@ public class RouteRegistryInitializerTest {
                 "RouteRegistry should not have navigation targets after empty set",
                 registry.hasNavigationTargets());
 
-        RouteUtil.setNavigationTargets(new HashSet<>(
-                Collections.singleton(NavigationTargetFoo.class)), registry);
+        RouteUtil.setNavigationTargets(
+                new HashSet<>(Collections.singleton(NavigationTargetFoo.class)),
+                registry);
 
         Assert.assertTrue("RouteRegistry should be initialized",
                 registry.hasNavigationTargets());
 
         RouteUtil.setNavigationTargets(
-                new HashSet<>(Collections.singleton(NavigationTarget.class)), registry);
+                new HashSet<>(Collections.singleton(NavigationTarget.class)),
+                registry);
 
         Assert.assertEquals(
-                "Giving new routes should have added to the registry", 2,
+                "Giving new routes should have added to the registry", 1,
                 registry.getRegisteredRoutes().size());
     }
 
@@ -164,24 +169,23 @@ public class RouteRegistryInitializerTest {
                         + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo' and "
                         + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2' with the same route.");
 
-        RouteUtil.setNavigationTargets(new HashSet<>(
-                Collections.singleton(NavigationTargetFoo.class)), registry);
+        RouteUtil.setAnnotatedRoute(NavigationTargetFoo.class, registry);
 
         Assert.assertTrue("RouteRegistry should be initialized",
                 registry.hasNavigationTargets());
 
-        // Test should fail on this as there already exists a route for this route
-        RouteUtil.setNavigationTargets(new HashSet<>(
-                Collections.singleton(NavigationTargetFoo2.class)), registry);
+        // Test should fail on this as there already exists a route for this
+        // route
+        RouteUtil.setAnnotatedRoute(NavigationTargetFoo2.class, registry);
     }
 
     @Test
     public void routeRegistry_registers_correctly_route_with_parentLayout()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
-                Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
+        routeRegistryInitializer.onStartup(Stream
+                .of(NavigationTarget.class, NavigationTargetFoo.class,
                         MiddleParentWithRoute.class)
-                        .collect(Collectors.toSet()), servletContext);
+                .collect(Collectors.toSet()), servletContext);
 
         Optional<Class<? extends Component>> navigationTarget = registry
                 .getNavigationTarget("middle_parent");
@@ -305,10 +309,10 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_route_returns_registered_string_for_get_url()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
-                Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
+        routeRegistryInitializer.onStartup(Stream
+                .of(NavigationTarget.class, NavigationTargetFoo.class,
                         AbsoluteRoute.class, ExtendingPrefix.class)
-                        .collect(Collectors.toSet()), servletContext);
+                .collect(Collectors.toSet()), servletContext);
 
         Assert.assertEquals("",
                 registry.getTargetUrl(NavigationTarget.class).get());
@@ -325,7 +329,8 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         routeRegistryInitializer.onStartup(
                 Stream.of(ParameterRoute.class, StringParameterRoute.class)
-                        .collect(Collectors.toSet()), servletContext);
+                        .collect(Collectors.toSet()),
+                servletContext);
 
         Assert.assertEquals("parameter/{Boolean}",
                 registry.getTargetUrl(ParameterRoute.class).get());
@@ -336,9 +341,9 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_route_returns_string_not_ending_in_dash()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
-                Stream.of(NavigationRootWithParent.class)
-                        .collect(Collectors.toSet()), servletContext);
+        routeRegistryInitializer.onStartup(Stream
+                .of(NavigationRootWithParent.class).collect(Collectors.toSet()),
+                servletContext);
 
         Assert.assertEquals(
                 "The root target for a parent layout should not end with '/'",
@@ -375,9 +380,9 @@ public class RouteRegistryInitializerTest {
     @Test
     public void registration_succeeds_for_navigation_target_with_inherited_title_annotation()
             throws ServletException {
-        routeRegistryInitializer
-                .onStartup(Collections.singleton(ChildWithDynamicTitle.class),
-                        servletContext);
+        routeRegistryInitializer.onStartup(
+                Collections.singleton(ChildWithDynamicTitle.class),
+                servletContext);
 
         Assert.assertEquals("bar",
                 registry.getTargetUrl(ChildWithDynamicTitle.class).get());
@@ -633,9 +638,9 @@ public class RouteRegistryInitializerTest {
                 Parent.class.getName(),
                 RootViewportWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(RootViewportWithParent.class)
-                        .collect(Collectors.toSet()), servletContext);
+        routeRegistryInitializer.onStartup(Stream
+                .of(RootViewportWithParent.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
@@ -643,7 +648,8 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         routeRegistryInitializer.onStartup(
                 Stream.of(SingleNavigationTarget.class, RootWithParent.class)
-                        .collect(Collectors.toSet()), servletContext);
+                        .collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
@@ -762,8 +768,8 @@ public class RouteRegistryInitializerTest {
                 BodyParent.class.getName(),
                 BodyRootViewportWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(BodyRootViewportWithParent.class)
+        routeRegistryInitializer
+                .onStartup(Stream.of(BodyRootViewportWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -885,8 +891,8 @@ public class RouteRegistryInitializerTest {
                 Parent.class.getName(),
                 MiddleParentConfigurator.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(RootWithMultipleParentConfigurator.class)
+        routeRegistryInitializer
+                .onStartup(Stream.of(RootWithMultipleParentConfigurator.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -913,17 +919,17 @@ public class RouteRegistryInitializerTest {
                 Parent.class.getName(),
                 RootConfiguratorWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(RootConfiguratorWithParent.class)
+        routeRegistryInitializer
+                .onStartup(Stream.of(RootConfiguratorWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_one_page_configurator_in_chain_and_one_for_route_passes()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(SingleConfigurator.class,
-                RootWithParentConfigurator.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.onStartup(Stream
+                .of(SingleConfigurator.class, RootWithParentConfigurator.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
@@ -935,9 +941,9 @@ public class RouteRegistryInitializerTest {
                 Parent.class.getName(),
                 FailingAliasConfigurator.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(FailingAliasConfigurator.class)
-                        .collect(Collectors.toSet()), servletContext);
+        routeRegistryInitializer.onStartup(Stream
+                .of(FailingAliasConfigurator.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     /* Inline tests */
@@ -1010,9 +1016,9 @@ public class RouteRegistryInitializerTest {
                 InlineParent.class.getName(),
                 InlineMiddleParentLayout.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(InlineRootWithParents.class)
-                        .collect(Collectors.toSet()), servletContext);
+        routeRegistryInitializer.onStartup(Stream
+                .of(InlineRootWithParents.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
@@ -1037,8 +1043,8 @@ public class RouteRegistryInitializerTest {
                 InlineParent.class.getName(),
                 InlineRootViewportWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(InlineRootViewportWithParent.class)
+        routeRegistryInitializer
+                .onStartup(Stream.of(InlineRootViewportWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -1060,9 +1066,9 @@ public class RouteRegistryInitializerTest {
                 InlineParent.class.getName(),
                 InlineFailingAliasView.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(InlineFailingAliasView.class)
-                        .collect(Collectors.toSet()), servletContext);
+        routeRegistryInitializer.onStartup(Stream
+                .of(InlineFailingAliasView.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
@@ -1078,9 +1084,9 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeData_returns_all_registered_routes()
             throws ServletException {
-        Set<Class<?>> routes = Stream
-                .of(NavigationTarget.class, NavigationTargetFoo.class,
-                        NavigationTargetBar.class).collect(Collectors.toSet());
+        Set<Class<?>> routes = Stream.of(NavigationTarget.class,
+                NavigationTargetFoo.class, NavigationTargetBar.class)
+                .collect(Collectors.toSet());
         routeRegistryInitializer.onStartup(routes, servletContext);
         List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
 
@@ -1347,8 +1353,8 @@ public class RouteRegistryInitializerTest {
                 ThemeParent.class.getName(),
                 ThemeRootViewportWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(ThemeRootViewportWithParent.class)
+        routeRegistryInitializer
+                .onStartup(Stream.of(ThemeRootViewportWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -1370,9 +1376,9 @@ public class RouteRegistryInitializerTest {
                 ThemeParent.class.getName(),
                 ThemeFailingAliasView.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(ThemeFailingAliasView.class)
-                        .collect(Collectors.toSet()), servletContext);
+        routeRegistryInitializer.onStartup(Stream
+                .of(ThemeFailingAliasView.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
@@ -1421,8 +1427,8 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeFilter_ignoresRoutes()
             throws InvalidRouteConfigurationException, ServletException {
-        routeRegistryInitializer.onStartup(
-                Stream.of(IgnoredView.class, NavigationTarget.class)
+        routeRegistryInitializer
+                .onStartup(Stream.of(IgnoredView.class, NavigationTarget.class)
                         .collect(Collectors.toSet()), servletContext);
 
         List<?> registeredTargets = registry.getRegisteredRoutes().stream()
@@ -1448,9 +1454,8 @@ public class RouteRegistryInitializerTest {
                 Stream.of(IgnoredErrorView.class, FileNotFound.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertTrue(
-                registry.getErrorNavigationTarget(new NotFoundException())
-                        .isPresent());
+        Assert.assertTrue(registry
+                .getErrorNavigationTarget(new NotFoundException()).isPresent());
 
         ErrorTargetEntry errorTargetEntry = registry
                 .getErrorNavigationTarget(new Exception()).get();

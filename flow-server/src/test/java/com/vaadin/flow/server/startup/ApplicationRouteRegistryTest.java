@@ -1,32 +1,29 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.servlet.ServletContext;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.RouteBaseData;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.RouteRegistry;
 
-public class ApplicationRouteRegistryTest {
+/**
+ * Tests for {@link ApplicationRouteRegistry} instance inside OSGi container.
+ */
+public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
     private ApplicationRouteRegistry registry;
 
@@ -37,159 +34,9 @@ public class ApplicationRouteRegistryTest {
     }
 
     @Test
-    public void initalizedRoutes_routesCanBeAdded() {
-        registry.setRoute("home", MyRoute.class, Collections.emptyList());
-        registry.setRoute("info", MyInfo.class, Collections.emptyList());
-
-        Assert.assertEquals(
-                "Initial registration of routes should have succeeded.", 2,
-                registry.getRegisteredRoutes().size());
-
-        registry.setRoute("palace", MyPalace.class, Collections.emptyList());
-        registry.setRoute("modular", MyModular.class, Collections.emptyList());
-
-        Assert.assertEquals("All new routes should have been registered", 4,
-                registry.getRegisteredRoutes().size());
-
-        registry.setRoute("withAliases", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("version", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("person", MyRouteWithAliases.class,
-                Collections.emptyList());
-
-        Assert.assertEquals("The new route should have registered", 5,
-                registry.getRegisteredRoutes().size());
-    }
-
-    @Test
-    public void registeringRouteWithAlias_RouteDataIsPopulatedCorrectly() {
-
-        registry.setRoute("home", MyRoute.class, Collections.emptyList());
-        registry.setRoute("info", MyInfo.class, Collections.emptyList());
-
-        registry.setRoute("withAliases", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("version", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("person", MyRouteWithAliases.class,
-                Collections.emptyList());
-
-        Optional<RouteData> first = registry.getRegisteredRoutes().stream()
-                .filter(route -> route.getNavigationTarget()
-                        .equals(MyRouteWithAliases.class)).findFirst();
-        Assert.assertTrue("Didn't get RouteData for MyRouteWithAliases.",
-                first.isPresent());
-
-        Assert.assertEquals("Expected two route aliases to be registered", 2,
-                first.get().getRouteAliases().size());
-    }
-
-    @Test
-    public void registeredRouteWithAlias_removingClassRemovesAliases() {
-
-        registry.setRoute("withAliases", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("version", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("person", MyRouteWithAliases.class,
-                Collections.emptyList());
-
-        Assert.assertTrue(
-                "Registry didn't contain routes even though 3 should have been registered",
-                !registry.getRegisteredRoutes().isEmpty());
-
-        Assert.assertTrue("Path for main route 'withAliases' returned empty",
-                registry.getNavigationTarget("withAliases").isPresent());
-        Assert.assertTrue("RouteAlias 'version' returned empty.",
-                registry.getNavigationTarget("version").isPresent());
-        Assert.assertTrue("RouteAlias 'person' returned empty.",
-                registry.getNavigationTarget("person").isPresent());
-
-        registry.removeRoute(MyRouteWithAliases.class);
-
-        Assert.assertFalse(
-                "Registry should be empty after removing the only registered Class.",
-                !registry.getRegisteredRoutes().isEmpty());
-    }
-
-    @Test
-    public void registeredRouteWithAlias_removingPathLeavesAliases() {
-
-        registry.setRoute("withAliases", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("version", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("person", MyRouteWithAliases.class,
-                Collections.emptyList());
-
-        Assert.assertTrue(
-                "Registry didn't contain routes even though 3 should have been registered",
-                !registry.getRegisteredRoutes().isEmpty());
-
-        Assert.assertTrue("Path for main route 'withAliases' returned empty",
-                registry.getNavigationTarget("withAliases").isPresent());
-        Assert.assertTrue("RouteAlias 'version' returned empty.",
-                registry.getNavigationTarget("version").isPresent());
-        Assert.assertTrue("RouteAlias 'person' returned empty.",
-                registry.getNavigationTarget("person").isPresent());
-
-        registry.removeRoute("withAliases");
-
-        Assert.assertTrue("Registry should contain alias routes",
-                !registry.getRegisteredRoutes().isEmpty());
-
-        Assert.assertEquals(
-                "One RouteAlias should be the main url so only 1 route alias should be marked as an alias",
-                1,
-                registry.getRegisteredRoutes().get(0).getRouteAliases().size());
-    }
-
-    @Test
-    public void routesWithParentLayouts_parentLayoutReturnsAsExpected() {
-        registry.setRoute("MyRoute", MyRouteWithAliases.class,
-                Collections.singletonList(MainLayout.class));
-        registry.setRoute("info", MyRouteWithAliases.class,
-                Collections.emptyList());
-        registry.setRoute("version", MyRouteWithAliases.class,
-                Arrays.asList(MiddleLayout.class, MainLayout.class));
-
-        Assert.assertFalse("'MyRoute' should have a single parent",
-                registry.getRouteLayouts("MyRoute", MyRouteWithAliases.class)
-                        .isEmpty());
-        Assert.assertTrue("'info' should have no parents.",
-                registry.getRouteLayouts("info", MyRouteWithAliases.class)
-                        .isEmpty());
-        Assert.assertEquals("'version' should return two parents", 2,
-                registry.getRouteLayouts("version", MyRouteWithAliases.class)
-                        .size());
-    }
-
-    @Test
-    public void registeredParentLayouts_changingListDoesntChangeRegistration() {
-        List<Class<? extends RouterLayout>> parentChain = new ArrayList<>(
-                Arrays.asList(MiddleLayout.class, MainLayout.class));
-
-        registry.setRoute("version", MyRoute.class, parentChain);
-
-        parentChain.remove(MainLayout.class);
-
-        Assert.assertEquals(
-                "'version' should return two parents even when original list is changed",
-                2, registry.getRouteLayouts("version", MyRoute.class).size());
-    }
-
-    @Test
-    public void registeredParentLayouts_returnedListInSameOrder() {
-        List<Class<? extends RouterLayout>> parentChain = new ArrayList<>(
-                Arrays.asList(MiddleLayout.class, MainLayout.class));
-
-        registry.setRoute("version", MyRoute.class, parentChain);
-
-        Assert.assertArrayEquals(
-                "Registry should return parent layouts in the same order as set.",
-                parentChain.toArray(),
-                registry.getRouteLayouts("version", MyRoute.class).toArray());
+    public void assertApplicationRegistry() {
+        Assert.assertEquals(ApplicationRouteRegistry.class,
+                getTestedRegistry().getClass());
     }
 
     @Test
@@ -199,7 +46,7 @@ public class ApplicationRouteRegistryTest {
         List<Callable<Result>> callables = new ArrayList<>();
         callables.add(() -> {
             try {
-                registry.setRoute("home", MyRoute.class,
+                getTestedRegistry().setRoute("home", MyRoute.class,
                         Collections.emptyList());
             } catch (Exception e) {
                 return new Result(e.getMessage());
@@ -209,7 +56,7 @@ public class ApplicationRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                registry.setRoute("info", MyInfo.class,
+                getTestedRegistry().setRoute("info", MyInfo.class,
                         Collections.emptyList());
             } catch (Exception e) {
                 return new Result(e.getMessage());
@@ -219,7 +66,7 @@ public class ApplicationRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                registry.setRoute("palace", MyPalace.class,
+                getTestedRegistry().setRoute("palace", MyPalace.class,
                         Collections.emptyList());
             } catch (Exception e) {
                 return new Result(e.getMessage());
@@ -246,24 +93,26 @@ public class ApplicationRouteRegistryTest {
                 0, exceptions.size());
 
         Assert.assertTrue("Route 'home' was not registered into the scope.",
-                registry.getNavigationTarget("home").isPresent());
+                getTestedRegistry().getNavigationTarget("home").isPresent());
         Assert.assertTrue("Route 'info' was not registered into the scope.",
-                registry.getNavigationTarget("info").isPresent());
+                getTestedRegistry().getNavigationTarget("info").isPresent());
         Assert.assertTrue("Route 'palace' was not registered into the scope.",
-                registry.getNavigationTarget("palace").isPresent());
+                getTestedRegistry().getNavigationTarget("palace").isPresent());
     }
 
     @Test
     public void updateAndRemoveFromMultipleThreads_endResultAsExpected()
             throws InterruptedException, ExecutionException {
 
-        registry.setRoute("home", MyRoute.class, Collections.emptyList());
-        registry.setRoute("info", MyInfo.class, Collections.emptyList());
+        getTestedRegistry().setRoute("home", MyRoute.class,
+                Collections.emptyList());
+        getTestedRegistry().setRoute("info", MyInfo.class,
+                Collections.emptyList());
 
         List<Callable<Result>> callables = new ArrayList<>();
         callables.add(() -> {
             try {
-                registry.removeRoute("info");
+                getTestedRegistry().removeRoute("info");
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -272,7 +121,7 @@ public class ApplicationRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                registry.setRoute("modular", MyModular.class,
+                getTestedRegistry().setRoute("modular", MyModular.class,
                         Collections.emptyList());
             } catch (Exception e) {
                 return new Result(e.getMessage());
@@ -282,9 +131,9 @@ public class ApplicationRouteRegistryTest {
 
         callables.add(() -> {
             try {
-                registry.setRoute("palace", MyPalace.class,
+                getTestedRegistry().setRoute("palace", MyPalace.class,
                         Collections.emptyList());
-                registry.removeRoute("home");
+                getTestedRegistry().removeRoute("home");
             } catch (Exception e) {
                 return new Result(e.getMessage());
             }
@@ -311,16 +160,16 @@ public class ApplicationRouteRegistryTest {
 
         Assert.assertFalse(
                 "Route 'home' was still registered even though it should have been removed.",
-                registry.getNavigationTarget("home").isPresent());
+                getTestedRegistry().getNavigationTarget("home").isPresent());
 
         Assert.assertFalse(
                 "Route 'info' was still registered even though it should have been removed.",
-                registry.getNavigationTarget("info").isPresent());
+                getTestedRegistry().getNavigationTarget("info").isPresent());
 
         Assert.assertTrue("Route 'modular' was not registered into the scope.",
-                registry.getNavigationTarget("modular").isPresent());
+                getTestedRegistry().getNavigationTarget("modular").isPresent());
         Assert.assertTrue("Route 'palace' was not registered into the scope.",
-                registry.getNavigationTarget("palace").isPresent());
+                getTestedRegistry().getNavigationTarget("palace").isPresent());
     }
 
     private static class Result {
@@ -333,21 +182,23 @@ public class ApplicationRouteRegistryTest {
 
     @Test
     public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
-        registry.update(() -> {
-            registry.setRoute("", MyRoute.class, Collections.emptyList());
+        getTestedRegistry().update(() -> {
+            getTestedRegistry().setRoute("", MyRoute.class,
+                    Collections.emptyList());
 
             Assert.assertTrue("Registry should still remain empty",
-                    registry.getRegisteredRoutes().isEmpty());
+                    getTestedRegistry().getRegisteredRoutes().isEmpty());
 
-            registry.setRoute("path", Secondary.class, Collections.emptyList());
+            getTestedRegistry().setRoute("path", Secondary.class,
+                    Collections.emptyList());
 
             Assert.assertTrue("Registry should still remain empty",
-                    registry.getRegisteredRoutes().isEmpty());
+                    getTestedRegistry().getRegisteredRoutes().isEmpty());
         });
 
         Assert.assertEquals(
                 "After unlock registry should be updated for others to configure with new data",
-                2, registry.getRegisteredRoutes().size());
+                2, getTestedRegistry().getRegisteredRoutes().size());
     }
 
     @Test
@@ -355,14 +206,15 @@ public class ApplicationRouteRegistryTest {
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
 
-        registry.addRoutesChangeListener(event -> {
+        getTestedRegistry().addRoutesChangeListener(event -> {
             added.clear();
             removed.clear();
             added.addAll(event.getAddedRoutes());
             removed.addAll(event.getRemovedRoutes());
         });
 
-        registry.setRoute("", MyRoute.class, Collections.emptyList());
+        getTestedRegistry().setRoute("", MyRoute.class,
+                Collections.emptyList());
 
         Assert.assertFalse("Added should contain data for one entry",
                 added.isEmpty());
@@ -372,7 +224,8 @@ public class ApplicationRouteRegistryTest {
         Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
         Assert.assertEquals("", added.get(0).getUrl());
 
-        registry.setRoute("home", Secondary.class, Collections.emptyList());
+        getTestedRegistry().setRoute("home", Secondary.class,
+                Collections.emptyList());
 
         Assert.assertFalse("Added should contain data for one entry",
                 added.isEmpty());
@@ -385,7 +238,7 @@ public class ApplicationRouteRegistryTest {
                 added.get(0).getNavigationTarget());
         Assert.assertEquals("home", added.get(0).getUrl());
 
-        registry.removeRoute("home");
+        getTestedRegistry().removeRoute("home");
 
         Assert.assertTrue("No routes should have been added", added.isEmpty());
         Assert.assertFalse("One route should have gotten removed",
@@ -399,22 +252,24 @@ public class ApplicationRouteRegistryTest {
 
     @Test
     public void routeChangeListener_blockChangesAreGivenCorrectlyInEvent() {
-        registry.setRoute("", MyRoute.class, Collections.emptyList());
+        getTestedRegistry().setRoute("", MyRoute.class,
+                Collections.emptyList());
 
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
 
-        registry.addRoutesChangeListener(event -> {
+        getTestedRegistry().addRoutesChangeListener(event -> {
             added.clear();
             removed.clear();
             added.addAll(event.getAddedRoutes());
             removed.addAll(event.getRemovedRoutes());
         });
 
-        registry.update(() -> {
-            registry.removeRoute("");
-            registry.setRoute("path", Secondary.class, Collections.emptyList());
-            registry.setRoute("", MyRoute.class,
+        getTestedRegistry().update(() -> {
+            getTestedRegistry().removeRoute("");
+            getTestedRegistry().setRoute("path", Secondary.class,
+                    Collections.emptyList());
+            getTestedRegistry().setRoute("", MyRoute.class,
                     Collections.singletonList(MainLayout.class));
         });
 
@@ -446,18 +301,19 @@ public class ApplicationRouteRegistryTest {
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
 
-        registry.addRoutesChangeListener(event -> {
+        getTestedRegistry().addRoutesChangeListener(event -> {
             added.clear();
             removed.clear();
             added.addAll(event.getAddedRoutes());
             removed.addAll(event.getRemovedRoutes());
         });
 
-        registry.update(() -> {
-            registry.setRoute("main", Secondary.class, Collections.emptyList());
-            registry.setRoute("Alias1", Secondary.class,
+        getTestedRegistry().update(() -> {
+            getTestedRegistry().setRoute("main", Secondary.class,
                     Collections.emptyList());
-            registry.setRoute("Alias2", Secondary.class,
+            getTestedRegistry().setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+            getTestedRegistry().setRoute("Alias2", Secondary.class,
                     Collections.emptyList());
         });
 
@@ -467,7 +323,7 @@ public class ApplicationRouteRegistryTest {
         Assert.assertTrue("No routes should have been removed",
                 removed.isEmpty());
 
-        registry.removeRoute("Alias2");
+        getTestedRegistry().removeRoute("Alias2");
 
         Assert.assertTrue("No routes should have been added", added.isEmpty());
         Assert.assertEquals(
@@ -475,43 +331,14 @@ public class ApplicationRouteRegistryTest {
                 removed.size());
     }
 
-    @Tag("div")
-    @Route("home")
-    private static class MyRoute extends Component {
+    @Override
+    protected RouteRegistry getInitializationRegistry() {
+        return registry;
     }
 
-    @Tag("div")
-    @Route("info")
-    private static class MyInfo extends Component {
+    @Override
+    protected RouteRegistry getTestedRegistry() {
+        return registry;
     }
 
-    @Tag("div")
-    @Route("palace")
-    private static class MyPalace extends Component {
-    }
-
-    @Tag("div")
-    private static class Secondary extends Component {
-    }
-
-    @Tag("div")
-    @Route("modular")
-    private static class MyModular extends Component {
-    }
-
-    @Tag("div")
-    @Route("withAliases")
-    @RouteAlias("version")
-    @RouteAlias("person")
-    private static class MyRouteWithAliases extends Component {
-    }
-
-    @Tag("div")
-    private static class MainLayout extends Component implements RouterLayout {
-    }
-
-    @Tag("div")
-    private static class MiddleLayout extends Component
-            implements RouterLayout {
-    }
 }
