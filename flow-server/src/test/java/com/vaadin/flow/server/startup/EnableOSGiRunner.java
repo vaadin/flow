@@ -19,31 +19,49 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
-import org.osgi.framework.FrameworkUtil;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-public class DisableOSGiRunner extends BlockJUnit4ClassRunner {
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+
+public class EnableOSGiRunner extends BlockJUnit4ClassRunner {
 
     private static class TestClassLoader extends URLClassLoader {
+
+        private final Map<String, Class<?>> loadedClasses = new HashMap<>();
 
         public TestClassLoader() {
             super(new URL[0], Thread.currentThread().getContextClassLoader());
         }
 
         @Override
-        public Class<?> loadClass(String name) throws ClassNotFoundException {
+        public synchronized Class<?> loadClass(String name)
+                throws ClassNotFoundException {
+            Class<?> class1 = loadedClasses.get(name);
+            if (class1 != null) {
+                return class1;
+            }
             String vaadinPackagePrefix = VaadinServlet.class.getPackage()
                     .getName();
             vaadinPackagePrefix = vaadinPackagePrefix.substring(0,
                     vaadinPackagePrefix.lastIndexOf('.'));
-            if (name.startsWith(FrameworkUtil.class.getPackage().getName())) {
-                throw new ClassNotFoundException();
+            if (name.equals("org.osgi.framework.FrameworkUtil")) {
+                Builder<Object> builder = new ByteBuddy()
+                        .subclass(Object.class);
+
+                Class<?> fwUtil = builder.name(name).make()
+                        .load(this, ClassLoadingStrategy.Default.WRAPPER)
+                        .getLoaded();
+                return fwUtil;
             } else if (name.startsWith(vaadinPackagePrefix)) {
                 String path = name.replace('.', '/').concat(".class");
                 URL resource = Thread.currentThread().getContextClassLoader()
@@ -52,7 +70,9 @@ public class DisableOSGiRunner extends BlockJUnit4ClassRunner {
                 try {
                     stream = resource.openStream();
                     byte[] bytes = IOUtils.toByteArray(stream);
-                    return defineClass(name, bytes, 0, bytes.length);
+                    Class<?> clazz = defineClass(name, bytes, 0, bytes.length);
+                    loadedClasses.put(name, clazz);
+                    return clazz;
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -63,7 +83,7 @@ public class DisableOSGiRunner extends BlockJUnit4ClassRunner {
 
     private static final TestClassLoader classLoader = new TestClassLoader();
 
-    public DisableOSGiRunner(Class<?> clazz)
+    public EnableOSGiRunner(Class<?> clazz)
             throws InitializationError, ClassNotFoundException {
         super(classLoader.loadClass(clazz.getName()));
     }

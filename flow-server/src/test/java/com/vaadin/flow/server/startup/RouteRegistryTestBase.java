@@ -32,7 +32,7 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
 
-public abstract class AbstractRouteRegistryTest {
+public abstract class RouteRegistryTestBase {
 
     @Test
     public void initalizedRoutes_routesCanBeAdded() {

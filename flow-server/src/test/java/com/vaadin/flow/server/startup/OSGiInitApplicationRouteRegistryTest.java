@@ -24,6 +24,7 @@ import javax.servlet.ServletContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -38,8 +39,9 @@ import com.vaadin.flow.server.osgi.OSGiAccess;
  * OSGi routes initialization logic.
  *
  */
+@RunWith(EnableOSGiRunner.class)
 public class OSGiInitApplicationRouteRegistryTest
-        extends AbstractRouteRegistryTest {
+        extends RouteRegistryTestBase {
 
     private ApplicationRouteRegistry registry;
     private RouteRegistry osgiCollectorRegistry;
