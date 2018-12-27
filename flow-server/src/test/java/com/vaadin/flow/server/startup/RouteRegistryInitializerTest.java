@@ -164,10 +164,19 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_fails_for_multiple_registration_of_same_route() {
         expectedEx.expect(InvalidRouteConfigurationException.class);
-        RouteUtil.setNavigationTargets(
-                Stream.of(NavigationTargetFoo.class, NavigationTargetFoo2.class)
-                        .collect(Collectors.toSet()),
-                registry);
+        expectedEx.expectMessage(
+                "Navigation targets must have unique routes, found navigation targets "
+                        + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo' and "
+                        + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2' with the same route.");
+
+        RouteUtil.setAnnotatedRoute(NavigationTargetFoo.class, registry);
+
+        Assert.assertTrue("RouteRegistry should be initialized",
+                registry.hasNavigationTargets());
+
+        // Test should fail on this as there already exists a route for this
+        // route
+        RouteUtil.setAnnotatedRoute(NavigationTargetFoo2.class, registry);
     }
 
     @Test
