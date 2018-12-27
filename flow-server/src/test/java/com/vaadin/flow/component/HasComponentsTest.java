@@ -27,6 +27,15 @@ public class HasComponentsTest {
     }
 
     @Test
+    public void addStringToComponent() {
+        String text = "Add text";
+        TestComponent component = new TestComponent();
+        component.add(text);
+
+        Assert.assertEquals(text, component.getElement().getText());
+    }
+
+    @Test
     public void insertComponentAtFirst() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();

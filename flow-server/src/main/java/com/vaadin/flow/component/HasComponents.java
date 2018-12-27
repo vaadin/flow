@@ -52,6 +52,16 @@ public interface HasComponents extends HasElement, HasEnabled {
     }
 
     /**
+     * Add the given text as children of this component.
+     *
+     * @param text
+     *            the text to add
+     */
+    default void add(String text) {
+        add(new Text(text));
+    }
+
+    /**
      * Removes the given child components from this component.
      *
      * @param components
