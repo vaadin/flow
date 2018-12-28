@@ -44,13 +44,13 @@ public class IFrame extends HtmlComponent {
           .optionalAttributeWithDefault("name", "");
 
   private static final PropertyDescriptor<String, Optional<String>> sandboxDescriptor = PropertyDescriptors
-          .optionalAttributeWithDefault("sandbox", "");
+          .optionalAttributeWithDefault("sandbox", "allow-all");
 
   private static final PropertyDescriptor<String, Optional<String>> allowDescriptor = PropertyDescriptors
           .optionalAttributeWithDefault("allow", "");
 
   private static final PropertyDescriptor<String, Optional<String>> importanceDescriptor = PropertyDescriptors
-          .optionalAttributeWithDefault("importance", "");
+          .optionalAttributeWithDefault("importance", "auto");
 
   /**
    * Importance types.
@@ -180,7 +180,7 @@ public class IFrame extends HtmlComponent {
    * Sets the importance attribute to the specified {@link ImportanceType} value.
    * @param importance {@link ImportanceType} value.
    */
-  public void setImportance(ImportanceType importance) { set(importanceDescriptor, importance.value); }
+  public void setImportance(ImportanceType importance) { set(importanceDescriptor, importance != null ? importance.value : ""); }
 
   /**
    * @return the importance value.
@@ -192,7 +192,16 @@ public class IFrame extends HtmlComponent {
    * @param types {@link SandboxType}s.
    */
   public void setSandbox(SandboxType ...types) {
-    set(sandboxDescriptor, Stream.of(types).map(SandboxType::getValue).collect(Collectors.joining(" ")));
+    if (types == null || types.length == 0) {
+
+      // NOTE: "allow-all" is used internally to remove the property in this case when types argument is null.
+      // It is the default value of the sandboxDescriptor, thus when it is set the descriptor will remove the property.
+
+      set(sandboxDescriptor, "allow-all");
+
+    } else {
+      set(sandboxDescriptor, Stream.of(types).map(SandboxType::getValue).collect(Collectors.joining(" ")));
+    }
   }
 
   /**

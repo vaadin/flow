@@ -27,7 +27,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
@@ -65,10 +64,10 @@ public class HtmlComponentSmokeTest {
         testValues.put(IFrame.SandboxType[].class, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
 
         // Transform Arrays into Lists so that assertEqual may work properly over collections.
+        // NOTE: See also constructor of GetterProcessOutput.
         testValues.keySet().stream().filter(clazz -> clazz.isArray()).forEach(clazz -> {
             processTestValue.put(clazz, Arrays.asList((Object[]) testValues.get(clazz)));
         });
-
     }
 
     // For classes registered here testStringConstructor will be ignored. This test checks whether the content of the
@@ -76,11 +75,6 @@ public class HtmlComponentSmokeTest {
     private static final Set<Class<?>> ignoredStringConstructors = new HashSet<>();
     static {
         ignoredStringConstructors.add(IFrame.class);
-    }
-
-    private static final Collection<Function<Optional<GetterStrategyOutput>, GetterStrategyInput>> getterStrategies = new ArrayList<>(2);
-    static {
-//        getterStrategies.add(HtmlComponentSmokeTest::)
     }
 
     @Test
@@ -199,7 +193,7 @@ public class HtmlComponentSmokeTest {
 
     private static void testSetter(HtmlComponent instance, Method setter) {
         Method getter = findGetter(setter);
-        GetterStrategyInput getterStrategyInput = null;
+        GetterProcessInput getterProcessInput = null;
 
         Class<?> propertyType = setter.getParameterTypes()[0];
 
@@ -226,30 +220,26 @@ public class HtmlComponentSmokeTest {
 
             Object getterValue = getter.invoke(instance);
 
-            getterStrategyInput = GetterStrategyInput.with(getter, getterValue);
+            getterProcessInput = GetterProcessInput.with(getter, getterValue);
 
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
 
-
         // Validate getter type and value.
-        Optional<GetterStrategyOutput> getterStrategyOutput = process(getterStrategyInput);
+        Optional<GetterProcessOutput> getterProcessOutput = process(getterProcessInput);
 
         Assert.assertTrue(
                 "Undefined output handling for " + getter,
-                getterStrategyOutput.isPresent());
+                getterProcessOutput.isPresent());
 
         // Try getting the actual test value.
         Object getterTestValue = processTestValue.get(propertyType);
-        if (getterTestValue != null) {
-            testValue = getterTestValue;
-        }
 
-        Object finalTestValue = testValue;
+        Object finalTestValue = getterTestValue != null ? getterTestValue : testValue;
 
-        getterStrategyOutput.ifPresent(output -> {
+        getterProcessOutput.ifPresent(output -> {
             Assert.assertEquals(setter + " should have the same type as its getter",
                     propertyType, output.type);
 
@@ -259,7 +249,7 @@ public class HtmlComponentSmokeTest {
 
     }
 
-    private static Optional<GetterStrategyOutput> process(GetterStrategyInput input) {
+    private static Optional<GetterProcessOutput> process(GetterProcessInput input) {
         Class<?> getterType = input.getter.getReturnType();
 
         if (getterType == Optional.class) {
@@ -267,7 +257,7 @@ public class HtmlComponentSmokeTest {
 
             if (actualType instanceof Class<?>) {
                 // Getter's return value is an Optional wrapping a simple type.
-                return Optional.of(GetterStrategyOutput.with(actualType, ((Optional<?>) input.result).get()));
+                return Optional.of(GetterProcessOutput.with(actualType, ((Optional<?>) input.result).get()));
 
             } else if (actualType instanceof ParameterizedType) {
                 // Getter's return value is an Optional wrapping a generic type.
@@ -276,33 +266,7 @@ public class HtmlComponentSmokeTest {
 
         } else {
             // Getter's return value is a simple type.
-            return Optional.of(GetterStrategyOutput.with(getterType, input.result));
-        }
-
-        return Optional.empty();
-    }
-
-    // Return the implicit type if found.
-    private static Optional<GetterStrategyOutput> implicitType(GetterStrategyInput input) {
-        Class<?> getterType = input.getter.getReturnType();
-
-        if (getterType != Optional.class) {
-            return Optional.of(GetterStrategyOutput.with(getterType, input.result));
-        }
-
-        return Optional.empty();
-    }
-
-    // Return the implicit type if found.
-    private static Optional<GetterStrategyOutput> optionalType(GetterStrategyInput input) {
-        Class<?> getterType = input.getter.getReturnType();
-
-        if (getterType == Optional.class) {
-            Type actualType = ((ParameterizedType) input.getter.getGenericReturnType()).getActualTypeArguments()[0];
-
-            if (actualType instanceof Class<?>) {
-                return Optional.of(GetterStrategyOutput.with(actualType, ((Optional<?>) input.result).get()));
-            }
+            return Optional.of(GetterProcessOutput.with(getterType, input.result));
         }
 
         return Optional.empty();
@@ -375,34 +339,34 @@ public class HtmlComponentSmokeTest {
 }
 
 // Wraps a getter method and a value it returned.
-class GetterStrategyInput {
+class GetterProcessInput {
 
     final Method getter;
 
     final Object result;
 
-    static GetterStrategyInput with(Method getter, Object result) {
-        return new GetterStrategyInput(getter, result);
+    static GetterProcessInput with(Method getter, Object result) {
+        return new GetterProcessInput(getter, result);
     }
 
-    private GetterStrategyInput(Method getter, Object result) {
+    private GetterProcessInput(Method getter, Object result) {
         this.getter = getter;
         this.result = result;
     }
 }
 
 // Wraps a value and its type in form of a tuple.
-class GetterStrategyOutput {
+class GetterProcessOutput {
 
     final Type type;
 
     final Object value;
 
-    static GetterStrategyOutput with(Type type, Object value) {
-        return new GetterStrategyOutput(type, value);
+    static GetterProcessOutput with(Type type, Object value) {
+        return new GetterProcessOutput(type, value);
     }
 
-    private GetterStrategyOutput(Type type, Object value) {
+    private GetterProcessOutput(Type type, Object value) {
 
         if (value.getClass().isArray()) {
             value = Arrays.asList((Object[]) value);

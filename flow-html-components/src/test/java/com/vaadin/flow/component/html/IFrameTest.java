@@ -22,6 +22,10 @@ public class IFrameTest extends ComponentTest {
     @Override
     protected void addProperties() {
         addStringProperty("src", "");
+        addOptionalStringProperty("srcdoc");
         addOptionalStringProperty("name");
+        addOptionalStringProperty("allow");
+        addProperty("importance", IFrame.ImportanceType.class, IFrame.ImportanceType.AUTO, true);
+        addProperty("sandbox", IFrame.SandboxType[].class, new IFrame.SandboxType[0], true);
     }
 }
