@@ -59,7 +59,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
          * @param configuration
          *            mutable routeConfiguration to make changes to
          */
-        void configure(RouteConfiguration configuration);
+        void configure(ConfigureRoutes configuration);
     }
 
     /**
@@ -73,8 +73,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * The live configuration for this route registry. This can only be updated
      * through {@link #configure(Configuration)} for concurrency reasons.
      */
-    private volatile RouteConfiguration routeConfiguration = new RouteConfiguration();
-    private volatile RouteConfiguration editing = null;
+    private volatile ConfiguredRoutes routeConfiguration = new ConfiguredRoutes();
+    private volatile ConfigureRoutes editing = null;
 
     private CopyOnWriteArrayList<RoutesChangedListener> routesChangedListeners = new CopyOnWriteArrayList<>();
 
@@ -88,7 +88,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         lock();
         try {
             if (editing == null) {
-                editing = new RouteConfiguration(routeConfiguration, true);
+                editing = new ConfigureRoutes(routeConfiguration);
             }
 
             command.configure(editing);
@@ -115,15 +115,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private void unlock() {
         if (configurationLock.getHoldCount() == 1 && editing != null) {
             try {
-                RouteConfiguration oldConfiguration = routeConfiguration;
+                ConfiguredRoutes oldConfiguration = routeConfiguration;
 
-                routeConfiguration = new RouteConfiguration(editing, false);
+                routeConfiguration = new ConfiguredRoutes(editing);
 
                 if (!routesChangedListeners.isEmpty()) {
                     List<RouteBaseData<?>> oldRoutes = flattenRoutes(
                             getRegisteredRoutes(oldConfiguration));
                     List<RouteBaseData<?>> newRoutes = flattenRoutes(
-                            getRegisteredRoutes(editing));
+                            getRegisteredRoutes(routeConfiguration));
                     List<RouteBaseData<?>> added = new ArrayList<>();
                     List<RouteBaseData<?>> removed = new ArrayList<>();
 
@@ -170,7 +170,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *
      * @return current route configuration
      */
-    protected RouteConfiguration getConfiguration() {
+    protected ConfiguredRoutes getConfiguration() {
         return routeConfiguration;
     }
 
@@ -180,7 +180,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     private List<RouteData> getRegisteredRoutes(
-            RouteConfiguration configuration) {
+            ConfiguredRoutes configuration) {
         List<RouteData> registeredRoutes = new ArrayList<>();
         configuration.getTargetRoutes().forEach((target, url) -> {
             List<Class<?>> parameters = getRouteParameters(target);
@@ -229,7 +229,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     private List<Class<? extends RouterLayout>> getParentLayouts(
-            RouteConfiguration configuration, Class<? extends Component> target,
+            ConfiguredRoutes configuration, Class<? extends Component> target,
             String url) {
         if (configuration.getRouteTarget(url) != null) {
             List<Class<? extends RouterLayout>> parentLayouts = configuration
@@ -350,8 +350,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      */
     private RouteTarget addRouteToConfiguration(String path,
             Class<? extends Component> navigationTarget,
-            RouteConfiguration configuration) {
-        if (!hasLock() || !configuration.isMutable()) {
+            ConfigureRoutes configuration) {
+        if (!hasLock()) {
             throw new IllegalStateException(
                     "addRouteToConfiguration requires the registry lock and a mutable configuration.");
         }

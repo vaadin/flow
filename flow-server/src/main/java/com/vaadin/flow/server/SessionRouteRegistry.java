@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
-import com.vaadin.flow.router.internal.RouteConfiguration;
+import com.vaadin.flow.router.internal.ConfigureRoutes;
 
 /**
  * SessionRouteRegistry is a mutable route registry that is valid in the scope
@@ -107,7 +107,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      * Clear all registered routes from this SessionRouteRegistry.
      */
     public void clear() {
-        configure(RouteConfiguration::clear);
+        configure(ConfigureRoutes::clear);
     }
 
     @Override
