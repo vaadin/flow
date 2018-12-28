@@ -324,7 +324,7 @@ public class Router implements Serializable {
      * @param <C>
      *         navigation target type
      * @return url for the navigation target with parameter
-     * @deprecated Url handling is moved to {@link RouteConfiguration#getUrl(Class, T)}
+     * @deprecated Url handling is moved to {@link RouteConfiguration#getUrl(Class, Object)}
      */
     @Deprecated
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(

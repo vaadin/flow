@@ -106,7 +106,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     /**
      * Adds the given route change listener to registry.
-     * <p></p>
+     * <p>
      * Note! Also registers a listener to parent registry
      *
      * @param listener
