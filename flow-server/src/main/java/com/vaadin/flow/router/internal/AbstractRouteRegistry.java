@@ -332,7 +332,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     @Override
     public void clean() {
-        configure(RouteConfiguration::clear);
+        configure(ConfigureRoutes::clear);
     }
 
     /**
