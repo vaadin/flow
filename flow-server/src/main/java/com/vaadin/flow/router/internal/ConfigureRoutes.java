@@ -17,7 +17,6 @@ package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,25 +25,27 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
- * Configuration class for editing routes. After editing the class should always
+ * Configuration class for editing routes. After editing the class should
+ * always
  * be set as a {@link ConfiguredRoutes} read only value object.
  * <p>
- * {@link ConfigureRoutes} is always mutable where as {@link ConfiguredRoutes} is always
+ * {@link ConfigureRoutes} is always mutable where as {@link ConfiguredRoutes}
+ * is always
  * immutable.
  */
 public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
-    protected final Map<String, RouteTarget> routes;
-    protected final Map<Class<? extends Component>, String> targetRoutes;
-    protected final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets;
+    private final Map<String, RouteTarget> routeMap;
+    private final Map<Class<? extends Component>, String> targetRouteMap;
+    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap;
 
     /**
      * Create an immutable RouteConfiguration.
      */
     public ConfigureRoutes() {
-        routes = new HashMap<>();
-        targetRoutes = new HashMap<>();
-        exceptionTargets = new HashMap<>();
+        routeMap = new HashMap<>();
+        targetRouteMap = new HashMap<>();
+        exceptionTargetMap = new HashMap<>();
     }
 
     /**
@@ -55,35 +56,51 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      *         original configuration to get data from
      */
     public ConfigureRoutes(ConfiguredRoutes original) {
-        Map<String, RouteTarget> routes = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
-        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets = new HashMap<>();
+        Map<String, RouteTarget> routesMap = new HashMap<>();
+        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
+        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
 
-        for (Map.Entry<String, RouteTarget> route : original.routes
+        for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
                 .entrySet()) {
-            routes.put(route.getKey(), route.getValue().copy(true));
+            routesMap.put(route.getKey(), route.getValue().copy(true));
         }
-        targetRoutes.putAll(original.targetRoutes);
-        exceptionTargets.putAll(original.exceptionTargets);
+        targetRoutesMap.putAll(original.getTargetRoutes());
+        exceptionTargetsMap.putAll(original.getExceptionHandlers());
 
-        this.routes = routes;
-        this.targetRoutes = targetRoutes;
-        this.exceptionTargets = exceptionTargets;
+        this.routeMap = routesMap;
+        this.targetRouteMap = targetRoutesMap;
+        this.exceptionTargetMap = exceptionTargetsMap;
     }
 
+    /**
+     * Override so that the getters use the correct routes map for data.
+     *
+     * @return editable map of routes
+     */
     @Override
     protected Map<String, RouteTarget> getRoutesMap() {
-        return routes;
+        return routeMap;
     }
 
+    /**
+     * Override so that the getters use the correct target routes map for data.
+     *
+     * @return editable map of targetRoutes
+     */
     @Override
     public Map<Class<? extends Component>, String> getTargetRoutes() {
-        return targetRoutes;
+        return targetRouteMap;
     }
 
+    /**
+     * Override so that the getters use the correct exception targets map for
+     * data.
+     *
+     * @return editable map of exception targets
+     */
     @Override
     public Map<Class<? extends Exception>, Class<? extends Component>> getExceptionHandlers() {
-        return exceptionTargets;
+        return exceptionTargetMap;
     }
 
     /*-----------------------------------*/
@@ -94,8 +111,8 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Clear all maps from this configuration.
      */
     public void clear() {
-        routes.clear();
-        targetRoutes.clear();
+        getRoutesMap().clear();
+        getTargetRoutes().clear();
     }
 
     /**
@@ -111,9 +128,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     public void setRoute(String path,
             Class<? extends Component> navigationTarget) {
         if (hasRoute(path)) {
-            routes.get(path).addRoute(navigationTarget);
+            getRoutesMap().get(path).addRoute(navigationTarget);
         } else {
-            routes.computeIfAbsent(path,
+            getRoutesMap().computeIfAbsent(path,
                     key -> new RouteTarget(navigationTarget, true));
         }
     }
@@ -131,7 +148,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      */
     public void setTargetRoute(Class<? extends Component> navigationTarget,
             String path) {
-        targetRoutes.put(navigationTarget, path);
+        getTargetRoutes().put(navigationTarget, path);
     }
 
     /**
@@ -147,7 +164,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      */
     public void setErrorRoute(Class<? extends Exception> exception,
             Class<? extends Component> errorTarget) {
-        exceptionTargets.put(exception, errorTarget);
+        getExceptionHandlers().put(exception, errorTarget);
     }
 
     /**
@@ -162,19 +179,19 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         }
 
         // Remove target route from class-to-string map
-        targetRoutes.remove(targetRoute);
+        getTargetRoutes().remove(targetRoute);
 
         List<String> emptyRoutes = new ArrayList<>();
         // Remove all instances of the route class for any path
         // that it may be registered to
-        routes.forEach((route, routeTarget) -> {
+        getRoutesMap().forEach((route, routeTarget) -> {
             routeTarget.remove(targetRoute);
 
             if (routeTarget.isEmpty()) {
                 emptyRoutes.add(route);
             }
         });
-        emptyRoutes.forEach(routes::remove);
+        emptyRoutes.forEach(getRoutesMap()::remove);
     }
 
     /**
@@ -193,7 +210,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             return;
         }
 
-        RouteTarget removedRoute = routes.remove(path);
+        RouteTarget removedRoute = getRoutesMap().remove(path);
         for (Class<? extends Component> targetRoute : removedRoute
                 .getRoutes()) {
             updateMainRouteTarget(targetRoute);
@@ -216,18 +233,19 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      */
     public void removeRoute(String path,
             Class<? extends Component> targetRoute) {
-        if (!hasRoute(path) || !routes.get(path).containsTarget(targetRoute)) {
+        if (!hasRoute(path) || !getRoutesMap().get(path)
+                .containsTarget(targetRoute)) {
             return;
         }
 
-        RouteTarget routeTarget = routes.get(path);
+        RouteTarget routeTarget = getRoutesMap().get(path);
         routeTarget.remove(targetRoute);
 
         if (routeTarget.isEmpty()) {
-            routes.remove(path);
+            getRoutesMap().remove(path);
         }
 
-        if (targetRoutes.containsKey(targetRoute) && targetRoutes
+        if (getTargetRoutes().containsKey(targetRoute) && getTargetRoutes()
                 .get(targetRoute).equals(path)) {
             updateMainRouteTarget(targetRoute);
         }
@@ -242,12 +260,12 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      */
     private void updateMainRouteTarget(
             Class<? extends Component> navigationTarget) {
-        targetRoutes.remove(navigationTarget);
+        getTargetRoutes().remove(navigationTarget);
 
         // Update Class-to-string map with a new mapping if removed route exists for another path
-        for (Map.Entry<String, RouteTarget> entry : routes.entrySet()) {
+        for (Map.Entry<String, RouteTarget> entry : getRoutesMap().entrySet()) {
             if (entry.getValue().containsTarget(navigationTarget)) {
-                targetRoutes.put(navigationTarget, entry.getKey());
+                getTargetRoutes().put(navigationTarget, entry.getKey());
                 return;
             }
         }

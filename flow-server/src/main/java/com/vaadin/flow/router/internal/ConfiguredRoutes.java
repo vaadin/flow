@@ -36,9 +36,9 @@ import com.vaadin.flow.server.startup.RouteTarget;
  */
 public class ConfiguredRoutes implements Serializable {
 
-    protected final Map<String, RouteTarget> routes;
-    protected final Map<Class<? extends Component>, String> targetRoutes;
-    protected final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets;
+    private final Map<String, RouteTarget> routes;
+    private final Map<Class<? extends Component>, String> targetRoutes;
+    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets;
 
     /**
      * Create an immutable RouteConfiguration.
@@ -57,26 +57,26 @@ public class ConfiguredRoutes implements Serializable {
      *         original configuration to get data from
      */
     public ConfiguredRoutes(ConfigureRoutes original) {
-        Map<String, RouteTarget> routes = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
-        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets = new HashMap<>();
+        Map<String, RouteTarget> routeMap = new HashMap<>();
+        Map<Class<? extends Component>, String> targetRouteMap = new HashMap<>();
+        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap = new HashMap<>();
 
-        for (Map.Entry<String, RouteTarget> route : original.routes
+        for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
                 .entrySet()) {
-            routes.put(route.getKey(), route.getValue().copy(false));
+            routeMap.put(route.getKey(), route.getValue().copy(false));
         }
-        targetRoutes.putAll(original.targetRoutes);
-        exceptionTargets.putAll(original.exceptionTargets);
+        targetRouteMap.putAll(original.getTargetRoutes());
+        exceptionTargetMap.putAll(original.getExceptionHandlers());
 
-        this.routes = routes.isEmpty() ?
+        this.routes = routeMap.isEmpty() ?
                 Collections.emptyMap() :
-                Collections.unmodifiableMap(routes);
-        this.targetRoutes = targetRoutes.isEmpty() ?
+                Collections.unmodifiableMap(routeMap);
+        this.targetRoutes = targetRouteMap.isEmpty() ?
                 Collections.emptyMap() :
-                Collections.unmodifiableMap(targetRoutes);
-        this.exceptionTargets = exceptionTargets.isEmpty() ?
+                Collections.unmodifiableMap(targetRouteMap);
+        this.exceptionTargets = exceptionTargetMap.isEmpty() ?
                 Collections.emptyMap() :
-                Collections.unmodifiableMap(exceptionTargets);
+                Collections.unmodifiableMap(exceptionTargetMap);
     }
 
     protected Map<String, RouteTarget> getRoutesMap() {
