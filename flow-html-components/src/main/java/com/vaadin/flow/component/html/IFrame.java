@@ -16,6 +16,8 @@
 package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 
 import java.util.Collection;
@@ -31,6 +33,24 @@ import java.util.stream.Stream;
  */
 @Tag(Tag.IFRAME)
 public class IFrame extends HtmlComponent {
+
+  private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
+          .attributeWithDefault("src", "");
+
+  private static final PropertyDescriptor<String, Optional<String>> srcdocDescriptor = PropertyDescriptors
+          .optionalAttributeWithDefault("srcdoc", "");
+
+  private static final PropertyDescriptor<String, Optional<String>> nameDescriptor = PropertyDescriptors
+          .optionalAttributeWithDefault("name", "");
+
+  private static final PropertyDescriptor<String, Optional<String>> sandboxDescriptor = PropertyDescriptors
+          .optionalAttributeWithDefault("sandbox", "");
+
+  private static final PropertyDescriptor<String, Optional<String>> allowDescriptor = PropertyDescriptors
+          .optionalAttributeWithDefault("allow", "");
+
+  private static final PropertyDescriptor<String, Optional<String>> importanceDescriptor = PropertyDescriptors
+          .optionalAttributeWithDefault("importance", "");
 
   /**
    * Importance types.
@@ -51,7 +71,7 @@ public class IFrame extends HtmlComponent {
 
     private static Optional<ImportanceType> fromAttributeValue(String value) {
       return Stream.of(values()).filter(type-> type.value.equals(value))
-          .findFirst();
+              .findFirst();
     }
   }
 
@@ -73,8 +93,8 @@ public class IFrame extends HtmlComponent {
     ALLOW_TOP_NAVIGATION("allow-top-navigation"),
     ALLOW_TOP_NAVIGATION_BY_USER_ACTIVATION("allow-top-navigation-by-user-activation");
 
-
     private final String value;
+
     SandboxType(String value){
       this.value = value;
     }
@@ -87,14 +107,48 @@ public class IFrame extends HtmlComponent {
       return Stream.of(values()).filter(type-> type.value.equals(value))
           .findFirst();
     }
+
   }
 
   /**
    * Creates a new iframe.
+   */
+  public IFrame() { }
+
+  /**
+   * Creates a new iframe with a source URL.
    * @param src Source URL
    */
   public IFrame(String src) {
     setSrc(src);
+  }
+
+  /**
+   * Sets the source of the iframe.
+   * @param src Source URL.
+   */
+  public void setSrc(String src) { set(srcDescriptor, src); }
+
+  /**
+   * @return the source of the iframe.
+   */
+  public String getSrc(){
+    return get(srcDescriptor);
+  }
+
+  /**
+   * Sets the srcdoc of the iframe.
+   * @param srcdoc srcdoc URL.
+   */
+  public void setSrcdoc(String srcdoc){
+    set(srcdocDescriptor, srcdoc);
+  }
+
+  /**
+   * @return the srcdoc of the iframe.
+   */
+  public Optional<String> getSrcdoc() {
+    return get(srcdocDescriptor);
   }
 
   /**
@@ -103,110 +157,55 @@ public class IFrame extends HtmlComponent {
    * @param allow Allow.
    */
   public void setAllow(String allow){
-    getElement().setAttribute("allow", allow);
+    set(allowDescriptor, allow);
   }
 
   /**
    * @return the currently applied allow value.
    */
-  public Optional<String> getAllow(){
-    return optionallyGetAttribute("allow");
-  }
-
-  /**
-   * Sets the importance attribute to the specified {@link ImportanceType} value.
-   * @param importance {@link ImportanceType} value.
-   */
-  public void setImportance(ImportanceType importance){
-    getElement().setAttribute("value", importance.value);
-  }
-
-  /**
-   * @return the importance value.
-   */
-  public Optional<ImportanceType> getImportance(){
-    return optionallyGetAttribute("importance")
-        .flatMap(ImportanceType::fromAttributeValue);
-  }
+  public Optional<String> getAllow() { return get(allowDescriptor); }
 
   /**
    * Sets the name attribute.
    * @param name name.
    */
-  public void setName(String name){
-    getElement().setAttribute("name", name);
-  }
+  public void setName(String name) { set(nameDescriptor, name); }
 
   /**
    * @return the name attribute.
    */
-  public Optional<String> getName() {
-    return optionallyGetAttribute("name");
-  }
+  public Optional<String> getName() { return get(nameDescriptor); }
+
+  /**
+   * Sets the importance attribute to the specified {@link ImportanceType} value.
+   * @param importance {@link ImportanceType} value.
+   */
+  public void setImportance(ImportanceType importance) { set(importanceDescriptor, importance.value); }
+
+  /**
+   * @return the importance value.
+   */
+  public Optional<ImportanceType> getImportance() { return get(importanceDescriptor).flatMap(ImportanceType::fromAttributeValue); }
 
   /**
    * Sets the sandbox attribute to the given {@link SandboxType}s.
    * @param types {@link SandboxType}s.
    */
   public void setSandbox(SandboxType ...types) {
-    getElement().setAttribute("sandbox", Stream.of(types).map(SandboxType::getValue).collect(Collectors.joining(" ")));
+    set(sandboxDescriptor, Stream.of(types).map(SandboxType::getValue).collect(Collectors.joining(" ")));
   }
 
   /**
    * @return the current {@link SandboxType}s.
    */
-  public Optional<Collection<SandboxType>> getSandbox(){
-    return optionallyGetAttribute("sandbox")
+  public Optional<SandboxType[]> getSandbox() {
+    return get(sandboxDescriptor)
         .map(value -> Stream.of(value.split(" "))
             .map(SandboxType::fromAttributeValue)
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .collect(Collectors.toList()));
-  }
-
-  /**
-   * Sets the source of the iframe.
-   * @param src Source URL.
-   */
-  public void setSrc(String src) {
-    getElement().setAttribute("src", src);
-  }
-
-  /**
-   * @return the source of the iframe.
-   */
-  public String getSrc(){
-    return getElement().getAttribute("src");
-  }
-
-  /**
-   * Sets the srcdoc of the iframe.
-   * @param srcdoc srcdoc URL.
-   */
-  public void setSrcdoc(String srcdoc){
-    getElement().setAttribute("srcdoc", srcdoc);
-  }
-
-  /**
-   * @return the srcdoc of the iframe.
-   */
-  public Optional<String> getSrcdoc() {
-    return optionallyGetAttribute("srcdoc");
-  }
-
-  /**
-   * Tries to get an attribute value.
-   * @param attributeName Name of attribute
-   * @return Optional containing value, or empty optional
-   */
-  private Optional<String> optionallyGetAttribute(String attributeName) {
-    String value = getElement().getAttribute(attributeName);
-
-    if(value!=null){
-      return Optional.of(value);
-    } else {
-      return Optional.empty();
-    }
+            .collect(Collectors.toList()))
+            .map(collection -> collection.toArray(new SandboxType[collection.size()]));
   }
 
 }
