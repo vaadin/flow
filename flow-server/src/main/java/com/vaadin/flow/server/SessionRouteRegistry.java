@@ -26,8 +26,9 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
-import com.vaadin.flow.router.internal.ConfigureRoutes;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * SessionRouteRegistry is a mutable route registry that is valid in the scope
@@ -104,10 +105,26 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     /**
-     * Clear all registered routes from this SessionRouteRegistry.
+     * Adds the given route change listener to registry.
+     * <p></p>
+     * Note! Also registers a listener to parent registry
+     *
+     * @param listener
+     *         listener to add
+     * @return registration to remove the listener
      */
-    public void clear() {
-        configure(ConfigureRoutes::clear);
+    @Override
+    public Registration addRoutesChangeListener(
+            RoutesChangedListener listener) {
+        final Registration parentRegistration = parentRegistry
+                .addRoutesChangeListener(listener);
+        final Registration registration = super
+                .addRoutesChangeListener(listener);
+
+        return () -> {
+            registration.remove();
+            parentRegistration.remove();
+        };
     }
 
     @Override

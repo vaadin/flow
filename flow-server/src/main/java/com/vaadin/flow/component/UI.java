@@ -48,6 +48,7 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Command;
@@ -777,8 +778,9 @@ public class UI extends Component
      *            navigation target to navigate to
      */
     public void navigate(Class<? extends Component> navigationTarget) {
-        String routeUrl = getRouter().getUrl(navigationTarget);
-        navigate(routeUrl);
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getRouter().getRegistry());
+        navigate(configuration.getUrl(navigationTarget));
     }
 
     /**
@@ -804,8 +806,9 @@ public class UI extends Component
      */
     public <T, C extends Component & HasUrlParameter<T>> void navigate(
             Class<? extends C> navigationTarget, T parameter) {
-        String routeUrl = getRouter().getUrl(navigationTarget, parameter);
-        navigate(routeUrl);
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getRouter().getRegistry());
+        navigate(configuration.getUrl(navigationTarget, parameter));
     }
 
     /**

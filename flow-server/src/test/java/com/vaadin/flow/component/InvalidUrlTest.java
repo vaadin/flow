@@ -28,7 +28,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -95,10 +95,10 @@ public class InvalidUrlTest {
 
             ui.getInternals().setSession(session);
 
-            RouteUtil
-                    .setNavigationTargets(new HashSet<>(
+            RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
+                    .setRoutes(new HashSet<>(
                             Arrays.asList(UITest.RootNavigationTarget.class,
-                                    UITest.FooBarNavigationTarget.class)), ui.getRouter().getRegistry());
+                                    UITest.FooBarNavigationTarget.class)));
 
             ui.doInit(request, 0);
             ui.getRouter().initializeUI(ui, request);

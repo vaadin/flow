@@ -170,7 +170,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *
      * @return current route configuration
      */
-    protected ConfiguredRoutes getConfiguration() {
+    public ConfiguredRoutes getConfiguration() {
         return routeConfiguration;
     }
 

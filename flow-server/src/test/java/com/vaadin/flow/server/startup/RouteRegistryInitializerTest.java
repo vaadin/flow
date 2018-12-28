@@ -52,13 +52,13 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteAliasData;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterTest.FileNotFound;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -135,26 +135,49 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void routeRegistry_setNavigationTargets_routesAreClearedAndNewDataIsSet() {
+    public void routeRegistry_routes_can_be_added() {
         Assert.assertFalse("RouteRegistry should not be initialized",
                 registry.hasNavigationTargets());
 
-        RouteUtil.setNavigationTargets(new HashSet<>(), registry);
+        RouteConfiguration.forRegistry(registry).setRoutes(new HashSet<>());
 
         Assert.assertFalse(
                 "RouteRegistry should not have navigation targets after empty set",
                 registry.hasNavigationTargets());
 
-        RouteUtil.setNavigationTargets(
-                new HashSet<>(Collections.singleton(NavigationTargetFoo.class)),
-                registry);
+        RouteConfiguration.forRegistry(registry).setRoutes(new HashSet<>(
+                Collections.singleton(NavigationTargetFoo.class)));
 
         Assert.assertTrue("RouteRegistry should be initialized",
                 registry.hasNavigationTargets());
 
-        RouteUtil.setNavigationTargets(
-                new HashSet<>(Collections.singleton(NavigationTarget.class)),
-                registry);
+        RouteConfiguration.forRegistry(registry).addRoutes(
+                new HashSet<>(Collections.singleton(NavigationTarget.class)));
+
+        Assert.assertEquals(
+                "Giving new routes should have added to the registry", 2,
+                registry.getRegisteredRoutes().size());
+    }
+
+    @Test
+    public void routeRegistry_setNavigationTargets_routesAreClearedAndNewDataIsSet() {
+        Assert.assertFalse("RouteRegistry should not be initialized",
+                registry.hasNavigationTargets());
+
+        RouteConfiguration.forRegistry(registry).setRoutes(new HashSet<>());
+
+        Assert.assertFalse(
+                "RouteRegistry should not have navigation targets after empty set",
+                registry.hasNavigationTargets());
+
+        RouteConfiguration.forRegistry(registry).setRoutes(
+                new HashSet<>(Collections.singleton(NavigationTargetFoo.class)));
+
+        Assert.assertTrue("RouteRegistry should be initialized",
+                registry.hasNavigationTargets());
+
+        RouteConfiguration.forRegistry(registry).setRoutes(
+                new HashSet<>(Collections.singleton(NavigationTarget.class)));
 
         Assert.assertEquals(
                 "Giving new routes should have added to the registry", 1,
@@ -169,14 +192,15 @@ public class RouteRegistryInitializerTest {
                         + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo' and "
                         + "'com.vaadin.flow.server.startup.RouteRegistryInitializerTest$NavigationTargetFoo2' with the same route.");
 
-        RouteUtil.setAnnotatedRoute(NavigationTargetFoo.class, registry);
+        RouteConfiguration.forRegistry(registry).setRoutes(new HashSet<>(
+                Collections.singleton(NavigationTargetFoo.class)));
 
         Assert.assertTrue("RouteRegistry should be initialized",
                 registry.hasNavigationTargets());
 
-        // Test should fail on this as there already exists a route for this
-        // route
-        RouteUtil.setAnnotatedRoute(NavigationTargetFoo2.class, registry);
+        // Test should fail on this as there already exists a route for this route
+        RouteConfiguration.forRegistry(registry).addRoutes(new HashSet<>(
+                Collections.singleton(NavigationTargetFoo2.class)));
     }
 
     @Test

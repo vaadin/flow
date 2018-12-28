@@ -185,11 +185,11 @@ public interface RouteRegistry extends Serializable {
     void update(Command command);
 
     /**
-     * Registers a new route change listener.
+     * Adds the given route change listener to registry.
      *
      * @param listener
      *            listener to be informed on route changes
-     * @return a registration for the listener
+     * @return registration to remove the listener
      */
     Registration addRoutesChangeListener(RoutesChangedListener listener);
 

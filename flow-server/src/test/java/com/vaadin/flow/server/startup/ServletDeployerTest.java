@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
@@ -252,8 +252,8 @@ public class ServletDeployerTest {
             expect(contextMock.getAttribute(RouteRegistry.class.getName()))
                     .andAnswer(() -> {
                         ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
-                        RouteUtil.setNavigationTargets(Collections
-                                .singleton(ComponentWithRoute.class), registry);
+                        RouteConfiguration.forRegistry(registry).setRoutes(Collections
+                                .singleton(ComponentWithRoute.class));
                         return registry;
                     }).anyTimes();
         } else {

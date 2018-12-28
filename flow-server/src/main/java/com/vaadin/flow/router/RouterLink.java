@@ -156,7 +156,8 @@ public class RouterLink extends Component
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget) {
         validateRouteParameters(router, navigationTarget);
-        String url = router.getUrl(navigationTarget);
+        String url = RouteConfiguration.forRegistry(router.getRegistry())
+                .getUrl(navigationTarget);
         updateHref(url);
     }
 
@@ -177,7 +178,8 @@ public class RouterLink extends Component
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Router router, Class<? extends C> navigationTarget, T parameter) {
         validateRouteParameters(router, navigationTarget);
-        String url = router.getUrl(navigationTarget, parameter);
+        String url = RouteConfiguration.forRegistry(router.getRegistry())
+                .getUrl(navigationTarget, parameter);
         updateHref(url);
     }
 
