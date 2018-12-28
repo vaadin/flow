@@ -39,8 +39,6 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Utility class with methods for route handling.
