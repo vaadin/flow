@@ -27,8 +27,7 @@ class AssertUtils {
      * @param expected expected value
      * @param actual actual value
      */
-    static public void assertEquals(String message, Object expected, Object actual)
-            throws ComparisonFailure, ArrayComparisonFailure {
+    static public void assertEquals(String message, Object expected, Object actual) {
 
         if (expected instanceof Optional && actual instanceof Optional) {
             expected = ((Optional) expected).orElseGet(() -> null);
