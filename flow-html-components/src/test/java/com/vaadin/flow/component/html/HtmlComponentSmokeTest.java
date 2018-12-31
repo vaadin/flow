@@ -54,7 +54,6 @@ public class HtmlComponentSmokeTest {
     }
 
     private static final Map<Class<?>, Object> testValues = new HashMap<>();
-    private static final Map<Class<?>, Object> processTestValue = new HashMap<>();
     static {
         testValues.put(String.class, "asdf");
         testValues.put(boolean.class, false);
@@ -62,12 +61,6 @@ public class HtmlComponentSmokeTest {
         testValues.put(int.class, 42);
         testValues.put(IFrame.ImportanceType.class, IFrame.ImportanceType.HIGH);
         testValues.put(IFrame.SandboxType[].class, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
-
-        // Transform Arrays into Lists so that assertEqual may work properly over collections.
-        // NOTE: See also constructor of GetterProcessOutput.
-        testValues.keySet().stream().filter(clazz -> clazz.isArray()).forEach(clazz -> {
-            processTestValue.put(clazz, Arrays.asList((Object[]) testValues.get(clazz)));
-        });
     }
 
     // For classes registered here testStringConstructor will be ignored. This test checks whether the content of the
@@ -192,10 +185,19 @@ public class HtmlComponentSmokeTest {
     }
 
     private static void testSetter(HtmlComponent instance, Method setter) {
-        Method getter = findGetter(setter);
-        GetterProcessInput getterProcessInput = null;
-
         Class<?> propertyType = setter.getParameterTypes()[0];
+
+        Method getter = findGetter(setter);
+        Class<?> getterType = getter.getReturnType();
+        boolean isOptional = (getterType == Optional.class);
+        if (isOptional) {
+            // setFoo(String) + Optional<String> getFoo() is ok
+            Type gen = getter.getGenericReturnType();
+            getterType = (Class<?>) ((ParameterizedType) gen)
+                    .getActualTypeArguments()[0];
+        }
+        Assert.assertEquals(setter + " should have the same type as its getter",
+                propertyType, getterType);
 
         Object testValue = testValues.get(propertyType);
 
@@ -219,57 +221,23 @@ public class HtmlComponentSmokeTest {
                     hasPendingChanges(elementNode));
 
             Object getterValue = getter.invoke(instance);
+            if (isOptional) {
+                getterValue = ((Optional<?>) getterValue).get();
+            }
 
-            getterProcessInput = GetterProcessInput.with(getter, getterValue);
+            if (testValue.getClass().isArray() && getterValue.getClass().isArray()) {
+                Assert.assertArrayEquals(getter + " should return the set value",
+                        (Object[]) testValue, (Object[]) getterValue);
+
+            } else {
+                Assert.assertEquals(getter + " should return the set value",
+                        testValue, getterValue);
+            }
 
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
-
-        // Validate getter type and value.
-        Optional<GetterProcessOutput> getterProcessOutput = process(getterProcessInput);
-
-        Assert.assertTrue(
-                "Undefined output handling for " + getter,
-                getterProcessOutput.isPresent());
-
-        // Try getting the actual test value.
-        Object getterTestValue = processTestValue.get(propertyType);
-
-        Object finalTestValue = getterTestValue != null ? getterTestValue : testValue;
-
-        getterProcessOutput.ifPresent(output -> {
-            Assert.assertEquals(setter + " should have the same type as its getter",
-                    propertyType, output.type);
-
-            Assert.assertEquals(getter + " should return the set value",
-                    finalTestValue, output.value);
-        });
-
-    }
-
-    private static Optional<GetterProcessOutput> process(GetterProcessInput input) {
-        Class<?> getterType = input.getter.getReturnType();
-
-        if (getterType == Optional.class) {
-            Type actualType = ((ParameterizedType) input.getter.getGenericReturnType()).getActualTypeArguments()[0];
-
-            if (actualType instanceof Class<?>) {
-                // Getter's return value is an Optional wrapping a simple type.
-                return Optional.of(GetterProcessOutput.with(actualType, ((Optional<?>) input.result).get()));
-
-            } else if (actualType instanceof ParameterizedType) {
-                // Getter's return value is an Optional wrapping a generic type.
-
-            }
-
-        } else {
-            // Getter's return value is a simple type.
-            return Optional.of(GetterProcessOutput.with(getterType, input.result));
-        }
-
-        return Optional.empty();
     }
 
     private static boolean hasPendingChanges(StateNode elementNode) {
@@ -335,44 +303,5 @@ public class HtmlComponentSmokeTest {
     private static Class<? extends HtmlComponent> asHtmlComponentSubclass(
             Class<?> cls) {
         return cls.asSubclass(HtmlComponent.class);
-    }
-}
-
-// Wraps a getter method and a value it returned.
-class GetterProcessInput {
-
-    final Method getter;
-
-    final Object result;
-
-    static GetterProcessInput with(Method getter, Object result) {
-        return new GetterProcessInput(getter, result);
-    }
-
-    private GetterProcessInput(Method getter, Object result) {
-        this.getter = getter;
-        this.result = result;
-    }
-}
-
-// Wraps a value and its type in form of a tuple.
-class GetterProcessOutput {
-
-    final Type type;
-
-    final Object value;
-
-    static GetterProcessOutput with(Type type, Object value) {
-        return new GetterProcessOutput(type, value);
-    }
-
-    private GetterProcessOutput(Type type, Object value) {
-
-        if (value.getClass().isArray()) {
-            value = Arrays.asList((Object[]) value);
-        }
-
-        this.type = type;
-        this.value = value;
     }
 }

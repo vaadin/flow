@@ -30,6 +30,8 @@ import java.util.stream.Stream;
  *
  * @author Vaadin Ltd
  * @since 1.3
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe#Attributes">The Inline Frame element</>
  */
 @Tag(Tag.IFRAME)
 public class IFrame extends HtmlComponent {
@@ -130,6 +132,7 @@ public class IFrame extends HtmlComponent {
   public void setSrc(String src) { set(srcDescriptor, src); }
 
   /**
+   * Gets the source of the iframe.
    * @return the source of the iframe.
    */
   public String getSrc(){
@@ -145,6 +148,7 @@ public class IFrame extends HtmlComponent {
   }
 
   /**
+   * Gets the srcdoc of the iframe.
    * @return the srcdoc of the iframe.
    */
   public Optional<String> getSrcdoc() {
@@ -152,26 +156,30 @@ public class IFrame extends HtmlComponent {
   }
 
   /**
-   * Sets the allow property to specify a feature policy. See <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy">Feature Policy</a>.
+   * Sets the allow property to specify a feature policy.
    *
-   * @param allow Allow.
+   * @param allow the allow attribute value.
+   *
+   * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy">Feature Policy</a>.
    */
   public void setAllow(String allow){
     set(allowDescriptor, allow);
   }
 
   /**
+   * Gets the value of allow attribute.
    * @return the currently applied allow value.
    */
   public Optional<String> getAllow() { return get(allowDescriptor); }
 
   /**
    * Sets the name attribute.
-   * @param name name.
+   * @param name the value for the name attribute.
    */
   public void setName(String name) { set(nameDescriptor, name); }
 
   /**
+   * Gets the name attribute.
    * @return the name attribute.
    */
   public Optional<String> getName() { return get(nameDescriptor); }
@@ -179,11 +187,16 @@ public class IFrame extends HtmlComponent {
   /**
    * Sets the importance attribute to the specified {@link ImportanceType} value.
    * @param importance {@link ImportanceType} value.
+   *
+   * @see ImportanceType
    */
   public void setImportance(ImportanceType importance) { set(importanceDescriptor, importance != null ? importance.value : ""); }
 
   /**
+   * Gets the importance attribute value.
    * @return the importance value.
+   *
+   * @see ImportanceType
    */
   public Optional<ImportanceType> getImportance() { return get(importanceDescriptor).flatMap(ImportanceType::fromAttributeValue); }
 
@@ -205,6 +218,7 @@ public class IFrame extends HtmlComponent {
   }
 
   /**
+   * Gets the list of sandbox attribute values.
    * @return the current {@link SandboxType}s.
    */
   public Optional<SandboxType[]> getSandbox() {
