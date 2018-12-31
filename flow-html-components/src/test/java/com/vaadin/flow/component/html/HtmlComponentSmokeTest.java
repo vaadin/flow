@@ -225,14 +225,8 @@ public class HtmlComponentSmokeTest {
                 getterValue = ((Optional<?>) getterValue).get();
             }
 
-            if (testValue.getClass().isArray() && getterValue.getClass().isArray()) {
-                Assert.assertArrayEquals(getter + " should return the set value",
-                        (Object[]) testValue, (Object[]) getterValue);
-
-            } else {
-                Assert.assertEquals(getter + " should return the set value",
-                        testValue, getterValue);
-            }
+            AssertUtils.assertEquals(getter + " should return the set value",
+                    testValue, getterValue);
 
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {

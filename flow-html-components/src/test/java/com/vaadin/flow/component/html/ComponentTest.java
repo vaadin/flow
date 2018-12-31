@@ -307,7 +307,7 @@ public abstract class ComponentTest {
     private void assertNonDefaultValues() throws Exception {
         for (ComponentProperty property : properties) {
             if (property.optional) {
-                Assert.assertEquals(
+                AssertUtils.assertEquals(
                         "Getter for " + property.name
                                 + " should return Optional<"
                                 + property.type.getSimpleName() + ">",
