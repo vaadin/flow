@@ -15,22 +15,22 @@
  */
 package com.vaadin.flow.server.startup;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
+
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import java.util.Set;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
-
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
  */
-@HandlesTypes({ Route.class, RouteAlias.class })
+@HandlesTypes({Route.class, RouteAlias.class})
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         implements ServletContainerInitializer {
 
@@ -61,4 +61,15 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         }
     }
 
+    public void onDestroy(Set<Class<?>> classSet, ServletContext servletContext) {
+        removeRoutes(classSet, servletContext);
+    }
+
+    private void removeRoutes(Set<Class<?>> classSet, ServletContext servletContext) {
+        ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
+                .getInstance(servletContext);
+        Set<Class<? extends Component>> routes = validateRouteClasses(
+                classSet.stream());
+        routes.forEach(routeRegistry::removeRoute);
+    }
 }
