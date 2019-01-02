@@ -828,6 +828,48 @@ public class SessionRouteRegistryTest {
                 removed.size());
     }
 
+    @Test
+    public void maskedPathsInParent_eventContainsOnlyChangesVisibleForSession() {
+        registry.setRoute("main", MyRoute.class, Collections.emptyList());
+
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        List<RoutesChangedEvent> events = new ArrayList<>();
+
+        sessionRegistry.update(() -> {
+            sessionRegistry
+                    .setRoute("main", Secondary.class, Collections.emptyList());
+            sessionRegistry.setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+            sessionRegistry.setRoute("Alias2", Secondary.class,
+                    Collections.emptyList());
+        });
+
+        sessionRegistry.addRoutesChangeListener(events::add);
+
+        registry.removeRoute(MyRoute.class);
+
+        Assert.assertTrue("No event for masked path should have been received.",
+                events.isEmpty());
+
+        registry.setRoute("main", MyRoute.class, Collections.emptyList());
+
+        Assert.assertTrue("No event for masked path should have been received.",
+                events.isEmpty());
+
+        registry.setRoute("home", Secondary.class, Collections.emptyList());
+
+        Assert.assertEquals(
+                "Addition of non masked path should have fired an event.", 1,
+                events.size());
+        Assert.assertEquals("Source should have been ApplicationRouteRegistry",
+                registry, events.get(0).getSource());
+        Assert.assertEquals("One route should have been added", 1,
+                events.get(0).getAddedRoutes().size());
+        Assert.assertEquals("No routes should have been removed", 0,
+                events.get(0).getRemovedRoutes().size());
+    }
+
     @Tag("div")
     @Route("MyRoute")
     private static class MyRoute extends Component {
