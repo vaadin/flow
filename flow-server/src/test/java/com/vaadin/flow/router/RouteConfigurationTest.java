@@ -99,6 +99,23 @@ public class RouteConfigurationTest {
     }
 
     @Test
+    public void isRouteRegistered_returnsCorrectly() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        routeConfiguration.update(() -> {
+            routeConfiguration
+                    .setRoute("", MyRoute.class, Collections.emptyList());
+            routeConfiguration
+                    .setRoute("path", Secondary.class, Collections.emptyList());
+        });
+
+        Assert.assertTrue("Registered 'MyRoute.class' should return true", routeConfiguration.isRouteRegistered(MyRoute.class));
+        Assert.assertTrue("Registered 'Secondary.class' should return true",routeConfiguration.isRouteRegistered(Secondary.class));
+        Assert.assertFalse("Unregistered 'Url.class' should return false",routeConfiguration.isRouteRegistered(Url.class));
+    }
+
+    @Test
     public void routeConfiguration_getMethodsReturnCorrectly() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(getRegistry(session));

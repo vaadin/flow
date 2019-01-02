@@ -124,6 +124,17 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
+     * Check if the route is available as a registered target.
+     *
+     * @param route
+     *         target class to check for registration
+     * @return true if class is registered
+     */
+    public boolean isRouteRegistered(Class<? extends Component> route) {
+        return handledRegistry.getTargetUrl(route).isPresent();
+    }
+
+    /**
      * Gets the registered route class for a given path. Returns an
      * empty optional if no navigation target corresponds to the given path.
      *
@@ -512,7 +523,6 @@ public class RouteConfiguration implements Serializable {
                 .getSessionRegistry(VaadinSession.getCurrent());
     }
 
-
     private void validateRoutes(
             Set<Class<? extends Component>> navigationTargets) {
         List<Class<? extends Component>> faulty = navigationTargets.stream()
@@ -532,9 +542,8 @@ public class RouteConfiguration implements Serializable {
         }
     }
 
-    private String getUrlForTarget(
-            Class<? extends Component> navigationTarget, RouteRegistry registry)
-            throws NotFoundException {
+    private String getUrlForTarget(Class<? extends Component> navigationTarget,
+            RouteRegistry registry) throws NotFoundException {
         Optional<String> targetUrl = registry.getTargetUrl(navigationTarget);
         if (!targetUrl.isPresent()) {
             throw new NotFoundException(
@@ -576,8 +585,7 @@ public class RouteConfiguration implements Serializable {
         return HasUrlParameter.class.isAssignableFrom(navigationTarget);
     }
 
-    private <T> List<String> serializeUrlParameters(
-            List<T> urlParameters) {
+    private <T> List<String> serializeUrlParameters(List<T> urlParameters) {
         return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
                 .collect(Collectors.toList());
     }
