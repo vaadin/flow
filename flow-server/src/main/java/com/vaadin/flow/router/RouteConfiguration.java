@@ -62,7 +62,7 @@ public class RouteConfiguration implements Serializable {
      * <p>
      * Note! Session scoped registry sees also the application scope routes.
      *
-     * @return controller for session scope routes
+     * @return configurator for session scope routes
      */
     public static RouteConfiguration forSessionScope() {
         return new RouteConfiguration(getSessionRegistry());
@@ -72,7 +72,7 @@ public class RouteConfiguration implements Serializable {
      * Get a {@link RouteConfiguration} that edits the application scope routes.
      * This requires that {@link VaadinServlet#getCurrent()} is populated.
      *
-     * @return controller for application scope routes
+     * @return configurator for application scope routes
      */
     public static RouteConfiguration forApplicationScope() {
         return new RouteConfiguration(getApplicationRegistry());
@@ -85,7 +85,7 @@ public class RouteConfiguration implements Serializable {
      *
      * @param registry
      *         registry to edit through the controller
-     * @return controller for editing given registry
+     * @return configurator for editing given registry
      */
     public static RouteConfiguration forRegistry(RouteRegistry registry) {
         return new RouteConfiguration(registry);
@@ -96,7 +96,9 @@ public class RouteConfiguration implements Serializable {
     /**
      * Get the {@link RouteData} for all registered navigation targets.
      * <p>
-     * Note! This would be best to request for session scope registry.
+     * Note! This would be best to request for session scope registry as it will
+     * then contain the actual currently visible routes from both the session
+     * and application scopes.
      * <p>
      * Note! Size of the list is only main routes as RouteData will contain a
      * list of alias route registrations.
@@ -119,8 +121,11 @@ public class RouteConfiguration implements Serializable {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
                     .hasRoute(path);
         }
-        return getAvailableRoutes().stream()
-                .anyMatch(routeData -> routeData.getUrl().equals(path));
+        return getAvailableRoutes().stream().anyMatch(
+                routeData -> routeData.getUrl().equals(path) || routeData
+                        .getRouteAliases().stream().anyMatch(
+                                routeAliasData -> routeAliasData.getUrl()
+                                        .equals(path)));
     }
 
     /**
@@ -154,7 +159,7 @@ public class RouteConfiguration implements Serializable {
      *         path to get navigation target for, not {@code null}
      * @param segments
      *         segments given for path
-     * @return optional navigation target corresponding to the give
+     * @return optional navigation target corresponding to the given path and segments
      */
     public Optional<Class<? extends Component>> getRoute(String pathString,
             List<String> segments) {
@@ -241,11 +246,9 @@ public class RouteConfiguration implements Serializable {
      * Giving a navigation target here will handle the {@link Route} annotation
      * to get the path and also register any {@link RouteAlias} that may be on
      * the class.
-     * <p>
-     * Note! A RouteAlias that is targeting an existing Route will throw.
      *
      * @param navigationTarget
-     *         navigation target to register into the session route scope
+     *         navigation target to register
      * @throws InvalidRouteConfigurationException
      *         thrown if exact route already defined in this scope
      */
@@ -269,7 +272,7 @@ public class RouteConfiguration implements Serializable {
      * @param path
      *         path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register into the session route scope
+     *         navigation target to register
      * @throws InvalidRouteConfigurationException
      *         thrown if exact route already defined in this scope
      */
@@ -284,13 +287,12 @@ public class RouteConfiguration implements Serializable {
      * layouts.
      * <p>
      * Note! Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will
-     * be
-     * ignored in route handling.
+     * be ignored in route handling.
      *
      * @param path
      *         path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register into session scope
+     *         navigation target to register
      * @throws InvalidRouteConfigurationException
      *         thrown if exact route already defined in this scope
      */
@@ -304,13 +306,12 @@ public class RouteConfiguration implements Serializable {
      * chain.
      * <p>
      * Note! Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will
-     * be
-     * ignored in route handling.
+     * be ignored in route handling.
      *
      * @param path
      *         path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register into session scope
+     *         navigation target to register
      * @param parentChain
      *         chain of parent layouts that should be used with this target
      * @throws InvalidRouteConfigurationException
@@ -327,13 +328,12 @@ public class RouteConfiguration implements Serializable {
      * chain.
      * <p>
      * Note! Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will
-     * be
-     * ignored in route handling.
+     * be ignored in route handling.
      *
      * @param path
      *         path to register navigation target to
      * @param navigationTarget
-     *         navigation target to register into session scope
+     *         navigation target to register
      * @param parentChain
      *         chain of parent layouts that should be used with this target
      * @throws InvalidRouteConfigurationException
@@ -459,10 +459,12 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Get the url string for given navigation target with the parameters in the
+     * Get the url string for given navigation target with the parameters in
+     * the
      * url.
      * <p>
-     * Note! Given parameter is checked for correct class type. This means that
+     * Note! Given parameters are checked for correct class type. This means
+     * that
      * if the navigation target defined parameter is of type {@code Boolean}
      * then calling getUrl with a {@code String} will fail.
      *
@@ -543,7 +545,7 @@ public class RouteConfiguration implements Serializable {
     }
 
     private String getUrlForTarget(Class<? extends Component> navigationTarget,
-            RouteRegistry registry) throws NotFoundException {
+            RouteRegistry registry) {
         Optional<String> targetUrl = registry.getTargetUrl(navigationTarget);
         if (!targetUrl.isPresent()) {
             throw new NotFoundException(

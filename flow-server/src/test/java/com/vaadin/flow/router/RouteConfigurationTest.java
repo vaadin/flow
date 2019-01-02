@@ -110,9 +110,12 @@ public class RouteConfigurationTest {
                     .setRoute("path", Secondary.class, Collections.emptyList());
         });
 
-        Assert.assertTrue("Registered 'MyRoute.class' should return true", routeConfiguration.isRouteRegistered(MyRoute.class));
-        Assert.assertTrue("Registered 'Secondary.class' should return true",routeConfiguration.isRouteRegistered(Secondary.class));
-        Assert.assertFalse("Unregistered 'Url.class' should return false",routeConfiguration.isRouteRegistered(Url.class));
+        Assert.assertTrue("Registered 'MyRoute.class' should return true",
+                routeConfiguration.isRouteRegistered(MyRoute.class));
+        Assert.assertTrue("Registered 'Secondary.class' should return true",
+                routeConfiguration.isRouteRegistered(Secondary.class));
+        Assert.assertFalse("Unregistered 'Url.class' should return false",
+                routeConfiguration.isRouteRegistered(Url.class));
     }
 
     @Test
@@ -311,7 +314,7 @@ public class RouteConfigurationTest {
     }
 
     @Test
-    public void setNavigationTargets_allExpectedRoutesAreSet() {
+    public void setRoutes_allExpectedRoutesAreSet() {
 
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
         RouteConfiguration routeConfiguration = RouteConfiguration
@@ -383,7 +386,8 @@ public class RouteConfigurationTest {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
 
-        routeConfiguration.setParentAnnotatedRoute("middle", MiddleLayout.class);
+        routeConfiguration
+                .setParentAnnotatedRoute("middle", MiddleLayout.class);
 
         Mockito.verify(registry).setRoute("middle", MiddleLayout.class,
                 Collections.singletonList(MainLayout.class));
