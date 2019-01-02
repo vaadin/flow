@@ -324,10 +324,59 @@ public class DataCommunicatorTest {
                 dataCommunicator.getKeyMapper().get(key));
     }
 
+    @Test
+    public void dataProviderReturnsLessItemsThanRequested_aNewSizeQueryIsPerformed() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProviderThatChangesSize(
+                50, 10);
+        dataProvider = Mockito.spy(dataProvider);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        // The first request will return size 50, but the actual fetch will
+        // bring only 40 items. A new size query should then be performed, that
+        // will return 40 instead
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertEquals(40, lastSet.getEnd());
+        Mockito.verify(dataProvider, Mockito.times(2)).size(Mockito.any());
+        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+    }
+
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().getStateTree().collectChanges(ignore -> {
         });
+    }
+
+    private AbstractDataProvider<Item, Object> createDataProviderThatChangesSize(
+            final int size, final int delta) {
+        return new AbstractDataProvider<Item, Object>() {
+            private boolean modifiedCount;
+
+            @Override
+            public boolean isInMemory() {
+                return true;
+            }
+
+            @Override
+            public int size(Query<Item, Object> query) {
+                if (modifiedCount) {
+                    return size - delta;
+                }
+                return size;
+            }
+
+            @Override
+            public Stream<Item> fetch(Query<Item, Object> query) {
+                int count = query.getLimit() + query.getOffset();
+                if (!modifiedCount) {
+                    count -= delta;
+                    modifiedCount = true;
+                }
+                return IntStream.range(query.getOffset(), count)
+                        .mapToObj(Item::new);
+            }
+        };
     }
 
     private AbstractDataProvider<Item, Object> createDataProvider() {
