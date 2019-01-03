@@ -29,6 +29,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.Registration;
 
 public class SessionRouteRegistryTest {
 
@@ -826,6 +827,82 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals(
                 "Removing the alias route should be seen in the event", 1,
                 removed.size());
+    }
+
+    @Test
+    public void maskedPathsInParent_eventContainsOnlyChangesVisibleForSession() {
+        registry.setRoute("main", MyRoute.class, Collections.emptyList());
+
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        List<RoutesChangedEvent> events = new ArrayList<>();
+
+        sessionRegistry.update(() -> {
+            sessionRegistry
+                    .setRoute("main", Secondary.class, Collections.emptyList());
+            sessionRegistry.setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+            sessionRegistry.setRoute("Alias2", Secondary.class,
+                    Collections.emptyList());
+        });
+
+        sessionRegistry.addRoutesChangeListener(events::add);
+
+        registry.removeRoute(MyRoute.class);
+
+        Assert.assertTrue("No event for masked path should have been received.",
+                events.isEmpty());
+
+        registry.setRoute("main", MyRoute.class, Collections.emptyList());
+
+        Assert.assertTrue("No event for masked path should have been received.",
+                events.isEmpty());
+
+        registry.setRoute("home", Secondary.class, Collections.emptyList());
+
+        Assert.assertEquals(
+                "Addition of non masked path should have fired an event.", 1,
+                events.size());
+        Assert.assertEquals("Source should have been ApplicationRouteRegistry",
+                registry, events.get(0).getSource());
+        Assert.assertEquals("One route should have been added", 1,
+                events.get(0).getAddedRoutes().size());
+        Assert.assertEquals("No routes should have been removed", 0,
+                events.get(0).getRemovedRoutes().size());
+    }
+
+    @Test
+    public void removeListener_noEventsAreGottenForAnyRegistry() {
+
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        List<RoutesChangedEvent> events = new ArrayList<>();
+
+        Registration registration = sessionRegistry
+                .addRoutesChangeListener(events::add);
+
+        registry.setRoute("main", MyRoute.class, Collections.emptyList());
+        sessionRegistry.update(() -> {
+            sessionRegistry
+                    .setRoute("main", Secondary.class, Collections.emptyList());
+            sessionRegistry.setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+            sessionRegistry.setRoute("Alias2", Secondary.class,
+                    Collections.emptyList());
+        });
+
+        Assert.assertEquals("One event for both registries should have been fired.", 2, events.size());
+
+        registration.remove();
+
+        sessionRegistry.removeRoute("main");
+
+        Assert.assertEquals("No new event should have been received for session scope", 2, events.size());
+
+        registry.removeRoute("main");
+
+        Assert.assertEquals("No new event should have been received for application scope", 2, events.size());
+
     }
 
     @Tag("div")

@@ -24,10 +24,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutesChangedEvent;
+import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
-import com.vaadin.flow.router.internal.ConfigureRoutes;
+import com.vaadin.flow.router.internal.ConfiguredRoutes;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * SessionRouteRegistry is a mutable route registry that is valid in the scope
@@ -104,10 +108,45 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     /**
-     * Clear all registered routes from this SessionRouteRegistry.
+     * Adds the given route change listener to the registry.
+     * <p>
+     * For the session scoped registry also changes to the application scoped
+     * registry will be delegated to the listener if the added or removed route
+     * was not masked by a registration in the session scope.
+     *
+     * @param listener
+     *         listener to add
+     * @return registration to remove the listener
      */
-    public void clear() {
-        configure(ConfigureRoutes::clear);
+    @Override
+    public Registration addRoutesChangeListener(
+            RoutesChangedListener listener) {
+
+        final Registration parentRegistration = parentRegistry
+                .addRoutesChangeListener(event -> {
+                    ConfiguredRoutes configuration = getConfiguration();
+                    List<RouteBaseData<?>> addedVisible = event.getAddedRoutes()
+                            .stream().filter(routeData -> !configuration
+                                    .hasRoute(routeData.getUrl()))
+                            .collect(Collectors.toList());
+                    List<RouteBaseData<?>> removedVisible = event
+                            .getRemovedRoutes().stream()
+                            .filter(routeData -> !configuration
+                                    .hasRoute(routeData.getUrl()))
+                            .collect(Collectors.toList());
+                    // Only fire an event if we have visible changes.
+                    if (!(addedVisible.isEmpty() && removedVisible.isEmpty())) {
+                        fireEvent(new RoutesChangedEvent(event.getSource(),
+                                addedVisible, removedVisible));
+                    }
+                });
+        final Registration registration = super
+                .addRoutesChangeListener(listener);
+
+        return () -> {
+            registration.remove();
+            parentRegistration.remove();
+        };
     }
 
     @Override

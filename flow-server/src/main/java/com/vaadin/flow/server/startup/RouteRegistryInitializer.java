@@ -19,13 +19,12 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.util.Collections;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
 /**
@@ -40,8 +39,9 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             throws ServletException {
         try {
             if (classSet == null) {
-                RouteUtil.setNavigationTargets(Collections.emptySet(),
-                        ApplicationRouteRegistry.getInstance(servletContext));
+                ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
+                        .getInstance(servletContext);
+                routeRegistry.clean();
                 return;
             }
 
@@ -50,7 +50,8 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(servletContext);
-            RouteUtil.setNavigationTargets(routes, routeRegistry);
+            RouteConfiguration.forRegistry(routeRegistry)
+                    .setRoutes(routes);
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {

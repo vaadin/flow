@@ -274,7 +274,7 @@ public abstract class VaadinService implements Serializable {
         if (!getDeploymentConfiguration().isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            router.getRoutes().stream().map(Object::toString)
+            getRouteRegistry().getRegisteredRoutes().stream().map(Object::toString)
                     .forEach(logger::debug);
         }
 

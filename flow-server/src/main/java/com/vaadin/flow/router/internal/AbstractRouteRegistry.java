@@ -54,10 +54,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @FunctionalInterface
     public interface Configuration extends Serializable {
         /**
-         * Configure the given RouteConfiguration.
+         * Configure the given configurable route holder object.
          *
          * @param configuration
-         *            mutable routeConfiguration to make changes to
+         *         mutable route configuration to make changes to
          */
         void configure(ConfigureRoutes configuration);
     }
@@ -73,7 +73,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * The live configuration for this route registry. This can only be updated
      * through {@link #configure(Configuration)} for concurrency reasons.
      */
-    private volatile ConfiguredRoutes routeConfiguration = new ConfiguredRoutes();
+    private volatile ConfiguredRoutes configuredRoutes = new ConfiguredRoutes();
     private volatile ConfigureRoutes editing = null;
 
     private CopyOnWriteArrayList<RoutesChangedListener> routesChangedListeners = new CopyOnWriteArrayList<>();
@@ -82,13 +82,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * Thread-safe update of the RouteConfiguration.
      *
      * @param command
-     *            command that will mutate the configuration copy.
+     *         command that will mutate the configuration copy.
      */
     protected void configure(Configuration command) {
         lock();
         try {
             if (editing == null) {
-                editing = new ConfigureRoutes(routeConfiguration);
+                editing = new ConfigureRoutes(configuredRoutes);
             }
 
             command.configure(editing);
@@ -115,15 +115,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private void unlock() {
         if (configurationLock.getHoldCount() == 1 && editing != null) {
             try {
-                ConfiguredRoutes oldConfiguration = routeConfiguration;
+                ConfiguredRoutes oldConfiguration = configuredRoutes;
 
-                routeConfiguration = new ConfiguredRoutes(editing);
+                configuredRoutes = new ConfiguredRoutes(editing);
 
                 if (!routesChangedListeners.isEmpty()) {
                     List<RouteBaseData<?>> oldRoutes = flattenRoutes(
                             getRegisteredRoutes(oldConfiguration));
                     List<RouteBaseData<?>> newRoutes = flattenRoutes(
-                            getRegisteredRoutes(routeConfiguration));
+                            getRegisteredRoutes(configuredRoutes));
                     List<RouteBaseData<?>> added = new ArrayList<>();
                     List<RouteBaseData<?>> removed = new ArrayList<>();
 
@@ -145,7 +145,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         }
     }
 
-    private void fireEvent(RoutesChangedEvent routeChangedEvent) {
+    /**
+     * Fire routes changed event to all registered listeners.
+     *
+     * @param routeChangedEvent
+     *         event containing changes
+     */
+    protected void fireEvent(RoutesChangedEvent routeChangedEvent) {
         routesChangedListeners
                 .forEach(listener -> listener.routesChanged(routeChangedEvent));
     }
@@ -168,15 +174,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * being read, but the given configuration is valid at the given point in
      * time.
      *
-     * @return current route configuration
+     * @return current state of the registry as a value object
      */
-    protected ConfiguredRoutes getConfiguration() {
-        return routeConfiguration;
+    public ConfiguredRoutes getConfiguration() {
+        return configuredRoutes;
     }
 
     @Override
     public List<RouteData> getRegisteredRoutes() {
-        return getRegisteredRoutes(routeConfiguration);
+        return getRegisteredRoutes(configuredRoutes);
     }
 
     private List<RouteData> getRegisteredRoutes(
@@ -188,8 +194,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             List<RouteAliasData> routeAliases = new ArrayList<>();
 
             configuration.getRoutePaths(target).stream()
-                    .filter(route -> !route.equals(url))
-                    .forEach(route -> routeAliases.add(new RouteAliasData(
+                    .filter(route -> !route.equals(url)).forEach(
+                    route -> routeAliases.add(new RouteAliasData(
                             getParentLayouts(configuration, target, route),
                             route, parameters, target)));
             List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
@@ -210,7 +216,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * even if aliases change.
      *
      * @param routeData
-     *            route data to flatten.
+     *         route data to flatten.
      * @return flattened list of routes and aliases
      */
     private List<RouteBaseData<?>> flattenRoutes(List<RouteData> routeData) {
@@ -273,22 +279,23 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * Append any required parameters as /{param_class} to the route.
      *
      * @param navigationTarget
-     *            navigation target to generate url for
+     *         navigation target to generate url for
      * @return route with required parameters
      */
     private String collectRequiredParameters(
             Class<? extends Component> navigationTarget) {
-        if (!routeConfiguration.hasRouteTarget(navigationTarget)) {
+        if (!configuredRoutes.hasRouteTarget(navigationTarget)) {
             return null;
         }
         StringBuilder route = new StringBuilder(
-                routeConfiguration.getTargetRoute(navigationTarget));
+                configuredRoutes.getTargetRoute(navigationTarget));
 
         List<Class<?>> routeParameters = getRouteParameters(navigationTarget);
 
         if (!routeParameters.isEmpty()) {
-            routeParameters.forEach(param -> route.append("/{")
-                    .append(param.getSimpleName()).append("}"));
+            routeParameters.forEach(
+                    param -> route.append("/{").append(param.getSimpleName())
+                            .append("}"));
         }
         return route.toString();
     }
@@ -326,8 +333,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasRoute(path)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(path,
-                navigationTarget));
+        configure(configuration -> configuration
+                .removeRoute(path, navigationTarget));
     }
 
     @Override
@@ -341,11 +348,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * Note! this should only be called from a configure() for thread safety.
      *
      * @param path
-     *            path for the navigation target
+     *         path for the navigation target
      * @param navigationTarget
-     *            navigation target for given path
+     *         navigation target for given path
      * @param configuration
-     *            mutable configuration object
+     *         mutable configuration object
      * @return the route target to which the target was added
      */
     private RouteTarget addRouteToConfiguration(String path,
@@ -371,12 +378,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * related.
      *
      * @param target
-     *            error handler target
+     *         error handler target
      * @param exceptionTargetsMap
-     *            map of existing error handlers
+     *         map of existing error handlers
      * @throws InvalidRouteConfigurationException
-     *             if trying to add a non related exception handler for which a
-     *             handler already exists
+     *         if trying to add a non related exception handler for which a
+     *         handler already exists
      */
     protected void addErrorTarget(Class<? extends Component> target,
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap) {
@@ -401,9 +408,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * allowed.
      *
      * @param target
-     *            target being handled
+     *         target being handled
      * @param exceptionType
-     *            type of the handled exception
+     *         type of the handled exception
      */
     private void handleRegisteredExceptionType(
             Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap,
@@ -415,10 +422,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (registered.isAssignableFrom(target)) {
             exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
-            String msg = String.format(
-                    "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                    target.getName(), registered.getName(),
-                    exceptionType.getName());
+            String msg = String
+                    .format("Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                            target.getName(), registered.getName(),
+                            exceptionType.getName());
             throw new InvalidRouteLayoutConfigurationException(msg);
         }
     }
@@ -428,16 +435,16 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * cause until possible exception with handler found.
      *
      * @param exception
-     *            exception to get handler for
+     *         exception to get handler for
      * @return Optional containing found handler or empty if none found
      */
     protected Optional<ErrorTargetEntry> searchByCause(Exception exception) {
-        Class<? extends Component> targetClass = routeConfiguration
+        Class<? extends Component> targetClass = configuredRoutes
                 .getExceptionHandlerByClass(exception.getClass());
 
         if (targetClass != null) {
-            return Optional.of(
-                    new ErrorTargetEntry(targetClass, exception.getClass()));
+            return Optional.of(new ErrorTargetEntry(targetClass,
+                    exception.getClass()));
         }
 
         Throwable cause = exception.getCause();
@@ -452,15 +459,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * exist.
      *
      * @param exception
-     *            exception to get handler for
+     *         exception to get handler for
      * @return Optional containing found handler or empty if none found
      */
     protected Optional<ErrorTargetEntry> searchBySuperType(
             Throwable exception) {
         Class<?> superClass = exception.getClass().getSuperclass();
-        while (superClass != null
-                && Exception.class.isAssignableFrom(superClass)) {
-            Class<? extends Component> targetClass = routeConfiguration
+        while (superClass != null && Exception.class
+                .isAssignableFrom(superClass)) {
+            Class<? extends Component> targetClass = configuredRoutes
                     .getExceptionHandlerByClass(superClass);
             if (targetClass != null) {
                 return Optional.of(new ErrorTargetEntry(targetClass,

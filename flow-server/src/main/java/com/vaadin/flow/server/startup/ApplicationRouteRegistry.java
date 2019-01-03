@@ -373,7 +373,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     /**
      * Sets pwa configuration class.
      *
-     * Should be set along with setNavigationTargets, for scanning of proper pwa
+     * Should be set along with setRoutes, for scanning of proper pwa
      * configuration class is done along route scanning. See
      * {@link AbstractRouteRegistryInitializer}.
      *

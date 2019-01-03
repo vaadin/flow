@@ -43,8 +43,8 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
@@ -201,9 +201,9 @@ public class UidlWriterTest {
 
         JsonArray expectedJson = JsonUtils.createArray(JsonUtils.createArray(
                 // Null since element is not attached
-                Json.createNull(), Json.create("$0.focus()")),
-                JsonUtils.createArray(Json.create("Lives remaining:"),
-                        Json.create(3), Json.create("console.log($0, $1)")));
+                Json.createNull(), Json.create("$0.focus()")), JsonUtils
+                .createArray(Json.create("Lives remaining:"), Json.create(3),
+                        Json.create("console.log($0, $1)")));
 
         assertTrue(JsonUtils.jsonEquals(expectedJson, json));
     }
@@ -273,15 +273,15 @@ public class UidlWriterTest {
         Map<LoadMode, List<JsonObject>> dependenciesMap = Stream
                 .of(LoadMode.values())
                 .map(mode -> response.getArray(mode.name()))
-                .flatMap(JsonUtils::<JsonObject> stream)
-                .collect(Collectors.toMap(
-                        jsonObject -> LoadMode.valueOf(
+                .flatMap(JsonUtils::<JsonObject>stream).collect(Collectors
+                        .toMap(jsonObject -> LoadMode.valueOf(
                                 jsonObject.getString(Dependency.KEY_LOAD_MODE)),
-                        Collections::singletonList, (list1, list2) -> {
-                            List<JsonObject> result = new ArrayList<>(list1);
-                            result.addAll(list2);
-                            return result;
-                        }));
+                                Collections::singletonList, (list1, list2) -> {
+                                    List<JsonObject> result = new ArrayList<>(
+                                            list1);
+                                    result.addAll(list2);
+                                    return result;
+                                }));
 
         assertThat(
                 "Dependencies with all types of load mode should be present in this response",
@@ -294,13 +294,14 @@ public class UidlWriterTest {
         assertThat("Eager dependencies should not have inline contents",
                 eagerDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
+                        .collect(Collectors.toList()), hasSize(0));
+        assertThat("Should have 3 different eager urls",
+                eagerDependencies.stream()
+                        .map(json -> json.getString(Dependency.KEY_URL))
+                        .map(url -> url.substring(
+                                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                                        .length()))
                         .collect(Collectors.toList()),
-                hasSize(0));
-        assertThat("Should have 3 different eager urls", eagerDependencies
-                .stream().map(json -> json.getString(Dependency.KEY_URL))
-                .map(url -> url.substring(
-                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length()))
-                .collect(Collectors.toList()),
                 containsInAnyOrder("eager.js", "eager.html", "eager.css"));
         assertThat("Should have 3 different eager dependency types",
                 eagerDependencies.stream()
@@ -315,13 +316,14 @@ public class UidlWriterTest {
         assertThat("Lazy dependencies should not have inline contents",
                 lazyDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
+                        .collect(Collectors.toList()), hasSize(0));
+        assertThat("Should have 3 different lazy urls",
+                lazyDependencies.stream()
+                        .map(json -> json.getString(Dependency.KEY_URL))
+                        .map(url -> url.substring(
+                                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                                        .length()))
                         .collect(Collectors.toList()),
-                hasSize(0));
-        assertThat("Should have 3 different lazy urls", lazyDependencies
-                .stream().map(json -> json.getString(Dependency.KEY_URL))
-                .map(url -> url.substring(
-                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length()))
-                .collect(Collectors.toList()),
                 containsInAnyOrder("lazy.js", "lazy.html", "lazy.css"));
         assertThat("Should have 3 different lazy dependency types",
                 lazyDependencies.stream()
@@ -344,8 +346,8 @@ public class UidlWriterTest {
 
         ui.add(new ComponentWithFrontendProtocol());
         JsonObject response = uidlWriter.createUidl(ui, false);
-        List<JsonObject> inlineDependencies = JsonUtils
-                .<JsonObject> stream(response.getArray(LoadMode.INLINE.name()))
+        List<JsonObject> inlineDependencies = JsonUtils.<JsonObject>stream(
+                response.getArray(LoadMode.INLINE.name()))
                 .collect(Collectors.toList());
 
         assertInlineDependencies(inlineDependencies, "/frontend/");
@@ -372,8 +374,9 @@ public class UidlWriterTest {
                 "Expected to have exactly 3 eager dependencies in uidl, actual: %d",
                 eagerDependencies.length(), 3);
 
-        List<Class<?>> expectedClassOrder = Arrays.asList(
-                SuperParentClass.class, ParentClass.class, BaseClass.class);
+        List<Class<?>> expectedClassOrder = Arrays
+                .asList(SuperParentClass.class, ParentClass.class,
+                        BaseClass.class);
 
         for (int i = 0; i < expectedClassOrder.size(); i++) {
             Class<?> expectedClass = expectedClassOrder.get(i);
@@ -398,8 +401,7 @@ public class UidlWriterTest {
         assertThat("Eager dependencies should not have urls",
                 inlineDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_URL))
-                        .collect(Collectors.toList()),
-                hasSize(0));
+                        .collect(Collectors.toList()), hasSize(0));
         assertThat("Should have 3 different inline contents",
                 inlineDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_CONTENTS))
@@ -428,9 +430,9 @@ public class UidlWriterTest {
         session.lock();
         ui.getInternals().setSession(session);
 
-        RouteUtil.setNavigationTargets(
-                new HashSet<>(Arrays.asList(BaseClass.class)),
-                ui.getRouter().getRegistry());
+        RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
+                .setRoutes(
+                        new HashSet<>(Arrays.asList(BaseClass.class)));
 
         for (String type : new String[] { "html", "js", "css" }) {
             mocks.getServlet()
@@ -501,10 +503,10 @@ public class UidlWriterTest {
     private Map<String, JsonObject> getDependenciesMap(JsonObject response) {
         return Stream.of(LoadMode.values())
                 .map(mode -> response.getArray(mode.name()))
-                .flatMap(JsonUtils::<JsonObject> stream)
-                .collect(Collectors.toMap(
-                        jsonObject -> jsonObject.getString(Dependency.KEY_URL),
-                        Function.identity()));
+                .flatMap(JsonUtils::<JsonObject>stream).collect(Collectors
+                        .toMap(jsonObject -> jsonObject
+                                        .getString(Dependency.KEY_URL),
+                                Function.identity()));
     }
 
     private void assertDependency(String url, String type,

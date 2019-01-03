@@ -40,12 +40,12 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -173,10 +173,10 @@ public class UITest {
 
             ui.getInternals().setSession(session);
 
-            RouteUtil.setNavigationTargets(new HashSet<>(
+            RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
+                    .setRoutes(new HashSet<>(
                             Arrays.asList(RootNavigationTarget.class,
-                                    FooBarNavigationTarget.class)),
-                    ui.getRouter().getRegistry());
+                                    FooBarNavigationTarget.class)));
 
             ui.doInit(request, 0);
             ui.getRouter().initializeUI(ui, request);

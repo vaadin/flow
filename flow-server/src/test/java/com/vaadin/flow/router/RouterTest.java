@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -54,15 +52,11 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
@@ -1185,8 +1179,7 @@ public class RouterTest extends RoutingTestBase {
 
     @After
     public void tearDown() {
-        UI.setCurrent(null);
-        VaadinService.setCurrent(null);
+        CurrentInstance.clearAll();
     }
 
     @Rule
@@ -2151,20 +2144,20 @@ public class RouterTest extends RoutingTestBase {
         ForwardingAndReroutingNavigationTarget.events.clear();
         RootNavigationTarget.events.clear();
         setNavigationTargets(RootNavigationTarget.class,
-                ForwardingAndReroutingNavigationTarget.class, FooBarNavigationTarget.class);
+                ForwardingAndReroutingNavigationTarget.class,
+                FooBarNavigationTarget.class);
 
         router.navigate(ui, new Location(location),
                 NavigationTrigger.PROGRAMMATIC);
 
         String validationMessage = "Error forward & reroute can not be set at the same time";
 
-        String errorMessage = String.format(
-                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
-                location, validationMessage);
+        String errorMessage = String
+                .format("There was an exception while trying to navigate to '%s' with the exception message '%s'",
+                        location, validationMessage);
 
         assertExceptionComponent(InternalServerError.class, errorMessage);
     }
-
 
     @Test
     public void faulty_error_response_code_should_throw_exception()
@@ -2574,7 +2567,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void navaigateWithinOneParent_oneLeaveEventOneEnterEvent()
+    public void navigateWithinOneParent_oneLeaveEventOneEnterEvent()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteChild.class, LoneRoute.class);
 
@@ -2594,7 +2587,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void navaigateWithinOneParent_oneAfterNavigationEventOneEventOnly()
+    public void navigateWithinOneParent_oneAfterNavigationEventOneEventOnly()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(AfterNavigationChild.class,
                 AfterNavigationWithinSameParent.class, LoneRoute.class);
@@ -2982,7 +2975,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void alias_has_two_parents_even_if_route_doesnt() {
-        RouteUtil.setAnnotatedRoute(AliasLayout.class, router.getRegistry());
+        RouteConfiguration.forRegistry(router.getRegistry())
+                .setAnnotatedRoute(AliasLayout.class);
 
         List<Class<? extends RouterLayout>> parents = router.getRegistry()
                 .getRouteLayouts("noParent", AliasLayout.class);
@@ -3027,9 +3021,8 @@ public class RouterTest extends RoutingTestBase {
     private void setNavigationTargets(
             Class<? extends Component>... navigationTargets)
             throws InvalidRouteConfigurationException {
-        RouteUtil.setNavigationTargets(
-                new HashSet<>(Arrays.asList(navigationTargets)),
-                router.getRegistry());
+        RouteConfiguration.forRegistry(router.getRegistry())
+                .setRoutes(new HashSet<>(Arrays.asList(navigationTargets)));
     }
 
     private void setErrorNavigationTargets(

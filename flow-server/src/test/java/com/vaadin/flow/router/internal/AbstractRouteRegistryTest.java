@@ -13,9 +13,11 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutesChangedEvent;
+import com.vaadin.flow.shared.Registration;
 
 public class AbstractRouteRegistryTest {
 
@@ -222,6 +224,25 @@ public class AbstractRouteRegistryTest {
         Assert.assertEquals(
                 "Removing the alias route should be seen in the event", 1,
                 removed.size());
+    }
+
+    @Test
+    public void removeChangeListener_noEventsAreFired() {
+        List<RoutesChangedEvent> events = new ArrayList<>();
+
+        Registration registration = registry
+                .addRoutesChangeListener(events::add);
+
+        registry.setRoute("home", MyRoute.class, Collections.emptyList());
+
+        Assert.assertEquals("Event should have been fired for listener", 1,
+                events.size());
+
+        registration.remove();
+
+        registry.setRoute("away", MyRoute.class, Collections.emptyList());
+
+        Assert.assertEquals("No new event should have fired", 1, events.size());
     }
 
     @Tag("div")
