@@ -20,6 +20,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -75,7 +76,7 @@ public class VaadinServlet extends HttpServlet {
 
         DeploymentConfiguration deploymentConfiguration = servletService
                 .getDeploymentConfiguration();
-        staticFileServer = new StaticFileServer(servletService);
+        staticFileServer = createStaticFileServer(servletService);
 
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
@@ -85,7 +86,20 @@ public class VaadinServlet extends HttpServlet {
 
         servletInitialized();
         CurrentInstance.clearAll();
+    }
 
+    /**
+     * Creates a new instance of {@link StaticFileServer}, that is responsible
+     * to find and serve static resources. By default it returns a
+     * {@link DefaultStaticFileServer} instance.
+     * 
+     * @param servletService
+     *            the servlet service created at {@link #createServletService()}
+     * @return the file server to be used by this servlet, not <code>null</code>
+     */
+    protected StaticFileServer createStaticFileServer(
+            VaadinServletService servletService) {
+        return new DefaultStaticFileServer(servletService);
     }
 
     protected void servletInitialized() throws ServletException {
@@ -126,7 +140,8 @@ public class VaadinServlet extends HttpServlet {
      *
      * @throws ServletException
      *             if construction of the {@link Properties} for
-     *             {@link DeploymentConfigurationFactory#createInitParameters(Class, ServletConfig)} fails
+     *             {@link DeploymentConfigurationFactory#createInitParameters(Class, ServletConfig)}
+     *             fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {

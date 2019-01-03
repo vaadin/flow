@@ -46,7 +46,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 
-public class StaticFileServerTest implements Serializable {
+public class DefaultStaticFileServerTest implements Serializable {
 
     private static class CapturingServletOutputStream
             extends ServletOutputStream {
@@ -95,7 +95,7 @@ public class StaticFileServerTest implements Serializable {
 
     }
 
-    private static class OverrideableStaticFileServer extends StaticFileServer {
+    private static class OverrideableStaticFileServer extends DefaultStaticFileServer {
         private Boolean overrideBrowserHasNewestVersion;
         private Integer overrideCacheTime;
 
