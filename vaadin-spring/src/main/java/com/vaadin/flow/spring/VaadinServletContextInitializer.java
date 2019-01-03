@@ -45,7 +45,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
@@ -92,7 +92,7 @@ public class VaadinServletContextInitializer
                     Set<Class<? extends Component>> navigationTargets = validateRouteClasses(
                             routeClasses.stream());
 
-                    RouteUtil.setNavigationTargets(navigationTargets, registry);
+                    RouteConfiguration.forRegistry(registry).setRoutes(navigationTargets);
                     registry.setPwaConfigurationClass(validatePwaClass(routeClasses.stream()));
                 } catch (InvalidRouteConfigurationException e) {
                     throw new IllegalStateException(e);
