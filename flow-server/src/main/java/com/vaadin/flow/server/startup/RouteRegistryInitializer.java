@@ -39,6 +39,9 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             throws ServletException {
         try {
             if (classSet == null) {
+                ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
+                        .getInstance(servletContext);
+                routeRegistry.clean();
                 return;
             }
 
@@ -47,8 +50,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(servletContext);
-            RouteConfiguration.forRegistry(
-                    ApplicationRouteRegistry.getInstance(servletContext))
+            RouteConfiguration.forRegistry(routeRegistry)
                     .setRoutes(routes);
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
