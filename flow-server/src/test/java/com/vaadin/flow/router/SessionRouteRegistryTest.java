@@ -29,6 +29,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.Registration;
 
 public class SessionRouteRegistryTest {
 
@@ -868,6 +869,40 @@ public class SessionRouteRegistryTest {
                 events.get(0).getAddedRoutes().size());
         Assert.assertEquals("No routes should have been removed", 0,
                 events.get(0).getRemovedRoutes().size());
+    }
+
+    @Test
+    public void removeListener_noEventsAreGottenForAnyRegistry() {
+
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+
+        List<RoutesChangedEvent> events = new ArrayList<>();
+
+        Registration registration = sessionRegistry
+                .addRoutesChangeListener(events::add);
+
+        registry.setRoute("main", MyRoute.class, Collections.emptyList());
+        sessionRegistry.update(() -> {
+            sessionRegistry
+                    .setRoute("main", Secondary.class, Collections.emptyList());
+            sessionRegistry.setRoute("Alias1", Secondary.class,
+                    Collections.emptyList());
+            sessionRegistry.setRoute("Alias2", Secondary.class,
+                    Collections.emptyList());
+        });
+
+        Assert.assertEquals("One event for both registries should have been fired.", 2, events.size());
+
+        registration.remove();
+
+        sessionRegistry.removeRoute("main");
+
+        Assert.assertEquals("No new event should have been received for session scope", 2, events.size());
+
+        registry.removeRoute("main");
+
+        Assert.assertEquals("No new event should have been received for application scope", 2, events.size());
+
     }
 
     @Tag("div")

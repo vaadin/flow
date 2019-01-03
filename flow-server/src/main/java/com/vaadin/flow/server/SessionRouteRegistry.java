@@ -107,6 +107,17 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         return routes;
     }
 
+    /**
+     * Adds the given route change listener to the registry.
+     * <p>
+     * For the session scoped registry also changes to the application scoped
+     * registry will be delegated to the listener if the added or removed route
+     * was not masked by a registration in the session scope.
+     *
+     * @param listener
+     *         listener to add
+     * @return registration to remove the listener
+     */
     @Override
     public Registration addRoutesChangeListener(
             RoutesChangedListener listener) {
