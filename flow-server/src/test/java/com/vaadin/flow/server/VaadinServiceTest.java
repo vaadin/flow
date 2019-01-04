@@ -19,7 +19,10 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -34,14 +37,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.BootstrapListener;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.SessionDestroyEvent;
-import com.vaadin.flow.server.SessionDestroyListener;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.startup.BundleDependencyFilter;
+import com.vaadin.flow.server.startup.FakeBrowser;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -225,6 +223,27 @@ public class VaadinServiceTest {
 
         Assert.assertFalse(listener1Run.get());
         Assert.assertTrue(listener2Run.get());
+    }
+
+    @Test
+    public void dependencyFilterOrder_bundeFiltersAfterApplicationFilters() {
+        DependencyFilter applicationFilter = (dependencies,
+                filterContext) -> dependencies;
+
+        BundleDependencyFilter bundleFilter = new BundleDependencyFilter(
+                FakeBrowser.getEs6(), "", new HashMap<>());
+
+        MockVaadinServletService service = new MockVaadinServletService();
+        service.init(new MockInstantiator(evt -> {
+            evt.addDependencyFilter(bundleFilter);
+            evt.addDependencyFilter(applicationFilter);
+        }));
+
+        List<DependencyFilter> filters = new ArrayList<>();
+        service.getDependencyFilters().forEach(filters::add);
+
+        Assert.assertEquals(Arrays.asList(applicationFilter, bundleFilter),
+                filters);
     }
 
     private static VaadinService createService() {
