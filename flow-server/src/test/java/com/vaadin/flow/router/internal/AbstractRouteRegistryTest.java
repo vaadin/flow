@@ -6,18 +6,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.shared.Registration;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AbstractRouteRegistryTest {
 
@@ -86,6 +84,8 @@ public class AbstractRouteRegistryTest {
 
         Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
         Assert.assertEquals("", added.get(0).getUrl());
+        Assert.assertEquals(Collections.emptyList(),
+                added.get(0).getParentLayouts());
 
         registry.setRoute("home", Secondary.class, Collections.emptyList());
 
@@ -153,7 +153,7 @@ public class AbstractRouteRegistryTest {
         Assert.assertEquals("MyRoute should have been both removed and added",
                 MyRoute.class, removed.get(0).getNavigationTarget());
         Assert.assertEquals("Removed version should not have a parent layout",
-                UI.class, removed.get(0).getParentLayout());
+                Collections.emptyList(), removed.get(0).getParentLayouts());
     }
 
     @Test
@@ -200,7 +200,8 @@ public class AbstractRouteRegistryTest {
             registry.setRoute("Alias1", Secondary.class,
                     Collections.emptyList());
 
-            // Long running task was done here and another thread added a listener
+            // Long running task was done here and another thread added a
+            // listener
             registry.addRoutesChangeListener(event -> {
                 added.clear();
                 removed.clear();
