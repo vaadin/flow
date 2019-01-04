@@ -50,7 +50,7 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
-    private StaticFileServer staticFileServer;
+    private StaticFileHandler staticFileServer;
     private WebJarServer webJarServer;
 
     /**
@@ -89,17 +89,17 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Creates a new instance of {@link StaticFileServer}, that is responsible
+     * Creates a new instance of {@link StaticFileHandler}, that is responsible
      * to find and serve static resources. By default it returns a
-     * {@link DefaultStaticFileServer} instance.
+     * {@link StaticFileServer} instance.
      * 
      * @param servletService
      *            the servlet service created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
      */
-    protected StaticFileServer createStaticFileServer(
+    protected StaticFileHandler createStaticFileServer(
             VaadinServletService servletService) {
-        return new DefaultStaticFileServer(servletService);
+        return new StaticFileServer(servletService);
     }
 
     protected void servletInitialized() throws ServletException {
