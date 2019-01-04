@@ -15,24 +15,21 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import javax.servlet.ServletContext;
-
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.osgi.OSGiAccess;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.osgi.OSGiAccess;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance which is initialized via
@@ -82,14 +79,15 @@ public class OSGiInitApplicationRouteRegistryTest
         data = routes.get(1);
         Assert.assertEquals("foo", data.getUrl());
         Assert.assertEquals(RouteComponent1.class, data.getNavigationTarget());
-        Assert.assertEquals(Collections.singletonList(UI.class),
-                data.getParentLayouts());
+        Assert.assertEquals(Collections.emptyList(), data.getParentLayouts());
 
         Assert.assertEquals(Optional.of(RouteComponent1.class),
                 getTestedRegistry().getNavigationTarget("foo"));
         Assert.assertEquals(Optional.of(RouteComponent2.class),
                 getTestedRegistry().getNavigationTarget("bar"));
 
+        System.out.println("getRouteLayouts foo: " + getTestedRegistry()
+                .getRouteLayouts("foo", RouteComponent1.class));
         Assert.assertTrue(getTestedRegistry()
                 .getRouteLayouts("foo", RouteComponent1.class).isEmpty());
         Assert.assertEquals(Collections.singletonList(MainLayout.class),
@@ -107,13 +105,19 @@ public class OSGiInitApplicationRouteRegistryTest
                 Collections.emptyList());
 
         List<RouteData> routes = getTestedRegistry().getRegisteredRoutes();
-        Assert.assertEquals(1, routes.size());
+        Assert.assertEquals(2, routes.size());
 
-        RouteData data = routes.get(0);
-        Assert.assertEquals("foo", data.getUrl());
-        Assert.assertEquals(RouteComponent2.class, data.getNavigationTarget());
+        Optional<RouteData> fooRoute = routes.stream()
+                .filter(routeData -> "foo".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(
+                "After mixing new routes from OSGiDataCollector, the existing routes should remain in the route registry.",
+                fooRoute.isPresent());
+        Assert.assertEquals("foo", fooRoute.get().getUrl());
+        Assert.assertEquals(RouteComponent2.class,
+                fooRoute.get().getNavigationTarget());
         Assert.assertEquals(Collections.singletonList(MainLayout.class),
-                data.getParentLayouts());
+                fooRoute.get().getParentLayouts());
 
         Assert.assertEquals(Optional.of(RouteComponent2.class),
                 getTestedRegistry().getNavigationTarget("foo"));
@@ -122,6 +126,23 @@ public class OSGiInitApplicationRouteRegistryTest
                 getTestedRegistry().getRouteLayouts("foo",
                         RouteComponent2.class));
 
+        Optional<RouteData> barRoute = routes.stream()
+                .filter(routeData -> "bar".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(
+                "After mixing new routes from OSGiDataCollector, the new routes should be added to the route registry.",
+                barRoute.isPresent());
+        Assert.assertEquals("bar", barRoute.get().getUrl());
+        Assert.assertEquals(RouteComponent1.class,
+                barRoute.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                barRoute.get().getParentLayouts());
+
+        Assert.assertEquals(Optional.of(RouteComponent1.class),
+                getTestedRegistry().getNavigationTarget("bar"));
+
+        Assert.assertEquals(Collections.emptyList(), getTestedRegistry()
+                .getRouteLayouts("bar", RouteComponent1.class));
     }
 
     @Test

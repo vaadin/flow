@@ -240,11 +240,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (configuration.getRouteTarget(url) != null) {
             List<Class<? extends RouterLayout>> parentLayouts = configuration
                     .getRouteTarget(url).getParentLayouts(target);
-            if (!parentLayouts.isEmpty()) {
-                return parentLayouts;
-            }
+            return parentLayouts;
         }
-        return Collections.singletonList(UI.class);
+        return Collections.emptyList();
     }
 
     @Override
