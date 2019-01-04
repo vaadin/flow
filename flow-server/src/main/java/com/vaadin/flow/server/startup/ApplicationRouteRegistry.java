@@ -15,36 +15,36 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.io.Serializable;
+import javax.servlet.ServletContext;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
+import org.slf4j.LoggerFactory;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -149,17 +149,28 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                     .getOsgiServletContext();
             OSGiDataCollector registry = (OSGiDataCollector) getInstance(
                     osgiServletContext);
-            if (registry.collectedRouteData == null) {
+            if (registry.routesChangedEvents.isEmpty()) {
                 return;
             }
             update(() -> {
-                if (hasRoutes) {
-                    // routes has been already set e.g. by web container which
-                    // is able to run ServletContainerInitializer
-                    return;
+                final RouteConfiguration routeConfiguration = RouteConfiguration
+                        .forRegistry(this);
+                RoutesChangedEvent event;
+
+                synchronized (registry.routesChangedEvents) {
+                    while ((event = registry.routesChangedEvents
+                            .poll()) != null) {
+                        event.getRemovedRoutes().forEach(
+                                routeBaseData -> routeConfiguration.removeRoute(
+                                        routeBaseData.getUrl(),
+                                        routeBaseData.getNavigationTarget()));
+                        event.getAddedRoutes().forEach(
+                                routeBaseData -> routeConfiguration.setRoute(
+                                        routeBaseData.getUrl(),
+                                        routeBaseData.getNavigationTarget(),
+                                        routeBaseData.getParentLayouts()));
+                    }
                 }
-                registry.collectedRouteData.forEach(data -> setRoute(data.path,
-                        data.navigationTarget, data.parentChain));
             });
         }
 
@@ -175,28 +186,14 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
     }
 
-    private static class CollectedRouteData implements Serializable {
-
-        private String path;
-        private Class<? extends Component> navigationTarget;
-        private List<Class<? extends RouterLayout>> parentChain;
-    }
-
     private static class OSGiDataCollector extends ApplicationRouteRegistry {
 
-        private Collection<CollectedRouteData> collectedRouteData;
+        private final Queue<RoutesChangedEvent> routesChangedEvents = new ConcurrentLinkedQueue<>();
 
         private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
 
-        @Override
-        public void setRoute(String path,
-                Class<? extends Component> navigationTarget,
-                List<Class<? extends RouterLayout>> parentChain) {
-            CollectedRouteData data = new CollectedRouteData();
-            data.path = path;
-            data.navigationTarget = navigationTarget;
-            data.parentChain = new ArrayList<>(parentChain);
-            collectedRouteData.add(data);
+        OSGiDataCollector() {
+            addRoutesChangeListener(routesChangedEvents::add);
         }
 
         @Override
@@ -218,7 +215,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
         @Override
         public void clean() {
-            collectedRouteData = new ArrayList<>();
+            super.clean();
+            routesChangedEvents.clear();
         }
     }
 
@@ -372,7 +370,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     /**
      * Sets pwa configuration class.
-     *
+     * <p>
      * Should be set along with setRoutes, for scanning of proper pwa
      * configuration class is done along route scanning. See
      * {@link AbstractRouteRegistryInitializer}.
