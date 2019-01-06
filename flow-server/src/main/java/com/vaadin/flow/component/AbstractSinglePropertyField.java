@@ -31,6 +31,8 @@ import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.JsonValue;
+import static com.vaadin.flow.component.AbstractSinglePropertyField.ValuePropertyUpdateAction.ALLOW_UPDATE;
+import static com.vaadin.flow.component.AbstractSinglePropertyField.ValuePropertyUpdateAction.BLOCK_AND_REVERT_UPDATE;
 
 /**
  * Abstract field that is based on a single element property.
@@ -44,6 +46,42 @@ import elemental.json.JsonValue;
  */
 public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
         extends AbstractField<C, T> {
+
+    /**
+     * An enum that specifies the action to take when the value property has been
+     * updated and {@link #onValuePropertyChange(PropertyChangeEvent)} is invoked.
+     *
+     * @since
+     */
+    public static enum ValuePropertyUpdateAction {
+        /**
+         * Allows the property update and fires a
+         * {@link com.vaadin.flow.component.HasValue.ValueChangeEvent} based on
+         * the new value.
+         * <p>
+         * This would imply that the new property value is convertible from the
+         * presentation type to the model type.
+         */
+        ALLOW_UPDATE,
+        /**
+         * Allows the property update, but doesn't fire a
+         * {@link com.vaadin.flow.component.HasValue.ValueChangeEvent}. for the
+         * component.
+         * <p>
+         * This is useful e.g. when the new value is something that the user can
+         * enter, but cannot be converted to a valid value of the model type.
+         */
+        BLOCK_VALUE_CHANGE_EVENT,
+        /**
+         * Blocks the {@link com.vaadin.flow.component.HasValue.ValueChangeEvent}
+         * and reverts the property value to the previous one.
+         * <p>
+         * This is for the case when the new value is something that is impossible
+         * for the user to use, e.g. a disabled option in a select.
+         */
+        BLOCK_AND_REVERT_UPDATE;
+    }
+
     @SuppressWarnings("rawtypes")
     private static final SerializableBiFunction RAW_IDENTITY = (ignore,
             value) -> value;
@@ -312,19 +350,43 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
      *
      * @return <code>true</code> if the element property value can be converted
      *         to the model type; otherwise <code>false</code>
+     * @deprecated deprecated since 1.3 in favor of {@link #onValuePropertyChange(PropertyChangeEvent)} and will be removed in a later version
      */
+    @Deprecated
     protected boolean hasValidValue() {
         return true;
     }
 
+    /**
+     * This method is triggered for all received property change events for the
+     * value property. Overriding this method allows subclasses to define what
+     * action should be taken when the value property is updated.
+     * <p>
+     * The default is {@link ValuePropertyUpdateAction#ALLOW_UPDATE}.
+     *
+     * @param event the property change event
+     * @return the action to take for the new value, not {@code null}
+     * @since
+     * @see ValuePropertyUpdateAction
+     */
+    protected ValuePropertyUpdateAction onValuePropertyChange(PropertyChangeEvent event) { return ALLOW_UPDATE; }
+
     private void handlePropertyChange(PropertyChangeEvent event) {
-        if (hasValidValue()) {
+        ValuePropertyUpdateAction action = onValuePropertyChange(event);
+        Objects.requireNonNull(action, "ValuePropertyUpdateAction cannot be null");
+
+        if (hasValidValue() && action == ALLOW_UPDATE) {
             @SuppressWarnings("unchecked")
             T presentationValue = propertyReader.apply((C) this,
                     getEmptyValue());
 
             setModelValue(presentationValue, event.isUserOriginated());
-        }
+        } else if (action == BLOCK_AND_REVERT_UPDATE){
+            // revert to previous value, there will not be a value change event
+            // because the value is the same
+            setPresentationValue(getValue());
+
+        } // else just block the value change event
     }
 
     @SuppressWarnings("unchecked")
