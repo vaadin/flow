@@ -925,6 +925,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .isProductionMode();
         String result = getBootstrapJS();
         JsonObject appConfig = context.getApplicationParameters();
+appConfig.put(ApplicationConstants.UI_TAG, context.getUI().getElement().getTag());
 
         int indent = 0;
         if (!productionMode) {
@@ -972,7 +973,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static JsonObject getApplicationParameters(VaadinRequest request,
             VaadinSession session) {
-        VaadinService vaadinService = session.getService();
         DeploymentConfiguration deploymentConfiguration = session
                 .getConfiguration();
         final boolean productionMode = deploymentConfiguration
@@ -984,6 +984,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 deploymentConfiguration.getEs6FrontendPrefix());
         appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
                 deploymentConfiguration.getEs5FrontendPrefix());
+        appConfig.put(ApplicationConstants.ROOT_ELEMENT_ID,
+                        deploymentConfiguration.getRootElementId());
 
         if (!productionMode) {
             JsonObject versionInfo = Json.createObject();
@@ -999,8 +1001,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Use locale from session if set, else from the request
         Locale locale = ServletHelper.findLocale(session, request);
         // Get system messages
-        SystemMessages systemMessages = vaadinService.getSystemMessages(locale,
-                request);
+        SystemMessages systemMessages = session.getService()
+                .getSystemMessages(locale, request);
         if (systemMessages != null) {
             JsonObject sessExpMsg = Json.createObject();
             putValueOrNull(sessExpMsg, CAPTION,

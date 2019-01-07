@@ -16,6 +16,7 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.Scheduler;
+import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 
 import elemental.client.Browser;
@@ -39,12 +40,13 @@ public class DefaultReconnectDialog implements ReconnectDialog {
 
     private EventRemover clickHandler = null;
     private Element root;
+    private Registry registry;
 
     /**
      * Creates a new instance.
      */
-    public DefaultReconnectDialog() {
-        // super(false, true);
+    public DefaultReconnectDialog(Registry registry) {
+        this.registry = registry;
 
         root = Browser.getDocument().createElement("div");
         root.setClassName("v-reconnect-dialog");
@@ -96,14 +98,14 @@ public class DefaultReconnectDialog implements ReconnectDialog {
     public void show() {
         // FIXME Do something else
         if (root.getParentElement() == null) {
-            Browser.getDocument().getBody().appendChild(root);
+            registry.getStateTree().getRootNode().getDomNode().appendChild(root);
         }
     }
 
     @Override
     public void preload() {
         setModal(false); // Don't interfere with application use
-        show();
+        Browser.getDocument().getBody().appendChild(root);
         root.getStyle().setVisibility(Visibility.HIDDEN);
         root.getClassList().add(STYLE_RECONNECTING);
 

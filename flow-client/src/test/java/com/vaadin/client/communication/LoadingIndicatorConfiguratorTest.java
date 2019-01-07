@@ -42,7 +42,7 @@ public class LoadingIndicatorConfiguratorTest
         {
             set(UILifecycle.class, new UILifecycle());
             set(StateTree.class, new StateTree(this));
-            set(LoadingIndicator.class, new LoadingIndicator());
+            set(LoadingIndicator.class, new LoadingIndicator(this));
         }
     };
 

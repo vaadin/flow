@@ -40,6 +40,8 @@ public class ApplicationConfiguration {
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
+    private String rootId;
+    private String rootTag;
 
     /**
      * Gets the id generated for the application.
@@ -293,4 +295,42 @@ public class ApplicationConfiguration {
         this.frontendRootUrl = frontendRootUrl;
     }
 
+    /**
+     * Get the dom element id defined for root.
+     *
+     * @return root element id or {@code null} if not defined
+     */
+    public String getRootId() {
+        return rootId;
+    }
+
+    /**
+     * Set the dom element id to which root should be bound.
+     *
+     * @param rootId
+     *         root id for target dom element, {@code null} for {@literal
+     *         <body>}
+     */
+    public void setRootId(String rootId) {
+        this.rootId = rootId;
+    }
+
+    /**
+     * Get the defined tag for root dom element.
+     *
+     * @return root tag for target dom element
+     */
+    public String getRootTag() {
+        return rootTag;
+    }
+
+    /**
+     * Set the dom element tag to be used for root.
+     *
+     * @param rootTag
+     *         root tag for target dom element
+     */
+    public void setRootTag(String rootTag) {
+        this.rootTag = rootTag;
+    }
 }

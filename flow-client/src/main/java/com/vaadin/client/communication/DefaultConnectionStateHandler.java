@@ -47,7 +47,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     private static final boolean DEBUG = false;
     private final Registry registry;
-    private ReconnectDialog reconnectDialog = new DefaultReconnectDialog();
+    private ReconnectDialog reconnectDialog;
     private int reconnectAttempt = 0;
     private Type reconnectionCause = null;
 
@@ -95,6 +95,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      */
     public DefaultConnectionStateHandler(Registry registry) {
         this.registry = registry;
+        reconnectDialog = new DefaultReconnectDialog(registry);
         registry.getUILifecycle().addHandler(e -> {
             if (e.getUiLifecycle().isTerminated()) {
                 if (isReconnecting()) {

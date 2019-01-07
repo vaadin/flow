@@ -129,6 +129,9 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String UI_ID_PARAMETER = "v-uiId";
 
+    public static final String ROOT_ELEMENT_ID = "v-rootId";
+    public static final String UI_TAG = "v-uiTag";
+
     /**
      * Path to the Vaadin client engine folder, relative to the context root.
      */

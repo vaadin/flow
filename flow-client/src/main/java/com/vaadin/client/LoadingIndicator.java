@@ -18,6 +18,7 @@ package com.vaadin.client;
 
 import com.google.gwt.user.client.Timer;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
+
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Element;
@@ -120,6 +121,12 @@ public class LoadingIndicator {
 
     private Element styleElement;
     private boolean applyDefaultTheme = true;
+
+    private Registry registry;
+
+    public LoadingIndicator(Registry registry) {
+        this.registry = registry;
+    }
 
     /**
      * Returns the delay (in ms) which must pass before the loading indicator
@@ -274,7 +281,8 @@ public class LoadingIndicator {
             setupTheming();
 
             element = Browser.getDocument().createElement("div");
-            Browser.getDocument().getBody().appendChild(element);
+            registry.getStateTree().getRootNode().getDomNode()
+                    .appendChild(element);
         }
         return element;
     }
