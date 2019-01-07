@@ -26,12 +26,7 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
@@ -64,6 +59,15 @@ public class HtmlComponentSmokeTest {
         testValues.put(boolean.class, false);
         testValues.put(NumberingType.class, NumberingType.LOWERCASE_ROMAN);
         testValues.put(int.class, 42);
+        testValues.put(IFrame.ImportanceType.class, IFrame.ImportanceType.HIGH);
+        testValues.put(IFrame.SandboxType[].class, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
+    }
+
+    // For classes registered here testStringConstructor will be ignored. This test checks whether the content of the
+    // element is the constructor argument. However, for some HTMLComponents this test is not valid.
+    private static final Set<Class<?>> ignoredStringConstructors = new HashSet<>();
+    static {
+        ignoredStringConstructors.add(IFrame.class);
     }
 
     @Test
@@ -90,7 +94,9 @@ public class HtmlComponentSmokeTest {
 
             // Tests that a String constructor sets the text and not the tag
             // name for a component with @Tag
-            testStringConstructor(clazz);
+            if (!ignoredStringConstructors.contains(clazz)) {
+                testStringConstructor(clazz);
+            }
 
             // Component must be attached for some checks to work
             UI ui = new UI();
@@ -218,7 +224,8 @@ public class HtmlComponentSmokeTest {
             if (isOptional) {
                 getterValue = ((Optional<?>) getterValue).get();
             }
-            Assert.assertEquals(getter + " should return the set value",
+
+            AssertUtils.assertEquals(getter + " should return the set value",
                     testValue, getterValue);
 
         } catch (IllegalAccessException | IllegalArgumentException
