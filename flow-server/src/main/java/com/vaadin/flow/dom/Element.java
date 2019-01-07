@@ -79,6 +79,14 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * No-op DOM listener implementation used by e.g.
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}.
+     */
+    private static final DomEventListener NO_OP_DOM_LISTENER = event -> {
+        // No op
+    };
+
+    /**
      * Private constructor for initializing with an existing node and state
      * provider.
      *
@@ -707,15 +715,48 @@ public class Element extends Node<Element> {
      *
      * @see #synchronizeProperty(String, String)
      * @param name
-     *            the property name to add the listener for
+     *            the property name to add the listener for, not
+     *            <code>null</code>
      * @param listener
-     *            listener to get notifications about property value changes
+     *            listener to get notifications about property value changes,
+     *            not <code>null</code>
      * @return an event registration handle for removing the listener
      */
     public Registration addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
         return getStateProvider().addPropertyChangeListener(getNode(), name,
                 listener);
+    }
+
+    /**
+     * Adds a property change listener and configures the property to be
+     * synchronized to the server when a given DOM event is fired.
+     *
+     * #see {@link #addPropertyChangeListener(String, PropertyChangeListener)}
+     *
+     * @param propertyName
+     *            the name of the element property to listen to, not
+     *            <code>null</code>
+     * @param domEventName
+     *            the name of the DOM event for which the property should be
+     *            synchronized to the server, not <code>null</code>
+     * @param listener
+     *            the property change listener not add, not <code>null</code>
+     * @return a handle that can be used for configuring or removing the
+     *         listener
+     *
+     * @since
+     */
+    public DomListenerRegistration addPropertyChangeListener(
+            String propertyName, String domEventName,
+            PropertyChangeListener listener) {
+        Registration propertyListenerRegistration = addPropertyChangeListener(
+                propertyName, listener);
+
+        // No-op DOM listener since we're also listening to property changes
+        return addEventListener(domEventName, NO_OP_DOM_LISTENER)
+                .synchronizeProperty(propertyName)
+                .onUnregister(propertyListenerRegistration::remove);
     }
 
     private Element setRawProperty(String name, Serializable value) {
@@ -1114,7 +1155,13 @@ public class Element extends Node<Element> {
      *
      * @see #synchronizeProperty(String, String, DisabledUpdateMode)
      * @return this element
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Element synchronizeProperty(String property, String eventType) {
         return synchronizeProperty(property, eventType,
                 DisabledUpdateMode.ONLY_WHEN_ENABLED);
@@ -1129,8 +1176,16 @@ public class Element extends Node<Element> {
      * Only properties which can be set using setProperty can be synchronized,
      * e.g. classList cannot be synchronized.
      * <p>
+     * When multiple update mode settings are defined for the same property, the
+     * most permissive mode is used. This means that there might be unexpected
+     * updates for a disabled component if multiple parties independently
+     * configure different aspects for the same component. This is based on the
+     * assumption that if a property is explicitly safe to update for disabled
+     * components in one context, then the nature of that property is probably
+     * such that it's also safe to update in other contexts.
+     * <p>
      * This is convenience method for batching
-     * {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedProperty(String, DisabledUpdateMode)} and
      * {@link #addSynchronizedPropertyEvent(String)}.
      *
      * @param property
@@ -1142,7 +1197,13 @@ public class Element extends Node<Element> {
      *            controls property update from the client side to the server
      *            side when the element is disabled, not {@code null}
      * @return this element
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Element synchronizeProperty(String property, String eventType,
             DisabledUpdateMode mode) {
         addSynchronizedProperty(property, mode);
@@ -1168,7 +1229,13 @@ public class Element extends Node<Element> {
      * @param property
      *            the property name to synchronize
      * @return this element
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Element addSynchronizedProperty(String property) {
         return addSynchronizedProperty(property,
                 DisabledUpdateMode.ONLY_WHEN_ENABLED);
@@ -1183,6 +1250,14 @@ public class Element extends Node<Element> {
      * <p>
      * Only properties which can be set using setProperty can be synchronized,
      * e.g. classList cannot be synchronized.
+     * <p>
+     * When multiple update mode settings are defined for the same property, the
+     * most permissive mode is used. This means that there might be unexpected
+     * updates for a disabled component if multiple parties independently
+     * configure different aspects for the same component. This is based on the
+     * assumption that if a property is explicitly safe to update for disabled
+     * components in one context, then the nature of that property is probably
+     * such that it's also safe to update in other contexts.
      *
      * @param property
      *            the property name to synchronize
@@ -1190,7 +1265,13 @@ public class Element extends Node<Element> {
      *            controls property update from the client side to the server
      *            side when the element is disabled, not {@code null}
      * @return this element
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Element addSynchronizedProperty(String property,
             DisabledUpdateMode mode) {
         verifySetPropertyName(property);
@@ -1215,7 +1296,13 @@ public class Element extends Node<Element> {
      *            the client side event which trigger synchronization of the
      *            property values to the server
      * @return this element
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Element addSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
         getStateProvider().getSynchronizedPropertyEvents(getNode())
@@ -1232,7 +1319,13 @@ public class Element extends Node<Element> {
      * @param property
      *            the property name to remove
      * @return this element
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
         getStateProvider().getSynchronizedProperties(getNode())
@@ -1250,7 +1343,13 @@ public class Element extends Node<Element> {
      *            the client side event which trigger synchronization of the
      *            property values to the server
      * @return this element
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Element removeSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
         getStateProvider().getSynchronizedPropertyEvents(getNode())
@@ -1266,7 +1365,13 @@ public class Element extends Node<Element> {
      * @see #addSynchronizedPropertyEvent(String)
      *
      * @return the property names which are synchronized
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Stream<String> getSynchronizedProperties() {
         return getStateProvider().getSynchronizedProperties(getNode()).stream();
     }
@@ -1279,7 +1384,13 @@ public class Element extends Node<Element> {
      *
      * @return the client side events which trigger synchronization of the
      *         property values to the server
+     * @deprecated Use
+     *             {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     *             or
+     *             {@link DomListenerRegistration#synchronizeProperty(String)}
+     *             instead.
      */
+    @Deprecated
     public Stream<String> getSynchronizedPropertyEvents() {
         return getStateProvider().getSynchronizedPropertyEvents(getNode())
                 .stream();

@@ -25,6 +25,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.dom.PropertyChangeListener;
@@ -155,6 +156,14 @@ public class ElementPropertyMapTest {
         Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
 
         Element.get(map.getNode()).removeSynchronizedProperty("foo");
+        Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
+
+        DomListenerRegistration registration = Element.get(map.getNode())
+                .addEventListener("dummy", event -> {
+                }).synchronizeProperty("foo");
+        Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
+
+        registration.remove();
         Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
     }
 
@@ -341,6 +350,18 @@ public class ElementPropertyMapTest {
         assertDeferredUpdate_putResult(map, "foo");
     }
 
+    @Test
+    public void deferredUpdateFromClient_filterDisallowUpdate_eventIsSynchronized() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        Element.get(map.getNode()).addEventListener("dummy", event -> {
+
+        }).synchronizeProperty("foo");
+
+        map.setUpdateFromClientFilter(key -> false);
+
+        assertDeferredUpdate_putResult(map, "foo");
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void deferredUpdateFromClient_filterAllowsUpdate_propertyIsForbidden_throw() {
         ElementPropertyMap map = createSimplePropertyMap();
@@ -356,7 +377,7 @@ public class ElementPropertyMapTest {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setUpdateFromClientFilter(name -> !name.equals("foo"));
 
-        AtomicReference<PropertyChangeEvent> eventCapture = new AtomicReference<PropertyChangeEvent>();
+        AtomicReference<PropertyChangeEvent> eventCapture = new AtomicReference<>();
         map.addPropertyChangeListener("foo", eventCapture::set);
 
         Runnable runnable = map.deferredUpdateFromClient("foo", "value");
@@ -372,7 +393,7 @@ public class ElementPropertyMapTest {
         ElementPropertyMap map = createSimplePropertyMap();
         map.setUpdateFromClientFilter(name -> name.equals("foo"));
 
-        AtomicReference<PropertyChangeEvent> eventCapture = new AtomicReference<PropertyChangeEvent>();
+        AtomicReference<PropertyChangeEvent> eventCapture = new AtomicReference<>();
         map.addPropertyChangeListener("foo", eventCapture::set);
 
         Runnable runnable = assertDeferredUpdate_putResult(map, "foo");

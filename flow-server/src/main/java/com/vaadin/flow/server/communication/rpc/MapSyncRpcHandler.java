@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -66,31 +69,47 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
         boolean isEnabled = node.isEnabled();
 
-        DisabledUpdateMode updateMode = null;
+        List<DisabledUpdateMode> seenUpdateModes = new ArrayList<>();
 
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
 
         if (node.hasFeature(SynchronizedPropertiesList.class)) {
-            SynchronizedPropertiesList syncedProps = node
-                    .getFeature(SynchronizedPropertiesList.class);
-            updateMode = syncedProps.getDisabledUpdateMode(property);
+            DisabledUpdateMode syncMode = node
+                    .getFeature(SynchronizedPropertiesList.class)
+                    .getDisabledUpdateMode(property);
+
+            if (syncMode != null) {
+                seenUpdateModes.add(syncMode);
+            }
         }
+        if (node.hasFeature(ElementListenerMap.class)) {
+            DisabledUpdateMode eventMode = node
+                    .getFeature(ElementListenerMap.class)
+                    .getPropertySynchronizationMode(property);
+
+            if (eventMode != null) {
+                seenUpdateModes.add(eventMode);
+            }
+        }
+
+        DisabledUpdateMode updateMode = seenUpdateModes.stream()
+                .reduce(DisabledUpdateMode::mostPermissive).orElse(null);
 
         if (isEnabled) {
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else if (DisabledUpdateMode.ALWAYS.equals(updateMode)) {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class).trace(
-                    "Property update request for disabled element is received from the client side. "
+            LoggerFactory.getLogger(MapSyncRpcHandler.class)
+                    .trace("Property update request for disabled element is received from the client side. "
                             + "Change will be applied since the property '{}' always allows its update.",
-                    property);
+                            property);
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class).warn(
-                    "Property update request for disabled element is received from the client side. "
+            LoggerFactory.getLogger(MapSyncRpcHandler.class)
+                    .warn("Property update request for disabled element is received from the client side. "
                             + "The property is '{}'. Request is ignored.",
-                    property);
+                            property);
         }
         return Optional.empty();
     }
