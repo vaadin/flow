@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  * @author Vaadin Ltd
  * @since 1.3
  *
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe#Attributes">The Inline Frame element</>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe#Attributes">The Inline Frame element</a>
  */
 @Tag(Tag.IFRAME)
 public class IFrame extends HtmlComponent {
