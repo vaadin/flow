@@ -54,7 +54,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
 
-        private boolean hasRoutes;
+        private final Object initRoutesLock = new Object();
 
         @Override
         public Class<?> getPwaConfigurationClass() {
@@ -115,7 +115,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 List<Class<? extends RouterLayout>> parentChain) {
             update(() -> {
                 super.setRoute(path, navigationTarget, parentChain);
-                hasRoutes = true;
             });
         }
 
@@ -157,7 +156,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                         .forRegistry(this);
                 RoutesChangedEvent event;
 
-                synchronized (registry.routesChangedEvents) {
+                synchronized (initRoutesLock) {
                     while ((event = registry.routesChangedEvents
                             .poll()) != null) {
                         event.getRemovedRoutes().forEach(
@@ -192,10 +191,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
         private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
 
-        OSGiDataCollector() {
-            addRoutesChangeListener(routesChangedEvents::add);
-        }
-
         @Override
         protected void handleInitializedRegistry() {
             // Don't do anything in this fake internal registry
@@ -217,6 +212,12 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         public void clean() {
             super.clean();
             routesChangedEvents.clear();
+        }
+
+        @Override
+        protected void fireEvent(RoutesChangedEvent routeChangedEvent) {
+            super.fireEvent(routeChangedEvent);
+            routesChangedEvents.add(routeChangedEvent);
         }
     }
 

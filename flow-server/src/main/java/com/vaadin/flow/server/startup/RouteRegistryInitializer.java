@@ -60,6 +60,13 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         }
     }
 
+    /**
+     * should be called when it's time to remove the routes registered here. One
+     * example of its usage is in OSGi environment when a bundle is stopped.
+     * @param classSet @see javax.servlet.ServletContainerInitializer#onStartup
+     * @param servletContext @see
+     *                       javax.servlet.ServletContainerInitializer#onStartup
+     */
     public void onDestroy(Set<Class<?>> classSet,
             ServletContext servletContext) {
         removeRoutes(classSet, servletContext);
