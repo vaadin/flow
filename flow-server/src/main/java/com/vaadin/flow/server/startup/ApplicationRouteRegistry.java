@@ -53,9 +53,6 @@ import org.slf4j.LoggerFactory;
 public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
-
-        private final Object initRoutesLock = new Object();
-
         @Override
         public Class<?> getPwaConfigurationClass() {
             initPwa();
@@ -156,19 +153,16 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                         .forRegistry(this);
                 RoutesChangedEvent event;
 
-                synchronized (initRoutesLock) {
-                    while ((event = registry.routesChangedEvents
-                            .poll()) != null) {
-                        event.getRemovedRoutes().forEach(
-                                routeBaseData -> routeConfiguration.removeRoute(
-                                        routeBaseData.getUrl(),
-                                        routeBaseData.getNavigationTarget()));
-                        event.getAddedRoutes().forEach(
-                                routeBaseData -> routeConfiguration.setRoute(
-                                        routeBaseData.getUrl(),
-                                        routeBaseData.getNavigationTarget(),
-                                        routeBaseData.getParentLayouts()));
-                    }
+                while ((event = registry.routesChangedEvents.poll()) != null) {
+                    event.getRemovedRoutes().forEach(
+                            routeBaseData -> routeConfiguration.removeRoute(
+                                    routeBaseData.getUrl(),
+                                    routeBaseData.getNavigationTarget()));
+                    event.getAddedRoutes()
+                            .forEach(routeBaseData -> routeConfiguration
+                                    .setRoute(routeBaseData.getUrl(),
+                                            routeBaseData.getNavigationTarget(),
+                                            routeBaseData.getParentLayouts()));
                 }
             });
         }
