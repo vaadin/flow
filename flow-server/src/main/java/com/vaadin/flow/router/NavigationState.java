@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.internal.RouterHelper;
 
 /**
  * Class containing all relevant information related to a valid navigation.
@@ -76,7 +77,7 @@ public class NavigationState implements Serializable {
         if (resolvedPath == null) {
             resolvedPath = AnnotationReader
                     .getAnnotationFor(navigationTarget, Route.class)
-                    .map( route -> Router.resolve(navigationTarget, route)).orElse(null);
+                    .map( route -> RouterHelper.resolve(navigationTarget, route)).orElse(null);
         }
         return resolvedPath;
     }

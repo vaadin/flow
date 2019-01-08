@@ -396,7 +396,7 @@ public abstract class AbstractNavigationStateRenderer
             targetType = beforeNavigation.getRouteTargetType();
         }
 
-        Location location = new Location(Router.resolve(targetType, targetType
+        Location location = new Location(RouterHelper.resolve(targetType, targetType
                 .getAnnotation(Route.class)));
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),

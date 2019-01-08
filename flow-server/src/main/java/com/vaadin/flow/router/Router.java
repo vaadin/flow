@@ -37,6 +37,7 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
+import com.vaadin.flow.router.internal.RouterHelper;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
@@ -399,7 +400,7 @@ public class Router implements Serializable {
 
         return grouped;
     }
-
+    
     /**
      * Gets the effective route path value of the annotated class.
      *
@@ -409,21 +410,12 @@ public class Router implements Serializable {
      *         the annotation
      * @return The value of the annotation or naming convention based value if
      * no explicit value is given.
+     * 
+     * @deprecated Use {@link RouterHelper#resolve(Class, Route)} instead
      */
+    @Deprecated
     public static String resolve(Class<?> component, Route route) {
-        if (route.value().equals(Route.NAMING_CONVENTION)) {
-            String simpleName = component.getSimpleName();
-            if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
-                return "";
-            }
-            if (simpleName.endsWith("View")) {
-                return simpleName
-                        .substring(0, simpleName.length() - "View".length())
-                        .toLowerCase();
-            }
-            return simpleName.toLowerCase();
-        }
-        return route.value();
+        return RouterHelper.resolve(component, route);
     }
 
     protected Optional<ErrorTargetEntry> getErrorNavigationTarget(

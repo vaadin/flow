@@ -37,7 +37,6 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 
 /**
@@ -113,10 +112,10 @@ public final class RouteUtil {
      */
     public static String getRoutePath(Class<?> component, Route route) {
         if (route.absolute()) {
-            return Router.resolve(component, route);
+            return RouterHelper.resolve(component, route);
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), Router.resolve(component, route));
+                route.layout(), RouterHelper.resolve(component, route));
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 

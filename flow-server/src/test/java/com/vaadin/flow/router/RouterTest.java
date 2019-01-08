@@ -52,6 +52,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
+import com.vaadin.flow.router.internal.RouterHelper;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -2914,7 +2915,7 @@ public class RouterTest extends RoutingTestBase {
 
     private String resolve(Class<?> clazz) {
         Route annotation = clazz.getAnnotation(Route.class);
-        return Router.resolve(clazz, annotation);
+        return RouterHelper.resolve(clazz, annotation);
     }
 
     @Test
