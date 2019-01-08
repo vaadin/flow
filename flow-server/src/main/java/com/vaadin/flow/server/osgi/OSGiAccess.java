@@ -15,18 +15,6 @@
  */
 package com.vaadin.flow.server.osgi;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.server.startup.RouteRegistryInitializer;
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import org.osgi.framework.Bundle;
-import org.slf4j.LoggerFactory;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -47,6 +35,18 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.server.startup.RouteRegistryInitializer;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import org.osgi.framework.Bundle;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages scanned classes inside OSGi container.
@@ -191,32 +191,35 @@ public final class OSGiAccess {
         initializerClasses.get().stream()
                 .filter(RouteRegistryInitializer.class::isAssignableFrom)
                 .map(ReflectTools::createInstance)
-                .forEach(initializer ->
-                        removeRoutes((RouteRegistryInitializer) initializer,
-                                bundleId));
+                .forEach(initializer -> removeRoutes(
+                        (RouteRegistryInitializer) initializer, bundleId));
 
         cachedClasses.remove(bundleId);
     }
 
-    private void removeRoutes(RouteRegistryInitializer routeRegistryInitializer, Long bundleId) {
-        Optional<HandlesTypes> handleTypes = AnnotationReader
-                .getAnnotationFor(routeRegistryInitializer.getClass(),
-                        HandlesTypes.class);
-        routeRegistryInitializer.onDestroy(filterClasses(
-                handleTypes.orElse(null), bundleId),
+    private void removeRoutes(RouteRegistryInitializer routeRegistryInitializer,
+            Long bundleId) {
+        Optional<HandlesTypes> handleTypes = AnnotationReader.getAnnotationFor(
+                routeRegistryInitializer.getClass(), HandlesTypes.class);
+        routeRegistryInitializer.onDestroy(
+                filterClasses(handleTypes.orElse(null), bundleId),
                 getOsgiServletContext());
     }
 
-    private void resetContextInitializers(Map<Long, Collection<Class<?>>> extenderClasses) {
+    private void resetContextInitializers(
+            Map<Long, Collection<Class<?>>> extenderClasses) {
         initializerClasses.get().stream().map(ReflectTools::createInstance)
-                .forEach(initializer -> handleTypes(initializer, extenderClasses));
+                .forEach(initializer -> handleTypes(initializer,
+                        extenderClasses));
     }
 
-    private void handleTypes(ServletContainerInitializer initializer, Map<Long, Collection<Class<?>>> extenderClasses) {
+    private void handleTypes(ServletContainerInitializer initializer,
+            Map<Long, Collection<Class<?>>> extenderClasses) {
         Optional<HandlesTypes> handleTypes = AnnotationReader
                 .getAnnotationFor(initializer.getClass(), HandlesTypes.class);
         try {
-            initializer.onStartup(filterClasses(extenderClasses, handleTypes.orElse(null)),
+            initializer.onStartup(
+                    filterClasses(extenderClasses, handleTypes.orElse(null)),
                     getOsgiServletContext());
         } catch (ServletException e) {
             throw new RuntimeException(
@@ -227,10 +230,13 @@ public final class OSGiAccess {
     }
 
     @SuppressWarnings("unchecked")
-    private Set<Class<?>> filterClasses(Map<Long, Collection<Class<?>>> extenderClasses, HandlesTypes typesAnnotation) {
+    private Set<Class<?>> filterClasses(
+            Map<Long, Collection<Class<?>>> extenderClasses,
+            HandlesTypes typesAnnotation) {
         Set<Class<?>> result = new HashSet<>();
         if (typesAnnotation == null) {
-            extenderClasses.forEach((bundle, classes) -> result.addAll(classes));
+            extenderClasses
+                    .forEach((bundle, classes) -> result.addAll(classes));
         } else {
             Class<?>[] requestedTypes = typesAnnotation.value();
 
@@ -248,9 +254,9 @@ public final class OSGiAccess {
                     .anyMatch(annotation -> AnnotationReader
                             .getAnnotationFor(clazz, annotation).isPresent())
                     || superTypes.stream()
-                    .anyMatch(superType -> GenericTypeReflector
-                            .isSuperType(HasErrorParameter.class,
-                                    clazz));
+                            .anyMatch(superType -> GenericTypeReflector
+                                    .isSuperType(HasErrorParameter.class,
+                                            clazz));
 
             extenderClasses.forEach((bundle, classes) -> result.addAll(classes
                     .stream().filter(hasType).collect(Collectors.toList())));
@@ -261,7 +267,7 @@ public final class OSGiAccess {
 
     @SuppressWarnings("unchecked")
     private Set<Class<?>> filterClasses(HandlesTypes typesAnnotation,
-                                        Long bundleId) {
+            Long bundleId) {
         Set<Class<?>> result = new HashSet<>();
         if (typesAnnotation == null) {
             result.addAll(cachedClasses.get(bundleId));
@@ -282,12 +288,12 @@ public final class OSGiAccess {
                     .anyMatch(annotation -> AnnotationReader
                             .getAnnotationFor(clazz, annotation).isPresent())
                     || superTypes.stream()
-                    .anyMatch(superType -> GenericTypeReflector
-                            .isSuperType(HasErrorParameter.class,
-                                    clazz));
+                            .anyMatch(superType -> GenericTypeReflector
+                                    .isSuperType(HasErrorParameter.class,
+                                            clazz));
 
-            result.addAll(cachedClasses.get(bundleId)
-                    .stream().filter(hasType).collect(Collectors.toList()));
+            result.addAll(cachedClasses.get(bundleId).stream().filter(hasType)
+                    .collect(Collectors.toList()));
 
         }
         return result;
@@ -324,15 +330,20 @@ public final class OSGiAccess {
         /**
          * Tries to detect the version of the OSGi framework used.
          *
-         * @return the used OSGi version or {@code null} if not able to detect it
+         * @return the used OSGi version or {@code null} if not able to detect
+         *         it
          */
         private static String getOSGiVersion() {
             try {
-                Bundle osgiBundle = org.osgi.framework.FrameworkUtil.getBundle(Bundle.class);
+                Bundle osgiBundle = org.osgi.framework.FrameworkUtil
+                        .getBundle(Bundle.class);
                 return osgiBundle.getVersion().toString();
             } catch (Throwable throwable) {
-                // just eat it so that any failure in the version detection doesn't break OSGi usage
-                LoggerFactory.getLogger(OSGiAccess.class).info("Unable to detect used OSGi framework version due to " + throwable.getMessage());
+                // just eat it so that any failure in the version detection
+                // doesn't break OSGi usage
+                LoggerFactory.getLogger(OSGiAccess.class).info(
+                        "Unable to detect used OSGi framework version due to "
+                                + throwable.getMessage());
             }
             return null;
         }

@@ -191,6 +191,10 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
         private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
 
+        OSGiDataCollector() {
+            addRoutesChangeListener(routesChangedEvents::add);
+        }
+
         @Override
         protected void handleInitializedRegistry() {
             // Don't do anything in this fake internal registry
@@ -212,12 +216,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         public void clean() {
             super.clean();
             routesChangedEvents.clear();
-        }
-
-        @Override
-        protected void fireEvent(RoutesChangedEvent routeChangedEvent) {
-            super.fireEvent(routeChangedEvent);
-            routesChangedEvents.add(routeChangedEvent);
         }
     }
 
