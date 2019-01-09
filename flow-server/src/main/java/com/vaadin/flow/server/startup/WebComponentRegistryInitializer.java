@@ -67,7 +67,7 @@ public class WebComponentRegistryInitializer
      * @param componentSet
      *         set of web components to validate
      */
-    private void validateComponentName(
+    protected void validateComponentName(
             Set<? extends Class<? extends Component>> componentSet) {
         for (Class<? extends Component> clazz : componentSet) {
             String tagName = getWebComponentName(clazz);
@@ -87,7 +87,7 @@ public class WebComponentRegistryInitializer
      * @param componentSet
      *         set of web components to validate
      */
-    private void validateDistinct(
+    protected void validateDistinct(
             Set<? extends Class<? extends Component>> componentSet) {
         long count = componentSet.stream().map(this::getWebComponentName)
                 .distinct().count();
@@ -107,7 +107,7 @@ public class WebComponentRegistryInitializer
         }
     }
 
-    private String getWebComponentName(Class<? extends Component> clazz) {
+    protected String getWebComponentName(Class<? extends Component> clazz) {
         return clazz.getAnnotation(WebComponent.class).value();
     }
 }
