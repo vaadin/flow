@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.internal.CustomElementNameValidator;
+import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
 
 @HandlesTypes({ WebComponent.class })
@@ -50,6 +52,7 @@ public class WebComponentRegistryInitializer
                 .collect(Collectors.toSet());
 
         validateDistinct(componentSet);
+        validateComponentName(componentSet);
 
         Map<String, Class<? extends Component>> webComponentMap = componentSet
                 .stream()
@@ -58,9 +61,34 @@ public class WebComponentRegistryInitializer
         instance.setWebComponents(webComponentMap);
     }
 
+    /**
+     * Validate that all web component names are valid custom element names.
+     *
+     * @param componentSet
+     *         set of web components to validate
+     */
+    private void validateComponentName(
+            Set<? extends Class<? extends Component>> componentSet) {
+        for (Class<? extends Component> clazz : componentSet) {
+            String tagName = getWebComponentName(clazz);
+            if (!CustomElementNameValidator.isCustomElementName(tagName)) {
+                String msg = String
+                        .format("WebComponent name '%s' for '%s' is not a valid custom element name.",
+                                tagName, clazz.getCanonicalName());
+                throw new InvalidCustomElementNameException(msg);
+            }
+        }
+    }
+
+    /**
+     * Validate that in all the components we only have one instance for each
+     * element name.
+     *
+     * @param componentSet
+     *         set of web components to validate
+     */
     private void validateDistinct(
-            Set<? extends Class<? extends Component>> componentSet)
-            throws ServletException {
+            Set<? extends Class<? extends Component>> componentSet) {
         long count = componentSet.stream().map(this::getWebComponentName)
                 .distinct().count();
         if (componentSet.size() != count) {
@@ -72,7 +100,7 @@ public class WebComponentRegistryInitializer
                             .format("Found two WebComponents with the same name for classes '%s' and '%s'",
                                     items.get(webComponentName).getName(),
                                     component.getName());
-                    throw new ServletException(message);
+                    throw new IllegalArgumentException(message);
                 }
                 items.put(webComponentName, component);
             }

@@ -16,8 +16,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
 
 public class WebComponentRegistryInitializerTest {
@@ -61,7 +61,7 @@ public class WebComponentRegistryInitializerTest {
     @Test
     public void emptySet_noExceptionAndWebComponentsSet() {
         try {
-        initializer.onStartup(Collections.emptySet(), servletContext);
+            initializer.onStartup(Collections.emptySet(), servletContext);
         } catch (Exception e) {
             Assert.fail(
                     "WebComponentRegistryInitializer.onStartup should not throw with empty set");
@@ -69,12 +69,25 @@ public class WebComponentRegistryInitializerTest {
         Mockito.verify(registry).setWebComponents(Collections.emptyMap());
     }
 
-    @Test(expected = ServletException.class)
+    @Test
     public void duplicateNamesFoundOnStartUp_exceptionIsThrown()
             throws ServletException {
+        expectedEx.expect(IllegalArgumentException.class);
         initializer.onStartup(
                 Stream.of(MyComponent.class, MyDuplicateComponent.class)
                         .collect(Collectors.toSet()), servletContext);
+    }
+
+    @Test
+    public void invalidCustomElementName_initializerThrowsException()
+            throws ServletException {
+        expectedEx.expect(InvalidCustomElementNameException.class);
+        expectedEx.expectMessage(String.format(
+                "WebComponent name '%s' for '%s' is not a valid custom element name.",
+                "invalid", InvalidName.class.getCanonicalName()));
+
+        initializer.onStartup(Collections.singleton(InvalidName.class),
+                servletContext);
     }
 
     @WebComponent("my-component")
@@ -87,5 +100,9 @@ public class WebComponentRegistryInitializerTest {
 
     @WebComponent("user-box")
     public class UserBox extends Component {
+    }
+
+    @WebComponent("invalid")
+    public class InvalidName extends Component {
     }
 }

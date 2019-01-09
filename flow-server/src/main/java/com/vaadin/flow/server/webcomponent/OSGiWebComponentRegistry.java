@@ -22,7 +22,24 @@ import java.util.Optional;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 
+/**
+ * OSGi WebComponentRegistry implementation.
+ */
 public class OSGiWebComponentRegistry extends WebComponentRegistry {
+    boolean hasWebComponents = false;
+
+    @Override
+    public boolean setWebComponents(
+            Map<String, Class<? extends Component>> components) {
+        configurationLock.lock();
+        try {
+            boolean result = super.setWebComponents(components);
+            hasWebComponents = true;
+            return result;
+        } finally {
+            configurationLock.unlock();
+        }
+    }
 
     @Override
     public Optional<Class<? extends Component>> getWebComponent(String tag) {
@@ -37,21 +54,33 @@ public class OSGiWebComponentRegistry extends WebComponentRegistry {
     }
 
     private void initWebComponents() {
-        Map<String, Class<? extends Component>> webComponents = getWebComponents();
-        if (webComponents != null && !webComponents.isEmpty()) {
-            return;
-        }
+        configurationLock.lock();
+        try {
+            Map<String, Class<? extends Component>> webComponents = super
+                    .getWebComponents();
+            if (webComponents != null && !webComponents.isEmpty()) {
+                return;
+            }
 
-        ServletContext osgiServletContext = OSGiAccess.getInstance()
-                .getOsgiServletContext();
-        if (osgiServletContext == null || !OSGiAccess.getInstance()
-                .hasInitializers()) {
-            return;
-        }
-        OSGiWebComponentDataCollector dataCollector = (OSGiWebComponentDataCollector) getInstance(
-                osgiServletContext);
-        if (dataCollector.webComponents.get() != null) {
-            setWebComponents(dataCollector.webComponents.get());
+            if (hasWebComponents) {
+                // WebComponents have already been set e.g. by web container which
+                // is able to run ServletContainerInitializer
+                return;
+            }
+
+            ServletContext osgiServletContext = OSGiAccess.getInstance()
+                    .getOsgiServletContext();
+            if (osgiServletContext == null || !OSGiAccess.getInstance()
+                    .hasInitializers()) {
+                return;
+            }
+            OSGiWebComponentDataCollector dataCollector = (OSGiWebComponentDataCollector) getInstance(
+                    osgiServletContext);
+            if (dataCollector.webComponents.get() != null) {
+                setWebComponents(dataCollector.webComponents.get());
+            }
+        } finally {
+            configurationLock.unlock();
         }
     }
 }

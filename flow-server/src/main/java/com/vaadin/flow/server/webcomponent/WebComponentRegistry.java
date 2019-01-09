@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.webcomponent;
 
 import javax.servlet.ServletContext;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,20 +27,36 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 
-public class WebComponentRegistry {
+/**
+ * Registry for storing available web component implementations.
+ *
+ * @since
+ */
+public class WebComponentRegistry implements Serializable {
 
     /**
      * Lock used to ensure there's only one update going on at once.
      * <p>
      * The lock is configured to always guarantee a fair ordering.
      */
-    private final ReentrantLock configurationLock = new ReentrantLock(true);
+    protected final ReentrantLock configurationLock = new ReentrantLock(true);
 
     private AtomicReference<Map<String, Class<? extends Component>>> webComponents = new AtomicReference<>();
 
+    /**
+     * Protected constructor for internal OSGi extensions.
+     */
     protected WebComponentRegistry() {
     }
 
+    /**
+     * Get a web component class for given custom element tag if one is
+     * registered.
+     *
+     * @param tag
+     *         custom element tag
+     * @return Optional containing a web component matching given tag
+     */
     public Optional<Class<? extends Component>> getWebComponent(String tag) {
         Class<? extends Component> webComponent = null;
         if (webComponents.get() != null) {
@@ -48,12 +65,22 @@ public class WebComponentRegistry {
         return Optional.ofNullable(webComponent);
     }
 
-    public void setWebComponents(
+    /**
+     * Register all available web components to the registry.
+     * <p>
+     * This can be done only once and any following set should only return
+     * false.
+     *
+     * @param components
+     *         map of components to register
+     * @return true if set successfully or false if not set
+     */
+    public boolean setWebComponents(
             Map<String, Class<? extends Component>> components) {
         configurationLock.lock();
         try {
             if (webComponents.get() != null) {
-                return;
+                return false;
             }
 
             Map<String, Class<? extends Component>> webComponentMap = new HashMap<>();
@@ -71,15 +98,28 @@ public class WebComponentRegistry {
                 throw new IllegalStateException(
                         "WebComponents have already been initialized");
             }
+            return true;
         } finally {
             configurationLock.unlock();
         }
     }
 
+    /**
+     * Get map containing all registered web components.
+     *
+     * @return unmodifiable map of all web components in registry
+     */
     public Map<String, Class<? extends Component>> getWebComponents() {
         return webComponents.get();
     }
 
+    /**
+     * Get WebComponentRegistry instance for given servlet context.
+     *
+     * @param servletContext
+     *         servlet context to get registry for
+     * @return WebComponentRegistry instance
+     */
     public static WebComponentRegistry getInstance(
             ServletContext servletContext) {
         assert servletContext != null;

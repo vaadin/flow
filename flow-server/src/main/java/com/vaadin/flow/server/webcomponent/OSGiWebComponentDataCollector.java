@@ -21,19 +21,25 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.component.Component;
 
+/**
+ * Data collector component for collecting web components in an OSGi
+ * environment.
+ */
 public class OSGiWebComponentDataCollector extends WebComponentRegistry {
 
     protected AtomicReference<Map<String, Class<? extends Component>>> webComponents = new AtomicReference<>();
 
     @Override
-    public void setWebComponents(
+    public boolean setWebComponents(
             Map<String, Class<? extends Component>> components) {
         if (components.isEmpty() && webComponents.get() == null) {
             // ignore initial empty targets avoiding error target
             // initialization it they are not yet discovered
-            return;
+            return false;
         }
 
         webComponents.set(Collections.unmodifiableMap(components));
+
+        return true;
     }
 }
