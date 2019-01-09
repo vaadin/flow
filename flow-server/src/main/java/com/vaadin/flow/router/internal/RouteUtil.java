@@ -112,10 +112,10 @@ public final class RouteUtil {
      */
     public static String getRoutePath(Class<?> component, Route route) {
         if (route.absolute()) {
-            return RouterHelper.resolve(component, route);
+            return RouteUtil.resolve(component, route);
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), RouterHelper.resolve(component, route));
+                route.layout(), RouteUtil.resolve(component, route));
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
@@ -377,5 +377,31 @@ public final class RouteUtil {
             aliases.add(RouteUtil.getRouteAliasPath(navigationTarget, alias));
         }
         return aliases;
+    }
+
+    /**
+     * Gets the effective route path value of the annotated class.
+     *
+     * @param component
+     *            the component where the route points to
+     * @param route
+     *            the annotation
+     * @return The value of the annotation or naming convention based value if
+     *         no explicit value is given.
+     */
+    public static String resolve(Class<?> component, Route route) {
+        if (route.value().equals(Route.NAMING_CONVENTION)) {
+            String simpleName = component.getSimpleName();
+            if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
+                return "";
+            }
+            if (simpleName.endsWith("View")) {
+                return simpleName
+                        .substring(0, simpleName.length() - "View".length())
+                        .toLowerCase();
+            }
+            return simpleName.toLowerCase();
+        }
+        return route.value();
     }
 }

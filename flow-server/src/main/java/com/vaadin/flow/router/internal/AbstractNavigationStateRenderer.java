@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -43,7 +44,7 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 
@@ -363,8 +364,8 @@ public abstract class AbstractNavigationStateRenderer
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
-        newNavigationEvent.getUI().getPage().getHistory()
-                .replaceState(null, newNavigationEvent.getLocation());
+        newNavigationEvent.getUI().getPage().getHistory().replaceState(null,
+                newNavigationEvent.getLocation());
 
         return handler.handle(newNavigationEvent);
     }
@@ -390,14 +391,18 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         Class<? extends Component> targetType;
-        if (beforeNavigation.hasForwardTarget())  {
+        if (beforeNavigation.hasForwardTarget()) {
             targetType = beforeNavigation.getForwardTargetType();
         } else {
             targetType = beforeNavigation.getRouteTargetType();
         }
 
-        Location location = new Location(RouterHelper.resolve(targetType, targetType
-                .getAnnotation(Route.class)));
+        Location location = new Location(RouteConfiguration
+                .forRegistry(event.getSource().getRegistry())
+                .getUrlBase(targetType)
+                .orElseThrow(() -> new IllegalStateException(String.format(
+                        "The target component '%s' has no registered route",
+                        targetType))));
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC);

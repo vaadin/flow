@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.internal.RouterHelper;
+import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Defines the route for components that function as navigation targets in
@@ -54,7 +54,7 @@ public @interface Route {
      * mapped to root (value will be "").</p>
      *
      * <p>Note for framework developers: do not use the value directly, but
-     * use the helper method {@link RouterHelper#resolve(Class, Route)}, so that
+     * use the helper method {@link RouteUtil#resolve(Class, Route)}, so that
      * naming convention based values are dealt correctly.</p>
      *
      * @return the explicit path value of this route
