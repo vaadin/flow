@@ -50,7 +50,7 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
-    private StaticFileHandler staticFileServer;
+    private StaticFileHandler staticFileHandler;
     private WebJarServer webJarServer;
 
     /**
@@ -76,7 +76,7 @@ public class VaadinServlet extends HttpServlet {
 
         DeploymentConfiguration deploymentConfiguration = servletService
                 .getDeploymentConfiguration();
-        staticFileServer = createStaticFileServer(servletService);
+        staticFileHandler = createStaticFileHandler(servletService);
 
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
@@ -97,7 +97,7 @@ public class VaadinServlet extends HttpServlet {
      *            the servlet service created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
      */
-    protected StaticFileHandler createStaticFileServer(
+    protected StaticFileHandler createStaticFileHandler(
             VaadinServletService servletService) {
         return new StaticFileServer(servletService);
     }
@@ -268,8 +268,8 @@ public class VaadinServlet extends HttpServlet {
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
-        if (staticFileServer.isStaticResourceRequest(request)) {
-            staticFileServer.serveStaticResource(request, response);
+        if (staticFileHandler.isStaticResourceRequest(request)) {
+            staticFileHandler.serveStaticResource(request, response);
             return true;
         }
 
