@@ -115,7 +115,7 @@ public final class RouteUtil {
             return resolve(component, route);
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), RouteUtil.resolve(component, route));
+                route.layout(), resolve(component, route));
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
