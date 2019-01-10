@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.URL;
-import java.net.URLConnection;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +43,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class StaticFileServer implements Serializable {
+public class StaticFileServer implements StaticFileHandler {
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
@@ -61,14 +60,7 @@ public class StaticFileServer implements Serializable {
         responseWriter = new ResponseWriter(deploymentConfiguration);
     }
 
-    /**
-     * Checks if a static resource can be found for the requested path.
-     *
-     * @param request
-     *            the request to check
-     * @return true if a static resource exists and can be sent as a response to
-     *         this request, false otherwise
-     */
+    @Override
     public boolean isStaticResourceRequest(HttpServletRequest request) {
         URL resource;
 
@@ -90,20 +82,7 @@ public class StaticFileServer implements Serializable {
         return resource != null;
     }
 
-    /**
-     * Serves a static resource for the requested path if a resource can be
-     * found.
-     * <p>
-     *
-     * @param request
-     *            the request object to read from
-     * @param response
-     *            the response object to write to
-     * @return true if a file was served and the request has been handled, false
-     *         otherwise.
-     * @throws IOException
-     *             if the underlying servlet container reports an exception
-     */
+    @Override
     public boolean serveStaticResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         String filenameWithPath = getRequestFilename(request);
