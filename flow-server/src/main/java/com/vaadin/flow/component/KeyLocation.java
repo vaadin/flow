@@ -42,7 +42,7 @@ public enum KeyLocation {
     RIGHT(2),
 
     /**
-     * Typo
+     * This value contains a typo. Please use RIGHT instead. @see RIGHT
      */
     @Deprecated
     RIGTH(2),
