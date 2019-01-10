@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.component.Component;
@@ -39,9 +38,9 @@ public class WebComponentRegistry implements Serializable {
      * <p>
      * The lock is configured to always guarantee a fair ordering.
      */
-    protected final ReentrantLock configurationLock = new ReentrantLock(true);
+    private final ReentrantLock configurationLock = new ReentrantLock(true);
 
-    private AtomicReference<Map<String, Class<? extends Component>>> webComponents = new AtomicReference<>();
+    private Map<String, Class<? extends Component>> webComponents;
 
     /**
      * Protected constructor for internal OSGi extensions.
@@ -59,8 +58,8 @@ public class WebComponentRegistry implements Serializable {
      */
     public Optional<Class<? extends Component>> getWebComponent(String tag) {
         Class<? extends Component> webComponent = null;
-        if (webComponents.get() != null) {
-            webComponent = webComponents.get().get(tag);
+        if (webComponents != null) {
+            webComponent = webComponents.get(tag);
         }
         return Optional.ofNullable(webComponent);
     }
@@ -79,7 +78,7 @@ public class WebComponentRegistry implements Serializable {
             Map<String, Class<? extends Component>> components) {
         configurationLock.lock();
         try {
-            if (webComponents.get() != null) {
+            if (webComponents != null) {
                 return false;
             }
 
@@ -93,11 +92,7 @@ public class WebComponentRegistry implements Serializable {
                 webComponentMap = Collections.emptyMap();
             }
 
-            if (!webComponents.compareAndSet(null,
-                    Collections.unmodifiableMap(webComponentMap))) {
-                throw new IllegalStateException(
-                        "WebComponents have already been initialized");
-            }
+            webComponents = Collections.unmodifiableMap(webComponentMap);
             return true;
         } finally {
             configurationLock.unlock();
@@ -110,7 +105,7 @@ public class WebComponentRegistry implements Serializable {
      * @return unmodifiable map of all web components in registry
      */
     public Map<String, Class<? extends Component>> getWebComponents() {
-        return webComponents.get();
+        return webComponents;
     }
 
     /**

@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -59,63 +60,41 @@ public class WebComponentRegistryTest {
     }
 
     @Test
-    public void setWebComponentsTwice_onlyFirstIsStoredAndSecondReceivesFalse() {
-        Map<String, Class<? extends Component>> webComponents = mapWebComponents(
-                MyComponent.class);
-
-        Assert.assertTrue("Registry should have accepted the WebComponents",
-                registry.setWebComponents(webComponents));
-
-        Assert.assertFalse(
-                "Registry should not accept a second set of WebComponents.",
-                registry.setWebComponents(mapWebComponents(UserBox.class)));
-
-        Assert.assertEquals(
-                "Stored WebComponents should be the same as first given.",
-                webComponents, registry.getWebComponents());
-    }
-
-    @Test
     public void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
             throws InterruptedException, ExecutionException {
         final int THREADS = 10;
 
         ExecutorService executorService = Executors.newFixedThreadPool(THREADS);
 
-        List<Callable<Result>> callables = IntStream.range(0, THREADS)
+        List<Callable<AtomicBoolean>> callables = IntStream.range(0, THREADS)
                 .mapToObj(i -> {
-                    Callable<Result> callable = () -> {
+                    Callable<AtomicBoolean> callable = () -> {
+                        // Add random sleep for better possibility to run at same time
                         Thread.sleep(new Random().nextInt(200));
-                        return new Result(registry.setWebComponents(mapWebComponents(MyComponent.class)));
+                        return new AtomicBoolean(registry.setWebComponents(
+                                mapWebComponents(MyComponent.class)));
                     };
                     return callable;
                 }).collect(Collectors.toList());
 
-        List<Future<Result>> futures = executorService.invokeAll(callables);
+        List<Future<AtomicBoolean>> futures = executorService
+                .invokeAll(callables);
 
         executorService.shutdown();
 
         Assert.assertEquals("Expected a result for all threads", THREADS,
                 futures.size());
 
-        List<Result> results = new ArrayList<>();
-        for (Future<Result> resultFuture : futures) {
+        List<AtomicBoolean> results = new ArrayList<>();
+        for (Future<AtomicBoolean> resultFuture : futures) {
             results.add(resultFuture.get());
         }
 
         Assert.assertEquals("Expected all except one thread to return false",
                 THREADS - 1,
-                results.stream().filter(result -> result.value == false)
+                results.stream().filter(result -> result.get() == false)
                         .count());
 
-    }
-
-    private static class Result {
-        final boolean value;
-
-        Result(boolean value) {
-            this.value = value;
-        }
     }
 
     private Map<String, Class<? extends Component>> mapWebComponents(

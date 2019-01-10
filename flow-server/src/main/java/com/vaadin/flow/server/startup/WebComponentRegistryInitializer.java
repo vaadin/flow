@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -60,7 +61,7 @@ public class WebComponentRegistryInitializer
 
         Map<String, Class<? extends Component>> webComponentMap = componentSet
                 .stream()
-                .collect(Collectors.toMap(this::getWebComponentName, c -> c));
+                .collect(Collectors.toMap(this::getWebComponentName, Function.identity()));
 
         instance.setWebComponents(webComponentMap);
     }

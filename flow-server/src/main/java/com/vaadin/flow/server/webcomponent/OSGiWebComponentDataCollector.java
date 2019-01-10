@@ -27,7 +27,7 @@ import com.vaadin.flow.component.Component;
  */
 public class OSGiWebComponentDataCollector extends WebComponentRegistry {
 
-    protected AtomicReference<Map<String, Class<? extends Component>>> webComponents = new AtomicReference<>();
+    private AtomicReference<Map<String, Class<? extends Component>>> webComponents = new AtomicReference<>();
 
     @Override
     public boolean setWebComponents(
@@ -41,5 +41,14 @@ public class OSGiWebComponentDataCollector extends WebComponentRegistry {
         webComponents.set(Collections.unmodifiableMap(components));
 
         return true;
+    }
+
+    /**
+     * Get  webComponents collected to this data collector.
+     *
+     * @return map of collected component or null if none collected
+     */
+    protected Map<String, Class<? extends Component>> getWebComponentCollection() {
+        return webComponents.get();
     }
 }
