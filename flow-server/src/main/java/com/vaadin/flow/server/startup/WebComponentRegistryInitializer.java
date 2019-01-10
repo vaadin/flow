@@ -31,6 +31,10 @@ import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
 
+/**
+ * Servlet initializer for collecting all available {@link WebComponent}
+ * annotated classes on startup.
+ */
 @HandlesTypes({ WebComponent.class })
 public class WebComponentRegistryInitializer
         implements ServletContainerInitializer {
