@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.ServletContext;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletContext;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +46,8 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.MockUI;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class NavigationStateRendererTest {
@@ -76,7 +78,8 @@ public class NavigationStateRendererTest {
     public void getRouterLayoutForSingleParent() throws Exception {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(SingleView.class));
-        RouteConfiguration.forRegistry(router.getRegistry()).setAnnotatedRoute(SingleView.class);
+        RouteConfiguration.forRegistry(router.getRegistry())
+                .setAnnotatedRoute(SingleView.class);
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(SingleView.class, router);
@@ -91,7 +94,8 @@ public class NavigationStateRendererTest {
     public void getRouterLayoutForMulipleLayers() throws Exception {
         NavigationStateRenderer childRenderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
-        RouteConfiguration.forRegistry(router.getRegistry()).setAnnotatedRoute(ChildConfiguration.class);
+        RouteConfiguration.forRegistry(router.getRegistry())
+                .setAnnotatedRoute(ChildConfiguration.class);
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
                 .getRouterLayoutTypes(ChildConfiguration.class, router);
@@ -152,6 +156,6 @@ public class NavigationStateRendererTest {
 
     private NavigationState navigationStateFromTarget(
             Class<? extends Component> target) {
-        return new NavigationStateBuilder().withTarget(target).build();
+        return new NavigationStateBuilder(router).withTarget(target).build();
     }
 }

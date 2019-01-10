@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -25,7 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +37,7 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
@@ -64,7 +65,7 @@ public class Router implements Serializable {
      * {@link DefaultRouteResolver}.
      *
      * @param registry
-     *         the route registry to use, not <code>null</code>
+     *            the route registry to use, not <code>null</code>
      */
     public Router(RouteRegistry registry) {
         assert registry != null;
@@ -78,9 +79,9 @@ public class Router implements Serializable {
      * updated when the user navigates to some other location.
      *
      * @param ui
-     *         the UI that navigation should be set up for
+     *            the UI that navigation should be set up for
      * @param initRequest
-     *         the Vaadin request that bootstraps the provided UI
+     *            the Vaadin request that bootstraps the provided UI
      */
     public void initializeUI(UI ui, VaadinRequest initRequest) {
         Location location = getLocationForRequest(initRequest.getPathInfo(),
@@ -122,8 +123,8 @@ public class Router implements Serializable {
                 encodedPath = URLEncoder.encode(path.substring(1),
                         StandardCharsets.UTF_8.name());
             } else {
-                encodedPath = URLEncoder
-                        .encode(path, StandardCharsets.UTF_8.name());
+                encodedPath = URLEncoder.encode(path,
+                        StandardCharsets.UTF_8.name());
             }
         } catch (UnsupportedEncodingException e) {
             LoggerFactory.getLogger(Router.class.getName())
@@ -137,9 +138,9 @@ public class Router implements Serializable {
      * router routeResolver.
      *
      * @param pathInfo
-     *         the path relative to the application
+     *            the path relative to the application
      * @param parameterMap
-     *         A mapping of parameter names to arrays of parameter values
+     *            A mapping of parameter names to arrays of parameter values
      * @return NavigationTarget for the given path and parameter map if found
      */
     public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
@@ -150,9 +151,9 @@ public class Router implements Serializable {
             resolve = getRouteResolver()
                     .resolve(new ResolveRequest(this, location));
         } catch (NotFoundException nfe) {
-            LoggerFactory.getLogger(Router.class.getName())
-                    .warn("Failed to resolve navigation target for path: {}",
-                            pathInfo, nfe);
+            LoggerFactory.getLogger(Router.class.getName()).warn(
+                    "Failed to resolve navigation target for path: {}",
+                    pathInfo, nfe);
         }
         return Optional.ofNullable(resolve);
     }
@@ -166,12 +167,12 @@ public class Router implements Serializable {
      * the browser location as well.
      *
      * @param ui
-     *         the UI to update, not <code>null</code>
+     *            the UI to update, not <code>null</code>
      * @param location
-     *         the location to navigate to, not <code>null</code>
+     *            the location to navigate to, not <code>null</code>
      * @param trigger
-     *         the type of user action that triggered this navigation, not
-     *         <code>null</code>
+     *            the type of user action that triggered this navigation, not
+     *            <code>null</code>
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
@@ -246,7 +247,7 @@ public class Router implements Serializable {
                     lookupResult.getHandledExceptionType(), exception,
                     exception.getMessage());
             ErrorStateRenderer handler = new ErrorStateRenderer(
-                    new NavigationStateBuilder()
+                    new NavigationStateBuilder(this)
                             .withTarget(lookupResult.getNavigationTarget())
                             .build());
 
@@ -270,11 +271,12 @@ public class Router implements Serializable {
      * this method will throw and IllegalArgumentException.
      *
      * @param navigationTarget
-     *         navigation target to get url for
+     *            navigation target to get url for
      * @return url for the navigation target
      * @throws IllegalArgumentException
-     *         if the navigation target requires a parameter
-     * @deprecated Url handling is moved to {@link RouteConfiguration#getUrl(Class)}
+     *             if the navigation target requires a parameter
+     * @deprecated Url handling is moved to
+     *             {@link RouteConfiguration#getUrl(Class)}
      */
     @Deprecated
     public String getUrl(Class<? extends Component> navigationTarget) {
@@ -286,25 +288,15 @@ public class Router implements Serializable {
      * Return the url base without any url parameters.
      *
      * @param navigationTarget
-     *         navigation target to get url for
+     *            navigation target to get url for
      * @return url base without url parameters
-     * @deprecated No replacement.
+     * @deprecated Url base handling is moved to
+     *             {@link RouteConfiguration#getUrlBase(Class)}
      */
     @Deprecated
     public String getUrlBase(Class<? extends Component> navigationTarget) {
-        Optional<String> targetUrl = getRegistry()
-                .getTargetUrl(navigationTarget);
-        if (!targetUrl.isPresent()) {
-            throw new NotFoundException(
-                    "No route found for given navigation target!");
-        }
-        String routeString = targetUrl.get();
-
-        if (routeString.startsWith("/")) {
-            routeString = routeString.substring(1);
-        }
-        Pattern pattern = Pattern.compile("/\\{[\\s\\S]*}");
-        return pattern.matcher(routeString).replaceAll("");
+        return RouteConfiguration.forRegistry(getRegistry())
+                .getUrlBase(navigationTarget).orElse(null);
     }
 
     /**
@@ -316,15 +308,16 @@ public class Router implements Serializable {
      * then calling getUrl with a {@code String} will fail.
      *
      * @param navigationTarget
-     *         navigation target to get url for
+     *            navigation target to get url for
      * @param parameter
-     *         parameter to embed into the generated url
+     *            parameter to embed into the generated url
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      * @return url for the navigation target with parameter
-     * @deprecated Url handling is moved to {@link RouteConfiguration#getUrl(Class, Object)}
+     * @deprecated Url handling is moved to
+     *             {@link RouteConfiguration#getUrl(Class, Object)}
      */
     @Deprecated
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
@@ -342,15 +335,16 @@ public class Router implements Serializable {
      * then calling getUrl with a {@code String} will fail.
      *
      * @param navigationTarget
-     *         navigation target to get url for
+     *            navigation target to get url for
      * @param parameters
-     *         parameters to embed into the generated url, not null
+     *            parameters to embed into the generated url, not null
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      * @return url for the navigation target with parameter
-     * @deprecated Url handling is moved to {@link RouteConfiguration#getUrl(Class, List)}
+     * @deprecated Url handling is moved to
+     *             {@link RouteConfiguration#getUrl(Class, List)}
      */
     @Deprecated
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
@@ -373,7 +367,8 @@ public class Router implements Serializable {
      * Get all available routes.
      *
      * @return RouteData for all registered routes
-     * @deprecated Url handling is moved to {@link RouteConfiguration#getAvailableRoutes()}
+     * @deprecated Url handling is moved to
+     *             {@link RouteConfiguration#getAvailableRoutes()}
      */
     @Deprecated
     public List<RouteData> getRoutes() {
@@ -391,9 +386,8 @@ public class Router implements Serializable {
     public Map<Class<? extends RouterLayout>, List<RouteData>> getRoutesByParent() {
         Map<Class<? extends RouterLayout>, List<RouteData>> grouped = new HashMap<>();
         for (RouteData route : getRoutes()) {
-            List<RouteData> routeDataList = grouped
-                    .computeIfAbsent(route.getParentLayout(),
-                            key -> new ArrayList<>());
+            List<RouteData> routeDataList = grouped.computeIfAbsent(
+                    route.getParentLayout(), key -> new ArrayList<>());
             routeDataList.add(route);
         }
 
@@ -404,26 +398,17 @@ public class Router implements Serializable {
      * Gets the effective route path value of the annotated class.
      *
      * @param component
-     *         the component where the route points to
+     *            the component where the route points to
      * @param route
-     *         the annotation
+     *            the annotation
      * @return The value of the annotation or naming convention based value if
-     * no explicit value is given.
+     *         no explicit value is given.
+     *
+     * @deprecated Use {@link RouteUtil#resolve(Class, Route)} instead
      */
+    @Deprecated
     public static String resolve(Class<?> component, Route route) {
-        if (route.value().equals(Route.NAMING_CONVENTION)) {
-            String simpleName = component.getSimpleName();
-            if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
-                return "";
-            }
-            if (simpleName.endsWith("View")) {
-                return simpleName
-                        .substring(0, simpleName.length() - "View".length())
-                        .toLowerCase();
-            }
-            return simpleName.toLowerCase();
-        }
-        return route.value();
+        return RouteUtil.resolve(component, route);
     }
 
     protected Optional<ErrorTargetEntry> getErrorNavigationTarget(

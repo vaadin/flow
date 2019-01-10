@@ -51,7 +51,8 @@ public class DefaultRouteResolver implements RouteResolver {
             return null;
         }
 
-        NavigationStateBuilder builder = new NavigationStateBuilder();
+        NavigationStateBuilder builder = new NavigationStateBuilder(
+                request.getRouter());
         Class<? extends Component> navigationTarget;
         try {
             if (!path.segments.isEmpty()) {
