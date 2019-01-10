@@ -42,6 +42,12 @@ public enum KeyLocation {
     RIGHT(2),
 
     /**
+     * Typo
+     */
+    @Deprecated
+    RIGTH(2),
+    
+    /**
      * Numeric pad key location.
      */
     NUMPAD(3);
