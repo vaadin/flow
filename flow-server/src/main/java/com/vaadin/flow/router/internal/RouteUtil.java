@@ -112,7 +112,7 @@ public final class RouteUtil {
      */
     public static String getRoutePath(Class<?> component, Route route) {
         if (route.absolute()) {
-            return RouteUtil.resolve(component, route);
+            return resolve(component, route);
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
                 route.layout(), RouteUtil.resolve(component, route));
