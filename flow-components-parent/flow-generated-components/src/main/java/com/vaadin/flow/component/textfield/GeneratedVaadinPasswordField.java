@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2018 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -19,7 +19,6 @@ import javax.annotation.Generated;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableBiFunction;
 
@@ -82,7 +81,7 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.3-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#2.3.0-alpha1",
+        "WebComponent: Vaadin.PasswordFieldElement#2.3.0-alpha4",
         "Flow#1.3-SNAPSHOT" })
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
@@ -99,7 +98,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code revealButtonHidden} property from the webcomponent
      */
     protected boolean isRevealButtonHiddenBoolean() {
@@ -113,7 +112,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * <p>
      * Set to true to hide the eye icon which toggles the password visibility.
      * </p>
-     * 
+     *
      * @param revealButtonHidden
      *            the boolean value to set
      */
@@ -131,7 +130,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code passwordVisible} property from the webcomponent
      */
     protected boolean isPasswordVisibleBoolean() {
@@ -141,7 +140,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     /**
      * Constructs a new GeneratedVaadinPasswordField component with the given
      * arguments.
-     * 
+     *
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue
@@ -166,7 +165,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     /**
      * Constructs a new GeneratedVaadinPasswordField component with the given
      * arguments.
-     * 
+     *
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue
@@ -182,7 +181,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     /**
      * Constructs a new GeneratedVaadinPasswordField component with the given
      * arguments.
-     * 
+     *
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue
