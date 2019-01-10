@@ -29,11 +29,17 @@ public class NavigationStateBuilder {
 
     private NavigationState currentState;
 
+    private final Router router;
+
     /**
      * Constructs a new NavigationStateBuilder.
+     *
+     * @param router
+     *            the router managing navigation
      */
-    public NavigationStateBuilder() {
-        currentState = new NavigationState();
+    public NavigationStateBuilder(Router router) {
+        currentState = new NavigationState(router);
+        this.router = router;
     }
 
     /**
@@ -70,7 +76,7 @@ public class NavigationStateBuilder {
 
     /**
      * Assign the path that was used for determining the navigation target.
-     * 
+     *
      * @param path
      *            navigation path
      * @return this builder, for chaining
@@ -88,7 +94,7 @@ public class NavigationStateBuilder {
      */
     public NavigationState build() {
         NavigationState toReturn = currentState;
-        currentState = new NavigationState();
+        currentState = new NavigationState(router);
         return toReturn;
     }
 }
