@@ -35,6 +35,12 @@ public class NavigationState implements Serializable {
     private String resolvedPath;
     private final Router router;
 
+    /**
+     * Creates a new instance of the class using the {@code router}.
+     *
+     * @param router
+     *            the router managing navigation
+     */
     public NavigationState(Router router) {
         this.router = router;
     }

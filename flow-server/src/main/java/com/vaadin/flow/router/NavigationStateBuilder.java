@@ -33,6 +33,9 @@ public class NavigationStateBuilder {
 
     /**
      * Constructs a new NavigationStateBuilder.
+     *
+     * @param router
+     *            the router managing navigation
      */
     public NavigationStateBuilder(Router router) {
         currentState = new NavigationState(router);
