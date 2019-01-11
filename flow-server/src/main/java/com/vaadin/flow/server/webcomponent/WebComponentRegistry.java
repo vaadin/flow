@@ -58,8 +58,14 @@ public class WebComponentRegistry implements Serializable {
      */
     public Optional<Class<? extends Component>> getWebComponent(String tag) {
         Class<? extends Component> webComponent = null;
-        if (webComponents != null) {
-            webComponent = webComponents.get(tag);
+        configurationLock.lock();
+        try {
+            if (webComponents != null) {
+                webComponent = webComponents.get(tag);
+
+            }
+        } finally {
+            configurationLock.unlock();
         }
         return Optional.ofNullable(webComponent);
     }
@@ -105,7 +111,12 @@ public class WebComponentRegistry implements Serializable {
      * @return unmodifiable map of all web components in registry
      */
     public Map<String, Class<? extends Component>> getWebComponents() {
-        return webComponents;
+        configurationLock.lock();
+        try {
+            return webComponents;
+        } finally {
+            configurationLock.unlock();
+        }
     }
 
     /**
