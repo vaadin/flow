@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import javax.servlet.ServletContext;
 
 import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,6 +59,11 @@ public class RouteConfigurationTest {
                 return vaadinService;
             }
         };
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
     }
 
     /**
@@ -586,6 +592,35 @@ public class RouteConfigurationTest {
         Assert.assertEquals(
                 "Expected path should only have been parent RoutePrefix",
                 "aliasparent/alias", routePath);
+    }
+
+    @Test
+    public void getTopParentLayout_noParentLayouts_returnsNull() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        routeConfiguration.update(() -> {
+            routeConfiguration.setRoute("", MyRoute.class);
+            routeConfiguration.setRoute("foo", MyRoute.class, MainLayout.class);
+        });
+
+        Assert.assertNull(
+                routeConfiguration.getTopParentLayout(MyRoute.class, ""));
+    }
+
+    @Test
+    public void getTopParentLayout_parentLayoutsChain_returnsLastLayout() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        routeConfiguration.update(() -> {
+            routeConfiguration.setRoute("", MyRoute.class);
+            routeConfiguration.setRoute("foo", MyRoute.class,
+                    MiddleLayout.class, MainLayout.class);
+        });
+
+        Assert.assertEquals(MainLayout.class,
+                routeConfiguration.getTopParentLayout(MyRoute.class, "foo"));
     }
 
     @Tag("div")
