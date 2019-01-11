@@ -71,6 +71,32 @@ public class WebComponentRegistry implements Serializable {
     }
 
     /**
+     * Internal method for updating registry.
+     *
+     * @param components
+     *         map of components to register
+     */
+    protected void updateRegistry(
+            Map<String, Class<? extends Component>> components) {
+        configurationLock.lock();
+        try {
+            Map<String, Class<? extends Component>> webComponentMap = new HashMap<>();
+            for (Map.Entry<String, Class<? extends Component>> entry : components
+                    .entrySet()) {
+                webComponentMap.put(entry.getKey(), entry.getValue());
+            }
+
+            if (webComponentMap.isEmpty()) {
+                webComponentMap = Collections.emptyMap();
+            }
+
+            webComponents = Collections.unmodifiableMap(webComponentMap);
+        } finally {
+            configurationLock.unlock();
+        }
+    }
+
+    /**
      * Register all available web components to the registry.
      * <p>
      * This can be done only once and any following set should only return
@@ -88,17 +114,8 @@ public class WebComponentRegistry implements Serializable {
                 return false;
             }
 
-            Map<String, Class<? extends Component>> webComponentMap = new HashMap<>();
-            for (Map.Entry<String, Class<? extends Component>> entry : components
-                    .entrySet()) {
-                webComponentMap.put(entry.getKey(), entry.getValue());
-            }
+            updateRegistry(components);
 
-            if (webComponentMap.isEmpty()) {
-                webComponentMap = Collections.emptyMap();
-            }
-
-            webComponents = Collections.unmodifiableMap(webComponentMap);
             return true;
         } finally {
             configurationLock.unlock();
@@ -152,12 +169,16 @@ public class WebComponentRegistry implements Serializable {
     }
 
     private static WebComponentRegistry createRegistry(ServletContext context) {
-        if (context != null && context == OSGiAccess.getInstance()
-                .getOsgiServletContext()) {
-            return new OSGiWebComponentDataCollector();
-        } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
+        if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return new WebComponentRegistry();
         }
+        Object attribute = OSGiAccess.getInstance().getOsgiServletContext()
+                .getAttribute(WebComponentRegistry.class.getName());
+        if (attribute != null
+                && attribute instanceof OSGiWebComponentRegistry) {
+            return (WebComponentRegistry) attribute;
+        }
+
         return new OSGiWebComponentRegistry();
     }
 }

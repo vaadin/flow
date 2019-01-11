@@ -15,47 +15,21 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import javax.servlet.ServletContext;
 import java.util.Map;
-import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.server.osgi.OSGiAccess;
 
 /**
- * OSGi WebComponentRegistry implementation.
+ * Data collector component for collecting web components in an OSGi
+ * environment.
  */
 public class OSGiWebComponentRegistry extends WebComponentRegistry {
 
     @Override
-    public Optional<Class<? extends Component>> getWebComponent(String tag) {
-        initWebComponents();
-        return super.getWebComponent(tag);
-    }
+    public boolean setWebComponents(
+            Map<String, Class<? extends Component>> components) {
 
-    @Override
-    public Map<String, Class<? extends Component>> getWebComponents() {
-        initWebComponents();
-        return super.getWebComponents();
-    }
-
-    private void initWebComponents() {
-        Map<String, Class<? extends Component>> webComponents = super
-                .getWebComponents();
-        if (webComponents != null && !webComponents.isEmpty()) {
-            return;
-        }
-
-        ServletContext osgiServletContext = OSGiAccess.getInstance()
-                .getOsgiServletContext();
-        if (osgiServletContext == null || !OSGiAccess.getInstance()
-                .hasInitializers()) {
-            return;
-        }
-        OSGiWebComponentDataCollector dataCollector = (OSGiWebComponentDataCollector) getInstance(
-                osgiServletContext);
-        if (dataCollector.getWebComponentCollection() != null) {
-            setWebComponents(dataCollector.getWebComponentCollection());
-        }
+        updateRegistry(components);
+        return true;
     }
 }

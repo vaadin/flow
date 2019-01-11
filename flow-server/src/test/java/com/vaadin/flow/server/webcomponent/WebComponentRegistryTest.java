@@ -60,6 +60,23 @@ public class WebComponentRegistryTest {
     }
 
     @Test
+    public void setWebComponentsTwice_expectedSetIsStoredToRegistry() {
+        Map<String, Class<? extends Component>> webComponents = mapWebComponents(
+                MyComponent.class);
+
+        Assert.assertTrue("Registry should have accepted the WebComponents",
+                registry.setWebComponents(webComponents));
+
+        Assert.assertFalse(
+                "Registry should not accept a second set of WebComponents.",
+                registry.setWebComponents(mapWebComponents(UserBox.class)));
+
+        Assert.assertEquals(
+                "Stored WebComponents should be the same as first given.",
+                webComponents, registry.getWebComponents());
+    }
+
+    @Test
     public void setSameRouteValueFromDifferentThreads_ConcurrencyTest()
             throws InterruptedException, ExecutionException {
         final int THREADS = 10;
@@ -97,7 +114,7 @@ public class WebComponentRegistryTest {
 
     }
 
-    private Map<String, Class<? extends Component>> mapWebComponents(
+    protected Map<String, Class<? extends Component>> mapWebComponents(
             Class<? extends Component>... components) {
         return Stream.of(components).collect(Collectors
                 .toMap(c -> c.getAnnotation(WebComponent.class).value(),
