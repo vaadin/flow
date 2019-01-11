@@ -51,4 +51,15 @@ public interface ClickNotifier<T extends Component> extends Serializable {
                     "addClickListener"));
         }
     }
+
+    /**
+     * Adds a click shortcut to this component. Invocation of this shortcut
+     * will simulate a click on this component.
+     *
+     * @return {@link ShortcutRegistration} used to configure the shortcut
+     */
+    default ShortcutRegistration addClickShortcut() {
+        return ShortcutActions.click(this);
+
+    }
 }

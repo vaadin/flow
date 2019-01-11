@@ -124,4 +124,18 @@ public interface Focusable<T extends Component>
         getElement().callFunction("blur");
     }
 
+
+    /**
+     * Registers a shortcut which, when invoked moves focus to the focusable
+     * component.
+     *
+     * Use the {@link ShortcutRegistration} to configure the shortcut properties
+     * such as keys used to invoke the shortcut.
+     *
+     * @return <code>ShortcutRegistration</code> for configuring the shortcut.
+     */
+    default ShortcutRegistration addFocusShortcut() {
+        return ShortcutActions.focus(this);
+    }
+
 }
