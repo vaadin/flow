@@ -760,11 +760,12 @@ public class UI extends Component
      * @return the associated ThemeDefinition, or empty if none is defined and
      *         the Lumo class is not in the classpath, or if the NoTheme
      *         annotation is being used.
-     * @see ThemeUtil#findThemeForNavigationTarget(Class, String)
+     * @see ThemeUtil#findThemeForNavigationTarget(UI, Class, String)
      */
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
-        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(navigationTarget, path));
+        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(this,
+                navigationTarget, path));
     }
 
     /**

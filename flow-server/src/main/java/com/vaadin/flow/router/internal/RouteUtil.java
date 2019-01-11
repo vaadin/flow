@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -36,6 +34,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 
@@ -53,7 +52,11 @@ public final class RouteUtil {
      * @param component
      *            navigation target to get parents for
      * @return parent layouts for target
+     *
+     * @deprecated This is internal method and will be removed in the future
+     *             since it's not longer needed
      */
+    @Deprecated
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             Class<?> component) {
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
@@ -74,30 +77,15 @@ public final class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle
      * @return parent layouts for target
+     *
+     * @deprecated Use
+     *             {@link RouteConfiguration#discoverParentLayouts(Class, String)}
      */
+    @Deprecated
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             Class<?> component, String path) {
-        final List<Class<? extends RouterLayout>> list = new ArrayList<>();
-
-        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent()
-                && path.equals(getRoutePath(component, route.get()))
-                && !route.get().layout().equals(UI.class)) {
-            list.addAll(collectRouteParentLayouts(route.get().layout()));
-        } else {
-
-            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
-                    component, path, routeAliases);
-            if (matchingRoute.isPresent()) {
-                list.addAll(collectRouteParentLayouts(
-                        matchingRoute.get().layout()));
-            }
-        }
-
-        return list;
+        return RouteConfiguration.forApplicationScope()
+                .discoverParentLayouts(component, path);
     }
 
     /**
@@ -109,14 +97,13 @@ public final class RouteUtil {
      * @param route
      *            route annotation to check
      * @return actual path for given route target
+     *
+     * @deprecated Use {@link RouteConfiguration#getRoutePath(Class, Route)}
      */
+    @Deprecated
     public static String getRoutePath(Class<?> component, Route route) {
-        if (route.absolute()) {
-            return resolve(component, route);
-        }
-        List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), resolve(component, route));
-        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
+        return RouteConfiguration.forApplicationScope().getRoutePath(component,
+                route);
     }
 
     /**
@@ -128,62 +115,15 @@ public final class RouteUtil {
      * @param alias
      *            route alias annotation to check
      * @return actual path for given route alias target
+     *
+     * @deprecated Use
+     *             {@link RouteConfiguration#getRouteAliasPath(Class, RouteAlias)}
      */
+    @Deprecated
     public static String getRouteAliasPath(Class<?> component,
             RouteAlias alias) {
-        if (alias.absolute()) {
-            return alias.value();
-        }
-        List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                alias.layout(), alias.value());
-        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
-    }
-
-    private static List<String> getRoutePrefixes(Class<?> component,
-            final Class<? extends RouterLayout> layout, final String value) {
-        List<String> parentRoutePrefixes = getParentRoutePrefixes(component,
-                () -> layout);
-        Collections.reverse(parentRoutePrefixes);
-        if (value != null && !value.isEmpty()) {
-            parentRoutePrefixes.add(value);
-        }
-
-        return parentRoutePrefixes;
-    }
-
-    private static List<String> getParentRoutePrefixes(Class<?> component,
-            Supplier<Class<? extends RouterLayout>> routerLayoutSupplier) {
-        List<String> list = new ArrayList<>();
-
-        Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(component, ParentLayout.class);
-        Optional<RoutePrefix> routePrefix = AnnotationReader
-                .getAnnotationFor(component, RoutePrefix.class);
-
-        routePrefix.ifPresent(prefix -> list.add(prefix.value()));
-
-        // break chain on an absolute RoutePrefix or Route
-        if (routePrefix.isPresent() && routePrefix.get().absolute()) {
-            return list;
-        }
-
-        Class<? extends RouterLayout> routerLayout = routerLayoutSupplier.get();
-        if (routerLayout != null && !routerLayout.equals(UI.class)) {
-            list.addAll(getParentRoutePrefixes(routerLayout, () -> null));
-        } else if (parentLayout.isPresent()) {
-            list.addAll(getParentRoutePrefixes(parentLayout.get().value(),
-                    () -> null));
-        }
-
-        return list;
-    }
-
-    private static Optional<RouteAlias> getMatchingRouteAlias(
-            Class<?> component, String path, List<RouteAlias> routeAliases) {
-        return routeAliases.stream().filter(
-                alias -> path.equals(getRouteAliasPath(component, alias))
-                        && !alias.layout().equals(UI.class))
-                .findFirst();
+        return RouteConfiguration.forApplicationScope()
+                .getRouteAliasPath(component, alias);
     }
 
     private static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
@@ -233,47 +173,15 @@ public final class RouteUtil {
      *            path used to get navigation target so we know which annotation
      *            to handle or null for error views.
      * @return top parent layout for target or null if none found
+     *
+     * @deprecated Use
+     *             {@link RouteConfiguration#getTopParentLayout(Class, String)}
      */
+    @Deprecated
     public static Class<? extends RouterLayout> getTopParentLayout(
             final Class<?> component, final String path) {
-        if (path == null) {
-            Optional<ParentLayout> parentLayout = AnnotationReader
-                    .getAnnotationFor(component, ParentLayout.class);
-            if (parentLayout.isPresent()) {
-                return recuseToTopLayout(parentLayout.get().value());
-            }
-            // No need to check for Route or RouteAlias as the path is null
-            return null;
-        }
-
-        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent()
-                && path.equals(getRoutePath(component, route.get()))
-                && !route.get().layout().equals(UI.class)) {
-            return recuseToTopLayout(route.get().layout());
-        } else {
-            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
-                    component, path, routeAliases);
-            if (matchingRoute.isPresent()) {
-                return recuseToTopLayout(matchingRoute.get().layout());
-            }
-        }
-
-        return null;
-    }
-
-    private static Class<? extends RouterLayout> recuseToTopLayout(
-            Class<? extends RouterLayout> layout) {
-        Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(layout, ParentLayout.class);
-
-        if (parentLayout.isPresent()) {
-            return recuseToTopLayout(parentLayout.get().value());
-        }
-        return layout;
+        return RouteConfiguration.forApplicationScope().getTopParentLayout(
+                (Class<? extends Component>) component, path);
     }
 
     /**
@@ -286,7 +194,10 @@ public final class RouteUtil {
      *            the event object about the navigation
      * @param routeTarget
      *            the currently visible component
+     * @deprecated This is internal method and will be removed in the future
+     *             since it's not longer needed
      */
+    @Deprecated
     public static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget) {
 
@@ -301,6 +212,11 @@ public final class RouteUtil {
         navigationEvent.getUI().getPage().setTitle(title);
     }
 
+    /**
+     *
+     * XXX: remove along with
+     * {@link #updatePageTitle(NavigationEvent, Component)}
+     */
     private static Optional<PageTitle> lookForTitleInTarget(
             Component routeTarget) {
         return Optional.ofNullable(
@@ -315,7 +231,11 @@ public final class RouteUtil {
      *            the actual component in the route chain
      * @param routeLayoutTypes
      *            the parent types in the route chain
+     *
+     * @deprecated This is internal method and will be removed in the future
+     *             since it's not longer needed
      */
+    @Deprecated
     public static void checkForDuplicates(
             Class<? extends Component> routeTargetType,
             Collection<Class<? extends RouterLayout>> routeLayoutTypes) {
@@ -337,7 +257,11 @@ public final class RouteUtil {
      * @param routeTargetChain
      *            chain of route targets
      * @return new LocationChangeEvent
+     *
+     * @deprecated This is internal method and will be removed in the future
+     *             since it's not longer needed
      */
+    @Deprecated
     public static LocationChangeEvent createEvent(NavigationEvent event,
             List<HasElement> routeTargetChain) {
         return new LocationChangeEvent(event.getSource(), event.getUI(),
@@ -353,7 +277,11 @@ public final class RouteUtil {
      * @param navigationTarget
      *            navigation target to get chain route for
      * @return full navigation route
+     *
+     * @deprecated This is internal method and will be removed in the future
+     *             since it's not longer needed
      */
+    @Deprecated
     public static String getNavigationRoute(Class<?> navigationTarget) {
         Route annotation = navigationTarget.getAnnotation(Route.class);
         return RouteUtil.getRoutePath(navigationTarget, annotation);
@@ -368,7 +296,11 @@ public final class RouteUtil {
      * @param navigationTarget
      *            navigation target to get chain route alias for
      * @return full navigation route
+     *
+     * @deprecated This is internal method and will be removed in the future
+     *             since it's not longer needed
      */
+    @Deprecated
     public static Collection<String> getRouteAliases(
             Class<?> navigationTarget) {
         List<String> aliases = new ArrayList<>();

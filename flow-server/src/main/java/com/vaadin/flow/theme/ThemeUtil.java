@@ -20,12 +20,15 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
- *Utility class for getting default theme and navigation target theme.
+ * Utility class for getting default theme and navigation target theme.
  */
 public final class ThemeUtil {
 
@@ -38,7 +41,7 @@ public final class ThemeUtil {
      * Loads the Lumo theme class from the classpath if it is available.
      *
      * @return the Lumo ThemeDefinition, or <code>null</code> if it is not
-     * available in the classpath
+     *         available in the classpath
      */
     private static ThemeDefinition loadLumoClassIfAvailable() {
         try {
@@ -60,23 +63,52 @@ public final class ThemeUtil {
      * available.
      *
      * @param navigationTarget
-     *         navigation target to find theme for
+     *            navigation target to find theme for
      * @param path
-     *         path used for navigation
+     *            path used for navigation
+     * @return found theme or lumo if available
+     *
+     * @deprecated Use {@link #findThemeForNavigationTarget(UI, Class, String)}
+     *             instead
+     */
+    @Deprecated
+    public static ThemeDefinition findThemeForNavigationTarget(
+            Class<?> navigationTarget, String path) {
+        return findThemeForNavigationTarget(UI.getCurrent(), navigationTarget,
+                path);
+    }
+
+    /**
+     * Find annotated theme for navigationTarget on given path or lumo if
+     * available.
+     *
+     * @param ui
+     *            the UI where {@code navigationTarget} is expected being
+     *            registered
+     * @param navigationTarget
+     *            navigation target to find theme for
+     * @param path
+     *            path used for navigation
      * @return found theme or lumo if available
      */
-    public static ThemeDefinition findThemeForNavigationTarget(
+    public static ThemeDefinition findThemeForNavigationTarget(UI ui,
             Class<?> navigationTarget, String path) {
 
         if (navigationTarget == null) {
             return ThemeUtil.LUMO_CLASS_IF_AVAILABLE;
         }
 
-        Class<? extends RouterLayout> topParentLayout = RouteUtil
-                .getTopParentLayout(navigationTarget, path);
+        Class<? extends RouterLayout> topParentLayout = null;
+        if (Component.class.isAssignableFrom(navigationTarget)) {
+            topParentLayout = RouteConfiguration
+                    .forRegistry(ui.getRouter().getRegistry())
+                    .getTopParentLayout(
+                            (Class<? extends Component>) navigationTarget,
+                            path);
+        }
 
-        Class<?> target =
-                topParentLayout == null ? navigationTarget : topParentLayout;
+        Class<?> target = topParentLayout == null ? navigationTarget
+                : topParentLayout;
 
         Optional<Theme> themeAnnotation = AnnotationReader
                 .getAnnotationFor(target, Theme.class);

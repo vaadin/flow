@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,6 +41,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -64,6 +66,9 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -83,6 +88,17 @@ public class RouteRegistryInitializerTest {
         servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
                 .thenReturn(registry);
+
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
+        Mockito.when(service.getServlet()).thenReturn(servlet);
+        CurrentInstance.set(VaadinService.class, service);
+        Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
+    }
+
+    @After
+    public void shutDown() {
+        CurrentInstance.clearAll();
     }
 
     @Rule
@@ -170,8 +186,8 @@ public class RouteRegistryInitializerTest {
                 "RouteRegistry should not have navigation targets after empty set",
                 registry.hasNavigationTargets());
 
-        RouteConfiguration.forRegistry(registry).setRoutes(
-                new HashSet<>(Collections.singleton(NavigationTargetFoo.class)));
+        RouteConfiguration.forRegistry(registry).setRoutes(new HashSet<>(
+                Collections.singleton(NavigationTargetFoo.class)));
 
         Assert.assertTrue("RouteRegistry should be initialized",
                 registry.hasNavigationTargets());
@@ -198,7 +214,8 @@ public class RouteRegistryInitializerTest {
         Assert.assertTrue("RouteRegistry should be initialized",
                 registry.hasNavigationTargets());
 
-        // Test should fail on this as there already exists a route for this route
+        // Test should fail on this as there already exists a route for this
+        // route
         RouteConfiguration.forRegistry(registry).addRoutes(new HashSet<>(
                 Collections.singleton(NavigationTargetFoo2.class)));
     }
