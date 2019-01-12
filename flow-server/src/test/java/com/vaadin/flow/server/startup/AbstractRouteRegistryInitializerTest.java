@@ -17,15 +17,11 @@ package com.vaadin.flow.server.startup;
 
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
@@ -33,64 +29,54 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
 public class AbstractRouteRegistryInitializerTest {
 
     private AbstractRouteRegistryInitializer initializer;
+    private ApplicationRouteRegistry registry = new TestRouteRegistry();
 
     @Before
     public void setUp() {
         initializer = new AbstractRouteRegistryInitializer() {
         };
-        ApplicationRouteRegistry registry = new TestRouteRegistry();
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
-                .thenReturn(registry);
-
-        VaadinServletService service = Mockito.mock(VaadinServletService.class);
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        Mockito.when(service.getServlet()).thenReturn(servlet);
-        CurrentInstance.set(VaadinService.class, service);
-        Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
     }
 
     @Test
     public void validatePwa_prefixedParent_validattionPasses() {
-        initializer.validatePwaClass(
+        initializer.validatePwaClass(registry,
                 Stream.of(BaseRouteWithParentPrefixAndRouteAlias.class));
     }
 
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void validatePwa_notPrefixedParent_validattionFails() {
-        initializer.validatePwaClass(Stream.of(BaseRouteWithParent.class));
+        initializer.validatePwaClass(registry,
+                Stream.of(BaseRouteWithParent.class));
     }
 
     @Test
     public void validatePwa_prefixedParentForNotRouteTarget_validationPasses() {
-        initializer.validatePwaClass(
+        initializer.validatePwaClass(registry,
                 Stream.of(RouteWithParentPrefixAndRouteAlias.class));
     }
 
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void validatePwa_notParentForNotRouteTarget_validationFails() {
-        initializer.validatePwaClass(Stream.of(RouteWithParent.class));
+        initializer.validatePwaClass(registry,
+                Stream.of(RouteWithParent.class));
     }
 
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void validateTheme_targetHasThemeAndHasParentViaAlias_validationFails() {
-        initializer.validateRouteClasses(
+        initializer.validateRouteClasses(registry,
                 Stream.of(RouteWithThemeAndRouteParentInAlias.class));
     }
 
     @Test
     public void validateTheme_targetHasThemeAndNoParents_validationPasses() {
-        initializer.validateRouteClasses(Stream.of(RouteWithTheme.class));
+        initializer.validateRouteClasses(registry,
+                Stream.of(RouteWithTheme.class));
     }
 
     @Route(value = "", layout = RoutePrefixParent.class)

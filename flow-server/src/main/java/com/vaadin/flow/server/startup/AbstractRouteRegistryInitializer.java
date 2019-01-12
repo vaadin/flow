@@ -41,6 +41,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Common validation methods for route registry initializer.
@@ -60,9 +61,10 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      */
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Component>> validateRouteClasses(
-            Stream<Class<?>> routeClasses) {
+            RouteRegistry registry, Stream<Class<?>> routeClasses) {
 
-        return routeClasses.peek(this::checkForConflictingAnnotations)
+        return routeClasses
+                .peek(clazz -> checkForConflictingAnnotations(registry, clazz))
                 .filter(this::isApplicableClass)
                 .map(target -> (Class<? extends Component>) target)
                 .collect(Collectors.toSet());
@@ -83,7 +85,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 && !clazz.isAnnotationPresent(DynamicRoute.class);
     }
 
-    private void checkForConflictingAnnotations(Class<?> route) {
+    private void checkForConflictingAnnotations(RouteRegistry registry,
+            Class<?> route) {
         if (route.isAnnotationPresent(RouteAlias.class)
                 && !route.isAnnotationPresent(Route.class)) {
             throw new InvalidRouteLayoutConfigurationException(String.format(
@@ -109,66 +112,67 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                     Class<? extends Annotation> annotation = type
                             .asSubclass(Annotation.class);
 
-                    validateRouteAnnotation(route, annotation);
+                    validateRouteAnnotation(registry, route, annotation);
 
                     for (RouteAlias alias : route
                             .getAnnotationsByType(RouteAlias.class)) {
-                        validateRouteAliasAnnotation(route, alias, annotation);
+                        validateRouteAliasAnnotation(registry, route, alias,
+                                annotation);
                     }
                 });
 
         /* Validate PageConfigurator usage */
-        validateRouteImplementation(route, PageConfigurator.class);
+        validateRouteImplementation(registry, route, PageConfigurator.class);
 
         for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
-            validateRouteAliasImplementation(route, alias,
+            validateRouteAliasImplementation(registry, route, alias,
                     PageConfigurator.class);
         }
     }
 
     /* Route validator methods for bootstrap implementations */
-    private void validateRouteImplementation(Class<?> route,
-            Class<?> implementation) {
+    private void validateRouteImplementation(RouteRegistry registry,
+            Class<?> route, Class<?> implementation) {
         Route annotation = route.getAnnotation(Route.class);
         if (!UI.class.equals(annotation.layout())) {
             if (implementation.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
-                                getTopParentLayout(route,
+                                getTopParentLayout(registry, route,
                                         RouteUtil.resolve(route, annotation))
                                                 .getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteConfiguration
-                    .forApplicationScope().discoverParentLayouts(route,
+                    .forRegistry(registry).discoverParentLayouts(route,
                             RouteUtil.resolve(route, annotation));
             Class<? extends RouterLayout> topParentLayout = getTopParentLayout(
-                    route, RouteUtil.resolve(route, annotation));
+                    registry, route, RouteUtil.resolve(route, annotation));
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);
         }
     }
 
-    private void validateRouteAliasImplementation(Class<?> route,
-            RouteAlias alias, Class<?> implementation) {
+    private void validateRouteAliasImplementation(RouteRegistry registry,
+            Class<?> route, RouteAlias alias, Class<?> implementation) {
         if (!UI.class.equals(alias.layout())) {
             if (PageConfigurator.class.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
-                                getTopParentLayout(route, alias.value())
-                                        .getName(),
+                                getTopParentLayout(registry, route,
+                                        alias.value()).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteConfiguration
-                    .forApplicationScope()
+                    .forRegistry(registry)
                     .discoverParentLayouts(route, alias.value());
             Class<? extends RouterLayout> topParentLayout = getTopParentLayout(
-                    route, alias.value());
+                    registry, route, alias.value());
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);
@@ -201,7 +205,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     }
 
     /* Route validator methods for bootstrap annotations */
-    private void validateRouteAnnotation(Class<?> route,
+    private void validateRouteAnnotation(RouteRegistry registry, Class<?> route,
             Class<? extends Annotation> annotation) {
         Route routeAnnotation = route.getAnnotation(Route.class);
         if (!UI.class.equals(routeAnnotation.layout())) {
@@ -209,40 +213,41 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
                                 annotation.getSimpleName(),
-                                getTopParentLayout(route,
+                                getTopParentLayout(registry, route,
                                         RouteUtil.resolve(route,
                                                 routeAnnotation)).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteConfiguration
-                    .forApplicationScope().discoverParentLayouts(route,
+                    .forRegistry(registry).discoverParentLayouts(route,
                             RouteUtil.resolve(route, routeAnnotation));
             Class<? extends RouterLayout> topParentLayout = getTopParentLayout(
-                    route, RouteUtil.resolve(route, routeAnnotation));
+                    registry, route, RouteUtil.resolve(route, routeAnnotation));
 
             validateParentAnnotation(parentLayouts, topParentLayout,
                     annotation);
         }
     }
 
-    private void validateRouteAliasAnnotation(Class<?> route, RouteAlias alias,
+    private void validateRouteAliasAnnotation(RouteRegistry registry,
+            Class<?> route, RouteAlias alias,
             Class<? extends Annotation> annotation) {
         if (!UI.class.equals(alias.layout())) {
             if (route.isAnnotationPresent(annotation)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
                                 annotation.getSimpleName(),
-                                getTopParentLayout(route, alias.value())
-                                        .getName(),
+                                getTopParentLayout(registry, route,
+                                        alias.value()).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteConfiguration
-                    .forApplicationScope()
+                    .forRegistry(registry)
                     .discoverParentLayouts(route, alias.value());
             Class<? extends RouterLayout> topParentLayout = getTopParentLayout(
-                    route, alias.value());
+                    registry, route, alias.value());
 
             validateParentAnnotation(parentLayouts, topParentLayout,
                     annotation);
@@ -283,7 +288,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @return a PWA -annotated class, or null if none exist.
      */
     @SuppressWarnings("unchecked")
-    protected Class<?> validatePwaClass(Stream<Class<?>> routeClasses) {
+    protected Class<?> validatePwaClass(RouteRegistry registry,
+            Stream<Class<?>> routeClasses) {
         pwaClass = null;
         routeClasses.forEach(route -> {
             // check and validate route pwa annotation
@@ -292,7 +298,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             Route routeAnnotation = route.getAnnotation(Route.class);
             if (!UI.class.equals(routeAnnotation.layout())) {
                 Class<? extends RouterLayout> topParentLayout = getTopParentLayout(
-                        route, RouteUtil.resolve(route, routeAnnotation));
+                        registry, route,
+                        RouteUtil.resolve(route, routeAnnotation));
                 // check and validate top parent layout pwa annotation
                 validatePwa(topParentLayout);
             }
@@ -315,7 +322,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     }
 
     private Class<? extends RouterLayout> getTopParentLayout(
-            final Class<?> component, final String path) {
+            RouteRegistry registry, final Class<?> component,
+            final String path) {
         if (path == null) {
             Optional<ParentLayout> parentLayout = AnnotationReader
                     .getAnnotationFor(component, ParentLayout.class);
@@ -331,13 +339,13 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
         if (route.isPresent()
-                && path.equals(RouteConfiguration.forApplicationScope()
+                && path.equals(RouteConfiguration.forRegistry(registry)
                         .getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             return recurseToTopLayout(route.get().layout());
         } else {
             Optional<RouteAlias> matchingRoute = RouteConfiguration
-                    .forApplicationScope()
+                    .forRegistry(registry)
                     .getMatchingRouteAlias(component, path, routeAliases);
             if (matchingRoute.isPresent()) {
                 return recurseToTopLayout(matchingRoute.get().layout());

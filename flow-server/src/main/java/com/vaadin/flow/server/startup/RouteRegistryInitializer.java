@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.util.Set;
+
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.util.Set;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
@@ -45,15 +46,16 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
                 return;
             }
 
-            Set<Class<? extends Component>> routes = validateRouteClasses(
-                    classSet.stream());
-
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(servletContext);
-            RouteConfiguration.forRegistry(routeRegistry)
-                    .setRoutes(routes);
-            routeRegistry.setPwaConfigurationClass(validatePwaClass(
-                    routes.stream().map(clazz -> (Class<?>) clazz)));
+
+            Set<Class<? extends Component>> routes = validateRouteClasses(
+                    routeRegistry, classSet.stream());
+
+            RouteConfiguration.forRegistry(routeRegistry).setRoutes(routes);
+            routeRegistry
+                    .setPwaConfigurationClass(validatePwaClass(routeRegistry,
+                            routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {
             throw new ServletException(
                     "Exception while registering Routes on servlet startup",
