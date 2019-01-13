@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.server.osgi;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.annotation.HandlesTypes;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,20 +31,25 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.annotation.HandlesTypes;
+
+import org.slf4j.LoggerFactory;
+
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.server.startup.RouteRegistryInitializer;
+
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import org.osgi.framework.Bundle;
-import org.slf4j.LoggerFactory;
 
 /**
- * Manages scanned classes inside OSGi container.
+ * Manages scanned classes inside OSGi conteiner.
  * <p>
  * It doesn't do anything outside of OSGi.
  *
@@ -174,7 +174,7 @@ public final class OSGiAccess {
     public void addScannedClasses(
             Map<Long, Collection<Class<?>>> extenderClasses) {
         cachedClasses.putAll(extenderClasses);
-        resetContextInitializers(extenderClasses);
+        resetContextInitializers();
     }
 
     /**
@@ -188,38 +188,20 @@ public final class OSGiAccess {
      *            the bundle identifier
      */
     public void removeScannedClasses(Long bundleId) {
-        initializerClasses.get().stream()
-                .filter(RouteRegistryInitializer.class::isAssignableFrom)
-                .map(ReflectTools::createInstance)
-                .forEach(initializer -> removeRoutes(
-                        (RouteRegistryInitializer) initializer, bundleId));
-
         cachedClasses.remove(bundleId);
+        resetContextInitializers();
     }
 
-    private void removeRoutes(RouteRegistryInitializer routeRegistryInitializer,
-            Long bundleId) {
-        Optional<HandlesTypes> handleTypes = AnnotationReader.getAnnotationFor(
-                routeRegistryInitializer.getClass(), HandlesTypes.class);
-        routeRegistryInitializer.onDestroy(
-                filterClasses(handleTypes.orElse(null), bundleId),
-                getOsgiServletContext());
-    }
-
-    private void resetContextInitializers(
-            Map<Long, Collection<Class<?>>> extenderClasses) {
+    private void resetContextInitializers() {
         initializerClasses.get().stream().map(ReflectTools::createInstance)
-                .forEach(initializer -> handleTypes(initializer,
-                        extenderClasses));
+                .forEach(this::handleTypes);
     }
 
-    private void handleTypes(ServletContainerInitializer initializer,
-            Map<Long, Collection<Class<?>>> extenderClasses) {
+    private void handleTypes(ServletContainerInitializer initializer) {
         Optional<HandlesTypes> handleTypes = AnnotationReader
                 .getAnnotationFor(initializer.getClass(), HandlesTypes.class);
         try {
-            initializer.onStartup(
-                    filterClasses(extenderClasses, handleTypes.orElse(null)),
+            initializer.onStartup(filterClasses(handleTypes.orElse(null)),
                     getOsgiServletContext());
         } catch (ServletException e) {
             throw new RuntimeException(
@@ -230,13 +212,10 @@ public final class OSGiAccess {
     }
 
     @SuppressWarnings("unchecked")
-    private Set<Class<?>> filterClasses(
-            Map<Long, Collection<Class<?>>> extenderClasses,
-            HandlesTypes typesAnnotation) {
+    private Set<Class<?>> filterClasses(HandlesTypes typesAnnotation) {
         Set<Class<?>> result = new HashSet<>();
         if (typesAnnotation == null) {
-            extenderClasses
-                    .forEach((bundle, classes) -> result.addAll(classes));
+            cachedClasses.forEach((bundle, classes) -> result.addAll(classes));
         } else {
             Class<?>[] requestedTypes = typesAnnotation.value();
 
@@ -254,46 +233,12 @@ public final class OSGiAccess {
                     .anyMatch(annotation -> AnnotationReader
                             .getAnnotationFor(clazz, annotation).isPresent())
                     || superTypes.stream()
-                            .anyMatch(superType -> GenericTypeReflector
-                                    .isSuperType(HasErrorParameter.class,
-                                            clazz));
+                    .anyMatch(superType -> GenericTypeReflector
+                            .isSuperType(HasErrorParameter.class,
+                                    clazz));
 
-            extenderClasses.forEach((bundle, classes) -> result.addAll(classes
+            cachedClasses.forEach((bundle, classes) -> result.addAll(classes
                     .stream().filter(hasType).collect(Collectors.toList())));
-
-        }
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> filterClasses(HandlesTypes typesAnnotation,
-            Long bundleId) {
-        Set<Class<?>> result = new HashSet<>();
-        if (typesAnnotation == null) {
-            result.addAll(cachedClasses.get(bundleId));
-        } else {
-            Class<?>[] requestedTypes = typesAnnotation.value();
-
-            Predicate<Class<?>> isAnnotation = Class::isAnnotation;
-
-            List<Class<? extends Annotation>> annotations = Stream
-                    .of(requestedTypes).filter(isAnnotation)
-                    .map(clazz -> (Class<? extends Annotation>) clazz)
-                    .collect(Collectors.toList());
-
-            List<Class<?>> superTypes = Stream.of(requestedTypes)
-                    .filter(isAnnotation.negate()).collect(Collectors.toList());
-
-            Predicate<Class<?>> hasType = clazz -> annotations.stream()
-                    .anyMatch(annotation -> AnnotationReader
-                            .getAnnotationFor(clazz, annotation).isPresent())
-                    || superTypes.stream()
-                            .anyMatch(superType -> GenericTypeReflector
-                                    .isSuperType(HasErrorParameter.class,
-                                            clazz));
-
-            result.addAll(cachedClasses.get(bundleId).stream().filter(hasType)
-                    .collect(Collectors.toList()));
 
         }
         return result;
@@ -318,35 +263,10 @@ public final class OSGiAccess {
         private static boolean isInOSGi() {
             try {
                 Class.forName("org.osgi.framework.FrameworkUtil");
-
-                UsageStatistics.markAsUsed("flow/osgi", getOSGiVersion());
-
                 return true;
             } catch (ClassNotFoundException exception) {
                 return false;
             }
         }
-
-        /**
-         * Tries to detect the version of the OSGi framework used.
-         *
-         * @return the used OSGi version or {@code null} if not able to detect
-         *         it
-         */
-        private static String getOSGiVersion() {
-            try {
-                Bundle osgiBundle = org.osgi.framework.FrameworkUtil
-                        .getBundle(Bundle.class);
-                return osgiBundle.getVersion().toString();
-            } catch (Throwable throwable) {
-                // just eat it so that any failure in the version detection
-                // doesn't break OSGi usage
-                LoggerFactory.getLogger(OSGiAccess.class).info(
-                        "Unable to detect used OSGi framework version due to "
-                                + throwable.getMessage());
-            }
-            return null;
-        }
-
     }
 }

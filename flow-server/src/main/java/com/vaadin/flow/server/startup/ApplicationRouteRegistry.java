@@ -53,6 +53,9 @@ import org.slf4j.LoggerFactory;
 public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
+
+        private final Queue<RoutesChangedEvent> osgiDataCollectorChangedEvents = new ConcurrentLinkedQueue<>();
+
         @Override
         public Class<?> getPwaConfigurationClass() {
             initPwa();
@@ -141,11 +144,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             if (!OSGiAccess.getInstance().hasInitializers()) {
                 return;
             }
-            ServletContext osgiServletContext = OSGiAccess.getInstance()
-                    .getOsgiServletContext();
-            OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                    osgiServletContext);
-            if (registry.routesChangedEvents.isEmpty()) {
+            if (osgiDataCollectorChangedEvents.isEmpty()) {
                 return;
             }
             update(() -> {
@@ -153,7 +152,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                         .forRegistry(this);
                 RoutesChangedEvent event;
 
-                while ((event = registry.routesChangedEvents.poll()) != null) {
+                while ((event = osgiDataCollectorChangedEvents
+                        .poll()) != null) {
                     event.getRemovedRoutes().forEach(
                             routeBaseData -> routeConfiguration.removeRoute(
                                     routeBaseData.getUrl(),
@@ -177,17 +177,16 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 setPwaConfigurationClass(registry.getPwaConfigurationClass());
             }
         }
+
+        private void subscribeToChanges(RouteRegistry routeRegistry) {
+            routeRegistry.addRoutesChangeListener(
+                    osgiDataCollectorChangedEvents::add);
+        }
     }
 
     private static class OSGiDataCollector extends ApplicationRouteRegistry {
 
-        private final Queue<RoutesChangedEvent> routesChangedEvents = new ConcurrentLinkedQueue<>();
-
         private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
-
-        OSGiDataCollector() {
-            addRoutesChangeListener(routesChangedEvents::add);
-        }
 
         @Override
         protected void handleInitializedRegistry() {
@@ -204,12 +203,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 return;
             }
             this.errorNavigationTargets.set(errorNavigationTargets);
-        }
-
-        @Override
-        public void clean() {
-            super.clean();
-            routesChangedEvents.clear();
         }
     }
 
@@ -363,7 +356,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     /**
      * Sets pwa configuration class.
-     * <p>
+     *
      * Should be set along with setRoutes, for scanning of proper pwa
      * configuration class is done along route scanning. See
      * {@link AbstractRouteRegistryInitializer}.
@@ -405,6 +398,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return new ApplicationRouteRegistry();
         }
-        return new OSGiRouteRegistry();
+
+        OSGiRouteRegistry osgiRouteRegistry = new OSGiRouteRegistry();
+        OSGiDataCollector osgiDataCollector = (OSGiDataCollector) getInstance(
+                OSGiAccess.getInstance().getOsgiServletContext());
+        osgiRouteRegistry.subscribeToChanges(osgiDataCollector);
+        return osgiRouteRegistry;
     }
 }
