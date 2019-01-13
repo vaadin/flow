@@ -278,7 +278,7 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
      * <code>value-changed</code>.
      *
      * @see Element#addPropertyChangeListener(String, String, PropertyChangeListener)
-     * @see this#getSynchronizationRegistration()
+     * @see #getSynchronizationRegistration()
      *
      * @param synchronizedEvent
      *            the property name to synchronize, or <code>null</code> to
