@@ -46,13 +46,13 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -445,16 +445,24 @@ class BootstrapUtils {
         }
         return ui.getRouter().resolveNavigationTarget(request.getPathInfo(),
                 request.getParameterMap()).map(navigationState -> {
-                    Class<? extends RouterLayout> parentLayout = RouteUtil
-                            .getTopParentLayout(
-                                    navigationState.getNavigationTarget(),
-                                    navigationState.getResolvedPath());
-
+                    Class<? extends RouterLayout> parentLayout = getTopParentLayout(
+                            ui.getRouter(), navigationState);
                     if (parentLayout != null) {
                         return parentLayout;
                     }
 
                     return navigationState.getNavigationTarget();
                 });
+    }
+
+    private static Class<? extends RouterLayout> getTopParentLayout(
+            Router router, NavigationState navigationState) {
+        List<Class<? extends RouterLayout>> routeLayouts = router.getRegistry()
+                .getRouteLayouts(navigationState.getResolvedPath(),
+                        navigationState.getNavigationTarget());
+        if (routeLayouts.isEmpty()) {
+            return null;
+        }
+        return routeLayouts.get(routeLayouts.size() - 1);
     }
 }

@@ -2,10 +2,14 @@ package com.vaadin.flow.theme;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.RouteRegistry;
 
 public class ThemeUtilTest {
 
@@ -34,7 +38,15 @@ public class ThemeUtilTest {
 
     @Test
     public void navigationTargetWithTheme_subclassGetsTheme() {
-        ThemeDefinition theme = ThemeUtil.findThemeForNavigationTarget(
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        Router router = new Router(registry);
+        UI ui = new UI() {
+            @Override
+            public Router getRouter() {
+                return router;
+            }
+        };
+        ThemeDefinition theme = ThemeUtil.findThemeForNavigationTarget(ui,
                 ThemeSingleNavigationTargetSubclass.class, "single");
         Assert.assertNotNull(
                 "Subclass should have a theme when the superclass has", theme);
