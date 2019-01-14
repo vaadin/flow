@@ -86,8 +86,6 @@ public class OSGiInitApplicationRouteRegistryTest
         Assert.assertEquals(Optional.of(RouteComponent2.class),
                 getTestedRegistry().getNavigationTarget("bar"));
 
-        System.out.println("getRouteLayouts foo: " + getTestedRegistry()
-                .getRouteLayouts("foo", RouteComponent1.class));
         Assert.assertTrue(getTestedRegistry()
                 .getRouteLayouts("foo", RouteComponent1.class).isEmpty());
         Assert.assertEquals(Collections.singletonList(MainLayout.class),
@@ -178,6 +176,111 @@ public class OSGiInitApplicationRouteRegistryTest
                         RouteComponent1.class));
     }
 
+    @Test
+    public void osgiRouteRegistry_modifyingRoutesInOsgiDataCollector_routesAreModifiedInOsgiRouteRegistry() {
+        getInitializationRegistry().clean();
+        getInitializationRegistry().setRoute("foo", RouteComponent1.class,
+                Collections.emptyList());
+        getInitializationRegistry().setRoute("bar", RouteComponent2.class,
+                Collections.emptyList());
+        getInitializationRegistry().removeRoute("foo");
+        getInitializationRegistry().setRoute("foo", RouteComponent3.class,
+                Collections.emptyList());
+        getInitializationRegistry().removeRoute("bar");
+        getInitializationRegistry().setRoute("xyz", RouteComponent4.class,
+                Collections.emptyList());
+
+        List<RouteData> routes = getTestedRegistry().getRegisteredRoutes();
+        Assert.assertEquals(2, routes.size());
+
+        Optional<RouteData> fooRoute1 = routes.stream()
+                .filter(routeData -> "foo".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(fooRoute1.isPresent());
+        Assert.assertEquals(RouteComponent3.class,
+                fooRoute1.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                fooRoute1.get().getParentLayouts());
+        Assert.assertEquals(Optional.of(RouteComponent3.class),
+                getTestedRegistry().getNavigationTarget("foo"));
+        Assert.assertTrue(getTestedRegistry()
+                .getRouteLayouts("foo", RouteComponent3.class).isEmpty());
+
+        Optional<RouteData> xyzRoute1 = routes.stream()
+                .filter(routeData -> "xyz".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(xyzRoute1.isPresent());
+        Assert.assertEquals(RouteComponent4.class,
+                xyzRoute1.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                xyzRoute1.get().getParentLayouts());
+        Assert.assertEquals(Optional.of(RouteComponent4.class),
+                getTestedRegistry().getNavigationTarget("xyz"));
+        Assert.assertTrue(getTestedRegistry()
+                .getRouteLayouts("xyz", RouteComponent4.class).isEmpty());
+
+        // Modifying OSGiDataCollector again
+        getInitializationRegistry().setRoute("bar", RouteComponent2.class,
+                Collections.emptyList());
+        getInitializationRegistry().removeRoute("foo");
+        getInitializationRegistry().setRoute("foo", RouteComponent1.class,
+                Collections.emptyList());
+        getInitializationRegistry().removeRoute("xyz");
+
+        List<RouteData> routesAfterCollectorChanges = getTestedRegistry()
+                .getRegisteredRoutes();
+        Assert.assertEquals(2, routesAfterCollectorChanges.size());
+
+        Optional<RouteData> fooRoute = routesAfterCollectorChanges.stream()
+                .filter(routeData -> "foo".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(fooRoute.isPresent());
+        Assert.assertEquals(RouteComponent1.class,
+                fooRoute.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                fooRoute.get().getParentLayouts());
+
+        Optional<RouteData> barRoute = routesAfterCollectorChanges.stream()
+                .filter(routeData -> "bar".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(barRoute.isPresent());
+        Assert.assertEquals(RouteComponent2.class,
+                barRoute.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                barRoute.get().getParentLayouts());
+
+        // More modifying
+        getInitializationRegistry().removeRoute("xyz");
+        getInitializationRegistry().setRoute("xyz", RouteComponent4.class,
+                Collections.emptyList());
+        getInitializationRegistry().removeRoute("bar");
+        getInitializationRegistry().removeRoute("foo");
+        getInitializationRegistry().setRoute("foo", RouteComponent2.class,
+                Collections.emptyList());
+
+        List<RouteData> routesAfterMoreChanges = getTestedRegistry()
+                .getRegisteredRoutes();
+        Assert.assertEquals(2, routesAfterMoreChanges.size());
+
+        Optional<RouteData> fooRoute3 = routesAfterMoreChanges.stream()
+                .filter(routeData -> "foo".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(fooRoute3.isPresent());
+        Assert.assertEquals(RouteComponent2.class,
+                fooRoute3.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                fooRoute3.get().getParentLayouts());
+
+        Optional<RouteData> xyzRoute = routesAfterMoreChanges.stream()
+                .filter(routeData -> "xyz".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(xyzRoute.isPresent());
+        Assert.assertEquals(RouteComponent4.class,
+                xyzRoute.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                xyzRoute.get().getParentLayouts());
+    }
+
     @Override
     protected RouteRegistry getTestedRegistry() {
         return registry;
@@ -196,4 +299,11 @@ public class OSGiInitApplicationRouteRegistryTest
     private static class RouteComponent2 extends Component {
     }
 
+    @Tag("span")
+    private static class RouteComponent3 extends Component {
+    }
+
+    @Tag("span")
+    private static class RouteComponent4 extends Component {
+    }
 }

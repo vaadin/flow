@@ -147,24 +147,25 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             if (osgiDataCollectorChangedEvents.isEmpty()) {
                 return;
             }
-            update(() -> {
-                final RouteConfiguration routeConfiguration = RouteConfiguration
-                        .forRegistry(this);
-                RoutesChangedEvent event;
+            final RouteConfiguration routeConfiguration = RouteConfiguration
+                    .forRegistry(this);
 
-                while ((event = osgiDataCollectorChangedEvents
-                        .poll()) != null) {
-                    event.getRemovedRoutes().forEach(
-                            routeBaseData -> routeConfiguration.removeRoute(
-                                    routeBaseData.getUrl(),
-                                    routeBaseData.getNavigationTarget()));
-                    event.getAddedRoutes()
-                            .forEach(routeBaseData -> routeConfiguration
-                                    .setRoute(routeBaseData.getUrl(),
-                                            routeBaseData.getNavigationTarget(),
-                                            routeBaseData.getParentLayouts()));
-                }
-            });
+            while (!osgiDataCollectorChangedEvents.isEmpty()) {
+                RoutesChangedEvent routesChangedEvent = osgiDataCollectorChangedEvents
+                        .poll();
+                if (routesChangedEvent != null)
+                    update(() -> {
+                        routesChangedEvent.getRemovedRoutes().forEach(
+                                routeBaseData -> routeConfiguration.removeRoute(
+                                        routeBaseData.getUrl(),
+                                        routeBaseData.getNavigationTarget()));
+                        routesChangedEvent.getAddedRoutes().forEach(
+                                routeBaseData -> routeConfiguration.setRoute(
+                                        routeBaseData.getUrl(),
+                                        routeBaseData.getNavigationTarget(),
+                                        routeBaseData.getParentLayouts()));
+                    });
+            }
         }
 
         private void initPwa() {
