@@ -194,13 +194,13 @@ public interface DomListenerRegistration extends Registration {
     }
 
     /**
-     * Gets the debounce phases that is configured by debounce or throttle.
+     * Gets the debouncing phases for which this listener should be triggered.
      *
      * @see #debounce(int, DebouncePhase, DebouncePhase...)
      * @see #debounce(int)
      * @see #throttle(int)
      *
-     * @return debounce phases, or <code>null</code> if debouncing is disabled
+     * @return debounce phases
      */
     default Set<DebouncePhase> getDebouncePhases() {
         /*
