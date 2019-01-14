@@ -254,11 +254,14 @@ public class RouteConfiguration implements Serializable {
      *             thrown if exact route already defined in this scope
      */
     public void setAnnotatedRoute(Class<? extends Component> navigationTarget) {
-        String route = RouteUtil.getNavigationRoute(navigationTarget);
+        String route = RouteUtil.getRoutePath(navigationTarget,
+                navigationTarget.getAnnotation(Route.class));
         handledRegistry.setRoute(route, navigationTarget,
                 RouteUtil.getParentLayouts(navigationTarget, route));
 
-        for (String path : RouteUtil.getRouteAliases(navigationTarget)) {
+        for (RouteAlias alias : navigationTarget
+                .getAnnotationsByType(RouteAlias.class)) {
+            String path = RouteUtil.getRouteAliasPath(navigationTarget, alias);
             handledRegistry.setRoute(path, navigationTarget,
                     RouteUtil.getParentLayouts(navigationTarget, path));
         }
@@ -616,4 +619,5 @@ public class RouteConfiguration implements Serializable {
         }
         return trimRouteString(routeString);
     }
+
 }
