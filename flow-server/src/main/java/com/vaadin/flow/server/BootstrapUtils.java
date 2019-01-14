@@ -44,6 +44,7 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.ParentLayout;
@@ -119,7 +120,7 @@ class BootstrapUtils {
      * tag for the target route chain that was navigated to, specified with
      * {@link Meta} on the {@link Route} class or the {@link ParentLayout} of
      * the route.
-     * 
+     *
      * @param context
      *            the bootstrap context
      * @return the map contains name and content value string for the customized
@@ -127,7 +128,8 @@ class BootstrapUtils {
      */
     static Map<String, String> getMetaTargets(
             BootstrapHandler.BootstrapContext context) {
-        List<Meta> metaAnnotations = context.getPageConfigurationAnnotations(Meta.class);
+        List<Meta> metaAnnotations = context
+                .getPageConfigurationAnnotations(Meta.class);
         boolean illegalValue = false;
         Map<String, String> map = new HashMap<>();
         for (Meta meta : metaAnnotations) {
@@ -197,7 +199,9 @@ class BootstrapUtils {
                 .collect(Collectors.toList());
 
         AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
-                RouteUtil.createEvent(navigationEvent, components));
+                new LocationChangeEvent(navigationEvent.getSource(),
+                        navigationEvent.getUI(), navigationEvent.getTrigger(),
+                        navigationEvent.getLocation(), components));
 
         return new InitialPageSettings(request, ui, afterNavigationEvent,
                 browser);

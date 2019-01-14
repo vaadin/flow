@@ -17,9 +17,12 @@ package com.vaadin.flow.router.internal;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,12 +41,14 @@ import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -129,7 +134,7 @@ public abstract class AbstractNavigationStateRenderer
         assert routeLayoutTypes != null;
 
         clearContinueNavigationAction(ui);
-        RouteUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
+        checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         if (eventActionsSupported()) {
 
@@ -181,8 +186,9 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType);
 
-        LocationChangeEvent locationChangeEvent = RouteUtil.createEvent(event,
-                chain);
+        LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
+                event.getSource(), event.getUI(), event.getTrigger(),
+                event.getLocation(), chain);
 
         notifyNavigationTarget(componentInstance, event,
                 beforeNavigationActivating, locationChangeEvent);
@@ -216,7 +222,7 @@ public abstract class AbstractNavigationStateRenderer
                 navigationState.getResolvedPath(), componentInstance,
                 routerLayouts);
 
-        RouteUtil.updatePageTitle(event, componentInstance);
+        updatePageTitle(event, componentInstance);
 
         int statusCode = locationChangeEvent.getStatusCode();
         validateStatusCode(statusCode, routeTargetType);
@@ -423,6 +429,38 @@ public abstract class AbstractNavigationStateRenderer
             throw new IllegalStateException(
                     "Error forward & reroute can not be set at the same time");
         }
+    }
+
+    private static void checkForDuplicates(
+            Class<? extends Component> routeTargetType,
+            Collection<Class<? extends RouterLayout>> routeLayoutTypes) {
+        Set<Class<?>> duplicateCheck = new HashSet<>();
+        duplicateCheck.add(routeTargetType);
+        for (Class<?> parentType : routeLayoutTypes) {
+            if (!duplicateCheck.add(parentType)) {
+                throw new IllegalArgumentException(
+                        parentType + " is used in multiple locations");
+            }
+        }
+    }
+
+    private static void updatePageTitle(NavigationEvent navigationEvent,
+            Component routeTarget) {
+        String title;
+
+        if (routeTarget instanceof HasDynamicTitle) {
+            title = ((HasDynamicTitle) routeTarget).getPageTitle();
+        } else {
+            title = lookForTitleInTarget(routeTarget).map(PageTitle::value)
+                    .orElse("");
+        }
+        navigationEvent.getUI().getPage().setTitle(title);
+    }
+
+    private static Optional<PageTitle> lookForTitleInTarget(
+            Component routeTarget) {
+        return Optional.ofNullable(
+                routeTarget.getClass().getAnnotation(PageTitle.class));
     }
 
 }
