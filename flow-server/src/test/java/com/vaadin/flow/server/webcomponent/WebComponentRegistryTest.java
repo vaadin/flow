@@ -60,7 +60,7 @@ public class WebComponentRegistryTest {
     }
 
     @Test
-    public void setWebComponentsTwice_expectedSetIsStoredToRegistry() {
+    public void setWebComponentsTwice_onlyFirstSetIsAccepted() {
         Map<String, Class<? extends Component>> webComponents = mapWebComponents(
                 MyComponent.class);
 

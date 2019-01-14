@@ -43,15 +43,18 @@ public class OSGiWebComponentRegistryTest extends WebComponentRegistryTest {
 
     @Test
     public void assertOsgiRegistryIsServedAsASingleton() {
-        Assert.assertEquals(OSGiWebComponentRegistry.class.getName(),
-                registry.getClass().getName());
-
-        Assert.assertEquals(registry,
-                WebComponentRegistry.getInstance(Mockito.mock(ServletContext.class)));
+        Assert.assertEquals(registry, WebComponentRegistry
+                .getInstance(Mockito.mock(ServletContext.class)));
     }
 
     @Override
-    public void setWebComponentsTwice_expectedSetIsStoredToRegistry() {
+    public void setWebComponentsTwice_onlyFirstSetIsAccepted() {
+        // OSGi accepts setting the web components multiple times.
+        // NO-OP
+    }
+
+    @Test
+    public void setWebComponentsTwice_allSetsAcceptedLastSetValid() {
         Map<String, Class<? extends Component>> webComponents = mapWebComponents(
                 MyComponent.class);
 
@@ -62,10 +65,10 @@ public class OSGiWebComponentRegistryTest extends WebComponentRegistryTest {
                 "OSGi registry should have accept the second set of WebComponents.",
                 registry.setWebComponents(mapWebComponents(UserBox.class)));
 
-        Assert.assertNotEquals(
-                "Stored WebComponents should be the latest set.",
+        Assert.assertNotEquals("Stored WebComponents should be the latest set.",
                 webComponents, registry.getWebComponents());
-        Assert.assertEquals(mapWebComponents(UserBox.class), registry.getWebComponents());
+        Assert.assertEquals(mapWebComponents(UserBox.class),
+                registry.getWebComponents());
     }
 
     @Override
