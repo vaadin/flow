@@ -63,6 +63,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar\\$VaadinScanPackages",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer\\$ErrorParameterServletContextListener",
+                "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer\\$WebComponentServletContextListener",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinMVCWebAppInitializer",
                 "com\\.vaadin\\.flow\\.spring\\.RootMappedCondition",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinWebsocketEndpointExporter",
