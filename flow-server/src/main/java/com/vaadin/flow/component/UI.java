@@ -764,7 +764,8 @@ public class UI extends Component
      */
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
-        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(navigationTarget, path));
+        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(this,
+                navigationTarget, path));
     }
 
     /**

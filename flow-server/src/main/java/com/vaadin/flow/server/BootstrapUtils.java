@@ -44,14 +44,15 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -119,7 +120,7 @@ class BootstrapUtils {
      * tag for the target route chain that was navigated to, specified with
      * {@link Meta} on the {@link Route} class or the {@link ParentLayout} of
      * the route.
-     * 
+     *
      * @param context
      *            the bootstrap context
      * @return the map contains name and content value string for the customized
@@ -127,7 +128,8 @@ class BootstrapUtils {
      */
     static Map<String, String> getMetaTargets(
             BootstrapHandler.BootstrapContext context) {
-        List<Meta> metaAnnotations = context.getPageConfigurationAnnotations(Meta.class);
+        List<Meta> metaAnnotations = context
+                .getPageConfigurationAnnotations(Meta.class);
         boolean illegalValue = false;
         Map<String, String> map = new HashMap<>();
         for (Meta meta : metaAnnotations) {
@@ -197,7 +199,9 @@ class BootstrapUtils {
                 .collect(Collectors.toList());
 
         AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
-                RouteUtil.createEvent(navigationEvent, components));
+                new LocationChangeEvent(navigationEvent.getSource(),
+                        navigationEvent.getUI(), navigationEvent.getTrigger(),
+                        navigationEvent.getLocation(), components));
 
         return new InitialPageSettings(request, ui, afterNavigationEvent,
                 browser);
@@ -441,16 +445,24 @@ class BootstrapUtils {
         }
         return ui.getRouter().resolveNavigationTarget(request.getPathInfo(),
                 request.getParameterMap()).map(navigationState -> {
-                    Class<? extends RouterLayout> parentLayout = RouteUtil
-                            .getTopParentLayout(
-                                    navigationState.getNavigationTarget(),
-                                    navigationState.getResolvedPath());
-
+                    Class<? extends RouterLayout> parentLayout = getTopParentLayout(
+                            ui.getRouter(), navigationState);
                     if (parentLayout != null) {
                         return parentLayout;
                     }
 
                     return navigationState.getNavigationTarget();
                 });
+    }
+
+    private static Class<? extends RouterLayout> getTopParentLayout(
+            Router router, NavigationState navigationState) {
+        List<Class<? extends RouterLayout>> routeLayouts = router.getRegistry()
+                .getRouteLayouts(navigationState.getResolvedPath(),
+                        navigationState.getNavigationTarget());
+        if (routeLayouts.isEmpty()) {
+            return null;
+        }
+        return routeLayouts.get(routeLayouts.size() - 1);
     }
 }
