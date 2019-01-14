@@ -87,10 +87,10 @@ public class ValueChangeModeTest {
     @Test
     public void field_setValueChangeTimeout_applied() {
         ValueChangeModeField field = new ValueChangeModeField();
-        assertDebounceEquals(field, null, 0);
+        assertDebounceDisabled(field);
 
         field.setValueChangeMode(ValueChangeMode.LAZY);
-        assertDebounceEquals(field, null, 0);
+        assertDebounceDisabled(field);
 
         field.setValueChangeTimeout(123);
         assertDebounceEquals(field, EnumSet.of(DebouncePhase.TRAILING), 123);
@@ -114,13 +114,19 @@ public class ValueChangeModeTest {
     private void assertNoTimeoutApplied(ValueChangeMode valueChangeMode) {
         ValueChangeModeField field = new ValueChangeModeField();
         field.setValueChangeMode(valueChangeMode);
-        assertDebounceEquals(field, null, 0);
+        assertDebounceDisabled(field);
     }
 
-    private void assertDebounceEquals(ValueChangeModeField field, EnumSet<DebouncePhase> phases, int timeout) {
+    private void assertDebounceEquals(ValueChangeModeField field,
+                                      EnumSet<DebouncePhase> phases, int timeout) {
         DomListenerRegistration reg = field.getSynchronizationRegistration();
         Assert.assertEquals(timeout, reg.getDebounceTimeout());
         Assert.assertEquals(phases, reg.getDebouncePhases());
+    }
+
+    private void assertDebounceDisabled(ValueChangeModeField field) {
+        Assert.assertEquals(0,
+                field.getSynchronizationRegistration().getDebounceTimeout());
     }
 
     private void assertValueSynchronizedWithEvent(ValueChangeModeField field,
