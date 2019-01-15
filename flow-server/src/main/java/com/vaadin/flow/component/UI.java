@@ -389,7 +389,7 @@ public class UI extends Component
      * while allowing new APIs to use newer conventions.
      */
     private void accessSynchronously(Command command,
-            SerializableRunnable detachHandler) {
+                                     SerializableRunnable detachHandler) {
 
         Map<Class<?>, CurrentInstance> old = null;
 
@@ -475,7 +475,7 @@ public class UI extends Component
      * while allowing new APIs to use newer conventions.
      */
     private Future<Void> access(Command command,
-            SerializableRunnable detachHandler) {
+                                SerializableRunnable detachHandler) {
         VaadinSession session = getSession();
 
         if (session == null) {
@@ -527,7 +527,7 @@ public class UI extends Component
      *         handler, possibly asynchronously
      */
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
-            SerializableRunnable detachHandler) {
+                               SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
         return () -> access(accessTask::run, detachHandler);
@@ -997,5 +997,21 @@ public class UI extends Component
      */
     public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
         return internals.getNavigationListeners(navigationHandler);
+    }
+
+    public Registration addShortcut(Command command, Key key, KeyModifier... keyModifiers) {
+        return Shortcuts.addShortcut(this, command, key, keyModifiers);
+    }
+
+    public Registration addShortcut(Command command, char character, KeyModifier... keyModifiers) {
+        return Shortcuts.addShortcut(this, command, character, keyModifiers);
+    }
+
+    public ShortcutRegistration ShortcutRegistration(Command command, Key key) {
+        return Shortcuts.registerShortcut(this, command, key);
+    }
+
+    public ShortcutRegistration ShortcutRegistration(Command command, char character) {
+        return Shortcuts.registerShortcut(this, command, character);
     }
 }

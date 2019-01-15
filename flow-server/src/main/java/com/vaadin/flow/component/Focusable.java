@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.component;
 
+import java.security.InvalidParameterException;
+
+import com.vaadin.flow.shared.Registration;
+
 /**
  * Interface with the methods implemented by components that can gain and lose
  * focus.
@@ -124,8 +128,31 @@ public interface Focusable<T extends Component>
         getElement().callFunction("blur");
     }
 
+    /**
+     * TODO
+     * @param key
+     * @param keyModifiers
+     * @return
+     */
+    default Registration addFocusShortcut(Key key, KeyModifier... keyModifiers) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addFocusShortcut(Key, KeyModifier...)"));
+        }
+
+        if (key == null) {
+            throw new InvalidParameterException(
+                    String.format(Shortcuts.NULL, key));
+        }
+
+        return this.registerFocusShortcut(key).withModifiers(keyModifiers);
+    }
 
     /**
+     * TODO
      * Registers a shortcut which, when invoked moves focus to the focusable
      * component.
      *
@@ -134,8 +161,57 @@ public interface Focusable<T extends Component>
      *
      * @return <code>ShortcutRegistration</code> for configuring the shortcut.
      */
-    default ShortcutRegistration addFocusShortcut() {
-        return ShortcutActions.focus(this);
+    default Registration addFocusShortcut(char character, KeyModifier... keyModifiers) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addFocusShortcut(char, KeyModifier...)"));
+        }
+
+        return this.registerFocusShortcut(character)
+                .withModifiers(keyModifiers);
     }
 
+    /**
+     * TODO
+     * @param key
+     * @return
+     */
+    default ShortcutRegistration registerFocusShortcut(Key key) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "registerFocusShortcut(Key)"));
+        }
+
+        if (key == null) {
+            throw new InvalidParameterException(
+                    String.format(Shortcuts.NULL, key));
+        }
+
+        return new ShortcutRegistration((Component) this, UI::getCurrent,
+                this::focus, key);
+    }
+
+    /**
+     * TODO
+     * @param character
+     * @return
+     */
+    default ShortcutRegistration registerFocusShortcut(char character) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "registerFocusShortcut(char)"));
+        }
+
+        return new ShortcutRegistration((Component) this, UI::getCurrent,
+                this::focus, character);
+    }
 }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.security.InvalidParameterException;
 
 import com.vaadin.flow.shared.Registration;
 
@@ -53,13 +54,90 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     }
 
     /**
+     * TODO
      * Adds a click shortcut to this component. Invocation of this shortcut
      * will simulate a click on this component.
      *
      * @return {@link ShortcutRegistration} used to configure the shortcut
      */
-    default ShortcutRegistration addClickShortcut() {
-        return ShortcutActions.click(this);
+    default Registration addClickShortcut(Key key, KeyModifier... keyModifiers) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addClickShortcut(Key, KeyModifier...)"));
+        }
 
+        if (key == null) {
+            throw new InvalidParameterException(
+                    String.format(Shortcuts.NULL, key));
+        }
+
+        return registerClickShortcut(key).withModifiers(keyModifiers);
+    }
+
+    /**
+     * TODO
+     * Adds a click shortcut to this component. Invocation of this shortcut
+     * will simulate a click on this component.
+     *
+     * @return {@link ShortcutRegistration} used to configure the shortcut
+     */
+    default Registration addClickShortcut(char character, KeyModifier... keyModifiers) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addClickShortcut(char, KeyModifier...)"));
+        }
+
+        return registerClickShortcut(character).withModifiers(keyModifiers);
+    }
+
+    /**
+     * TODO
+     * @param key
+     * @return
+     */
+    default ShortcutRegistration registerClickShortcut(Key key) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "registerClickShortcut(Key)"));
+        }
+
+        if (key == null) {
+            throw new InvalidParameterException(
+                    String.format(Shortcuts.NULL, key));
+        }
+
+        final Component _this = (Component) this;
+        return new ShortcutRegistration(_this, UI::getCurrent,
+                () -> ComponentUtil.fireEvent(_this, new ClickEvent<>(_this)),
+                key);
+    }
+
+    /**
+     * TODO
+     * @param character
+     * @return
+     */
+    default ShortcutRegistration registerClickShortcut(char character) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "registerClickShortcut(char)"));
+        }
+
+        final Component _this = (Component) this;
+        return new ShortcutRegistration(_this, UI::getCurrent,
+                () -> ComponentUtil.fireEvent(_this, new ClickEvent<>(_this)),
+                character);
     }
 }
