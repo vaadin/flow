@@ -177,7 +177,7 @@ public class OSGiInitApplicationRouteRegistryTest
     }
 
     @Test
-    public void osgiRouteRegistry_modifyingRoutesInOsgiDataCollector_routesAreModifiedInOsgiRouteRegistry() {
+    public void osgiRouteRegistry_modifyingRoutesInOsgiDataCollectorAfterInitRoutes_routesAreModifiedInOsgiRouteRegistry() {
         getInitializationRegistry().clean();
         getInitializationRegistry().setRoute("foo", RouteComponent1.class,
                 Collections.emptyList());
@@ -248,37 +248,47 @@ public class OSGiInitApplicationRouteRegistryTest
                 barRoute.get().getNavigationTarget());
         Assert.assertEquals(Collections.emptyList(),
                 barRoute.get().getParentLayouts());
+    }
 
-        // More modifying
-        getInitializationRegistry().removeRoute("xyz");
-        getInitializationRegistry().setRoute("xyz", RouteComponent4.class,
+    @Test
+    public void osgiRouteRegistry_modifyingRoutesInBothOsgiDataCollectorAndOsgiRouteRegistry_routesAreModifiedInOsgiRouteRegistry() {
+        getInitializationRegistry().clean();
+        getInitializationRegistry().setRoute("foo", RouteComponent1.class,
+                Collections.emptyList());
+        getInitializationRegistry().setRoute("bar", RouteComponent2.class,
+                Collections.emptyList());
+
+        getTestedRegistry().getRegisteredRoutes();
+
+        // Modifying OsgiRouteRegistry and OSGiDataCollector
+        getTestedRegistry().removeRoute("foo");
+        getTestedRegistry().setRoute("xyz", RouteComponent3.class,
                 Collections.emptyList());
         getInitializationRegistry().removeRoute("bar");
-        getInitializationRegistry().removeRoute("foo");
-        getInitializationRegistry().setRoute("foo", RouteComponent2.class,
+        getInitializationRegistry().setRoute("abc", RouteComponent4.class,
                 Collections.emptyList());
 
-        List<RouteData> routesAfterMoreChanges = getTestedRegistry()
+        List<RouteData> routesAfterCollectorChanges = getTestedRegistry()
                 .getRegisteredRoutes();
-        Assert.assertEquals(2, routesAfterMoreChanges.size());
+        Assert.assertEquals(2, routesAfterCollectorChanges.size());
 
-        Optional<RouteData> fooRoute3 = routesAfterMoreChanges.stream()
-                .filter(routeData -> "foo".equals(routeData.getUrl()))
-                .findFirst();
-        Assert.assertTrue(fooRoute3.isPresent());
-        Assert.assertEquals(RouteComponent2.class,
-                fooRoute3.get().getNavigationTarget());
-        Assert.assertEquals(Collections.emptyList(),
-                fooRoute3.get().getParentLayouts());
-
-        Optional<RouteData> xyzRoute = routesAfterMoreChanges.stream()
+        Optional<RouteData> xyzRoute = routesAfterCollectorChanges.stream()
                 .filter(routeData -> "xyz".equals(routeData.getUrl()))
                 .findFirst();
         Assert.assertTrue(xyzRoute.isPresent());
-        Assert.assertEquals(RouteComponent4.class,
+        Assert.assertEquals(RouteComponent3.class,
                 xyzRoute.get().getNavigationTarget());
         Assert.assertEquals(Collections.emptyList(),
                 xyzRoute.get().getParentLayouts());
+
+        Optional<RouteData> abcRoute = routesAfterCollectorChanges.stream()
+                .filter(routeData -> "abc".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(abcRoute.isPresent());
+        Assert.assertEquals(RouteComponent4.class,
+                abcRoute.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                abcRoute.get().getParentLayouts());
     }
 
     @Override

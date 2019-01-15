@@ -109,15 +109,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             return super.hasNavigationTargets();
         }
 
-        @Override
-        public void setRoute(String path,
-                Class<? extends Component> navigationTarget,
-                List<Class<? extends RouterLayout>> parentChain) {
-            update(() -> {
-                super.setRoute(path, navigationTarget, parentChain);
-            });
-        }
-
         private void initErrorTargets() {
             if (!getConfiguration().getExceptionHandlers().isEmpty()) {
                 return;
