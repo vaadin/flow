@@ -16,8 +16,11 @@
 package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Property value class for web components that will be published and synced on
@@ -76,10 +79,37 @@ public class WebComponentProperty<T> implements Serializable {
 
     }
 
+    /**
+     * Add a property value change listener to this property.
+     *
+     * @param listener
+     *         listener to notify for value change
+     * @return registration to remove listener with
+     */
+    public Registration addValueChangeListener(
+            PropertyValueChangeListener listener) {
+        if (listeners == null) {
+            listeners = new HashSet<>();
+        }
+        listeners.add(listener);
+
+        return () -> listeners.remove(listener);
+    }
+
+    /**
+     * Get the current property value.
+     *
+     * @return current value
+     */
     public T get() {
         return value;
     }
 
+    /**
+     * Get the property class type.
+     *
+     * @return property class type
+     */
     public Class<T> getValueType() {
         return propertyClass;
     }

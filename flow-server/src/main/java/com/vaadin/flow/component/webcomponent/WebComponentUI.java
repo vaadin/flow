@@ -26,6 +26,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
@@ -88,6 +90,31 @@ public class WebComponentUI extends UI {
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
         return Optional.empty();
+    }
+
+    @Override
+    public void navigate(String location) {
+        throw new UnsupportedOperationException(
+                "Navigation is not available for WebComponents");
+    }
+
+    @Override
+    public void navigate(Class<? extends Component> navigationTarget) {
+        throw new UnsupportedOperationException(
+                "Navigation is not available for WebComponents");
+    }
+
+    @Override
+    public <T, C extends Component & HasUrlParameter<T>> void navigate(
+            Class<? extends C> navigationTarget, T parameter) {
+        throw new UnsupportedOperationException(
+                "Navigation is not available for WebComponents");
+    }
+
+    @Override
+    public void navigate(String location, QueryParameters queryParameters) {
+        throw new UnsupportedOperationException(
+                "Navigation is not available for WebComponents");
     }
 
     private void assignLumoThemeIfAvailable() {
