@@ -56,31 +56,6 @@ public final class Shortcuts {
 
     /**
      * TODO
-     * Ties a {@link Runnable} to a shortcut owner by {@link Component owner}.
-     *
-     * @param owner     Component which controls whether the shortcut is
-     *                  available or not
-     * @param command   Code to execute when the shortcut is invoked
-     * @param character
-     * @param keyModifiers
-     * @return {@link ShortcutRegistration} for configuring the shortcut.
-     * @see Shortcuts#addShortcut(Component, Command, Key, KeyModifier...)
-     */
-    public static ShortcutRegistration addShortcut(
-            Component owner, Command command, char character,
-            KeyModifier... keyModifiers) {
-        if (owner == null) {
-            throw new InvalidParameterException(String.format(NULL, "owner"));
-        }
-        if (command == null) {
-            throw new InvalidParameterException(String.format(NULL, "command"));
-        }
-        return registerShortcut(owner, command, character)
-                .withModifiers(keyModifiers);
-    }
-
-    /**
-     * TODO
      * @param owner
      * @param command
      * @param key
@@ -112,32 +87,6 @@ public final class Shortcuts {
      * TODO
      * @param owner
      * @param command
-     * @param character
-     * @return
-     */
-    public static ShortcutRegistration registerShortcut(
-            Component owner, Command command, char character) {
-        if (owner == null) {
-            throw new InvalidParameterException(String.format(NULL, "owner"));
-        }
-        if (command == null) {
-            throw new InvalidParameterException(String.format(NULL, "command"));
-        }
-
-        UI ui = UI.getCurrent();
-
-        if (ui == null) {
-            throw new IllegalStateException("Cannot register a shortcut with " +
-                    "lifecycle bound to the UI when UI is not available.");
-        }
-
-        return new ShortcutRegistration(ui, () -> owner, command, character);
-    }
-
-    /**
-     * TODO
-     * @param owner
-     * @param command
      * @param key
      * @return
      */
@@ -160,30 +109,5 @@ public final class Shortcuts {
 
         return new ShortcutRegistration(lifecycleOwner, () -> owner, command,
                 key);
-    }
-
-    /**
-     * TODO
-     * @param owner
-     * @param command
-     * @param character
-     * @return
-     */
-    public static ShortcutRegistration registerShortcut(
-            Component owner, Component lifecycleOwner, Command command,
-            char character) {
-        if (owner == null) {
-            throw new InvalidParameterException(String.format(NULL, "owner"));
-        }
-        if (lifecycleOwner == null) {
-            throw new InvalidParameterException(String.format(NULL,
-                    "lifecycleOwner"));
-        }
-        if (command == null) {
-            throw new InvalidParameterException(String.format(NULL, "command"));
-        }
-
-        return new ShortcutRegistration(lifecycleOwner, () -> owner, command,
-                character);
     }
 }

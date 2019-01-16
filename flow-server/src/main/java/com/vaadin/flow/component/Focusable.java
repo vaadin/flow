@@ -153,29 +153,6 @@ public interface Focusable<T extends Component>
 
     /**
      * TODO
-     * Registers a shortcut which, when invoked moves focus to the focusable
-     * component.
-     *
-     * Use the {@link ShortcutRegistration} to configure the shortcut properties
-     * such as keys used to invoke the shortcut.
-     *
-     * @return <code>ShortcutRegistration</code> for configuring the shortcut.
-     */
-    default Registration addFocusShortcut(char character, KeyModifier... keyModifiers) {
-        if (!(this instanceof Component)) {
-            throw new IllegalStateException(String.format(
-                    "The class '%s' doesn't extend '%s'. "
-                            + "Make your implementation for the method '%s'.",
-                    getClass().getName(), Component.class.getSimpleName(),
-                    "addFocusShortcut(char, KeyModifier...)"));
-        }
-
-        return this.registerFocusShortcut(character)
-                .withModifiers(keyModifiers);
-    }
-
-    /**
-     * TODO
      * @param key
      * @return
      */
@@ -195,23 +172,5 @@ public interface Focusable<T extends Component>
 
         return new ShortcutRegistration((Component) this, UI::getCurrent,
                 this::focus, key);
-    }
-
-    /**
-     * TODO
-     * @param character
-     * @return
-     */
-    default ShortcutRegistration registerFocusShortcut(char character) {
-        if (!(this instanceof Component)) {
-            throw new IllegalStateException(String.format(
-                    "The class '%s' doesn't extend '%s'. "
-                            + "Make your implementation for the method '%s'.",
-                    getClass().getName(), Component.class.getSimpleName(),
-                    "registerFocusShortcut(char)"));
-        }
-
-        return new ShortcutRegistration((Component) this, UI::getCurrent,
-                this::focus, character);
     }
 }

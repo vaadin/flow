@@ -61,28 +61,40 @@ public class ShortcutRegistration implements Registration, Serializable {
         addKey(key);
     }
 
+    /**
+     * @param lifecycleOwner
+     *              This is the component which controls when the shortcut is
+     *              actually active. If the component is either detached or
+     *              invisible, the shortcut will not be active
+     * @param handlerOwnerSupplier
+     *              Supplier for component to which the shortcut listener is
+     *              bound to. Supplier is given in order to get around some
+     *              cases where the component might not be immediately
+     *              available.
+     * @param command
+     *              The code to execute when the shortcut is invoked
+     * @param key
+     *              Primary key of the shortcut. This can not be a modifier key.
+     */
     ShortcutRegistration(Component lifecycleOwner,
                          SerializableSupplier<Component> handlerOwnerSupplier,
                          Command command, Key key) {
         this(handlerOwnerSupplier, command, key);
-        setLifecycleOwner(lifecycleOwner);
-    }
 
-    ShortcutRegistration(Component lifecycleOwner,
-                         SerializableSupplier<Component> handlerOwnerSupplier,
-                         Command command, char character) {
-        this(handlerOwnerSupplier, command, charToKey(character));
+        if (Key.isModifier(key)) {
+            throw new InvalidParameterException(String.format("Parameter " +
+                    "'key' cannot belong to %s",
+                    KeyModifier.class.getSimpleName()));
+        }
+
         setLifecycleOwner(lifecycleOwner);
     }
 
     /**
      * Configures {@link KeyModifier KeyModifiers} for the shortcut.
      * Calling this method will overwrite any previously set modifier keys.
-     * Hence, calling
-     * <code>
-     *     shortcutRegistration.withModifiers();
-     * </code>
-     * will remove all previously set modifier keys.
+     * Hence, calling {@code shortcutRegistration.withModifiers();} will remove
+     * all previously set modifier keys.
      *
      * @param keyModifiers  Key modifiers. Can be empty.
      * @return this <code>ShortcutRegistration</code>
@@ -97,7 +109,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Fluent method for configuring alt modifier key.
+     * Fluent method for configuring Alt modifier key.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration withAlt() {
@@ -106,7 +118,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Fluent method for configuring ctrl modifier key.
+     * Fluent method for configuring Ctrl modifier key.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration withCtrl() {
@@ -115,7 +127,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Fluent method for configuring meta modifier key.
+     * Fluent method for configuring Meta modifier key.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration withMeta() {
@@ -124,7 +136,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Fluent method for configuring shift modifier key.
+     * Fluent method for configuring Shift modifier key.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration withShift() {
@@ -274,6 +286,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private String filterText() {
+        // todo: rework this prioritize code > key > char(?)
         String modifierFilter = modifiers.stream().filter(Key::isModifier)
                 .map(modifier ->
                         "event.getModifierState('" +
@@ -393,10 +406,6 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
     }
 
-    private static Key charToKey(char c) {
-        return Key.of(("" + c).toLowerCase());
-    }
-
     private static String generateEventKeyJSMatcher(Key key) {
         // will now allow shortcut to happen without primary key
         if (key == null) return "false";
@@ -489,7 +498,8 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
 
         void addRegistration(Registration registration) {
-            registrations.add(registration);
+            if (registration != null)
+                registrations.add(registration);
         }
 
         @Override

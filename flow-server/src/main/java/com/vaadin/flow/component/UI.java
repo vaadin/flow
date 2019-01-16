@@ -1003,15 +1003,7 @@ public class UI extends Component
         return Shortcuts.addShortcut(this, command, key, keyModifiers);
     }
 
-    public Registration addShortcut(Command command, char character, KeyModifier... keyModifiers) {
-        return Shortcuts.addShortcut(this, command, character, keyModifiers);
-    }
-
     public ShortcutRegistration ShortcutRegistration(Command command, Key key) {
         return Shortcuts.registerShortcut(this, command, key);
-    }
-
-    public ShortcutRegistration ShortcutRegistration(Command command, char character) {
-        return Shortcuts.registerShortcut(this, command, character);
     }
 }

@@ -79,25 +79,6 @@ public interface ClickNotifier<T extends Component> extends Serializable {
 
     /**
      * TODO
-     * Adds a click shortcut to this component. Invocation of this shortcut
-     * will simulate a click on this component.
-     *
-     * @return {@link ShortcutRegistration} used to configure the shortcut
-     */
-    default Registration addClickShortcut(char character, KeyModifier... keyModifiers) {
-        if (!(this instanceof Component)) {
-            throw new IllegalStateException(String.format(
-                    "The class '%s' doesn't extend '%s'. "
-                            + "Make your implementation for the method '%s'.",
-                    getClass().getName(), Component.class.getSimpleName(),
-                    "addClickShortcut(char, KeyModifier...)"));
-        }
-
-        return registerClickShortcut(character).withModifiers(keyModifiers);
-    }
-
-    /**
-     * TODO
      * @param key
      * @return
      */
@@ -119,25 +100,5 @@ public interface ClickNotifier<T extends Component> extends Serializable {
         return new ShortcutRegistration(_this, UI::getCurrent,
                 () -> ComponentUtil.fireEvent(_this, new ClickEvent<>(_this)),
                 key);
-    }
-
-    /**
-     * TODO
-     * @param character
-     * @return
-     */
-    default ShortcutRegistration registerClickShortcut(char character) {
-        if (!(this instanceof Component)) {
-            throw new IllegalStateException(String.format(
-                    "The class '%s' doesn't extend '%s'. "
-                            + "Make your implementation for the method '%s'.",
-                    getClass().getName(), Component.class.getSimpleName(),
-                    "registerClickShortcut(char)"));
-        }
-
-        final Component _this = (Component) this;
-        return new ShortcutRegistration(_this, UI::getCurrent,
-                () -> ComponentUtil.fireEvent(_this, new ClickEvent<>(_this)),
-                character);
     }
 }
