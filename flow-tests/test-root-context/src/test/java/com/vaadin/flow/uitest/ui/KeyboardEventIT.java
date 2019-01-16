@@ -14,21 +14,46 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  */
 public class KeyboardEventIT extends ChromeBrowserTest {
     @Test
-    public void verify_both_key_and_code_are_set_correctly() {
+    public void verify_that_keys_are_received_correctly() {
         open();
 
         // make sure both elements are present
         Assert.assertTrue(isElementPresent(By.id("input")));
         Assert.assertTrue(isElementPresent(By.id("paragraph")));
 
+        WebElement input = findElement(By.id("input"));
         WebElement paragraph = findElement(By.id("paragraph"));
 
-        String innerHTML = paragraph.getText();
+        input.sendKeys("q");
 
-        // Both .key and .code are correctly set
         Assert.assertEquals(
-                "Q:KeyQ;Q:;Q:;",
-                innerHTML
+                "q:KeyQ",
+                paragraph.getText()
+        );
+
+        input.sendKeys("%");
+
+        Assert.assertEquals(
+                "%:Digit5",
+                paragraph.getText()
+        );
+        // next tests rely on
+        // https://github.com/SeleniumHQ/selenium/blob/master/javascript/node/selenium-webdriver/lib/input.js#L52
+
+        // arrow right
+        input.sendKeys("\uE014");
+
+        Assert.assertEquals(
+                "ArrowRight:ArrowRight",
+                paragraph.getText()
+        );
+
+        // physical * key
+        input.sendKeys("\uE024");
+
+        Assert.assertEquals(
+                "*:NumpadMultiply",
+                paragraph.getText()
         );
     }
 }
