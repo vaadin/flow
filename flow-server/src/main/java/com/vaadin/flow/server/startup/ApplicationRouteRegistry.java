@@ -174,6 +174,18 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             routeRegistry.addRoutesChangeListener(
                     osgiDataCollectorChangedEvents::add);
         }
+
+        private void setRoutes(List<RouteData> routes) {
+            routes.forEach(routeData -> {
+                setRoute(routeData.getUrl(), routeData.getNavigationTarget(),
+                        routeData.getParentLayouts());
+                routeData.getRouteAliases()
+                        .forEach(routeAliasData -> setRoute(
+                                routeAliasData.getUrl(),
+                                routeAliasData.getNavigationTarget(),
+                                routeAliasData.getParentLayouts()));
+            });
+        }
     }
 
     private static class OSGiDataCollector extends ApplicationRouteRegistry {
@@ -414,6 +426,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         OSGiRouteRegistry osgiRouteRegistry = new OSGiRouteRegistry();
         OSGiDataCollector osgiDataCollector = (OSGiDataCollector) getInstance(
                 OSGiAccess.getInstance().getOsgiServletContext());
+        osgiRouteRegistry.setRoutes(osgiDataCollector.getRegisteredRoutes());
         osgiRouteRegistry.subscribeToChanges(osgiDataCollector);
         return osgiRouteRegistry;
     }
