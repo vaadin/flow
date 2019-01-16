@@ -9,12 +9,18 @@
     </parent>
     <artifactId>flow-html-components-testbench</artifactId>
     <name>TestBench elements for Flow HTML Components</name>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-testbench-core</artifactId>
@@ -35,6 +41,9 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <configuration>
+                    <webAppConfig>
+                        <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+                    </webAppConfig>
                     <httpConnector>
                         <port>8888</port>
                     </httpConnector>
@@ -61,6 +70,52 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>local-run</id>
+            <activation>
+                <property>
+                    <name>!test.use.hub</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.lazerycode.selenium</groupId>
+                        <artifactId>driver-binary-downloader-maven-plugin</artifactId>
+                        <version>${driver.binary.downloader.maven.plugin.version}</version>
+                        <configuration>
+                            <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
+                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
+                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>selenium</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

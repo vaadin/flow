@@ -17,6 +17,9 @@ package com.vaadin.flow.component.html;
 
 import java.util.Optional;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
@@ -31,7 +34,7 @@ import com.vaadin.flow.server.StreamResource;
  * @since 1.0
  */
 @Tag(Tag.IMG)
-public class Image extends HtmlContainer {
+public class Image extends HtmlContainer implements ClickNotifier<Image> {
 
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
             .attributeWithDefault("src", "");
@@ -63,6 +66,25 @@ public class Image extends HtmlContainer {
     }
 
     /**
+     * Creates an image with the given URL, an alternative text and click listener.
+     *
+     * @param src
+     *            the image URL
+     * @param alt
+     *            the alternate text
+     * @param clickListener
+     *            the click listener
+     *
+     * @see #setSrc(String)
+     * @see #setAlt(String)
+     */
+    public Image(String src, String alt, ComponentEventListener<ClickEvent<Image>> clickListener) {
+        setSrc(src);
+        setAlt(alt);
+        addClickListener(clickListener);
+    }
+
+    /**
      * Creates an image with the given stream resource and an alternative text.
      *
      * @param src
@@ -76,6 +98,25 @@ public class Image extends HtmlContainer {
     public Image(AbstractStreamResource src, String alt) {
         setSrc(src);
         setAlt(alt);
+    }
+
+    /**
+     * Creates an image with the given stream resource, an alternative text and click listener.
+     *
+     * @param src
+     *            the resource value, not null
+     * @param alt
+     *            the alternate text
+     * @param clickListener
+     *            the click listener
+     *
+     * @see #setSrc(AbstractStreamResource)
+     * @see #setAlt(String)
+     */
+    public Image(AbstractStreamResource src, String alt, ComponentEventListener<ClickEvent<Image>> clickListener) {
+        setSrc(src);
+        setAlt(alt);
+        addClickListener(clickListener);
     }
 
     /**

@@ -63,8 +63,11 @@ final class ChromeDriverLocator {
     private static String getDriverLocation() {
         Path driverDirectory = Paths.get("../../driver/");
         if (!driverDirectory.toFile().isDirectory()) {
-            System.out.println(String.format(
-                    "Could not find driver directory: %s", driverDirectory));
+            driverDirectory = Paths.get("../driver/");
+        }
+        if (!driverDirectory.toFile().isDirectory()) {
+            System.out.println(String.format("Could not find driver directory: ../../driver/"));
+            System.out.println(String.format("Could not find driver directory: ../driver/"));
             return null;
         }
 
