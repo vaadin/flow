@@ -21,6 +21,7 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
+            <type>war</type>
         </dependency>
 
         <dependency>
