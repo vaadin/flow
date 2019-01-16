@@ -196,6 +196,25 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             }
             this.errorNavigationTargets.set(errorNavigationTargets);
         }
+
+        @Override
+        public void removeRoute(Class<? extends Component> routeTarget) {
+            throw new UnsupportedOperationException(
+                    "removeRoute is not supported in OSGiDataCollector");
+        }
+
+        @Override
+        public void removeRoute(String path) {
+            throw new UnsupportedOperationException(
+                    "removeRoute is not supported in OSGiDataCollector");
+        }
+
+        @Override
+        public void removeRoute(String path,
+                Class<? extends Component> navigationTarget) {
+            throw new UnsupportedOperationException(
+                    "removeRoute is not supported in OSGiDataCollector");
+        }
     }
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
