@@ -53,6 +53,7 @@ public class WebComponentProperty<T> implements Serializable {
      * Create a property with no initial value in the generated file.
      *
      * @param propertyClass
+     *         property type class
      */
     public WebComponentProperty(Class<T> propertyClass) {
         value = null;
@@ -63,7 +64,7 @@ public class WebComponentProperty<T> implements Serializable {
      * Set the value for this property. Will fire a {@link
      * PropertyValueChangeEvent} if listeners have been registered.
      *
-     * @param value
+     * @param value value to be set
      */
     public void set(T value) {
         T oldValue = this.value;

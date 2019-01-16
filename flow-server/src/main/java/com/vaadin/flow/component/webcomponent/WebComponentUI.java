@@ -39,6 +39,8 @@ import com.vaadin.flow.theme.ThemeUtil;
  */
 public class WebComponentUI extends UI {
 
+    public static final String NO_NAVIGATION = "Navigation is not available for WebComponents";
+
     /**
      * Instantiate a UI for WebComponent communication.
      */
@@ -67,6 +69,7 @@ public class WebComponentUI extends UI {
             LoggerFactory.getLogger(WebComponentUI.class)
                     .warn("Received connect request for non existing WebComponent '{}'",
                             tag);
+            return;
         }
 
         Component wcInstance = Instantiator.get(this)
@@ -94,27 +97,23 @@ public class WebComponentUI extends UI {
 
     @Override
     public void navigate(String location) {
-        throw new UnsupportedOperationException(
-                "Navigation is not available for WebComponents");
+        throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
     @Override
     public void navigate(Class<? extends Component> navigationTarget) {
-        throw new UnsupportedOperationException(
-                "Navigation is not available for WebComponents");
+        throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
     @Override
     public <T, C extends Component & HasUrlParameter<T>> void navigate(
             Class<? extends C> navigationTarget, T parameter) {
-        throw new UnsupportedOperationException(
-                "Navigation is not available for WebComponents");
+        throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
     @Override
     public void navigate(String location, QueryParameters queryParameters) {
-        throw new UnsupportedOperationException(
-                "Navigation is not available for WebComponents");
+        throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
     private void assignLumoThemeIfAvailable() {
