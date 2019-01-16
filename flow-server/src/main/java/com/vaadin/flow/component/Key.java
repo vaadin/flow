@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2018 Vaadin Ltd.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -44,7 +44,7 @@ import java.util.Objects;
  * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
  * for event.key values and https://w3c.github.io/uievents-code/ for
  * event.code values.
- * <p>
+ *
  * @author Vaadin Ltd.
  * @since
  */
@@ -68,6 +68,7 @@ public interface Key extends Serializable {
      * The <code>Alt</code> (Alternative) key.
      * <p>
      * The second value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
      * @see #ALT_LEFT
      */
     Key ALT = Key.of("Alt", "AltLeft");
@@ -78,6 +79,7 @@ public interface Key extends Serializable {
      * level 2 modifier).
      * <p>
      * The second value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
      * @see #ALT_RIGHT
      */
     Key ALT_GRAPH = Key.of("AltGraph", "AltRight");
@@ -96,6 +98,7 @@ public interface Key extends Serializable {
      * <p>
      * The second and third values match DOM's KeyboardEvent's
      * <code>event.code</code>.
+     *
      * @see #CONTROL_LEFT
      * @see #CONTROL_RIGHT
      */
@@ -161,6 +164,7 @@ public interface Key extends Serializable {
      * <p>
      * The second and third values match DOM's KeyboardEvent's
      * <code>event.code</code>.
+     *
      * @see #SHIFT_LEFT
      * @see #SHIFT_RIGHT
      */
@@ -434,7 +438,6 @@ public interface Key extends Serializable {
      * applicable. Note: This shouldn't be confused with the
      * <code>"MediaPlay"</code> key value, which is used for media controllers,
      * rather than to control applications and processes.
-     * <p>
      */
     Key PLAY = Key.of("Play");
 
@@ -1993,7 +1996,7 @@ public interface Key extends Serializable {
     Key BRACKET_RIGHT = Key.of("BracketRight");
 
     /**
-     * <code>,<</code> on a US keyboard.
+     * <code>,&lt;</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2049,7 +2052,7 @@ public interface Key extends Serializable {
     Key DIGIT_6 = Key.of("Digit6");
 
     /**
-     * <code>7&</code> on a US keyboard.
+     * <code>7&amp;</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2297,7 +2300,7 @@ public interface Key extends Serializable {
     Key MINUS = Key.of("Minus");
 
     /**
-     * <code>.></code> on a US keyboard.
+     * <code>.&gt;</code> on a US keyboard.
      * <p>
      * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
@@ -2700,7 +2703,7 @@ public interface Key extends Serializable {
      * same key, in the rare cases where browsers don't agree.
      * <p>
      * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
-     * <p>
+     *
      * @param key
      *            the printable representation of the key, not <code>null</code>
      *            nor empty
@@ -2725,7 +2728,7 @@ public interface Key extends Serializable {
      * JavaScript <code>KeyboardEvent</code>.
      * <p>
      * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
-     * <p>
+     *
      * @return the list of printable representations of the key
      */
     List<String> getKeys();
@@ -2733,7 +2736,7 @@ public interface Key extends Serializable {
     /**
      * Checks if <code>key</code> is a printable representation for this
      * instance.
-     * <p>
+     *
      * @param key
      *            a printable representation of a key
      * @return true, if <code>key</code> is a printable representation for this
