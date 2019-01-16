@@ -39,6 +39,11 @@ public enum KeyModifier implements Key {
     ALT(Key.ALT),
 
     /**
+     * KeyModifier for "{@code Alt Graph}" key.
+     */
+    ALT_GRAPH(Key.ALT_GRAPH),
+
+    /**
      * KeyModifier for "{@code Meta}" key.
      */
     META(Key.META);
