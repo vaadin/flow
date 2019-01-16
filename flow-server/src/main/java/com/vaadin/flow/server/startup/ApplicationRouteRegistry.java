@@ -178,6 +178,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiDataCollector extends ApplicationRouteRegistry {
 
+        public static final String REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE = "removeRoute is not supported in OSGiDataCollector";
         private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
 
         @Override
@@ -200,20 +201,20 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         @Override
         public void removeRoute(Class<? extends Component> routeTarget) {
             throw new UnsupportedOperationException(
-                    "removeRoute is not supported in OSGiDataCollector");
+                    REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE);
         }
 
         @Override
         public void removeRoute(String path) {
             throw new UnsupportedOperationException(
-                    "removeRoute is not supported in OSGiDataCollector");
+                    REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE);
         }
 
         @Override
         public void removeRoute(String path,
                 Class<? extends Component> navigationTarget) {
             throw new UnsupportedOperationException(
-                    "removeRoute is not supported in OSGiDataCollector");
+                    REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE);
         }
     }
 

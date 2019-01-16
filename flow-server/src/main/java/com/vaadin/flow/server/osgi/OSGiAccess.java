@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.server.osgi;
 
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.annotation.HandlesTypes;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,25 +36,19 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.annotation.HandlesTypes;
-
-import org.slf4j.LoggerFactory;
-
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
-
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import org.osgi.framework.Bundle;
+import org.slf4j.LoggerFactory;
 
 /**
- * Manages scanned classes inside OSGi conteiner.
+ * Manages scanned classes inside OSGi container.
  * <p>
  * It doesn't do anything outside of OSGi.
  *
@@ -233,9 +232,9 @@ public final class OSGiAccess {
                     .anyMatch(annotation -> AnnotationReader
                             .getAnnotationFor(clazz, annotation).isPresent())
                     || superTypes.stream()
-                    .anyMatch(superType -> GenericTypeReflector
-                            .isSuperType(HasErrorParameter.class,
-                                    clazz));
+                            .anyMatch(superType -> GenericTypeReflector
+                                    .isSuperType(HasErrorParameter.class,
+                                            clazz));
 
             cachedClasses.forEach((bundle, classes) -> result.addAll(classes
                     .stream().filter(hasType).collect(Collectors.toList())));
@@ -263,10 +262,35 @@ public final class OSGiAccess {
         private static boolean isInOSGi() {
             try {
                 Class.forName("org.osgi.framework.FrameworkUtil");
+
+                UsageStatistics.markAsUsed("flow/osgi", getOSGiVersion());
+
                 return true;
             } catch (ClassNotFoundException exception) {
                 return false;
             }
         }
+
+        /**
+         * Tries to detect the version of the OSGi framework used.
+         *
+         * @return the used OSGi version or {@code null} if not able to detect
+         *         it
+         */
+        private static String getOSGiVersion() {
+            try {
+                Bundle osgiBundle = org.osgi.framework.FrameworkUtil
+                        .getBundle(Bundle.class);
+                return osgiBundle.getVersion().toString();
+            } catch (Throwable throwable) {
+                // just eat it so that any failure in the version detection
+                // doesn't break OSGi usage
+                LoggerFactory.getLogger(OSGiAccess.class).info(
+                        "Unable to detect used OSGi framework version due to "
+                                + throwable.getMessage());
+            }
+            return null;
+        }
+
     }
 }
