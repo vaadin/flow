@@ -104,7 +104,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Fluent method for configuring Alt modifier key.
+     * Fluently adds {@link KeyModifier#ALT} to the shortcut's modifiers.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration withAlt() {
@@ -113,7 +113,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Fluent method for configuring Ctrl modifier key.
+     * Fluently adds {@link KeyModifier#CONTROL} to the shortcut's modifiers.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration withCtrl() {
@@ -122,7 +122,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Fluent method for configuring Meta modifier key.
+     * Fluently adds {@link KeyModifier#META} to the shortcut's modifiers.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration withMeta() {
@@ -131,7 +131,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Fluent method for configuring Shift modifier key.
+     * Fluently adds {@link KeyModifier#SHIFT} to the shortcut's modifiers.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration withShift() {
@@ -140,7 +140,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Prevent default event handling when the shortcut is invoked
+     * Allows the default keyboard event handling when the shortcut is invoked
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration allowBrowserDefault() {
@@ -152,7 +152,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Prevent the event from propagating upwards in the dom tree, when the
+     * Allow the event to propagate upwards in the dom tree, when the
      * shortcut is invoked.
      * @return this <code>ShortcutRegistration</code>
      */
@@ -166,17 +166,13 @@ public class ShortcutRegistration implements Registration, Serializable {
 
 
     /**
-     * todo
      * Binds the shortcut's life cycle to that of the given {@link Component}.
-     * When the given <code>component is attached</code>, there shortcut is
-     * attached in all attached scopes and when the given <code>component</code>
+     * When the given {@code component} is attached, the shortcut's listener is
+     * attached to the {@code Component} that owns the shortcut. When the given
+     * {@code component} is detached, so is the listener.
      * is detached, the shortcut is removed from all attached scopes.
      *
-     *     <b>Note:</b> the default life cycle <code>component</code> of a
-     *     shortcut is the owning <code>component</code>. Calling this function
-     *     will change the owner of the shortcut.
-     *
-     * @param component New owner of the shortcut
+     * @param component New lifecycle owner of the shortcut
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration bindLifecycleTo(Component component) {
@@ -193,9 +189,10 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Removes all attached listeners related to the shortcut. Clears
-     * {@link Registration registrations} tied to the owner of the shortcut and
-     * registrations tied to the scope {@link Component components}.
+     * Removes the {@code ShortcutRegistration}
+     * <p>
+     * Removes all the underlying registrations tied to owner and lifecycle
+     * owner {@link Component components}.
      */
     @Override
     public void remove() {
@@ -584,13 +581,9 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * TODO
-     * Class for storing all the registration information tied to a component
-     * and shortcut. These include attach and detach listener registrations,
-     * domListenerRegistration, and keydown listener registration.
-     *
-     * These are used to keep track of the components state and the resulting
-     * state of the shortcut listening mechanisms
+     * Class for bundling multiple {@link Registration Registrations} together.
+     * This is used to group registrations that need to be created and removed
+     * together.
      */
     private static class CompoundRegistration implements Registration {
         Set<Registration> registrations;
