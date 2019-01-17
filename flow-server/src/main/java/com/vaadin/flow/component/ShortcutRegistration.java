@@ -3,6 +3,7 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +43,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     private CompoundRegistration handlerListenerRegistration;
     private Component handlerOwner;
 
+    private boolean shortcutActive = false;
 
     private SerializableSupplier<Component> handlerOwnerSupplier;
 
@@ -49,17 +51,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     private AtomicBoolean isDirty = new AtomicBoolean(false);
 
     private Command shortcutCommand;
-
-    private ShortcutRegistration(SerializableSupplier<Component> handlerOwnerSupplier,
-                                 Command command, Key key) {
-        assert handlerOwnerSupplier != null;
-        assert command != null;
-        assert key != null;
-
-        shortcutCommand = command;
-        this.handlerOwnerSupplier = handlerOwnerSupplier;
-        addKey(key);
-    }
 
     /**
      * @param lifecycleOwner
@@ -79,15 +70,18 @@ public class ShortcutRegistration implements Registration, Serializable {
     ShortcutRegistration(Component lifecycleOwner,
                          SerializableSupplier<Component> handlerOwnerSupplier,
                          Command command, Key key) {
-        this(handlerOwnerSupplier, command, key);
-
         if (Key.isModifier(key)) {
             throw new InvalidParameterException(String.format("Parameter " +
                     "'key' cannot belong to %s",
                     KeyModifier.class.getSimpleName()));
         }
 
+        shortcutCommand = command;
+        this.handlerOwnerSupplier = handlerOwnerSupplier;
         setLifecycleOwner(lifecycleOwner);
+
+        // addKey cannot be called without lifecycleOwner
+        addKey(key);
     }
 
     /**
@@ -227,6 +221,65 @@ public class ShortcutRegistration implements Registration, Serializable {
         shortcutCommand = null;
     }
 
+    /**
+     * Is the shortcut active on the current UI. For this to be true, the
+     * lifecycle owner needs to be attached and visible and handler owner
+     * needs to be attached.
+     *
+     * @return  Is the shortcut active
+     */
+    public boolean isShortcutActive() {
+        return shortcutActive;
+    }
+
+    /**
+     * Get the primary {@link Key} of the shortcut. Primary key can be any key besides
+     * modifier keys.
+     *
+     * @return Primary key
+     */
+    public Key getKey() {
+        return primaryKey;
+    }
+
+    /**
+     * Get a set of {@link Key keys} where each {@code key} is an instance of a
+     * {@link KeyModifier}.
+     *
+     * @return Set of modifier keys
+     */
+    public Set<Key> getModifiers() {
+        return new HashSet<>(modifiers);
+    }
+
+    /**
+     * Is the shortcut preventing default key behaviour.
+     *
+     * @return Prevents default behavior
+     */
+    public boolean preventsDefault() {
+        return preventDefault;
+    }
+
+    /**
+     * Is the shortcut stopping the keyboard event from propagating up the DOM
+     * tree.
+     *
+     * @return Stops propagation
+     */
+    public boolean stopsPropagation() {
+        return stopPropagation;
+    }
+
+    /**
+     * Used for testing purposes.
+     *
+     * @return Is there a need to write shortcut changes to the client
+     */
+    boolean isDirty() {
+        return isDirty.get();
+    }
+
     private void setLifecycleOwner(Component owner) {
         assert owner != null;
 
@@ -266,8 +319,9 @@ public class ShortcutRegistration implements Registration, Serializable {
 
         // either lifecycle owner is attached or it is UI
         if (lifecycleOwner.getUI().isPresent()) {
-            executionRegistration = UI.getCurrent().beforeClientResponse(
-                    lifecycleOwner, beforeClientResponseConsumer);
+            executionRegistration = lifecycleOwner.getUI().get()
+                    .beforeClientResponse(lifecycleOwner,
+                            beforeClientResponseConsumer);
         }
         /*
         else {
@@ -286,15 +340,8 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private String filterText() {
-        // todo: rework this prioritize code > key > char(?)
-        String modifierFilter = modifiers.stream().filter(Key::isModifier)
-                .map(modifier ->
-                        "event.getModifierState('" +
-                                modifier.getKeys().get(0) + "')")
-                .collect(Collectors.joining(" && "));
-
-        return generateEventKeyJSMatcher(primaryKey) + " && " +
-                (modifierFilter.isEmpty() ? "true" : modifierFilter);
+        return generateEventKeyFilter(primaryKey) + " && " +
+                generateEventModifierFilter(modifiers);
     }
 
     private void updateHandlerListenerRegistration() {
@@ -326,20 +373,28 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (handlerListenerRegistration != null) {
             Optional<Registration> registration = handlerListenerRegistration
                     .registrations.stream().filter(r ->
-                            r.getClass().equals(DomListenerRegistration.class))
+                            r instanceof DomListenerRegistration)
                     .findFirst();
 
             registration.ifPresent(r -> {
                 DomListenerRegistration listenerRegistration =
                         (DomListenerRegistration) r;
-                listenerRegistration.setFilter(filterText());
+
+                String filterText = filterText();
+                /*
+                    Due to https://github.com/vaadin/flow/issues/4871 we are not
+                    able to use setEventData for these values, so we hack the
+                    filter.
+                 */
                 if (preventDefault) {
-                    listenerRegistration.addEventData("event.preventDefault()");
+                    filterText += "&& (event.preventDefault() || true)";
                 }
                 if (stopPropagation) {
-                    listenerRegistration.addEventData(
-                            "event.stopPropagation()");
+                    filterText += "&& (event.stopPropagation() || true)";
                 }
+                listenerRegistration.setFilter(filterText);
+
+                shortcutActive = true;
             });
         }
     }
@@ -348,6 +403,11 @@ public class ShortcutRegistration implements Registration, Serializable {
         assert owner != null;
 
         lifecycleOwner = owner;
+
+//        owner.getElement().addPropertyChangeListener("visible", event -> {
+//            Boolean visible = (Boolean) event.getValue();
+//            System.out.println(visible);
+//        });
 
         // since we are attached, UI should be available
         Registration attachRegistration = owner.addAttachListener(e -> {
@@ -404,15 +464,28 @@ public class ShortcutRegistration implements Registration, Serializable {
             handlerListenerRegistration.remove();
             handlerListenerRegistration = null;
         }
+        shortcutActive = false;
     }
 
-    private static String generateEventKeyJSMatcher(Key key) {
+    private static String generateEventModifierFilter(
+            Collection<Key> modifiers) {
+
+        if (modifiers.size() == 0) return "true";
+
+        return modifiers.stream().filter(Key::isModifier)
+                .map(modifier ->
+                        "event.getModifierState('" +
+                                modifier.getKeys().get(0) + "')")
+                .collect(Collectors.joining(" && "));
+    }
+
+    private static String generateEventKeyFilter(Key key) {
         // will now allow shortcut to happen without primary key
         if (key == null) return "false";
-        else return "[" + key.getKeys().stream()
-                .map(s -> "'" + s.toLowerCase() + "'")
-                .collect(Collectors.joining(",")) +
-                "].indexOf(event.key.toLowerCase()) !== -1";
+        String keyList = "[" + key.getKeys().stream().map(s -> "'" + s + "'")
+                .collect(Collectors.joining(",")) + "]";
+        return  "(" + keyList + ".indexOf(event.code) !== -1 || " +
+                keyList + ".indexOf(event.key) !== -1)";
     }
 
     private final SerializableConsumer<ExecutionContext>
@@ -474,11 +547,11 @@ public class ShortcutRegistration implements Registration, Serializable {
         return  String.format(
                 "%s [key = %s, modifiers = %s, lifecycle owner = %s]",
                 getClass().getSimpleName(),
-                primaryKey.getKeys().get(0),
+                (primaryKey != null ? primaryKey.getKeys().get(0) : "null"),
                 Arrays.toString(modifiers.stream()
                         .map(k -> k.getKeys().get(0)).toArray()),
-                (lifecycleOwner == null) ? "null" : lifecycleOwner.getClass()
-                        .getSimpleName());
+                (lifecycleOwner != null) ? lifecycleOwner.getClass()
+                        .getSimpleName() : "null");
     }
 
     /**

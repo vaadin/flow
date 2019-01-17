@@ -13,6 +13,7 @@ package com.vaadin.flow.component;
 import java.security.InvalidParameterException;
 
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.shared.Registration;
 
 
 /**
@@ -38,7 +39,7 @@ public final class Shortcuts {
      * @param keyModifiers
      * @return {@link ShortcutRegistration} for configuring the shortcut.
      */
-    public static ShortcutRegistration addShortcut(
+    public static Registration addShortcut(
             Component owner, Command command, Key key,
             KeyModifier... keyModifiers) {
         if (owner == null) {
