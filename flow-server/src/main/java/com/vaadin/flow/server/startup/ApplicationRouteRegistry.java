@@ -23,10 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,7 +36,6 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.PWA;
@@ -61,44 +58,10 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
 
         @Override
-        public List<RouteData> getRegisteredRoutes() {
-            return super.getRegisteredRoutes();
-        }
-
-        @Override
         public Optional<ErrorTargetEntry> getErrorNavigationTarget(
                 Exception exception) {
             initErrorTargets();
             return super.getErrorNavigationTarget(exception);
-        }
-
-        @Override
-        public Optional<Class<? extends Component>> getNavigationTarget(
-                String pathString) {
-            return super.getNavigationTarget(pathString);
-        }
-
-        @Override
-        public Optional<Class<? extends Component>> getNavigationTarget(
-                String pathString, List<String> segments) {
-            return super.getNavigationTarget(pathString, segments);
-        }
-
-        @Override
-        public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
-                Class<? extends Component> navigationTarget) {
-            return super.getRouteLayouts(path, navigationTarget);
-        }
-
-        @Override
-        public Optional<String> getTargetUrl(
-                Class<? extends Component> navigationTarget) {
-            return super.getTargetUrl(navigationTarget);
-        }
-
-        @Override
-        public boolean hasNavigationTargets() {
-            return super.hasNavigationTargets();
         }
 
         private void initErrorTargets() {
