@@ -9,8 +9,10 @@ import org.mockito.ArgumentCaptor;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
+import com.vaadin.flow.shared.Registration;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -30,6 +32,9 @@ public class ShortcutRegistrationTest {
         handlerOwner = mock(Component.class);
 
         when(lifeOwner.getUI()).thenReturn(Optional.of(ui));
+        when(lifeOwner.addAttachListener(any())).thenReturn(mock(Registration.class));
+        when(lifeOwner.addDetachListener(any())).thenReturn(mock(Registration.class));
+
         when(handlerOwner.getUI()).thenReturn(Optional.of(ui));
     }
 
@@ -93,6 +98,21 @@ public class ShortcutRegistrationTest {
 
         assertFalse(registration.preventsDefault());
         assertFalse(registration.stopsPropagation());
+    }
+
+    @Test
+    public void bindLifecycleToChangesLifecycleOwner() {
+        Component newOwner = mock(Component.class);
+
+        ShortcutRegistration registration = new ShortcutRegistration(lifeOwner,
+                () -> handlerOwner, () -> {}, Key.KEY_A);
+
+        assertEquals(lifeOwner, registration.getLifecycleOwner());
+
+        registration.bindLifecycleTo(newOwner);
+
+        assertEquals(newOwner, registration.getLifecycleOwner());
+
     }
 
     /**

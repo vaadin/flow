@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -272,6 +273,24 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
+     * {@link Component} which owns the shortcuts key event listener.
+     * @return Component
+     */
+    public Component getOwner() {
+        return handlerOwner;
+    }
+
+    /**
+     * {@link Component} which controls when the shortcut is active and when it
+     * is not.
+     * @return Component
+     * @see #isShortcutActive()
+     */
+    public Component getLifecycleOwner() {
+        return lifecycleOwner;
+    }
+
+    /**
      * Used for testing purposes.
      *
      * @return Is there a need to write shortcut changes to the client
@@ -354,7 +373,11 @@ public class ShortcutRegistration implements Registration, Serializable {
                 Registration keydownRegistration = ComponentUtil.addListener(
                         handlerOwner,
                         KeyDownEvent.class,
-                        e -> shortcutCommand.execute(),
+                        e -> {
+                            if (lifecycleOwner.isVisible()) {
+                                shortcutCommand.execute();
+                            }
+                        },
                         domRegistration -> {
                             handlerListenerRegistration.addRegistration(
                                     domRegistration);
@@ -404,21 +427,9 @@ public class ShortcutRegistration implements Registration, Serializable {
 
         lifecycleOwner = owner;
 
-//        owner.getElement().addPropertyChangeListener("visible", event -> {
-//            Boolean visible = (Boolean) event.getValue();
-//            System.out.println(visible);
-//        });
-
         // since we are attached, UI should be available
-        Registration attachRegistration = owner.addAttachListener(e -> {
-            if (executionRegistration != null) {
-                executionRegistration.remove();
-            }
-            executionRegistration = UI.getCurrent()
-                    .beforeClientResponse(
-                            lifecycleOwner,
-                            beforeClientResponseConsumer);
-        });
+        Registration attachRegistration = owner.addAttachListener(e ->
+                queueBeforeExecutionCallback());
 
         // remove shortcut listener when detached
         Registration detachRegistration = owner.addDetachListener(e ->
@@ -465,6 +476,24 @@ public class ShortcutRegistration implements Registration, Serializable {
             handlerListenerRegistration = null;
         }
         shortcutActive = false;
+    }
+
+    private boolean canAttachHandlerListener() {
+        return lifecycleOwner != null && lifecycleOwner.getUI().isPresent();
+    }
+
+    private void queueBeforeExecutionCallback() {
+        if (!canAttachHandlerListener()) {
+            return;
+        }
+
+        if (executionRegistration != null) {
+            executionRegistration.remove();
+        }
+        executionRegistration = UI.getCurrent()
+                .beforeClientResponse(
+                        lifecycleOwner,
+                        beforeClientResponseConsumer);
     }
 
     private static String generateEventModifierFilter(
@@ -577,8 +606,10 @@ public class ShortcutRegistration implements Registration, Serializable {
 
         @Override
         public void remove() {
-            registrations.forEach(Registration::remove);
-            registrations = null;
+            if (registrations != null) {
+                registrations.forEach(Registration::remove);
+                registrations = null;
+            }
         }
     }
 }
