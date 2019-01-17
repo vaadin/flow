@@ -24,6 +24,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -110,6 +111,15 @@ public final class OSGiAccess {
             return Collections.emptyMap();
         }
 
+        @Override
+        public void removeAttribute(String name) {
+            attributes.remove(name);
+        }
+
+        @Override
+        public Enumeration<String> getAttributeNames() {
+            return Collections.enumeration(attributes.keySet());
+        }
     }
 
     /**

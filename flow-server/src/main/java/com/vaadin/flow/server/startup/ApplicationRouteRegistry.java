@@ -54,8 +54,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
 
-        private final Queue<RoutesChangedEvent> osgiDataCollectorChangedEvents = new ConcurrentLinkedQueue<>();
-
         @Override
         public Class<?> getPwaConfigurationClass() {
             initPwa();
@@ -64,7 +62,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
         @Override
         public List<RouteData> getRegisteredRoutes() {
-            initRoutes();
             return super.getRegisteredRoutes();
         }
 
@@ -78,34 +75,29 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         @Override
         public Optional<Class<? extends Component>> getNavigationTarget(
                 String pathString) {
-            initRoutes();
             return super.getNavigationTarget(pathString);
         }
 
         @Override
         public Optional<Class<? extends Component>> getNavigationTarget(
                 String pathString, List<String> segments) {
-            initRoutes();
             return super.getNavigationTarget(pathString, segments);
         }
 
         @Override
         public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
                 Class<? extends Component> navigationTarget) {
-            initRoutes();
             return super.getRouteLayouts(path, navigationTarget);
         }
 
         @Override
         public Optional<String> getTargetUrl(
                 Class<? extends Component> navigationTarget) {
-            initRoutes();
             return super.getTargetUrl(navigationTarget);
         }
 
         @Override
         public boolean hasNavigationTargets() {
-            initRoutes();
             return super.hasNavigationTargets();
         }
 
@@ -128,37 +120,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             }
         }
 
-        private void initRoutes() {
-            if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
-                return;
-            }
-            if (!OSGiAccess.getInstance().hasInitializers()) {
-                return;
-            }
-            if (osgiDataCollectorChangedEvents.isEmpty()) {
-                return;
-            }
-            final RouteConfiguration routeConfiguration = RouteConfiguration
-                    .forRegistry(this);
-
-            while (!osgiDataCollectorChangedEvents.isEmpty()) {
-                RoutesChangedEvent routesChangedEvent = osgiDataCollectorChangedEvents
-                        .poll();
-                if (routesChangedEvent != null)
-                    update(() -> {
-                        routesChangedEvent.getRemovedRoutes().forEach(
-                                routeBaseData -> routeConfiguration.removeRoute(
-                                        routeBaseData.getUrl(),
-                                        routeBaseData.getNavigationTarget()));
-                        routesChangedEvent.getAddedRoutes().forEach(
-                                routeBaseData -> routeConfiguration.setRoute(
-                                        routeBaseData.getUrl(),
-                                        routeBaseData.getNavigationTarget(),
-                                        routeBaseData.getParentLayouts()));
-                    });
-            }
-        }
-
         private void initPwa() {
             if (getConfiguration().getRoutes().isEmpty()) {
                 return;
@@ -171,8 +132,19 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
 
         private void subscribeToChanges(RouteRegistry routeRegistry) {
-            routeRegistry.addRoutesChangeListener(
-                    osgiDataCollectorChangedEvents::add);
+            routeRegistry.addRoutesChangeListener(event -> update(() -> {
+                final RouteConfiguration routeConfiguration = RouteConfiguration
+                        .forRegistry(this);
+                event.getRemovedRoutes()
+                        .forEach(routeBaseData -> routeConfiguration
+                                .removeRoute(routeBaseData.getUrl(),
+                                        routeBaseData.getNavigationTarget()));
+                event.getAddedRoutes()
+                        .forEach(routeBaseData -> routeConfiguration.setRoute(
+                                routeBaseData.getUrl(),
+                                routeBaseData.getNavigationTarget(),
+                                routeBaseData.getParentLayouts()));
+            }));
         }
 
         private void setRoutes(List<RouteData> routes) {
@@ -190,7 +162,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiDataCollector extends ApplicationRouteRegistry {
 
-        public static final String REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE = "removeRoute is not supported in OSGiDataCollector";
+        private static final String REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE = "removeRoute is not supported in OSGiDataCollector";
         private AtomicReference<Set<Class<? extends Component>>> errorNavigationTargets = new AtomicReference<>();
 
         @Override

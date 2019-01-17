@@ -45,12 +45,21 @@ public class OSGiInitApplicationRouteRegistryTest
 
     @Before
     public void init() {
-        registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
         OSGiAccess.getInstance()
                 .setServletContainerInitializers(Collections.emptyList());
+        removeAttributes(OSGiAccess.getInstance().getOsgiServletContext());
+        registry = ApplicationRouteRegistry
+                .getInstance(Mockito.mock(ServletContext.class));
         osgiCollectorRegistry = ApplicationRouteRegistry
                 .getInstance(OSGiAccess.getInstance().getOsgiServletContext());
+    }
+
+    private void removeAttributes(ServletContext servletContext) {
+        while (servletContext.getAttributeNames().hasMoreElements()) {
+            String attributeName = servletContext.getAttributeNames()
+                    .nextElement();
+            servletContext.removeAttribute(attributeName);
+        }
     }
 
     @Test
@@ -60,7 +69,7 @@ public class OSGiInitApplicationRouteRegistryTest
     }
 
     @Test
-    public void initalizedRoutes_registryIsEmpty_registryIsInitializedFromOSGi() {
+    public void initializedRoutes_registryIsEmpty_registryIsInitializedFromOSGi() {
         getInitializationRegistry().clean();
         getInitializationRegistry().setRoute("foo", RouteComponent1.class,
                 Collections.emptyList());
@@ -94,7 +103,7 @@ public class OSGiInitApplicationRouteRegistryTest
     }
 
     @Test
-    public void initalizedRoutes_registryIsNotEmpty_registryIsNotInitializedFromOSGi() {
+    public void initializedRoutes_registryIsNotEmpty_registryIsNotInitializedFromOSGi() {
         getTestedRegistry().setRoute("foo", RouteComponent2.class,
                 Collections.singletonList(MainLayout.class));
 
@@ -177,7 +186,7 @@ public class OSGiInitApplicationRouteRegistryTest
     }
 
     @Test
-    public void initalizedRoutesTwice_registryIsEmpty_registryIsInitializedFromOSGi() {
+    public void initializedRoutesTwice_registryIsEmpty_registryIsInitializedFromOSGi() {
         getInitializationRegistry().clean();
         getInitializationRegistry().setRoute("foo", RouteComponent1.class,
                 Collections.emptyList());
@@ -220,7 +229,7 @@ public class OSGiInitApplicationRouteRegistryTest
     }
 
     @Test
-    public void initalizedRoutes_modifyingRegistry_registryIsModifiedFromOSGi() {
+    public void initializedRoutes_modifyingRegistry_registryIsModifiedFromOSGi() {
         getInitializationRegistry().clean();
         getInitializationRegistry().setRoute("foo", RouteComponent1.class,
                 Collections.emptyList());
@@ -258,6 +267,49 @@ public class OSGiInitApplicationRouteRegistryTest
                 abcRoute.get().getNavigationTarget());
         Assert.assertEquals(Collections.emptyList(),
                 abcRoute.get().getParentLayouts());
+    }
+
+    @Test
+    public void initializedRoutes_registryCreatedAfterRoutesAdded_registryIsInitializedFromOSGi() {
+        getInitializationRegistry().clean();
+        getInitializationRegistry().setRoute("foo", RouteComponent1.class,
+                Collections.emptyList());
+        getInitializationRegistry().setRoute("bar", RouteComponent2.class,
+                Collections.singletonList(MainLayout.class));
+
+        ApplicationRouteRegistry anotherRegistry = ApplicationRouteRegistry
+                .getInstance(Mockito.mock(ServletContext.class));
+
+        List<RouteData> routes = anotherRegistry.getRegisteredRoutes();
+        Assert.assertEquals(2, routes.size());
+
+        Optional<RouteData> barRoute = routes.stream()
+                .filter(routeData -> "bar".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(barRoute.isPresent());
+        Assert.assertEquals(RouteComponent2.class,
+                barRoute.get().getNavigationTarget());
+        Assert.assertEquals(Collections.singletonList(MainLayout.class),
+                barRoute.get().getParentLayouts());
+
+        Optional<RouteData> fooRoute = routes.stream()
+                .filter(routeData -> "foo".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(fooRoute.isPresent());
+        Assert.assertEquals(RouteComponent1.class,
+                fooRoute.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                fooRoute.get().getParentLayouts());
+
+        Assert.assertEquals(Optional.of(RouteComponent1.class),
+                anotherRegistry.getNavigationTarget("foo"));
+        Assert.assertEquals(Optional.of(RouteComponent2.class),
+                anotherRegistry.getNavigationTarget("bar"));
+
+        Assert.assertTrue(anotherRegistry
+                .getRouteLayouts("foo", RouteComponent1.class).isEmpty());
+        Assert.assertEquals(Collections.singletonList(MainLayout.class),
+                anotherRegistry.getRouteLayouts("bar", RouteComponent2.class));
     }
 
     @Override
