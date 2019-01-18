@@ -754,8 +754,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement(SCRIPT_TAG)
                     .text("if ('serviceWorker' in navigator) {\n"
                             + "  window.addEventListener('load', function() {\n"
-                            + "    navigator.serviceWorker.register('"
+                            + "    const swRegistration = navigator.serviceWorker.register('"
                             + config.getServiceWorkerPath() + "');\n"
+                            + "    window.Vaadin = window.Vaadin || {};\n"
+                            + "    window.Vaadin.swRegistration = swRegistration;\n"
+                            + "    dispatchEvent(new CustomEvent('sw-registered', { detail: swRegistration, bubbles: true, composed: true}));"
                             + "  });\n" + "}");
 
             // add body injections

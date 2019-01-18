@@ -93,6 +93,14 @@
             <version>9.1.2</version>
         </dependency>
 
+        <!-- Web Push Notification dependencies -->
+        <dependency>
+            <groupId>nl.martijndwars</groupId>
+            <artifactId>web-push</artifactId>
+            <version>3.1.1</version>
+        </dependency>
+
+
         <!-- Byte code generation -->
         <dependency>
             <groupId>net.bytebuddy</groupId>

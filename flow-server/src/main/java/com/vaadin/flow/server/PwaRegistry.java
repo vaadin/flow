@@ -240,6 +240,28 @@ public class PwaRegistry implements Serializable {
                         getPwaConfiguration().getOfflinePath()))
                 .append("        })\n    );\n  }\n });");
 
+        stringBuilder
+            .append("self.addEventListener('push', event => {\n")
+            .append("  const data = event.data.json();\n\n")
+            .append("  const title = data.title;\n")
+            .append("  const options = {\n")
+            .append("    body: data.body,\n")
+            .append("    icon: '").append(getManifestIcons().get(0).getHref()).append("',\n")
+            .append("    badge: '").append(getManifestIcons().get(0).getHref()).append("',\n")
+            .append("  };\n")
+            .append("\n")
+            .append("  self.addEventListener('notificationclick', event => {\n" +
+                "  event.notification.close();\n" +
+                "  const url = event.notification.data.json().url;\n" +
+                "  const urlToOpen = new URL(url, self.location.origin).href;\n" +
+                "\n" +
+                "  event.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true})\n" +
+                "    .then((windowClients) => {\n" +
+                "      const matchingClient = windowClients.find(client => client.url === urlToOpen);\n" +
+                "      return matchingClient ? matchingClient.focus() : self.clients.openWindow(urlToOpen);\n" +
+                "    }));\n" +
+                "});");
+
         return stringBuilder.toString();
     }
 
