@@ -54,11 +54,18 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     }
 
     /**
-     * TODO
-     * Adds a click shortcut to this component. Invocation of this shortcut
-     * will simulate a click on this component.
+     * Adds a shortcut which 'clicks' the {@link Component} which implements
+     * {@link ClickNotifier} interface. The shortcut's event listener is in
+     * global scope and the shortcut's lifecycle is tied to {@code this}
+     * component. For more configuration options, use {@link
+     * #registerClickShortcut(Key)}.
      *
-     * @return {@link ShortcutRegistration} used to configure the shortcut
+     * @param key
+     *              Primary {@link Key} used to trigger the shortcut
+     * @param keyModifiers
+     *              {@link KeyModifier KeyModifiers} that need to be pressed
+     *              along with the {@code key} for the shortcut to trigger
+     * @return {@link Registration} used to remove the shortcut
      */
     default Registration addClickShortcut(Key key, KeyModifier... keyModifiers) {
         if (!(this instanceof Component)) {
@@ -78,9 +85,17 @@ public interface ClickNotifier<T extends Component> extends Serializable {
     }
 
     /**
-     * TODO
+     * Registers a shortcut which 'clicks' the {@link Component} which
+     * implements {@link ClickNotifier} interface. The shortcut's event listener
+     * is in global scope and the shortcut's lifecycle is tied to {@code this}
+     * component.
+     * <p>
+     * Use the returned {@link ShortcutRegistration} to fluently configure the
+     * {@link KeyModifier KeyModifiers} and other values.
+     *
      * @param key
-     * @return
+     *              Primary {@link Key} used to trigger the shortcut
+     * @return {@link ShortcutRegistration} used to configure the shortcut
      */
     default ShortcutRegistration registerClickShortcut(Key key) {
         if (!(this instanceof Component)) {
