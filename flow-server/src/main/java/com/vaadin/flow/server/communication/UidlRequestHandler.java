@@ -43,7 +43,7 @@ import elemental.json.JsonObject;
 
 /**
  * Processes a UIDL request from the client.
- *
+ * <p>
  * Uses {@link ServerRpcHandler} to execute client-to-server RPC invocations and
  * {@link UidlWriter} to write state changes and client RPC calls back to the
  * client.
@@ -118,8 +118,24 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     private static void writeUidl(UI ui, Writer writer) throws IOException {
         JsonObject uidl = new UidlWriter().createUidl(ui, false);
 
-        // some dirt to prevent cross site scripting
-        String responseString = "for(;;);[" + uidl.toJson() + "]";
+        String responseString;
+        try {
+            // some dirt to prevent cross site scripting
+            responseString = "for(;;);[" + uidl.toJson() + "]";
+        } catch (Exception exception) {
+            // provide more details to if the UIDL could not be serialized to JSON to help debugging
+            // there are cases with NPE thrown from inside elementa.json without details to what is the issue
+            StringBuilder messageBuilder = new StringBuilder("Error trying to serialize UIDL to JSON, active location was ");
+            try {
+                messageBuilder.append(ui.getInternals().getActiveViewLocation().getPathWithQueryParameters());
+            } catch (Exception another) {
+                getLogger().error(another);
+                messageBuilder.append("<could not parse location due to ").append(another.getMessage()).append(">");
+            }
+            getLogger().error(messageBuilder.toString(), exception);
+            // let any registered error handlers take care of what happens next
+            throw exception;
+        }
         writer.write(responseString);
     }
 
