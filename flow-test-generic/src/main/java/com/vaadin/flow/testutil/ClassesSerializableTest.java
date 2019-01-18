@@ -81,6 +81,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.orderedlayout\\.FlexConstants",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.DefaultTemplateParser",
                 "com\\.vaadin\\.flow\\.component\\.PropertyDescriptors(\\$.*)?",
+                "com\\.vaadin\\.flow\\.component\\.Shortcuts",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.JsonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.UsageStatistics(\\$.*)?",
