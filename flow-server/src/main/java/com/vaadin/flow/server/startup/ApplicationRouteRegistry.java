@@ -16,9 +16,12 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,6 +45,7 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.shared.Registration;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -51,6 +55,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
+        private List<Registration> subscribingRegistrations = new LinkedList<>();
 
         @Override
         public Class<?> getPwaConfigurationClass() {
@@ -96,23 +101,26 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
 
         private void subscribeToChanges(RouteRegistry routeRegistry) {
-            routeRegistry.addRoutesChangeListener(this::applyChange);
+            subscribingRegistrations.add(routeRegistry.addRoutesChangeListener(
+                    event -> update(() -> applyChange(event))));
+        }
+
+        private void unsubscribeToAllChanges() {
+            subscribingRegistrations.forEach(Registration::remove);
         }
 
         private void applyChange(RoutesChangedEvent event) {
-            update(() -> {
-                final RouteConfiguration routeConfiguration = RouteConfiguration
-                        .forRegistry(this);
-                event.getRemovedRoutes()
-                        .forEach(routeBaseData -> routeConfiguration
-                                .removeRoute(routeBaseData.getUrl(),
-                                        routeBaseData.getNavigationTarget()));
-                event.getAddedRoutes()
-                        .forEach(routeBaseData -> routeConfiguration.setRoute(
-                                routeBaseData.getUrl(),
-                                routeBaseData.getNavigationTarget(),
-                                routeBaseData.getParentLayouts()));
-            });
+            final RouteConfiguration routeConfiguration = RouteConfiguration
+                    .forRegistry(this);
+            event.getRemovedRoutes()
+                    .forEach(routeBaseData -> routeConfiguration.removeRoute(
+                            routeBaseData.getUrl(),
+                            routeBaseData.getNavigationTarget()));
+            event.getAddedRoutes()
+                    .forEach(routeBaseData -> routeConfiguration.setRoute(
+                            routeBaseData.getUrl(),
+                            routeBaseData.getNavigationTarget(),
+                            routeBaseData.getParentLayouts()));
         }
 
         private void setRoutes(List<RouteData> routes) {
@@ -167,6 +175,28 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 Class<? extends Component> navigationTarget) {
             throw new UnsupportedOperationException(
                     REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE);
+        }
+    }
+
+    /**
+     * ContextListener that does the initialization and termination of
+     * ApplicationRouteRegistry
+     */
+    public static class RouteRegistryServletContextListener
+            implements ServletContextListener {
+
+        @Override
+        public void contextInitialized(ServletContextEvent event) {
+
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent event) {
+            Object attribute = event.getServletContext()
+                    .getAttribute(RouteRegistry.class.getName());
+            if (attribute instanceof OSGiRouteRegistry) {
+                ((OSGiRouteRegistry) attribute).unsubscribeToAllChanges();
+            }
         }
     }
 

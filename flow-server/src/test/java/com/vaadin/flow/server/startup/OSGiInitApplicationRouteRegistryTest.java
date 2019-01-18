@@ -26,6 +26,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import org.mockito.Mockito;
  *
  */
 @RunWith(EnableOSGiRunner.class)
+@NotThreadSafe
 public class OSGiInitApplicationRouteRegistryTest
         extends RouteRegistryTestBase {
 
