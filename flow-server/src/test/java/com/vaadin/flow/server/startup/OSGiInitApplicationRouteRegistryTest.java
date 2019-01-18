@@ -58,7 +58,7 @@ public class OSGiInitApplicationRouteRegistryTest
         while (servletContext.getAttributeNames().hasMoreElements()) {
             String attributeName = servletContext.getAttributeNames()
                     .nextElement();
-            servletContext.removeAttribute(attributeName);
+            servletContext.setAttribute(attributeName, null);
         }
     }
 
@@ -274,6 +274,8 @@ public class OSGiInitApplicationRouteRegistryTest
         getInitializationRegistry().clean();
         getInitializationRegistry().setRoute("foo", RouteComponent1.class,
                 Collections.emptyList());
+        getInitializationRegistry().setRoute("f", RouteComponent1.class,
+                Collections.emptyList());
         getInitializationRegistry().setRoute("bar", RouteComponent2.class,
                 Collections.singletonList(MainLayout.class));
 
@@ -281,7 +283,7 @@ public class OSGiInitApplicationRouteRegistryTest
                 .getInstance(Mockito.mock(ServletContext.class));
 
         List<RouteData> routes = anotherRegistry.getRegisteredRoutes();
-        Assert.assertEquals(2, routes.size());
+        Assert.assertEquals(3, routes.size());
 
         Optional<RouteData> barRoute = routes.stream()
                 .filter(routeData -> "bar".equals(routeData.getUrl()))
@@ -301,13 +303,26 @@ public class OSGiInitApplicationRouteRegistryTest
         Assert.assertEquals(Collections.emptyList(),
                 fooRoute.get().getParentLayouts());
 
+        Optional<RouteData> fRoute = routes.stream()
+                .filter(routeData -> "f".equals(routeData.getUrl()))
+                .findFirst();
+        Assert.assertTrue(fRoute.isPresent());
+        Assert.assertEquals(RouteComponent1.class,
+                fRoute.get().getNavigationTarget());
+        Assert.assertEquals(Collections.emptyList(),
+                fRoute.get().getParentLayouts());
+
         Assert.assertEquals(Optional.of(RouteComponent1.class),
                 anotherRegistry.getNavigationTarget("foo"));
+        Assert.assertEquals(Optional.of(RouteComponent1.class),
+                anotherRegistry.getNavigationTarget("f"));
         Assert.assertEquals(Optional.of(RouteComponent2.class),
                 anotherRegistry.getNavigationTarget("bar"));
 
         Assert.assertTrue(anotherRegistry
                 .getRouteLayouts("foo", RouteComponent1.class).isEmpty());
+        Assert.assertTrue(anotherRegistry
+                .getRouteLayouts("f", RouteComponent1.class).isEmpty());
         Assert.assertEquals(Collections.singletonList(MainLayout.class),
                 anotherRegistry.getRouteLayouts("bar", RouteComponent2.class));
     }

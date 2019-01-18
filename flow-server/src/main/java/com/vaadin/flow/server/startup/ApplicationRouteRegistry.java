@@ -36,6 +36,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.PWA;
@@ -95,7 +96,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         }
 
         private void subscribeToChanges(RouteRegistry routeRegistry) {
-            routeRegistry.addRoutesChangeListener(event -> update(() -> {
+            routeRegistry.addRoutesChangeListener(this::applyChange);
+        }
+
+        private void applyChange(RoutesChangedEvent event) {
+            update(() -> {
                 final RouteConfiguration routeConfiguration = RouteConfiguration
                         .forRegistry(this);
                 event.getRemovedRoutes()
@@ -107,7 +112,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                                 routeBaseData.getUrl(),
                                 routeBaseData.getNavigationTarget(),
                                 routeBaseData.getParentLayouts()));
-            }));
+            });
         }
 
         private void setRoutes(List<RouteData> routes) {

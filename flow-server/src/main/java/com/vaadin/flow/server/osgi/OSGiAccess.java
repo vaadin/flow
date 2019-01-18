@@ -112,11 +112,6 @@ public final class OSGiAccess {
         }
 
         @Override
-        public void removeAttribute(String name) {
-            attributes.remove(name);
-        }
-
-        @Override
         public Enumeration<String> getAttributeNames() {
             return Collections.enumeration(attributes.keySet());
         }
