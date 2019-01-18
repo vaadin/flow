@@ -24,23 +24,69 @@ public final class Shortcuts {
     static final String NULL = "Parameter '%s' must not be null!";
 
     /**
-     * TODO
-     * Invoke a {@link Runnable} as a result of a shortcut. Registering
-     * a shortcut using this method will tie it to the current UI and the
-     * shortcut is available in the global scope.
+     * Invoke a {@link Command} when the shortcut is invoked.
      * <p>
-     *     In order to tie the shortcut to a different owner, use
-     *     instead. To limit the availability of the shortcut, use
-     *     define the components inside which the shortcut should work.
+     * Registering a shortcut using this method will tie it to the current UI
+     * and the shortcut is available in the global scope.
+     * <p>
+     * In order to change the owner (listener) of the shortcut from {@link UI}
+     * to something else, use
+     * {@link #addShortcut(Component, Component, Command, Key, KeyModifier...)}
+     * instead.
      *
-     * @param owner
-     * @param command  Code to execute when the shortcut is invoked
+     * @param lifecycleOwner
+     *              The component that controls, when the shortcut is active. If
+     *              the component is either invisible or detached, the shortcut
+     *              won't work
+     * @param command
+     *              Code to execute when the shortcut is invoked
      * @param key
+     *              Primary {@link Key} used to trigger the shortcut
      * @param keyModifiers
-     * @return {@link ShortcutRegistration} for configuring the shortcut.
+     *              {@link KeyModifier KeyModifiers} which also need to be
+     *              pressed for the shortcut to trigger
+     * @return {@link Registration} for removing the shortcut
      */
     public static Registration addShortcut(
-            Component owner, Command command, Key key,
+            Component lifecycleOwner, Command command, Key key,
+            KeyModifier... keyModifiers) {
+        if (lifecycleOwner == null) {
+            throw new InvalidParameterException(String.format(NULL,
+                    "lifecycleOwner"));
+        }
+        if (command == null) {
+            throw new InvalidParameterException(String.format(NULL, "command"));
+        }
+        if (key == null) {
+            throw new InvalidParameterException(String.format(NULL, "key"));
+        }
+        return registerShortcut(lifecycleOwner, command, key)
+                .withModifiers(keyModifiers);
+    }
+
+    /**
+     * Invoke a {@link Command} when the shortcut is invoked.
+     * <p>
+     * Allows for the configuration of {@code owner} which owns the shortcut
+     * event handler.
+     *
+     * @param owner
+     *              {@link Component} which listens for the shortcut event
+     * @param lifecycleOwner
+     *              The component that controls, when the shortcut is active. If
+     *              the component is either invisible or detached, the shortcut
+     *              won't work
+     * @param command
+     *              Code to execute when the shortcut is invoked
+     * @param key
+     *              Primary {@link Key} used to trigger the shortcut
+     * @param keyModifiers
+     *              {@link KeyModifier KeyModifiers} which also need to be
+     *              pressed for the shortcut to trigger
+     * @return {@link Registration} for removing the shortcut
+     */
+    public static Registration addShortcut(
+            Component owner, Component lifecycleOwner, Command command, Key key,
             KeyModifier... keyModifiers) {
         if (owner == null) {
             throw new InvalidParameterException(String.format(NULL, "owner"));
@@ -51,21 +97,36 @@ public final class Shortcuts {
         if (key == null) {
             throw new InvalidParameterException(String.format(NULL, "key"));
         }
-        return registerShortcut(owner, command, key)
+        return registerShortcut(owner, lifecycleOwner, command, key)
                 .withModifiers(keyModifiers);
     }
 
     /**
-     * TODO
-     * @param owner
+     * Invoke a {@link Command} when the shortcut is invoked.
+     * <p>
+     * Registering a shortcut using this method will tie it to the current UI
+     * and the shortcut is available in the global scope. Further configuration
+     * can be done using the returned {@link ShortcutRegistration}.
+     * <p>
+     * In order to change the owner (listener) of the shortcut from {@link UI}
+     * to something else, use
+     * {@link #registerShortcut(Component, Component, Command, Key)} instead.
+     *
+     * @param lifecycleOwner
+     *              The component that controls, when the shortcut is active. If
+     *              the component is either invisible or detached, the shortcut
+     *              won't work
      * @param command
+     *              Code to execute when the shortcut is invoked
      * @param key
-     * @return
+     *              Primary {@link Key} used to trigger the shortcut
+     * @return {@link ShortcutRegistration} for configuring
      */
     public static ShortcutRegistration registerShortcut(
-            Component owner, Command command, Key key) {
-        if (owner == null) {
-            throw new InvalidParameterException(String.format(NULL, "owner"));
+            Component lifecycleOwner, Command command, Key key) {
+        if (lifecycleOwner == null) {
+            throw new InvalidParameterException(String.format(NULL,
+                    "lifecycleOwner"));
         }
         if (command == null) {
             throw new InvalidParameterException(String.format(NULL, "command"));
@@ -74,22 +135,28 @@ public final class Shortcuts {
             throw new InvalidParameterException(String.format(NULL, "key"));
         }
 
-        UI ui = UI.getCurrent();
-
-        if (ui == null) {
-            throw new IllegalStateException("Cannot register a shortcut with " +
-                    "lifecycle bound to the UI when UI is not available.");
-        }
-
-        return new ShortcutRegistration(ui, () -> owner, command, key);
+        return new ShortcutRegistration(lifecycleOwner, UI::getCurrent, command,
+                key);
     }
 
     /**
-     * TODO
+     * Invoke a {@link Command} when the shortcut is invoked.
+     * <p>
+     * Allows for the configuration of {@code owner} which owns the shortcut
+     * event handler. Further configuration can be done using the returned
+     * {@link ShortcutRegistration}.
+     *
      * @param owner
+     *              {@link Component} which listens for the shortcut event
+     * @param lifecycleOwner
+     *              The component that controls, when the shortcut is active. If
+     *              the component is either invisible or detached, the shortcut
+     *              won't work
      * @param command
+     *              Code to execute when the shortcut is invoked
      * @param key
-     * @return
+     *              Primary {@link Key} used to trigger the shortcut
+     * @return {@link ShortcutRegistration} for configuring
      */
     public static ShortcutRegistration registerShortcut(
             Component owner, Component lifecycleOwner, Command command,
