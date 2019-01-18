@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -333,18 +332,10 @@ public class ShortcutRegistration implements Registration, Serializable {
             isDirty.set(true);
         }
 
-        // either lifecycle owner is attached or it is UI
-        if (lifecycleOwner.getUI().isPresent()) {
-            executionRegistration = lifecycleOwner.getUI().get()
-                    .beforeClientResponse(lifecycleOwner,
-                            beforeClientResponseConsumer);
-        }
-        /*
-        else {
-            see createOwnerRegistration() for what happens when the owner is
-            not attached or it is not an instance of UI
-        }
-        */
+        // if lifecycleOwner is attached, we'll register new
+        // beforeClientResponse callback. Otherwise we'll need to wait for the
+        // lifecycleOwner's attach-callback to do it
+        queueBeforeExecutionCallback();
     }
 
     private void markClean() {
@@ -475,21 +466,21 @@ public class ShortcutRegistration implements Registration, Serializable {
         shortcutActive = false;
     }
 
-    private boolean canAttachHandlerListener() {
+    private boolean isLifecycleOwnerAttached() {
         return lifecycleOwner != null && lifecycleOwner.getUI().isPresent();
     }
 
     private void queueBeforeExecutionCallback() {
-        if (!canAttachHandlerListener()) {
+        if (!isLifecycleOwnerAttached()) {
             return;
         }
 
         if (executionRegistration != null) {
             executionRegistration.remove();
         }
-        executionRegistration = UI.getCurrent()
-                .beforeClientResponse(
-                        lifecycleOwner,
+        // isLifecycleOwnerAttached checks for UI status
+        executionRegistration = lifecycleOwner.getUI().get()
+                .beforeClientResponse(lifecycleOwner,
                         beforeClientResponseConsumer);
     }
 
