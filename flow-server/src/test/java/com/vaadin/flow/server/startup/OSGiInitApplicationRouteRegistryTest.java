@@ -17,6 +17,7 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,9 +56,9 @@ public class OSGiInitApplicationRouteRegistryTest
     }
 
     private void removeAttributes(ServletContext servletContext) {
-        while (servletContext.getAttributeNames().hasMoreElements()) {
-            String attributeName = servletContext.getAttributeNames()
-                    .nextElement();
+        Enumeration<String> attributeNames = servletContext.getAttributeNames();
+        while (attributeNames.hasMoreElements()) {
+            String attributeName = attributeNames.nextElement();
             servletContext.setAttribute(attributeName, null);
         }
     }
@@ -283,7 +284,7 @@ public class OSGiInitApplicationRouteRegistryTest
                 .getInstance(Mockito.mock(ServletContext.class));
 
         List<RouteData> routes = anotherRegistry.getRegisteredRoutes();
-        Assert.assertEquals(3, routes.size());
+        Assert.assertEquals(2, routes.size());
 
         Optional<RouteData> barRoute = routes.stream()
                 .filter(routeData -> "bar".equals(routeData.getUrl()))
@@ -302,15 +303,14 @@ public class OSGiInitApplicationRouteRegistryTest
                 fooRoute.get().getNavigationTarget());
         Assert.assertEquals(Collections.emptyList(),
                 fooRoute.get().getParentLayouts());
-
-        Optional<RouteData> fRoute = routes.stream()
-                .filter(routeData -> "f".equals(routeData.getUrl()))
-                .findFirst();
-        Assert.assertTrue(fRoute.isPresent());
+        Assert.assertNotNull(fooRoute.get().getRouteAliases());
+        Assert.assertEquals(1, fooRoute.get().getRouteAliases().size());
+        Assert.assertEquals("f",
+                fooRoute.get().getRouteAliases().get(0).getUrl());
         Assert.assertEquals(RouteComponent1.class,
-                fRoute.get().getNavigationTarget());
+                fooRoute.get().getRouteAliases().get(0).getNavigationTarget());
         Assert.assertEquals(Collections.emptyList(),
-                fRoute.get().getParentLayouts());
+                fooRoute.get().getRouteAliases().get(0).getParentLayouts());
 
         Assert.assertEquals(Optional.of(RouteComponent1.class),
                 anotherRegistry.getNavigationTarget("foo"));
