@@ -51,8 +51,8 @@ public class ShortcutsView extends Div {
         subview.add(focusTarget);
 
         // only works, when focusTarget is focused
-        Shortcuts.addShortcut(subview, () -> expected.setText("subview"),
-                Key.KEY_S, KeyModifier.ALT);
+        Shortcuts.addShortcut(subview, subview,
+                () -> expected.setText("subview"), Key.KEY_S, KeyModifier.ALT);
 
         add(subview);
 
