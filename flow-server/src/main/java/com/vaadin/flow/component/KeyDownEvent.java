@@ -37,6 +37,8 @@ public class KeyDownEvent extends KeyboardEvent {
      *            server-side logic
      * @param key
      *            the string value representing the key
+     * @param code
+     *            the string value representing the code
      * @param location
      *            the integer value representing the location of the key
      * @param ctrlKey
@@ -60,6 +62,7 @@ public class KeyDownEvent extends KeyboardEvent {
      */
     public KeyDownEvent(Component source, boolean fromClient,
             @EventData("event.key") String key,
+            @EventData("event.code") String code,
             @EventData("event.location") int location,
             @EventData("event.ctrlKey") boolean ctrlKey,
             @EventData("event.shiftKey") boolean shiftKey,
@@ -67,8 +70,8 @@ public class KeyDownEvent extends KeyboardEvent {
             @EventData("event.metaKey") boolean metaKey,
             @EventData("event.repeat") boolean repeat,
             @EventData("event.isComposing") boolean composing) {
-        super(source, fromClient, key, location, ctrlKey, shiftKey, altKey,
-                metaKey, repeat, composing);
+        super(source, fromClient, key, code, location, ctrlKey, shiftKey,
+                altKey, metaKey, repeat, composing);
     }
 
     /**
@@ -81,5 +84,19 @@ public class KeyDownEvent extends KeyboardEvent {
      */
     public KeyDownEvent(Component source, String key) {
         super(source, key);
+    }
+
+    /**
+     * Creates a new server-side keyboard event with no additional information.
+     *
+     * @param source
+     *            the component that fired the event
+     * @param key
+     *            the key for this event
+     * @param code
+     *            the code for this event
+     */
+    public KeyDownEvent(Component source, String key, String code) {
+        super(source, key, code);
     }
 }
