@@ -37,6 +37,8 @@ import com.vaadin.flow.router.internal.RouteUtil;
  */
 public final class ThemeUtil {
 
+    private static final boolean IS_OSGI_ENV = isInOSGi();
+
     private ThemeUtil() {
     }
 
@@ -48,9 +50,7 @@ public final class ThemeUtil {
      *         it's not in the classpath
      */
     public static Optional<ThemeDefinition> getLumoThemeDefinition() {
-        try {
-            Class.forName("org.osgi.framework.FrameworkUtil");
-
+        if (IS_OSGI_ENV) {
             Bundle bundle = FrameworkUtil.getBundle(ThemeDefinition.class);
             if (bundle == null) {
                 return Optional
@@ -68,9 +68,8 @@ public final class ThemeUtil {
             ThemeDefinition definition = context.getService(reference);
 
             return Optional.ofNullable(definition);
-        } catch (ClassNotFoundException exception) {
-            return Optional.empty();
         }
+        return Optional.ofNullable(LazyLoadLumoTheme.LUMO_CLASS_IF_AVAILABLE);
     }
 
     /**
@@ -136,6 +135,15 @@ public final class ThemeUtil {
         }
 
         return null;
+    }
+
+    private static boolean isInOSGi() {
+        try {
+            Class.forName("org.osgi.framework.FrameworkUtil");
+            return true;
+        } catch (ClassNotFoundException exception) {
+            return false;
+        }
     }
 
     private static final class LazyLoadLumoTheme {
