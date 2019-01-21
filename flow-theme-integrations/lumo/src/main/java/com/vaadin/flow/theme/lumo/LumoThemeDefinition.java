@@ -20,12 +20,17 @@ import org.osgi.service.component.annotations.Component;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
+ * {@link Lumo} theme definition.
+ *
  * @author Vaadin Ltd
  *
  */
 @Component(service = ThemeDefinition.class)
 public class LumoThemeDefinition extends ThemeDefinition {
 
+    /**
+     * Creates a new instance of {@link Lumo} theme definition.
+     */
     public LumoThemeDefinition() {
         super(Lumo.class, "");
     }
