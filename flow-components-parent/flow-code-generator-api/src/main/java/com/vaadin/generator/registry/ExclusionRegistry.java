@@ -79,6 +79,8 @@ public class ExclusionRegistry {
         // https://github.com/vaadin/flow/issues/4477
         // https://github.com/vaadin/flow/issues/4479
         excludeTag("vaadin-time-picker-text-field");
+        // generates not-needed component that doesn't work due to invalid generics inheritance
+        excludeTag("vaadin-select-text-field");
         // Polymer lifecycle callbacks
         excludeMethod(null, "connectedCallback");
         excludeMethod(null, "disconnectedCallback");
