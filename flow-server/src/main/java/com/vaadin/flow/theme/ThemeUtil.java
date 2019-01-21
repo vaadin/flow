@@ -76,25 +76,6 @@ public final class ThemeUtil {
      * Find annotated theme for navigationTarget on given path or lumo if
      * available.
      *
-     * @param navigationTarget
-     *            navigation target to find theme for
-     * @param path
-     *            path used for navigation
-     *
-     * @deprecated Use {@link #findThemeForNavigationTarget(UI, Class, String)}
-     *             instead
-     */
-    @Deprecated
-    public static ThemeDefinition findThemeForNavigationTarget(
-            Class<?> navigationTarget, String path) {
-        return findThemeForNavigationTarget(UI.getCurrent(), navigationTarget,
-                path);
-    }
-
-    /**
-     * Find annotated theme for navigationTarget on given path or lumo if
-     * available.
-     *
      * @param ui
      *            the UI where {@code navigationTarget} is expected being
      *            registered
