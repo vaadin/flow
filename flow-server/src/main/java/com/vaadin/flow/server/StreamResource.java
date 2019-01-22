@@ -15,21 +15,25 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletContext;
-
-import com.vaadin.flow.function.ContentTypeResolver;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
+
+import javax.servlet.ServletContext;
+
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.ContentTypeResolver;
 
 /**
  * Represents dynamically generated data.
  * <p>
  * The instance should be registered via
  * {@link StreamResourceRegistry#registerResource(AbstractStreamResource)}. This
- * method returns an object which may be used to get resource URI.
+ * method returns an object which may be used to get resource URI. Registration
+ * happens automatically when used together with components with stream resource
+ * support or through
+ * {@link Element#setAttribute(String, AbstractStreamResource)}.
  *
  * @author Vaadin Ltd
  * @since 1.0
