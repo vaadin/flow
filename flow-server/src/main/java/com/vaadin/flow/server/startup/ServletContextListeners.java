@@ -17,8 +17,7 @@ public class ServletContextListeners implements ServletContextListener {
      * The servlet must be deployed before websocket support is added to it.
      */
     private ServletContextListener[] listeners = new ServletContextListener[] {
-            new ServletDeployer(), new JSR356WebsocketInitializer(),
-            new ApplicationRouteRegistry.RouteRegistryServletContextListener() };
+            new ServletDeployer(), new JSR356WebsocketInitializer() };
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {

@@ -1,6 +1,8 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,10 +14,15 @@ import java.util.concurrent.Future;
 
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.server.RouteRegistry;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance inside OSGi container.
@@ -23,11 +30,28 @@ import org.mockito.Mockito;
 public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
     private ApplicationRouteRegistry registry;
+    private ArgumentCaptor<ServletContextListener> contextListenerCaptor;
+    private ServletContext servletContext;
 
     @Before
     public void init() {
-        registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        servletContext = Mockito.mock(ServletContext.class);
+        contextListenerCaptor = ArgumentCaptor
+                .forClass(ServletContextListener.class);
+        doNothing().when(servletContext)
+                .addListener(contextListenerCaptor.capture());
+
+        registry = ApplicationRouteRegistry.getInstance(servletContext);
+
+        when(servletContext.getAttribute(RouteRegistry.class.getName()))
+                .thenReturn(registry);
+    }
+
+    @After
+    public void destroy() {
+        if (!contextListenerCaptor.getAllValues().isEmpty())
+            contextListenerCaptor.getValue()
+                    .contextDestroyed(new ServletContextEvent(servletContext));
     }
 
     @Test

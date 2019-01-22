@@ -10,17 +10,12 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.easymock.Capture;
-import org.easymock.CaptureType;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
@@ -28,6 +23,11 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
+import org.easymock.Capture;
+import org.easymock.CaptureType;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -38,6 +38,7 @@ import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.mock;
 import static org.easymock.EasyMock.newCapture;
 import static org.easymock.EasyMock.replay;
@@ -234,6 +235,8 @@ public class ServletDeployerTest {
                 .andReturn(Collections.emptySet()).anyTimes();
 
         ServletContext contextMock = mock(ServletContext.class);
+        contextMock.addListener(anyObject(EventListener.class));
+        expectLastCall().anyTimes();
         expect(contextMock.getClassLoader())
                 .andReturn(this.getClass().getClassLoader()).anyTimes();
         expect(contextMock.addServlet(EasyMock.capture(servletNames),
@@ -252,8 +255,9 @@ public class ServletDeployerTest {
             expect(contextMock.getAttribute(RouteRegistry.class.getName()))
                     .andAnswer(() -> {
                         ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
-                        RouteConfiguration.forRegistry(registry).setRoutes(Collections
-                                .singleton(ComponentWithRoute.class));
+                        RouteConfiguration.forRegistry(registry)
+                                .setRoutes(Collections
+                                        .singleton(ComponentWithRoute.class));
                         return registry;
                     }).anyTimes();
         } else {
@@ -284,7 +288,8 @@ public class ServletDeployerTest {
         Capture<String> parameterNameCapture = newCapture();
         expect(registrationMock.getInitParameter(capture(parameterNameCapture)))
                 .andAnswer(() -> initParameters
-                        .get(parameterNameCapture.getValue())).anyTimes();
+                        .get(parameterNameCapture.getValue()))
+                .anyTimes();
         replay(registrationMock);
         return registrationMock;
     }

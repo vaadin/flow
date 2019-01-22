@@ -21,13 +21,13 @@ import javax.servlet.ServletContextListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static class OSGiRouteRegistry extends ApplicationRouteRegistry {
-        private List<Registration> subscribingRegistrations = new LinkedList<>();
+        private List<Registration> subscribingRegistrations = new CopyOnWriteArrayList<>();
 
         @Override
         public Class<?> getPwaConfigurationClass() {
@@ -182,7 +182,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * ContextListener that does the initialization and termination of
      * ApplicationRouteRegistry
      */
-    public static class RouteRegistryServletContextListener
+    private static class RouteRegistryServletContextListener
             implements ServletContextListener {
 
         @Override
@@ -398,6 +398,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 OSGiAccess.getInstance().getOsgiServletContext());
         osgiRouteRegistry.setRoutes(osgiDataCollector.getRegisteredRoutes());
         osgiRouteRegistry.subscribeToChanges(osgiDataCollector);
+        context.addListener(new RouteRegistryServletContextListener());
         return osgiRouteRegistry;
     }
 }
