@@ -138,6 +138,11 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * <td>:host</td>
  * </tr>
  * <tr>
+ * <td>{@code input-prevented}</td>
+ * <td>Temporarily set when invalid input is prevented</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
  * <td>{@code focused}</td>
  * <td>Set when the element is focused</td>
  * <td>:host</td>
@@ -161,7 +166,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.3-SNAPSHOT",
-        "WebComponent: Vaadin.TextFieldElement#2.3.0-alpha4",
+        "WebComponent: Vaadin.TextFieldElement#2.3.0-alpha7",
         "Flow#1.3-SNAPSHOT" })
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-field.html")
@@ -976,6 +981,26 @@ public abstract class GeneratedVaadinTextField<R extends GeneratedVaadinTextFiel
     protected void addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
+            getElement().appendChild(component.getElement());
+        }
+    }
+
+    /**
+     * Adds the given components as children of this component at the slot
+     * 'input'.
+     *
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     */
+    protected void addToInput(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "input");
             getElement().appendChild(component.getElement());
         }
     }

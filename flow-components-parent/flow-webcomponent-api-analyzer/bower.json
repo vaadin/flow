@@ -41,7 +41,7 @@
     "vaadin-select": "2.0.2",
     "vaadin-split-layout": "4.1.0",
     "vaadin-tabs": "2.1.1",
-    "vaadin-text-field": "2.3.0-alpha4",
+    "vaadin-text-field": "2.3.0-alpha7",
     "vaadin-upload": "4.2.1",
     "vaadin-time-picker": "1.1.0"
   }
