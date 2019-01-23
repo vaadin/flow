@@ -43,6 +43,8 @@ public final class BehaviorRegistry {
                 "Polymer.GestureEventListeners", "vaadin-button",
                 "vaadin-form-item");
         put(HasText.class, "vaadin-button", "paper-button");
+        put(HasValue.class, "vaadin-email-field");
+        put(HasValue.class, "vaadin-number-field");
         put(HasValue.class, "vaadin-password-field");
         put(HasValue.class, "vaadin-combo-box");
         put(Focusable.class, "paper-button", "Vaadin.FormElementMixin",

@@ -142,7 +142,7 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.3-SNAPSHOT",
-        "WebComponent: Vaadin.TextAreaElement#2.3.0-alpha4",
+        "WebComponent: Vaadin.TextAreaElement#2.3.0-alpha7",
         "Flow#1.3-SNAPSHOT" })
 @Tag("vaadin-text-area")
 @HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-text-area.html")
@@ -857,6 +857,26 @@ public abstract class GeneratedVaadinTextArea<R extends GeneratedVaadinTextArea<
     protected void addToPrefix(Component... components) {
         for (Component component : components) {
             component.getElement().setAttribute("slot", "prefix");
+            getElement().appendChild(component.getElement());
+        }
+    }
+
+    /**
+     * Adds the given components as children of this component at the slot
+     * 'textarea'.
+     *
+     * @param components
+     *            The components to add.
+     * @see <a
+     *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+     *      page about slots</a>
+     * @see <a
+     *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+     *      website about slots</a>
+     */
+    protected void addToTextarea(Component... components) {
+        for (Component component : components) {
+            component.getElement().setAttribute("slot", "textarea");
             getElement().appendChild(component.getElement());
         }
     }

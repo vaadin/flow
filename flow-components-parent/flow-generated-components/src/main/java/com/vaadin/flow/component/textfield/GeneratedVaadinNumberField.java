@@ -20,6 +20,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasValue;
+import elemental.json.JsonObject;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableBiFunction;
 
@@ -28,65 +29,20 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-password-field>} is a Web Component for password field control
+ * {@code <vaadin-number-field>} is a Polymer 2 element for number field control
  * in forms.
  * </p>
  * <p>
- * &lt;vaadin-password-field label=&quot;Password&quot;&gt;
- * &lt;/vaadin-password-field&gt;
- * </p>
- * <h3>Styling</h3>
- * <p>
- * See vaadin-text-field.html for the styling documentation
- * </p>
- * <p>
- * In addition to vaadin-text-field parts, here's the list of
- * vaadin-password-field specific parts
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Part name</th>
- * <th>Description</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code reveal-button}</td>
- * <td>The eye icon which toggles the password visibility</td>
- * </tr>
- * </tbody>
- * </table>
- * <p>
- * In addition to vaadin-text-field state attributes, here's the list of
- * vaadin-password-field specific attributes
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Attribute</th>
- * <th>Description</th>
- * <th>Part name</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code password-visible}</td>
- * <td>Set when the password is visible</td>
- * <td>:host</td>
- * </tr>
- * </tbody>
- * </table>
- * <p>
- * See <a
- * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
- * how to apply styles for shadow parts</a>
+ * &lt;vaadin-number-field label=&quot;Number&quot;&gt;
+ * &lt;/vaadin-number-field&gt;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.3-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#2.3.0-alpha7",
+        "WebComponent: Vaadin.NumberFieldElement#2.3.0-alpha7",
         "Flow#1.3-SNAPSHOT" })
-@Tag("vaadin-password-field")
-@HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
-public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R, T>, T>
+@Tag("vaadin-number-field")
+@HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-number-field.html")
+public abstract class GeneratedVaadinNumberField<R extends GeneratedVaadinNumberField<R, T>, T>
         extends GeneratedVaadinTextField<R, T> implements HasStyle {
 
     /**
@@ -94,16 +50,16 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Set to true to hide the eye icon which toggles the password visibility.
+     * Set to true to display value increase/decrease controls.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
      *
-     * @return the {@code revealButtonHidden} property from the webcomponent
+     * @return the {@code hasControls} property from the webcomponent
      */
-    protected boolean isRevealButtonHiddenBoolean() {
-        return getElement().getProperty("revealButtonHidden", false);
+    protected boolean hasControlsBoolean() {
+        return getElement().getProperty("hasControls", false);
     }
 
     /**
@@ -111,14 +67,14 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Set to true to hide the eye icon which toggles the password visibility.
+     * Set to true to display value increase/decrease controls.
      * </p>
      *
-     * @param revealButtonHidden
+     * @param hasControls
      *            the boolean value to set
      */
-    protected void setRevealButtonHidden(boolean revealButtonHidden) {
-        getElement().setProperty("revealButtonHidden", revealButtonHidden);
+    protected void setHasControls(boolean hasControls) {
+        getElement().setProperty("hasControls", hasControls);
     }
 
     /**
@@ -126,20 +82,103 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * True if the password is visible ([type=text]).
+     * The minimum value of the field.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
      *
-     * @return the {@code passwordVisible} property from the webcomponent
+     * @return the {@code min} property from the webcomponent
      */
-    protected boolean isPasswordVisibleBoolean() {
-        return getElement().getProperty("passwordVisible", false);
+    protected double getMinDouble() {
+        return getElement().getProperty("min", 0.0);
     }
 
     /**
-     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The minimum value of the field.
+     * </p>
+     *
+     * @param min
+     *            the double value to set
+     */
+    protected void setMin(double min) {
+        getElement().setProperty("min", min);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The maximum value of the field.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     *
+     * @return the {@code max} property from the webcomponent
+     */
+    protected double getMaxDouble() {
+        return getElement().getProperty("max", 0.0);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * The maximum value of the field.
+     * </p>
+     *
+     * @param max
+     *            the double value to set
+     */
+    protected void setMax(double max) {
+        getElement().setProperty("max", max);
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Specifies the allowed number intervals of the field.
+     * <p>
+     * This property is not synchronized automatically from the client side, so
+     * the returned value may not be the same as in client side.
+     * </p>
+     *
+     * @return the {@code step} property from the webcomponent
+     */
+    protected JsonObject getStepJsonObject() {
+        return (JsonObject) getElement().getPropertyRaw("step");
+    }
+
+    /**
+     * <p>
+     * Description copied from corresponding location in WebComponent:
+     * </p>
+     * <p>
+     * Specifies the allowed number intervals of the field.
+     * </p>
+     *
+     * @param step
+     *            the JsonObject value to set
+     */
+    protected void setStep(JsonObject step) {
+        getElement().setPropertyJson("step", step);
+    }
+
+    protected void checkValidity() {
+        getElement().callFunction("checkValidity");
+    }
+
+    /**
+     * Constructs a new GeneratedVaadinNumberField component with the given
      * arguments.
      *
      * @param initialValue
@@ -155,7 +194,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * @param <P>
      *            the property type
      */
-    public <P> GeneratedVaadinPasswordField(T initialValue, T defaultValue,
+    public <P> GeneratedVaadinNumberField(T initialValue, T defaultValue,
             Class<P> elementPropertyType,
             SerializableFunction<P, T> presentationToModel,
             SerializableFunction<T, P> modelToPresentation) {
@@ -164,7 +203,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     }
 
     /**
-     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * Constructs a new GeneratedVaadinNumberField component with the given
      * arguments.
      *
      * @param initialValue
@@ -174,13 +213,13 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * @param acceptNullValues
      *            whether <code>null</code> is accepted as a model value
      */
-    public GeneratedVaadinPasswordField(T initialValue, T defaultValue,
+    public GeneratedVaadinNumberField(T initialValue, T defaultValue,
             boolean acceptNullValues) {
         super(initialValue, defaultValue, acceptNullValues);
     }
 
     /**
-     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * Constructs a new GeneratedVaadinNumberField component with the given
      * arguments.
      *
      * @param initialValue
@@ -198,7 +237,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * @param <P>
      *            the property type
      */
-    public <P> GeneratedVaadinPasswordField(T initialValue, T defaultValue,
+    public <P> GeneratedVaadinNumberField(T initialValue, T defaultValue,
             Class<P> elementPropertyType,
             SerializableBiFunction<R, P, T> presentationToModel,
             SerializableBiFunction<R, T, P> modelToPresentation) {
@@ -209,7 +248,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     /**
      * Default constructor.
      */
-    public GeneratedVaadinPasswordField() {
+    public GeneratedVaadinNumberField() {
         this(null, null, null, (SerializableFunction) null,
                 (SerializableFunction) null);
     }
