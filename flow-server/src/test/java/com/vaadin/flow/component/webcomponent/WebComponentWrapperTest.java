@@ -86,7 +86,8 @@ public class WebComponentWrapperTest {
         wrapper.sync("response", "update");
         wrapper.sync("integerValue", "15");
 
-        Assert.assertEquals("First event source should be 'response' from the extending class",
+        Assert.assertEquals(
+                "First event source should be 'response' from the extending class",
                 component.response, events.get(0).getSource());
 
         Assert.assertEquals("Second event source should be 'integerValue'",
@@ -118,13 +119,14 @@ public class WebComponentWrapperTest {
 
     @Test(expected = IllegalStateException.class)
     public void overlappingFieldAndMethodRegistration_syncFailsWithAnException() {
-        Broken component =new Broken();
+        Broken component = new Broken();
         WebComponentWrapper wrapper = new WebComponentWrapper("my-extension",
                 component);
 
         wrapper.sync("message", "hello");
 
-        Assert.fail("Synchronisation of property for which both method and field exists should have thrown!");
+        Assert.fail(
+                "Synchronisation of property for which both method and field exists should have thrown!");
     }
 
     @WebComponent("my-component")
@@ -132,7 +134,7 @@ public class WebComponentWrapperTest {
 
         protected String message;
         protected WebComponentProperty<String> response = new WebComponentProperty<>(
-                "hello");
+                "hello", String.class);
         protected WebComponentProperty<Integer> integerValue = new WebComponentProperty<>(
                 Integer.class);
 
@@ -150,7 +152,8 @@ public class WebComponentWrapperTest {
     @WebComponent("my-extension")
     public static class MyExtension extends MyComponent {
 
-        protected WebComponentProperty<String> response = new WebComponentProperty<>("Hi");
+        protected WebComponentProperty<String> response = new WebComponentProperty<>(
+                "Hi", String.class);
 
         @WebComponentMethod("message")
         public void setMyFancyMessage(String extendedMessage) {
@@ -160,7 +163,8 @@ public class WebComponentWrapperTest {
 
     @WebComponent("broken-component")
     public static class Broken extends Component {
-        protected WebComponentProperty<String> message = new WebComponentProperty<>("");
+        protected WebComponentProperty<String> message = new WebComponentProperty<>(
+                "", String.class);
 
         public Broken() {
             super(new Element("div"));
