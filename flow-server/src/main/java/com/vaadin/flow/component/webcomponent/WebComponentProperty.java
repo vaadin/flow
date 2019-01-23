@@ -41,12 +41,14 @@ public class WebComponentProperty<T> implements Serializable {
      *
      * @param initialValue
      *         initial value to generate file with
+     * @param propertyClass
+     *         property type class
      */
-    public WebComponentProperty(T initialValue) {
+    public WebComponentProperty(T initialValue, Class<T> propertyClass) {
         Objects.requireNonNull(initialValue,
                 "For a null initial value Class<T> needs to be given.");
         value = initialValue;
-        this.propertyClass = (Class<T>) initialValue.getClass();
+        this.propertyClass = propertyClass;
     }
 
     /**
@@ -64,7 +66,8 @@ public class WebComponentProperty<T> implements Serializable {
      * Set the value for this property. Will fire a {@link
      * PropertyValueChangeEvent} if listeners have been registered.
      *
-     * @param value value to be set
+     * @param value
+     *         value to be set
      */
     public void set(T value) {
         T oldValue = this.value;
@@ -73,7 +76,8 @@ public class WebComponentProperty<T> implements Serializable {
         if (listeners != null) {
             PropertyValueChangeEvent<T> event = new PropertyValueChangeEvent<>(
                     this, oldValue, value);
-            Set<PropertyValueChangeListener> listenerSet = new HashSet<>(listeners);
+            Set<PropertyValueChangeListener> listenerSet = new HashSet<>(
+                    listeners);
             for (PropertyValueChangeListener listener : listenerSet) {
                 listener.valueChange(event);
             }

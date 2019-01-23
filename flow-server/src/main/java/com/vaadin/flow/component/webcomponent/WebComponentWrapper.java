@@ -82,7 +82,7 @@ public class WebComponentWrapper extends Component {
                 setNewFieldValue(property, newValue);
             } else {
                 LoggerFactory.getLogger(child.getClass())
-                        .error("No method found for " + property);
+                        .error("No method found for {}", property);
             }
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             LoggerFactory.getLogger(child.getClass())

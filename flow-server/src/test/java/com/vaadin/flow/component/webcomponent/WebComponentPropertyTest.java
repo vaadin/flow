@@ -18,7 +18,7 @@ public class WebComponentPropertyTest {
         Assert.assertEquals("Wrong class value type for given class type",
                 String.class, string.getValueType());
 
-        string = new WebComponentProperty<>("hi");
+        string = new WebComponentProperty<>("hi", String.class);
         Assert.assertEquals(
                 "Wrong class value type received from initalValue.'",
                 String.class, string.getValueType());
@@ -29,7 +29,7 @@ public class WebComponentPropertyTest {
         Assert.assertEquals("Wrong class value type for given class type",
                 Integer.class, integer.getValueType());
 
-        integer = new WebComponentProperty<>(15);
+        integer = new WebComponentProperty<>(15, Integer.class);
         Assert.assertEquals(
                 "Wrong class value type received from initalValue.'",
                 Integer.class, integer.getValueType());
@@ -40,7 +40,7 @@ public class WebComponentPropertyTest {
         Assert.assertEquals("Wrong class value type for given class type",
                 Boolean.class, bool.getValueType());
 
-        bool = new WebComponentProperty<>(true);
+        bool = new WebComponentProperty<>(true, Boolean.class);
         Assert.assertEquals(
                 "Wrong class value type received from initalValue.'",
                 Boolean.class, bool.getValueType());
@@ -51,7 +51,7 @@ public class WebComponentPropertyTest {
         Assert.assertEquals("Wrong class value type for given class type",
                 Long.class, longProperty.getValueType());
 
-        longProperty = new WebComponentProperty<>(15l);
+        longProperty = new WebComponentProperty<>(15l, Long.class);
         Assert.assertEquals(
                 "Wrong class value type received from initalValue.'",
                 Long.class, longProperty.getValueType());
