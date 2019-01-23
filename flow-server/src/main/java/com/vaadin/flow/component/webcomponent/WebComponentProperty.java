@@ -33,7 +33,7 @@ public class WebComponentProperty<T> implements Serializable {
 
     private T value;
     private final Class<T> propertyClass;
-    Set<PropertyValueChangeListener> listeners;
+    private Set<PropertyValueChangeListener> listeners;
 
     /**
      * Create a property with the given initial value to be added to the
@@ -73,7 +73,8 @@ public class WebComponentProperty<T> implements Serializable {
         if (listeners != null) {
             PropertyValueChangeEvent<T> event = new PropertyValueChangeEvent<>(
                     this, oldValue, value);
-            for (PropertyValueChangeListener listener : listeners) {
+            Set<PropertyValueChangeListener> listenerSet = new HashSet<>(listeners);
+            for (PropertyValueChangeListener listener : listenerSet) {
                 listener.valueChange(event);
             }
         }

@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import java.lang.reflect.Field;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -31,6 +29,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
 
@@ -45,7 +44,6 @@ public class WebComponentUI extends UI {
      * Instantiate a UI for WebComponent communication.
      */
     public WebComponentUI() {
-        // TODO: What should be done with the theme?
         assignLumoThemeIfAvailable();
     }
 
@@ -117,14 +115,14 @@ public class WebComponentUI extends UI {
     }
 
     private void assignLumoThemeIfAvailable() {
-        try {
-            Field field = UIInternals.class.getDeclaredField("theme");
-            boolean accessible = field.isAccessible();
-            field.setAccessible(true);
-            field.set(getInternals(), ThemeUtil.LUMO_CLASS_IF_AVAILABLE);
-            field.setAccessible(accessible);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+        Optional<ThemeDefinition> lumoOptional = ThemeUtil
+                .getLumoThemeDefinition();
+        
+        if (lumoOptional.isPresent()) {
+            ThemeDefinition lumoThemeDefinition = lumoOptional.get();
+            AbstractTheme theme = Instantiator.get(this)
+                    .getOrCreate(lumoThemeDefinition.getTheme());
+            getInternals().setTheme(theme);
         }
     }
 }

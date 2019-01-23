@@ -69,6 +69,12 @@ public class WebComponentWrapper extends Component {
      */
     @ClientCallable
     public void sync(String property, String newValue) {
+        if (methods.containsKey(property) && fields.containsKey(property)) {
+            String message = String
+                    .format("The property '%s' exists both as a method and a field.",
+                            property);
+            throw new IllegalStateException(message);
+        }
         try {
             if (methods.containsKey(property)) {
                 setNewMethodValue(property, newValue);
@@ -147,6 +153,11 @@ public class WebComponentWrapper extends Component {
             Class<?> webComponent) {
         HashMap<String, Method> methods = new HashMap<>();
 
+        // Collect first inherited methods so they can be overridden by the child
+        if (webComponent.getSuperclass() != null) {
+            methods.putAll(getPropertyMethods(webComponent.getSuperclass()));
+        }
+
         for (Method method : webComponent.getDeclaredMethods()) {
             WebComponentMethod ann = method
                     .getAnnotation(WebComponentMethod.class);
@@ -154,6 +165,7 @@ public class WebComponentWrapper extends Component {
                 methods.put(ann.value(), method);
             }
         }
+
         return methods;
     }
 
@@ -168,11 +180,17 @@ public class WebComponentWrapper extends Component {
             Class<?> webComponent) {
         HashMap<String, Field> fields = new HashMap<>();
 
+        // Collect first inherited methods so they can be overridden by the child
+        if (webComponent.getSuperclass() != null) {
+            fields.putAll(getPropertyFields(webComponent.getSuperclass()));
+        }
+
         for (Field field : webComponent.getDeclaredFields()) {
             if (WebComponentProperty.class.isAssignableFrom(field.getType())) {
                 fields.put(field.getName(), field);
             }
         }
+
         return fields;
     }
 }
