@@ -28,53 +28,17 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-password-field>} is a Web Component for password field control
- * in forms.
+ * {@code <vaadin-email-field>} is a Web Component for email field control in
+ * forms.
  * </p>
  * <p>
- * &lt;vaadin-password-field label=&quot;Password&quot;&gt;
- * &lt;/vaadin-password-field&gt;
+ * &lt;vaadin-email-field label=&quot;Email&quot;&gt;
+ * &lt;/vaadin-email-field&gt;
  * </p>
  * <h3>Styling</h3>
  * <p>
  * See vaadin-text-field.html for the styling documentation
  * </p>
- * <p>
- * In addition to vaadin-text-field parts, here's the list of
- * vaadin-password-field specific parts
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Part name</th>
- * <th>Description</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code reveal-button}</td>
- * <td>The eye icon which toggles the password visibility</td>
- * </tr>
- * </tbody>
- * </table>
- * <p>
- * In addition to vaadin-text-field state attributes, here's the list of
- * vaadin-password-field specific attributes
- * </p>
- * <table>
- * <thead>
- * <tr>
- * <th>Attribute</th>
- * <th>Description</th>
- * <th>Part name</th>
- * </tr>
- * </thead> <tbody>
- * <tr>
- * <td>{@code password-visible}</td>
- * <td>Set when the password is visible</td>
- * <td>:host</td>
- * </tr>
- * </tbody>
- * </table>
  * <p>
  * See <a
  * href="https://github.com/vaadin/vaadin-themable-mixin/wiki">ThemableMixin –
@@ -82,64 +46,15 @@ import com.vaadin.flow.function.SerializableBiFunction;
  * </p>
  */
 @Generated({ "Generator: com.vaadin.generator.ComponentGenerator#1.3-SNAPSHOT",
-        "WebComponent: Vaadin.PasswordFieldElement#2.3.0-alpha7",
+        "WebComponent: Vaadin.EmailFieldElement#2.3.0-alpha7",
         "Flow#1.3-SNAPSHOT" })
-@Tag("vaadin-password-field")
-@HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-password-field.html")
-public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R, T>, T>
+@Tag("vaadin-email-field")
+@HtmlImport("frontend://bower_components/vaadin-text-field/src/vaadin-email-field.html")
+public abstract class GeneratedVaadinEmailField<R extends GeneratedVaadinEmailField<R, T>, T>
         extends GeneratedVaadinTextField<R, T> implements HasStyle {
 
     /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to hide the eye icon which toggles the password visibility.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     *
-     * @return the {@code revealButtonHidden} property from the webcomponent
-     */
-    protected boolean isRevealButtonHiddenBoolean() {
-        return getElement().getProperty("revealButtonHidden", false);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Set to true to hide the eye icon which toggles the password visibility.
-     * </p>
-     *
-     * @param revealButtonHidden
-     *            the boolean value to set
-     */
-    protected void setRevealButtonHidden(boolean revealButtonHidden) {
-        getElement().setProperty("revealButtonHidden", revealButtonHidden);
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * True if the password is visible ([type=text]).
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     *
-     * @return the {@code passwordVisible} property from the webcomponent
-     */
-    protected boolean isPasswordVisibleBoolean() {
-        return getElement().getProperty("passwordVisible", false);
-    }
-
-    /**
-     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * Constructs a new GeneratedVaadinEmailField component with the given
      * arguments.
      *
      * @param initialValue
@@ -155,7 +70,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * @param <P>
      *            the property type
      */
-    public <P> GeneratedVaadinPasswordField(T initialValue, T defaultValue,
+    public <P> GeneratedVaadinEmailField(T initialValue, T defaultValue,
             Class<P> elementPropertyType,
             SerializableFunction<P, T> presentationToModel,
             SerializableFunction<T, P> modelToPresentation) {
@@ -164,7 +79,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     }
 
     /**
-     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * Constructs a new GeneratedVaadinEmailField component with the given
      * arguments.
      *
      * @param initialValue
@@ -174,13 +89,13 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * @param acceptNullValues
      *            whether <code>null</code> is accepted as a model value
      */
-    public GeneratedVaadinPasswordField(T initialValue, T defaultValue,
+    public GeneratedVaadinEmailField(T initialValue, T defaultValue,
             boolean acceptNullValues) {
         super(initialValue, defaultValue, acceptNullValues);
     }
 
     /**
-     * Constructs a new GeneratedVaadinPasswordField component with the given
+     * Constructs a new GeneratedVaadinEmailField component with the given
      * arguments.
      *
      * @param initialValue
@@ -198,7 +113,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
      * @param <P>
      *            the property type
      */
-    public <P> GeneratedVaadinPasswordField(T initialValue, T defaultValue,
+    public <P> GeneratedVaadinEmailField(T initialValue, T defaultValue,
             Class<P> elementPropertyType,
             SerializableBiFunction<R, P, T> presentationToModel,
             SerializableBiFunction<R, T, P> modelToPresentation) {
@@ -209,7 +124,7 @@ public abstract class GeneratedVaadinPasswordField<R extends GeneratedVaadinPass
     /**
      * Default constructor.
      */
-    public GeneratedVaadinPasswordField() {
+    public GeneratedVaadinEmailField() {
         this(null, null, null, (SerializableFunction) null,
                 (SerializableFunction) null);
     }
