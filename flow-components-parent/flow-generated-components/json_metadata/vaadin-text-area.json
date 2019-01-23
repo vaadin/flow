@@ -2,7 +2,7 @@
   "name": "Vaadin.TextAreaElement",
   "tag": "vaadin-text-area",
   "baseUrl": "vaadin-text-field/src/vaadin-text-area.html",
-  "version": "2.3.0-alpha1",
+  "version": "2.3.0-alpha7",
   "properties": [
     {
       "name": "autofocus",
@@ -43,6 +43,14 @@
       ],
       "objectType": [],
       "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.\n         "
+    },
+    {
+      "name": "autoselect",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specify that the value should be automatically selected when the field gains focus.\n         "
     },
     {
       "name": "clearButtonVisible",
@@ -185,6 +193,7 @@
   ],
   "slots": [
     "prefix",
+    "textarea",
     "suffix"
   ],
   "behaviors": [],
