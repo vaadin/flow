@@ -389,7 +389,7 @@ public class UI extends Component
      * while allowing new APIs to use newer conventions.
      */
     private void accessSynchronously(Command command,
-                                     SerializableRunnable detachHandler) {
+            SerializableRunnable detachHandler) {
 
         Map<Class<?>, CurrentInstance> old = null;
 
@@ -475,7 +475,7 @@ public class UI extends Component
      * while allowing new APIs to use newer conventions.
      */
     private Future<Void> access(Command command,
-                                SerializableRunnable detachHandler) {
+            SerializableRunnable detachHandler) {
         VaadinSession session = getSession();
 
         if (session == null) {
@@ -527,7 +527,7 @@ public class UI extends Component
      *         handler, possibly asynchronously
      */
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
-                               SerializableRunnable detachHandler) {
+            SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
         return () -> access(accessTask::run, detachHandler);
@@ -760,7 +760,7 @@ public class UI extends Component
      * @return the associated ThemeDefinition, or empty if none is defined and
      *         the Lumo class is not in the classpath, or if the NoTheme
      *         annotation is being used.
-     * @see ThemeUtil#findThemeForNavigationTarget(Class, String)
+     * @see ThemeUtil#findThemeForNavigationTarget(UI, Class, String)
      */
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
@@ -1007,20 +1007,18 @@ public class UI extends Component
      * {@link #registerShortcut(Command, Key)} or a method in {@link Shortcuts}.
      *
      * @param command
-     *              Code to execute when the shortcut is invoked
+     *            Code to execute when the shortcut is invoked
      * @param key
-     *              Primary {@link Key} used to trigger the shortcut
+     *            Primary {@link Key} used to trigger the shortcut
      * @param keyModifiers
-     *              {@link KeyModifier KeyModifiers} which also need to be
-     *              pressed for the shortcut to trigger
-     * @return
-     *              {@link Registration} for removing the shortcut
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
+     * @return {@link Registration} for removing the shortcut
      * @see Shortcuts
      */
-    public Registration addShortcut(Command command, Key key, KeyModifier...
-            keyModifiers) {
-        return Shortcuts.addShortcut(this, this, command, key,
-                keyModifiers);
+    public Registration addShortcut(Command command, Key key,
+            KeyModifier... keyModifiers) {
+        return Shortcuts.addShortcut(this, this, command, key, keyModifiers);
     }
 
     /**
@@ -1032,11 +1030,10 @@ public class UI extends Component
      * For more configuration option, use a method in {@link Shortcuts}.
      *
      * @param command
-     *              Code to execute when the shortcut is invoked
+     *            Code to execute when the shortcut is invoked
      * @param key
-     *              Primary {@link Key} used to trigger the shortcut
-     * @return
-     *              {@link ShortcutRegistration} for configuring the shortcut
+     *            Primary {@link Key} used to trigger the shortcut
+     * @return {@link ShortcutRegistration} for configuring the shortcut
      * @see Shortcuts
      */
     public ShortcutRegistration registerShortcut(Command command, Key key) {
