@@ -13,19 +13,19 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<link rel="import" href="../../../polymer/polymer-element.html">
+<link rel="import" href="../../polymer/polymer-element.html">
 
-<dom-module id="material-themed-template">
+<dom-module id="not-themed-template">
     <template>
-      <div id='div'>Material themed Template</div>
+      <div id='div'>Template</div>
     </template>
 
     <script>
-        class MaterialThemedTemplate extends Polymer.Element {
+        class NotThemedTemplate extends Polymer.Element {
             static get is() {
-                return 'material-themed-template'
+                return 'not-themed-template'
             }
         }
-        customElements.define(MaterialThemedTemplate.is, MaterialThemedTemplate);
+        customElements.define(NotThemedTemplate.is, NotThemedTemplate);
     </script>
 </dom-module>
