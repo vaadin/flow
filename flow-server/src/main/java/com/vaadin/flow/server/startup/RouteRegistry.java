@@ -33,6 +33,10 @@ import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -275,7 +279,6 @@ public class RouteRegistry implements Serializable {
 
     private AtomicReference<Class<?>> pwaConfigurationClass = new AtomicReference<>();
 
-    private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
     private static final Set<Class<? extends Component>> defaultErrorHandlers = Stream
             .of(RouteNotFoundError.class, InternalServerError.class)
             .collect(Collectors.toSet());
@@ -726,9 +729,8 @@ public class RouteRegistry implements Serializable {
 
     private ThemeDefinition findThemeForNavigationTarget(
             Class<?> navigationTarget, String path) {
-
         if (navigationTarget == null) {
-            return LUMO_CLASS_IF_AVAILABLE;
+            return getLumoThemeDefinition().orElse(null);
         }
 
         Class<? extends RouterLayout> topParentLayout = RouterUtil
@@ -746,7 +748,7 @@ public class RouteRegistry implements Serializable {
 
         if (!AnnotationReader.getAnnotationFor(target, NoTheme.class)
                 .isPresent()) {
-            return LUMO_CLASS_IF_AVAILABLE;
+            return getLumoThemeDefinition().orElse(null);
         }
 
         return null;
@@ -880,5 +882,57 @@ public class RouteRegistry implements Serializable {
             return new RouteRegistry();
         }
         return new OSGiRouteRegistry();
+    }
+
+    private static Optional<ThemeDefinition> getLumoThemeDefinition() {
+        if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
+            // we are in OSGi
+            Bundle bundle = FrameworkUtil.getBundle(ThemeDefinition.class);
+            if (bundle == null) {
+                return Optional
+                        .ofNullable(LazyLoadLumoTheme.LUMO_CLASS_IF_AVAILABLE);
+            }
+            BundleContext context = bundle.getBundleContext();
+
+            ServiceReference<ThemeDefinition> reference = context
+                    .getServiceReference(ThemeDefinition.class);
+            if (reference == null) {
+                return Optional
+                        .ofNullable(LazyLoadLumoTheme.LUMO_CLASS_IF_AVAILABLE);
+            }
+
+            ThemeDefinition definition = context.getService(reference);
+
+            return Optional.ofNullable(definition);
+        }
+        return Optional.ofNullable(LazyLoadLumoTheme.LUMO_CLASS_IF_AVAILABLE);
+    }
+
+    private static final class LazyLoadLumoTheme {
+
+        private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
+
+        /**
+         * Loads the Lumo theme class from the classpath if it is available.
+         *
+         * @return the Lumo ThemeDefinition, or <code>null</code> if it is not
+         *         available in the classpath
+         */
+        private static ThemeDefinition loadLumoClassIfAvailable() {
+            try {
+                Class<? extends ThemeDefinition> theme = (Class<? extends ThemeDefinition>) Class
+                        .forName(
+                                "com.vaadin.flow.theme.lumo.LumoThemeDefinition");
+                return ReflectTools.createInstance(theme);
+            } catch (ClassNotFoundException e) {
+                // ignore, the Lumo class is not available in the classpath
+                Logger logger = LoggerFactory
+                        .getLogger(RouteRegistry.class.getName());
+                logger.trace(
+                        "Lumo theme is not present in the classpath. The application will not use any default theme.",
+                        e);
+            }
+            return null;
+        }
     }
 }
