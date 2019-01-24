@@ -182,12 +182,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * ContextListener that does the initialization and termination of
      * ApplicationRouteRegistry
      */
-    private static class RouteRegistryServletContextListener
+    static class RouteRegistryServletContextListener
             implements ServletContextListener {
 
         @Override
         public void contextInitialized(ServletContextEvent event) {
-
         }
 
         @Override
@@ -398,7 +397,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 OSGiAccess.getInstance().getOsgiServletContext());
         osgiRouteRegistry.setRoutes(osgiDataCollector.getRegisteredRoutes());
         osgiRouteRegistry.subscribeToChanges(osgiDataCollector);
-        context.addListener(new RouteRegistryServletContextListener());
         return osgiRouteRegistry;
     }
 }

@@ -19,6 +19,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,6 +59,7 @@ public class OSGiInitApplicationRouteRegistryTest
     public void init() {
         OSGiAccess.getInstance()
                 .setServletContainerInitializers(Collections.emptyList());
+        removeAttributes(OSGiAccess.getInstance().getOsgiServletContext());
         servletContext = Mockito.mock(ServletContext.class);
         contextListenerCaptor = ArgumentCaptor
                 .forClass(ServletContextListener.class);
@@ -75,8 +77,17 @@ public class OSGiInitApplicationRouteRegistryTest
 
     @After
     public void destroy() {
-        contextListenerCaptor.getValue()
-                .contextDestroyed(new ServletContextEvent(servletContext));
+        if (!contextListenerCaptor.getAllValues().isEmpty())
+            contextListenerCaptor.getValue()
+                    .contextDestroyed(new ServletContextEvent(servletContext));
+    }
+
+    private void removeAttributes(ServletContext servletContext) {
+        Enumeration<String> attributeNames = servletContext.getAttributeNames();
+        while (attributeNames.hasMoreElements()) {
+            String attributeName = attributeNames.nextElement();
+            servletContext.setAttribute(attributeName, null);
+        }
     }
 
     @Test
