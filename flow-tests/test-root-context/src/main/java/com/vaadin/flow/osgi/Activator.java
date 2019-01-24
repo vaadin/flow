@@ -25,6 +25,7 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 
+import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.uitest.servlet.Es6UrlViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
@@ -36,6 +37,7 @@ public class Activator implements BundleActivator {
 
     private ServiceTracker<HttpService, HttpService> httpTracker;
 
+    @VaadinServletConfiguration(productionMode = false)
     private static class FixedViewServlet extends ViewTestServlet {
         @Override
         public void init(ServletConfig servletConfig) throws ServletException {
@@ -45,6 +47,7 @@ public class Activator implements BundleActivator {
         }
     }
 
+    @VaadinServletConfiguration(productionMode = false)
     private static class FixedRouterServlet extends RouterTestServlet {
         @Override
         public void init(ServletConfig servletConfig) throws ServletException {
@@ -54,6 +57,7 @@ public class Activator implements BundleActivator {
         }
     }
 
+    @VaadinServletConfiguration(productionMode = true)
     private static class FixedProductionModeViewServlet
             extends ProductionModeViewTestServlet {
 
@@ -65,6 +69,7 @@ public class Activator implements BundleActivator {
         }
     }
 
+    @VaadinServletConfiguration(productionMode = true)
     private static class FixedProductionModeTimingDataViewServlet
             extends ProductionModeTimingDataViewTestServlet {
         @Override
@@ -75,6 +80,7 @@ public class Activator implements BundleActivator {
         }
     }
 
+    @VaadinServletConfiguration(productionMode = true)
     private static class FixedEs6UrlViewServlet extends Es6UrlViewTestServlet {
         @Override
         public void init(ServletConfig servletConfig) throws ServletException {
