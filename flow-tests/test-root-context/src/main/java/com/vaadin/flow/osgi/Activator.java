@@ -57,7 +57,7 @@ public class Activator implements BundleActivator {
         }
     }
 
-    @VaadinServletConfiguration(productionMode = false)
+    @VaadinServletConfiguration(productionMode = true)
     private static class FixedProductionModeViewServlet
             extends ProductionModeViewTestServlet {
 
@@ -69,7 +69,7 @@ public class Activator implements BundleActivator {
         }
     }
 
-    @VaadinServletConfiguration(productionMode = false)
+    @VaadinServletConfiguration(productionMode = true)
     private static class FixedProductionModeTimingDataViewServlet
             extends ProductionModeTimingDataViewTestServlet {
         @Override
@@ -80,7 +80,7 @@ public class Activator implements BundleActivator {
         }
     }
 
-    @VaadinServletConfiguration(productionMode = false)
+    @VaadinServletConfiguration(productionMode = true)
     private static class FixedEs6UrlViewServlet extends Es6UrlViewTestServlet {
         @Override
         public void init(ServletConfig servletConfig) throws ServletException {
