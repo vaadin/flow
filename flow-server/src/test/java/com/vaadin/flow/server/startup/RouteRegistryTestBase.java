@@ -37,7 +37,7 @@ import com.vaadin.flow.server.RouteRegistry;
 public abstract class RouteRegistryTestBase {
 
     @Test
-    public void initalizedRoutes_routesCanBeAdded() {
+    public void initializedRoutes_routesCanBeAdded() {
         getInitializationRegistry().clean();
 
         getInitializationRegistry().setRoute("home", MyRoute.class,

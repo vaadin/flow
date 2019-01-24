@@ -16,8 +16,6 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -29,16 +27,11 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance which is initialized via
@@ -52,34 +45,17 @@ public class OSGiInitApplicationRouteRegistryTest
 
     private ApplicationRouteRegistry registry;
     private RouteRegistry osgiCollectorRegistry;
-    private ArgumentCaptor<ServletContextListener> contextListenerCaptor;
-    private ServletContext servletContext;
 
     @Before
     public void init() {
         OSGiAccess.getInstance()
                 .setServletContainerInitializers(Collections.emptyList());
         removeAttributes(OSGiAccess.getInstance().getOsgiServletContext());
-        servletContext = Mockito.mock(ServletContext.class);
-        contextListenerCaptor = ArgumentCaptor
-                .forClass(ServletContextListener.class);
-        doNothing().when(servletContext)
-                .addListener(contextListenerCaptor.capture());
-
-        registry = ApplicationRouteRegistry.getInstance(servletContext);
-
-        when(servletContext.getAttribute(RouteRegistry.class.getName()))
-                .thenReturn(registry);
+        registry = ApplicationRouteRegistry
+                .getInstance(Mockito.mock(ServletContext.class));
 
         osgiCollectorRegistry = ApplicationRouteRegistry
                 .getInstance(OSGiAccess.getInstance().getOsgiServletContext());
-    }
-
-    @After
-    public void destroy() {
-        if (!contextListenerCaptor.getAllValues().isEmpty())
-            contextListenerCaptor.getValue()
-                    .contextDestroyed(new ServletContextEvent(servletContext));
     }
 
     private void removeAttributes(ServletContext servletContext) {
