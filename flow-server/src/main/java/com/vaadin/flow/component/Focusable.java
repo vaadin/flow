@@ -131,17 +131,20 @@ public interface Focusable<T extends Component>
     /**
      * Adds a shortcut which focuses the {@link Component} which implements
      * {@link Focusable} interface. The shortcut's event listener is in global
-     * scope and the shortcut's lifecycle is tied to {@code this} component. For
-     * more configuration options, use {@link #registerFocusShortcut(Key)}.
+     * scope and the shortcut's lifecycle is tied to {@code this} component.
+     * <p>
+     * Use the returned {@link ShortcutRegistration} to fluently configure the
+     * shortcut.
      *
      * @param key
      *              Primary {@link Key} used to trigger the shortcut
      * @param keyModifiers
      *              {@link KeyModifier KeyModifiers} that need to be pressed
      *              along with the {@code key} for the shortcut to trigger
-     * @return {@link Registration} used to remove the shortcut
+     * @return {@link ShortcutRegistration} used to remove the shortcut
      */
-    default Registration addFocusShortcut(Key key, KeyModifier... keyModifiers) {
+    default ShortcutRegistration addFocusShortcut(Key key,
+                                                  KeyModifier... keyModifiers) {
         if (!(this instanceof Component)) {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
@@ -155,36 +158,7 @@ public interface Focusable<T extends Component>
                     String.format(Shortcuts.NULL, key));
         }
 
-        return this.registerFocusShortcut(key).withModifiers(keyModifiers);
-    }
-
-    /**
-     * Registers a shortcut which focuses the {@link Component} which implements
-     * {@link Focusable} interface. The shortcut's event listener is in global
-     * scope and the shortcut's lifecycle is tied to {@code this} component.
-     * <p>
-     * Use the returned {@link ShortcutRegistration} to fluently configure the
-     * {@link KeyModifier KeyModifiers} and other values.
-     *
-     * @param key
-     *              Primary {@link Key} used to trigger the shortcut
-     * @return {@link ShortcutRegistration} used to configure the shortcut
-     */
-    default ShortcutRegistration registerFocusShortcut(Key key) {
-        if (!(this instanceof Component)) {
-            throw new IllegalStateException(String.format(
-                    "The class '%s' doesn't extend '%s'. "
-                            + "Make your implementation for the method '%s'.",
-                    getClass().getName(), Component.class.getSimpleName(),
-                    "registerFocusShortcut(Key)"));
-        }
-
-        if (key == null) {
-            throw new InvalidParameterException(
-                    String.format(Shortcuts.NULL, key));
-        }
-
         return new ShortcutRegistration((Component) this, UI::getCurrent,
-                this::focus, key);
+                this::focus, key).withModifiers(keyModifiers);
     }
 }
