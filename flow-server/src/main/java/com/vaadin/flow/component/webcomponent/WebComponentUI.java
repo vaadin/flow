@@ -23,6 +23,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
@@ -117,11 +118,17 @@ public class WebComponentUI extends UI {
     private void assignLumoThemeIfAvailable() {
         Optional<ThemeDefinition> lumoOptional = ThemeUtil
                 .getLumoThemeDefinition();
-        
+
         if (lumoOptional.isPresent()) {
             ThemeDefinition lumoThemeDefinition = lumoOptional.get();
-            AbstractTheme theme = Instantiator.get(this)
-                    .getOrCreate(lumoThemeDefinition.getTheme());
+            AbstractTheme theme;
+            if (getSession() != null) {
+                theme = Instantiator.get(this)
+                        .getOrCreate(lumoThemeDefinition.getTheme());
+            } else {
+                theme = ReflectTools
+                        .createInstance(lumoThemeDefinition.getTheme());
+            }
             getInternals().setTheme(theme);
         }
     }
