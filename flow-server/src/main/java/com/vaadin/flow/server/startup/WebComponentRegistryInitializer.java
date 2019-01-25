@@ -19,15 +19,20 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponentMethod;
+import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
@@ -59,9 +64,11 @@ public class WebComponentRegistryInitializer
         validateDistinct(componentSet);
         validateComponentName(componentSet);
 
+        componentSet.forEach(this::validateMethodsAndProperties);
+
         Map<String, Class<? extends Component>> webComponentMap = componentSet
-                .stream()
-                .collect(Collectors.toMap(this::getWebComponentName, Function.identity()));
+                .stream().collect(Collectors
+                        .toMap(this::getWebComponentName, Function.identity()));
 
         instance.setWebComponents(webComponentMap);
     }
@@ -110,6 +117,52 @@ public class WebComponentRegistryInitializer
                 items.put(webComponentName, component);
             }
         }
+    }
+
+    protected void validateMethodsAndProperties(Class<?> webComponent) {
+        Set<String> methods = getWebComponentMethods(webComponent);
+        Set<String> propertyFields = getWebComponentPropertyFields(
+                webComponent);
+
+        Set<String> duplicates = methods.stream()
+                .filter(propertyFields::contains).collect(Collectors.toSet());
+
+        if (!duplicates.isEmpty()) {
+            String message = String
+                    .format("In the WebComponent '%s' there is a method and a property for the name(s) %s",
+                            webComponent, duplicates);
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private Set<String> getWebComponentPropertyFields(Class<?> webComponent) {
+        Set<String> propertyFields = new HashSet<>();
+
+        if (webComponent.getSuperclass() != null) {
+            propertyFields.addAll(getWebComponentPropertyFields(
+                    webComponent.getSuperclass()));
+        }
+        Stream.of(webComponent.getDeclaredFields())
+                .filter(field -> WebComponentProperty.class
+                        .isAssignableFrom(field.getType())).map(Field::getName)
+                .forEach(propertyFields::add);
+
+        return propertyFields;
+    }
+
+    private Set<String> getWebComponentMethods(Class<?> webComponent) {
+        Set<String> methods = new HashSet<>();
+
+        if (webComponent.getSuperclass() != null) {
+            methods.addAll(
+                    getWebComponentMethods(webComponent.getSuperclass()));
+        }
+        Stream.of(webComponent.getDeclaredMethods()).filter(method -> method
+                .isAnnotationPresent(WebComponentMethod.class))
+                .map(method -> method.getAnnotation(WebComponentMethod.class))
+                .forEach(annotation -> methods.add(annotation.value()));
+
+        return methods;
     }
 
     protected String getWebComponentName(Class<? extends Component> clazz) {

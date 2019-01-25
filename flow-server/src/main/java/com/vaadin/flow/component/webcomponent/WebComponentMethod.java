@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.webcomponent;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,13 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark a field or a method to be published and synced on client
+ * Annotation to mark a method to be published and synced on client
  * for the generated server side WebComponent.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.METHOD })
+@Target({ ElementType.METHOD })
 @Documented
-public @interface WebComponentProperty {
+public @interface WebComponentMethod {
 
     /**
      * Name of the property.

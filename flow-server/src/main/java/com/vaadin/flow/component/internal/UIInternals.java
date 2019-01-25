@@ -707,6 +707,21 @@ public class UIInternals implements Serializable {
         }
     }
 
+    /**
+     * Set the Theme to use for HTML import theme translations.
+     * <p>
+     * Note! The set theme will be overridden for each call to {@link
+     * #showRouteTarget(Location, String, Component, List)} if the new theme is
+     * not the same as the set theme.
+     * <p>
+     * This method is intended for managed internal use only.
+     *
+     * @param theme theme implementation to set
+     */
+    public void setTheme(AbstractTheme theme) {
+        this.theme = theme;
+    }
+
     private void removeFromParent(HasElement component) {
         if (component != null) {
             component.getElement().removeFromParent();

@@ -17,6 +17,8 @@ import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponentMethod;
+import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
 
@@ -90,6 +92,26 @@ public class WebComponentRegistryInitializerTest {
                 servletContext);
     }
 
+    @Test
+    public void duplicatePropertyRegistration_initializerThrowsException() throws ServletException {
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(String.format(
+                "In the WebComponent '%s' there is a method and a property for the name(s) %s",
+                Duplicates.class, "[message]"));
+
+        initializer.onStartup(Collections.singleton(Duplicates.class), servletContext);
+    }
+
+    @Test
+    public void duplicatePropertyRegistrationBetweenParentAndChild_initializerThrowsException() throws ServletException {
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(String.format(
+                "In the WebComponent '%s' there is a method and a property for the name(s) %s",
+                Extending.class, "[message]"));
+
+        initializer.onStartup(Collections.singleton(Extending.class), servletContext);
+    }
+
     @WebComponent("my-component")
     public class MyComponent extends Component {
     }
@@ -104,5 +126,28 @@ public class WebComponentRegistryInitializerTest {
 
     @WebComponent("invalid")
     public class InvalidName extends Component {
+    }
+
+    @WebComponent("duplicate-properties")
+    public class Duplicates extends Component {
+        protected WebComponentProperty<String> message = new WebComponentProperty<>(
+                String.class);
+
+        @WebComponentMethod("message")
+        private void setMessage(String message) {
+        }
+    }
+
+    @WebComponent("parent-wc")
+    public class ParentComponent extends Component {
+        protected WebComponentProperty<String> message = new WebComponentProperty<>(
+                String.class);
+    }
+
+    @WebComponent("extending-wc")
+    public class Extending extends ParentComponent {
+        @WebComponentMethod("message")
+        private void setMessage(String message) {
+        }
     }
 }
