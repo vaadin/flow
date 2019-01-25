@@ -15,16 +15,10 @@
  */
 package com.vaadin.flow.server.osgi;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.annotation.HandlesTypes;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,16 +31,24 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.annotation.HandlesTypes;
+
+import org.osgi.framework.Bundle;
+import org.slf4j.LoggerFactory;
+
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
+
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import org.osgi.framework.Bundle;
-import org.slf4j.LoggerFactory;
 
 /**
  * Manages scanned classes inside OSGi container.
@@ -111,10 +113,6 @@ public final class OSGiAccess {
             return Collections.emptyMap();
         }
 
-        @Override
-        public Enumeration<String> getAttributeNames() {
-            return Collections.enumeration(attributes.keySet());
-        }
     }
 
     /**

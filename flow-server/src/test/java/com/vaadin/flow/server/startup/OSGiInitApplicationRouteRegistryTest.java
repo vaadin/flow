@@ -15,23 +15,25 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.ServletContext;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.osgi.OSGiAccess;
+
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance which is initialized via
@@ -50,20 +52,13 @@ public class OSGiInitApplicationRouteRegistryTest
     public void init() {
         OSGiAccess.getInstance()
                 .setServletContainerInitializers(Collections.emptyList());
-        removeAttributes(OSGiAccess.getInstance().getOsgiServletContext());
+        OSGiAccess.getInstance().getOsgiServletContext()
+                .setAttribute(RouteRegistry.class.getName(), null);
         registry = ApplicationRouteRegistry
                 .getInstance(Mockito.mock(ServletContext.class));
 
         osgiCollectorRegistry = ApplicationRouteRegistry
                 .getInstance(OSGiAccess.getInstance().getOsgiServletContext());
-    }
-
-    private void removeAttributes(ServletContext servletContext) {
-        Enumeration<String> attributeNames = servletContext.getAttributeNames();
-        while (attributeNames.hasMoreElements()) {
-            String attributeName = attributeNames.nextElement();
-            servletContext.setAttribute(attributeName, null);
-        }
     }
 
     @Test
