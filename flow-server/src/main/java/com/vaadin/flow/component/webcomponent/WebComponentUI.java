@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -40,10 +41,9 @@ public class WebComponentUI extends UI {
 
     public static final String NO_NAVIGATION = "Navigation is not available for WebComponents";
 
-    /**
-     * Instantiate a UI for WebComponent communication.
-     */
-    public WebComponentUI() {
+    @Override
+    public void doInit(VaadinRequest request, int uiId) {
+        super.doInit(request, uiId);
         assignLumoThemeIfAvailable();
     }
 
@@ -117,10 +117,11 @@ public class WebComponentUI extends UI {
     private void assignLumoThemeIfAvailable() {
         Optional<ThemeDefinition> lumoOptional = ThemeUtil
                 .getLumoThemeDefinition();
-        
+
         if (lumoOptional.isPresent()) {
             ThemeDefinition lumoThemeDefinition = lumoOptional.get();
-            AbstractTheme theme = Instantiator.get(this)
+            AbstractTheme theme;
+            theme = Instantiator.get(this)
                     .getOrCreate(lumoThemeDefinition.getTheme());
             getInternals().setTheme(theme);
         }
