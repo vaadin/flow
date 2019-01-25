@@ -29,8 +29,8 @@ public final class Shortcuts {
      * Registering a shortcut using this method will tie it to
      * {@code lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
-     * By default, the shortcut's listener is bound to the given
-     * {@code lifecycleOwner}. The listening component can be changed by calling
+     * By default, the shortcut's listener is bound to {@link UI}. The listening
+     * component can be changed by calling
      * {@link ShortcutRegistration#listenOn(Component)}.
      *
      * @param lifecycleOwner
@@ -61,7 +61,7 @@ public final class Shortcuts {
         if (key == null) {
             throw new InvalidParameterException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, () -> lifecycleOwner,
-                command, key);
+        return new ShortcutRegistration(lifecycleOwner, UI::getCurrent,
+                command, key).withModifiers(keyModifiers);
     }
 }

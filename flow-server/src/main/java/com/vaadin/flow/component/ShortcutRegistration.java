@@ -39,13 +39,13 @@ public class ShortcutRegistration implements Registration, Serializable {
     private CompoundRegistration lifecycleRegistration;
     private Component lifecycleOwner;
     // event listener owner
-    private CompoundRegistration handlerStateRegistration;
-    private CompoundRegistration handlerListenerRegistration;
-    private Component handlerOwner;
+    private CompoundRegistration listenOnAttachListenerRegistration;
+    private CompoundRegistration shortcutListenerRegistration;
+    private Component listenOnComponent;
 
     private boolean shortcutActive = false;
 
-    private SerializableSupplier<Component> handlerOwnerSupplier;
+    private SerializableSupplier<Component> listenOnSupplier;
 
     // used to determine, if we need to do something before client response
     private AtomicBoolean isDirty = new AtomicBoolean(false);
@@ -57,7 +57,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *              This is the component which controls when the shortcut is
      *              actually active. If the component is either detached or
      *              invisible, the shortcut will not be active
-     * @param handlerOwnerSupplier
+     * @param listenOnSupplier
      *              Supplier for component to which the shortcut listener is
      *              bound to. Supplier is given in order to get around some
      *              cases where the component might not be immediately
@@ -68,7 +68,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      *              Primary key of the shortcut. This can not be a modifier key.
      */
     ShortcutRegistration(Component lifecycleOwner,
-                         SerializableSupplier<Component> handlerOwnerSupplier,
+                         SerializableSupplier<Component> listenOnSupplier,
                          Command command, Key key) {
         if (Key.isModifier(key)) {
             throw new InvalidParameterException(String.format("Parameter " +
@@ -77,7 +77,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
 
         shortcutCommand = command;
-        this.handlerOwnerSupplier = handlerOwnerSupplier;
+        this.listenOnSupplier = listenOnSupplier;
         setLifecycleOwner(lifecycleOwner);
 
         // addKey cannot be called without lifecycleOwner
@@ -188,6 +188,23 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
+     * Fluently define the {@link Component} onto which the shortcut's listener
+     * is bound. Calling this method will remove the previous listener from the
+     * {@code component} it was bound to.
+     *
+     * @param listenOnComponent {@code Component} onto which the shortcut
+     *                          listener is bound.
+     * @return this <code>ShortcutRegistration</code>
+     */
+    public ShortcutRegistration listenOn(Component listenOnComponent) {
+            removeAllListenerRegistrations();
+            this. listenOnSupplier = () -> listenOnComponent;
+            prepareForClientResponse();
+
+            return this;
+    }
+
+    /**
      * Removes the {@code ShortcutRegistration}
      * <p>
      * Removes all the underlying registrations tied to owner and lifecycle
@@ -203,17 +220,10 @@ public class ShortcutRegistration implements Registration, Serializable {
             lifecycleRegistration.remove();
             lifecycleRegistration = null;
         }
-        if (handlerStateRegistration != null) {
-            handlerStateRegistration.remove();
-            handlerStateRegistration = null;
-        }
-        if (handlerListenerRegistration != null) {
-            handlerListenerRegistration.remove();
-            handlerListenerRegistration = null;
-        }
+        removeAllListenerRegistrations();
 
         lifecycleOwner = null;
-        handlerOwner = null;
+        listenOnComponent = null;
 
         shortcutCommand = null;
     }
@@ -273,7 +283,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return Component
      */
     public Component getOwner() {
-        return handlerOwner;
+        return listenOnComponent;
     }
 
     /**
@@ -352,14 +362,14 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private void updateHandlerListenerRegistration() {
-        assert handlerOwner != null;
+        assert listenOnComponent != null;
 
-        if (handlerListenerRegistration == null) {
-            if (handlerOwner.getUI().isPresent()) {
-                handlerListenerRegistration = new CompoundRegistration();
+        if (shortcutListenerRegistration == null) {
+            if (listenOnComponent.getUI().isPresent()) {
+                shortcutListenerRegistration = new CompoundRegistration();
 
                 Registration keydownRegistration = ComponentUtil.addListener(
-                        handlerOwner,
+                        listenOnComponent,
                         KeyDownEvent.class,
                         e -> {
                             if (lifecycleOwner.isVisible()) {
@@ -367,11 +377,11 @@ public class ShortcutRegistration implements Registration, Serializable {
                             }
                         },
                         domRegistration -> {
-                            handlerListenerRegistration.addRegistration(
+                            shortcutListenerRegistration.addRegistration(
                                     domRegistration);
                             configureHandlerListenerRegistration();
                         });
-                handlerListenerRegistration.addRegistration(
+                shortcutListenerRegistration.addRegistration(
                         keydownRegistration);
             }
         }
@@ -381,8 +391,8 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private void configureHandlerListenerRegistration() {
-        if (handlerListenerRegistration != null) {
-            Optional<Registration> registration = handlerListenerRegistration
+        if (shortcutListenerRegistration != null) {
+            Optional<Registration> registration = shortcutListenerRegistration
                     .registrations.stream().filter(r ->
                             r instanceof DomListenerRegistration)
                     .findFirst();
@@ -421,18 +431,18 @@ public class ShortcutRegistration implements Registration, Serializable {
 
         // remove shortcut listener when detached
         Registration detachRegistration = owner.addDetachListener(e ->
-                removeHandlerListener());
+                removeListenerRegistration());
 
         lifecycleRegistration = new CompoundRegistration(attachRegistration,
                 detachRegistration);
     }
 
     private void registerOwnerListener() {
-        assert handlerOwnerSupplier != null;
+        assert listenOnSupplier != null;
 
-        handlerOwner = handlerOwnerSupplier.get();
+        listenOnComponent = listenOnSupplier.get();
 
-        if (handlerOwner == null) {
+        if (listenOnComponent == null) {
             throw new IllegalStateException(
                     String.format("Could register shortcut listener for %s. " +
                                     "%s<%s> supplied a null value.",
@@ -441,27 +451,36 @@ public class ShortcutRegistration implements Registration, Serializable {
                     Component.class.getSimpleName()));
         }
 
-        if (!(handlerOwner instanceof UI)) {
-            handlerStateRegistration = new CompoundRegistration();
-            handlerStateRegistration.addRegistration(
-                    handlerOwner.addAttachListener(
+        if (!(listenOnComponent instanceof UI)) {
+            listenOnAttachListenerRegistration = new CompoundRegistration();
+            listenOnAttachListenerRegistration.addRegistration(
+                    listenOnComponent.addAttachListener(
                             attachEvent -> updateHandlerListenerRegistration()));
-            handlerStateRegistration.addRegistration(
-                    handlerOwner.addDetachListener(
-                            detachEvent -> removeHandlerListener()));
+            listenOnAttachListenerRegistration.addRegistration(
+                    listenOnComponent.addDetachListener(
+                            detachEvent -> removeListenerRegistration()));
         }
 
         // either the scope is an active UI, or the component is attached to an
         // active UI - in either case, we want to update dom registration
-        if (handlerOwner.getUI().isPresent()) {
+        if (listenOnComponent.getUI().isPresent()) {
             updateHandlerListenerRegistration();
         }
     }
 
-    private void removeHandlerListener() {
-        if (handlerListenerRegistration != null) {
-            handlerListenerRegistration.remove();
-            handlerListenerRegistration = null;
+    private void removeAllListenerRegistrations() {
+        if (listenOnAttachListenerRegistration != null) {
+            listenOnAttachListenerRegistration.remove();
+            listenOnAttachListenerRegistration = null;
+        }
+        removeListenerRegistration();
+        listenOnComponent = null;
+    }
+
+    private void removeListenerRegistration() {
+        if (shortcutListenerRegistration != null) {
+            shortcutListenerRegistration.remove();
+            shortcutListenerRegistration = null;
         }
         shortcutActive = false;
     }
@@ -507,7 +526,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     private final SerializableConsumer<ExecutionContext>
             beforeClientResponseConsumer = executionContext -> {
-        if (handlerOwner == null) {
+        if (listenOnComponent == null) {
             registerOwnerListener();
         }
 

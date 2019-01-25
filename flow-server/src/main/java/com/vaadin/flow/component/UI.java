@@ -1019,6 +1019,7 @@ public class UI extends Component
      */
     public ShortcutRegistration addShortcut(Command command, Key key,
                                             KeyModifier... keyModifiers) {
-        return Shortcuts.addShortcut(this, command, key);
+        return new ShortcutRegistration(this, () -> this, command,
+                key).withModifiers(keyModifiers);
     }
 }
