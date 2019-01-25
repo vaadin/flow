@@ -37,7 +37,7 @@ public class ShortcutsView extends Div {
             expected.setText("toggled!");
         }, Key.KEY_I, KeyModifier.ALT);
 
-        Shortcuts.registerShortcut(UI.getCurrent(), invisibleP, () -> expected
+        Shortcuts.addShortcut(invisibleP, () -> expected
                 .setText("invisibleP"), Key.KEY_V).withAlt();
 
         add(expected, button, input, invisibleP);
@@ -51,15 +51,16 @@ public class ShortcutsView extends Div {
         subview.add(focusTarget);
 
         // only works, when focusTarget is focused
-        Shortcuts.addShortcut(subview, subview,
-                () -> expected.setText("subview"), Key.KEY_S, KeyModifier.ALT);
+        Shortcuts.addShortcut(subview,
+                () -> expected.setText("subview"), Key.KEY_S, KeyModifier.ALT)
+                .listenOn(subview);
 
         add(subview);
 
         Paragraph attachable = new Paragraph("attachable");
         attachable.setId("attachable");
 
-        Shortcuts.registerShortcut(UI.getCurrent(), attachable, () -> expected
+        Shortcuts.addShortcut(attachable, () -> expected
                 .setText("attachable"), Key.KEY_A).withAlt();
 
         UI.getCurrent().addShortcut(() -> {

@@ -55,7 +55,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void ownerScopesTheShortcut() {
+    public void listenOnScopesTheShortcut() {
         open();
 
         sendKeys(Keys.ALT, "s");
