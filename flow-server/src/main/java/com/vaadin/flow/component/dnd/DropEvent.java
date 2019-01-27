@@ -15,142 +15,60 @@
  */
 package com.vaadin.flow.component.dnd;
 
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 
 /**
- * Server side drop event. Fired when an HTML5 drop happens.
+ * Server side drop event. Fired when an HTML5 drop happens on a valid drop
+ * target.
  *
  * @param <T>
  *            Type of the drop target component.
  * @author Vaadin Ltd
- * @see DropTargetExtension#addDropListener(DropListener)
+ * @see DropTarget#addDropListener(DropListener)
+ * @author Vaadin Ltd
+ * @since
  */
+@DomEvent("drop")
 public class DropEvent<T extends Component> extends ComponentEvent<T> {
-    private final Map<String, String> data;
-    private final DragSourceComponent<? extends Component> dragSourceExtension;
-    private final Component dragSource;
-    private final DropEffect dropEffect;
-    private final MouseEventDetails mouseEventDetails;
+
+    private final EffectAllowed effectAllowed;
+    private final String dropEffect;
+    private final Component dragSourceComponent;
 
     /**
      * Creates a server side drop event.
      *
-     * @param target
+     * @param source
      *            Component that received the drop.
-     * @param data
-     *            Map containing all types and corresponding data from the
-     *            {@code
-     *         DataTransfer} object.
-     * @param dropEffect
-     *            the desired drop effect
-     * @param dragSourceExtension
-     *            Drag source extension of the component that initiated the drop
-     *            event.
-     * @param mouseEventDetails
-     *            Mouse event details object containing information about the
-     *            drop event
+     * @param fromClient
+     *            <code>true</code> if the event originated from the client
+     *            side, <code>false</code> otherwise
+     * @param effectAllowed
+     *            the effect allowed by the drag source
      */
-    public DropEvent(T target, Map<String, String> data, DropEffect dropEffect,
-            DragSourceComponent<? extends Component> dragSourceExtension,
-            MouseEventDetails mouseEventDetails) {
-        super(target, true);
+    public DropEvent(T source, boolean fromClient,
+            @EventData("event.dataTransfer.effectAllowed") String effectAllowed) {
+        super(source, fromClient);
 
-        this.data = data;
-        this.dropEffect = dropEffect;
-        this.dragSourceExtension = dragSourceExtension;
-        this.dragSource = Optional.ofNullable(dragSourceExtension)
-                .map(DragSourceComponent::getContent).orElse(null);
-        this.mouseEventDetails = mouseEventDetails;
-    }
-
-    /**
-     * Get data from the {@code DataTransfer} object.
-     *
-     * @param type
-     *            Data format, e.g. {@code text/plain} or {@code text/uri-list}.
-     * @return Optional data for the given format if exists in the {@code
-     * DataTransfer}, otherwise {@code Optional.empty()}.
-     */
-    public Optional<String> getDataTransferData(String type) {
-        return Optional.ofNullable(data.get(type));
-    }
-
-    /**
-     * Get data of any of the types {@code "text"}, {@code "Text"} or {@code
-     * "text/plain"}.
-     * <p>
-     * IE 11 transfers data dropped from the desktop as {@code "Text"} while
-     * most other browsers transfer textual data as {@code "text/plain"}.
-     *
-     * @return First existing data of types in order {@code "text"}, {@code
-     * "Text"} or {@code "text/plain"}, or {@code null} if none of them exist.
-     */
-    public String getDataTransferText() {
-        // Read data type "text"
-        String text = data.get(DnDConstants.DATA_TYPE_TEXT);
-
-        // IE stores data dragged from the desktop as "Text"
-        if (text == null) {
-            text = data.get(DnDConstants.DATA_TYPE_TEXT_IE);
-        }
-
-        // Browsers may store the key as "text/plain"
-        if (text == null) {
-            text = data.get(DnDConstants.DATA_TYPE_TEXT_PLAIN);
-        }
-
-        return text;
-    }
-
-    /**
-     * Get all of the transfer data from the {@code DataTransfer} object. The
-     * data can be iterated to find the most relevant data as it preserves the
-     * order in which the data was set to the drag source element.
-     *
-     * @return Map of type/data pairs, containing all the data from the {@code
-     * DataTransfer} object.
-     */
-    public Map<String, String> getDataTransferData() {
-        return data;
-    }
-
-    /**
-     * Get the desired dropEffect for the drop event.
-     * <p>
-     * <em>NOTE: Currently you cannot trust this to work on all browsers!
-     * https://github.com/vaadin/framework/issues/9247 For Chrome & IE11 it is
-     * never set and always returns {@link DropEffect#NONE} even though the drop
-     * succeeded!</em>
-     *
-     * @return the drop effect
-     */
-    public DropEffect getDropEffect() {
-        return dropEffect;
-    }
-
-    /**
-     * Returns the drag source component if the drag originated from a component
-     * in the same UI as the drop target component, or an empty optional.
-     *
-     * @return Drag source component or an empty optional.
-     */
-    public Optional<Component> getDragSourceComponent() {
-        return Optional.ofNullable(dragSource);
-    }
-
-    /**
-     * Returns the extension of the drag source component if the drag originated
-     * from a component in the same UI as the drop target component, or an empty
-     * optional.
-     *
-     * @return Drag source extension or an empty optional
-     */
-    public Optional<DragSourceComponent<? extends Component>> getDragSourceExtension() {
-        return Optional.ofNullable(dragSourceExtension);
+        this.effectAllowed = Stream.of(EffectAllowed.values())
+                .filter(ea -> ea.getValue().equalsIgnoreCase(effectAllowed))
+                .findFirst().get();
+        // capture drop effect from server side, since it is meant for drag
+        // end event
+        dropEffect = source.getElement().getProperty("__dropEffect");
+        // when the event is created, the drop target is always attached
+        dragSourceComponent = getComponent().getUI()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Drop target received a drop event but not attached "
+                                + "to an UI."))
+                .getActiveDragSourceComponent();
     }
 
     /**
@@ -160,20 +78,42 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
      *
      * @return Optional server side drag data if set and the drag source and the
      *         drop target are in the same UI, otherwise empty {@code Optional}.
-     * @see DragSourceExtension#setDragData(Object)
      */
     public Optional<Object> getDragData() {
-        return getDragSourceExtension().map(DragSourceComponent::getDragData);
+        Optional<Component> dragSourceComponent = getDragSourceComponent();
+        return dragSourceComponent.map(component -> ComponentUtil
+                .getData(component, DragSource.DRAG_SOURCE_DATA_KEY));
     }
 
     /**
-     * Gets the mouse event details for the drop event.
+     * Get the desired {@code dropEffect} for the drop event.
      *
-     * @return Mouse event details object containing information about the drop
-     *         event.
+     * @return the drop effect set to the drop target, or null if nothing set
+     * @see DropTarget#setDropEffect(DropEffect)
      */
-    public MouseEventDetails getMouseEventDetails() {
-        return mouseEventDetails;
+    public DropEffect getDropEffect() {
+        return dropEffect == null ? null
+                : DropEffect.valueOf(dropEffect.toUpperCase());
+    }
+
+    /**
+     * Get the {@code effectAllowed} set by the drag source.
+     *
+     * @return the effect allowed by the drag source
+     * @see DragSource#setEffectAllowed(EffectAllowed)
+     */
+    public EffectAllowed getEffectAllowed() {
+        return effectAllowed;
+    }
+
+    /**
+     * Returns the drag source component if the drag originated from a component
+     * in the same UI as the drop target component, or an empty optional.
+     *
+     * @return Drag source component from the same UI or an empty optional.
+     */
+    public Optional<Component> getDragSourceComponent() {
+        return Optional.ofNullable(dragSourceComponent);
     }
 
     /**

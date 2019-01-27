@@ -15,31 +15,139 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.dependency.JavaScript;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.dnd.DragSource;
+import com.vaadin.flow.component.dnd.DropEffect;
+import com.vaadin.flow.component.dnd.DropTarget;
+import com.vaadin.flow.component.dnd.EffectAllowed;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DnDView", layout = ViewTestLayout.class)
-@JavaScript("dnd.js")
 public class DnDView extends Div {
 
+    public static final String NO_EFFECT_SETUP = "no-effect";
+    private Div eventLog;
+    private int eventCounter = 0;
+
+    private boolean data;
+
     public DnDView() {
-        Div source = new Div();
-        source.setText("Source");
-        source.setId("source");
-        source.getElement().setAttribute("draggable", "true");
-        source.getElement().executeJavaScript("this.ondragstart=drag;");
+        setWidth("1000px");
+        setHeight("800px");
+        getStyle().set("display", "flex");
 
-        Div target = new Div();
-        target.getStyle().set("width", "100px");
-        target.getStyle().set("height", "50px");
-        target.getStyle().set("border", "1px solid");
-        target.setId("target");
-        target.getElement().executeJavaScript("this.ondrop=drop;");
-        target.getElement().executeJavaScript("this.ondragover=allowDrop;");
+        eventLog = new Div();
+        eventLog.add(new Text("Events:"));
+        eventLog.add(new NativeButton("Clear", event -> {
+            eventLog.getChildren().filter(c -> c instanceof Div)
+                    .forEach(eventLog::remove);
+            eventCounter = 0;
+        }));
+        eventLog.add(new NativeButton("Data: " + data, event -> {
+            data = !data;
+            event.getSource().setText("Data: " + data);
+        }));
+        eventLog.setHeightFull();
+        eventLog.setWidth("400px");
+        eventLog.getStyle().set("display", "inline-block").set("border",
+                "2px " + "solid");
+        add(eventLog);
 
-        add(source, target);
+        Div startLane = createLane("start");
+        startLane.add(createDraggableBox(null));
+        Stream.of(EffectAllowed.values()).map(this::createDraggableBox)
+                .forEach(startLane::add);
+
+        Div noEffectLane = createDropLane(null);
+        Div copyDropLane = createDropLane(DropEffect.COPY);
+        Div moveDropLane = createDropLane(DropEffect.MOVE);
+        Div linkDropLane = createDropLane(DropEffect.LINK);
+        Div noneDropLane = createDropLane(DropEffect.NONE);
+
+        Div deactivatedLane = createDropLane(DropEffect.COPY);
+        deactivatedLane.setId("lane-deactivated");
+        deactivatedLane.getChildren().findFirst()
+                .ifPresent(c -> c.getElement().setText("deactivated"));
+        DropTarget.of(deactivatedLane).setActive(false);
+
+        add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane,
+                noneDropLane, deactivatedLane);
     }
 
+    private void addLogEntry(String eventDetails) {
+        Div div = new Div();
+        eventCounter++;
+        div.add(eventCounter + ": " + eventDetails);
+        div.setId("event-" + eventCounter);
+        eventLog.add(div);
+    }
+
+    private Component createDraggableBox(EffectAllowed effectAllowed) {
+        String identifier = effectAllowed == null ? NO_EFFECT_SETUP
+                : effectAllowed.toString();
+
+        Div box = createBox(identifier);
+
+        DragSource<Div> dragSource = DragSource.of(box);
+        dragSource.setDraggable(true);
+        if (effectAllowed != null) {
+            dragSource.setEffectAllowed(effectAllowed);
+        }
+        dragSource.addDragStartListener(event -> {
+            addLogEntry("Start: " + event.getComponent().getText());
+            if (data) {
+                dragSource.setDragData(identifier);
+            }
+        });
+        dragSource.addDragEndListener(event -> {
+            addLogEntry("End: " + event.getComponent().getText() + " "
+                    + event.getDropEffect());
+        });
+        return box;
+    }
+
+    private Div createDropLane(DropEffect dropEffect) {
+        String identifier = dropEffect == null ? "no-effect"
+                : dropEffect.toString();
+
+        Div lane = createLane(identifier);
+
+        DropTarget<Div> dropTarget = DropTarget.of(lane);
+        dropTarget.setActive(true);
+        if (dropEffect != null) {
+            dropTarget.setDropEffect(dropEffect);
+        }
+        dropTarget.addDropListener(event -> addLogEntry("Drop: "
+                + event.getEffectAllowed() + " " + event.getDropEffect()
+                + (data ? (" " + event.getDragData()) : "")));
+
+        return lane;
+    }
+
+    private Div createBox(String identifier) {
+        Div box = new Div();
+        box.setText(identifier);
+        box.setWidth("100px");
+        box.setHeight("60px");
+        box.getStyle().set("border", "1px solid").set("margin", "10px");
+        box.setId("box-" + identifier);
+        return box;
+    }
+
+    private Div createLane(String identifier) {
+        Div lane = new Div();
+        lane.add(identifier);
+        lane.setId("lane-" + identifier);
+        lane.getStyle().set("margin", "20px").set("border", "1px solid black")
+                .set("display", "inline-block");
+        lane.setHeightFull();
+        lane.setWidth("150px");
+        return lane;
+    }
 }
