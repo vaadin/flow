@@ -25,8 +25,8 @@ import com.vaadin.flow.component.ComponentEventListener;
  * @param <T>
  *            Type of draggable component.
  * @author Vaadin Ltd
- * @see DragSourceExtension#addDragStartListener(DragStartListener)
- * @since 8.1
+ * @see DragSource#addDragStartListener(DragStartListener)
+ * @since
  */
 @FunctionalInterface
 public interface DragStartListener<T extends Component>

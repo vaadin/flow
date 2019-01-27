@@ -25,7 +25,7 @@ import com.vaadin.flow.component.ComponentEventListener;
  * @param <T>
  *            Type of the drop target component.
  * @author Vaadin Ltd
- * @see DropTargetExtension#addDropListener(DropListener)
+ * @see DropTarget#addDropListener(DropListener)
  */
 @FunctionalInterface
 public interface DropListener<T extends Component>

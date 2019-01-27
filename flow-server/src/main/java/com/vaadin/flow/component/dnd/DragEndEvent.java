@@ -17,15 +17,20 @@ package com.vaadin.flow.component.dnd;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 
 /**
- * HTML5 drag end event.
+ * HTML5 drag end event, fired when the user stops dragging a drag source
+ * either by dropping on top of a valid drop target or by canceling to drop.
  *
  * @param <T>
  *            Type of the component that was dragged.
+ * @see DragSource#addDragEndListener(DragEndListener)
  * @author Vaadin Ltd
- * @see DragSourceExtension#addDragEndListener(DragEndListener)
+ * @since
  */
+@DomEvent("dragend")
 public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
     private final DropEffect dropEffect;
 
@@ -34,21 +39,25 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      *
      * @param source
      *            Component that was dragged.
+     * @param fromClient
+     *            <code>true</code> if the event originated from the client
+     *            side, <code>false</code> otherwise
      * @param dropEffect
      *            Drop effect from {@code DataTransfer.dropEffect} object.
      */
-    public DragEndEvent(T source, DropEffect dropEffect) {
-        super(source, true);
-
-        this.dropEffect = dropEffect;
+    public DragEndEvent(T source, boolean fromClient,
+            @EventData("event.dataTransfer.dropEffect") String dropEffect) {
+        super(source, fromClient);
+        this.dropEffect = DropEffect.valueOf(dropEffect.toUpperCase());
     }
 
     /**
-     * Get drop effect of the dragend event. The value will be the desired
-     * action, that is the dropEffect value of the last dragenter or dragover
-     * event. The value depends on the effectAllowed parameter of the drag
-     * source, the dropEffect parameter of the drop target, and its drag over
-     * and drop criteria.
+     * Get drop effect of the dragend event. The value will be in priority
+     * order: the desired action set by the drop target, effectAllowed parameter
+     * of the drag source and modifier keys the user presses. <em>NOTE:</em>
+     * there are some browser specific differences to this - Chrome does not
+     * change the drop effect based on modifier keys but only what the drop
+     * target sets.
      * <p>
      * If the drop is not successful, the value will be {@code NONE}.
      * <p>
@@ -57,24 +66,22 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      *
      * @return The {@code DataTransfer.dropEffect} parameter of the client side
      *         dragend event.
-     * @see DragSourceExtension#setEffectAllowed(com.vaadin.shared.ui.dnd.EffectAllowed)
-     *      DragSourceExtension#setEffectAllowed(EffectAllowed)
-     * @see DropTargetExtension#setDropEffect(DropEffect)
-     * @see DropTargetExtension#setDropCriteriaScript(String)
+     * @see DragSource#setEffectAllowed(com.vaadin.flow.component.dnd.EffectAllowed)
+     * @see DropTarget#setDropEffect(DropEffect)
      */
     public DropEffect getDropEffect() {
         return dropEffect;
     }
 
     /**
-     * Returns whether the drag event was cancelled. This is a shorthand for
-     * {@code dropEffect == NONE}.
+     * Returns whether the drop event succesful or was it cancelled or didn't
+     * succeed. This is a shorthand for {@code dropEffect != NONE}.
      *
-     * @return {@code true} if the drop event was cancelled, {@code false}
+     * @return {@code true} if the drop event succeeded, {@code false}
      *         otherwise.
      */
-    public boolean isCanceled() {
-        return getDropEffect() == DropEffect.NONE;
+    public boolean isSuccesful() {
+        return getDropEffect() != DropEffect.NONE;
     }
 
     /**
