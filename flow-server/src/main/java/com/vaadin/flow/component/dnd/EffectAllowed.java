@@ -19,6 +19,7 @@ package com.vaadin.flow.component.dnd;
  * Used to specify the effect that is allowed for a drag operation.
  *
  * @author Vaadin Ltd
+ * @since
  */
 public enum EffectAllowed {
     /**
@@ -44,17 +45,17 @@ public enum EffectAllowed {
     /**
      * A copy or move operation is permitted.
      */
-    COPY_MOVE("copyMove"),
+    COPY_MOVE("copymove"),
 
     /**
      * A copy or link operation is permitted.
      */
-    COPY_LINK("copyLink"),
+    COPY_LINK("copylink"),
 
     /**
      * A link or move operation is permitted.
      */
-    LINK_MOVE("linkMove"),
+    LINK_MOVE("linkmove"),
 
     /**
      * All operations are permitted.
@@ -73,7 +74,8 @@ public enum EffectAllowed {
     }
 
     /**
-     * Get the string value that is accepted by the client side drag event.
+     * Get the lower case string value that is accepted by the client side drag
+     * event.
      *
      * @return String value accepted by the client side drag event.
      */

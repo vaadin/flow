@@ -19,6 +19,7 @@ package com.vaadin.flow.component.dnd;
  * Used to specify the drop effect to use on dragenter or dragover events.
  *
  * @author Vaadin Ltd
+ * @since
  */
 public enum DropEffect {
     /**
