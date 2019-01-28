@@ -1,0 +1,81 @@
+<link rel="import" href="../frontend/bower_components/polymer/polymer-element.html">
+<link rel="import" href="web-component-ui.html">
+
+<dom-module id="_TagDash_">
+  <template>
+
+    <style>
+      :host {
+        display: inline-block;
+      }
+    </style>
+    <slot></slot>
+  </template>
+  <script>
+    class _TagCamel_ extends Polymer.Element {
+      static get is() {
+        return '_TagDash_';
+      }
+
+      static get properties() {
+        return _Properties_
+
+      }
+
+      _PropertyMethods_
+
+      _sync(property, newValue) {
+        if (this.$server) {
+          this.$server.sync(property, newValue);
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        let flowRoot = _RootElement_;
+        if (!this.$.id) {
+          this._registerElement();
+        } else if (flowRoot && flowRoot.$server) {
+          this.$server.reconnect();
+        }
+
+        console.log('connected', this);
+      }
+
+      _registerElement() {
+        this.$.id = "_TagCamel_-" + _TagCamel_.id++;
+
+        // Needed to make Flow do lookup correctly
+        const poller = () => {
+          let flowRoot = _RootElement_;
+          if (flowRoot && flowRoot.$server) {
+            flowRoot.$ = flowRoot.$ || {};
+            flowRoot.$[this.$.id] = this;
+            flowRoot.$server.connectWebComponent('_TagDash_', this.$.id);
+          } else {
+            setTimeout(poller, 10);
+          }
+        };
+
+        poller();
+      }
+
+      disconnectedCallback() {
+        this.$server.disconnected();
+
+        console.log('disconnected', this);
+      }
+
+      serverConnected() {
+        Object.keys(_TagCamel_.properties).forEach(prop => {
+          this._sync(prop, this[prop]);
+        });
+      }
+    }
+
+    _TagCamel_.id = 0;
+
+    customElements.define(_TagCamel_.is, _TagCamel_);
+  </script>
+</dom-module>

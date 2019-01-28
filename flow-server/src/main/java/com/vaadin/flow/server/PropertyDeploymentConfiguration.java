@@ -163,6 +163,11 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public int getWebComponentDisconnect() {
+        return DefaultDeploymentConfiguration.DEFAULT_WEB_COMPONENT_DISCONNECT;
+    }
+
+    @Override
     public boolean isSendUrlsAsParameters() {
         return getBooleanProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, true);

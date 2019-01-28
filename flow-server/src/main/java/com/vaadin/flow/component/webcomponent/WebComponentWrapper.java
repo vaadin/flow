@@ -19,6 +19,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +44,9 @@ public class WebComponentWrapper extends Component {
     private final Component child;
     private final HashMap<String, Field> fields;
     private final HashMap<String, Method> methods;
+
+    private Future<?> disconnect;
+    private ReentrantLock lock = new ReentrantLock();
 
     /**
      * Wrapper class for the server side WebComponent.
@@ -88,6 +96,60 @@ public class WebComponentWrapper extends Component {
             LoggerFactory.getLogger(child.getClass())
                     .error("Failed to synchronise property '{}'", property, e);
         }
+    }
+
+    /**
+     * Cancel cleanup for a disconnected component.
+     */
+    @ClientCallable
+    public void reconnect() {
+        lock.lock();
+        try {
+            if (disconnect != null && disconnect.cancel(false)) {
+                disconnect = null;
+            } else {
+                LoggerFactory.getLogger(WebComponentUI.class)
+                        .warn("Received reconnect request for non disconnected WebComponent '{}'",
+                                this.child.getClass().getName());
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * A WebComponent disconnected from the dom will be scheduled for cleaning
+     * if it doesn't get reconnected before times up.
+     */
+    @ClientCallable
+    public void disconnected() {
+        lock.lock();
+        try {
+            int disconnectTimeout = getUI().get().getSession()
+                    .getConfiguration().getWebComponentDisconnect();
+            ScheduledExecutorService executorService = Executors
+                    .newSingleThreadScheduledExecutor();
+            disconnect = executorService.schedule(() -> {
+                lock.lock();
+                try {
+                    this.getElement().removeFromParent();
+                    disconnect = null;
+                } finally {
+                    lock.unlock();
+                }
+            }, disconnectTimeout, TimeUnit.SECONDS);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Check if the component is disconnected from the dom on the client side.
+     *
+     * @return disconnected on the client
+     */
+    public boolean isDisconnectedOnClient() {
+        return disconnect != null;
     }
 
     private void setNewMethodValue(String property, String newValue)

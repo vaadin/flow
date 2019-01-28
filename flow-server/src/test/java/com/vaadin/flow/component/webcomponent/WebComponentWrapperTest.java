@@ -2,13 +2,24 @@ package com.vaadin.flow.component.webcomponent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinSession;
 
 public class WebComponentWrapperTest {
 
@@ -129,6 +140,116 @@ public class WebComponentWrapperTest {
                 "Synchronisation of property for which both method and field exists should have thrown!");
     }
 
+    @Test
+    public void disconnectReconnect_componentIsNotCleaned()
+            throws ExecutionException, InterruptedException {
+        WebComponentUI ui = Mockito.mock(WebComponentUI.class);
+
+        MyComponent component = new MyComponent();
+        WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
+                component) {
+            @Override
+            public Optional<UI> getUI() {
+                return Optional.of(ui);
+            }
+        };
+
+        Component parent = new Parent();
+        parent.getElement().appendChild(wrapper.getElement());
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.getWebComponentDisconnect()).thenReturn(1);
+
+        wrapper.disconnected();
+
+        Assert.assertTrue(
+                "Wrapper should be marked as disconnected on the client",
+                wrapper.isDisconnectedOnClient());
+        Assert.assertTrue("Wrapper should still be connected on the server",
+                wrapper.getParent().isPresent());
+
+        wrapper.reconnect();
+
+        Assert.assertFalse(
+                "Wrapper should again be marked as connected on the client",
+                wrapper.isDisconnectedOnClient());
+
+        ScheduledExecutorService service = Executors
+                .newSingleThreadScheduledExecutor();
+
+        ScheduledFuture<Boolean> status = service
+                .schedule(() -> wrapper.getParent().isPresent(), 1200,
+                        TimeUnit.MILLISECONDS);
+
+        awaitTerminationAfterShutdown(service);
+
+        Assert.assertTrue("Wrapper should stay connected on the server",
+                status.get());
+    }
+
+    private void awaitTerminationAfterShutdown(
+            ScheduledExecutorService threadPool) {
+        threadPool.shutdown();
+        try {
+            if (!threadPool.awaitTermination(2, TimeUnit.SECONDS)) {
+                threadPool.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            threadPool.shutdownNow();
+            Thread.currentThread().interrupt();
+            Assert.fail("Executor was interrupted");
+        }
+    }
+
+    @Test
+    public void disconnectOnClient_componentIsCleaned()
+            throws ExecutionException, InterruptedException {
+        WebComponentUI ui = Mockito.mock(WebComponentUI.class);
+
+        MyComponent component = new MyComponent();
+        WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
+                component) {
+            @Override
+            public Optional<UI> getUI() {
+                return Optional.of(ui);
+            }
+        };
+
+        Component parent = new Parent();
+        parent.getElement().appendChild(wrapper.getElement());
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.getWebComponentDisconnect()).thenReturn(1);
+
+        wrapper.disconnected();
+
+        Assert.assertTrue(wrapper.isDisconnectedOnClient());
+        Assert.assertTrue(wrapper.getParent().isPresent());
+
+        ScheduledExecutorService service = Executors
+                .newSingleThreadScheduledExecutor();
+
+        ScheduledFuture<Boolean> status = service
+                .schedule(() -> wrapper.getParent().isPresent(), 1200,
+                        TimeUnit.MILLISECONDS);
+
+        awaitTerminationAfterShutdown(service);
+
+        Assert.assertFalse(
+                "Wrapper should have been disconnected also on the server",
+                status.get());
+    }
+
     @WebComponent("my-component")
     public static class MyComponent extends Component {
 
@@ -173,5 +294,9 @@ public class WebComponentWrapperTest {
         @WebComponentMethod("message")
         public void setMessage(String message) {
         }
+    }
+
+    @Tag("div")
+    public static class Parent extends Component {
     }
 }

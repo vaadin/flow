@@ -60,6 +60,11 @@ public class DefaultDeploymentConfiguration
     public static final int DEFAULT_HEARTBEAT_INTERVAL = 300;
 
     /**
+     * Default value for {@link #getWebComponentDisconnect()} = {@value}.
+     */
+    public static final int DEFAULT_WEB_COMPONENT_DISCONNECT = 300;
+
+    /**
      * Default value for {@link #isCloseIdleSessions()} = {@value} .
      */
     public static final boolean DEFAULT_CLOSE_IDLE_SESSIONS = false;
@@ -75,6 +80,7 @@ public class DefaultDeploymentConfiguration
     private boolean productionMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
+    private int webComponentDisconnect;
     private boolean closeIdleSessions;
     private PushMode pushMode;
     private String pushURL;
@@ -103,6 +109,7 @@ public class DefaultDeploymentConfiguration
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
+        checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
         checkPushMode();
         checkPushURL();
@@ -149,6 +156,11 @@ public class DefaultDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return heartbeatInterval;
+    }
+
+    @Override
+    public int getWebComponentDisconnect() {
+        return webComponentDisconnect;
     }
 
     /**
@@ -240,6 +252,18 @@ public class DefaultDeploymentConfiguration
         } catch (NumberFormatException e) {
             getLogger().warn(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
+        }
+    }
+
+    private void checkWebComponentDisconnectTimeout() {
+        try {
+            webComponentDisconnect = getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT,
+                    DEFAULT_WEB_COMPONENT_DISCONNECT, Integer::parseInt);
+
+        } catch (NumberFormatException e) {
+            getLogger().warn(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
+            webComponentDisconnect = DEFAULT_WEB_COMPONENT_DISCONNECT;
         }
     }
 

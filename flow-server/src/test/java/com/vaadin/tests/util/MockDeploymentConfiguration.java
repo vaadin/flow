@@ -16,6 +16,7 @@ public class MockDeploymentConfiguration
     private boolean productionMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
+    private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
     private String pushURL = "";
@@ -68,6 +69,11 @@ public class MockDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return heartbeatInterval;
+    }
+
+    @Override
+    public int getWebComponentDisconnect() {
+        return webComponentDisconnect;
     }
 
     public void setHeartbeatInterval(int heartbeatInterval) {
