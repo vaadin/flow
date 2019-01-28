@@ -789,7 +789,7 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals("One MyRoute should have been removed",
                 MyRoute.class, removed.get(0).getNavigationTarget());
         Assert.assertEquals("Removed version should not have a parent layout",
-                UI.class, removed.get(0).getParentLayout());
+                Collections.emptyList(), removed.get(0).getParentLayouts());
     }
 
     @Test

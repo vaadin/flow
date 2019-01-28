@@ -16,18 +16,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.easymock.Capture;
-import org.easymock.CaptureType;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
+import org.easymock.Capture;
+import org.easymock.CaptureType;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -252,8 +251,9 @@ public class ServletDeployerTest {
             expect(contextMock.getAttribute(RouteRegistry.class.getName()))
                     .andAnswer(() -> {
                         ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
-                        RouteConfiguration.forRegistry(registry).setRoutes(Collections
-                                .singleton(ComponentWithRoute.class));
+                        RouteConfiguration.forRegistry(registry)
+                                .setRoutes(Collections
+                                        .singleton(ComponentWithRoute.class));
                         return registry;
                     }).anyTimes();
         } else {
@@ -284,7 +284,8 @@ public class ServletDeployerTest {
         Capture<String> parameterNameCapture = newCapture();
         expect(registrationMock.getInitParameter(capture(parameterNameCapture)))
                 .andAnswer(() -> initParameters
-                        .get(parameterNameCapture.getValue())).anyTimes();
+                        .get(parameterNameCapture.getValue()))
+                .anyTimes();
         replay(registrationMock);
         return registrationMock;
     }
