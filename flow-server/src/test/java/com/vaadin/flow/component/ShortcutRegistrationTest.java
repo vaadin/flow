@@ -1,3 +1,19 @@
+/*
+ * Copyright 2000-2019 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.component;
 
 import java.util.Optional;
@@ -11,37 +27,40 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.shared.Registration;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ShortcutRegistrationTest {
 
     private UI ui;
-    private Component lifeOwner;
-    private Component handlerOwner;
+    private Component lifecycleOwner;
+    private Component listenOn;
 
     @Before
     public void initTests() {
         ui = mock(UI.class);
-        lifeOwner = mock(Component.class);
-        handlerOwner = mock(Component.class);
+        lifecycleOwner = mock(Component.class);
+        listenOn = mock(Component.class);
 
-        when(lifeOwner.getUI()).thenReturn(Optional.of(ui));
-        when(lifeOwner.addAttachListener(any())).thenReturn(mock(Registration.class));
-        when(lifeOwner.addDetachListener(any())).thenReturn(mock(Registration.class));
+        when(lifecycleOwner.getUI()).thenReturn(Optional.of(ui));
+        when(lifecycleOwner.addAttachListener(any())).thenReturn(mock(Registration.class));
+        when(lifecycleOwner.addDetachListener(any())).thenReturn(mock(Registration.class));
 
-        when(handlerOwner.getUI()).thenReturn(Optional.of(ui));
+        when(listenOn.getUI()).thenReturn(Optional.of(ui));
     }
 
     @Test
     public void registrationWillBeCompletedBeforeClientResponse() {
-        ShortcutRegistration registration = new ShortcutRegistration(lifeOwner,
-                () -> handlerOwner, () -> {}, Key.KEY_A);
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
 
         clientResponse();
 
@@ -55,16 +74,16 @@ public class ShortcutRegistrationTest {
 
     @Test
     public void constructedRegistrationIsDirty() {
-        ShortcutRegistration registration = new ShortcutRegistration(lifeOwner,
-                () -> handlerOwner, () -> {}, Key.KEY_A);
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
 
         assertTrue(registration.isDirty());
     }
 
     @Test
     public void lateUpdateOfModifiersDirtiesRegistration() {
-        ShortcutRegistration registration = new ShortcutRegistration(lifeOwner,
-                () -> handlerOwner, () -> {}, Key.KEY_A);
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
 
         clientResponse();
 
@@ -78,8 +97,8 @@ public class ShortcutRegistrationTest {
 
     @Test
     public void fluentModifiersAreAddedCorrectly() {
-        ShortcutRegistration registration = new ShortcutRegistration(lifeOwner,
-                () -> handlerOwner, () -> {}, Key.KEY_A);
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
 
         registration.withAlt().withCtrl().withMeta().withShift();
 
@@ -88,8 +107,8 @@ public class ShortcutRegistrationTest {
 
     @Test
     public void preventDefaultAndStopPropagationValuesDefaultToTrue() {
-        ShortcutRegistration registration = new ShortcutRegistration(lifeOwner,
-                () -> handlerOwner, () -> {}, Key.KEY_A);
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
 
         assertTrue(registration.preventsDefault());
         assertTrue(registration.stopsPropagation());
@@ -104,15 +123,39 @@ public class ShortcutRegistrationTest {
     public void bindLifecycleToChangesLifecycleOwner() {
         Component newOwner = mock(Component.class);
 
-        ShortcutRegistration registration = new ShortcutRegistration(lifeOwner,
-                () -> handlerOwner, () -> {}, Key.KEY_A);
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
 
-        assertEquals(lifeOwner, registration.getLifecycleOwner());
+        assertEquals(lifecycleOwner, registration.getLifecycleOwner());
 
         registration.bindLifecycleTo(newOwner);
 
         assertEquals(newOwner, registration.getLifecycleOwner());
 
+    }
+
+    @Test
+    public void listenOnChangesTheComponentThatOwnsTheListener() {
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
+
+        // No response, no listenOn component
+        assertNull(registration.getOwner());
+
+        clientResponse();
+
+        // listenOn component should be set after client response
+        assertEquals(listenOn, registration.getOwner());
+
+        // Change the listenOn component
+        Component newListenOn = mock(Component.class);
+        when(newListenOn.getUI()).thenReturn(Optional.empty());
+        registration.listenOn(newListenOn);
+
+        clientResponse(newListenOn);
+
+        // listenOn component should be set to the new component
+        assertEquals(newListenOn, registration.getOwner());
     }
 
     /**
@@ -121,21 +164,45 @@ public class ShortcutRegistrationTest {
      * Simulates a "beforeClientResponse" callback for the given
      * {@link ShortcutRegistration}
      */
-    public void clientResponse() {
+    private void clientResponse() {
         /*
             In all honesty, this should be an integration test and it relies
             too heavily on the internals of ShortcutRegistration and other
             components, but it did help catch a bug so here it is!
          */
 
-        when(handlerOwner.getElement()).thenReturn(new Element("tag"));
-        when(handlerOwner.getEventBus()).thenReturn(new ComponentEventBus(handlerOwner));
+        when(listenOn.getElement()).thenReturn(new Element("tag"));
+        when(listenOn.getEventBus()).thenReturn(new ComponentEventBus(
+                listenOn));
 
         ArgumentCaptor<SerializableConsumer> captor =
                 ArgumentCaptor.forClass(SerializableConsumer.class);
 
-        verify(ui, times(1)).beforeClientResponse(
-                eq(lifeOwner), captor.capture());
+        verify(ui).beforeClientResponse(eq(lifecycleOwner), captor.capture());
+
+        SerializableConsumer consumer = captor.getValue();
+
+        // Fake beforeClientExecution call.
+        consumer.accept(mock(ExecutionContext.class));
+    }
+
+    /**
+     * Works only with the {@code registration} member variable, but allows
+     * configuring the {@code listenOn} component
+     *
+     * Simulates a "beforeClientResponse" callback for the given
+     * {@link ShortcutRegistration}
+     */
+    private void clientResponse(Component listenOnMock) {
+        when(listenOnMock.getElement()).thenReturn(new Element("tag"));
+        when(listenOnMock.getEventBus()).thenReturn(new ComponentEventBus(
+                listenOnMock));
+
+        ArgumentCaptor<SerializableConsumer> captor =
+                ArgumentCaptor.forClass(SerializableConsumer.class);
+
+        verify(ui, atLeastOnce()).beforeClientResponse(
+                eq(lifecycleOwner), captor.capture());
 
         SerializableConsumer consumer = captor.getValue();
 
