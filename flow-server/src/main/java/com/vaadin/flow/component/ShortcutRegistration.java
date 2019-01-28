@@ -1,3 +1,19 @@
+/*
+ * Copyright 2000-2019 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
@@ -51,6 +67,18 @@ public class ShortcutRegistration implements Registration, Serializable {
     private AtomicBoolean isDirty = new AtomicBoolean(false);
 
     private Command shortcutCommand;
+
+    // beforeClientResponse callback
+    private final SerializableConsumer<ExecutionContext>
+            beforeClientResponseConsumer = executionContext -> {
+        if (listenOnComponent == null) {
+            registerOwnerListener();
+        }
+
+        updateHandlerListenerRegistration();
+
+        markClean();
+    };
 
     /**
      * @param lifecycleOwner
@@ -139,7 +167,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Allows the default keyboard event handling when the shortcut is invoked
+     * Allows the default keyboard event handling when the shortcut is invoked.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration allowBrowserDefault() {
@@ -325,8 +353,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 modifiers.add(hashableKey);
                 prepareForClientResponse();
             }
-        }
-        else {
+        } else {
             if (primaryKey == null || !primaryKey.equals(hashableKey)) {
                 primaryKey = hashableKey;
                 prepareForClientResponse();
@@ -338,7 +365,9 @@ public class ShortcutRegistration implements Registration, Serializable {
         assert lifecycleOwner != null;
 
         synchronized (this) {
-            if (isDirty.get()) return;
+            if (isDirty.get()) {
+                return;
+            }
             isDirty.set(true);
         }
 
@@ -350,7 +379,9 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     private void markClean() {
         synchronized (this) {
-            if (!isDirty.get()) return;
+            if (!isDirty.get()) {
+                return;
+            }
             isDirty.set(false);
             executionRegistration = null;
         }
@@ -384,8 +415,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 shortcutListenerRegistration.addRegistration(
                         keydownRegistration);
             }
-        }
-        else {
+        } else {
             configureHandlerListenerRegistration();
         }
     }
@@ -485,19 +515,15 @@ public class ShortcutRegistration implements Registration, Serializable {
         shortcutActive = false;
     }
 
-    private boolean isLifecycleOwnerAttached() {
-        return lifecycleOwner != null && lifecycleOwner.getUI().isPresent();
-    }
-
     private void queueBeforeExecutionCallback() {
-        if (!isLifecycleOwnerAttached()) {
+        if (lifecycleOwner == null || !lifecycleOwner.getUI().isPresent()) {
             return;
         }
 
         if (executionRegistration != null) {
             executionRegistration.remove();
         }
-        // isLifecycleOwnerAttached checks for UI status
+
         executionRegistration = lifecycleOwner.getUI().get()
                 .beforeClientResponse(lifecycleOwner,
                         beforeClientResponseConsumer);
@@ -523,17 +549,6 @@ public class ShortcutRegistration implements Registration, Serializable {
         return  "(" + keyList + ".indexOf(event.code) !== -1 || " +
                 keyList + ".indexOf(event.key) !== -1)";
     }
-
-    private final SerializableConsumer<ExecutionContext>
-            beforeClientResponseConsumer = executionContext -> {
-        if (listenOnComponent == null) {
-            registerOwnerListener();
-        }
-
-        updateHandlerListenerRegistration();
-
-        markClean();
-    };
 
     /**
      * Class used to wrap a {@link Key} instance. Makes it easier to compare the
