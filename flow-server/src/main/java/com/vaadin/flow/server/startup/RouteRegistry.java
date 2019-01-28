@@ -908,7 +908,7 @@ public class RouteRegistry implements Serializable {
         return Optional.ofNullable(LazyLoadLumoTheme.LUMO_CLASS_IF_AVAILABLE);
     }
 
-    private static final class LazyLoadLumoTheme {
+    private static final class LazyLoadLumoTheme implements Serializable {
 
         private static final ThemeDefinition LUMO_CLASS_IF_AVAILABLE = loadLumoClassIfAvailable();
 
