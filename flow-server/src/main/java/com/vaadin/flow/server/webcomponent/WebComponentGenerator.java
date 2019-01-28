@@ -35,7 +35,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentMethod;
 import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -56,14 +55,24 @@ public class WebComponentGenerator {
                                 .getResourceAsStream("webcomponent-template.html"),
                         StandardCharsets.UTF_8);
             } catch (IOException e) {
-                throw new IllegalArgumentException("Couldn't load the template class", e);
+                throw new IllegalArgumentException(
+                        "Couldn't load the template class", e);
             }
         }
         return template;
     }
 
+    /**
+     * Generate web component html/JS for given tag and class.
+     *
+     * @param tag
+     *         web component tag
+     * @param webComponentClass
+     *         web component class implementation
+     * @return generated web component html/JS to be served to the client
+     */
     public static String generateModule(String tag,
-            Class<? extends Component> webComponentClass) throws IOException {
+            Class<? extends Component> webComponentClass) {
         Set<PropertyData> webComponentProperties = new HashSet<>();
 
         webComponentProperties
