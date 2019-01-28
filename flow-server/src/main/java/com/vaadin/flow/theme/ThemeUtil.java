@@ -60,14 +60,7 @@ public final class ThemeUtil {
 
             ServiceReference<ThemeDefinition> reference = context
                     .getServiceReference(ThemeDefinition.class);
-            if (reference == null) {
-                return Optional
-                        .ofNullable(LazyLoadLumoTheme.LUMO_CLASS_IF_AVAILABLE);
-            }
-
-            ThemeDefinition definition = context.getService(reference);
-
-            return Optional.ofNullable(definition);
+            return Optional.ofNullable(reference).map(context::getService);
         }
         return Optional.ofNullable(LazyLoadLumoTheme.LUMO_CLASS_IF_AVAILABLE);
     }
