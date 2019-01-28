@@ -55,7 +55,7 @@ public final class Shortcuts {
      *              {@link ShortcutRegistration} for configuring and removing the
      *              shortcut
      */
-    public static ShortcutRegistration addShortcut(
+    public static ShortcutRegistration addShortcutListener(
             Component lifecycleOwner, Command command, Key key,
             KeyModifier... keyModifiers) {
         if (lifecycleOwner == null) {
@@ -69,6 +69,43 @@ public final class Shortcuts {
             throw new InvalidParameterException(String.format(NULL, "key"));
         }
         return new ShortcutRegistration(lifecycleOwner, UI::getCurrent,
-                command, key).withModifiers(keyModifiers);
+                event -> command.execute(), key).withModifiers(keyModifiers);
+    }
+
+    /**
+     *
+     * @param lifecycleOwner
+     *              The component that controls, when the shortcut is active. If
+     *              the component is either invisible or detached, the shortcut
+     *              won't work
+     * @param listener
+     *              Listener to execute when the shortcut is invoked. Receives a
+     *              {@link ShortcutEvent}
+     * @param key
+     *              Primary {@link Key} used to trigger the shortcut
+     * @param keyModifiers
+     *              {@link KeyModifier KeyModifiers} which also need to be
+     *              pressed for the shortcut to trigger
+     * @return
+     *              {@link ShortcutRegistration} for configuring and removing the
+     *              shortcut
+     */
+    public ShortcutRegistration addShortcutListener(
+            Component lifecycleOwner, ShortcutEventListener listener, Key key,
+            KeyModifier... keyModifiers) {
+
+        if (lifecycleOwner == null) {
+            throw new InvalidParameterException(String.format(NULL,
+                    "lifecycleOwner"));
+        }
+        if (listener == null) {
+            throw new InvalidParameterException(String.format(NULL,
+                    "listener"));
+        }
+        if (key == null) {
+            throw new InvalidParameterException(String.format(NULL, "key"));
+        }
+        return new ShortcutRegistration(lifecycleOwner, UI::getCurrent,
+                listener, key).withModifiers(keyModifiers);
     }
 }

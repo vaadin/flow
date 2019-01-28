@@ -87,8 +87,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
 
         final Component thisComponent = (Component) this;
         return new ShortcutRegistration(thisComponent, UI::getCurrent,
-                () -> ComponentUtil.fireEvent(thisComponent, new ClickEvent<>(
-                        thisComponent)),
+                event -> ComponentUtil.fireEvent(thisComponent,
+                        new ClickEvent<>(thisComponent)),
                 key).withModifiers(keyModifiers);
     }
 }

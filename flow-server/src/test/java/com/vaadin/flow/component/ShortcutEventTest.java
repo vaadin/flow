@@ -35,7 +35,7 @@ public class ShortcutEventTest {
 
     private static ShortcutEvent event(Key key, KeyModifier... modifiers) {
         Component component = mock(Component.class);
-        return new ShortcutEvent(component, false, component, key,
+        return new ShortcutEvent(component, component, key,
                 new HashSet<>(Arrays.asList(modifiers)));
     }
 }

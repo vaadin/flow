@@ -1,62 +1,79 @@
 package com.vaadin.flow.component;
 
-import java.util.Arrays;
+import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ShortcutEvent extends ComponentEvent<Component> {
+/**
+ * Event when shortcut is detected
+ *
+ * @author  Vaadin Ltd.
+ * @since
+ */
+public class ShortcutEvent extends EventObject implements Serializable {
     private Component lifecycleOwner;
     private Key key;
     private Set<KeyModifier> keyModifiers;
 
     /**
-     * Creates a new event using the given source and indicator whether the
-     * event originated from the client side or the server side.
+     * Creates a new {@code ShortcutEvent}
      *
-     * @param source     the source component
-     * @param fromClient <code>true</code> if the event originated from the client
-     */
-    public ShortcutEvent(Component source, boolean fromClient) {
-        this(source, fromClient, null, null);
-    }
-
-    /**
      * @param source
-     * @param fromClient
+     *          shortcut's {@code listenOn} {@link Component}
      * @param lifecycleOwner
+     *          shortcut's {@code lifecycleOwner} {@link Component}
      * @param key
+     *          primary {@link Key} of the shortcut
      * @param keyModifiers
+     *          set of {@link KeyModifier KeyModifiers} of the shortcut
      */
-    public ShortcutEvent(Component source, boolean fromClient,
-                         Component lifecycleOwner, Key key,
-                         KeyModifier... keyModifiers) {
-        super(source, fromClient);
+    public ShortcutEvent(Component source, Component lifecycleOwner, Key key,
+                         Set<KeyModifier> keyModifiers) {
+        super(source);
         this.lifecycleOwner = lifecycleOwner;
         this.key = key;
-        this.keyModifiers = Collections.unmodifiableSet(
-                new HashSet<>(Arrays.asList(keyModifiers)));
+        this.keyModifiers = keyModifiers == null ? Collections.emptySet() :
+                Collections.unmodifiableSet(keyModifiers);
     }
 
     /**
+     * Component which listened for the shortcut.
      * @return
+     *          listening {@link Component}
+     */
+    @Override
+    public Component getSource() {
+        return (Component) super.getSource();
+    }
+
+    /**
+     * Component which owns the shortcut.
+     * @return
+     *          owning {@link Component}
      */
     public Component getLifecycleOwner() {
         return lifecycleOwner;
     }
 
     /**
+     * Primary {@link Key} that triggered the shortcut. Primary key can be
+     * anything that is not a {@link KeyModifier}.
      * @return
+     *          primary key
      */
     public Key getKey() {
         return key;
     }
 
     /**
+     * Set of {@link KeyModifier KeyModifiers} that, in combination with the
+     * primary key, triggered the shortcut.
      * @return
+     *          set of key modifiers
      */
     public Set<KeyModifier> getKeyModifiers() {
         return keyModifiers;

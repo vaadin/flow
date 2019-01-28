@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.component;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1000,12 +1001,12 @@ public class UI extends Component
     }
 
     /**
-     * Registers a global shortcut tied to the {@code UI} and returns
-     * {@link ShortcutRegistration} which can be used to fluently configure the
-     * shortcut. The shortcut will be present until
-     * {@link ShortcutRegistration#remove()} is called.
+     * Registers a global shortcut tied to the {@code UI} which executes the
+     * given {@link Command} when invoked.
      * <p>
-     * For more configuration option, use a method in {@link Shortcuts}.
+     * Returns {@link ShortcutRegistration} which can be used to fluently
+     * configure the shortcut. The shortcut will be present until
+     * {@link ShortcutRegistration#remove()} is called.
      *
      * @param command
      *            Code to execute when the shortcut is invoked
@@ -1016,11 +1017,59 @@ public class UI extends Component
      *            for the shortcut to trigger
      * @return  {@link ShortcutRegistration} for configuring the shortcut and
      *          removing
+     * @see #addShortcutListener(ComponentEventListener, Key, KeyModifier...)
+     *          For registering a listener which receives a
+     *          {@link ShortcutEvent}
      * @see Shortcuts
+     *          For a more generic way to add a shortcut
      */
-    public ShortcutRegistration addShortcut(Command command, Key key,
-                                            KeyModifier... keyModifiers) {
-        return new ShortcutRegistration(this, () -> this, command,
-                key).withModifiers(keyModifiers);
+    public ShortcutRegistration addShortcutListener(
+            Command command, Key key, KeyModifier... keyModifiers) {
+        if (command == null) {
+            throw new InvalidParameterException(String.format(Shortcuts.NULL,
+                    "command"));
+        }
+        if (key == null) {
+            throw new InvalidParameterException(String.format(Shortcuts.NULL,
+                    "key"));
+        }
+        return new ShortcutRegistration(this, () -> this,
+                event -> command.execute(), key).withModifiers(keyModifiers);
+    }
+
+    /**
+     * Registers a global shortcut tied to the {@code UI} which executes the
+     * given {@link ComponentEventListener} when invoked.
+     * <p>
+     * Returns {@link ShortcutRegistration} which can be used to fluently
+     * configure the shortcut. The shortcut will be present until
+     * {@link ShortcutRegistration#remove()} is called.
+     *
+     * @param listener
+     *            Listener to execute when the shortcut is invoked. Receives a
+     *            {@link ShortcutEvent}
+     * @param key
+     *            Primary {@link Key} used to trigger the shortcut
+     * @param keyModifiers
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
+     * @return  {@link ShortcutRegistration} for configuring the shortcut and
+     *          removing
+     * @see Shortcuts
+     *          For a more generic way to add a shortcut
+     */
+    public ShortcutRegistration addShortcutListener(
+            ShortcutEventListener listener, Key key,
+            KeyModifier... keyModifiers) {
+        if (listener == null) {
+            throw new InvalidParameterException(String.format(Shortcuts.NULL,
+                    "listener"));
+        }
+        if (key == null) {
+            throw new InvalidParameterException(String.format(Shortcuts.NULL,
+                    "key"));
+        }
+        return new ShortcutRegistration(this, () -> this,
+                listener, key).withModifiers(keyModifiers);
     }
 }

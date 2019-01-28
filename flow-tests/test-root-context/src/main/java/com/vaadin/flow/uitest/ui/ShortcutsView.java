@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
@@ -34,30 +35,36 @@ public class ShortcutsView extends Div {
     private Paragraph invisibleP = new Paragraph("invisible");
     private boolean attached = false;
 
+    private ShortcutRegistration flipFloppingRegistration;
+
     public ShortcutsView() {
         Paragraph expected = new Paragraph();
         expected.setId("expected");
         expected.setText("testing...");
 
+        // clickShortcutWorks
         NativeButton button = new NativeButton();
         button.setId("button");
         button.addClickListener(e -> expected.setText("button"));
         button.addClickShortcut(Key.KEY_B, KeyModifier.ALT);
 
+        // focusShortcutWorks
         Input input = new Input();
         input.setId("input");
         input.addFocusShortcut(Key.KEY_F, KeyModifier.ALT);
 
-        UI.getCurrent().addShortcut(() -> {
+        // shortcutsOnlyWorkWhenComponentIsVisible
+        UI.getCurrent().addShortcutListener(() -> {
             invisibleP.setVisible(!invisibleP.isVisible());
             expected.setText("toggled!");
         }, Key.KEY_I, KeyModifier.ALT);
 
-        Shortcuts.addShortcut(invisibleP, () -> expected
+        Shortcuts.addShortcutListener(invisibleP, () -> expected
                 .setText("invisibleP"), Key.KEY_V).withAlt();
 
         add(expected, button, input, invisibleP);
 
+        // listenOnScopesTheShortcut
         Div subview = new Div();
         subview.setId("subview");
 
@@ -66,20 +73,20 @@ public class ShortcutsView extends Div {
 
         subview.add(focusTarget);
 
-        // only works, when focusTarget is focused
-        Shortcuts.addShortcut(subview,
+        Shortcuts.addShortcutListener(subview,
                 () -> expected.setText("subview"), Key.KEY_S, KeyModifier.ALT)
                 .listenOn(subview);
 
         add(subview);
 
+        // shortcutsOnlyWorkWhenComponentIsAttached
         Paragraph attachable = new Paragraph("attachable");
         attachable.setId("attachable");
 
-        Shortcuts.addShortcut(attachable, () -> expected
+        Shortcuts.addShortcutListener(attachable, () -> expected
                 .setText("attachable"), Key.KEY_A).withAlt();
 
-        UI.getCurrent().addShortcut(() -> {
+        UI.getCurrent().addShortcutListener(() -> {
             attached = !attached;
             if (attached) {
                 add(attachable);
@@ -89,6 +96,23 @@ public class ShortcutsView extends Div {
             }
             expected.setText("toggled!");
         }, Key.KEY_Y, KeyModifier.ALT);
+
+        // modifyingShortcutShouldChangeShortcutEvent
+        flipFloppingRegistration =
+                UI.getCurrent().addShortcutListener(event -> {
+                    if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
+                        expected.setText("Alt");
+                        flipFloppingRegistration.withModifiers(
+                                KeyModifier.SHIFT);
+                    } else if (event.getKeyModifiers().contains(
+                            KeyModifier.SHIFT)) {
+                        expected.setText("Shift");
+                        flipFloppingRegistration.withModifiers(KeyModifier.ALT);
+                    }
+                    else {
+                        expected.setText("Failed");
+                    }
+
+                }, Key.KEY_G, KeyModifier.ALT);
     }
 }
-
