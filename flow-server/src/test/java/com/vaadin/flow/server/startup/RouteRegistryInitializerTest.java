@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,19 +26,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
@@ -66,6 +57,12 @@ import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -170,8 +167,8 @@ public class RouteRegistryInitializerTest {
                 "RouteRegistry should not have navigation targets after empty set",
                 registry.hasNavigationTargets());
 
-        RouteConfiguration.forRegistry(registry).setRoutes(
-                new HashSet<>(Collections.singleton(NavigationTargetFoo.class)));
+        RouteConfiguration.forRegistry(registry).setRoutes(new HashSet<>(
+                Collections.singleton(NavigationTargetFoo.class)));
 
         Assert.assertTrue("RouteRegistry should be initialized",
                 registry.hasNavigationTargets());
@@ -198,7 +195,8 @@ public class RouteRegistryInitializerTest {
         Assert.assertTrue("RouteRegistry should be initialized",
                 registry.hasNavigationTargets());
 
-        // Test should fail on this as there already exists a route for this route
+        // Test should fail on this as there already exists a route for this
+        // route
         RouteConfiguration.forRegistry(registry).addRoutes(new HashSet<>(
                 Collections.singleton(NavigationTargetFoo2.class)));
     }
@@ -1170,24 +1168,27 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Not all registered routes were returned", 7,
                 registeredRoutes.size());
 
-        Assert.assertEquals("Parent is wrongly set to data", UI.class,
-                registeredRoutes.get(0).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data",
+                Collections.emptyList(),
+                registeredRoutes.get(0).getParentLayouts());
         Assert.assertEquals("Parent is wrongly set to data",
                 ParentWithRoutePrefix.class,
                 registeredRoutes.get(1).getParentLayout());
         Assert.assertEquals("Parent is wrongly set to data",
                 AbsoluteMiddleParent.class,
                 registeredRoutes.get(2).getParentLayout());
-        Assert.assertEquals("Parent is wrongly set to data", UI.class,
-                registeredRoutes.get(3).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data",
+                Collections.emptyList(),
+                registeredRoutes.get(3).getParentLayouts());
         Assert.assertEquals("Parent is wrongly set to data",
                 ParentWithRoutePrefix.class,
                 registeredRoutes.get(4).getParentLayout());
         Assert.assertEquals("Parent is wrongly set to data",
                 ParentWithRoutePrefix.class,
                 registeredRoutes.get(5).getParentLayout());
-        Assert.assertEquals("Parent is wrongly set to data", UI.class,
-                registeredRoutes.get(6).getParentLayout());
+        Assert.assertEquals("Parent is wrongly set to data",
+                Collections.emptyList(),
+                registeredRoutes.get(6).getParentLayouts());
 
     }
 
@@ -1260,8 +1261,9 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Sort order was not the one expected",
                 ParentWithRoutePrefix.class,
                 routeAliases.get(1).getParentLayout());
-        Assert.assertEquals("Sort order was not the one expected", UI.class,
-                routeAliases.get(2).getParentLayout());
+        Assert.assertEquals("Sort order was not the one expected",
+                Collections.emptyList(),
+                routeAliases.get(2).getParentLayouts());
         Assert.assertEquals("Sort order was not the one expected",
                 ParentWithRoutePrefix.class,
                 routeAliases.get(3).getParentLayout());
