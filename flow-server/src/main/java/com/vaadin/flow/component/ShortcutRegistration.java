@@ -532,7 +532,9 @@ public class ShortcutRegistration implements Registration, Serializable {
     private static String generateEventModifierFilter(
             Collection<Key> modifiers) {
 
-        if (modifiers.size() == 0) return "true";
+        if (modifiers.isEmpty()) {
+            return "true";
+        }
 
         return modifiers.stream().filter(Key::isModifier)
                 .map(modifier ->
@@ -542,8 +544,8 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private static String generateEventKeyFilter(Key key) {
-        // will now allow shortcut to happen without primary key
-        if (key == null) return "false";
+        assert key != null;
+
         String keyList = "[" + key.getKeys().stream().map(s -> "'" + s + "'")
                 .collect(Collectors.joining(",")) + "]";
         return  "(" + keyList + ".indexOf(event.code) !== -1 || " +
@@ -611,7 +613,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * together.
      */
     private static class CompoundRegistration implements Registration {
-        Set<Registration> registrations;
+        private Set<Registration> registrations;
 
         CompoundRegistration(Registration... registrations) {
             this.registrations = new HashSet<>(Arrays.asList(registrations));

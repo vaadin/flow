@@ -156,7 +156,7 @@ public interface Focusable<T extends Component>
 
         if (key == null) {
             throw new InvalidParameterException(
-                    String.format(Shortcuts.NULL, key));
+                    String.format(Shortcuts.NULL, "key"));
         }
 
         return new ShortcutRegistration((Component) this, UI::getCurrent,

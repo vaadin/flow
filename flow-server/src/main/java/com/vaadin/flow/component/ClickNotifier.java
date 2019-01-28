@@ -82,7 +82,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
 
         if (key == null) {
             throw new InvalidParameterException(
-                    String.format(Shortcuts.NULL, key));
+                    String.format(Shortcuts.NULL, "key"));
         }
 
         final Component thisComponent = (Component) this;
