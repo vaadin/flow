@@ -163,7 +163,7 @@ public class ShortcutRegistrationTest {
      * Simulates a "beforeClientResponse" callback for the given
      * {@link ShortcutRegistration}
      */
-    public void clientResponse() {
+    private void clientResponse() {
         /*
             In all honesty, this should be an integration test and it relies
             too heavily on the internals of ShortcutRegistration and other
@@ -192,7 +192,7 @@ public class ShortcutRegistrationTest {
      * Simulates a "beforeClientResponse" callback for the given
      * {@link ShortcutRegistration}
      */
-    public void clientResponse(Component listenOnMock) {
+    private void clientResponse(Component listenOnMock) {
         when(listenOnMock.getElement()).thenReturn(new Element("tag"));
         when(listenOnMock.getEventBus()).thenReturn(new ComponentEventBus(
                 listenOnMock));

@@ -226,7 +226,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      */
     public ShortcutRegistration listenOn(Component listenOnComponent) {
             removeAllListenerRegistrations();
-            this. listenOnSupplier = () -> listenOnComponent;
+            this.listenOnSupplier = () -> listenOnComponent;
             prepareForClientResponse();
 
             return this;

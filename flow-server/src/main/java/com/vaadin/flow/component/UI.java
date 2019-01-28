@@ -1014,7 +1014,8 @@ public class UI extends Component
      * @param keyModifiers
      *            {@link KeyModifier KeyModifiers} which also need to be pressed
      *            for the shortcut to trigger
-     * @return {@link ShortcutRegistration} for configuring the shortcut
+     * @return  {@link ShortcutRegistration} for configuring the shortcut and
+     *          removing
      * @see Shortcuts
      */
     public ShortcutRegistration addShortcut(Command command, Key key,

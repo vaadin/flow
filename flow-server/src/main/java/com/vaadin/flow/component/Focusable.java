@@ -141,7 +141,8 @@ public interface Focusable<T extends Component>
      * @param keyModifiers
      *              {@link KeyModifier KeyModifiers} that need to be pressed
      *              along with the {@code key} for the shortcut to trigger
-     * @return {@link ShortcutRegistration} used to remove the shortcut
+     * @return  {@link ShortcutRegistration} for configuring the shortcut and
+     *          removing
      */
     default ShortcutRegistration addFocusShortcut(Key key,
                                                   KeyModifier... keyModifiers) {
@@ -160,5 +161,6 @@ public interface Focusable<T extends Component>
 
         return new ShortcutRegistration((Component) this, UI::getCurrent,
                 this::focus, key).withModifiers(keyModifiers);
+
     }
 }
