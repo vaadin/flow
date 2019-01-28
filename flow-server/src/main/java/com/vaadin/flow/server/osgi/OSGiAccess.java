@@ -84,8 +84,8 @@ public final class OSGiAccess {
      * <p>
      * It's public only because it needs to be proxied.
      * <p>
-     * This class represents a singletion servlet context instance which is not
-     * a real servlet context.
+     * This class represents a singleton servlet context instance which is not a
+     * real servlet context.
      */
     public abstract static class OSGiServletContext implements ServletContext {
 

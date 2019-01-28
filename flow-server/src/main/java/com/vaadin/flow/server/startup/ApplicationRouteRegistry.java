@@ -16,8 +16,6 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -105,10 +103,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                     event -> update(() -> applyChange(event))));
         }
 
-        private void unsubscribeToAllChanges() {
-            subscribingRegistrations.forEach(Registration::remove);
-        }
-
         private void applyChange(RoutesChangedEvent event) {
             final RouteConfiguration routeConfiguration = RouteConfiguration
                     .forRegistry(this);
@@ -175,27 +169,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 Class<? extends Component> navigationTarget) {
             throw new UnsupportedOperationException(
                     REMOVE_ROUTE_IS_NOT_SUPPORTED_MESSAGE);
-        }
-    }
-
-    /**
-     * ContextListener that does the initialization and termination of
-     * ApplicationRouteRegistry
-     */
-    static class RouteRegistryServletContextListener
-            implements ServletContextListener {
-
-        @Override
-        public void contextInitialized(ServletContextEvent event) {
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent event) {
-            Object attribute = event.getServletContext()
-                    .getAttribute(RouteRegistry.class.getName());
-            if (attribute instanceof OSGiRouteRegistry) {
-                ((OSGiRouteRegistry) attribute).unsubscribeToAllChanges();
-            }
         }
     }
 

@@ -52,8 +52,12 @@ public class OSGiInitApplicationRouteRegistryTest
     public void init() {
         OSGiAccess.getInstance()
                 .setServletContainerInitializers(Collections.emptyList());
+
+        // In case new attributes are added to OsgiServletContext, they should
+        // also be set to null here
         OSGiAccess.getInstance().getOsgiServletContext()
                 .setAttribute(RouteRegistry.class.getName(), null);
+
         registry = ApplicationRouteRegistry
                 .getInstance(Mockito.mock(ServletContext.class));
 
