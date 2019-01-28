@@ -80,7 +80,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 generated = cache.get(webComponent.get());
             } else {
                 generated = WebComponentGenerator
-                        .generateModule(session, tag.get(), webComponent.get());
+                        .generateModule(tag.get(), webComponent.get());
                 cache.put(webComponent.get(), generated);
             }
 

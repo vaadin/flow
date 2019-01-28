@@ -62,7 +62,7 @@ public class WebComponentGenerator {
         return template;
     }
 
-    public static String generateModule(VaadinSession session, String tag,
+    public static String generateModule(String tag,
             Class<? extends Component> webComponentClass) throws IOException {
         Set<PropertyData> webComponentProperties = new HashSet<>();
 
@@ -82,14 +82,7 @@ public class WebComponentGenerator {
         replacements.put("Properties",
                 getPropertyDefinitions(webComponentProperties));
 
-        // Commented out part needs the possibility to move ui away from body.
-        //        if (session.getConfiguration().getRootElementId().isEmpty()) {
         replacements.put("RootElement", "document.body");
-        //        } else {
-        //            replacements.put("RootElement",
-        //                    "document.getElementById('" + session.getConfiguration()
-        //                            .getRootElementId() + "')");
-        //        }
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
