@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -60,7 +60,7 @@ public class ShortcutRegistrationTest {
     @Test
     public void registrationWillBeCompletedBeforeClientResponse() {
         ShortcutRegistration registration = new ShortcutRegistration(
-                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
+                lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
         clientResponse();
 
@@ -75,7 +75,7 @@ public class ShortcutRegistrationTest {
     @Test
     public void constructedRegistrationIsDirty() {
         ShortcutRegistration registration = new ShortcutRegistration(
-                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
+                lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
         assertTrue(registration.isDirty());
     }
@@ -83,7 +83,7 @@ public class ShortcutRegistrationTest {
     @Test
     public void lateUpdateOfModifiersDirtiesRegistration() {
         ShortcutRegistration registration = new ShortcutRegistration(
-                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
+                lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
         clientResponse();
 
@@ -98,7 +98,7 @@ public class ShortcutRegistrationTest {
     @Test
     public void fluentModifiersAreAddedCorrectly() {
         ShortcutRegistration registration = new ShortcutRegistration(
-                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
+                lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
         registration.withAlt().withCtrl().withMeta().withShift();
 
@@ -108,7 +108,7 @@ public class ShortcutRegistrationTest {
     @Test
     public void preventDefaultAndStopPropagationValuesDefaultToTrue() {
         ShortcutRegistration registration = new ShortcutRegistration(
-                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
+                lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
         assertTrue(registration.preventsDefault());
         assertTrue(registration.stopsPropagation());
@@ -124,7 +124,7 @@ public class ShortcutRegistrationTest {
         Component newOwner = mock(Component.class);
 
         ShortcutRegistration registration = new ShortcutRegistration(
-                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
+                lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
         assertEquals(lifecycleOwner, registration.getLifecycleOwner());
 
@@ -137,7 +137,7 @@ public class ShortcutRegistrationTest {
     @Test
     public void listenOnChangesTheComponentThatOwnsTheListener() {
         ShortcutRegistration registration = new ShortcutRegistration(
-                lifecycleOwner, () -> listenOn, () -> {}, Key.KEY_A);
+                lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
         // No response, no listenOn component
         assertNull(registration.getOwner());
