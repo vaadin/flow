@@ -129,7 +129,14 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String UI_ID_PARAMETER = "v-uiId";
 
-    public static final String ROOT_ELEMENT_ID = "v-rootId";
+    /**
+     * Parameter for transmitting the ui element id.
+     */
+    public static final String UI_ELEMENT_ID = "v-uiElementId";
+
+    /**
+     * Parameter for transmitting the ui tag.
+     */
     public static final String UI_TAG = "v-uiTag";
 
     /**

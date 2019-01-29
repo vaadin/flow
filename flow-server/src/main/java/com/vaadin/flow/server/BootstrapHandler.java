@@ -984,7 +984,7 @@ appConfig.put(ApplicationConstants.UI_TAG, context.getUI().getElement().getTag()
                 deploymentConfiguration.getEs6FrontendPrefix());
         appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
                 deploymentConfiguration.getEs5FrontendPrefix());
-        appConfig.put(ApplicationConstants.ROOT_ELEMENT_ID,
+        appConfig.put(ApplicationConstants.UI_ELEMENT_ID,
                         deploymentConfiguration.getRootElementId());
 
         if (!productionMode) {

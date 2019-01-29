@@ -124,6 +124,12 @@ public class LoadingIndicator {
 
     private Registry registry;
 
+    /**
+     * LodingIndicator constructor.
+     *
+     * @param registry
+     *         current registry
+     */
     public LoadingIndicator(Registry registry) {
         this.registry = registry;
     }

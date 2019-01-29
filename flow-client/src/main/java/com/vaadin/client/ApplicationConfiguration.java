@@ -40,8 +40,8 @@ public class ApplicationConfiguration {
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
-    private String rootId;
-    private String rootTag;
+    private String uiElementId;
+    private String uiTag;
 
     /**
      * Gets the id generated for the application.
@@ -296,41 +296,41 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Get the dom element id defined for root.
+     * Get the dom element id defined for the ui element.
      *
-     * @return root element id or {@code null} if not defined
+     * @return ui element id or {@code null} if not defined
      */
-    public String getRootId() {
-        return rootId;
+    public String getUiElementId() {
+        return uiElementId;
     }
 
     /**
-     * Set the dom element id to which root should be bound.
+     * Set the dom element id to which ui element should be bound.
      *
-     * @param rootId
-     *         root id for target dom element, {@code null} for {@literal
+     * @param uiElementId
+     *         ui id for target dom element, {@code null} for {@literal
      *         <body>}
      */
-    public void setRootId(String rootId) {
-        this.rootId = rootId;
+    public void setUiElementId(String uiElementId) {
+        this.uiElementId = uiElementId;
     }
 
     /**
-     * Get the defined tag for root dom element.
+     * Get the defined tag for ui dom element.
      *
-     * @return root tag for target dom element
+     * @return ui tag for target dom element
      */
-    public String getRootTag() {
-        return rootTag;
+    public String getUiTag() {
+        return uiTag;
     }
 
     /**
-     * Set the dom element tag to be used for root.
+     * Set the dom element tag to be used for ui element.
      *
-     * @param rootTag
-     *         root tag for target dom element
+     * @param uiTag
+     *         ui tag for target dom element
      */
-    public void setRootTag(String rootTag) {
-        this.rootTag = rootTag;
+    public void setUiTag(String uiTag) {
+        this.uiTag = uiTag;
     }
 }

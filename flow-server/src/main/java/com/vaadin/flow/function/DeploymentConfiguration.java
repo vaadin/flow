@@ -261,7 +261,7 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     default String getRootElementId() {
-        return getStringProperty(ApplicationConstants.ROOT_ELEMENT_ID, "");
+        return getStringProperty(ApplicationConstants.UI_ELEMENT_ID, "");
     }
     /**
      * Determines if webJars mechanism is enabled. It is disabled if the user

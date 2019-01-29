@@ -63,13 +63,13 @@ public class ApplicationConnection {
 
         Document document = Browser.getDocument();
         Element flowRoot = document
-                .getElementById(applicationConfiguration.getRootId());
+                .getElementById(applicationConfiguration.getUiElementId());
 
         Element root = flowRoot != null ? flowRoot : document.getBody();
-        assert root.getTagName().toLowerCase()
-                .equals(applicationConfiguration.getRootTag().toLowerCase()) :
+        assert root.getTagName()
+                .equalsIgnoreCase(applicationConfiguration.getUiTag()) :
                 "UI element type didn't match the server defined one! expected "
-                        + applicationConfiguration.getRootTag().toLowerCase()
+                        + applicationConfiguration.getUiTag().toLowerCase()
                         + " got " + root.getTagName().toLowerCase();
 
         rootNode.setDomNode(root);

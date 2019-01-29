@@ -44,6 +44,9 @@ public class DefaultReconnectDialog implements ReconnectDialog {
 
     /**
      * Creates a new instance.
+     *
+     * @param registry
+     *         current registry
      */
     public DefaultReconnectDialog(Registry registry) {
         this.registry = registry;
@@ -96,9 +99,9 @@ public class DefaultReconnectDialog implements ReconnectDialog {
 
     @Override
     public void show() {
-        // FIXME Do something else
         if (root.getParentElement() == null) {
-            registry.getStateTree().getRootNode().getDomNode().appendChild(root);
+            registry.getStateTree().getRootNode().getDomNode()
+                    .appendChild(root);
         }
     }
 
