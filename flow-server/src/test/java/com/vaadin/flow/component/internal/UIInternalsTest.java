@@ -2,27 +2,40 @@ package com.vaadin.flow.component.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 public class UIInternalsTest {
 
     @Mock
     UI ui;
+    @Mock
+    VaadinService vaadinService;
+
     UIInternals internals;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
 
+        Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        Element body = new Element("body");
+        Mockito.when(ui.getElement()).thenReturn(body);
+
         internals = new UIInternals(ui);
+        internals.setSession(new AlwaysLockedVaadinSession(vaadinService));
     }
 
     @Test
