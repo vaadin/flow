@@ -27,6 +27,8 @@ import com.vaadin.flow.shared.Registration;
  *            the type of the component which implements the interface
  * @see BlurNotifier
  * @see FocusNotifier
+ * @author  Vaadin Ltd.
+ * @since
  */
 public interface Focusable<T extends Component>
         extends HasElement, BlurNotifier<T>, FocusNotifier<T>, HasEnabled {
@@ -137,7 +139,8 @@ public interface Focusable<T extends Component>
      * shortcut.
      *
      * @param key
-     *              Primary {@link Key} used to trigger the shortcut
+     *              primary {@link Key} used to trigger the shortcut. Cannot
+     *              be null.
      * @param keyModifiers
      *              {@link KeyModifier KeyModifiers} that need to be pressed
      *              along with the {@code key} for the shortcut to trigger
@@ -160,7 +163,6 @@ public interface Focusable<T extends Component>
         }
 
         return new ShortcutRegistration((Component) this, UI::getCurrent,
-                this::focus, key).withModifiers(keyModifiers);
-
+                event -> this.focus(), key).withModifiers(keyModifiers);
     }
 }

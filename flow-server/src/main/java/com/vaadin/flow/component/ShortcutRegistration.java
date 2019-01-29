@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +33,6 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -66,7 +66,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     // used to determine, if we need to do something before client response
     private AtomicBoolean isDirty = new AtomicBoolean(false);
 
-    private Command shortcutCommand;
+    private ShortcutEventListener eventListener;
 
     // beforeClientResponse callback
     private final SerializableConsumer<ExecutionContext>
@@ -90,21 +90,22 @@ public class ShortcutRegistration implements Registration, Serializable {
      *              bound to. Supplier is given in order to get around some
      *              cases where the component might not be immediately
      *              available.
-     * @param command
-     *              The code to execute when the shortcut is invoked
+     * @param eventListener
+     *              The listener to invoke when the shortcut detected
      * @param key
-     *              Primary key of the shortcut. This can not be a modifier key.
+     *              Primary key of the shortcut. This can not be a
+     *              {@link KeyModifier}.
      */
     ShortcutRegistration(Component lifecycleOwner,
                          SerializableSupplier<Component> listenOnSupplier,
-                         Command command, Key key) {
+                         ShortcutEventListener eventListener, Key key) {
         if (Key.isModifier(key)) {
             throw new InvalidParameterException(String.format("Parameter " +
                     "'key' cannot belong to %s",
                     KeyModifier.class.getSimpleName()));
         }
 
-        shortcutCommand = command;
+        this.eventListener = eventListener;
         this.listenOnSupplier = listenOnSupplier;
         setLifecycleOwner(lifecycleOwner);
 
@@ -253,7 +254,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         lifecycleOwner = null;
         listenOnComponent = null;
 
-        shortcutCommand = null;
+        eventListener = null;
     }
 
     /**
@@ -284,7 +285,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return Set of modifier keys
      */
     public Set<Key> getModifiers() {
-        return new HashSet<>(modifiers);
+        return Collections.unmodifiableSet(modifiers);
     }
 
     /**
@@ -404,7 +405,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                         KeyDownEvent.class,
                         e -> {
                             if (lifecycleOwner.isVisible()) {
-                                shortcutCommand.execute();
+                                invokeShortcutEventListener();
                             }
                         },
                         domRegistration -> {
@@ -448,6 +449,16 @@ public class ShortcutRegistration implements Registration, Serializable {
                 shortcutActive = true;
             });
         }
+    }
+
+    private void invokeShortcutEventListener() {
+        // construct the event
+        final ShortcutEvent event = new ShortcutEvent(listenOnComponent,
+                lifecycleOwner, primaryKey,
+                modifiers.stream().map(k -> (KeyModifier)((HashableKey)k).key)
+                        .collect(Collectors.toSet()));
+
+        eventListener.onShortcut(event);
     }
 
     private void registerLifecycleOwner(Component owner) {

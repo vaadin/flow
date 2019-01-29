@@ -63,7 +63,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * shortcut.
      *
      * @param key
-     *              Primary {@link Key} used to trigger the shortcut
+     *              primary {@link Key} used to trigger the shortcut. Cannot
+     *              be null.
      * @param keyModifiers
      *              {@link KeyModifier KeyModifiers} that need to be pressed
      *              along with the {@code key} for the shortcut to trigger
@@ -87,8 +88,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
 
         final Component thisComponent = (Component) this;
         return new ShortcutRegistration(thisComponent, UI::getCurrent,
-                () -> ComponentUtil.fireEvent(thisComponent, new ClickEvent<>(
-                        thisComponent)),
+                event -> ComponentUtil.fireEvent(thisComponent,
+                        new ClickEvent<>(thisComponent)),
                 key).withModifiers(keyModifiers);
     }
 }

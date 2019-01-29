@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -29,18 +30,19 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ShortcutsIT extends ChromeBrowserTest {
 
+    @Before
+    public void before() {
+        open();
+    }
+
     @Test
     public void clickShortcutWorks() {
-        open();
-
         sendKeys(Keys.ALT, "b");
         Assert.assertEquals("button", getValue());
     }
 
     @Test
     public void focusShortcutWorks() {
-        open();
-
         sendKeys(Keys.ALT, "f") ;
 
         WebElement input = findElement(By.id("input"));
@@ -50,8 +52,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
 
     @Test
     public void shortcutsOnlyWorkWhenComponentIsVisible() {
-        open();
-
         sendKeys(Keys.ALT, "v");
         Assert.assertEquals("invisibleP", getValue());
 
@@ -72,8 +72,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
 
     @Test
     public void listenOnScopesTheShortcut() {
-        open();
-
         sendKeys(Keys.ALT, "s");
         Assert.assertEquals("testing...", getValue()); // nothing happened
 
@@ -87,8 +85,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
 
     @Test
     public void shortcutsOnlyWorkWhenComponentIsAttached() {
-        open();
-
         sendKeys(Keys.ALT, "a");
         Assert.assertEquals("testing...", getValue()); // nothing happens
 
@@ -107,6 +103,20 @@ public class ShortcutsIT extends ChromeBrowserTest {
         Assert.assertEquals("toggled!", getValue()); // nothing happens
     }
 
+    @Test
+    public void modifyingShortcutShouldChangeShortcutEvent() {
+        // the shortcut in this test flips its own modifiers
+        sendKeys(Keys.ALT, "g");
+        Assert.assertEquals("Alt", getValue());
+
+        sendKeys("G");
+        Assert.assertEquals("Shift", getValue());
+
+        // check that things revert back.
+        sendKeys(Keys.ALT, "g");
+        Assert.assertEquals("Alt", getValue());
+    }
+
     private String getValue() {
         WebElement expected = findElement(By.id("expected"));
         return expected.getText();
@@ -120,9 +130,5 @@ public class ShortcutsIT extends ChromeBrowserTest {
 
     private void resetKeys() {
         new Actions(driver).sendKeys(Keys.NULL).build().perform();
-    }
-
-    private void _wait(long millis) {
-        driver.manage().timeouts().implicitlyWait(millis, TimeUnit.MILLISECONDS);
     }
 }
