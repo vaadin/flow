@@ -73,6 +73,14 @@ public final class Shortcuts {
     }
 
     /**
+     * Invoke a {@link ShortcutEventListener} when the shortcut is invoked.
+     * <p>
+     * Registering a shortcut using this method will tie it to
+     * {@code lifecycleOwner} and the shortcut is available in the global scope.
+     * <p>
+     * By default, the shortcut's listener is bound to {@link UI}. The listening
+     * component can be changed by calling
+     * {@link ShortcutRegistration#listenOn(Component)}.
      *
      * @param lifecycleOwner
      *              The component that controls, when the shortcut is active. If

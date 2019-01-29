@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Event when shortcut is detected
+ * Event when shortcut is detected.
  *
  * @author  Vaadin Ltd.
  * @since
@@ -20,7 +20,7 @@ public class ShortcutEvent extends EventObject implements Serializable {
     private Set<KeyModifier> keyModifiers;
 
     /**
-     * Creates a new {@code ShortcutEvent}
+     * Creates a new {@code ShortcutEvent}.
      *
      * @param source
      *          shortcut's {@code listenOn} {@link Component}

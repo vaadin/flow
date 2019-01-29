@@ -20,13 +20,15 @@ import java.io.Serializable;
 import java.util.EventListener;
 
 /**
- * Listener for shortcut events
+ * Listener for shortcut events.
  * @author  Vaadin Ltd.
  * @since
  */
 @FunctionalInterface
 public interface ShortcutEventListener extends EventListener, Serializable {
     /**
+     * Invoked when shortcut has been used.
+     *
      * @param event
      *          {@link ShortcutEvent} based on the registered shortcut
      */

@@ -66,7 +66,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     // used to determine, if we need to do something before client response
     private AtomicBoolean isDirty = new AtomicBoolean(false);
 
-    //private Command shortcutCommand;
     private ShortcutEventListener eventListener;
 
     // beforeClientResponse callback
