@@ -72,6 +72,8 @@ public class WebComponentGenerator {
     /**
      * Generate web component html/JS for given tag and class.
      *
+     * @param uiElement
+     *         string for finding the UI element on the client
      * @param tag
      *         web component tag
      * @param webComponentClass
@@ -80,13 +82,13 @@ public class WebComponentGenerator {
      *         class instantiator implementation
      * @return generated web component html/JS to be served to the client
      */
-    public static String generateModule(String tag,
+    public static String generateModule(String uiElement, String tag,
             Class<? extends Component> webComponentClass,
             Instantiator instantiator) {
         Set<PropertyData> webComponentProperties = getPropertyData(
                 webComponentClass, instantiator);
 
-        Map<String, String> replacements = getReplacementsMap(tag,
+        Map<String, String> replacements = getReplacementsMap(uiElement, tag,
                 webComponentProperties);
 
         String template = getTemplate();
@@ -109,7 +111,7 @@ public class WebComponentGenerator {
         return webComponentProperties;
     }
 
-    static Map<String, String> getReplacementsMap(String tag,
+    static Map<String, String> getReplacementsMap(String uiElement, String tag,
             Set<PropertyData> webComponentProperties) {
         Map<String, String> replacements = new HashMap<>();
 
@@ -123,7 +125,8 @@ public class WebComponentGenerator {
         replacements.put("Properties",
                 getPropertyDefinitions(webComponentProperties));
 
-        replacements.put("RootElement", "document.body");
+        replacements.put("RootElement", uiElement);
+
         return replacements;
     }
 

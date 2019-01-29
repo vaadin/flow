@@ -82,8 +82,16 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             if (cache.containsKey(webComponent.get())) {
                 generated = cache.get(webComponent.get());
             } else {
+                String uiElement;
+                if (session.getConfiguration().getRootElementId().isEmpty()) {
+                    uiElement = "document.body";
+                } else {
+                    uiElement = "document.getElementById('" + session
+                            .getConfiguration().getRootElementId() + "')";
+                }
+
                 generated = WebComponentGenerator
-                        .generateModule(tag.get(), webComponent.get(),
+                        .generateModule(uiElement, tag.get(), webComponent.get(),
                                 Instantiator.get(UI.getCurrent()));
                 cache.put(webComponent.get(), generated);
             }
@@ -91,7 +99,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             IOUtils.write(generated, response.getOutputStream(),
                     StandardCharsets.UTF_8);
         } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "No such web component");
+            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                    "No such web component");
         }
 
         return true;

@@ -19,6 +19,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponent;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -105,7 +106,7 @@ public class WebComponentProviderTest {
     }
 
     @Test
-    public void webComponentGenerater_responseGetsResult() throws IOException {
+    public void webComponentGenerator_responseGetsResult() throws IOException {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
 
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
@@ -119,7 +120,11 @@ public class WebComponentProviderTest {
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
+        DefaultDeploymentConfiguration configuratio = Mockito.mock(DefaultDeploymentConfiguration.class);
+
         Mockito.when(response.getOutputStream()).thenReturn(out);
+        Mockito.when(session.getConfiguration()).thenReturn(configuratio);
+        Mockito.when(configuratio.getRootElementId()).thenReturn("");
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");

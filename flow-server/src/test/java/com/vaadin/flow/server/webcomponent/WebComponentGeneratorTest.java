@@ -92,7 +92,8 @@ public class WebComponentGeneratorTest {
                 .getPropertyData(MyComponent.class, new MockInstantiator());
 
         Map<String, String> replacementsMap = WebComponentGenerator
-                .getReplacementsMap("my-component", propertyData);
+                .getReplacementsMap("document.body", "my-component",
+                        propertyData);
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
