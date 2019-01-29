@@ -32,8 +32,8 @@ public class WebComponentBootstrap extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        VaadinServletRequest serlvetRequest = (VaadinServletRequest) request;
-        String pathInfo = serlvetRequest.getPathInfo();
+        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+        String pathInfo = servletRequest.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
         }

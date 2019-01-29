@@ -22,6 +22,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
+import elemental.json.Json;
+
 public class WebComponentWrapperTest {
 
     @Test
@@ -30,18 +32,18 @@ public class WebComponentWrapperTest {
         WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
                 component);
 
-        wrapper.sync("response", "test value");
+        wrapper.sync("response", Json.create("test value"));
 
         Assert.assertEquals("Response field should have updated with new value",
                 "test value", component.response.get());
 
-        wrapper.sync("message", "MyMessage");
+        wrapper.sync("message", Json.create("MyMessage"));
 
         Assert.assertEquals(
                 "Message should have updated through 'setMessage' method",
                 "MyMessage", component.message);
 
-        wrapper.sync("integerValue", "10");
+        wrapper.sync("integerValue", Json.create(10));
 
         Assert.assertEquals(
                 "IntegerValue field should contain a matching integer value",
@@ -59,8 +61,8 @@ public class WebComponentWrapperTest {
         component.response.addValueChangeListener(events::add);
         component.integerValue.addValueChangeListener(events::add);
 
-        wrapper.sync("response", "update");
-        wrapper.sync("integerValue", "15");
+        wrapper.sync("response", Json.create("update"));
+        wrapper.sync("integerValue", Json.create(15));
 
         Assert.assertEquals(
                 "Only one event for each sync should have taken place", 2,
@@ -95,8 +97,8 @@ public class WebComponentWrapperTest {
         component.response.addValueChangeListener(events::add);
         component.integerValue.addValueChangeListener(events::add);
 
-        wrapper.sync("response", "update");
-        wrapper.sync("integerValue", "15");
+        wrapper.sync("response", Json.create("update"));
+        wrapper.sync("integerValue", Json.create(15));
 
         Assert.assertEquals(
                 "First event source should be 'response' from the extending class",
@@ -122,7 +124,7 @@ public class WebComponentWrapperTest {
         WebComponentWrapper wrapper = new WebComponentWrapper("my-extension",
                 component);
 
-        wrapper.sync("message", "MyMessage");
+        wrapper.sync("message", Json.create("MyMessage"));
 
         Assert.assertEquals(
                 "Message should have updated through 'setMessage' method",
@@ -135,7 +137,7 @@ public class WebComponentWrapperTest {
         WebComponentWrapper wrapper = new WebComponentWrapper("my-extension",
                 component);
 
-        wrapper.sync("message", "hello");
+        wrapper.sync("message", Json.create("hello"));
 
         Assert.fail(
                 "Synchronisation of property for which both method and field exists should have thrown!");
@@ -143,7 +145,7 @@ public class WebComponentWrapperTest {
 
     @Test
     public void disconnectReconnect_componentIsNotCleaned()
-            throws ExecutionException, InterruptedException {
+            throws InterruptedException {
         WebComponentUI ui = Mockito.mock(WebComponentUI.class);
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
         Element body = new Element("body");

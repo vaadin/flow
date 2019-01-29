@@ -93,7 +93,7 @@ public class WebComponentProperty<T> implements Serializable {
      * @return registration to remove listener with
      */
     public Registration addValueChangeListener(
-            PropertyValueChangeListener listener) {
+            PropertyValueChangeListener<T> listener) {
         if (listeners == null) {
             listeners = new HashSet<>();
         }

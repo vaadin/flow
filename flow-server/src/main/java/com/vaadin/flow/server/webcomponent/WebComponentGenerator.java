@@ -36,6 +36,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentMethod;
 import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -244,8 +245,21 @@ public class WebComponentGenerator {
 
         prop.put("type", property.getType().getSimpleName());
 
+        Class<?> convertedType = ReflectTools
+                .convertPrimitiveType(property.getType());
         if (property.getInitialValue() != null) {
-            prop.put("value", property.getInitialValue());
+            if (convertedType == Boolean.class) {
+                prop.put("value", (Boolean) convertedType
+                        .cast(Boolean.valueOf(property.getInitialValue())));
+            } else if (convertedType == Double.class) {
+                prop.put("value", (Double) convertedType
+                        .cast(Double.valueOf(property.getInitialValue())));
+            } else if (convertedType == Integer.class) {
+                prop.put("value", (Integer) convertedType
+                        .cast(Integer.valueOf(property.getInitialValue())));
+            } else {
+                prop.put("value", property.getInitialValue());
+            }
         }
 
         prop.put("observer", getSyncMethod(property.getName()));

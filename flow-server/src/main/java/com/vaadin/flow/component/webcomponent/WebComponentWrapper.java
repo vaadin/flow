@@ -30,8 +30,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 
-import elemental.json.Json;
-import elemental.json.JsonString;
+import elemental.json.JsonValue;
 
 /**
  * Wrapper component for a WebComponent that exposes client callable methods
@@ -75,7 +74,7 @@ public class WebComponentWrapper extends Component {
      *         the new value to set
      */
     @ClientCallable
-    public void sync(String property, String newValue) {
+    public void sync(String property, JsonValue newValue) {
         if (methods.containsKey(property) && fields.containsKey(property)) {
             String message = String
                     .format("The property '%s' exists both as a method and a field.",
@@ -129,14 +128,15 @@ public class WebComponentWrapper extends Component {
                         int timeout = 1000 * disconnectTimeout;
 
                         if (event.getSource().getInternals()
-                                .getLastHeartbeatTimestamp() - disconnect > timeout) {
+                                .getLastHeartbeatTimestamp() - disconnect
+                                > timeout) {
                             this.getElement().removeFromParent();
                         }
                     });
         }
     }
 
-    private void setNewMethodValue(String property, String newValue)
+    private void setNewMethodValue(String property, JsonValue newValue)
             throws IllegalAccessException, InvocationTargetException {
         Method method = methods.get(property);
         boolean accessible = method.isAccessible();
@@ -144,24 +144,19 @@ public class WebComponentWrapper extends Component {
 
         Class<?>[] parameterTypes = method.getParameterTypes();
 
-        if (String.class.isAssignableFrom(parameterTypes[0])) {
-            method.invoke(child, newValue);
+        if (JsonCodec.canEncodeWithoutTypeInfo(parameterTypes[0])) {
+            method.invoke(child,
+                    JsonCodec.decodeAs(newValue, parameterTypes[0]));
         } else {
-            JsonString value = Json.create(newValue);
-            if (JsonCodec.canEncodeWithoutTypeInfo(parameterTypes[0])) {
-                method.invoke(child,
-                        JsonCodec.decodeAs(value, parameterTypes[0]));
-            } else {
-                throw new IllegalArgumentException(String.format(
-                        "Received value wasn't convertible to '%s'",
-                        parameterTypes[0].getName()));
-            }
+            throw new IllegalArgumentException(
+                    String.format("Received value wasn't convertible to '%s'",
+                            parameterTypes[0].getName()));
         }
 
         method.setAccessible(accessible);
     }
 
-    private void setNewFieldValue(String property, String newValue)
+    private void setNewFieldValue(String property, JsonValue newValue)
             throws IllegalAccessException {
         Field field = fields.get(property);
         boolean accessible = field.isAccessible();
@@ -169,20 +164,13 @@ public class WebComponentWrapper extends Component {
         WebComponentProperty fieldProperty = (WebComponentProperty) field
                 .get(child);
 
-        if (String.class.isAssignableFrom(fieldProperty.getValueType())) {
-            fieldProperty.set(newValue);
+        if (JsonCodec.canEncodeWithoutTypeInfo(fieldProperty.getValueType())) {
+            fieldProperty.set(JsonCodec
+                    .decodeAs(newValue, fieldProperty.getValueType()));
         } else {
-
-            JsonString value = Json.create(newValue);
-            if (JsonCodec
-                    .canEncodeWithoutTypeInfo(fieldProperty.getValueType())) {
-                fieldProperty.set(JsonCodec
-                        .decodeAs(value, fieldProperty.getValueType()));
-            } else {
-                throw new IllegalArgumentException(String.format(
-                        "Received value wasn't convertible to '%s'",
-                        fieldProperty.getValueType().getName()));
-            }
+            throw new IllegalArgumentException(
+                    String.format("Received value wasn't convertible to '%s'",
+                            fieldProperty.getValueType().getName()));
         }
 
         field.setAccessible(accessible);

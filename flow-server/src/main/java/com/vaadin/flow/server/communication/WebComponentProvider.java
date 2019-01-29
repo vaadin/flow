@@ -26,8 +26,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -50,8 +48,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        VaadinServletRequest serlvetRequest = (VaadinServletRequest) request;
-        String pathInfo = serlvetRequest.getPathInfo();
+        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+        String pathInfo = servletRequest.getPathInfo();
 
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
@@ -91,8 +89,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 }
 
                 generated = WebComponentGenerator
-                        .generateModule(uiElement, tag.get(), webComponent.get(),
-                                Instantiator.get(UI.getCurrent()));
+                        .generateModule(uiElement, tag.get(),
+                                webComponent.get(),
+                                session.getService().getInstantiator());
                 cache.put(webComponent.get(), generated);
             }
 

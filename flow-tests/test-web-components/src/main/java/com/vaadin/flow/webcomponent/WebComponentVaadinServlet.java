@@ -13,21 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.webcomponent;
+package com.vaadin.flow.webcomponent;
 
-import java.io.Serializable;
+import javax.servlet.annotation.WebServlet;
 
-/**
- * Listener for receiving changes to {@link WebComponentProperty} value.
- */
-@FunctionalInterface
-public interface PropertyValueChangeListener<T> extends Serializable {
+import com.vaadin.flow.server.VaadinServlet;
 
-    /**
-     * Method called when target property value has changed.
-     *
-     * @param event
-     *         property value change event
-     */
-    void valueChange(PropertyValueChangeEvent<T> event);
+@WebServlet(urlPatterns = { "/*" })
+public class WebComponentVaadinServlet extends VaadinServlet {
 }
