@@ -16,6 +16,10 @@
 package com.vaadin.client.communication;
 
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.Registry;
+import com.vaadin.client.flow.StateTree;
+
+import elemental.client.Browser;
 
 public class GwtDefaultReconnectDialogTest extends ClientEngineTestBase {
 
@@ -24,7 +28,13 @@ public class GwtDefaultReconnectDialogTest extends ClientEngineTestBase {
     @Override
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
-        dialog = new DefaultReconnectDialog();
+        Registry registry = new Registry() {{
+            set(StateTree.class, new StateTree(this));
+            getStateTree().getRootNode()
+                    .setDomNode(Browser.getDocument().createDivElement());
+        }};
+
+        dialog = new DefaultReconnectDialog(registry);
     }
 
     public void testShow() {

@@ -143,6 +143,8 @@ public class Bootstrapper implements EntryPoint {
         conf.setHeartbeatInterval(
                 jsoConfiguration.getConfigInteger("heartbeatInterval"));
 
+        conf.setUiElementId(jsoConfiguration.getConfigString(ApplicationConstants.UI_ELEMENT_ID));
+        conf.setUiTag(jsoConfiguration.getConfigString(ApplicationConstants.UI_TAG));
         conf.setServletVersion(jsoConfiguration.getVaadinVersion());
         conf.setAtmosphereVersion(jsoConfiguration.getAtmosphereVersion());
         conf.setAtmosphereJSVersion(jsoConfiguration.getAtmosphereJSVersion());
