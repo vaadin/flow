@@ -686,7 +686,7 @@ public class UI extends Component
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
-     * 
+     *
      * @param navigationTarget
      *            navigation target to navigate to
      */
@@ -706,7 +706,7 @@ public class UI extends Component
      * Note! A {@code null} parameter will be handled the same as
      * navigate(navigationTarget) and will throw an exception if HasUrlParameter
      * is not @OptionalParameter or @WildcardParameter.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to navigate to
      * @param parameter
