@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 
 /**
@@ -267,6 +268,9 @@ public interface DeploymentConfiguration extends Serializable {
                 : getDevelopmentFrontendPrefix();
     }
 
+    default String getRootElementId() {
+        return getStringProperty(ApplicationConstants.UI_ELEMENT_ID, "");
+    }
     /**
      * Determines if webJars mechanism is enabled. It is disabled if the user
      * have explicitly set the {@link Constants#DISABLE_WEBJARS} property to

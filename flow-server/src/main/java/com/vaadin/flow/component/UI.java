@@ -86,6 +86,7 @@ import com.vaadin.flow.theme.ThemeUtil;
  * @see #init(VaadinRequest)
  *
  */
+@Tag("body")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
@@ -115,7 +116,7 @@ public class UI extends Component
      */
     public UI() {
         super(null);
-        getNode().getFeature(ElementData.class).setTag("body");
+        getNode().getFeature(ElementData.class).setTag(this.getClass().getAnnotation(Tag.class).value());
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
     }
@@ -1000,28 +1001,6 @@ public class UI extends Component
     }
 
     /**
-     * Adds a global shortcut tied to the {@code UI}. The shortcut will be
-     * present until {@link Registration#remove()} is called.
-     * <p>
-     * For more configuration option, use
-     * {@link #registerShortcut(Command, Key)} or a method in {@link Shortcuts}.
-     *
-     * @param command
-     *            Code to execute when the shortcut is invoked
-     * @param key
-     *            Primary {@link Key} used to trigger the shortcut
-     * @param keyModifiers
-     *            {@link KeyModifier KeyModifiers} which also need to be pressed
-     *            for the shortcut to trigger
-     * @return {@link Registration} for removing the shortcut
-     * @see Shortcuts
-     */
-    public Registration addShortcut(Command command, Key key,
-            KeyModifier... keyModifiers) {
-        return Shortcuts.addShortcut(this, this, command, key, keyModifiers);
-    }
-
-    /**
      * Registers a global shortcut tied to the {@code UI} and returns
      * {@link ShortcutRegistration} which can be used to fluently configure the
      * shortcut. The shortcut will be present until
@@ -1033,10 +1012,16 @@ public class UI extends Component
      *            Code to execute when the shortcut is invoked
      * @param key
      *            Primary {@link Key} used to trigger the shortcut
-     * @return {@link ShortcutRegistration} for configuring the shortcut
+     * @param keyModifiers
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
+     * @return  {@link ShortcutRegistration} for configuring the shortcut and
+     *          removing
      * @see Shortcuts
      */
-    public ShortcutRegistration registerShortcut(Command command, Key key) {
-        return Shortcuts.registerShortcut(this, this, command, key);
+    public ShortcutRegistration addShortcut(Command command, Key key,
+                                            KeyModifier... keyModifiers) {
+        return new ShortcutRegistration(this, () -> this, command,
+                key).withModifiers(keyModifiers);
     }
 }

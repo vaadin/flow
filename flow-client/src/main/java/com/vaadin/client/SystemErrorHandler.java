@@ -169,7 +169,8 @@ public class SystemErrorHandler {
             Console.error(details);
         }
 
-        document.getBody().appendChild(systemErrorContainer);
+        registry.getStateTree().getRootNode().getDomNode()
+                .appendChild(systemErrorContainer);
         return systemErrorContainer;
     }
 

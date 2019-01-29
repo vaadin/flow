@@ -26,7 +26,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -237,14 +236,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private List<Class<? extends RouterLayout>> getParentLayouts(
             ConfiguredRoutes configuration, Class<? extends Component> target,
             String url) {
-        if (configuration.getRouteTarget(url) != null) {
-            List<Class<? extends RouterLayout>> parentLayouts = configuration
-                    .getRouteTarget(url).getParentLayouts(target);
-            if (!parentLayouts.isEmpty()) {
-                return parentLayouts;
-            }
+        RouteTarget routeTarget = configuration.getRouteTarget(url);
+        if (routeTarget != null) {
+            return routeTarget.getParentLayouts(target);
         }
-        return Collections.singletonList(UI.class);
+        return Collections.emptyList();
     }
 
     @Override

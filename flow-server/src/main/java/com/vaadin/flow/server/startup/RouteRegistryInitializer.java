@@ -50,8 +50,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(servletContext);
-            RouteConfiguration.forRegistry(routeRegistry)
-                    .setRoutes(routes);
+            RouteConfiguration.forRegistry(routeRegistry).setRoutes(routes);
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {
