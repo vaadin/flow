@@ -6,6 +6,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,12 +16,17 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
 
+@NotThreadSafe
 public class WebComponentProviderTest {
 
     @Mock
@@ -31,11 +38,26 @@ public class WebComponentProviderTest {
 
     WebComponentProvider provider;
 
+    @Mock
+    UI ui;
+    @Mock
+    VaadinService service;
+
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+        Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(session.getService()).thenReturn(service);
+        Mockito.when(service.getInstantiator())
+                .thenReturn(new MockInstantiator());
+        UI.setCurrent(ui);
 
         provider = new WebComponentProvider();
+    }
+
+    @After
+    public void clean() {
+        CurrentInstance.clearAll();
     }
 
     @Test

@@ -996,7 +996,7 @@ public class UI extends Component
      * @return unmodifiable list of registered listeners for navigation handler
      */
     public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
-        return internals.getNavigationListeners(navigationHandler);
+        return internals.getListeners(navigationHandler);
     }
 
     /**

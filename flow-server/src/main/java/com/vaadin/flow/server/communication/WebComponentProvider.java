@@ -26,6 +26,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -41,6 +43,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
 public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private static final String PATH_PREFIX = "/web-component/";
+    public static final String SUFFIX = ".html";
 
     private Map<Class<?>, String> cache;
 
@@ -80,7 +83,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 generated = cache.get(webComponent.get());
             } else {
                 generated = WebComponentGenerator
-                        .generateModule(tag.get(), webComponent.get());
+                        .generateModule(tag.get(), webComponent.get(),
+                                Instantiator.get(UI.getCurrent()));
                 cache.put(webComponent.get(), generated);
             }
 
@@ -95,10 +99,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private static Optional<String> parseTag(String pathInfo) {
         String tag = pathInfo.substring(PATH_PREFIX.length());
-        if (!tag.endsWith(".html")) {
+        if (!tag.endsWith(SUFFIX)) {
             tag = null;
         } else {
-            tag = tag.substring(0, tag.length() - ".html".length());
+            tag = tag.substring(0, tag.length() - SUFFIX.length());
             if (!tag.contains("-")) {
                 tag = null;
             }

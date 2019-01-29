@@ -20,8 +20,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,7 +33,6 @@ import com.googlecode.gentyref.GenericTypeReflector;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentMethod;
 import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 import com.vaadin.flow.di.Instantiator;
@@ -40,10 +41,16 @@ import com.vaadin.flow.shared.util.SharedUtil;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+/**
+ * Class for generating a client-side web component from a Java class.
+ * <p>
+ * Current implementation will create a Polymer 2 component that can be served
+ * to the client.
+ */
 public class WebComponentGenerator {
 
     private static final String INDENTATION = "    ";
-    private static String template;
+    private static String template = getTemplate();
 
     private WebComponentGenerator() {
     }
@@ -69,16 +76,41 @@ public class WebComponentGenerator {
      *         web component tag
      * @param webComponentClass
      *         web component class implementation
+     * @param instantiator
+     *         class instantiator implementation
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(String tag,
-            Class<? extends Component> webComponentClass) {
+            Class<? extends Component> webComponentClass,
+            Instantiator instantiator) {
+        Set<PropertyData> webComponentProperties = getPropertyData(
+                webComponentClass, instantiator);
+
+        Map<String, String> replacements = getReplacementsMap(tag,
+                webComponentProperties);
+
+        String template = getTemplate();
+        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+            template = template.replace("_" + replacement.getKey() + "_",
+                    replacement.getValue());
+        }
+        return template;
+    }
+
+    static Set<PropertyData> getPropertyData(
+            Class<? extends Component> webComponentClass,
+            Instantiator instantiator) {
         Set<PropertyData> webComponentProperties = new HashSet<>();
 
         webComponentProperties
                 .addAll(getMethodPropertiesWithDefaults(webComponentClass));
-        webComponentProperties.addAll(getFieldProperties(webComponentClass));
+        webComponentProperties
+                .addAll(getFieldProperties(webComponentClass, instantiator));
+        return webComponentProperties;
+    }
 
+    static Map<String, String> getReplacementsMap(String tag,
+            Set<PropertyData> webComponentProperties) {
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);
@@ -92,30 +124,25 @@ public class WebComponentGenerator {
                 getPropertyDefinitions(webComponentProperties));
 
         replacements.put("RootElement", "document.body");
-
-        String template = getTemplate();
-        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-            template = template.replace("_" + replacement.getKey() + "_",
-                    replacement.getValue());
-        }
-        return template;
+        return replacements;
     }
 
     private static Set<PropertyData> getFieldProperties(
-            Class<? extends Component> webComponentClass) {
+            Class<? extends Component> webComponentClass,
+            Instantiator instantiator) {
 
-        Set<Field> propertyFields = getPropertyFields(webComponentClass);
+        List<Field> propertyFields = getPropertyFields(webComponentClass);
 
         Set<PropertyData> properties = new HashSet<>();
         if (propertyFields.isEmpty()) {
             return properties;
         }
 
-        Component wc = Instantiator.get(UI.getCurrent())
-                .getOrCreate(webComponentClass);
+        Component wc = instantiator.getOrCreate(webComponentClass);
 
+        // Add fields in order so any overriding child field is added first
+        // making the parent field not add their property data.
         for (Field field : propertyFields) {
-
             boolean accessible = field.isAccessible();
             field.setAccessible(true);
             Class<?> typeClass;
@@ -135,7 +162,9 @@ public class WebComponentGenerator {
                                 null :
                                 propertyValue.toString()));
             } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
+                throw new PropertyReadException(
+                        "Failed to get the property value for field '" + field
+                                .getName() + "'", e);
             } finally {
                 field.setAccessible(accessible);
             }
@@ -144,17 +173,27 @@ public class WebComponentGenerator {
         return properties;
     }
 
-    private static Set<Field> getPropertyFields(Class<?> webComponentClass) {
-        Set<Field> fields = new HashSet<>();
+    /**
+     * Get all {@link WebComponentProperty} fields for target class and parents.
+     * Fields are set in the order of child first parent last.
+     *
+     * @param webComponentClass
+     *         class to get fields for
+     * @return {@link WebComponentProperty} fields
+     */
+    private static List<Field> getPropertyFields(Class<?> webComponentClass) {
+        List<Field> fields = new ArrayList<>();
 
-        if (webComponentClass.getSuperclass() != null) {
-            fields.addAll(getPropertyFields(webComponentClass.getSuperclass()));
-        }
-
+        // Add all WebComponent fields for this class
         fields.addAll(Stream.of(webComponentClass.getDeclaredFields())
                 .filter(field -> WebComponentProperty.class
                         .isAssignableFrom(field.getType()))
                 .collect(Collectors.toSet()));
+
+        // Add the parent fields after our fields
+        if (webComponentClass.getSuperclass() != null) {
+            fields.addAll(getPropertyFields(webComponentClass.getSuperclass()));
+        }
 
         return fields;
     }
@@ -176,8 +215,12 @@ public class WebComponentGenerator {
                     Class<?>[] parameterTypes = method.getParameterTypes();
                     WebComponentMethod annotation = method
                             .getAnnotation(WebComponentMethod.class);
-                    properties.add(new PropertyData(annotation.value(),
-                            parameterTypes[0], annotation.initialValue()));
+                    PropertyData property = new PropertyData(annotation.value(),
+                            parameterTypes[0], annotation.initialValue());
+                    if (!properties.add(property)) {
+                        properties.remove(property);
+                        properties.add(property);
+                    }
                 });
 
         return properties;

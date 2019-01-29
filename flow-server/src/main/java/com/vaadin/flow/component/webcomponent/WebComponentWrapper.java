@@ -19,18 +19,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonString;
@@ -45,8 +43,9 @@ public class WebComponentWrapper extends Component {
     private final HashMap<String, Field> fields;
     private final HashMap<String, Method> methods;
 
-    private Future<?> disconnect;
-    private ReentrantLock lock = new ReentrantLock();
+    // Disconnect timeout
+    private Registration disconnectRegistration;
+    private long disconnect;
 
     /**
      * Wrapper class for the server side WebComponent.
@@ -103,17 +102,12 @@ public class WebComponentWrapper extends Component {
      */
     @ClientCallable
     public void reconnect() {
-        lock.lock();
-        try {
-            if (disconnect != null && disconnect.cancel(false)) {
-                disconnect = null;
-            } else {
-                LoggerFactory.getLogger(WebComponentUI.class)
-                        .warn("Received reconnect request for non disconnected WebComponent '{}'",
-                                this.child.getClass().getName());
-            }
-        } finally {
-            lock.unlock();
+        if (disconnectRegistration != null) {
+            disconnectRegistration.remove();
+        } else {
+            LoggerFactory.getLogger(WebComponentUI.class)
+                    .warn("Received reconnect request for non disconnected WebComponent '{}'",
+                            this.child.getClass().getName());
         }
     }
 
@@ -123,33 +117,23 @@ public class WebComponentWrapper extends Component {
      */
     @ClientCallable
     public void disconnected() {
-        lock.lock();
-        try {
-            int disconnectTimeout = getUI().get().getSession()
-                    .getConfiguration().getWebComponentDisconnect();
-            ScheduledExecutorService executorService = Executors
-                    .newSingleThreadScheduledExecutor();
-            disconnect = executorService.schedule(() -> {
-                lock.lock();
-                try {
-                    this.getElement().removeFromParent();
-                    disconnect = null;
-                } finally {
-                    lock.unlock();
-                }
-            }, disconnectTimeout, TimeUnit.SECONDS);
-        } finally {
-            lock.unlock();
-        }
-    }
+        Optional<UI> uiOptional = getUI();
 
-    /**
-     * Check if the component is disconnected from the dom on the client side.
-     *
-     * @return disconnected on the client
-     */
-    public boolean isDisconnectedOnClient() {
-        return disconnect != null;
+        if (uiOptional.isPresent() && disconnectRegistration == null) {
+            disconnect = System.currentTimeMillis();
+            disconnectRegistration = uiOptional.get().getInternals()
+                    .addHeartbeatListener(event -> {
+                        int disconnectTimeout = event.getSource().getSession()
+                                .getConfiguration().getWebComponentDisconnect();
+
+                        int timeout = 1000 * disconnectTimeout;
+
+                        if (event.getSource().getInternals()
+                                .getLastHeartbeatTimestamp() - disconnect > timeout) {
+                            this.getElement().removeFromParent();
+                        }
+                    });
+        }
     }
 
     private void setNewMethodValue(String property, String newValue)

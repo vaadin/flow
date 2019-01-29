@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
@@ -17,9 +15,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 public class WebComponentWrapperTest {
 
@@ -144,6 +145,14 @@ public class WebComponentWrapperTest {
     public void disconnectReconnect_componentIsNotCleaned()
             throws ExecutionException, InterruptedException {
         WebComponentUI ui = Mockito.mock(WebComponentUI.class);
+        Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        Element body = new Element("body");
+        Mockito.when(ui.getElement()).thenReturn(body);
+
+        UIInternals internals = new UIInternals(ui);
+        internals.setSession(new AlwaysLockedVaadinSession(
+                Mockito.mock(VaadinService.class)));
+        Mockito.when(ui.getInternals()).thenReturn(internals);
 
         MyComponent component = new MyComponent();
         WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
@@ -167,29 +176,21 @@ public class WebComponentWrapperTest {
 
         wrapper.disconnected();
 
-        Assert.assertTrue(
-                "Wrapper should be marked as disconnected on the client",
-                wrapper.isDisconnectedOnClient());
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
+
         Assert.assertTrue("Wrapper should still be connected on the server",
                 wrapper.getParent().isPresent());
 
         wrapper.reconnect();
 
-        Assert.assertFalse(
-                "Wrapper should again be marked as connected on the client",
-                wrapper.isDisconnectedOnClient());
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        ScheduledExecutorService service = Executors
-                .newSingleThreadScheduledExecutor();
+        Thread.sleep(1200);
 
-        ScheduledFuture<Boolean> status = service
-                .schedule(() -> wrapper.getParent().isPresent(), 1200,
-                        TimeUnit.MILLISECONDS);
-
-        awaitTerminationAfterShutdown(service);
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
         Assert.assertTrue("Wrapper should stay connected on the server",
-                status.get());
+                wrapper.getParent().isPresent());
     }
 
     private void awaitTerminationAfterShutdown(
@@ -210,6 +211,14 @@ public class WebComponentWrapperTest {
     public void disconnectOnClient_componentIsCleaned()
             throws ExecutionException, InterruptedException {
         WebComponentUI ui = Mockito.mock(WebComponentUI.class);
+        Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        Element body = new Element("body");
+        Mockito.when(ui.getElement()).thenReturn(body);
+
+        UIInternals internals = new UIInternals(ui);
+        internals.setSession(new AlwaysLockedVaadinSession(
+                Mockito.mock(VaadinService.class)));
+        Mockito.when(ui.getInternals()).thenReturn(internals);
 
         MyComponent component = new MyComponent();
         WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
@@ -233,21 +242,18 @@ public class WebComponentWrapperTest {
 
         wrapper.disconnected();
 
-        Assert.assertTrue(wrapper.isDisconnectedOnClient());
-        Assert.assertTrue(wrapper.getParent().isPresent());
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        ScheduledExecutorService service = Executors
-                .newSingleThreadScheduledExecutor();
+        Assert.assertTrue("Wrapper should still be connected on the server",
+                wrapper.getParent().isPresent());
 
-        ScheduledFuture<Boolean> status = service
-                .schedule(() -> wrapper.getParent().isPresent(), 1200,
-                        TimeUnit.MILLISECONDS);
+        Thread.sleep(1200);
 
-        awaitTerminationAfterShutdown(service);
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
         Assert.assertFalse(
                 "Wrapper should have been disconnected also on the server",
-                status.get());
+                wrapper.getParent().isPresent());
     }
 
     @WebComponent("my-component")
