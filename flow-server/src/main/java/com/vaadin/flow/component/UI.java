@@ -1009,19 +1009,19 @@ public class UI extends Component
      * {@link ShortcutRegistration#remove()} is called.
      *
      * @param command
-     *            Code to execute when the shortcut is invoked
+     *              Code to execute when the shortcut is invoked
      * @param key
-     *            Primary {@link Key} used to trigger the shortcut
+     *              Primary {@link Key} used to trigger the shortcut
      * @param keyModifiers
-     *            {@link KeyModifier KeyModifiers} which also need to be pressed
-     *            for the shortcut to trigger
-     * @return  {@link ShortcutRegistration} for configuring the shortcut and
-     *          removing
-     * @see #addShortcutListener(ComponentEventListener, Key, KeyModifier...)
-     *          For registering a listener which receives a
-     *          {@link ShortcutEvent}
+     *              {@link KeyModifier KeyModifiers} which also need to be
+     *              pressed for the shortcut to trigger
+     * @return      {@link ShortcutRegistration} for configuring the shortcut
+     *              and removing
+     * @see #addShortcutListener(ShortcutEventListener, Key, KeyModifier...)
+     *              For registering a listener which receives a {@link
+     *              ShortcutEvent}
      * @see Shortcuts
-     *          For a more generic way to add a shortcut
+     *              For a more generic way to add a shortcut
      */
     public ShortcutRegistration addShortcutListener(
             Command command, Key key, KeyModifier... keyModifiers) {
@@ -1046,17 +1046,17 @@ public class UI extends Component
      * {@link ShortcutRegistration#remove()} is called.
      *
      * @param listener
-     *            Listener to execute when the shortcut is invoked. Receives a
-     *            {@link ShortcutEvent}
+     *                  Listener to execute when the shortcut is invoked.
+     *                  Receives a {@link ShortcutEvent}
      * @param key
-     *            Primary {@link Key} used to trigger the shortcut
+     *                  Primary {@link Key} used to trigger the shortcut
      * @param keyModifiers
-     *            {@link KeyModifier KeyModifiers} which also need to be pressed
-     *            for the shortcut to trigger
-     * @return  {@link ShortcutRegistration} for configuring the shortcut and
-     *          removing
+     *                  {@link KeyModifier KeyModifiers} which also need to be
+     *                  pressed for the shortcut to trigger
+     * @return          {@link ShortcutRegistration} for configuring the
+     *                  shortcut and removing
      * @see Shortcuts
-     *          For a more generic way to add a shortcut
+     *                  For a more generic way to add a shortcut
      */
     public ShortcutRegistration addShortcutListener(
             ShortcutEventListener listener, Key key,
