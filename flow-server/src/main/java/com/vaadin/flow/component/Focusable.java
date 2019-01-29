@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.component;
 
+import java.security.InvalidParameterException;
+
+import com.vaadin.flow.shared.Registration;
+
 /**
  * Interface with the methods implemented by components that can gain and lose
  * focus.
@@ -124,4 +128,39 @@ public interface Focusable<T extends Component>
         getElement().callFunction("blur");
     }
 
+    /**
+     * Adds a shortcut which focuses the {@link Component} which implements
+     * {@link Focusable} interface. The shortcut's event listener is in global
+     * scope and the shortcut's lifecycle is tied to {@code this} component.
+     * <p>
+     * Use the returned {@link ShortcutRegistration} to fluently configure the
+     * shortcut.
+     *
+     * @param key
+     *              Primary {@link Key} used to trigger the shortcut
+     * @param keyModifiers
+     *              {@link KeyModifier KeyModifiers} that need to be pressed
+     *              along with the {@code key} for the shortcut to trigger
+     * @return  {@link ShortcutRegistration} for configuring the shortcut and
+     *          removing
+     */
+    default ShortcutRegistration addFocusShortcut(Key key,
+                                                  KeyModifier... keyModifiers) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addFocusShortcut(Key, KeyModifier...)"));
+        }
+
+        if (key == null) {
+            throw new InvalidParameterException(
+                    String.format(Shortcuts.NULL, "key"));
+        }
+
+        return new ShortcutRegistration((Component) this, UI::getCurrent,
+                this::focus, key).withModifiers(keyModifiers);
+
+    }
 }

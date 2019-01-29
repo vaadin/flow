@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
@@ -33,6 +34,7 @@ import com.vaadin.flow.component.KeyModifier;
 public abstract class KeyboardEvent extends ComponentEvent<Component> {
 
     private final Key key;
+    private final Key code;
     private final KeyLocation location;
 
     private final boolean repeat;
@@ -51,6 +53,8 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            server-side logic
      * @param key
      *            the string value representing the key
+     * @param code
+     *            the string value representing the code (nullable)
      * @param location
      *            the integer value representing the location of the key
      * @param ctrlKey
@@ -73,10 +77,15 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            composition session
      */
     public KeyboardEvent(Component source, boolean fromClient, String key,
-            int location, boolean ctrlKey, boolean shiftKey, boolean altKey,
-            boolean metaKey, boolean repeat, boolean composing) {
+                         String code, int location, boolean ctrlKey,
+                         boolean shiftKey, boolean altKey, boolean metaKey,
+                         boolean repeat, boolean composing) {
         super(source, fromClient);
         this.key = Key.of(key);
+        // code might not be present for all keys for all browsers
+        // it is quite implementation dependent
+        this.code = (code == null || code.isEmpty()) ?
+                null : Key.of(code);
         this.location = KeyLocation.of(location);
         this.repeat = repeat;
         this.composing = composing;
@@ -104,17 +113,40 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            the key for this event
      */
     public KeyboardEvent(Component source, String key) {
-        this(source, false, key, 0, false, false, false, false, false, false);
+        this(source, false, key, null, 0, false, false, false, false, false,
+                false);
+    }
+
+    /**
+     * Creates a new server-side keyboard event with no additional information.
+     *
+     * @param source
+     *            the component that fired the event
+     * @param key
+     *            the key for this event
+     * @param code
+     *            the code for this event
+     */
+    public KeyboardEvent(Component source, String key, String code) {
+        this(source, false, key, code, 0, false, false, false, false, false,
+                false);
     }
 
     /**
      * Gets the key of the event.
      *
-     * @return the key of the event
+     * @return the {@link Key} of the event
      */
     public Key getKey() {
         return key;
     }
+
+    /**
+     * Gets the code of the event. If the event did not contain a valid code, a
+     * <code>null</code> value will be given instead.
+     * @return the optional code of the event as a {@link Key}
+     */
+    public Optional<Key> getCode() { return Optional.ofNullable(code); }
 
     /**
      * Gets the {@link KeyLocation} of the event.

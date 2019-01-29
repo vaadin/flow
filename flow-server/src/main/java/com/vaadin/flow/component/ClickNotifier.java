@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.security.InvalidParameterException;
 
 import com.vaadin.flow.shared.Registration;
 
@@ -50,5 +51,44 @@ public interface ClickNotifier<T extends Component> extends Serializable {
                     getClass().getName(), Component.class.getSimpleName(),
                     "addClickListener"));
         }
+    }
+
+    /**
+     * Adds a shortcut which 'clicks' the {@link Component} which implements
+     * {@link ClickNotifier} interface. The shortcut's event listener is in
+     * global scope and the shortcut's lifecycle is tied to {@code this}
+     * component.
+     * <p>
+     * Use the returned {@link ShortcutRegistration} to fluently configure the
+     * shortcut.
+     *
+     * @param key
+     *              Primary {@link Key} used to trigger the shortcut
+     * @param keyModifiers
+     *              {@link KeyModifier KeyModifiers} that need to be pressed
+     *              along with the {@code key} for the shortcut to trigger
+     * @return  {@link ShortcutRegistration} for configuring the shortcut and
+     *          removing
+     */
+    default ShortcutRegistration addClickShortcut(Key key,
+                                                  KeyModifier... keyModifiers) {
+        if (!(this instanceof Component)) {
+            throw new IllegalStateException(String.format(
+                    "The class '%s' doesn't extend '%s'. "
+                            + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(),
+                    "addClickShortcut(Key, KeyModifier...)"));
+        }
+
+        if (key == null) {
+            throw new InvalidParameterException(
+                    String.format(Shortcuts.NULL, "key"));
+        }
+
+        final Component thisComponent = (Component) this;
+        return new ShortcutRegistration(thisComponent, UI::getCurrent,
+                () -> ComponentUtil.fireEvent(thisComponent, new ClickEvent<>(
+                        thisComponent)),
+                key).withModifiers(keyModifiers);
     }
 }

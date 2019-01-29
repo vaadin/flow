@@ -37,13 +37,13 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
-import com.vaadin.flow.internal.UsageStatistics;
 import org.osgi.framework.Bundle;
 import org.slf4j.LoggerFactory;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
 
 import net.bytebuddy.ByteBuddy;
@@ -84,8 +84,8 @@ public final class OSGiAccess {
      * <p>
      * It's public only because it needs to be proxied.
      * <p>
-     * This class represents a singletion servlet context instance which is not
-     * a real servlet context.
+     * This class represents a singleton servlet context instance which is not a
+     * real servlet context.
      */
     public abstract static class OSGiServletContext implements ServletContext {
 
@@ -277,15 +277,20 @@ public final class OSGiAccess {
         /**
          * Tries to detect the version of the OSGi framework used.
          *
-         * @return the used OSGi version or {@code null} if not able to detect it
+         * @return the used OSGi version or {@code null} if not able to detect
+         *         it
          */
         private static String getOSGiVersion() {
             try {
-                Bundle osgiBundle = org.osgi.framework.FrameworkUtil.getBundle(Bundle.class);
+                Bundle osgiBundle = org.osgi.framework.FrameworkUtil
+                        .getBundle(Bundle.class);
                 return osgiBundle.getVersion().toString();
             } catch (Throwable throwable) {
-                // just eat it so that any failure in the version detection doesn't break OSGi usage
-                LoggerFactory.getLogger(OSGiAccess.class).info("Unable to detect used OSGi framework version due to " + throwable.getMessage());
+                // just eat it so that any failure in the version detection
+                // doesn't break OSGi usage
+                LoggerFactory.getLogger(OSGiAccess.class).info(
+                        "Unable to detect used OSGi framework version due to "
+                                + throwable.getMessage());
             }
             return null;
         }

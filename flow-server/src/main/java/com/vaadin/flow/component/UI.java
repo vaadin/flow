@@ -761,11 +761,12 @@ public class UI extends Component
      * @return the associated ThemeDefinition, or empty if none is defined and
      *         the Lumo class is not in the classpath, or if the NoTheme
      *         annotation is being used.
-     * @see ThemeUtil#findThemeForNavigationTarget(Class, String)
+     * @see ThemeUtil#findThemeForNavigationTarget(UI, Class, String)
      */
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
-        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(navigationTarget, path));
+        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(this,
+                navigationTarget, path));
     }
 
     /**
@@ -997,5 +998,30 @@ public class UI extends Component
      */
     public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
         return internals.getNavigationListeners(navigationHandler);
+    }
+
+    /**
+     * Registers a global shortcut tied to the {@code UI} and returns
+     * {@link ShortcutRegistration} which can be used to fluently configure the
+     * shortcut. The shortcut will be present until
+     * {@link ShortcutRegistration#remove()} is called.
+     * <p>
+     * For more configuration option, use a method in {@link Shortcuts}.
+     *
+     * @param command
+     *            Code to execute when the shortcut is invoked
+     * @param key
+     *            Primary {@link Key} used to trigger the shortcut
+     * @param keyModifiers
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
+     * @return  {@link ShortcutRegistration} for configuring the shortcut and
+     *          removing
+     * @see Shortcuts
+     */
+    public ShortcutRegistration addShortcut(Command command, Key key,
+                                            KeyModifier... keyModifiers) {
+        return new ShortcutRegistration(this, () -> this, command,
+                key).withModifiers(keyModifiers);
     }
 }
