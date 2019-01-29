@@ -139,7 +139,8 @@ public interface Focusable<T extends Component>
      * shortcut.
      *
      * @param key
-     *              Primary {@link Key} used to trigger the shortcut
+     *              primary {@link Key} used to trigger the shortcut. Cannot
+     *              be null.
      * @param keyModifiers
      *              {@link KeyModifier KeyModifiers} that need to be pressed
      *              along with the {@code key} for the shortcut to trigger

@@ -41,13 +41,14 @@ public final class Shortcuts {
      * {@link ShortcutRegistration#listenOn(Component)}.
      *
      * @param lifecycleOwner
-     *              The component that controls, when the shortcut is active. If
+     *              the component that controls, when the shortcut is active. If
      *              the component is either invisible or detached, the shortcut
-     *              won't work
+     *              won't work. Cannot be null
      * @param command
-     *              Code to execute when the shortcut is invoked
+     *              code to execute when the shortcut is invoked. Cannot be null
      * @param key
-     *              Primary {@link Key} used to trigger the shortcut
+     *              primary {@link Key} used to trigger the shortcut. Cannot
+     *              be null
      * @param keyModifiers
      *              {@link KeyModifier KeyModifiers} which also need to be
      *              pressed for the shortcut to trigger
@@ -83,14 +84,15 @@ public final class Shortcuts {
      * {@link ShortcutRegistration#listenOn(Component)}.
      *
      * @param lifecycleOwner
-     *              The component that controls, when the shortcut is active. If
+     *              the component that controls, when the shortcut is active. If
      *              the component is either invisible or detached, the shortcut
-     *              won't work
+     *              won't work. Cannot be null
      * @param listener
-     *              Listener to execute when the shortcut is invoked. Receives a
-     *              {@link ShortcutEvent}
+     *              listener to execute when the shortcut is invoked. Receives a
+     *              {@link ShortcutEvent}. Cannot be null
      * @param key
-     *              Primary {@link Key} used to trigger the shortcut
+     *              primary {@link Key} used to trigger the shortcut. Cannot
+     *              be null
      * @param keyModifiers
      *              {@link KeyModifier KeyModifiers} which also need to be
      *              pressed for the shortcut to trigger
