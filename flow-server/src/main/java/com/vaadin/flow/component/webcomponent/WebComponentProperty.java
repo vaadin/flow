@@ -29,7 +29,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *         property type
  */
-public class WebComponentProperty<T extends Serializable> implements Serializable {
+public class WebComponentProperty<T> implements Serializable {
 
     private T value;
     private final Class<T> propertyClass;
