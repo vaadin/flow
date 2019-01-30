@@ -3024,8 +3024,13 @@ public class RouterTest extends RoutingTestBase {
     private void setNavigationTargets(
             Class<? extends Component>... navigationTargets)
             throws InvalidRouteConfigurationException {
-        RouteConfiguration.forRegistry(router.getRegistry())
-                .setRoutes(new HashSet<>(Arrays.asList(navigationTargets)));
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(router.getRegistry());
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            Arrays.asList(navigationTargets)
+                    .forEach(routeConfiguration::setAnnotatedRoute);
+        });
     }
 
     private void setErrorNavigationTargets(

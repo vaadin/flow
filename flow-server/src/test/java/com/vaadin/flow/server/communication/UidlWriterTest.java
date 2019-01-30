@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -430,9 +429,12 @@ public class UidlWriterTest {
         session.lock();
         ui.getInternals().setSession(session);
 
-        RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
-                .setRoutes(
-                        new HashSet<>(Arrays.asList(BaseClass.class)));
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(ui.getRouter().getRegistry());
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            routeConfiguration.setAnnotatedRoute(BaseClass.class);
+        });
 
         for (String type : new String[] { "html", "js", "css" }) {
             mocks.getServlet()

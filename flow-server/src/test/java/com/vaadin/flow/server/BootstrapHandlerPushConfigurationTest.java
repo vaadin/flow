@@ -2,7 +2,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Collections;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -176,8 +175,12 @@ public class BootstrapHandlerPushConfigurationTest {
             throws InvalidRouteConfigurationException {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinResponse response = mock(VaadinResponse.class);
-        RouteConfiguration.forRegistry(service.getRouteRegistry()).setRoutes(Collections.singleton(annotatedClazz)
-                );
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(service.getRouteRegistry());
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            routeConfiguration.setAnnotatedRoute(annotatedClazz);
+        });
 
         final BootstrapHandler.BootstrapContext context = bootstrapHandler
                 .createAndInitUI(UI.class, createVaadinRequest(), response,
