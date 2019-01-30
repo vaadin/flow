@@ -213,6 +213,12 @@ public class RouteConfiguration implements Serializable {
      *         thrown if exact route already defined in this scope
      */
     public void setAnnotatedRoute(Class<? extends Component> navigationTarget) {
+        if (!navigationTarget.isAnnotationPresent(Route.class)) {
+            String message = String
+                    .format("Given navigationTarget %s is missing the '@Route' annotation.",
+                            navigationTarget.getName());
+            throw new InvalidRouteConfigurationException(message);
+        }
         String route = RouteUtil.getRoutePath(navigationTarget,
                 navigationTarget.getAnnotation(Route.class));
         handledRegistry.setRoute(route, navigationTarget,
