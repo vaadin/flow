@@ -248,17 +248,18 @@ public class WebComponentGenerator {
         Class<?> convertedType = ReflectTools
                 .convertPrimitiveType(property.getType());
         if (property.getInitialValue() != null) {
+            String propertyValue = "value";
             if (convertedType == Boolean.class) {
-                prop.put("value", (Boolean) convertedType
+                prop.put(propertyValue, (Boolean) convertedType
                         .cast(Boolean.valueOf(property.getInitialValue())));
             } else if (convertedType == Double.class) {
-                prop.put("value", (Double) convertedType
+                prop.put(propertyValue, (Double) convertedType
                         .cast(Double.valueOf(property.getInitialValue())));
             } else if (convertedType == Integer.class) {
-                prop.put("value", (Integer) convertedType
+                prop.put(propertyValue, (Integer) convertedType
                         .cast(Integer.valueOf(property.getInitialValue())));
             } else {
-                prop.put("value", property.getInitialValue());
+                prop.put(propertyValue, property.getInitialValue());
             }
         }
 
