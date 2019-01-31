@@ -251,9 +251,13 @@ public class ServletDeployerTest {
             expect(contextMock.getAttribute(RouteRegistry.class.getName()))
                     .andAnswer(() -> {
                         ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
-                        RouteConfiguration.forRegistry(registry)
-                                .setRoutes(Collections
-                                        .singleton(ComponentWithRoute.class));
+
+                        RouteConfiguration routeConfiguration = RouteConfiguration
+                                .forRegistry(registry);
+                        routeConfiguration.update(() -> {
+                            routeConfiguration.getHandledRegistry().clean();
+                            routeConfiguration.setAnnotatedRoute(ComponentWithRoute.class);
+                        });
                         return registry;
                     }).anyTimes();
         } else {

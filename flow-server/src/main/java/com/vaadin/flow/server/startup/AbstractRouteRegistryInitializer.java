@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.DynamicRoute;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -65,8 +64,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
     /**
      * Any navigation target applicable to be registered on startup should be a
-     * Component, contain the Route annotation and not be annotated with
-     * {@link DynamicRoute}.
+     * {@link Component}, contain the {@link Route} annotation and have {@link
+     * Route#registerAtStartup} be {@code true}.
      *
      * @param clazz
      *         class to check for filer
@@ -74,8 +73,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      */
     private boolean isApplicableClass(Class<?> clazz) {
         return clazz.isAnnotationPresent(Route.class) && Component.class
-                .isAssignableFrom(clazz) && !clazz
-                .isAnnotationPresent(DynamicRoute.class);
+                .isAssignableFrom(clazz) && clazz.getAnnotation(Route.class)
+                .registerAtStartup();
     }
 
     private void checkForConflictingAnnotations(Class<?> route) {
@@ -131,14 +130,14 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                         String.format(
                                 "%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(), RouteUtil
-                                        .getTopParentLayout(route,
-                                                RouteUtil.resolve(route,
-                                                        annotation)).getName(),
-                                route.getName()));
+                                        .getTopParentLayout(route, RouteUtil
+                                                .resolve(route, annotation))
+                                        .getName(), route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                    .getParentLayouts(route, RouteUtil.resolve(route, annotation));
+                    .getParentLayouts(route,
+                            RouteUtil.resolve(route, annotation));
             Class<? extends RouterLayout> topParentLayout = RouteUtil
                     .getTopParentLayout(route,
                             RouteUtil.resolve(route, annotation));
@@ -207,8 +206,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                         String.format(
                                 "%s annotation needs to be on the top parent layout '%s' not on '%s'",
                                 annotation.getSimpleName(), RouteUtil
-                                        .getTopParentLayout(route,
-                                                RouteUtil.resolve(route,
+                                        .getTopParentLayout(route, RouteUtil
+                                                .resolve(route,
                                                         routeAnnotation))
                                         .getName(), route.getName()));
             }

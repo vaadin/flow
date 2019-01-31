@@ -423,7 +423,12 @@ public class BootstrapHandlerTest {
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
 
-        RouteConfiguration.forRegistry(service.getRouteRegistry()).setRoutes(navigationTargets);
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(service.getRouteRegistry());
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            navigationTargets.forEach(routeConfiguration::setAnnotatedRoute);
+        });
 
         this.request = request;
 

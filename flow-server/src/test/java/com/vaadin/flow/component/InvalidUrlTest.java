@@ -95,10 +95,13 @@ public class InvalidUrlTest {
 
             ui.getInternals().setSession(session);
 
-            RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
-                    .setRoutes(new HashSet<>(
-                            Arrays.asList(UITest.RootNavigationTarget.class,
-                                    UITest.FooBarNavigationTarget.class)));
+            RouteConfiguration routeConfiguration = RouteConfiguration
+                    .forRegistry(ui.getRouter().getRegistry());
+            routeConfiguration.update(() -> {
+                routeConfiguration.getHandledRegistry().clean();
+                Arrays.asList(UITest.RootNavigationTarget.class,
+                        UITest.FooBarNavigationTarget.class).forEach(routeConfiguration::setAnnotatedRoute);
+            });
 
             ui.doInit(request, 0);
             ui.getRouter().initializeUI(ui, request);
