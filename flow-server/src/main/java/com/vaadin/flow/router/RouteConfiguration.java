@@ -515,25 +515,6 @@ public class RouteConfiguration implements Serializable {
                 .getSessionRegistry(VaadinSession.getCurrent());
     }
 
-    private void validateRoutes(
-            Set<Class<? extends Component>> navigationTargets) {
-        List<Class<? extends Component>> faulty = navigationTargets.stream()
-                .filter(target -> !target.isAnnotationPresent(Route.class))
-                .filter(Component.class::isAssignableFrom)
-                .collect(Collectors.toList());
-        if (!faulty.isEmpty()) {
-            final StringBuilder faultyClasses = new StringBuilder();
-            faulty.forEach(
-                    clazz -> faultyClasses.append(clazz.getName()).append(" "));
-            String exceptionMessage = String
-                    .format("Classes [%s] given as navigation targets were not valid. "
-                                    + "Add correct annotations or use RouteRegistry#"
-                                    + "setRoute(String ,Class<? extends Component>, List<Class<? extends RouterLayout>>).",
-                            faultyClasses.toString());
-            throw new InvalidRouteConfigurationException(exceptionMessage);
-        }
-    }
-
     private String getUrlForTarget(Class<? extends Component> navigationTarget,
             RouteRegistry registry) {
         Optional<String> targetUrl = registry.getTargetUrl(navigationTarget);
