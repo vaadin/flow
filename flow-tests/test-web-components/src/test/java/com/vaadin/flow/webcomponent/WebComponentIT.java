@@ -18,7 +18,6 @@ package com.vaadin.flow.webcomponent;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -36,13 +35,12 @@ public class WebComponentIT extends ChromeBrowserTest {
 
         waitForElementVisible(By.id("show-message"));
 
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-
         WebElement showMessage = findElement(By.id("show-message"));
         WebElement select = showMessage.findElement(By.cssSelector("select"));
 
-        // Selection is visibly changed
-        js.executeScript("arguments[0].value='Peter';"
+        // Selection is visibly changed and event manually dispatched
+        // as else the change is not seen.
+        getCommandExecutor().executeScript("arguments[0].value='Peter';"
                 + "var event = new Event('change');"
                 + "arguments[0].dispatchEvent(event);", select);
 
@@ -52,7 +50,9 @@ public class WebComponentIT extends ChromeBrowserTest {
         WebElement noMessage = findElement(By.id("no-message"));
 
         select = noMessage.findElement(By.cssSelector("select"));
-        js.executeScript("arguments[0].value='Peter'", select);
+        getCommandExecutor().executeScript("arguments[0].value='Peter'"
+                + "var event = new Event('change');"
+                + "arguments[0].dispatchEvent(event);", select);
 
         Assert.assertFalse("Message should not be visible",
                 noMessage.findElement(By.cssSelector("span")).isDisplayed());
