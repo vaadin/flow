@@ -41,8 +41,7 @@ public class WebComponentIT extends ChromeBrowserTest {
         // Selection is visibly changed and event manually dispatched
         // as else the change is not seen.
         getCommandExecutor().executeScript("arguments[0].value='Peter';"
-                + "var event = new Event('change');"
-                + "arguments[0].dispatchEvent(event);", select);
+                + "arguments[0].dispatchEvent(new Event('change'));", select);
 
         Assert.assertEquals("Selected: Peter, Parker",
                 showMessage.findElement(By.cssSelector("span")).getText());
@@ -50,9 +49,8 @@ public class WebComponentIT extends ChromeBrowserTest {
         WebElement noMessage = findElement(By.id("no-message"));
 
         select = noMessage.findElement(By.cssSelector("select"));
-        getCommandExecutor().executeScript("arguments[0].value='Peter'"
-                + "var event = new Event('change');"
-                + "arguments[0].dispatchEvent(event);", select);
+        getCommandExecutor().executeScript("arguments[0].value='Peter';"
+                + "arguments[0].dispatchEvent(new Event('change'));", select);
 
         Assert.assertFalse("Message should not be visible",
                 noMessage.findElement(By.cssSelector("span")).isDisplayed());
