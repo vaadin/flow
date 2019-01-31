@@ -326,9 +326,11 @@ public class RouteConfigurationTest {
             return null;
         }).when(registry).update(Mockito.any(Command.class));
 
-        routeConfiguration.setRoutes(
-                Stream.of(MyRoute.class, MyInfo.class, MyPalace.class,
-                        MyModular.class).collect(Collectors.toSet()));
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            Arrays.asList(MyRoute.class, MyInfo.class, MyPalace.class,
+                    MyModular.class).forEach(routeConfiguration::setAnnotatedRoute);
+        });
 
         Mockito.verify(registry).update(Mockito.any());
 
