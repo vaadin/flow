@@ -51,7 +51,7 @@ import elemental.json.JsonObject;
 public class WebComponentGenerator {
 
     private static final String INDENTATION = "    ";
-    private static String template = getTemplate();
+    private static final String template = getTemplate();
 
     private WebComponentGenerator() {
     }
