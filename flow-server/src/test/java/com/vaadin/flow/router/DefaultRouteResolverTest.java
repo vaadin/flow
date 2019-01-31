@@ -65,7 +65,6 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         routeConfiguration.update(() -> {
-            routeConfiguration.getHandledRegistry().clean();
             routes.forEach(routeConfiguration::setAnnotatedRoute);
         });
     }

@@ -54,7 +54,6 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             RouteConfiguration routeConfiguration = RouteConfiguration
                     .forRegistry(routeRegistry);
             routeConfiguration.update(() -> {
-                routeConfiguration.getHandledRegistry().clean();
                 for (Class<? extends Component> navigationTarget : routes) {
                     routeConfiguration.setAnnotatedRoute(navigationTarget);
                 }

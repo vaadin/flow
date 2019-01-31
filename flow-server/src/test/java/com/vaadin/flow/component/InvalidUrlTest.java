@@ -98,7 +98,6 @@ public class InvalidUrlTest {
             RouteConfiguration routeConfiguration = RouteConfiguration
                     .forRegistry(ui.getRouter().getRegistry());
             routeConfiguration.update(() -> {
-                routeConfiguration.getHandledRegistry().clean();
                 Arrays.asList(UITest.RootNavigationTarget.class,
                         UITest.FooBarNavigationTarget.class).forEach(routeConfiguration::setAnnotatedRoute);
             });

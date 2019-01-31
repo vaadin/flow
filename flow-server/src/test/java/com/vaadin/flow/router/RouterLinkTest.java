@@ -64,7 +64,6 @@ public class RouterLinkTest extends HasCurrentService {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         routeConfiguration.update(() -> {
-            routeConfiguration.getHandledRegistry().clean();
             Arrays.asList(TestView.class, FooNavigationTarget.class,
                     GreetingNavigationTarget.class)
                     .forEach(routeConfiguration::setAnnotatedRoute);

@@ -177,7 +177,6 @@ public class UITest {
                     .forRegistry(ui.getRouter().getRegistry());
 
             routeConfiguration.update(() -> {
-                routeConfiguration.getHandledRegistry().clean();
                 Arrays.asList(RootNavigationTarget.class,
                         FooBarNavigationTarget.class).forEach(routeConfiguration::setAnnotatedRoute);
             });

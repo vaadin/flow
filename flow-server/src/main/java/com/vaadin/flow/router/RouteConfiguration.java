@@ -51,6 +51,10 @@ public class RouteConfiguration implements Serializable {
     private static final Pattern PARAMETER_PATTERN = Pattern
             .compile("/\\{[\\s\\S]*}");
 
+    // Ensure that handledRegistry.clean() is executed only on the first
+    // update call in a series of recursive calls.
+    private int updateCount;
+
     private RouteConfiguration(RouteRegistry registry) {
         handledRegistry = registry;
     }
@@ -198,7 +202,20 @@ public class RouteConfiguration implements Serializable {
      *         command to execute for the update
      */
     public void update(Command command) {
-        handledRegistry.update(command);
+        handledRegistry.update(() -> {
+
+            // This is concurrently safe due to the lock inside
+            // AbstractRouteRegistry.update()
+            if (updateCount == 0) {
+                handledRegistry.clean();
+            }
+
+            updateCount++;
+
+            command.execute();
+
+            updateCount--;
+        });
     }
 
     /**
@@ -370,15 +387,6 @@ public class RouteConfiguration implements Serializable {
     public void removeRoute(String path,
             Class<? extends Component> navigationTarget) {
         handledRegistry.removeRoute(path, navigationTarget);
-    }
-
-    /**
-     * Get the registry that this configuration is working with.
-     *
-     * @return handled RouteRegistry
-     */
-    public RouteRegistry getHandledRegistry() {
-        return handledRegistry;
     }
 
     /**

@@ -432,7 +432,6 @@ public class UidlWriterTest {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(ui.getRouter().getRegistry());
         routeConfiguration.update(() -> {
-            routeConfiguration.getHandledRegistry().clean();
             routeConfiguration.setAnnotatedRoute(BaseClass.class);
         });
 

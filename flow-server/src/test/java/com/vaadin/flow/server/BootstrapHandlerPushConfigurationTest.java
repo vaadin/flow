@@ -178,7 +178,6 @@ public class BootstrapHandlerPushConfigurationTest {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(service.getRouteRegistry());
         routeConfiguration.update(() -> {
-            routeConfiguration.getHandledRegistry().clean();
             routeConfiguration.setAnnotatedRoute(annotatedClazz);
         });
 

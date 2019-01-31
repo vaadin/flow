@@ -426,7 +426,6 @@ public class BootstrapHandlerTest {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(service.getRouteRegistry());
         routeConfiguration.update(() -> {
-            routeConfiguration.getHandledRegistry().clean();
             navigationTargets.forEach(routeConfiguration::setAnnotatedRoute);
         });
 

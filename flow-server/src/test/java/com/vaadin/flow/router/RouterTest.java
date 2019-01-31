@@ -3027,7 +3027,6 @@ public class RouterTest extends RoutingTestBase {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(router.getRegistry());
         routeConfiguration.update(() -> {
-            routeConfiguration.getHandledRegistry().clean();
             Arrays.asList(navigationTargets)
                     .forEach(routeConfiguration::setAnnotatedRoute);
         });

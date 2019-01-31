@@ -255,7 +255,6 @@ public class ServletDeployerTest {
                         RouteConfiguration routeConfiguration = RouteConfiguration
                                 .forRegistry(registry);
                         routeConfiguration.update(() -> {
-                            routeConfiguration.getHandledRegistry().clean();
                             routeConfiguration.setAnnotatedRoute(ComponentWithRoute.class);
                         });
                         return registry;
