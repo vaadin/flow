@@ -57,17 +57,14 @@ public class WebComponentGenerator {
     }
 
     private static String getTemplate() {
-        if (template == null) {
-            try {
-                template = IOUtils.toString(WebComponentGenerator.class
-                                .getResourceAsStream("webcomponent-template.html"),
-                        StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                throw new IllegalArgumentException(
-                        "Couldn't load the template class", e);
-            }
+        try {
+            return IOUtils.toString(WebComponentGenerator.class
+                            .getResourceAsStream("webcomponent-template.html"),
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(
+                    "Couldn't load the template class", e);
         }
-        return template;
     }
 
     /**
