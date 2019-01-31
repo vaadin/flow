@@ -13,24 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.webcomponent;
+package com.vaadin.flow.webcomponent;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Listener for receiving changes to {@link WebComponentProperty} value.
- *
- * @param <T>
- *         type of the {@link WebComponentProperty} value
- */
-@FunctionalInterface
-public interface PropertyValueChangeListener<T> extends Serializable {
+public class Backend implements Serializable {
 
-    /**
-     * Method called when target property value has changed.
-     *
-     * @param event
-     *         property value change event
-     */
-    void valueChange(PropertyValueChangeEvent<T> event);
+    public static List<Client> getAllClients() {
+        List<Client> clients = new ArrayList<>();
+        clients.add(new Client("Joe", "Mallone"));
+        clients.add(new Client("Janine", "Mallone"));
+        clients.add(new Client("Peter", "Parker"));
+        clients.add(new Client("Tony", "Stark"));
+        clients.add(new Client("Bruce", "Banner"));
+
+        return clients;
+    }
 }

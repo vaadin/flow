@@ -74,6 +74,14 @@ public interface DeploymentConfiguration extends Serializable {
     int getHeartbeatInterval();
 
     /**
+     * Returns the number of seconds that a WebComponent will wait for a
+     * reconnect before removing the server-side component from memory.
+     *
+     * @return time to wait after a disconnect has happened
+     */
+    int getWebComponentDisconnect();
+
+    /**
      * Returns whether the sending of URL's as GET and POST parameters in
      * requests with content-type <code>application/x-www-form-urlencoded</code>
      * is enabled or not.

@@ -306,6 +306,9 @@ public class UIInternals implements Serializable {
      */
     public void setLastHeartbeatTimestamp(long lastHeartbeat) {
         lastHeartbeatTimestamp = lastHeartbeat;
+        HeartbeatEvent heartbeatEvent = new HeartbeatEvent(ui, lastHeartbeat);
+        getListeners(HeartbeatListener.class)
+                .forEach(listener -> listener.heartbeat(heartbeatEvent));
     }
 
     @SuppressWarnings("unchecked")
@@ -434,7 +437,7 @@ public class UIInternals implements Serializable {
      * @return handler to remove the event listener
      */
     public Registration addBeforeEnterListener(BeforeEnterListener listener) {
-        return addNavigationListener(BeforeEnterHandler.class, listener);
+        return addListener(BeforeEnterHandler.class, listener);
     }
 
     /**
@@ -445,7 +448,7 @@ public class UIInternals implements Serializable {
      * @return handler to remove the event listener
      */
     public Registration addBeforeLeaveListener(BeforeLeaveListener listener) {
-        return addNavigationListener(BeforeLeaveHandler.class, listener);
+        return addListener(BeforeLeaveHandler.class, listener);
     }
 
     /**
@@ -458,14 +461,17 @@ public class UIInternals implements Serializable {
      */
     public Registration addAfterNavigationListener(
             AfterNavigationListener listener) {
-        return addNavigationListener(AfterNavigationHandler.class, listener);
+        return addListener(AfterNavigationHandler.class, listener);
     }
 
-    private <E> Registration addNavigationListener(Class<E> navigationHandler,
-            E listener) {
+    public Registration addHeartbeatListener(HeartbeatListener listener) {
+        return addListener(HeartbeatListener.class, listener);
+    }
+
+    private <E> Registration addListener(Class<E> handler, E listener) {
         session.checkHasLock();
-        List<E> list = (List<E>) listeners.computeIfAbsent(navigationHandler,
-                key -> new ArrayList<>());
+        List<E> list = (List<E>) listeners
+                .computeIfAbsent(handler, key -> new ArrayList<>());
         list.add(listener);
 
         list.sort((o1, o2) -> {
@@ -492,15 +498,15 @@ public class UIInternals implements Serializable {
     /**
      * Get all registered listeners for given navigation handler type.
      *
-     * @param navigationHandler
-     *            handler to get listeners for
+     * @param handler
+     *         handler to get listeners for
      * @param <E>
-     *            the handler type
+     *         the handler type
      * @return unmodifiable list of registered listeners for navigation handler
      */
-    public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
+    public <E> List<E> getListeners(Class<E> handler) {
         List<E> registeredListeners = (List<E>) listeners
-                .computeIfAbsent(navigationHandler, key -> new ArrayList<>());
+                .computeIfAbsent(handler, key -> new ArrayList<>());
 
         return Collections.unmodifiableList(registeredListeners);
     }

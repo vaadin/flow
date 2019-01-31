@@ -97,6 +97,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public int getWebComponentDisconnect() {
+            return 0;
+        }
+
+        @Override
         public boolean isCloseIdleSessions() {
             return false;
         }

@@ -13,24 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.webcomponent;
+package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.UI;
+
 /**
- * Listener for receiving changes to {@link WebComponentProperty} value.
- *
- * @param <T>
- *         type of the {@link WebComponentProperty} value
+ * Listener for listening to the heartbeat of the application.
  */
 @FunctionalInterface
-public interface PropertyValueChangeListener<T> extends Serializable {
+public interface HeartbeatListener extends Serializable {
 
     /**
-     * Method called when target property value has changed.
+     * Method called for a heartbeat received for UI.
      *
      * @param event
-     *         property value change event
+     *         heartbeat event containing new value and receiving UI
      */
-    void valueChange(PropertyValueChangeEvent<T> event);
+    void heartbeat(HeartbeatEvent event);
+
 }
