@@ -87,4 +87,14 @@ public @interface Route {
      */
     boolean absolute() default false;
 
+    /**
+     * Marks if this Route should be registered during the initial route
+     * registration on servlet startup.
+     * <p>
+     * Default is to register route at startup.
+     *
+     * @return true to skip automatic registration
+     */
+    boolean registerAtStartup() default true;
+
 }

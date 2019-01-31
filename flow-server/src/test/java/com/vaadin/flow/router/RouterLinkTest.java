@@ -18,9 +18,9 @@ package com.vaadin.flow.router;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,8 +36,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouterLinkTest extends HasCurrentService {
@@ -63,9 +61,14 @@ public class RouterLinkTest extends HasCurrentService {
     public void setUp() throws NoSuchFieldException, IllegalAccessException,
             InvalidRouteConfigurationException {
         registry = new TestRouteRegistry();
-        RouteConfiguration.forRegistry(registry).setRoutes(new HashSet<>(
-                Arrays.asList(TestView.class, FooNavigationTarget.class,
-                        GreetingNavigationTarget.class)));
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            Arrays.asList(TestView.class, FooNavigationTarget.class,
+                    GreetingNavigationTarget.class)
+                    .forEach(routeConfiguration::setAnnotatedRoute);
+        });
         router = new Router(registry);
 
         ui = new UI() {
