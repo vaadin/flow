@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -45,6 +46,12 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                                     }
                                 }));
         initCount.incrementAndGet();
+
+        RouteConfiguration configuration = RouteConfiguration.forApplicationScope();
+        if (!configuration.isPathRegistered("service-start-route")) {
+            configuration.setRoute(
+                    "service-start-route", ServiceInitListenersView.class);
+        }
 
         event.addRequestHandler((session, request, response) -> {
             requestCount.incrementAndGet();
