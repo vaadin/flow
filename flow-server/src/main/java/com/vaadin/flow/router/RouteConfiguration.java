@@ -33,7 +33,9 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
@@ -505,9 +507,19 @@ public class RouteConfiguration implements Serializable {
     /* Private methods */
 
     private static RouteRegistry getApplicationRegistry() {
-        return ApplicationRouteRegistry
-                .getInstance(VaadinServlet.getCurrent().getServletContext());
-    }
+        VaadinService service = VaadinService.getCurrent();
+        if (service instanceof VaadinServletService) {
+            return ApplicationRouteRegistry
+                    .getInstance(((VaadinServletService) service).getServlet()
+                            .getServletContext());
+        } else {
+            // TODO Once we have PortletService, this will explode
+            // we will need route registry for portlet context
+            throw new IllegalStateException("Cannot access "
+                    + ApplicationRouteRegistry.class.getName() + ", because no "
+                    + "VaadinServletService available for " +
+                    "fetching ServletContext");
+        }    }
 
     private static RouteRegistry getSessionRegistry() {
         return SessionRouteRegistry
