@@ -33,6 +33,12 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.Router;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,6 +59,11 @@ import net.jcip.annotations.NotThreadSafe;
  */
 @NotThreadSafe
 public class VaadinServiceTest {
+
+    @Tag("div")
+    public static class TestView extends Component {
+
+    }
 
     private class TestSessionDestroyListener implements SessionDestroyListener {
 
@@ -226,6 +237,38 @@ public class VaadinServiceTest {
 
         Assert.assertFalse(listener1Run.get());
         Assert.assertTrue(listener2Run.get());
+    }
+
+    @Test
+    public void testServiceInitListener_accessApplicationRouteRegistry_registryAvailable() {
+
+        VaadinServiceInitListener initListener = event -> {
+            Assert.assertNotNull("service init should have set thread local",
+                    VaadinService.getCurrent());
+
+            Router router = event.getSource().getRouter();
+            Assert.assertNotEquals("Router should be initialized", router);
+
+            Assert.assertNotEquals("registry should be initialized",
+                    router.getRegistry());
+
+            RouteConfiguration.forApplicationScope().setRoute("test",
+                    TestView.class);
+        };
+        MockInstantiator instantiator = new MockInstantiator(initListener);
+
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(instantiator);
+
+        // the following will allow the route configuration call to work
+        VaadinService.setCurrent(service);
+        List<RouteData> availableRoutes = RouteConfiguration
+                .forApplicationScope().getAvailableRoutes();
+        VaadinService.setCurrent(null);
+
+        Assert.assertEquals(1, availableRoutes.size());
+        Assert.assertEquals(availableRoutes.get(0).getUrl(), "test");
     }
 
     @Test
