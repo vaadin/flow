@@ -250,12 +250,20 @@ public abstract class VaadinService implements Serializable {
     public void init() throws ServiceException {
         instantiator = createInstantiator();
 
+        // init the router now so that registry will be available for
+        // modifications
+        router = new Router(getRouteRegistry());
+
         List<RequestHandler> handlers = createRequestHandlers();
 
         ServiceInitEvent event = new ServiceInitEvent(this);
 
+        // allow service init listeners to use thread local access to e.g.
+        // application scoped route registry
+        setCurrent(this);
         instantiator.getServiceInitListeners()
                 .forEach(listener -> listener.serviceInit(event));
+        setCurrent(null);
 
         event.getAddedRequestHandlers().forEach(handlers::add);
 
@@ -272,7 +280,6 @@ public abstract class VaadinService implements Serializable {
                 .getBootstrapListeners(event.getAddedBootstrapListeners())
                 .collect(Collectors.toList());
 
-        router = new Router(getRouteRegistry());
         if (!getDeploymentConfiguration().isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");

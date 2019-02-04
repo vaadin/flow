@@ -19,11 +19,13 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
 public class TestingServiceInitListener implements VaadinServiceInitListener {
+    public static final String DYNAMICALLY_REGISTERED_ROUTE = "dynamically-registered-route";
     private static AtomicInteger initCount = new AtomicInteger();
     private static AtomicInteger requestCount = new AtomicInteger();
 
@@ -45,6 +47,13 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                                     }
                                 }));
         initCount.incrementAndGet();
+
+        RouteConfiguration configuration = RouteConfiguration.forApplicationScope();
+        if (!configuration.isPathRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
+            configuration.setRoute(
+                    DYNAMICALLY_REGISTERED_ROUTE,
+                    DynamicallyRegisteredRoute.class);
+        }
 
         event.addRequestHandler((session, request, response) -> {
             requestCount.incrementAndGet();
