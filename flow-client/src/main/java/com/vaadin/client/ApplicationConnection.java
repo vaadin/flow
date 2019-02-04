@@ -63,7 +63,7 @@ public class ApplicationConnection {
 
         Document document = Browser.getDocument();
         Element flowRoot = null;
-        if (!"".equals(applicationConfiguration.getUiElementId())) {
+        if (!applicationConfiguration.getUiElementId().isEmpty()) {
             flowRoot = document
                     .getElementById(applicationConfiguration.getUiElementId());
         }
