@@ -58,6 +58,11 @@ public class Lumo implements AbstractTheme {
 
     @Override
     public Map<String, String> getBodyAttributes(String variant) {
+        return getHtmlAttributes(variant);
+    }
+
+    @Override
+    public Map<String, String> getHtmlAttributes(String variant) {
         if (variant.isEmpty()) {
             return Collections.emptyMap();
         }
