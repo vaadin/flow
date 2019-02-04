@@ -62,8 +62,11 @@ public class ApplicationConnection {
         new PopStateHandler(registry).bind();
 
         Document document = Browser.getDocument();
-        Element flowRoot = document
-                .getElementById(applicationConfiguration.getUiElementId());
+        Element flowRoot = null;
+        if (!applicationConfiguration.getUiElementId().isEmpty()) {
+            flowRoot = document
+                    .getElementById(applicationConfiguration.getUiElementId());
+        }
 
         Element root = flowRoot != null ? flowRoot : document.getBody();
         assert root.getTagName()
