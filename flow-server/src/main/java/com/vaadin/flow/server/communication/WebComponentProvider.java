@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
@@ -61,9 +62,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
         Optional<String> tag = parseTag(pathInfo);
         if (!tag.isPresent()) {
-            LoggerFactory.getLogger(WebComponentProvider.class)
-                    .info("Received web-component request for non-custom element with request path {}",
-                            pathInfo);
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request for non-custom element with request path {}",
+                    pathInfo);
             return false;
         }
 
@@ -84,14 +85,14 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 if (session.getConfiguration().getRootElementId().isEmpty()) {
                     uiElement = "document.body";
                 } else {
-                    uiElement = "document.getElementById('" + session
-                            .getConfiguration().getRootElementId() + "')";
+                    uiElement = "document.getElementById('"
+                            + session.getConfiguration().getRootElementId()
+                            + "')";
                 }
 
-                generated = WebComponentGenerator
-                        .generateModule(uiElement, tag.get(),
-                                webComponent.get(),
-                                session.getService().getInstantiator());
+                generated = WebComponentGenerator.generateModule(uiElement,
+                        tag.get(), webComponent.get(),
+                        session.getService().getInstantiator(), request);
                 cache.put(webComponent.get(), generated);
             }
 

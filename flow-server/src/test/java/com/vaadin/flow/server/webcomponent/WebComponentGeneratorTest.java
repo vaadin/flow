@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponent;
@@ -17,8 +18,11 @@ import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 import com.vaadin.flow.component.webcomponent.WebComponentWrapperTest;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinRequest;
 
 public class WebComponentGeneratorTest {
+
+    private VaadinRequest request = Mockito.mock(VaadinRequest.class);
 
     @Test
     public void generatorShouldGenerateAllPropertiesAndMethods() {
@@ -33,8 +37,8 @@ public class WebComponentGeneratorTest {
         PropertyData message = new PropertyData("message", String.class, "");
 
         Assert.assertTrue("All three properties should have been found",
-                propertyDataSet.containsAll(
-                        Stream.of(response, integer, message)
+                propertyDataSet
+                        .containsAll(Stream.of(response, integer, message)
                                 .collect(Collectors.toSet())));
 
         Assert.assertEquals("Response initial value should have been 'hello'",
@@ -67,8 +71,8 @@ public class WebComponentGeneratorTest {
                 "extend");
 
         Assert.assertTrue("All three properties should have been found",
-                propertyDataSet.containsAll(
-                        Stream.of(response, integer, message)
+                propertyDataSet
+                        .containsAll(Stream.of(response, integer, message)
                                 .collect(Collectors.toSet())));
 
         Assert.assertEquals("Response initial value should have been 'Hi'",
@@ -93,7 +97,7 @@ public class WebComponentGeneratorTest {
 
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("document.body", "my-component",
-                        propertyData);
+                        propertyData, request);
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
