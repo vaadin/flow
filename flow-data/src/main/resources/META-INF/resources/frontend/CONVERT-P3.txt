@@ -1,0 +1,18 @@
+
+To convert `.html` file to `.js` run the following command:
+
+```
+bower install
+npm install -g npm install -g polymer-modulizer
+modulizer --force --out . --import-style=name
+```
+
+Then restore modified and deleted files
+
+```
+git checkout package.json flow-component-renderer.html
+```
+
+And finally, commit changes to `flow-component-renderer.js`
+
+
