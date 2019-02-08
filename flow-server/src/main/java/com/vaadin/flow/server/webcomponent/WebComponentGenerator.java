@@ -80,6 +80,8 @@ public class WebComponentGenerator {
      *            web component class implementation
      * @param instantiator
      *            class instantiator implementation
+     * @param request
+     *            a vaadin request
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(String uiElement, String tag,
