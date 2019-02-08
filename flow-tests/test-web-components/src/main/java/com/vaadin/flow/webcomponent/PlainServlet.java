@@ -41,7 +41,8 @@ public class PlainServlet extends HttpServlet {
                     "<link rel='import' href='/vaadin/web-component/client-select.html'>");
             out.println("<title>Embedded web component</title></head>");
             out.println("<body>");
-            out.println("<client-select></client-select>");
+            out.println(
+                    "<client-select show='true'>Web Component</client-select>");
             out.println("</body>");
             out.println("</html>");
         }

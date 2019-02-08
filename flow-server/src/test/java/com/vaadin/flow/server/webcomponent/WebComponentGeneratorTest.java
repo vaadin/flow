@@ -95,6 +95,8 @@ public class WebComponentGeneratorTest {
         Set<PropertyData> propertyData = WebComponentGenerator
                 .getPropertyData(MyComponent.class, new MockInstantiator());
 
+        Mockito.when(request.getContextPath()).thenReturn("foo");
+
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("document.body", "my-component",
                         propertyData, request);
@@ -109,12 +111,16 @@ public class WebComponentGeneratorTest {
                 replacementsMap.containsKey("Properties"));
         Assert.assertTrue("No 'RootElement' specified",
                 replacementsMap.containsKey("RootElement"));
+        Assert.assertTrue("Missing servlet context path",
+                replacementsMap.containsKey("servlet_context"));
 
         Assert.assertEquals("my-component", replacementsMap.get("TagDash"));
         Assert.assertEquals("MyComponent", replacementsMap.get("TagCamel"));
 
         Assert.assertEquals("document.body",
                 replacementsMap.get("RootElement"));
+
+        Assert.assertEquals("/foo", replacementsMap.get("servlet_context"));
 
         String propertyMethods = replacementsMap.get("PropertyMethods");
         Assert.assertTrue(propertyMethods.contains("_sync_message"));

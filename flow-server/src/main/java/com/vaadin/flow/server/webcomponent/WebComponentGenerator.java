@@ -131,6 +131,9 @@ public class WebComponentGenerator {
         if (!contextPath.isEmpty() && !contextPath.startsWith("/")) {
             contextPath = "/" + contextPath;
         }
+        if (!contextPath.isEmpty() && contextPath.endsWith("/")) {
+            contextPath = contextPath.substring(0, contextPath.length() - 1);
+        }
 
         replacements.put("servlet_context", contextPath);
 
