@@ -25,7 +25,7 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/items/new";
+        return "/items/1/edit";
     }
 
     @Test
@@ -47,5 +47,11 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest {
         TestBenchElement msg = webComponent.$("span").first();
 
         Assert.assertEquals("Selected: Peter, Parker", msg.getText());
+
+        // Check that there is correctly imported custom element
+        TestBenchElement dependencyElement = $("dep-element").first();
+        TestBenchElement mainDepElement = dependencyElement
+                .$(TestBenchElement.class).id("main");
+        Assert.assertEquals("Imported element", mainDepElement.getText());
     }
 }

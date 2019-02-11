@@ -127,12 +127,14 @@ public class Bootstrapper implements EntryPoint {
                 .getConfigString(ApplicationConstants.SERVICE_URL);
         if (serviceUrl == null) {
             conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
+            conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
+                    .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
         } else {
             conf.setServiceUrl(serviceUrl);
+            conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(
+                    serviceUrl + jsoConfiguration.getConfigString(
+                            ApplicationConstants.CONTEXT_ROOT_URL)));
         }
-
-        conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
-                .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
 
         if (BrowserInfo.get().isEs6Supported()) {
             conf.setFrontendRootUrl(jsoConfiguration
