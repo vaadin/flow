@@ -91,7 +91,7 @@ public class WebComponentGenerator {
                 webComponentClass, instantiator);
 
         Map<String, String> replacements = getReplacementsMap(uiElement, tag,
-                webComponentProperties, request);
+                webComponentProperties, getContextPath(request));
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -114,7 +114,7 @@ public class WebComponentGenerator {
     }
 
     static Map<String, String> getReplacementsMap(String uiElement, String tag,
-            Set<PropertyData> webComponentProperties, VaadinRequest request) {
+            Set<PropertyData> webComponentProperties, String contextPath) {
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);
@@ -129,6 +129,12 @@ public class WebComponentGenerator {
 
         replacements.put("RootElement", uiElement);
 
+        replacements.put("servlet_context", contextPath);
+
+        return replacements;
+    }
+
+    private static String getContextPath(VaadinRequest request) {
         String contextPath = request.getContextPath();
         if (!contextPath.isEmpty() && !contextPath.startsWith("/")) {
             contextPath = "/" + contextPath;
@@ -136,10 +142,7 @@ public class WebComponentGenerator {
         if (!contextPath.isEmpty() && contextPath.endsWith("/")) {
             contextPath = contextPath.substring(0, contextPath.length() - 1);
         }
-
-        replacements.put("servlet_context", contextPath);
-
-        return replacements;
+        return contextPath;
     }
 
     private static Set<PropertyData> getFieldProperties(

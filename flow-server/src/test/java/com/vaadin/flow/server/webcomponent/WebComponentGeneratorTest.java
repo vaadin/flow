@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponent;
@@ -18,11 +17,8 @@ import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 import com.vaadin.flow.component.webcomponent.WebComponentWrapperTest;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.MockInstantiator;
-import com.vaadin.flow.server.VaadinRequest;
 
 public class WebComponentGeneratorTest {
-
-    private VaadinRequest request = Mockito.mock(VaadinRequest.class);
 
     @Test
     public void generatorShouldGenerateAllPropertiesAndMethods() {
@@ -95,11 +91,9 @@ public class WebComponentGeneratorTest {
         Set<PropertyData> propertyData = WebComponentGenerator
                 .getPropertyData(MyComponent.class, new MockInstantiator());
 
-        Mockito.when(request.getContextPath()).thenReturn("foo");
-
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("document.body", "my-component",
-                        propertyData, request);
+                        propertyData, "/foo");
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
