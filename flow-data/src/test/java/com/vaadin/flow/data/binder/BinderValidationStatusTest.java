@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.BindingValidationStatus.Status;
@@ -101,7 +101,7 @@ public class BinderValidationStatusTest
 
     @Test
     public void bindingWithStatusLabel_labelIsUpdatedAccordingStatus() {
-        Label label = new Label();
+        TestLabel label = new TestLabel();
 
         Binding<Person, String> binding = binder.forField(nameField)
                 .withValidator(notEmpty).withStatusLabel(label)
@@ -128,7 +128,7 @@ public class BinderValidationStatusTest
 
     @Test
     public void bindingWithStatusLabel_defaultStatusHandlerIsReplaced() {
-        Label label = new Label();
+        TestLabel label = new TestLabel();
 
         Binding<Person, String> binding = binder.forField(nameField)
                 .withValidator(notEmpty).withStatusLabel(label)
@@ -157,7 +157,7 @@ public class BinderValidationStatusTest
 
     @Test(expected = IllegalStateException.class)
     public void bindingWithStatusLabel_addAfterBound() {
-        Label label = new Label();
+        TestLabel label = new TestLabel();
 
         BindingBuilder<Person, String> binding = binder.forField(nameField)
                 .withValidator(notEmpty);
@@ -168,7 +168,7 @@ public class BinderValidationStatusTest
 
     @Test(expected = IllegalStateException.class)
     public void bindingWithStatusLabel_setAfterHandler() {
-        Label label = new Label();
+        TestLabel label = new TestLabel();
 
         BindingBuilder<Person, String> binding = binder.forField(nameField);
 
@@ -179,7 +179,7 @@ public class BinderValidationStatusTest
 
     @Test(expected = IllegalStateException.class)
     public void bindingWithStatusHandler_setAfterLabel() {
-        Label label = new Label();
+        TestLabel label = new TestLabel();
 
         BindingBuilder<Person, String> binding = binder.forField(nameField);
 
@@ -411,7 +411,7 @@ public class BinderValidationStatusTest
 
     @Test(expected = IllegalStateException.class)
     public void binderWithStatusLabel_addAfterBound() {
-        Label label = new Label();
+        TestLabel label = new TestLabel();
 
         BindingBuilder<Person, String> binding = binder.forField(nameField)
                 .withValidator(notEmpty);
@@ -422,7 +422,7 @@ public class BinderValidationStatusTest
 
     @Test(expected = IllegalStateException.class)
     public void binderWithStatusLabel_setAfterHandler() {
-        Label label = new Label();
+        TestLabel label = new TestLabel();
 
         BindingBuilder<Person, String> binding = binder.forField(nameField);
         binding.bind(Person::getFirstName, Person::setFirstName);
@@ -435,7 +435,7 @@ public class BinderValidationStatusTest
 
     @Test(expected = IllegalStateException.class)
     public void binderWithStatusHandler_setAfterLabel() {
-        Label label = new Label();
+        TestLabel label = new TestLabel();
 
         BindingBuilder<Person, String> binding = binder.forField(nameField);
         binding.bind(Person::getFirstName, Person::setFirstName);
@@ -472,7 +472,7 @@ public class BinderValidationStatusTest
         assertValidField(nameField);
     }
 
-    private void assertVisible(Label label, boolean visible) {
+    private void assertVisible(TestLabel label, boolean visible) {
         if (visible) {
             Assert.assertNull(label.getStyle().get("display"));
         } else {

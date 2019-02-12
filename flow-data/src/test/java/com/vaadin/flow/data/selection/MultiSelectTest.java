@@ -21,19 +21,19 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 
 public class MultiSelectTest {
 
-    private static class MultiSelectMock implements MultiSelect<Div, String> {
+    private static class MultiSelectMock implements MultiSelect<TestLabel, String> {
 
-        private final Div component = new Div();
+        private final TestLabel component = new TestLabel();
         private final Set<String> selectedItems = new LinkedHashSet<>();
 
         public MultiSelectMock(String... initialItems) {
@@ -42,7 +42,7 @@ public class MultiSelectTest {
 
         @Override
         public Registration addValueChangeListener(
-                ValueChangeListener<? super ComponentValueChangeEvent<Div, Set<String>>> listener) {
+                ValueChangeListener<? super ComponentValueChangeEvent<TestLabel, Set<String>>> listener) {
             return null;
         }
 
@@ -65,7 +65,7 @@ public class MultiSelectTest {
 
         @Override
         public Registration addSelectionListener(
-                MultiSelectionListener<Div, String> listener) {
+                MultiSelectionListener<TestLabel, String> listener) {
             return null;
         }
 
