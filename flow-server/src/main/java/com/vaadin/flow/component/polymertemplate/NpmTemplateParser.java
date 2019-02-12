@@ -22,13 +22,15 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.Constants;
@@ -38,9 +40,18 @@ import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 
+import elemental.json.JsonObject;
+
 public class NpmTemplateParser implements TemplateParser {
 
     private static final TemplateParser INSTANCE = new NpmTemplateParser();
+
+    private String hash;
+    private JsonObject statisticsJson;
+    private ReentrantLock lock = new ReentrantLock();
+
+    private static final Pattern HASH_PATTERN = Pattern
+            .compile("\"hash\":\\s\"(.*)\",");
 
     private NpmTemplateParser() {
         // Doesn't allow external instantiation
@@ -55,7 +66,6 @@ public class NpmTemplateParser implements TemplateParser {
             Class<? extends PolymerTemplate<?>> clazz, String tag,
             VaadinService service) {
 
-        //        boolean logEnabled = LOG_CACHE.get(clazz).compareAndSet(false, true);
         WebBrowser browser = FakeBrowser.getEs6();
 
         List<Dependency> dependencies = AnnotationReader
@@ -79,6 +89,7 @@ public class NpmTemplateParser implements TemplateParser {
             String statisticsFilePath = service.getDeploymentConfiguration()
                     .getStringProperty(Constants.STATISTICS_JSON,
                             "META-INF/resources/stats.json");
+
             try (InputStream content = getClass().getClassLoader()
                     .getResourceAsStream(statisticsFilePath)) {
                 if (content == null) {
@@ -86,8 +97,27 @@ public class NpmTemplateParser implements TemplateParser {
                             "Can't find resource '%s' "
                                     + "via the servlet context", url));
                 }
+                String statistics = streamToString(content);
+                Matcher matcher = HASH_PATTERN.matcher(statistics);
+                if (matcher.find()) {
+                    String hash = matcher.group(1);
+                    lock.lock();
+                    try {
+                        if (!hash.equals(this.hash)) {
+                            this.hash = hash;
+                            statisticsJson = BundleParser
+                                    .getStatisticsJson(url, statistics);
+                        }
+                    } finally {
+                        lock.unlock();
+                    }
+                } else {
+                    statisticsJson = BundleParser
+                            .getStatisticsJson(url, statistics);
+                }
+
                 Element templateElement = BundleParser
-                        .parseTemplateElement(url, streamToString(content));
+                        .parseTemplateElement(url, statisticsJson);
                 Element parent = new Element(tag);
                 parent.attr("id", tag);
                 templateElement.appendTo(parent);
@@ -115,7 +145,7 @@ public class NpmTemplateParser implements TemplateParser {
                         + "file or provide alternative implementation of the "
                         + "method getTemplateContent() which should return an element "
                         + "representing the content of the template file", tag,
-                HtmlImport.class.getSimpleName()));
+                JavaScript.class.getSimpleName()));
     }
 
     private String streamToString(InputStream inputStream) throws IOException {

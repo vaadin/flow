@@ -47,16 +47,13 @@ public final class BundleParser {
     private BundleParser() {
     }
 
-    public static Optional<Element> getIdElement(String id, String fileName,
+    public static JsonObject getStatisticsJson(String fileName,
             String statistics) {
-        Element template = parseTemplateElement(fileName, statistics);
-        return Optional.ofNullable(template.getElementById(id));
+        return getObjectWithId(fileName, Json.parse(statistics));
     }
 
     public static Element parseTemplateElement(String fileName,
-            String statistics) {
-        JsonObject moduleJson = getObjectWithId(fileName,
-                Json.parse(statistics));
+            JsonObject statisticsJson) {
 
         ErrorReporter errorReporter = new SimpleErrorReporter();
 
@@ -65,7 +62,7 @@ public final class BundleParser {
                 StaticSourceFile.SourceKind.STRONG);
 
         ParserRunner.ParseResult parseResult = ParserRunner
-                .parse(sourceFile, moduleJson.getString("source"), config,
+                .parse(sourceFile, statisticsJson.getString("source"), config,
                         errorReporter);
 
         // run the visitor on the ast to extract the needed values.
@@ -94,8 +91,9 @@ public final class BundleParser {
             JsonArray modules = obj.getArray("modules");
             for (int j = 0; j < modules.length(); j++) {
                 JsonObject object = modules.getObject(j);
-                if (object.hasKey("id") && (object.getString("id")
-                        .equals(fileName) || object.getString("id").equals("."+fileName))) {
+                if (object.hasKey("id") && (
+                        object.getString("id").equals(fileName) || object
+                                .getString("id").equals("." + fileName))) {
                     like = object;
                     break;
                 }
