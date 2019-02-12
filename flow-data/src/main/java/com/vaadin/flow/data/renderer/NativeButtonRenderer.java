@@ -20,7 +20,9 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 
@@ -135,10 +137,12 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
 
     @Override
     public Component createComponent(SOURCE item) {
-        NativeButton button = new NativeButton(getValueProvider().apply(item));
-        button.addClickListener(event -> getItemClickListeners()
-                .forEach(listener -> listener.onItemClicked(item)));
-        return button;
+        Element button = ElementFactory
+                .createButton(getValueProvider().apply(item));
+        button.addEventListener("click", event -> getItemClickListeners()
+                .forEach(listeners -> listeners.onItemClicked(item)));
+        return ComponentUtil.componentFromElement(button, Component.class,
+                true);
     }
 
 }
