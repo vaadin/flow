@@ -19,6 +19,6 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-@WebServlet(urlPatterns = { "/*" })
+@WebServlet(urlPatterns = { "/*", "/vaadin/*", "/frontend/*" })
 public class WebComponentVaadinServlet extends VaadinServlet {
 }

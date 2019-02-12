@@ -55,6 +55,11 @@ public class ApplicationConstants implements Serializable {
     public static final String UIDL_PUSH_ID = "Vaadin-Push-ID";
 
     /**
+     * The URL which should be used to connect server-side VaadinService.
+     */
+    public static final String SERVICE_URL = "serviceUrl";
+
+    /**
      * Configuration parameter giving the (in some cases relative) URL to the
      * web application context root.
      */

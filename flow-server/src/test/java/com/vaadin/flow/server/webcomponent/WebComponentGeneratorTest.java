@@ -33,8 +33,8 @@ public class WebComponentGeneratorTest {
         PropertyData message = new PropertyData("message", String.class, "");
 
         Assert.assertTrue("All three properties should have been found",
-                propertyDataSet.containsAll(
-                        Stream.of(response, integer, message)
+                propertyDataSet
+                        .containsAll(Stream.of(response, integer, message)
                                 .collect(Collectors.toSet())));
 
         Assert.assertEquals("Response initial value should have been 'hello'",
@@ -67,8 +67,8 @@ public class WebComponentGeneratorTest {
                 "extend");
 
         Assert.assertTrue("All three properties should have been found",
-                propertyDataSet.containsAll(
-                        Stream.of(response, integer, message)
+                propertyDataSet
+                        .containsAll(Stream.of(response, integer, message)
                                 .collect(Collectors.toSet())));
 
         Assert.assertEquals("Response initial value should have been 'Hi'",
@@ -93,7 +93,7 @@ public class WebComponentGeneratorTest {
 
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("document.body", "my-component",
-                        propertyData);
+                        propertyData, "/foo");
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -105,12 +105,16 @@ public class WebComponentGeneratorTest {
                 replacementsMap.containsKey("Properties"));
         Assert.assertTrue("No 'RootElement' specified",
                 replacementsMap.containsKey("RootElement"));
+        Assert.assertTrue("Missing servlet context path",
+                replacementsMap.containsKey("servlet_context"));
 
         Assert.assertEquals("my-component", replacementsMap.get("TagDash"));
         Assert.assertEquals("MyComponent", replacementsMap.get("TagCamel"));
 
         Assert.assertEquals("document.body",
                 replacementsMap.get("RootElement"));
+
+        Assert.assertEquals("/foo", replacementsMap.get("servlet_context"));
 
         String propertyMethods = replacementsMap.get("PropertyMethods");
         Assert.assertTrue(propertyMethods.contains("_sync_message"));
