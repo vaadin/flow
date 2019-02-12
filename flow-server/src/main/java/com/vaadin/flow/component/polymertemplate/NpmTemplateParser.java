@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
@@ -76,7 +77,7 @@ public class NpmTemplateParser implements TemplateParser {
             }
             String url = dependency.getUrl();
             String statisticsFilePath = service.getDeploymentConfiguration()
-                    .getStringProperty("statistics.file.path",
+                    .getStringProperty(Constants.STATISTICS_JSON,
                             "META-INF/resources/stats.json");
             try (InputStream content = getClass().getClassLoader()
                     .getResourceAsStream(statisticsFilePath)) {
