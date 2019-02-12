@@ -17,18 +17,18 @@ package com.vaadin.flow.data.validator;
 
 import java.util.Locale;
 
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Before;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
 
 public class ValidatorTestBase {
 
-    private Label localeContext;
+    private TestLabel localeContext;
     private Locale locale = Locale.US;
 
     @Before
@@ -40,7 +40,7 @@ public class ValidatorTestBase {
             }
         };
         UI.setCurrent(ui);
-        localeContext = new Label();
+        localeContext = new TestLabel();
     }
 
     protected <T> void assertPasses(T value, Validator<? super T> validator) {
