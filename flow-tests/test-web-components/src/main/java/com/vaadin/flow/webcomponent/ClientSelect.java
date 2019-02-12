@@ -18,6 +18,9 @@ package com.vaadin.flow.webcomponent;
 import java.util.Optional;
 
 import com.vaadin.flow.component.AbstractField;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
@@ -32,6 +35,11 @@ public class ClientSelect extends Div {
     private Span message = new Span();
     private Select select;
 
+    @Tag("dep-element")
+    private static class DepElement extends Component {
+
+    }
+
     public ClientSelect() {
         select = new Select();
         Backend.getAllClients().forEach(
@@ -42,6 +50,13 @@ public class ClientSelect extends Div {
                 event -> message.setVisible(event.getNewValue()));
 
         add(select, message);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        getUI().get().getPage().addHtmlImport("frontend://Dependency.html");
+
+        add(new DepElement());
     }
 
     private void setValue(

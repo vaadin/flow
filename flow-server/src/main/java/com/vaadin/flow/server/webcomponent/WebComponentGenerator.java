@@ -29,14 +29,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.apache.commons.io.IOUtils;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentMethod;
 import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -58,7 +59,8 @@ public class WebComponentGenerator {
 
     private static String getTemplate() {
         try {
-            return IOUtils.toString(WebComponentGenerator.class
+            return IOUtils.toString(
+                    WebComponentGenerator.class
                             .getResourceAsStream("webcomponent-template.html"),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -71,23 +73,25 @@ public class WebComponentGenerator {
      * Generate web component html/JS for given tag and class.
      *
      * @param uiElement
-     *         string for finding the UI element on the client
+     *            string for finding the UI element on the client
      * @param tag
-     *         web component tag
+     *            web component tag
      * @param webComponentClass
-     *         web component class implementation
+     *            web component class implementation
      * @param instantiator
-     *         class instantiator implementation
+     *            class instantiator implementation
+     * @param request
+     *            a vaadin request
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(String uiElement, String tag,
             Class<? extends Component> webComponentClass,
-            Instantiator instantiator) {
+            Instantiator instantiator, VaadinRequest request) {
         Set<PropertyData> webComponentProperties = getPropertyData(
                 webComponentClass, instantiator);
 
         Map<String, String> replacements = getReplacementsMap(uiElement, tag,
-                webComponentProperties);
+                webComponentProperties, getContextPath(request));
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -110,7 +114,7 @@ public class WebComponentGenerator {
     }
 
     static Map<String, String> getReplacementsMap(String uiElement, String tag,
-            Set<PropertyData> webComponentProperties) {
+            Set<PropertyData> webComponentProperties, String contextPath) {
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);
@@ -125,7 +129,20 @@ public class WebComponentGenerator {
 
         replacements.put("RootElement", uiElement);
 
+        replacements.put("servlet_context", contextPath);
+
         return replacements;
+    }
+
+    private static String getContextPath(VaadinRequest request) {
+        String contextPath = request.getContextPath();
+        if (!contextPath.isEmpty() && !contextPath.startsWith("/")) {
+            contextPath = "/" + contextPath;
+        }
+        if (!contextPath.isEmpty() && contextPath.endsWith("/")) {
+            contextPath = contextPath.substring(0, contextPath.length() - 1);
+        }
+        return contextPath;
     }
 
     private static Set<PropertyData> getFieldProperties(
@@ -149,9 +166,8 @@ public class WebComponentGenerator {
             Class<?> typeClass;
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
-                typeClass = GenericTypeReflector
-                        .erase(((ParameterizedType) type)
-                                .getActualTypeArguments()[0]);
+                typeClass = GenericTypeReflector.erase(
+                        ((ParameterizedType) type).getActualTypeArguments()[0]);
             } else {
                 typeClass = GenericTypeReflector.erase(field.getType());
             }
@@ -159,13 +175,13 @@ public class WebComponentGenerator {
                 Object propertyValue = ((WebComponentProperty) field.get(wc))
                         .get();
                 properties.add(new PropertyData(field.getName(), typeClass,
-                        propertyValue == null ?
-                                null :
-                                propertyValue.toString()));
+                        propertyValue == null ? null
+                                : propertyValue.toString()));
             } catch (IllegalAccessException e) {
                 throw new PropertyReadException(
-                        "Failed to get the property value for field '" + field
-                                .getName() + "'", e);
+                        "Failed to get the property value for field '"
+                                + field.getName() + "'",
+                        e);
             } finally {
                 field.setAccessible(accessible);
             }
@@ -179,7 +195,7 @@ public class WebComponentGenerator {
      * Fields are set in the order of child first parent last.
      *
      * @param webComponentClass
-     *         class to get fields for
+     *            class to get fields for
      * @return {@link WebComponentProperty} fields
      */
     private static List<Field> getPropertyFields(Class<?> webComponentClass) {
@@ -209,9 +225,8 @@ public class WebComponentGenerator {
                     webComponentClass.getSuperclass()));
         }
 
-        Stream.of(webComponentClass.getDeclaredMethods())
-                .filter(method -> method
-                        .isAnnotationPresent(WebComponentMethod.class))
+        Stream.of(webComponentClass.getDeclaredMethods()).filter(
+                method -> method.isAnnotationPresent(WebComponentMethod.class))
                 .forEach(method -> {
                     Class<?>[] parameterTypes = method.getParameterTypes();
                     WebComponentMethod annotation = method

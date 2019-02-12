@@ -22,6 +22,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.ApplicationConstants;
+
+import elemental.json.JsonObject;
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -45,7 +48,24 @@ public class WebComponentBootstrap extends BootstrapHandler {
     protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
-        return super.createAndInitUI(WebComponentUI.class, request, response,
-                session);
+        BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
+                request, response, session);
+        JsonObject config = context.getApplicationParameters();
+
+        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+        String requestURL = servletRequest.getRequestURL().toString();
+
+        if (!requestURL.endsWith(PATH_PREFIX)) {
+            throw new IllegalStateException("Unexpected request URL '"
+                    + requestURL
+                    + "' in the bootstrap handler for web component UI which should handle path "
+                    + PATH_PREFIX);
+        }
+        // remove path prefix but keep the trailing slash
+        String serviceUrl = requestURL.substring(0,
+                requestURL.length() - PATH_PREFIX.length() + 1);
+        assert serviceUrl.endsWith("/");
+        config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
+        return context;
     }
 }
