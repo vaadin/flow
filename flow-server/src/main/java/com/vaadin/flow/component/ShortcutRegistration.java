@@ -289,7 +289,8 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Checks if the shortcut preventing default key behaviour in the browser.
+     * Checks if the shortcut is preventing default key behaviour in the
+     * browser.
      *
      * @return Prevents default key behavior
      */
@@ -298,21 +299,21 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Set whether default key behavior should be prevented in the browser. If
-     * not changed, default key behavior is not allowed.
+     * Set whether default key behavior is prevented in the browser. If not
+     * changed, default key behavior is not allowed.
      *
      * @param preventBrowserDefault   Prevent default key behavior
      */
     public void setPreventBrowserDefault(boolean preventBrowserDefault) {
         if (preventDefault != preventBrowserDefault) {
-            preventDefault = !preventBrowserDefault;
+            preventDefault = preventBrowserDefault;
             prepareForClientResponse();
         }
     }
 
     /**
-     * Checks if the shortcut stopping key event (associated with the shortcut)
-     * propagation in the browser?
+     * Checks if the shortcut is stopping key event (associated with the
+     * shortcut) propagation in the browser?
      *
      * @return Stops event propagation
      */
@@ -326,9 +327,9 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @param stopEventPropagation  Stop event propagation
      */
-    public void setAllowEventPropagation(boolean stopEventPropagation) {
-        if (stopPropagation == stopEventPropagation) {
-            stopPropagation = !stopEventPropagation;
+    public void setStopEventPropagation(boolean stopEventPropagation) {
+        if (stopPropagation != stopEventPropagation) {
+            stopPropagation = stopEventPropagation;
             prepareForClientResponse();
         }
     }

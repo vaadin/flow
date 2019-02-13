@@ -21,12 +21,14 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.shared.Registration;
 
+import static org.easymock.EasyMock.reset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -36,6 +38,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class ShortcutRegistrationTest {
@@ -135,6 +138,35 @@ public class ShortcutRegistrationTest {
     }
 
     @Test
+    public void settersAndGettersChangeValuesCorrectly() {
+
+        //Component listenOn = mock(Component.class);
+        ShortcutRegistration registration =
+                new ShortcutRegistration(lifecycleOwner,
+                        () -> listenOn, event -> {}, Key.KEY_A);
+
+        registration.setPreventBrowserDefault(false);
+        registration.setStopEventPropagation(false);
+
+        clientResponse();
+
+        assertFalse("Prevent default was not set to false",
+                registration.getPreventBrowserDefault());
+        assertFalse("Stop propagation was not set to false",
+                registration.getStopEventPropagation());
+
+        registration.setPreventBrowserDefault(true);
+        registration.setStopEventPropagation(true);
+
+        clientResponse();
+
+        assertTrue("Prevent default was not set to true",
+                registration.getPreventBrowserDefault());
+        assertTrue("Stop propagation was not set to true",
+                registration.getStopEventPropagation());
+    }
+
+    @Test
     public void listenOnChangesTheComponentThatOwnsTheListener() {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
@@ -178,7 +210,8 @@ public class ShortcutRegistrationTest {
         ArgumentCaptor<SerializableConsumer> captor =
                 ArgumentCaptor.forClass(SerializableConsumer.class);
 
-        verify(ui).beforeClientResponse(eq(lifecycleOwner), captor.capture());
+        verify(ui, atLeastOnce()).beforeClientResponse(eq(lifecycleOwner),
+                captor.capture());
 
         SerializableConsumer consumer = captor.getValue();
 

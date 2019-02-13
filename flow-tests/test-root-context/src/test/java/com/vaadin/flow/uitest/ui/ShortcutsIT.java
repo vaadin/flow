@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -115,6 +113,26 @@ public class ShortcutsIT extends ChromeBrowserTest {
         // check that things revert back.
         sendKeys(Keys.ALT, "g");
         Assert.assertEquals("Alt", getValue());
+    }
+
+    @Test
+    public void clickShortcutAllowsKeyDefaults() {
+        WebElement textField1 = findElement(By.id("click-input-1"));
+        WebElement textField2 = findElement(By.id("click-input-2"));
+
+        // ClickButton1: has default values
+        textField1.sendKeys("value 1");
+
+        sendKeys(Keys.ENTER);
+
+        Assert.assertEquals("click: value 1", getValue());
+
+        // ClickButton2: prevents key default behavior
+        textField2.sendKeys("value 2");
+
+        sendKeys(Keys.ENTER);
+
+        Assert.assertEquals("click:", getValue());
     }
 
     private String getValue() {

@@ -60,7 +60,9 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * component.
      * <p>
      * Use the returned {@link ShortcutRegistration} to fluently configure the
-     * shortcut. By default, the returned {@code ShortcutRegistration} allows
+     * shortcut.
+     * <p>
+     * By default, the returned {@code ShortcutRegistration} allows
      * browser's default behavior, unlike other {@code ShortcutRegistrations}.
      * To change this behavior, call
      * {@link ShortcutRegistration#setPreventBrowserDefault(boolean)}.

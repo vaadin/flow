@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.ShortcutRegistration;
@@ -97,7 +99,7 @@ public class ShortcutsView extends Div {
             expected.setText("toggled!");
         }, Key.KEY_Y, KeyModifier.ALT);
 
-        // modifyingShortcutShouldChangeShortcutEvent
+            // modifyingShortcutShouldChangeShortcutEvent
         flipFloppingRegistration =
                 UI.getCurrent().addShortcutListener(event -> {
                     if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
@@ -114,5 +116,31 @@ public class ShortcutsView extends Div {
                     }
 
                 }, Key.KEY_G, KeyModifier.ALT);
+
+        // clickShortcutAllowsKeyDefaults
+        Div wrapper1 = new Div();
+        Div wrapper2 = new Div();
+        final Input clickInput1 = new Input();
+        clickInput1.setType("text");
+        clickInput1.setId("click-input-1");
+
+        final Input clickInput2 = new Input();
+        clickInput2.setType("text");
+        clickInput2.setId("click-input-2");
+
+        NativeButton clickButton1 = new NativeButton("CB1",
+                event -> expected.setText("click: " + clickInput1.getValue()));
+        clickButton1.addClickShortcut(Key.ENTER).listenOn(wrapper1);
+
+        NativeButton clickButton2 = new NativeButton("CB2",
+                event -> expected.setText("click: " + clickInput2.getValue()));
+        clickButton2.addClickShortcut(Key.ENTER).listenOn(wrapper2)
+                // this matches the default of other shortcuts but changes
+                // the default of the click shortcut
+                .setPreventBrowserDefault(true);
+
+        wrapper1.add(clickInput1, clickButton1);
+        wrapper2.add(clickInput2, clickButton2);
+        add(wrapper1, wrapper2);
     }
 }
