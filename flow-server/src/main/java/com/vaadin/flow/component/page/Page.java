@@ -256,6 +256,30 @@ public class Page implements Serializable {
     }
 
     /**
+     * Adds the given JavaScript module to the page and ensures that it is
+     * loaded successfully.
+     *
+     * @param module
+     *            the URL to load the JavaScript module from, not <code>null</code>
+     */
+    public void addJsModule(String module) {
+        addJsModule(module, LoadMode.EAGER);
+    }
+    /**
+     * Adds the given JavaScript to the page and ensures that it is loaded
+     * successfully.
+     *
+     * @param module
+     *            the URL to load the JavaScript module from, not <code>null</code>
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     */
+    public void addJsModule(String module, LoadMode loadMode) {
+        addDependency(new Dependency(Type.JS_MODULE, module, loadMode));
+    }
+
+    /**
      * Adds the given HTML import to the page and ensures that it is loaded
      * successfully.
      * <p>

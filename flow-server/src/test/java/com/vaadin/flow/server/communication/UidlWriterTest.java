@@ -35,6 +35,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
@@ -70,6 +71,8 @@ import static org.mockito.Mockito.when;
 public class UidlWriterTest {
     private static final String JS_TYPE_NAME = Dependency.Type.JAVASCRIPT
             .name();
+    private static final String JS_MODULE_NAME = Dependency.Type.JS_MODULE
+            .name();
     private static final String HTML_TYPE_NAME = Dependency.Type.HTML_IMPORT
             .name();
     private static final String CSS_STYLE_NAME = Dependency.Type.STYLESHEET
@@ -77,15 +80,18 @@ public class UidlWriterTest {
     private MockServletServiceSessionSetup mocks;
 
     @JavaScript("UI-parent-JAVASCRIPT")
+    @JsModule("UI-parent-JS_MODULE")
     private static class ParentUI extends UI {
     }
 
     @JavaScript("UI-JAVASCRIPT")
+    @JsModule("UI-JS_MODULE")
     private static class TestUI extends ParentUI {
     }
 
     @Tag("div")
     @JavaScript("super-JAVASCRIPT")
+    @JsModule("super-JS_MODULE")
     @StyleSheet("super-STYLESHEET")
     @HtmlImport("super-HTML_IMPORT")
     public static class SuperComponent extends Component {
@@ -96,6 +102,7 @@ public class UidlWriterTest {
     }
 
     @JavaScript("JAVASCRIPT")
+    @JsModule("JS_MODULE")
     @StyleSheet("STYLESHEET")
     @HtmlImport("HTML_IMPORT")
     public static class ActualComponent extends EmptyClassWithInterface
@@ -104,6 +111,8 @@ public class UidlWriterTest {
 
     @JavaScript("child1-JAVASCRIPT")
     @JavaScript("child2-JAVASCRIPT")
+    @JsModule("child1-JS_MODULE")
+    @JsModule("child2-JS_MODULE")
     @StyleSheet("child1-STYLESHEET")
     @StyleSheet("child2-STYLESHEET")
     @HtmlImport("child1-HTML_IMPORT")
@@ -113,24 +122,28 @@ public class UidlWriterTest {
     }
 
     @JavaScript("interface-JAVASCRIPT")
+    @JsModule("interface-JS_MODULE")
     @StyleSheet("interface-STYLESHEET")
     @HtmlImport("interface-HTML_IMPORT")
     public interface ComponentInterface {
     }
 
     @JavaScript("anotherinterface-JAVASCRIPT")
+    @JsModule("anotherinterface-JS_MODULE")
     @StyleSheet("anotherinterface-STYLESHEET")
     @HtmlImport("anotherinterface-HTML_IMPORT")
     public interface AnotherComponentInterface {
     }
 
     @JavaScript("childinterface1-JAVASCRIPT")
+    @JsModule("childinterface1-JS_MODULE")
     @StyleSheet("childinterface1-STYLESHEET")
     @HtmlImport("childinterface1-HTML_IMPORT")
     public interface ChildComponentInterface1 {
     }
 
     @JavaScript("childinterface2-JAVASCRIPT")
+    @JsModule("childinterface2-JS_MODULE")
     @StyleSheet("childinterface2-STYLESHEET")
     @HtmlImport("childinterface2-HTML_IMPORT")
     public interface ChildComponentInterface2 extends ChildComponentInterface1 {
@@ -138,12 +151,15 @@ public class UidlWriterTest {
 
     @Tag("test")
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
+    @JsModule(value = "lazy.mjs", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
     @JavaScript(value = "inline.js", loadMode = LoadMode.INLINE)
+    @JsModule(value = "inline.mjs", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE)
     @HtmlImport(value = "inline.html", loadMode = LoadMode.INLINE)
     @JavaScript("eager.js")
+    @JsModule("eager.mjs")
     @StyleSheet("eager.css")
     @HtmlImport("eager.html")
     public static class ComponentWithAllDependencyTypes extends Component {
@@ -152,6 +168,8 @@ public class UidlWriterTest {
     @Tag("test")
     @JavaScript(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
             + "inline.js", loadMode = LoadMode.INLINE)
+    @JsModule(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+            + "inline.mjs", loadMode = LoadMode.INLINE)
     @StyleSheet(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
             + "inline.css", loadMode = LoadMode.INLINE)
     @HtmlImport(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
@@ -234,7 +252,7 @@ public class UidlWriterTest {
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
 
-        assertEquals(12, dependenciesMap.size());
+        assertEquals(16, dependenciesMap.size());
         assertDependency("childinterface1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
         assertDependency("childinterface2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
@@ -250,6 +268,14 @@ public class UidlWriterTest {
         assertDependency("child1-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
         assertDependency("child2-" + JS_TYPE_NAME, JS_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("childinterface1-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                dependenciesMap);
+        assertDependency("childinterface2-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                dependenciesMap);
+        assertDependency("child1-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                dependenciesMap);
+        assertDependency("child2-" + JS_MODULE_NAME, JS_MODULE_NAME,
                 dependenciesMap);
         assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
@@ -288,21 +314,21 @@ public class UidlWriterTest {
 
         List<JsonObject> eagerDependencies = dependenciesMap
                 .get(LoadMode.EAGER);
-        assertThat("Should have 3 eager dependencies", eagerDependencies,
-                hasSize(3));
+        assertThat("Should have 4 eager dependencies", eagerDependencies,
+                hasSize(4));
         assertThat("Eager dependencies should not have inline contents",
                 eagerDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
                         .collect(Collectors.toList()), hasSize(0));
-        assertThat("Should have 3 different eager urls",
+        assertThat("Should have 4 different eager urls",
                 eagerDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_URL))
                         .map(url -> url.substring(
                                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                                         .length()))
                         .collect(Collectors.toList()),
-                containsInAnyOrder("eager.js", "eager.html", "eager.css"));
-        assertThat("Should have 3 different eager dependency types",
+                containsInAnyOrder("eager.js", "eager.mjs", "eager.html", "eager.css"));
+        assertThat("Should have 4 different eager dependency types",
                 eagerDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
@@ -310,21 +336,21 @@ public class UidlWriterTest {
                 containsInAnyOrder(Dependency.Type.values()));
 
         List<JsonObject> lazyDependencies = dependenciesMap.get(LoadMode.LAZY);
-        assertThat("Should have 3 lazy dependencies", lazyDependencies,
-                hasSize(3));
+        assertThat("Should have 4 lazy dependencies", lazyDependencies,
+                hasSize(4));
         assertThat("Lazy dependencies should not have inline contents",
                 lazyDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
                         .collect(Collectors.toList()), hasSize(0));
-        assertThat("Should have 3 different lazy urls",
+        assertThat("Should have 4 different lazy urls",
                 lazyDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_URL))
                         .map(url -> url.substring(
                                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                                         .length()))
                         .collect(Collectors.toList()),
-                containsInAnyOrder("lazy.js", "lazy.html", "lazy.css"));
-        assertThat("Should have 3 different lazy dependency types",
+                containsInAnyOrder("lazy.js","lazy.mjs", "lazy.html", "lazy.css"));
+        assertThat("Should have 4 different lazy dependency types",
                 lazyDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
@@ -395,13 +421,13 @@ public class UidlWriterTest {
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies,
             String expectedPrefix) {
-        assertThat("Should have 3 inline dependencies", inlineDependencies,
-                hasSize(3));
+        assertThat("Should have 4 inline dependencies", inlineDependencies,
+                hasSize(4));
         assertThat("Eager dependencies should not have urls",
                 inlineDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_URL))
                         .collect(Collectors.toList()), hasSize(0));
-        assertThat("Should have 3 different inline contents",
+        assertThat("Should have 4 different inline contents",
                 inlineDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_CONTENTS))
                         .map(url -> {
@@ -413,8 +439,8 @@ public class UidlWriterTest {
                                 return url.substring(expectedPrefix.length());
                             }
                         }).collect(Collectors.toList()),
-                containsInAnyOrder("inline.js", "inline.html", "inline.css"));
-        assertThat("Should have 3 different inline dependency type",
+                containsInAnyOrder("inline.js","inline.mjs", "inline.html", "inline.css"));
+        assertThat("Should have 4 different inline dependency type",
                 inlineDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
@@ -436,7 +462,7 @@ public class UidlWriterTest {
             routeConfiguration.setAnnotatedRoute(BaseClass.class);
         });
 
-        for (String type : new String[] { "html", "js", "css" }) {
+        for (String type : new String[] { "html", "js", "css", "mjs" }) {
             mocks.getServlet()
                     .addServletContextResource("/frontend/inline." + type,
                             "/frontend/inline." + type);
@@ -461,13 +487,17 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
-        assertEquals(17, dependenciesMap.size());
+        assertEquals(23, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
         assertDependency("UI-parent-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
         assertDependency("UI-" + JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
+
+        assertDependency("UI-parent-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                dependenciesMap);
+        assertDependency("UI-" + JS_MODULE_NAME, JS_MODULE_NAME, dependenciesMap);
 
         assertDependency("super-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
@@ -484,6 +514,14 @@ public class UidlWriterTest {
         assertDependency("interface-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
         assertDependency(JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
+
+        assertDependency("super-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                dependenciesMap);
+        assertDependency("anotherinterface-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                dependenciesMap);
+        assertDependency("interface-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                dependenciesMap);
+        assertDependency(JS_MODULE_NAME, JS_MODULE_NAME, dependenciesMap);
 
         assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);

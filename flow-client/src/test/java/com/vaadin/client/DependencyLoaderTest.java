@@ -15,8 +15,6 @@
  */
 package com.vaadin.client;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +30,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import static org.junit.Assert.assertEquals;
 
 /**
  * This class is used to test {@link DependencyLoader} functionality, that does
@@ -48,6 +47,7 @@ public class DependencyLoaderTest {
 
         List<String> loadingStyles = new ArrayList<>();
         List<String> loadingScripts = new ArrayList<>();
+        List<String> loadingModules = new ArrayList<>();
         List<String> loadingHtml = new ArrayList<>();
 
         @Override
@@ -70,6 +70,21 @@ public class DependencyLoaderTest {
                 boolean defer) {
             loadingScripts.add(scriptUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, scriptUrl));
+        }
+
+        @Override
+        public void loadModule(String moduleUrl,
+                ResourceLoadListener resourceLoadListener) {
+            loadingModules.add(moduleUrl);
+            resourceLoadListener.onLoad(new ResourceLoadEvent(this, moduleUrl));
+        }
+
+        @Override
+        public void loadModule(String moduleUrl,
+                ResourceLoadListener resourceLoadListener, boolean async,
+                boolean defer) {
+            loadingModules.add(moduleUrl);
+            resourceLoadListener.onLoad(new ResourceLoadEvent(this, moduleUrl));
         }
 
         @Override
@@ -122,9 +137,9 @@ public class DependencyLoaderTest {
     public void loadStylesheet() {
         String TEST_URL = "http://foo.bar/baz";
 
-        new DependencyLoader(registry).loadDependencies(
-                createDependenciesMap(new Dependency(Dependency.Type.STYLESHEET,
-                        TEST_URL, LoadMode.EAGER).toJson()));
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
+                new Dependency(Dependency.Type.STYLESHEET, TEST_URL,
+                        LoadMode.EAGER).toJson()));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingStyles);
@@ -140,6 +155,18 @@ public class DependencyLoaderTest {
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingScripts);
+    }
+
+    @Test
+    public void loadModule() {
+        String TEST_MODULE = "/vaadin-button.js";
+
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
+                new Dependency(Dependency.Type.JS_MODULE, TEST_MODULE,
+                        LoadMode.EAGER).toJson()));
+
+        assertEquals(Collections.singletonList(TEST_MODULE),
+                mockResourceLoader.loadingModules);
     }
 
     @Test
@@ -184,9 +211,8 @@ public class DependencyLoaderTest {
                 new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
                         LoadMode.EAGER).toJson()));
 
-        assertEquals(
-                Collections.singletonList(
-                        "http://someplace.com/es6/my-component.html"),
+        assertEquals(Collections
+                        .singletonList("http://someplace.com/es6/my-component.html"),
                 mockResourceLoader.loadingHtml);
     }
 

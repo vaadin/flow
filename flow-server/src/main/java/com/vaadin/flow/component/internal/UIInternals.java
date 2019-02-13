@@ -62,6 +62,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
@@ -793,8 +794,15 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        dependencies.getHtmlImports()
-                .forEach(html -> addHtmlImport(html, page));
+        // Waiting for #5042
+//        if (getSession().getConfiguration()
+//                .getBooleanProperty(Constants.BOWER_MODE, true)) {
+            dependencies.getHtmlImports()
+                    .forEach(html -> addHtmlImport(html, page));
+//        } else {
+            dependencies.getJsModules().forEach(module -> page
+                    .addJsModule(module.value(), module.loadMode()));
+//        }
         dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependencies.getStyleSheets().forEach(styleSheet -> page
