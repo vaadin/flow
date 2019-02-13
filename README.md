@@ -15,7 +15,7 @@ Instructions on how to set up a working environment for developing the Flow proj
 
 `master` branch is the latest version that will at some point be released in the [Vaadin platform](https://github.com/vaadin/platform). See other branches for other framework versions:
 * 1.0 branch is Vaadin 10 LTS (Flow version 1.0)
-* 1.3 branch is for Vaadin 13 (Flow version 1.3)
+* 1.4 branch is for Vaadin 13 (Flow version 1.4)
 
 Setting up Eclipse to Develop Flow
 =========
