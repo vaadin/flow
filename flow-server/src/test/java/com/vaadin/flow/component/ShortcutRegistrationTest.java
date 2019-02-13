@@ -113,13 +113,13 @@ public class ShortcutRegistrationTest {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
-        assertTrue(registration.getPreventBrowserDefault());
-        assertTrue(registration.getStopEventPropagation());
+        assertTrue(registration.isBrowserDefaultPrevented());
+        assertTrue(registration.isEventPropagationStopped());
 
         registration.allowBrowserDefault().allowEventPropagation();
 
-        assertFalse(registration.getPreventBrowserDefault());
-        assertFalse(registration.getStopEventPropagation());
+        assertFalse(registration.isBrowserDefaultPrevented());
+        assertFalse(registration.isEventPropagationStopped());
     }
 
     @Test
@@ -145,25 +145,25 @@ public class ShortcutRegistrationTest {
                 new ShortcutRegistration(lifecycleOwner,
                         () -> listenOn, event -> {}, Key.KEY_A);
 
-        registration.setPreventBrowserDefault(false);
-        registration.setStopEventPropagation(false);
+        registration.setBrowserDefaultPrevented(false);
+        registration.setEventPropagationStopped(false);
 
         clientResponse();
 
         assertFalse("Prevent default was not set to false",
-                registration.getPreventBrowserDefault());
+                registration.isBrowserDefaultPrevented());
         assertFalse("Stop propagation was not set to false",
-                registration.getStopEventPropagation());
+                registration.isEventPropagationStopped());
 
-        registration.setPreventBrowserDefault(true);
-        registration.setStopEventPropagation(true);
+        registration.setBrowserDefaultPrevented(true);
+        registration.setEventPropagationStopped(true);
 
         clientResponse();
 
         assertTrue("Prevent default was not set to true",
-                registration.getPreventBrowserDefault());
+                registration.isBrowserDefaultPrevented());
         assertTrue("Stop propagation was not set to true",
-                registration.getStopEventPropagation());
+                registration.isEventPropagationStopped());
     }
 
     @Test
