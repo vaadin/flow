@@ -64,6 +64,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * <p>
      * By default, the returned {@code ShortcutRegistration} allows
      * browser's default behavior, unlike other {@code ShortcutRegistrations}.
+     * This is used to make sure that value synchronization of input fields is
+     * not blocked for the shortcut key (e.g. Enter key).
      * To change this behavior, call
      * {@link ShortcutRegistration#setPreventBrowserDefault(boolean)}.
      *
