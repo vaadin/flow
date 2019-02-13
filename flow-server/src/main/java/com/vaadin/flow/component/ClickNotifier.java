@@ -63,7 +63,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * shortcut. By default, the returned {@code ShortcutRegistration} allows
      * browser's default behavior, unlike other {@code ShortcutRegistrations}.
      * To change this behavior, call
-     * {@link ShortcutRegistration#setAllowBrowserDefault(boolean)}.
+     * {@link ShortcutRegistration#setPreventBrowserDefault(boolean)}.
      *
      * @param key
      *              primary {@link Key} used to trigger the shortcut. Cannot

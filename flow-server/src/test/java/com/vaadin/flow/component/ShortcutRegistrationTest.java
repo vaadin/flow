@@ -110,13 +110,13 @@ public class ShortcutRegistrationTest {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
-        assertTrue(registration.preventsDefault());
-        assertTrue(registration.stopsPropagation());
+        assertTrue(registration.getPreventBrowserDefault());
+        assertTrue(registration.getStopEventPropagation());
 
         registration.allowBrowserDefault().allowEventPropagation();
 
-        assertFalse(registration.preventsDefault());
-        assertFalse(registration.stopsPropagation());
+        assertFalse(registration.getPreventBrowserDefault());
+        assertFalse(registration.getStopEventPropagation());
     }
 
     @Test
