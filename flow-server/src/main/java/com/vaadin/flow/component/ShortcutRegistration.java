@@ -294,30 +294,30 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @return Prevents default key behavior
      */
-    public boolean getPreventBrowserDefault() {
+    public boolean isBrowserDefaultPrevented() {
         return preventDefault;
     }
 
     /**
-     * Set whether default key behavior is prevented in the browser. If not
+     * Set whether the default key behavior is prevented in the browser. If not
      * changed, default key behavior is not allowed.
      *
-     * @param preventBrowserDefault   Prevent default key behavior
+     * @param browserDefaultPrevented   Prevent default key behavior
      */
-    public void setPreventBrowserDefault(boolean preventBrowserDefault) {
-        if (preventDefault != preventBrowserDefault) {
-            preventDefault = preventBrowserDefault;
+    public void setBrowserDefaultPrevented(boolean browserDefaultPrevented) {
+        if (preventDefault != browserDefaultPrevented) {
+            preventDefault = browserDefaultPrevented;
             prepareForClientResponse();
         }
     }
 
     /**
      * Checks if the shortcut is stopping key event (associated with the
-     * shortcut) propagation in the browser?
+     * shortcut) propagation in the browser.
      *
      * @return Stops event propagation
      */
-    public boolean getStopEventPropagation() {
+    public boolean isEventPropagationStopped() {
         return stopPropagation;
     }
 
@@ -325,11 +325,11 @@ public class ShortcutRegistration implements Registration, Serializable {
      * Set whether shortcut's key event is stopped from propagating up the DOM
      * tree in the browser. If not changed, event propagation is not allowed.
      *
-     * @param stopEventPropagation  Stop event propagation
+     * @param eventPropagationStopped  Stop event propagation
      */
-    public void setStopEventPropagation(boolean stopEventPropagation) {
-        if (stopPropagation != stopEventPropagation) {
-            stopPropagation = stopEventPropagation;
+    public void setEventPropagationStopped(boolean eventPropagationStopped) {
+        if (stopPropagation != eventPropagationStopped) {
+            stopPropagation = eventPropagationStopped;
             prepareForClientResponse();
         }
     }

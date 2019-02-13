@@ -135,7 +135,7 @@ public class ShortcutsView extends Div {
         clickButton2.addClickShortcut(Key.ENTER).listenOn(wrapper2)
                 // this matches the default of other shortcuts but changes
                 // the default of the click shortcut
-                .setPreventBrowserDefault(true);
+                .setBrowserDefaultPrevented(true);
 
         wrapper1.add(clickInput1, clickButton1);
         wrapper2.add(clickInput2, clickButton2);
