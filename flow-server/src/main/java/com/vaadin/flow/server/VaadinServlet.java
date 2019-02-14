@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Properties;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -51,6 +51,7 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
+    private DevModeServer devmodeServer;
     private WebJarServer webJarServer;
 
     /**
@@ -81,6 +82,9 @@ public class VaadinServlet extends HttpServlet {
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
         }
+        
+        devmodeServer = DevModeServer.createInstance(servletService);
+        
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
 
@@ -92,7 +96,7 @@ public class VaadinServlet extends HttpServlet {
      * Creates a new instance of {@link StaticFileHandler}, that is responsible
      * to find and serve static resources. By default it returns a
      * {@link StaticFileServer} instance.
-     * 
+     *
      * @param servletService
      *            the servlet service created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
@@ -223,6 +227,11 @@ public class VaadinServlet extends HttpServlet {
             HttpServletResponse response) throws ServletException, IOException {
         // Handle context root request without trailing slash, see #9921
         if (handleContextOrServletRootWithoutSlash(request, response)) {
+            return;
+        }
+
+        if (devmodeServer != null && devmodeServer.isDevModeRequest(request)
+                && devmodeServer.serveDevModeRequest(request, response)) {
             return;
         }
 
