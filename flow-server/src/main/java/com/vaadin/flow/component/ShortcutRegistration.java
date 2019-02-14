@@ -303,19 +303,20 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     /**
      * Checks if the default key behaviour in the browser is allowed by the
-     * shortcut. This is {@code false} by default.
+     * shortcut. The default value is {@code false}.
      *
-     * @return Prevents default key behavior
+     * @return Allows default key behavior
      */
     public boolean isBrowserDefaultAllowed() {
         return allowDefaultBehavior;
     }
 
     /**
-     * Set whether the default key behavior is allowed in the browser. If not
-     * changed, default key behavior is not allowed.
+     * Set whether the default key behavior is allowed in the browser. The
+     * default value is {@code false}, and it prevents the default key events
+     * from taking place in the browser.
      *
-     * @param browserDefaultAllowed   Prevent default key behavior
+     * @param browserDefaultAllowed   Allow default behavior on keydown
      */
     public void setBrowserDefaultAllowed(boolean browserDefaultAllowed) {
         if (allowDefaultBehavior != browserDefaultAllowed) {
@@ -337,10 +338,10 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Checks if the shortcut is allowing keydown event (associated with the
-     * shortcut) propagation in the browser. This is {@code false} by default.
+     * Checks if the shortcut allows keydown event (associated with the
+     * shortcut) propagation in the browser. The default value is {@code false}.
      *
-     * @return Stops event propagation
+     * @return Allows event propagation
      */
     public boolean isEventPropagationAllowed() {
         return allowEventPropagation;
@@ -348,10 +349,10 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     /**
      * Set whether shortcut's keydown event is allowed to propagate up the
-     * DOM tree in the browser. If not changed, event propagation is not
-     * allowed.
+     * DOM tree in the browser. The default value is {@code false}, and the
+     * DOM event is consumed by the shortcut handler.
      *
-     * @param eventPropagationAllowed  Stop event propagation
+     * @param eventPropagationAllowed  Allow event propagation
      */
     public void setEventPropagationAllowed(boolean eventPropagationAllowed) {
         if (allowEventPropagation != eventPropagationAllowed) {
