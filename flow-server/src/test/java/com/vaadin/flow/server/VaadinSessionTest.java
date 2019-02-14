@@ -47,11 +47,13 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -131,6 +133,12 @@ public class VaadinSessionTest {
 
         session = new VaadinSession(mockService);
         mockService.storeSession(session, mockWrappedSession);
+
+        MockDeploymentConfiguration configuration =new MockDeploymentConfiguration();
+        configuration.setBowerMode(true);
+        session.lock();
+        session.setConfiguration(configuration);
+        session.unlock();
 
         ui = new TestUI();
         vaadinRequest = new VaadinServletRequest(

@@ -26,7 +26,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.hamcrest.Matcher;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -195,6 +197,13 @@ public class UidlWriterTest {
             implements RouterLayout {
     }
 
+    private UI ui;
+
+    @Before
+    public void init() throws Exception {
+        ui = initializeUIForDependenciesTest(new TestUI());
+    }
+
     @After
     public void tearDown() {
         if (mocks != null) {
@@ -226,8 +235,8 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void componentDependencies() throws Exception {
-        UI ui = initializeUIForDependenciesTest(new TestUI());
+    public void componentDependencies() {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
 
@@ -239,8 +248,18 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void testComponentInterfaceDependencies() throws Exception {
-        UI ui = initializeUIForDependenciesTest(new TestUI());
+    public void testComponentInterfaceDependencies() {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+        assertComponentInterfaceDependencies();
+    }
+
+    @Test
+    public void testNpmComponentInterfaceDependencies() {
+        mocks.getDeploymentConfiguration().setBowerMode(false);
+        assertComponentInterfaceDependencies();
+    }
+
+    private void assertComponentInterfaceDependencies() {
         UidlWriter uidlWriter = new UidlWriter();
 
         addInitialComponentDependencies(ui, uidlWriter);
@@ -252,15 +271,7 @@ public class UidlWriterTest {
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
 
-        assertEquals(16, dependenciesMap.size());
-        assertDependency("childinterface1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("childinterface2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("child1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("child2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
-                dependenciesMap);
+        assertEquals(12, dependenciesMap.size());
         assertDependency("childinterface1-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
         assertDependency("childinterface2-" + JS_TYPE_NAME, JS_TYPE_NAME,
@@ -269,14 +280,25 @@ public class UidlWriterTest {
                 dependenciesMap);
         assertDependency("child2-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface1-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                dependenciesMap);
-        assertDependency("childinterface2-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                dependenciesMap);
-        assertDependency("child1-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                dependenciesMap);
-        assertDependency("child2-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                dependenciesMap);
+        if(mocks.getDeploymentConfiguration().isBowerMode()) {
+            assertDependency("childinterface1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                    dependenciesMap);
+            assertDependency("childinterface2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                    dependenciesMap);
+            assertDependency("child1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                    dependenciesMap);
+            assertDependency("child2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                    dependenciesMap);
+        }else {
+            assertDependency("childinterface1-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                    dependenciesMap);
+            assertDependency("childinterface2-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                    dependenciesMap);
+            assertDependency("child1-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                    dependenciesMap);
+            assertDependency("child2-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                    dependenciesMap);
+        }
         assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
         assertDependency("childinterface2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
@@ -288,8 +310,19 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void checkAllTypesOfDependencies() throws Exception {
-        UI ui = initializeUIForDependenciesTest(new TestUI());
+    public void checkAllTypesOfDependencies() {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+        assertAllDependencyTypes();
+    }
+
+    @Test
+    public void checkAllNpmTypesOfDependencies() {
+        mocks.getDeploymentConfiguration().setBowerMode(false);
+        assertAllDependencyTypes();
+    }
+
+
+    private void assertAllDependencyTypes() {
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
 
@@ -312,50 +345,72 @@ public class UidlWriterTest {
                 "Dependencies with all types of load mode should be present in this response",
                 dependenciesMap.size(), is(LoadMode.values().length));
 
+        Matcher<Iterable<? extends String>> matcher;
+        if (mocks.getDeploymentConfiguration().isBowerMode()) {
+            matcher = containsInAnyOrder("eager.js", "eager.html", "eager.css");
+        } else {
+            matcher = containsInAnyOrder("eager.js", "eager.mjs", "eager.css");
+        }
+
         List<JsonObject> eagerDependencies = dependenciesMap
                 .get(LoadMode.EAGER);
-        assertThat("Should have 4 eager dependencies", eagerDependencies,
-                hasSize(4));
+        assertThat("Should have 3 eager dependencies", eagerDependencies,
+                hasSize(3));
         assertThat("Eager dependencies should not have inline contents",
                 eagerDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
                         .collect(Collectors.toList()), hasSize(0));
-        assertThat("Should have 4 different eager urls",
+        assertThat("Should have 3 different eager urls",
                 eagerDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_URL))
                         .map(url -> url.substring(
                                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                                         .length()))
-                        .collect(Collectors.toList()),
-                containsInAnyOrder("eager.js", "eager.mjs", "eager.html", "eager.css"));
-        assertThat("Should have 4 different eager dependency types",
+                        .collect(Collectors.toList()), matcher);
+
+        Matcher<Iterable<? extends Dependency.Type>> typeMatcher;
+        if (mocks.getDeploymentConfiguration().isBowerMode()) {
+            typeMatcher = containsInAnyOrder(Dependency.Type.HTML_IMPORT,
+                    Dependency.Type.JAVASCRIPT, Dependency.Type.STYLESHEET);
+        } else {
+            typeMatcher = containsInAnyOrder(Dependency.Type.JS_MODULE,
+                    Dependency.Type.JAVASCRIPT, Dependency.Type.STYLESHEET);
+        }
+        assertThat("Should have 3 different eager dependency types",
                 eagerDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
                         .collect(Collectors.toList()),
-                containsInAnyOrder(Dependency.Type.values()));
+                typeMatcher);
 
         List<JsonObject> lazyDependencies = dependenciesMap.get(LoadMode.LAZY);
-        assertThat("Should have 4 lazy dependencies", lazyDependencies,
-                hasSize(4));
+        assertThat("Should have 3 lazy dependencies", lazyDependencies,
+                hasSize(3));
         assertThat("Lazy dependencies should not have inline contents",
                 lazyDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
                         .collect(Collectors.toList()), hasSize(0));
-        assertThat("Should have 4 different lazy urls",
+
+        if (mocks.getDeploymentConfiguration().isBowerMode()) {
+            matcher = containsInAnyOrder("lazy.js", "lazy.html", "lazy.css");
+        } else {
+            matcher = containsInAnyOrder("lazy.js", "lazy.mjs", "lazy.css");
+        }
+
+        assertThat("Should have 3 different lazy urls",
                 lazyDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_URL))
                         .map(url -> url.substring(
                                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                                         .length()))
                         .collect(Collectors.toList()),
-                containsInAnyOrder("lazy.js","lazy.mjs", "lazy.html", "lazy.css"));
-        assertThat("Should have 4 different lazy dependency types",
+                matcher);
+        assertThat("Should have 3 different lazy dependency types",
                 lazyDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
                         .collect(Collectors.toList()),
-                containsInAnyOrder(Dependency.Type.values()));
+                typeMatcher);
 
         List<JsonObject> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
@@ -363,9 +418,23 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void checkAllTypesOfDependencies_uriResolverResolvesFrontendProtocol()
-            throws Exception {
-        UI ui = initializeUIForDependenciesTest(new TestUI());
+    public void checkAllTypesOfDependencies_uriResolverResolvesFrontendProtocol() {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+
+        ui.add(new ComponentWithFrontendProtocol());
+        JsonObject response = uidlWriter.createUidl(ui, false);
+        List<JsonObject> inlineDependencies = JsonUtils.<JsonObject>stream(
+                response.getArray(LoadMode.INLINE.name()))
+                .collect(Collectors.toList());
+
+        assertInlineDependencies(inlineDependencies, "/frontend/");
+    }
+
+    @Test
+    public void checkAllNpmTypesOfDependencies_uriResolverResolvesFrontendProtocol() {
+        mocks.getDeploymentConfiguration().setBowerMode(false);
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
 
@@ -380,8 +449,8 @@ public class UidlWriterTest {
 
     @Test
     @Ignore("See https://github.com/vaadin/flow/issues/3822")
-    public void parentViewDependenciesAreAddedFirst() throws Exception {
-        UI ui = initializeUIForDependenciesTest(new UI());
+    public void parentViewDependenciesAreAddedFirst() {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
         UidlWriter uidlWriter = new UidlWriter();
         ui.add(new BaseClass());
 
@@ -421,13 +490,21 @@ public class UidlWriterTest {
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies,
             String expectedPrefix) {
-        assertThat("Should have 4 inline dependencies", inlineDependencies,
-                hasSize(4));
+        assertThat("Should have 3 inline dependencies", inlineDependencies,
+                hasSize(3));
         assertThat("Eager dependencies should not have urls",
                 inlineDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_URL))
                         .collect(Collectors.toList()), hasSize(0));
-        assertThat("Should have 4 different inline contents",
+        Matcher<Iterable<? extends String>> matcher;
+        if (mocks.getDeploymentConfiguration().isBowerMode()) {
+            matcher = containsInAnyOrder("inline.js", "inline.html",
+                    "inline.css");
+        } else {
+            matcher = containsInAnyOrder("inline.js", "inline.mjs",
+                    "inline.css");
+        }
+        assertThat("Should have 3 different inline contents",
                 inlineDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_CONTENTS))
                         .map(url -> {
@@ -438,14 +515,22 @@ public class UidlWriterTest {
                             } else {
                                 return url.substring(expectedPrefix.length());
                             }
-                        }).collect(Collectors.toList()),
-                containsInAnyOrder("inline.js","inline.mjs", "inline.html", "inline.css"));
-        assertThat("Should have 4 different inline dependency type",
+                        }).collect(Collectors.toList()), matcher);
+
+        Matcher<Iterable<? extends Dependency.Type>> typeMatcher;
+        if (mocks.getDeploymentConfiguration().isBowerMode()) {
+            typeMatcher = containsInAnyOrder(Dependency.Type.HTML_IMPORT,
+                    Dependency.Type.JAVASCRIPT, Dependency.Type.STYLESHEET);
+        } else {
+            typeMatcher = containsInAnyOrder(Dependency.Type.JS_MODULE,
+                    Dependency.Type.JAVASCRIPT, Dependency.Type.STYLESHEET);
+        }
+        assertThat("Should have 3 different inline dependency type",
                 inlineDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
                         .collect(Collectors.toList()),
-                containsInAnyOrder(Dependency.Type.values()));
+                typeMatcher);
     }
 
     private UI initializeUIForDependenciesTest(UI ui) throws Exception {
@@ -461,8 +546,7 @@ public class UidlWriterTest {
             routeConfiguration.getHandledRegistry().clean();
             routeConfiguration.setAnnotatedRoute(BaseClass.class);
         });
-
-        for (String type : new String[] { "html", "js", "css", "mjs" }) {
+        for (String type : new String[] { "html", "js", "css", "mjs"}) {
             mocks.getServlet()
                     .addServletContextResource("/frontend/inline." + type,
                             "/frontend/inline." + type);
@@ -487,7 +571,11 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
-        assertEquals(23, dependenciesMap.size());
+        if (mocks.getDeploymentConfiguration().isBowerMode()) {
+            assertEquals(19, dependenciesMap.size());
+        } else {
+            assertEquals(16, dependenciesMap.size());
+        }
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
@@ -497,15 +585,8 @@ public class UidlWriterTest {
 
         assertDependency("UI-parent-" + JS_MODULE_NAME, JS_MODULE_NAME,
                 dependenciesMap);
-        assertDependency("UI-" + JS_MODULE_NAME, JS_MODULE_NAME, dependenciesMap);
-
-        assertDependency("super-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+        assertDependency("UI-" + JS_MODULE_NAME, JS_MODULE_NAME,
                 dependenciesMap);
-        assertDependency("anotherinterface-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("interface-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
-                dependenciesMap);
-        assertDependency(HTML_TYPE_NAME, HTML_TYPE_NAME, dependenciesMap);
 
         assertDependency("super-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
@@ -515,14 +596,28 @@ public class UidlWriterTest {
                 dependenciesMap);
         assertDependency(JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
 
-        assertDependency("super-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                dependenciesMap);
-        assertDependency("anotherinterface-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                dependenciesMap);
-        assertDependency("interface-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                dependenciesMap);
-        assertDependency(JS_MODULE_NAME, JS_MODULE_NAME, dependenciesMap);
+        if (mocks.getDeploymentConfiguration().isBowerMode()) {
+            assertDependency("super-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                    dependenciesMap);
+            assertDependency("anotherinterface-" + HTML_TYPE_NAME,
+                    HTML_TYPE_NAME, dependenciesMap);
+            assertDependency("interface-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                    dependenciesMap);
+            assertDependency(HTML_TYPE_NAME, HTML_TYPE_NAME, dependenciesMap);
 
+            assertDependency("0.html", HTML_TYPE_NAME, dependenciesMap);
+            // parent router layouts
+            assertDependency("1.html", HTML_TYPE_NAME, dependenciesMap);
+            assertDependency("2.html", HTML_TYPE_NAME, dependenciesMap);
+        } else {
+            assertDependency("super-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                    dependenciesMap);
+            assertDependency("anotherinterface-" + JS_MODULE_NAME,
+                    JS_MODULE_NAME, dependenciesMap);
+            assertDependency("interface-" + JS_MODULE_NAME, JS_MODULE_NAME,
+                    dependenciesMap);
+            assertDependency(JS_MODULE_NAME, JS_MODULE_NAME, dependenciesMap);
+        }
         assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
@@ -534,10 +629,6 @@ public class UidlWriterTest {
 
         assertDependency(CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
 
-        assertDependency("0.html", HTML_TYPE_NAME, dependenciesMap);
-        // parent router layouts
-        assertDependency("1.html", HTML_TYPE_NAME, dependenciesMap);
-        assertDependency("2.html", HTML_TYPE_NAME, dependenciesMap);
     }
 
     private Map<String, JsonObject> getDependenciesMap(JsonObject response) {
