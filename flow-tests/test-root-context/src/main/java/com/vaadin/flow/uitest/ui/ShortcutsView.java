@@ -128,14 +128,15 @@ public class ShortcutsView extends Div {
 
         NativeButton clickButton1 = new NativeButton("CB1",
                 event -> actual.setValue("click: " + clickInput1.getValue()));
-        clickButton1.addClickShortcut(Key.ENTER).listenOn(wrapper1);
+        ShortcutRegistration r1 =
+                clickButton1.addClickShortcut(Key.ENTER).listenOn(wrapper1);
 
         NativeButton clickButton2 = new NativeButton("CB2",
                 event -> actual.setValue("click: " + clickInput2.getValue()));
         clickButton2.addClickShortcut(Key.ENTER).listenOn(wrapper2)
                 // this matches the default of other shortcuts but changes
                 // the default of the click shortcut
-                .setBrowserDefaultPrevented(true);
+                .setBrowserDefaultAllowed(false);
 
         wrapper1.add(clickInput1, clickButton1);
         wrapper2.add(clickInput2, clickButton2);

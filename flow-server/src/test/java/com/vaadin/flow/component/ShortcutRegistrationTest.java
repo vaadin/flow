@@ -21,14 +21,12 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.shared.Registration;
 
-import static org.easymock.EasyMock.reset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -38,7 +36,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class ShortcutRegistrationTest {
@@ -113,13 +110,13 @@ public class ShortcutRegistrationTest {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
-        assertTrue(registration.isBrowserDefaultPrevented());
-        assertTrue(registration.isEventPropagationStopped());
+        assertFalse(registration.isBrowserDefaultAllowed());
+        assertFalse(registration.isEventPropagationAllowed());
 
         registration.allowBrowserDefault().allowEventPropagation();
 
-        assertFalse(registration.isBrowserDefaultPrevented());
-        assertFalse(registration.isEventPropagationStopped());
+        assertTrue(registration.isBrowserDefaultAllowed());
+        assertTrue(registration.isEventPropagationAllowed());
     }
 
     @Test
@@ -145,25 +142,25 @@ public class ShortcutRegistrationTest {
                 new ShortcutRegistration(lifecycleOwner,
                         () -> listenOn, event -> {}, Key.KEY_A);
 
-        registration.setBrowserDefaultPrevented(false);
-        registration.setEventPropagationStopped(false);
+        registration.setBrowserDefaultAllowed(true);
+        registration.setEventPropagationAllowed(true);
 
         clientResponse();
 
-        assertFalse("Prevent default was not set to false",
-                registration.isBrowserDefaultPrevented());
-        assertFalse("Stop propagation was not set to false",
-                registration.isEventPropagationStopped());
+        assertTrue("Allow default was not set to true",
+                registration.isBrowserDefaultAllowed());
+        assertTrue("Allow propagation was not set to true",
+                registration.isBrowserDefaultAllowed());
 
-        registration.setBrowserDefaultPrevented(true);
-        registration.setEventPropagationStopped(true);
+        registration.setBrowserDefaultAllowed(false);
+        registration.setEventPropagationAllowed(false);
 
         clientResponse();
 
-        assertTrue("Prevent default was not set to true",
-                registration.isBrowserDefaultPrevented());
-        assertTrue("Stop propagation was not set to true",
-                registration.isEventPropagationStopped());
+        assertFalse("Allow default was not set to false",
+                registration.isBrowserDefaultAllowed());
+        assertFalse("Allow propagation was not set to false",
+                registration.isEventPropagationAllowed());
     }
 
     @Test
@@ -188,6 +185,34 @@ public class ShortcutRegistrationTest {
 
         // listenOn component should be set to the new component
         assertEquals(newListenOn, registration.getOwner());
+    }
+
+    @Test
+    public void shortcutRegistrationReturnedByClickNotifierHasCorrectDefault() {
+        FakeComponent fakeComponent = new FakeComponent();
+
+        ShortcutRegistration registration =
+                fakeComponent.addClickShortcut(Key.KEY_A);
+
+        assertTrue("Allows default was not true",
+                registration.isBrowserDefaultAllowed());
+
+        assertFalse("Allows propagation was not false",
+                registration.isEventPropagationAllowed());
+    }
+
+    @Test
+    public void shortcutRegistrationReturnedByFocusableHasCorrectDefaults() {
+        FakeComponent fakeComponent = new FakeComponent();
+
+        ShortcutRegistration registration =
+                fakeComponent.addFocusShortcut(Key.KEY_A);
+
+        assertFalse("Allows default was not false",
+                registration.isBrowserDefaultAllowed());
+
+        assertFalse("Allows propagation was not false",
+                registration.isEventPropagationAllowed());
     }
 
     /**
@@ -242,4 +267,8 @@ public class ShortcutRegistrationTest {
         // Fake beforeClientExecution call.
         consumer.accept(mock(ExecutionContext.class));
     }
+
+    @Tag("imaginary-tag")
+    private class FakeComponent extends Component implements
+            ClickNotifier<FakeComponent>, Focusable<FakeComponent> {}
 }

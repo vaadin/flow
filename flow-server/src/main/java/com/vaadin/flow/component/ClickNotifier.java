@@ -67,7 +67,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * This is used to make sure that value synchronization of input fields is
      * not blocked for the shortcut key (e.g. Enter key).
      * To change this behavior, call
-     * {@link ShortcutRegistration#setBrowserDefaultPrevented(boolean)}.
+     * {@link ShortcutRegistration#setBrowserDefaultAllowed(boolean)}.
      *
      * @param key
      *              primary {@link Key} used to trigger the shortcut. Cannot
