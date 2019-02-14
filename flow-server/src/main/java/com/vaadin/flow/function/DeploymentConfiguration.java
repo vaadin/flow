@@ -40,6 +40,15 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if in production mode, false otherwise.
      */
     boolean isProductionMode();
+    
+    /**
+     * Returns whether Vaadin is running in bower mode.
+     * 
+     * NOTE: bower mode will be unsupported in future versions.
+     *
+     * @return true if in bower mode, false otherwise.
+     */
+    boolean isBowerMode();    
 
     /**
      * Returns whether the server provides timing info to the client.
