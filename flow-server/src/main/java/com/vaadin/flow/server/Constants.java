@@ -30,6 +30,10 @@ public final class Constants implements Serializable {
     public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.vaadin1";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
+    
+    /** enable it if your project is a Polymer 2.0 one, should be removed in V15 */
+    public static final String SERVLET_PARAMETER_BOWER_MODE = "bowerMode";
+    
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed
     public static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";

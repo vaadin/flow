@@ -77,6 +77,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public boolean isBowerMode() {
+          return false;
+        }
+        
+        @Override
         public boolean isRequestTiming() {
             return !isProductionMode();
         }
