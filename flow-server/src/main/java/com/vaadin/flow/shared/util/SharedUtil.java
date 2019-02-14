@@ -322,7 +322,7 @@ public class SharedUtil implements Serializable {
      */
     public static String prefixIfRelative(String url, String prefix) {
         // Absolute
-        if (url.startsWith("/")) {
+        if (url.startsWith("/") || url.startsWith("@")) {
             return url;
         }
 
