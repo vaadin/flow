@@ -94,7 +94,8 @@ public class VaadinResourceTrackerComponent {
     }
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, service = OsgiVaadinStaticResource.class, policy = ReferencePolicy.DYNAMIC)
-    void bindResource(ServiceReference<OsgiVaadinStaticResource> resourceRef) {
+    void bindResource(ServiceReference<OsgiVaadinStaticResource> resourceRef)
+            throws NamespaceException {
         Bundle bundle = resourceRef.getBundle();
         BundleContext context = bundle.getBundleContext();
 
@@ -185,9 +186,15 @@ public class VaadinResourceTrackerComponent {
     }
 
     private void registerResource(OsgiVaadinStaticResource resource,
-            Bundle bundle, Long serviceId) {
-        resourceToRegistration.put(serviceId,
-                new Delegate(resource.getAlias(), resource.getPath(), bundle));
+            Bundle bundle, Long serviceId) throws NamespaceException {
+        Delegate registration = new Delegate(resource.getAlias(),
+                resource.getPath(), bundle);
+        resourceToRegistration.put(serviceId, registration);
+        if (httpService != null) {
+            registration.init(httpService);
+            httpService.registerResources(registration.alias, registration.path,
+                    registration);
+        }
     }
 
     private void unregisterResource(Long serviceId) {
