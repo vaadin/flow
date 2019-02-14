@@ -110,13 +110,13 @@ public class ShortcutRegistrationTest {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
-        assertTrue(registration.preventsDefault());
-        assertTrue(registration.stopsPropagation());
+        assertFalse(registration.isBrowserDefaultAllowed());
+        assertFalse(registration.isEventPropagationAllowed());
 
         registration.allowBrowserDefault().allowEventPropagation();
 
-        assertFalse(registration.preventsDefault());
-        assertFalse(registration.stopsPropagation());
+        assertTrue(registration.isBrowserDefaultAllowed());
+        assertTrue(registration.isEventPropagationAllowed());
     }
 
     @Test
@@ -132,6 +132,35 @@ public class ShortcutRegistrationTest {
 
         assertEquals(newOwner, registration.getLifecycleOwner());
 
+    }
+
+    @Test
+    public void settersAndGettersChangeValuesCorrectly() {
+
+        //Component listenOn = mock(Component.class);
+        ShortcutRegistration registration =
+                new ShortcutRegistration(lifecycleOwner,
+                        () -> listenOn, event -> {}, Key.KEY_A);
+
+        registration.setBrowserDefaultAllowed(true);
+        registration.setEventPropagationAllowed(true);
+
+        clientResponse();
+
+        assertTrue("Allow default was not set to true",
+                registration.isBrowserDefaultAllowed());
+        assertTrue("Allow propagation was not set to true",
+                registration.isBrowserDefaultAllowed());
+
+        registration.setBrowserDefaultAllowed(false);
+        registration.setEventPropagationAllowed(false);
+
+        clientResponse();
+
+        assertFalse("Allow default was not set to false",
+                registration.isBrowserDefaultAllowed());
+        assertFalse("Allow propagation was not set to false",
+                registration.isEventPropagationAllowed());
     }
 
     @Test
@@ -158,6 +187,34 @@ public class ShortcutRegistrationTest {
         assertEquals(newListenOn, registration.getOwner());
     }
 
+    @Test
+    public void shortcutRegistrationReturnedByClickNotifierHasCorrectDefault() {
+        FakeComponent fakeComponent = new FakeComponent();
+
+        ShortcutRegistration registration =
+                fakeComponent.addClickShortcut(Key.KEY_A);
+
+        assertTrue("Allows default was not true",
+                registration.isBrowserDefaultAllowed());
+
+        assertFalse("Allows propagation was not false",
+                registration.isEventPropagationAllowed());
+    }
+
+    @Test
+    public void shortcutRegistrationReturnedByFocusableHasCorrectDefaults() {
+        FakeComponent fakeComponent = new FakeComponent();
+
+        ShortcutRegistration registration =
+                fakeComponent.addFocusShortcut(Key.KEY_A);
+
+        assertFalse("Allows default was not false",
+                registration.isBrowserDefaultAllowed());
+
+        assertFalse("Allows propagation was not false",
+                registration.isEventPropagationAllowed());
+    }
+
     /**
      * Works only with the {@code registration} member variable.
      *
@@ -178,7 +235,8 @@ public class ShortcutRegistrationTest {
         ArgumentCaptor<SerializableConsumer> captor =
                 ArgumentCaptor.forClass(SerializableConsumer.class);
 
-        verify(ui).beforeClientResponse(eq(lifecycleOwner), captor.capture());
+        verify(ui, atLeastOnce()).beforeClientResponse(eq(lifecycleOwner),
+                captor.capture());
 
         SerializableConsumer consumer = captor.getValue();
 
@@ -209,4 +267,8 @@ public class ShortcutRegistrationTest {
         // Fake beforeClientExecution call.
         consumer.accept(mock(ExecutionContext.class));
     }
+
+    @Tag("imaginary-tag")
+    private class FakeComponent extends Component implements
+            ClickNotifier<FakeComponent>, Focusable<FakeComponent> {}
 }
