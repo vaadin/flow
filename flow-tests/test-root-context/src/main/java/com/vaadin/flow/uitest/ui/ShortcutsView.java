@@ -38,14 +38,14 @@ public class ShortcutsView extends Div {
     private ShortcutRegistration flipFloppingRegistration;
 
     public ShortcutsView() {
-        Paragraph expected = new Paragraph();
-        expected.setId("expected");
-        expected.setText("testing...");
+        Input actual = new Input();
+        actual.setId("actual");
+        actual.setValue("testing...");
 
         // clickShortcutWorks
         NativeButton button = new NativeButton();
         button.setId("button");
-        button.addClickListener(e -> expected.setText("button"));
+        button.addClickListener(e -> actual.setValue("button"));
         button.addClickShortcut(Key.KEY_B, KeyModifier.ALT);
 
         // focusShortcutWorks
@@ -56,13 +56,13 @@ public class ShortcutsView extends Div {
         // shortcutsOnlyWorkWhenComponentIsVisible
         UI.getCurrent().addShortcutListener(() -> {
             invisibleP.setVisible(!invisibleP.isVisible());
-            expected.setText("toggled!");
+            actual.setValue("toggled!");
         }, Key.KEY_I, KeyModifier.ALT);
 
-        Shortcuts.addShortcutListener(invisibleP, () -> expected
-                .setText("invisibleP"), Key.KEY_V).withAlt();
+        Shortcuts.addShortcutListener(invisibleP, () -> actual
+                .setValue("invisibleP"), Key.KEY_V).withAlt();
 
-        add(expected, button, input, invisibleP);
+        add(actual, button, input, invisibleP);
 
         // listenOnScopesTheShortcut
         Div subview = new Div();
@@ -74,7 +74,7 @@ public class ShortcutsView extends Div {
         subview.add(focusTarget);
 
         Shortcuts.addShortcutListener(subview,
-                () -> expected.setText("subview"), Key.KEY_S, KeyModifier.ALT)
+                () -> actual.setValue("subview"), Key.KEY_S, KeyModifier.ALT)
                 .listenOn(subview);
 
         add(subview);
@@ -83,8 +83,8 @@ public class ShortcutsView extends Div {
         Paragraph attachable = new Paragraph("attachable");
         attachable.setId("attachable");
 
-        Shortcuts.addShortcutListener(attachable, () -> expected
-                .setText("attachable"), Key.KEY_A).withAlt();
+        Shortcuts.addShortcutListener(attachable, () -> actual
+                .setValue("attachable"), Key.KEY_A).withAlt();
 
         UI.getCurrent().addShortcutListener(() -> {
             attached = !attached;
@@ -94,25 +94,52 @@ public class ShortcutsView extends Div {
             else {
                 remove(attachable);
             }
-            expected.setText("toggled!");
+            actual.setValue("toggled!");
         }, Key.KEY_Y, KeyModifier.ALT);
 
-        // modifyingShortcutShouldChangeShortcutEvent
+            // modifyingShortcutShouldChangeShortcutEvent
         flipFloppingRegistration =
                 UI.getCurrent().addShortcutListener(event -> {
                     if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
-                        expected.setText("Alt");
+                        actual.setValue("Alt");
                         flipFloppingRegistration.withModifiers(
                                 KeyModifier.SHIFT);
                     } else if (event.getKeyModifiers().contains(
                             KeyModifier.SHIFT)) {
-                        expected.setText("Shift");
+                        actual.setValue("Shift");
                         flipFloppingRegistration.withModifiers(KeyModifier.ALT);
                     }
                     else {
-                        expected.setText("Failed");
+                        actual.setValue("Failed");
                     }
 
                 }, Key.KEY_G, KeyModifier.ALT);
+
+        // clickShortcutAllowsKeyDefaults
+        Div wrapper1 = new Div();
+        Div wrapper2 = new Div();
+        final Input clickInput1 = new Input();
+        clickInput1.setType("text");
+        clickInput1.setId("click-input-1");
+
+        final Input clickInput2 = new Input();
+        clickInput2.setType("text");
+        clickInput2.setId("click-input-2");
+
+        NativeButton clickButton1 = new NativeButton("CB1",
+                event -> actual.setValue("click: " + clickInput1.getValue()));
+        ShortcutRegistration r1 =
+                clickButton1.addClickShortcut(Key.ENTER).listenOn(wrapper1);
+
+        NativeButton clickButton2 = new NativeButton("CB2",
+                event -> actual.setValue("click: " + clickInput2.getValue()));
+        clickButton2.addClickShortcut(Key.ENTER).listenOn(wrapper2)
+                // this matches the default of other shortcuts but changes
+                // the default of the click shortcut
+                .setBrowserDefaultAllowed(false);
+
+        wrapper1.add(clickInput1, clickButton1);
+        wrapper2.add(clickInput2, clickButton2);
+        add(wrapper1, wrapper2);
     }
 }
