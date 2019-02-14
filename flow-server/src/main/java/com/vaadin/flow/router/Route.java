@@ -93,7 +93,7 @@ public @interface Route {
      * <p>
      * Default is to register route at startup.
      *
-     * @return true to skip automatic registration
+     * @return setting to false skips automatic registration
      */
     boolean registerAtStartup() default true;
 
