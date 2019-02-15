@@ -273,7 +273,7 @@ public class BootstrapHandlerDependenciesTest {
         mocks.getDeploymentConfiguration().setBowerMode(true);
         service = mocks.getService();
         TestVaadinServlet servlet = mocks.getServlet();
-        for (String type : new String[] { "html", "js", "css", "mjs" }) {
+        for (String type : new String[] { "html", "js", "css" }) {
             servlet.addServletContextResource("/frontend/inline." + type,
                     "/frontend/inline." + type);
             servlet.addServletContextResource("/frontend/1." + type,
@@ -282,6 +282,11 @@ public class BootstrapHandlerDependenciesTest {
                     "/frontend/2." + type);
         }
         servlet.addServletContextResource("/frontend/new.js");
+        
+        servlet.addServletContextResource("inline.mjs", "inline.mjs");
+        servlet.addServletContextResource("1.mjs", "1.mjs");
+        servlet.addServletContextResource("2.mjs", "2.mjs");
+
     }
 
     @After
