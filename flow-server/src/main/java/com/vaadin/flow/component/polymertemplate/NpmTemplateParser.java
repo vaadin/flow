@@ -31,7 +31,7 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
@@ -69,8 +69,8 @@ public class NpmTemplateParser implements TemplateParser {
         WebBrowser browser = FakeBrowser.getEs6();
 
         List<Dependency> dependencies = AnnotationReader
-                .getAnnotationsFor(clazz, JavaScript.class).stream()
-                .map(htmlImport -> new Dependency(Dependency.Type.JAVASCRIPT,
+                .getAnnotationsFor(clazz, JsModule.class).stream()
+                .map(htmlImport -> new Dependency(Dependency.Type.JS_MODULE,
                         htmlImport.value(), htmlImport.loadMode()))
                 .collect(Collectors.toList());
 
@@ -85,7 +85,7 @@ public class NpmTemplateParser implements TemplateParser {
                 .isProductionMode();
 
         for (Dependency dependency : dependencies) {
-            if (dependency.getType() != Dependency.Type.JAVASCRIPT) {
+            if (dependency.getType() != Dependency.Type.JS_MODULE) {
                 continue;
             }
             String url = dependency.getUrl();
@@ -104,7 +104,7 @@ public class NpmTemplateParser implements TemplateParser {
                 if (content == null) {
                     throw new IllegalStateException(String.format(
                             "Can't find resource '%s' "
-                                    + "via the servlet context", url));
+                                    + "via the ClassLoader", url));
                 }
 
                 String fileContents = streamToString(content);
@@ -163,7 +163,7 @@ public class NpmTemplateParser implements TemplateParser {
                         + "file or provide alternative implementation of the "
                         + "method getTemplateContent() which should return an element "
                         + "representing the content of the template file", tag,
-                JavaScript.class.getSimpleName()));
+                JsModule.class.getSimpleName()));
     }
 
     private String streamToString(InputStream inputStream) throws IOException {

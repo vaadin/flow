@@ -11,7 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
@@ -39,7 +39,29 @@ public class NpmTemplateParserTest {
     }
 
     @Test
-    public void templateParserParsingNPMPolymerTemplate_findsCorrectData() {
+    public void templateParserParsingNPMPolymerTemplate_findsCorrectDataInProductionMode() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateParser.TemplateData templateContent = instance
+                .getTemplateContent(Likeable.class, "likeable-element",
+                        service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "likeable-element",
+                templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'test'",
+                "div",
+                templateContent.getTemplateElement().getElementById("test")
+                        .tag().toString());
+    }
+
+    @Test
+    public void templateParserParsingNPMPolymerTemplate_findsCorrectDataInDevMode() {
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(Likeable.class, "likeable-element",
@@ -60,7 +82,7 @@ public class NpmTemplateParserTest {
     }
 
     @Tag("likeable-element")
-    @JavaScript("/frontend/LikeableElement.js")
+    @JsModule("./frontend/LikeableElement.js")
     public class Likeable extends PolymerTemplate<TemplateModel> {
     }
 
