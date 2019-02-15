@@ -88,8 +88,12 @@ public class Dependency implements Serializable {
         assert type != null;
 
         this.type = type;
-        this.url = SharedUtil.prefixIfRelative(url,
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        if (type.equals(Type.JS_MODULE)) {
+            this.url = url;
+        } else {
+            this.url = SharedUtil.prefixIfRelative(url,
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        }
         this.loadMode = loadMode;
     }
 
