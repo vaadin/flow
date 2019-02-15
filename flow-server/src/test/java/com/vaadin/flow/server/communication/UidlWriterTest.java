@@ -280,20 +280,20 @@ public class UidlWriterTest {
                 dependenciesMap);
         assertDependency("child2-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        if(mocks.getDeploymentConfiguration().isBowerMode()) {
-            assertDependency("childinterface1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
-                    dependenciesMap);
-            assertDependency("childinterface2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
-                    dependenciesMap);
+        if (mocks.getDeploymentConfiguration().isBowerMode()) {
+            assertDependency("childinterface1-" + HTML_TYPE_NAME,
+                    HTML_TYPE_NAME, dependenciesMap);
+            assertDependency("childinterface2-" + HTML_TYPE_NAME,
+                    HTML_TYPE_NAME, dependenciesMap);
             assertDependency("child1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                     dependenciesMap);
             assertDependency("child2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                     dependenciesMap);
-        }else {
-            assertDependency("childinterface1-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                    dependenciesMap);
-            assertDependency("childinterface2-" + JS_MODULE_NAME, JS_MODULE_NAME,
-                    dependenciesMap);
+        } else {
+            assertDependency("childinterface1-" + JS_MODULE_NAME,
+                    JS_MODULE_NAME, dependenciesMap);
+            assertDependency("childinterface2-" + JS_MODULE_NAME,
+                    JS_MODULE_NAME, dependenciesMap);
             assertDependency("child1-" + JS_MODULE_NAME, JS_MODULE_NAME,
                     dependenciesMap);
             assertDependency("child2-" + JS_MODULE_NAME, JS_MODULE_NAME,
@@ -320,7 +320,6 @@ public class UidlWriterTest {
         mocks.getDeploymentConfiguration().setBowerMode(false);
         assertAllDependencyTypes();
     }
-
 
     private void assertAllDependencyTypes() {
         UidlWriter uidlWriter = new UidlWriter();
@@ -380,8 +379,7 @@ public class UidlWriterTest {
                 eagerDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
-                        .collect(Collectors.toList()),
-                typeMatcher);
+                        .collect(Collectors.toList()), typeMatcher);
 
         List<JsonObject> lazyDependencies = dependenciesMap.get(LoadMode.LAZY);
         assertThat("Should have 3 lazy dependencies", lazyDependencies,
@@ -403,14 +401,12 @@ public class UidlWriterTest {
                         .map(url -> url.substring(
                                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                                         .length()))
-                        .collect(Collectors.toList()),
-                matcher);
+                        .collect(Collectors.toList()), matcher);
         assertThat("Should have 3 different lazy dependency types",
                 lazyDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
-                        .collect(Collectors.toList()),
-                typeMatcher);
+                        .collect(Collectors.toList()), typeMatcher);
 
         List<JsonObject> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
@@ -529,8 +525,7 @@ public class UidlWriterTest {
                 inlineDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
-                        .collect(Collectors.toList()),
-                typeMatcher);
+                        .collect(Collectors.toList()), typeMatcher);
     }
 
     private UI initializeUIForDependenciesTest(UI ui) throws Exception {
@@ -546,7 +541,7 @@ public class UidlWriterTest {
             routeConfiguration.getHandledRegistry().clean();
             routeConfiguration.setAnnotatedRoute(BaseClass.class);
         });
-        for (String type : new String[] { "html", "js", "css", "mjs"}) {
+        for (String type : new String[] { "html", "js", "css", "mjs" }) {
             mocks.getServlet()
                     .addServletContextResource("/frontend/inline." + type,
                             "/frontend/inline." + type);

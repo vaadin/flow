@@ -141,7 +141,7 @@ public class PropertyDeploymentConfiguration
     
     @Override
     public boolean isBowerMode() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
                 false);
     }
 
