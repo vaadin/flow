@@ -362,10 +362,15 @@ public class UidlWriterTest {
         assertThat("Should have 3 different eager urls",
                 eagerDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_URL))
-                        .map(url -> url.substring(
-                                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-                                        .length()))
-                        .collect(Collectors.toList()), matcher);
+                        .map(url -> {
+                            if (url.startsWith(
+                                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
+                                return url.substring(
+                                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                                                .length());
+                            }
+                            return url;
+                        }).collect(Collectors.toList()), matcher);
 
         Matcher<Iterable<? extends Dependency.Type>> typeMatcher;
         if (mocks.getDeploymentConfiguration().isBowerMode()) {
@@ -398,10 +403,15 @@ public class UidlWriterTest {
         assertThat("Should have 3 different lazy urls",
                 lazyDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_URL))
-                        .map(url -> url.substring(
-                                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-                                        .length()))
-                        .collect(Collectors.toList()), matcher);
+                        .map(url -> {
+                            if (url.startsWith(
+                                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
+                                return url.substring(
+                                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                                                .length());
+                            }
+                            return url;
+                        }).collect(Collectors.toList()), matcher);
         assertThat("Should have 3 different lazy dependency types",
                 lazyDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
@@ -500,11 +510,14 @@ public class UidlWriterTest {
             matcher = containsInAnyOrder("inline.js", "inline.mjs",
                     "inline.css");
         }
-        assertThat("Should have 3 different inline contents",
+        assertThat("Should have different inline contents",
                 inlineDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_CONTENTS))
                         .map(url -> {
                             if (!url.startsWith(expectedPrefix)) {
+                                if(url.endsWith("mjs")) {
+                                    return url;
+                                }
                                 throw new AssertionError(
                                         url + " should have the prefix "
                                                 + expectedPrefix);
@@ -546,6 +559,8 @@ public class UidlWriterTest {
                     .addServletContextResource("/frontend/inline." + type,
                             "/frontend/inline." + type);
         }
+        mocks.getServlet()
+                .addServletContextResource("inline.mjs", "inline.mjs");
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
 
@@ -637,7 +652,9 @@ public class UidlWriterTest {
 
     private void assertDependency(String url, String type,
             Map<String, JsonObject> dependenciesMap) {
-        url = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + url;
+        if (!type.equals(JS_MODULE_NAME)) {
+            url = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + url;
+        }
         JsonObject jsonValue = dependenciesMap.get(url);
         assertNotNull(
                 "Expected dependencies map to have dependency with key=" + url,
