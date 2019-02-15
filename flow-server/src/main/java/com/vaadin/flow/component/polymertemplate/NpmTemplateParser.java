@@ -81,43 +81,61 @@ public class NpmTemplateParser implements TemplateParser {
                     .filter(new ArrayList<>(dependencies), filterContext);
         }
 
+        boolean productionMode = service.getDeploymentConfiguration()
+                .isProductionMode();
+
         for (Dependency dependency : dependencies) {
             if (dependency.getType() != Dependency.Type.JAVASCRIPT) {
                 continue;
             }
             String url = dependency.getUrl();
-            String statisticsFilePath = service.getDeploymentConfiguration()
-                    .getStringProperty(Constants.STATISTICS_JSON,
-                            "META-INF/resources/stats.json");
+            String sourcesFilePath;
+
+            if (productionMode) {
+                sourcesFilePath = service.getDeploymentConfiguration()
+                        .getStringProperty(Constants.STATISTICS_JSON,
+                                "META-INF/resources/stats.json");
+            } else {
+                sourcesFilePath = url;
+            }
 
             try (InputStream content = getClass().getClassLoader()
-                    .getResourceAsStream(statisticsFilePath)) {
+                    .getResourceAsStream(sourcesFilePath)) {
                 if (content == null) {
                     throw new IllegalStateException(String.format(
                             "Can't find resource '%s' "
                                     + "via the servlet context", url));
                 }
-                String statistics = streamToString(content);
-                Matcher matcher = HASH_PATTERN.matcher(statistics);
-                if (matcher.find()) {
-                    String hash = matcher.group(1);
-                    lock.lock();
-                    try {
-                        if (!hash.equals(this.hash)) {
-                            this.hash = hash;
-                            statisticsJson = BundleParser
-                                    .getStatisticsJson(url, statistics);
+
+                String fileContents = streamToString(content);
+                Element templateElement;
+
+                if (productionMode) {
+                    Matcher matcher = HASH_PATTERN.matcher(fileContents);
+                    if (matcher.find()) {
+                        String hash = matcher.group(1);
+                        lock.lock();
+                        try {
+                            if (!hash.equals(this.hash)) {
+                                this.hash = hash;
+                                statisticsJson = BundleParser
+                                        .getStatisticsJson(url, fileContents);
+                            }
+                        } finally {
+                            lock.unlock();
                         }
-                    } finally {
-                        lock.unlock();
+                    } else {
+                        statisticsJson = BundleParser
+                                .getStatisticsJson(url, fileContents);
                     }
+
+                    templateElement = BundleParser
+                            .parseTemplateElement(statisticsJson);
                 } else {
-                    statisticsJson = BundleParser
-                            .getStatisticsJson(url, statistics);
+                    templateElement = BundleParser
+                            .parseTemplateElement(url, fileContents);
                 }
 
-                Element templateElement = BundleParser
-                        .parseTemplateElement(url, statisticsJson);
                 Element parent = new Element(tag);
                 parent.attr("id", tag);
                 templateElement.appendTo(parent);
