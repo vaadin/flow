@@ -82,9 +82,9 @@ public class VaadinServlet extends HttpServlet {
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
         }
-        
-        devmodeServer = DevModeServer.createInstance(servletService);
-        
+
+        devmodeServer = DevModeServer.createInstance(servletService.getDeploymentConfiguration());
+
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
 
