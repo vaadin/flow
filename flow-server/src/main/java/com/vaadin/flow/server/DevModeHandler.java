@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 
 import javax.servlet.ServletOutputStream;
@@ -31,6 +35,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+
 
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
@@ -43,108 +50,103 @@ import org.slf4j.LoggerFactory;
  * @author Vaadin Ltd
  * @since 2.0
  */
-public class DevModeServer implements Serializable {
+public class DevModeHandler implements Serializable {
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 60 * 1000;
-    private static final Integer WEBPACK_PORT = 8081;
-    private static final String WEBPACK_SERVER = "http://localhost";
-    private static final String WEBPACK_FOLDER = "src/main/webapp";
-    private static final String WECPACK_CONFIG = "webpack.config.js";
+    private static final String WEBPACK_HOST = "http://localhost";
+    static final Integer WEBPACK_PORT = 8081;
+    static final Boolean isUnix = !System.getProperty("os.name").matches("(?i).*windows.*");
+    static final String WEBAPP_FOLDER = "src/main/webapp/";
+    static final String WEBPACK_CONFIG = "webpack.config.js";
+    static final String WEBPACK_SERVER = "node_modules/.bin/webpack-dev-server";
 
     private static Process exec;
 
-    /**
-     * Constructs a dev mode server in the case that production mode or bower
-     * mode are not set, and `webpack-dev-server` has been installed and
-     * configured.
-     */
-    public static DevModeServer createInstance(VaadinServletService servletService) {
-        if (servletService.getDeploymentConfiguration().isBowerMode()
-                || servletService.getDeploymentConfiguration().isProductionMode()) {
-            getLogger().trace("Instance not created because not in npm-dev mode");
-            return null;
-        }
-
-        File directory = new File(WEBPACK_FOLDER).getAbsoluteFile();
-        if (!directory.exists()) {
-            getLogger().warn("Instance not created because cannot change to " + directory);
-            return null;
-        }
-
-        File webpack = new File("./node_modules/.bin/webpack-dev-server");
-        if (!webpack.canExecute()) {
-            getLogger().warn("Instance not created because cannot execute " + webpack
-                    + ". Did you run `npm install`");
-            return null;
-        }
-
-        File config = new File(WECPACK_CONFIG);
-        if (!webpack.exists()) {
-            getLogger()
-                    .warn("Instance not created because there is not webpack configuration: " + config);
-            return null;
-        }
-
-        return new DevModeServer(directory, webpack, config);
+    // For testing purposes
+    DevModeHandler() {
     }
 
-    private DevModeServer(File directory, File webpack, File config) {
+    private DevModeHandler(File directory, File webpack, File webpackConfig) {
         if (exec != null && exec.isAlive()) {
             getLogger().info("Webpack is already running.");
             return;
         }
 
         getLogger().info("Starting Webpack in dev mode ...");
+        ProcessBuilder process = new ProcessBuilder();
+        process.directory(directory);
+
+        process.environment().put("PATH", webpack.getParent() + ":" + process.environment().get("PATH"));
+
+        // Add /usr/local/bin to the PATH in case of unixOS like
+        if (isUnix) {
+            process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
+        }
+
+        process.command(new String[] {
+            webpack.getAbsolutePath(),
+            "--config", webpackConfig.getAbsolutePath(),
+            "--port", WEBPACK_PORT.toString()
+        });
+
         try {
-            ProcessBuilder process = new ProcessBuilder();
-            process.directory(directory);
-
-            process.environment().put("PATH", "node_modules/.bin:" + process.environment().get("PATH"));
-
-            // Add /usr/local/bin to the PATH in case of unixOS like
-            File shell = new File("/bin/sh");
-            if (shell.canExecute()) {
-                process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
-            }
-
-            process.command(new String[] { webpack.getAbsolutePath(), "--config", config.getAbsolutePath(), "--port",
-                    WEBPACK_PORT.toString() });
-
             exec = process.start();
 
             Runtime.getRuntime().addShutdownHook(new Thread(exec::destroy));
-
             logStream(exec.getInputStream());
-
             logStream(exec.getErrorStream());
 
-            // Webpack takes a while to be ready
+            // webpack takes a while to listen
             Thread.sleep(2000);
         } catch (Exception e) {
-            e.printStackTrace();
+            getLogger().error(e.getMessage(), e);
         }
     }
 
-    private void logStream(InputStream input) {
-        Thread t = new Thread(() -> {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-            try {
-                for (String line; ((line = reader.readLine()) != null);) {
-                    getLogger().info(line);
-                }
-            } catch (IOException e) {
-            }
-        });
-        t.setName("webpack");
-        t.start();
+    /**
+     * Constructs a dev mode server in the case that production mode or bower
+     * mode are not set, and `webpack-dev-server` has been installed and
+     * configured.
+     *
+     * @param configuration
+     *            deployment configuration
+     * @return the instance in case everything is alright, null otherwise
+     */
+    public static DevModeHandler createInstance(DeploymentConfiguration configuration) {
+        if (configuration.isBowerMode() || configuration.isProductionMode()) {
+            getLogger().trace("Instance not created because not in npm-dev mode");
+            return null;
+        }
+
+        File directory = new File(WEBAPP_FOLDER).getAbsoluteFile();
+        if (!directory.exists()) {
+            getLogger().warn("Instance not created because cannot change to '{}'", directory);
+            return null;
+        }
+
+        File webpack = new File(WEBPACK_SERVER);
+        if (!webpack.canExecute()) {
+            getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
+            return null;
+        }
+
+        File webpackConfig = new File(WEBPACK_CONFIG);
+        if (!webpackConfig.canRead()) {
+            getLogger()
+                    .warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
+            return null;
+        }
+
+        return new DevModeHandler(directory, webpack, webpackConfig);
     }
 
     /**
      * Returns true if it's a request that should be handled by webpack.
      *
      * @param request
-     * @return
+     *            the servlet request
+     * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         return getRequestFilename(request).matches(".+\\.js");
@@ -154,14 +156,17 @@ public class DevModeServer implements Serializable {
      * Serve a file by proxying to webpack.
      *
      * @param request
+     *            the servlet request
      * @param response
+     *            the servlet response
      * @return false if webpack returned a not found, true otherwise
      * @throws IOException
+     *             in the case something went wrong like connection refused
      */
     public boolean serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String requestFilename = getRequestFilename(request);
 
-        URL uri = new URL(WEBPACK_SERVER + ":" + WEBPACK_PORT + requestFilename);
+        URL uri = new URL(WEBPACK_HOST + ":" + WEBPACK_PORT + requestFilename);
 
         HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
         connection.setRequestMethod(request.getMethod());
@@ -176,13 +181,14 @@ public class DevModeServer implements Serializable {
         }
 
         // Send the request
-        if (connection.getResponseCode() == 404) {
+        int responseCode = connection.getResponseCode();
+        if (responseCode == HTTP_NOT_FOUND) {
             // webpack cannot access the resource, return false so as flow can
             // handle it
             return false;
         }
 
-        getLogger().trace("Served resource by webpack: " + uri);
+        getLogger().debug("Served resource by webpack: {} {}", responseCode, uri);
 
         // Copies response headers
         connection.getHeaderFields().forEach((header, values) -> {
@@ -190,12 +196,31 @@ public class DevModeServer implements Serializable {
                 response.addHeader(header, values.get(0));
             }
         });
-        // Copies response payload
-        writeStream(response.getOutputStream(), connection.getInputStream());
+        
+        if (responseCode == HTTP_OK) {
+            // Copies response payload
+            writeStream(response.getOutputStream(), connection.getInputStream());
+        }
+
         // Copies response code
         response.sendError(connection.getResponseCode());
 
         return true;
+    }
+
+    private void logStream(InputStream input) {
+        Thread t = new Thread(() -> {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+            try {
+                for (String line; ((line = reader.readLine()) != null);) {
+                    getLogger().info(line);
+                }
+            } catch (IOException e) {
+                getLogger().trace(e.getMessage(), e);
+            }
+        });
+        t.setName("webpack");
+        t.start();
     }
 
     private void writeStream(ServletOutputStream outputStream, InputStream inputStream) throws IOException {
@@ -212,6 +237,6 @@ public class DevModeServer implements Serializable {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger("c.v.f.s." + DevModeServer.class.getSimpleName());
+        return LoggerFactory.getLogger("c.v.f.s." + DevModeHandler.class.getSimpleName());
     }
 }
