@@ -82,6 +82,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.DefaultTemplateParser",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.NpmTemplateParser",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser",
+                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser\\$DependencyVisitor",
                 "com\\.vaadin\\.flow\\.component\\.PropertyDescriptors(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.Shortcuts",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
