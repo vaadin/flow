@@ -364,8 +364,16 @@ public class ServerRpcHandler implements Serializable {
             }
         }
 
-        pendingChangeEvents.forEach(Runnable::run);
+        pendingChangeEvents.forEach(runnable -> runMapSyncTask(ui, runnable));
         data.forEach(json -> handleInvocationData(ui, json));
+    }
+
+    private void runMapSyncTask(UI ui, Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (Throwable throwable) {
+            ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
+        }
     }
 
     private void handleInvocationData(UI ui, JsonObject invocationJson) {
@@ -380,8 +388,8 @@ public class ServerRpcHandler implements Serializable {
             assert !handle.isPresent() : "RPC handler "
                     + handler.getClass().getName()
                     + " returned a Runnable even though it shouldn't";
-        } catch (Exception e) {
-            ui.getSession().getErrorHandler().error(new ErrorEvent(e));
+        } catch (Throwable throwable) {
+            ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
         }
     }
 
