@@ -244,6 +244,12 @@ public class DependencyLoader {
             }
             return (scriptUrl, resourceLoadListener) -> resourceLoader
                     .loadScript(scriptUrl, resourceLoadListener, false, true);
+        case JS_MODULE:
+            if (inline) {
+                return resourceLoader::inlineModule;
+            }
+            return (scriptUrl, resourceLoadListener) -> resourceLoader
+                    .loadModule(scriptUrl, resourceLoadListener, false, true);
         default:
             throw new IllegalArgumentException(
                     "Unknown dependency type " + resourceType);

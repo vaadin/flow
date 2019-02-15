@@ -32,6 +32,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -58,6 +59,7 @@ public class ComponentMetaData {
     public static class DependencyInfo {
         private final List<HtmlImportDependency> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
+        private final List<JsModule> jsModules = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
 
         List<HtmlImportDependency> getHtmlImports() {
@@ -66,6 +68,10 @@ public class ComponentMetaData {
 
         List<JavaScript> getJavaScripts() {
             return Collections.unmodifiableList(javaScripts);
+        }
+
+        List<JsModule> getJsModules() {
+            return Collections.unmodifiableList(jsModules);
         }
 
         List<StyleSheet> getStyleSheets() {
@@ -166,13 +172,15 @@ public class ComponentMetaData {
 
         dependencyInfo.htmlImports
                 .addAll(getHtmlImportDependencies(service, componentClass));
-        dependencyInfo.javaScripts.addAll(
-                AnnotationReader.getJavaScriptAnnotations(componentClass));
-        dependencyInfo.styleSheets.addAll(
-                AnnotationReader.getStyleSheetAnnotations(componentClass));
+        dependencyInfo.javaScripts.addAll(AnnotationReader
+                .getJavaScriptAnnotations(componentClass));
+        dependencyInfo.styleSheets.addAll(AnnotationReader
+                .getStyleSheetAnnotations(componentClass));
+        dependencyInfo.jsModules.addAll(AnnotationReader
+                .getJsModuleAnnotations(componentClass));
 
-        List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
-                Uses.class);
+        List<Uses> usesList = AnnotationReader
+                .getAnnotationsFor(componentClass, Uses.class);
         for (Uses uses : usesList) {
             Class<? extends Component> otherClass = uses.value();
             if (!scannedClasses.contains(otherClass)) {

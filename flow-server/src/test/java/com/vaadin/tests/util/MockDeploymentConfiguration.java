@@ -151,4 +151,8 @@ public class MockDeploymentConfiguration
         this.brotli = brotli;
     }
 
+    public void setBowerMode(boolean bower) {
+        bowerMode = bower;
+    }
+
 }

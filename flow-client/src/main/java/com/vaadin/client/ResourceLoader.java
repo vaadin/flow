@@ -318,6 +318,67 @@ public class ResourceLoader {
     }
 
     /**
+     * Load a script and notify a listener when the script is loaded. Calling
+     * this method when the script is currently loading or already loaded
+     * doesn't cause the script to be loaded again, but the listener will still
+     * be notified when appropriate.
+     * <p>
+     * Loads all dependencies with {@code async = false} and
+     * {@code defer = false} attribute values, see
+     * {@link #loadScript(String, ResourceLoadListener, boolean, boolean)}.
+     *
+     * @param moduleUrl
+     *            the url of the script to load
+     * @param resourceLoadListener
+     *            the listener that will get notified when the script is loaded
+     */
+    public void loadModule(final String moduleUrl,
+            final ResourceLoadListener resourceLoadListener) {
+        loadScript(moduleUrl, resourceLoadListener, false, false);
+    }
+
+    /**
+     * Load a script module and notify a listener when the script is loaded. Calling
+     * this method when the script is currently loading or already loaded
+     * doesn't cause the script to be loaded again, but the listener will still
+     * be notified when appropriate.
+     *
+     *
+     * @param moduleUrl
+     *            url of script to load
+     * @param resourceLoadListener
+     *            listener to notify when script is loaded
+     * @param async
+     *            What mode the script.async attribute should be set to
+     * @param defer
+     *            What mode the script.defer attribute should be set to
+     */
+    public void loadModule(final String moduleUrl,
+            final ResourceLoadListener resourceLoadListener, boolean async,
+            boolean defer) {
+        final String url = WidgetUtil.getAbsoluteUrl(moduleUrl);
+        ResourceLoadEvent event = new ResourceLoadEvent(this, url);
+        if (loadedResources.has(url)) {
+            if (resourceLoadListener != null) {
+                resourceLoadListener.onLoad(event);
+            }
+            return;
+        }
+
+        if (addListener(url, resourceLoadListener, loadListeners)) {
+            ScriptElement scriptTag = Browser.getDocument()
+                    .createScriptElement();
+            scriptTag.setSrc(url);
+            scriptTag.setType("module");
+            scriptTag.setAsync(async);
+            scriptTag.setDefer(defer);
+
+            addOnloadHandler(scriptTag, new SimpleLoadListener(), event);
+            getHead().appendChild(scriptTag);
+        }
+    }
+
+    /**
      * Inlines a script and notify a listener when the script is loaded. Calling
      * this method when the script is currently loading or already loaded
      * doesn't cause the script to be loaded again, but the listener will still
@@ -342,6 +403,37 @@ public class ResourceLoader {
             ScriptElement scriptElement = getDocument().createScriptElement();
             scriptElement.setTextContent(scriptContents);
             scriptElement.setType("text/javascript");
+
+            addOnloadHandler(scriptElement, new SimpleLoadListener(), event);
+            getHead().appendChild(scriptElement);
+        }
+    }
+
+    /**
+     * Inlines a JS module and notify a listener when the script is loaded. Calling
+     * this method when the script is currently loading or already loaded
+     * doesn't cause the script to be loaded again, but the listener will still
+     * be notified when appropriate.
+     *
+     * @param scriptContents
+     *            the script contents to inline
+     * @param resourceLoadListener
+     *            listener to notify when script is loaded
+     */
+    public void inlineModule(String scriptContents,
+            final ResourceLoadListener resourceLoadListener) {
+        ResourceLoadEvent event = new ResourceLoadEvent(this, scriptContents);
+        if (loadedResources.has(scriptContents)) {
+            if (resourceLoadListener != null) {
+                resourceLoadListener.onLoad(event);
+            }
+            return;
+        }
+
+        if (addListener(scriptContents, resourceLoadListener, loadListeners)) {
+            ScriptElement scriptElement = getDocument().createScriptElement();
+            scriptElement.setTextContent(scriptContents);
+            scriptElement.setType("module");
 
             addOnloadHandler(scriptElement, new SimpleLoadListener(), event);
             getHead().appendChild(scriptElement);
