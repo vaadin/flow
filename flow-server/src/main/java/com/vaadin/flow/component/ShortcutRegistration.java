@@ -43,8 +43,8 @@ import com.vaadin.flow.shared.Registration;
  * @since
  */
 public class ShortcutRegistration implements Registration, Serializable {
-    private boolean preventDefault = true;
-    private boolean stopPropagation = true;
+    private boolean allowDefaultBehavior = false;
+    private boolean allowEventPropagation = false;
 
     private Set<Key> modifiers = new HashSet<>(2);
     private Key primaryKey = null;
@@ -170,23 +170,25 @@ public class ShortcutRegistration implements Registration, Serializable {
     /**
      * Allows the default keyboard event handling when the shortcut is invoked.
      * @return this <code>ShortcutRegistration</code>
+     * @see #setBrowserDefaultAllowed(boolean)
      */
     public ShortcutRegistration allowBrowserDefault() {
-        if (preventDefault) {
-            preventDefault = false;
+        if (!allowDefaultBehavior) {
+            allowDefaultBehavior = true;
             prepareForClientResponse();
         }
         return this;
     }
 
     /**
-     * Allow the event to propagate upwards in the dom tree, when the
+     * Allow the event to propagate upwards in the DOM tree, when the
      * shortcut is invoked.
      * @return this <code>ShortcutRegistration</code>
+     * @see #setEventPropagationAllowed(boolean)
      */
     public ShortcutRegistration allowEventPropagation() {
-        if (stopPropagation) {
-            stopPropagation = false;
+        if (!allowEventPropagation) {
+            allowEventPropagation = true;
             prepareForClientResponse();
         }
         return this;
@@ -292,9 +294,35 @@ public class ShortcutRegistration implements Registration, Serializable {
      * Is the shortcut preventing default key behaviour.
      *
      * @return Prevents default behavior
+     * @deprecated Replaced by {@link #isBrowserDefaultAllowed} in 1.4
      */
+    @Deprecated
     public boolean preventsDefault() {
-        return preventDefault;
+        return !allowDefaultBehavior;
+    }
+
+    /**
+     * Checks if the default key behaviour in the browser is allowed by the
+     * shortcut. The default value is {@code false}.
+     *
+     * @return Allows default key behavior
+     */
+    public boolean isBrowserDefaultAllowed() {
+        return allowDefaultBehavior;
+    }
+
+    /**
+     * Set whether the default key behavior is allowed in the browser. The
+     * default value is {@code false}, and it prevents the default key events
+     * from taking place in the browser.
+     *
+     * @param browserDefaultAllowed   Allow default behavior on keydown
+     */
+    public void setBrowserDefaultAllowed(boolean browserDefaultAllowed) {
+        if (allowDefaultBehavior != browserDefaultAllowed) {
+            allowDefaultBehavior = browserDefaultAllowed;
+            prepareForClientResponse();
+        }
     }
 
     /**
@@ -302,9 +330,35 @@ public class ShortcutRegistration implements Registration, Serializable {
      * tree.
      *
      * @return Stops propagation
+     * @deprecated Replaced by {@link #isEventPropagationAllowed()} in 1.4
      */
+    @Deprecated
     public boolean stopsPropagation() {
-        return stopPropagation;
+        return !allowEventPropagation;
+    }
+
+    /**
+     * Checks if the shortcut allows keydown event (associated with the
+     * shortcut) propagation in the browser. The default value is {@code false}.
+     *
+     * @return Allows event propagation
+     */
+    public boolean isEventPropagationAllowed() {
+        return allowEventPropagation;
+    }
+
+    /**
+     * Set whether shortcut's keydown event is allowed to propagate up the
+     * DOM tree in the browser. The default value is {@code false}, and the
+     * DOM event is consumed by the shortcut handler.
+     *
+     * @param eventPropagationAllowed  Allow event propagation
+     */
+    public void setEventPropagationAllowed(boolean eventPropagationAllowed) {
+        if (allowEventPropagation != eventPropagationAllowed) {
+            allowEventPropagation = eventPropagationAllowed;
+            prepareForClientResponse();
+        }
     }
 
     /**
@@ -438,11 +492,11 @@ public class ShortcutRegistration implements Registration, Serializable {
                     able to use setEventData for these values, so we hack the
                     filter.
                  */
-                if (preventDefault) {
-                    filterText += "&& (event.preventDefault() || true)";
+                if (!allowDefaultBehavior) {
+                    filterText += " && (event.preventDefault() || true)";
                 }
-                if (stopPropagation) {
-                    filterText += "&& (event.stopPropagation() || true)";
+                if (!allowEventPropagation) {
+                    filterText += " && (event.stopPropagation() || true)";
                 }
                 listenerRegistration.setFilter(filterText);
 
@@ -609,13 +663,22 @@ public class ShortcutRegistration implements Registration, Serializable {
     @Override
     public String toString() {
         return  String.format(
-                "%s [key = %s, modifiers = %s, lifecycle owner = %s]",
+                "%s [key = %s, modifiers = %s, owner = %s, listenOn = %s, " +
+                        "default = %s, propagation = %s]",
                 getClass().getSimpleName(),
-                (primaryKey != null ? primaryKey.getKeys().get(0) : "null"),
-                Arrays.toString(modifiers.stream()
-                        .map(k -> k.getKeys().get(0)).toArray()),
-                (lifecycleOwner != null) ? lifecycleOwner.getClass()
-                        .getSimpleName() : "null");
+                primaryKey != null
+                        ? primaryKey.getKeys().get(0)
+                        : "null",
+                Arrays.toString(modifiers.stream().map(k -> k.getKeys().get(0))
+                        .toArray()),
+                lifecycleOwner != null
+                        ? lifecycleOwner.getClass().getSimpleName()
+                        : "null",
+                listenOnComponent != null
+                        ? listenOnComponent.getClass().getSimpleName()
+                        : "null",
+                allowDefaultBehavior,
+                allowEventPropagation);
     }
 
     /**

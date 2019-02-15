@@ -123,10 +123,18 @@ public class Bootstrapper implements EntryPoint {
          * locations even if the base URL of the page changes later (e.g. with
          * pushState)
          */
-        conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
-
-        conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
-                .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
+        String serviceUrl = jsoConfiguration
+                .getConfigString(ApplicationConstants.SERVICE_URL);
+        if (serviceUrl == null) {
+            conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
+            conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
+                    .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
+        } else {
+            conf.setServiceUrl(serviceUrl);
+            conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(
+                    serviceUrl + jsoConfiguration.getConfigString(
+                            ApplicationConstants.CONTEXT_ROOT_URL)));
+        }
 
         if (BrowserInfo.get().isEs6Supported()) {
             conf.setFrontendRootUrl(jsoConfiguration
@@ -143,8 +151,10 @@ public class Bootstrapper implements EntryPoint {
         conf.setHeartbeatInterval(
                 jsoConfiguration.getConfigInteger("heartbeatInterval"));
 
-        conf.setUiElementId(jsoConfiguration.getConfigString(ApplicationConstants.UI_ELEMENT_ID));
-        conf.setUiTag(jsoConfiguration.getConfigString(ApplicationConstants.UI_TAG));
+        conf.setUiElementId(jsoConfiguration
+                .getConfigString(ApplicationConstants.UI_ELEMENT_ID));
+        conf.setUiTag(
+                jsoConfiguration.getConfigString(ApplicationConstants.UI_TAG));
         conf.setServletVersion(jsoConfiguration.getVaadinVersion());
         conf.setAtmosphereVersion(jsoConfiguration.getAtmosphereVersion());
         conf.setAtmosphereJSVersion(jsoConfiguration.getAtmosphereJSVersion());

@@ -17,22 +17,22 @@ package com.vaadin.flow.data.renderer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Div;
 
 public class ComponentRendererTest {
 
     @Test
     public void componentFunction_invokedOnCreate() {
         AtomicInteger createInvocations = new AtomicInteger();
-        ComponentRenderer<Div, String> renderer = new ComponentRenderer<>(
+        ComponentRenderer<TestLabel, String> renderer = new ComponentRenderer<>(
                 item -> {
                     createInvocations.incrementAndGet();
                     Assert.assertEquals("New item", item);
-                    return new Div();
+                    return new TestLabel();
                 });
 
         renderer.createComponent("New item");
@@ -45,8 +45,8 @@ public class ComponentRendererTest {
     @Test
     public void componentFunction_noUpdateFunction_invokedOnUpdate() {
         AtomicInteger createInvocations = new AtomicInteger();
-        Div div = new Div();
-        ComponentRenderer<Div, String> renderer = new ComponentRenderer<>(
+        TestLabel div = new TestLabel();
+        ComponentRenderer<TestLabel, String> renderer = new ComponentRenderer<>(
                 item -> {
                     createInvocations.incrementAndGet();
                     Assert.assertEquals("New item", item);
@@ -67,18 +67,18 @@ public class ComponentRendererTest {
     public void updateFunction_invokedOnUpdate() {
         AtomicInteger createInvocations = new AtomicInteger();
         AtomicInteger updateInvocations = new AtomicInteger();
-        ComponentRenderer<Div, String> renderer = new ComponentRenderer<>(
+        ComponentRenderer<TestLabel, String> renderer = new ComponentRenderer<>(
                 item -> {
                     createInvocations.incrementAndGet();
                     Assert.assertEquals("New item", item);
-                    return new Div();
+                    return new TestLabel();
                 }, (component, item) -> {
                     updateInvocations.incrementAndGet();
                     Assert.assertEquals("Updated item", item);
                     return component;
                 });
 
-        Div div = renderer.createComponent("New item");
+        TestLabel div = renderer.createComponent("New item");
         Component updatedComponent = renderer.updateComponent(div,
                 "Updated item");
 

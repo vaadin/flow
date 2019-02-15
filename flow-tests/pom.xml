@@ -112,6 +112,12 @@
                     <stopPort>${server.stop.port}</stopPort>
                     <stopKey>foo</stopKey>
                     <stopWait>5</stopWait>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>vaadin.bowerMode</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
             </plugin>
         </plugins>

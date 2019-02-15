@@ -118,7 +118,7 @@ public class SharedUtil implements Serializable {
 
     /**
      * Capitalizes the first character in the given string in a way suitable for
-     * use in code (methods, properties etc)
+     * use in code (methods, properties etc).
      *
      * @param string
      *            The string to capitalize
