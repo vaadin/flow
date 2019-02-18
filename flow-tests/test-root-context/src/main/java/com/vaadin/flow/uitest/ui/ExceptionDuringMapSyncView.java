@@ -26,7 +26,7 @@ public class ExceptionDuringMapSyncView extends AbstractErrorHandlerView {
         Input input = new Input();
         input.addValueChangeListener(event -> {
             throw new RuntimeException(
-                    "Intentional exception in proeprty sync handler");
+                    "Intentional exception in property sync handler");
         });
         add(input);
     }

@@ -30,7 +30,7 @@ public class ExceptionDuringMapSyncIT extends AbstractErrorIT {
         assertNoSystemErrors();
 
         assertErrorReported(
-                "An error occurred: java.lang.RuntimeException: Intentional exception in proeprty sync handler");
+                "An error occurred: java.lang.RuntimeException: Intentional exception in property sync handler");
     }
 
 }
