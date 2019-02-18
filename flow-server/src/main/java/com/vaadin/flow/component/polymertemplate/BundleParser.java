@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import com.google.common.base.Predicates;
 import com.google.javascript.jscomp.NodeUtil;
@@ -38,11 +37,22 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+/**
+ * Parse statistics data provided by webpack.
+ *
+ * @see NpmTemplateParser
+ *
+ * @author Vaadin Ltd
+ * @since
+ *
+ */
 public final class BundleParser {
 
     private static Config config = ParserRunner
             .createConfig(Config.LanguageMode.ECMASCRIPT6, null,
                     Config.StrictMode.STRICT);
+
+    private static String TEMPLATE_TAG_NAME = "template";
 
     private BundleParser() {
     }
@@ -100,9 +110,9 @@ public final class BundleParser {
                 Predicates.alwaysTrue());
 
         Document templateDocument = Jsoup
-                .parse(visitor.getterContent.get("template"));
+                .parse(visitor.getterContent.get(TEMPLATE_TAG_NAME));
 
-        Element template = templateDocument.createElement("template");
+        Element template = templateDocument.createElement(TEMPLATE_TAG_NAME);
 
         templateDocument.body().getAllElements().stream()
                 .filter(node -> !node.equals(templateDocument.body()))
@@ -147,9 +157,10 @@ public final class BundleParser {
 
     private static class DependencyVisitor implements NodeUtil.Visitor {
 
-        public List<String> imports = new ArrayList<>();
-        public List<String> getters = new ArrayList<>();
-        public Map<String, String> getterContent = new HashMap<>();
+        private List<String> imports = new ArrayList<>();
+        private List<String> getters = new ArrayList<>();
+
+        Map<String, String> getterContent = new HashMap<>();
 
         @Override
         public void visit(Node node) {
@@ -165,7 +176,7 @@ public final class BundleParser {
 
         private void addGetter(Node node) {
             getters.add(node.getString());
-            if (node.getString().equals("template")) {
+            if (TEMPLATE_TAG_NAME.equals(node.getString())) {
                 String content = getTextNode(node).getRawString();
                 getterContent.put(node.getString(), content);
             }

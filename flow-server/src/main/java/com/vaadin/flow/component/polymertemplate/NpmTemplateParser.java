@@ -42,6 +42,20 @@ import com.vaadin.flow.shared.ui.Dependency;
 
 import elemental.json.JsonObject;
 
+/**
+ * Npm template parser implementation.
+ * <p>
+ * The implementation scans all JsModule annotations for the given template
+ * class and tries to find the one that contains template definition using the
+ * tag name.
+ * <p>
+ * The class is Singleton. Use {@link DefaultTemplateParser#getInstance()} to
+ * get its instance.
+ *
+ * @author Vaadin Ltd
+ * @see BundleParser
+ * @since
+ */
 public class NpmTemplateParser implements TemplateParser {
 
     private static final TemplateParser INSTANCE = new NpmTemplateParser();
@@ -107,46 +121,18 @@ public class NpmTemplateParser implements TemplateParser {
                                     + "via the ClassLoader", url));
                 }
 
-                String fileContents = streamToString(content);
-                Element templateElement;
-
-                if (productionMode) {
-                    Matcher matcher = HASH_PATTERN.matcher(fileContents);
-                    if (matcher.find()) {
-                        String hash = matcher.group(1);
-                        lock.lock();
-                        try {
-                            if (!hash.equals(this.hash)) {
-                                this.hash = hash;
-                                statisticsJson = BundleParser
-                                        .getStatisticsJson(url, fileContents);
-                            }
-                        } finally {
-                            lock.unlock();
-                        }
-                    } else {
-                        statisticsJson = BundleParser
-                                .getStatisticsJson(url, fileContents);
-                    }
-
-                    templateElement = BundleParser
-                            .parseTemplateElement(statisticsJson);
-                } else {
-                    templateElement = BundleParser
-                            .parseTemplateElement(url, fileContents);
-                }
-
-                Element parent = new Element(tag);
-                parent.attr("id", tag);
-                templateElement.appendTo(parent);
+                Element templateElement = getTemplateElement(productionMode,
+                        url, streamToString(content));
 
                 if (templateElement != null) {
+                    Element parent = new Element(tag);
+                    parent.attr("id", tag);
+                    templateElement.appendTo(parent);
+
                     getLogger()
                             .debug("Found a template file containing template definition for the tag '{}' by the path '{}'",
                                     tag, url);
-                }
 
-                if (templateElement != null) {
                     return new TemplateData(url, templateElement);
 
                 }
@@ -164,6 +150,36 @@ public class NpmTemplateParser implements TemplateParser {
                         + "method getTemplateContent() which should return an element "
                         + "representing the content of the template file", tag,
                 JsModule.class.getSimpleName()));
+    }
+
+    private Element getTemplateElement(boolean productionMode, String url, String fileContents) {
+        Element templateElement;
+        if (productionMode) {
+            Matcher matcher = HASH_PATTERN.matcher(fileContents);
+            if (matcher.find()) {
+                String hash = matcher.group(1);
+                lock.lock();
+                try {
+                    if (!hash.equals(this.hash)) {
+                        this.hash = hash;
+                        statisticsJson = BundleParser
+                                .getStatisticsJson(url, fileContents);
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            } else {
+                statisticsJson = BundleParser
+                        .getStatisticsJson(url, fileContents);
+            }
+
+            templateElement = BundleParser
+                    .parseTemplateElement(statisticsJson);
+        } else {
+            templateElement = BundleParser
+                    .parseTemplateElement(url, fileContents);
+        }
+        return templateElement;
     }
 
     private String streamToString(InputStream inputStream) throws IOException {
