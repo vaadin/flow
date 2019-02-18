@@ -2,7 +2,7 @@
 <root>
     <windows>
         <driver id="googlechrome">
-            <version id="2.45">
+            <version id="2.46">
                 <bitrate thirtytwobit="true" sixtyfourbit="true">
                     <filelocation>https://chromedriver.storage.googleapis.com/2.46/chromedriver_win32.zip</filelocation>
                     <hash>a95696782d22d94bb60f83a315e8a584f2ff5db2</hash>
