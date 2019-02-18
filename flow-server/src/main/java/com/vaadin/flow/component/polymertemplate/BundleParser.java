@@ -52,7 +52,7 @@ public final class BundleParser {
             .createConfig(Config.LanguageMode.ECMASCRIPT6, null,
                     Config.StrictMode.STRICT);
 
-    private static String TEMPLATE_TAG_NAME = "template";
+    private static final String TEMPLATE_TAG_NAME = "template";
 
     private BundleParser() {
     }
@@ -170,6 +170,8 @@ public final class BundleParser {
                 break;
             case GETTER_DEF:
                 addGetter(node);
+                break;
+            default:
                 break;
             }
         }

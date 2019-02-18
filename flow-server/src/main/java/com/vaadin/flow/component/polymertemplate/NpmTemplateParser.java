@@ -124,18 +124,16 @@ public class NpmTemplateParser implements TemplateParser {
                 Element templateElement = getTemplateElement(productionMode,
                         url, streamToString(content));
 
-                if (templateElement != null) {
-                    Element parent = new Element(tag);
-                    parent.attr("id", tag);
-                    templateElement.appendTo(parent);
+                Element parent = new Element(tag);
+                parent.attr("id", tag);
+                templateElement.appendTo(parent);
 
-                    getLogger()
-                            .debug("Found a template file containing template definition for the tag '{}' by the path '{}'",
-                                    tag, url);
+                getLogger()
+                        .debug("Found a template file containing template definition for the tag '{}' by the path '{}'",
+                                tag, url);
 
-                    return new TemplateData(url, templateElement);
+                return new TemplateData(url, templateElement);
 
-                }
             } catch (IOException exception) {
                 // ignore exception on close()
                 getLogger().warn("Couldn't close template input stream",
@@ -155,23 +153,7 @@ public class NpmTemplateParser implements TemplateParser {
     private Element getTemplateElement(boolean productionMode, String url, String fileContents) {
         Element templateElement;
         if (productionMode) {
-            Matcher matcher = HASH_PATTERN.matcher(fileContents);
-            if (matcher.find()) {
-                String hash = matcher.group(1);
-                lock.lock();
-                try {
-                    if (!hash.equals(this.hash)) {
-                        this.hash = hash;
-                        statisticsJson = BundleParser
-                                .getStatisticsJson(url, fileContents);
-                    }
-                } finally {
-                    lock.unlock();
-                }
-            } else {
-                statisticsJson = BundleParser
-                        .getStatisticsJson(url, fileContents);
-            }
+            setStatisticsJson(url, fileContents);
 
             templateElement = BundleParser
                     .parseTemplateElement(statisticsJson);
@@ -180,6 +162,26 @@ public class NpmTemplateParser implements TemplateParser {
                     .parseTemplateElement(url, fileContents);
         }
         return templateElement;
+    }
+
+    private void setStatisticsJson(String url, String fileContents) {
+        Matcher matcher = HASH_PATTERN.matcher(fileContents);
+        if (matcher.find()) {
+            String contentHash = matcher.group(1);
+            lock.lock();
+            try {
+                if (!contentHash.equals(this.hash)) {
+                    this.hash = contentHash;
+                    statisticsJson = BundleParser
+                            .getStatisticsJson(url, fileContents);
+                }
+            } finally {
+                lock.unlock();
+            }
+        } else {
+            statisticsJson = BundleParser
+                    .getStatisticsJson(url, fileContents);
+        }
     }
 
     private String streamToString(InputStream inputStream) throws IOException {
