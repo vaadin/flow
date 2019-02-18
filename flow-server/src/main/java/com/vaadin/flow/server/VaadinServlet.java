@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.Properties;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -51,6 +51,7 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
+    private DevModeHandler devmodeHandler;
     private WebJarServer webJarServer;
 
     /**
@@ -76,11 +77,13 @@ public class VaadinServlet extends HttpServlet {
 
         DeploymentConfiguration deploymentConfiguration = servletService
                 .getDeploymentConfiguration();
-        staticFileHandler = createStaticFileHandler(servletService);
 
+        devmodeHandler = DevModeHandler.createInstance(deploymentConfiguration);
+        staticFileHandler = createStaticFileHandler(servletService);
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
         }
+
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
 
@@ -92,7 +95,7 @@ public class VaadinServlet extends HttpServlet {
      * Creates a new instance of {@link StaticFileHandler}, that is responsible
      * to find and serve static resources. By default it returns a
      * {@link StaticFileServer} instance.
-     * 
+     *
      * @param servletService
      *            the servlet service created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
@@ -247,7 +250,12 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Handles a request by serving a static file or a file from a WebJar.
+     * Handles a request by serving a static file from Webpack when in
+     * npm-dev-mode, or from a WebJar when in bower-dev-mode or from the
+     * file-system when in production.
+     *
+     * It's not done via {@link VaadinService} handlers because static requests
+     * do not need a established session.
      *
      * @param request
      *            the HTTP servlet request object that contains the request the
@@ -268,6 +276,12 @@ public class VaadinServlet extends HttpServlet {
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
+
+        if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
+                && devmodeHandler.serveDevModeRequest(request, response)) {
+            return true;
+        }
+
         if (staticFileHandler.isStaticResourceRequest(request)) {
             staticFileHandler.serveStaticResource(request, response);
             return true;
