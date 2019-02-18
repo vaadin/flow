@@ -50,6 +50,7 @@ public class TemplateComponentTest {
     @Before
     public void init() throws Exception {
         mocks = new MockServletServiceSessionSetup();
+        mocks.getDeploymentConfiguration().setBowerMode(true);
 
         mocks.getServlet().addServletContextResource("/registration-form.html",
                 template_file);

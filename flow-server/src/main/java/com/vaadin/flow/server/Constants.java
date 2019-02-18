@@ -108,6 +108,15 @@ public final class Constants implements Serializable {
      */
     public static final String DISABLE_AUTOMATIC_SERVLET_REGISTRATION = "disable.automatic.servlet.registration";
 
+    /**
+     * The file path for WebPack profile statistics json file to use to
+     * determine template contents.
+     * <p>
+     * File needs to be available for the ClassLoader as a resource, for
+     * instance 'META-INF/resources/stats.json'
+     */
+    public static final String STATISTICS_JSON = "statistics.file.path";
+
     private Constants() {
         // prevent instantiation constants class only
     }
