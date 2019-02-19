@@ -175,17 +175,23 @@ public class ComponentMetaData {
         if (service.getDeploymentConfiguration().isBowerMode()) {
             dependencyInfo.htmlImports
                     .addAll(getHtmlImportDependencies(service, componentClass));
+
         } else {
-            dependencyInfo.jsModules
-                    .addAll(getHtmlImportAsJsModuleAnnotations(componentClass));
+            List<JsModule> jsModules = AnnotationReader.getJsModuleAnnotations(componentClass);
+
+            // Ignore @HtmlImport(s) when @JsModule(s) present.
+            if (!jsModules.isEmpty()) {
+                dependencyInfo.jsModules.addAll(jsModules);
+            } else {
+                dependencyInfo.jsModules
+                        .addAll(getHtmlImportAsJsModuleAnnotations(componentClass));
+            }
         }
 
         dependencyInfo.javaScripts.addAll(
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
         dependencyInfo.styleSheets.addAll(
                 AnnotationReader.getStyleSheetAnnotations(componentClass));
-        dependencyInfo.jsModules.addAll(
-                AnnotationReader.getJsModuleAnnotations(componentClass));
 
         List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
                 Uses.class);
@@ -326,20 +332,12 @@ public class ComponentMetaData {
         String value = SharedUtil.prefixIfRelative(htmlImport.value(),
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
-        final String[] split = value.split("/.");
+        String module = value
+                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html", "/node_modules/@vaadin/$1.js")
+                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html", "/node_modules/@polymer/$1.js")
+                .replaceFirst("^(.*frontend/.*/[^/]+-[^/]+)\\.html", "$1.js");
 
-        if (split.length == 6) {
-            // This works only for cases like
-            // @HtmlImport("frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html")
-            return jsModule("@vaadin/" + split[2] + "/" + split[4],
-                    htmlImport.loadMode());
-
-        } else if (split.length == 2) {
-            return jsModule("@vaadin/" + split[1], htmlImport.loadMode());
-
-        } else {
-            return null;
-        }
+        return jsModule(module, htmlImport.loadMode());
     }
 
     private static JsModule jsModule(final String value,
