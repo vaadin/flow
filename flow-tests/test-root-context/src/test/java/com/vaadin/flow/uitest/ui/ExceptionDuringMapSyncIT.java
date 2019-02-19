@@ -23,7 +23,7 @@ import com.vaadin.flow.component.html.testbench.InputTextElement;
 public class ExceptionDuringMapSyncIT extends AbstractErrorIT {
 
     @Test
-    public void exceptionInClickHandlerDoesNotCauseInternalError() {
+    public void exceptionInMapSyncDoesNotCauseInternalError() {
         open();
         $(InputTextElement.class).first().sendKeys("foo", Keys.ENTER);
 
