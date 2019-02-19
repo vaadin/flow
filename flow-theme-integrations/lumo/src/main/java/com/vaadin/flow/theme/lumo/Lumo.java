@@ -57,6 +57,7 @@ public class Lumo implements AbstractTheme {
     }
 
     @Override
+    @Deprecated
     public Map<String, String> getBodyAttributes(String variant) {
         return getHtmlAttributes(variant);
     }

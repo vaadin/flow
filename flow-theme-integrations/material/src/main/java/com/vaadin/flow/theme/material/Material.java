@@ -51,6 +51,7 @@ public class Material implements AbstractTheme {
     }
 
     @Override
+    @Deprecated
     public Map<String, String> getBodyAttributes(String variant) {
         return getHtmlAttributes(variant);
     }
