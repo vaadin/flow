@@ -32,33 +32,28 @@ public class UpdateServerSideWebComponentIT extends ChromeBrowserTest {
     public void pushUpdatesEmbeddedWebComponent() {
         open();
 
-        int updateCount = getUpdateCount();
+        int initialUpdateCount = getUpdateCount();
         Assert.assertTrue(
-                "Interim update count should be less than maximum 50, but it has value "
-                        + updateCount,
-                updateCount < 50);
+                "The initial update count should be less than maximum 50, but it has value "
+                        + initialUpdateCount,
+                initialUpdateCount < 50);
 
-        waitUntil(driver -> getUpdateCount() > 25, 5);
+        waitUntil(driver -> getUpdateCount() > initialUpdateCount, 5);
 
         int nextUpdateCount = getUpdateCount();
 
         Assert.assertTrue(
-                "Next interim update count should be more than the first one "
-                        + updateCount,
-                updateCount < nextUpdateCount);
-
-        Assert.assertTrue(
-                "Next interim update count should be less than maximum 50, but it has value "
+                "The next interim update count should be less than maximum 50, but it has value "
                         + nextUpdateCount,
                 nextUpdateCount < 50);
 
         waitUntil(driver -> getUpdateCount() == 50, 5);
 
-        updateCount = getUpdateCount();
-        Assert.assertTrue(
+        int updateCount = getUpdateCount();
+        Assert.assertEquals(
                 "The update count should have reached the maximin 50, but it has value "
                         + updateCount,
-                updateCount == 50);
+                50, updateCount);
     }
 
     private int getUpdateCount() {
