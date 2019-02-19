@@ -39,7 +39,7 @@ public class NpmTemplateParserTest {
     }
 
     @Test
-    public void templateParserParsingNPMPolymerTemplate_findsCorrectDataInProductionMode() {
+    public void should_FindCorrectlyDataInStats() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
@@ -61,14 +61,40 @@ public class NpmTemplateParserTest {
     }
 
     @Test
-    public void templateParserParsingNPMPolymerTemplate_findsCorrectDataInDevMode() {
+    public void should_FindCorrectlyDataInBeverageStats() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration
+                .getStringProperty(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn("META-INF/resources/stats-beverage.json");
+
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(Likeable.class, "likeable-element",
+                .getTemplateContent(ReviewList.class, "likeable-element",
                         service);
 
         Assert.assertEquals("Parent element ID not the expected one.",
                 "likeable-element",
+                templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 29,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'search'",
+                "vaadin-text-field",
+                templateContent.getTemplateElement().getElementById("search")
+                        .tag().toString());
+    }
+
+    @Test
+    public void should_NotUseStats_when_LocalFileTemplateExists() {
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateParser.TemplateData templateContent = instance
+                .getTemplateContent(LikeableView.class, "likeable-element-view",
+                        service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "likeable-element-view",
                 templateContent.getTemplateElement().parent().id());
 
         Assert.assertEquals("Expected template element to have 2 children", 2,
@@ -84,6 +110,16 @@ public class NpmTemplateParserTest {
     @Tag("likeable-element")
     @JsModule("./frontend/LikeableElement.js")
     public class Likeable extends PolymerTemplate<TemplateModel> {
+    }
+
+    @Tag("likeable-element")
+    @JsModule("./frontend/likeable-element-view.js")
+    public class LikeableView extends PolymerTemplate<TemplateModel> {
+    }
+
+    @Tag("review-list")
+    @JsModule("./src/views/reviewslist/reviews-list.js")
+    public class ReviewList extends PolymerTemplate<TemplateModel> {
     }
 
 }
