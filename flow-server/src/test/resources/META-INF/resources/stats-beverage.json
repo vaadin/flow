@@ -1,0 +1,411 @@
+{
+  "errors": [],
+  "warnings": [],
+  "version": "4.29.3",
+  "hash": "40667b889c021e528505",
+  "publicPath": "",
+  "outputPath": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/build",
+  "assetsByChunkName": {
+    "main": "index.js"
+  },
+  "assets": [
+    {
+      "name": "index.js",
+      "size": 892439,
+      "chunks": [
+        0
+      ],
+      "chunkNames": [
+        "main"
+      ],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/LICENSE.md",
+      "size": 1559,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/README.md",
+      "size": 10783,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/bundles/webcomponents-ce.js",
+      "size": 16910,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/bundles/webcomponents-ce.js.map",
+      "size": 104300,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/bundles/webcomponents-sd-ce-pf.js",
+      "size": 109183,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/bundles/webcomponents-sd-ce-pf.js.map",
+      "size": 649507,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/bundles/webcomponents-sd-ce.js",
+      "size": 81281,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/bundles/webcomponents-sd-ce.js.map",
+      "size": 521274,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/bundles/webcomponents-sd.js",
+      "size": 65318,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/bundles/webcomponents-sd.js.map",
+      "size": 416690,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/custom-elements-es5-adapter.js",
+      "size": 942,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/entrypoints/custom-elements-es5-adapter-index.js",
+      "size": 656,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/entrypoints/webcomponents-bundle-index.js",
+      "size": 1704,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/entrypoints/webcomponents-ce-index.js",
+      "size": 672,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/entrypoints/webcomponents-sd-ce-index.js",
+      "size": 851,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/entrypoints/webcomponents-sd-ce-pf-index.js",
+      "size": 1227,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/entrypoints/webcomponents-sd-index.js",
+      "size": 761,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/package.json",
+      "size": 3078,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/webcomponents-bundle.js",
+      "size": 109711,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/webcomponents-bundle.js.map",
+      "size": 651839,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "webcomponentsjs/webcomponents-loader.js",
+      "size": 6272,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    }
+  ],
+  "filteredAssets": 0,
+  "entrypoints": {
+    "main": {
+      "chunks": [
+        0
+      ],
+      "assets": [
+        "index.js"
+      ],
+      "children": {},
+      "childAssets": {}
+    }
+  },
+  "namedChunkGroups": {
+    "main": {
+      "chunks": [
+        0
+      ],
+      "assets": [
+        "index.js"
+      ],
+      "children": {},
+      "childAssets": {}
+    }
+  },
+  "chunks": [
+    {
+      "id": 0,
+      "rendered": true,
+      "initial": true,
+      "entry": true,
+      "size": 1851282,
+      "names": [
+        "main"
+      ],
+      "files": [
+        "index.js"
+      ],
+      "hash": "ce2c566bf6c1d96772a8",
+      "siblings": [],
+      "parents": [],
+      "children": [],
+      "childrenByOrder": {},
+      "modules": [
+        {
+          "id": 27,
+          "identifier": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/main.js 8326ded16a711cf7513e1407cd44c99f",
+          "name": "./main.js + 173 modules",
+          "index": 25,
+          "index2": 199,
+          "size": 1482380,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            0
+          ],
+          "issuer": null,
+          "issuerId": null,
+          "issuerName": null,
+          "issuerPath": null,
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": 2,
+              "moduleIdentifier": "multi /Users/manolo/github/flow/beverage-starter-flow/node_modules/webpack-dev-server/client/index.js?http://localhost:8081 ./main.js",
+              "module": "multi (webpack)-dev-server/client?http://localhost:8081 ./main.js",
+              "moduleName": "multi (webpack)-dev-server/client?http://localhost:8081 ./main.js",
+              "type": "single entry",
+              "userRequest": "./main.js",
+              "loc": "main[1]"
+            }
+          ],
+          "usedExports": true,
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 1,
+          "modules": [
+            {
+              "id": null,
+              "identifier": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/src/views/reviewslist/reviews-list.js",
+              "name": "./src/views/reviewslist/reviews-list.js",
+              "index": 200,
+              "index2": 198,
+              "size": 9711,
+              "cacheable": true,
+              "built": true,
+              "optional": false,
+              "prefetched": false,
+              "chunks": [],
+              "issuer": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/main.js",
+              "issuerId": null,
+              "issuerName": "./main.js",
+              "issuerPath": [
+                {
+                  "id": 2,
+                  "identifier": "multi /Users/manolo/github/flow/beverage-starter-flow/node_modules/webpack-dev-server/client/index.js?http://localhost:8081 ./main.js",
+                  "name": "multi (webpack)-dev-server/client?http://localhost:8081 ./main.js"
+                },
+                {
+                  "id": null,
+                  "identifier": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/main.js",
+                  "name": "./main.js"
+                }
+              ],
+              "failed": false,
+              "errors": 0,
+              "warnings": 0,
+              "assets": [],
+              "reasons": [
+                {
+                  "moduleId": null,
+                  "moduleIdentifier": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/main.js",
+                  "module": "./main.js",
+                  "moduleName": "./main.js",
+                  "type": "harmony side effect evaluation",
+                  "userRequest": "./src/views/reviewslist/reviews-list.js",
+                  "loc": "25:0-49"
+                }
+              ],
+              "usedExports": false,
+              "providedExports": [],
+              "optimizationBailout": [],
+              "depth": 2,
+              "source": "/*\n  ~ Copyright 2000-2017 Vaadin Ltd.\n  ~\n  ~ Licensed under the Apache License, Version 2.0 (the \"License\"); you may not\n  ~ use this file except in compliance with the License. You may obtain a copy of\n  ~ the License at\n  ~\n  ~ http://www.apache.org/licenses/LICENSE-2.0\n  ~\n  ~ Unless required by applicable law or agreed to in writing, software\n  ~ distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n  ~ License for the specific language governing permissions and limitations under\n  ~ the License.\n  */\n/* Dependency resources */\n/* Added Web Component dependencies to make Vaadin Designer preview work */\n/* TODO Needed to show icons in Vaadin Designer preview mode for now, but can be removed soon */\n/* Defines the reviews-list element */\n/* Polymer boilerplate to register the reviews-list element */\n/*\n  FIXME(polymer-modulizer): the above comments were extracted\n  from HTML and may be out of place here. Review them and\n  then delete this comment!\n*/\n\nimport { PolymerElement } from '@polymer/polymer/polymer-element.js';\nimport { html } from '@polymer/polymer/lib/utils/html-tag.js';\nimport '@vaadin/vaadin-button/vaadin-button.js';\nimport '@polymer/iron-icon/iron-icon.js';\n\nclass ReviewListElement extends PolymerElement {\n  static get template() {\n    return html`\n        <style include=\"lumo-color lumo-typography lumo-badge view-styles\">\n            :host {\n                display: block;\n            }\n\n            #header {\n                display: flex;\n                justify-content: space-between;\n                flex-wrap: wrap;\n                align-items: baseline;\n            }\n\n            /* Subtitle for the header */\n            #header span {\n                display: block;\n                font-size: var(--lumo-font-size-s);\n                font-weight: 400;\n                color: var(--lumo-secondary-text-color);\n                letter-spacing: 0;\n                margin-top: 0.3em;\n                margin-left: auto;\n                margin-right: 20px;\n            }\n\n            .review {\n                display: flex;\n                align-items: center;\n                width: 100%;\n                padding: var(--lumo-space-wide-xl);\n                padding-right: var(--lumo-space-m);\n                box-sizing: border-box;\n                margin-bottom: 8px;\n                background-color: var(--lumo-base-color);\n                box-shadow: 0 0 0 1px var(--lumo-shade-5pct), 0 2px 5px 0 var(--lumo-shade-10pct);\n                border-radius: var(--lumo-border-radius);\n            }\n\n            .review__rating {\n                flex: none;\n                align-self: flex-start;\n                margin: 0 1em 0 0;\n                position: relative;\n                cursor: default;\n            }\n\n            .review__score {\n                display: inline-flex;\n                align-items: center;\n                justify-content: center;\n                border-radius: var(--lumo-border-radius);\n                font-weight: 600;\n                width: 2.5em;\n                height: 2.5em;\n                margin: 0;\n            }\n\n            [data-score=\"1\"] {\n                box-shadow: inset 0 0 0 1px var(--lumo-contrast-10pct);\n            }\n\n            [data-score=\"2\"] {\n                background-color: var(--lumo-contrast-20pct);\n            }\n\n            [data-score=\"3\"] {\n                background-color: var(--lumo-contrast-40pct);\n            }\n\n            [data-score=\"4\"] {\n                background-color: var(--lumo-contrast-60pct);\n                color: var(--lumo-base-color);\n            }\n\n            [data-score=\"5\"] {\n                background-color: var(--lumo-contrast-80pct);\n                color: var(--lumo-base-color);\n            }\n\n            .review__count {\n                position: absolute;\n                display: inline-flex;\n                align-items: center;\n                justify-content: center;\n                height: 20px;\n                min-width: 8px;\n                padding: 0 6px;\n                background: var(--lumo-base-color);\n                color: var(--lumo-secondary-text-color);\n                top: -10px;\n                left: -10px;\n                border-radius: var(--lumo-border-radius);\n                margin: 0;\n                font-size: 12px;\n                font-weight: 500;\n                box-shadow: 0 0 0 1px var(--lumo-contrast-20pct);\n            }\n\n            .review__count span {\n                width: 0;\n                overflow: hidden;\n                white-space: nowrap;\n            }\n\n            .review__rating:hover .review__count span {\n                width: auto;\n                margin-left: 0.4em;\n            }\n\n            .review__details {\n                width: 100%;\n                max-width: calc(100% - 8.5em);\n                flex: auto;\n                line-height: var(--lumo-line-height-xs);\n                overflow: hidden;\n            }\n\n            .review__name {\n                margin: 0 0.5em 0 0;\n                white-space: nowrap;\n                overflow: hidden;\n                text-overflow: ellipsis;\n            }\n\n            .review__category {\n                margin: 0;\n                flex: none;\n            }\n\n            /* We only expect to have 10 categories at most, after which the colors start to rotate */\n            .review__category {\n                color: hsla(calc(340 + 360 / 10 * var(--category)), 40%, 20%, 1);\n                background-color: hsla(calc(340 + 360 / 10 * var(--category)), 60%, 50%, 0.1);\n            }\n\n            .review__date {\n                white-space: nowrap;\n                line-height: var(--lumo-line-height-xs);\n                margin: 0 1em;\n                width: 30%;\n            }\n\n            .review__date h5 {\n                font-size: var(--lumo-font-size-s);\n                font-weight: 400;\n                color: var(--lumo-secondary-text-color);\n                margin: 0;\n            }\n\n            .review__date p {\n                font-size: var(--lumo-font-size-s);\n                margin: 0;\n            }\n\n            .review__edit {\n                align-self: flex-start;\n                flex: none;\n                margin: 0 0 0 auto;\n                width: 5em;\n            }\n\n            .reviews__no-matches {\n                display: flex;\n                align-items: center;\n                justify-content: center;\n                height: 4em;\n                font-size: 22px;\n                color: var(--lumo-tertiary-text-color);\n            }\n\n            /* Small viewport styles */\n\n            @media (max-width: 500px) {\n                .review {\n                    padding: var(--lumo-space-m);\n                    padding-right: var(--lumo-space-s);\n                    flex-wrap: wrap;\n                }\n\n                .review__date {\n                    order: 1;\n                    margin-left: 3.5em;\n                    margin-top: 0.5em;\n                }\n            }\n\n        </style>\n\n        <div class=\"view-toolbar\">\n            <vaadin-text-field id=\"search\" class=\"view-toolbar__search-field\" autocapitalize=\"off\">\n                <iron-icon icon=\"lumo:search\" slot=\"prefix\"></iron-icon>\n            </vaadin-text-field>\n            <vaadin-button id=\"newReview\" class=\"view-toolbar__button\" theme=\"primary\">\n                <iron-icon icon=\"lumo:plus\" slot=\"prefix\"></iron-icon>\n                <span>[[reviewButtonText]]</span>\n            </vaadin-button>\n        </div>\n\n        <div class=\"view-container reviews\">\n            <h2 id=\"header\"></h2>\n            <template is=\"dom-if\" if=\"{{!_isEmpty(reviews)}}\">\n                <template is=\"dom-repeat\" items=\"[[reviews]]\">\n                    <div class=\"review\">\n                        <div class=\"review__rating\">\n                            <p class=\"review__score\" data-score\\$=\"[[item.score]]\">[[item.score]]</p>\n                            <p class=\"review__count\">\n                                [[item.count]]\n                                <span>times tasted</span>\n                            </p>\n                        </div>\n                        <div class=\"review__details\">\n                            <h4 class=\"review__name\">[[item.name]]</h4>\n                            <template is=\"dom-if\" if=\"[[item.category]]\">\n                                <p class=\"review__category\" theme=\"badge small\" style\\$=\"--category: [[item.category.id]];\">[[item.category.name]]</p>\n                            </template>\n                            <template is=\"dom-if\" if=\"[[!item.category]]\">\n                                <p class=\"review__category\" style=\"--category: -1;\">Undefined</p>\n                            </template>\n                        </div>\n                        <div class=\"review__date\">\n                            <h5>Last tasted</h5>\n                            <p>[[item.date]]</p>\n                        </div>\n                        <vaadin-button on-click=\"edit\" class=\"review__edit\" theme=\"tertiary\">\n                            <iron-icon icon=\"lumo:edit\"></iron-icon><span>[[editButtonText]]</span>\n                        </vaadin-button>\n                    </div>\n                </template>\n            </template>\n\n            <template is=\"dom-if\" if=\"{{_isEmpty(reviews)}}\">\n                <div class=\"reviews__no-matches\">No matches</div>\n            </template>\n        </div>\n`;\n  }\n\n  static get is() {\n      return 'reviews-list'\n  }\n\n  _isEmpty(array) {\n      return array.length == 0;\n  }\n}\ncustomElements.define(ReviewListElement.is, ReviewListElement);\n"
+            }
+          ],
+          "filteredModules": 0
+        }
+      ],
+      "filteredModules": 0,
+      "origins": [
+        {
+          "module": "",
+          "moduleIdentifier": "",
+          "moduleName": "",
+          "loc": "main",
+          "request": null,
+          "reasons": []
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": 27,
+      "identifier": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/main.js 8326ded16a711cf7513e1407cd44c99f",
+      "name": "./main.js + 173 modules",
+      "index": 25,
+      "index2": 199,
+      "size": 1482380,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        0
+      ],
+      "issuer": null,
+      "issuerId": null,
+      "issuerName": null,
+      "issuerPath": null,
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": 2,
+          "moduleIdentifier": "multi /Users/manolo/github/flow/beverage-starter-flow/node_modules/webpack-dev-server/client/index.js?http://localhost:8081 ./main.js",
+          "module": "multi (webpack)-dev-server/client?http://localhost:8081 ./main.js",
+          "moduleName": "multi (webpack)-dev-server/client?http://localhost:8081 ./main.js",
+          "type": "single entry",
+          "userRequest": "./main.js",
+          "loc": "main[1]"
+        }
+      ],
+      "usedExports": true,
+      "providedExports": [],
+      "optimizationBailout": [],
+      "depth": 1,
+      "modules": [
+        {
+          "id": null,
+          "identifier": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/src/views/reviewslist/reviews-list.js",
+          "name": "./src/views/reviewslist/reviews-list.js",
+          "index": 200,
+          "index2": 198,
+          "size": 9711,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [],
+          "issuer": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/main.js",
+          "issuerId": null,
+          "issuerName": "./main.js",
+          "issuerPath": [
+            {
+              "id": 2,
+              "identifier": "multi /Users/manolo/github/flow/beverage-starter-flow/node_modules/webpack-dev-server/client/index.js?http://localhost:8081 ./main.js",
+              "name": "multi (webpack)-dev-server/client?http://localhost:8081 ./main.js"
+            },
+            {
+              "id": null,
+              "identifier": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/main.js",
+              "name": "./main.js"
+            }
+          ],
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": null,
+              "moduleIdentifier": "/Users/manolo/github/flow/beverage-starter-flow/src/main/webapp/frontend/main.js",
+              "module": "./main.js",
+              "moduleName": "./main.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "./src/views/reviewslist/reviews-list.js",
+              "loc": "25:0-49"
+            }
+          ],
+          "usedExports": false,
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 2,
+          "source": "/*\n  ~ Copyright 2000-2017 Vaadin Ltd.\n  ~\n  ~ Licensed under the Apache License, Version 2.0 (the \"License\"); you may not\n  ~ use this file except in compliance with the License. You may obtain a copy of\n  ~ the License at\n  ~\n  ~ http://www.apache.org/licenses/LICENSE-2.0\n  ~\n  ~ Unless required by applicable law or agreed to in writing, software\n  ~ distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n  ~ License for the specific language governing permissions and limitations under\n  ~ the License.\n  */\n/* Dependency resources */\n/* Added Web Component dependencies to make Vaadin Designer preview work */\n/* TODO Needed to show icons in Vaadin Designer preview mode for now, but can be removed soon */\n/* Defines the reviews-list element */\n/* Polymer boilerplate to register the reviews-list element */\n/*\n  FIXME(polymer-modulizer): the above comments were extracted\n  from HTML and may be out of place here. Review them and\n  then delete this comment!\n*/\n\nimport { PolymerElement } from '@polymer/polymer/polymer-element.js';\nimport { html } from '@polymer/polymer/lib/utils/html-tag.js';\nimport '@vaadin/vaadin-button/vaadin-button.js';\nimport '@polymer/iron-icon/iron-icon.js';\n\nclass ReviewListElement extends PolymerElement {\n  static get template() {\n    return html`\n        <style include=\"lumo-color lumo-typography lumo-badge view-styles\">\n            :host {\n                display: block;\n            }\n\n            #header {\n                display: flex;\n                justify-content: space-between;\n                flex-wrap: wrap;\n                align-items: baseline;\n            }\n\n            /* Subtitle for the header */\n            #header span {\n                display: block;\n                font-size: var(--lumo-font-size-s);\n                font-weight: 400;\n                color: var(--lumo-secondary-text-color);\n                letter-spacing: 0;\n                margin-top: 0.3em;\n                margin-left: auto;\n                margin-right: 20px;\n            }\n\n            .review {\n                display: flex;\n                align-items: center;\n                width: 100%;\n                padding: var(--lumo-space-wide-xl);\n                padding-right: var(--lumo-space-m);\n                box-sizing: border-box;\n                margin-bottom: 8px;\n                background-color: var(--lumo-base-color);\n                box-shadow: 0 0 0 1px var(--lumo-shade-5pct), 0 2px 5px 0 var(--lumo-shade-10pct);\n                border-radius: var(--lumo-border-radius);\n            }\n\n            .review__rating {\n                flex: none;\n                align-self: flex-start;\n                margin: 0 1em 0 0;\n                position: relative;\n                cursor: default;\n            }\n\n            .review__score {\n                display: inline-flex;\n                align-items: center;\n                justify-content: center;\n                border-radius: var(--lumo-border-radius);\n                font-weight: 600;\n                width: 2.5em;\n                height: 2.5em;\n                margin: 0;\n            }\n\n            [data-score=\"1\"] {\n                box-shadow: inset 0 0 0 1px var(--lumo-contrast-10pct);\n            }\n\n            [data-score=\"2\"] {\n                background-color: var(--lumo-contrast-20pct);\n            }\n\n            [data-score=\"3\"] {\n                background-color: var(--lumo-contrast-40pct);\n            }\n\n            [data-score=\"4\"] {\n                background-color: var(--lumo-contrast-60pct);\n                color: var(--lumo-base-color);\n            }\n\n            [data-score=\"5\"] {\n                background-color: var(--lumo-contrast-80pct);\n                color: var(--lumo-base-color);\n            }\n\n            .review__count {\n                position: absolute;\n                display: inline-flex;\n                align-items: center;\n                justify-content: center;\n                height: 20px;\n                min-width: 8px;\n                padding: 0 6px;\n                background: var(--lumo-base-color);\n                color: var(--lumo-secondary-text-color);\n                top: -10px;\n                left: -10px;\n                border-radius: var(--lumo-border-radius);\n                margin: 0;\n                font-size: 12px;\n                font-weight: 500;\n                box-shadow: 0 0 0 1px var(--lumo-contrast-20pct);\n            }\n\n            .review__count span {\n                width: 0;\n                overflow: hidden;\n                white-space: nowrap;\n            }\n\n            .review__rating:hover .review__count span {\n                width: auto;\n                margin-left: 0.4em;\n            }\n\n            .review__details {\n                width: 100%;\n                max-width: calc(100% - 8.5em);\n                flex: auto;\n                line-height: var(--lumo-line-height-xs);\n                overflow: hidden;\n            }\n\n            .review__name {\n                margin: 0 0.5em 0 0;\n                white-space: nowrap;\n                overflow: hidden;\n                text-overflow: ellipsis;\n            }\n\n            .review__category {\n                margin: 0;\n                flex: none;\n            }\n\n            /* We only expect to have 10 categories at most, after which the colors start to rotate */\n            .review__category {\n                color: hsla(calc(340 + 360 / 10 * var(--category)), 40%, 20%, 1);\n                background-color: hsla(calc(340 + 360 / 10 * var(--category)), 60%, 50%, 0.1);\n            }\n\n            .review__date {\n                white-space: nowrap;\n                line-height: var(--lumo-line-height-xs);\n                margin: 0 1em;\n                width: 30%;\n            }\n\n            .review__date h5 {\n                font-size: var(--lumo-font-size-s);\n                font-weight: 400;\n                color: var(--lumo-secondary-text-color);\n                margin: 0;\n            }\n\n            .review__date p {\n                font-size: var(--lumo-font-size-s);\n                margin: 0;\n            }\n\n            .review__edit {\n                align-self: flex-start;\n                flex: none;\n                margin: 0 0 0 auto;\n                width: 5em;\n            }\n\n            .reviews__no-matches {\n                display: flex;\n                align-items: center;\n                justify-content: center;\n                height: 4em;\n                font-size: 22px;\n                color: var(--lumo-tertiary-text-color);\n            }\n\n            /* Small viewport styles */\n\n            @media (max-width: 500px) {\n                .review {\n                    padding: var(--lumo-space-m);\n                    padding-right: var(--lumo-space-s);\n                    flex-wrap: wrap;\n                }\n\n                .review__date {\n                    order: 1;\n                    margin-left: 3.5em;\n                    margin-top: 0.5em;\n                }\n            }\n\n        </style>\n\n        <div class=\"view-toolbar\">\n            <vaadin-text-field id=\"search\" class=\"view-toolbar__search-field\" autocapitalize=\"off\">\n                <iron-icon icon=\"lumo:search\" slot=\"prefix\"></iron-icon>\n            </vaadin-text-field>\n            <vaadin-button id=\"newReview\" class=\"view-toolbar__button\" theme=\"primary\">\n                <iron-icon icon=\"lumo:plus\" slot=\"prefix\"></iron-icon>\n                <span>[[reviewButtonText]]</span>\n            </vaadin-button>\n        </div>\n\n        <div class=\"view-container reviews\">\n            <h2 id=\"header\"></h2>\n            <template is=\"dom-if\" if=\"{{!_isEmpty(reviews)}}\">\n                <template is=\"dom-repeat\" items=\"[[reviews]]\">\n                    <div class=\"review\">\n                        <div class=\"review__rating\">\n                            <p class=\"review__score\" data-score\\$=\"[[item.score]]\">[[item.score]]</p>\n                            <p class=\"review__count\">\n                                [[item.count]]\n                                <span>times tasted</span>\n                            </p>\n                        </div>\n                        <div class=\"review__details\">\n                            <h4 class=\"review__name\">[[item.name]]</h4>\n                            <template is=\"dom-if\" if=\"[[item.category]]\">\n                                <p class=\"review__category\" theme=\"badge small\" style\\$=\"--category: [[item.category.id]];\">[[item.category.name]]</p>\n                            </template>\n                            <template is=\"dom-if\" if=\"[[!item.category]]\">\n                                <p class=\"review__category\" style=\"--category: -1;\">Undefined</p>\n                            </template>\n                        </div>\n                        <div class=\"review__date\">\n                            <h5>Last tasted</h5>\n                            <p>[[item.date]]</p>\n                        </div>\n                        <vaadin-button on-click=\"edit\" class=\"review__edit\" theme=\"tertiary\">\n                            <iron-icon icon=\"lumo:edit\"></iron-icon><span>[[editButtonText]]</span>\n                        </vaadin-button>\n                    </div>\n                </template>\n            </template>\n\n            <template is=\"dom-if\" if=\"{{_isEmpty(reviews)}}\">\n                <div class=\"reviews__no-matches\">No matches</div>\n            </template>\n        </div>\n`;\n  }\n\n  static get is() {\n      return 'reviews-list'\n  }\n\n  _isEmpty(array) {\n      return array.length == 0;\n  }\n}\ncustomElements.define(ReviewListElement.is, ReviewListElement);\n"
+        }
+      ],
+      "filteredModules": 0
+    }
+  ],
+  "filteredModules": 0,
+  "children": []
+}
