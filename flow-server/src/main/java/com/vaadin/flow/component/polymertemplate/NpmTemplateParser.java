@@ -103,18 +103,17 @@ public class NpmTemplateParser implements TemplateParser {
                 continue;
             }
             String url = dependency.getUrl();
-            String sourcesFilePath;
+            try {
+                // Try first the local file
+                InputStream content = getClass().getClassLoader().getResourceAsStream(url);
+                // Use stats if local file not found
+                if (content == null) {
+                    String stats = service.getDeploymentConfiguration()
+                            .getStringProperty(Constants.STATISTICS_JSON,
+                                    "META-INF/resources/stats.json");
+                    content = getClass().getClassLoader().getResourceAsStream(stats);
+                }
 
-            if (productionMode) {
-                sourcesFilePath = service.getDeploymentConfiguration()
-                        .getStringProperty(Constants.STATISTICS_JSON,
-                                "META-INF/resources/stats.json");
-            } else {
-                sourcesFilePath = url;
-            }
-
-            try (InputStream content = getClass().getClassLoader()
-                    .getResourceAsStream(sourcesFilePath)) {
                 if (content == null) {
                     throw new IllegalStateException(String.format(
                             "Can't find resource '%s' "
@@ -124,6 +123,7 @@ public class NpmTemplateParser implements TemplateParser {
                 Element templateElement = getTemplateElement(productionMode,
                         url, streamToString(content));
 
+                // Wrap template with an element with id, to look like a P2 template
                 Element parent = new Element(tag);
                 parent.attr("id", tag);
                 templateElement.appendTo(parent);
@@ -154,9 +154,8 @@ public class NpmTemplateParser implements TemplateParser {
         Element templateElement;
         if (productionMode) {
             setStatisticsJson(url, fileContents);
-
             templateElement = BundleParser
-                    .parseTemplateElement(statisticsJson);
+                    .parseTemplateElement(url, statisticsJson);
         } else {
             templateElement = BundleParser
                     .parseTemplateElement(url, fileContents);
