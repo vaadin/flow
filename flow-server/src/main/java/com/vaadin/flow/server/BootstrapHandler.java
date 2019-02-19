@@ -493,9 +493,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             insertElements(dependency, document.head()::appendChild);
         }
 
-        if (themeSettings.getBodyAttributes() != null) {
-            themeSettings.getBodyAttributes()
-                    .forEach((key, value) -> document.body().attr(key, value));
+        if (themeSettings.getHtmlAttributes() != null) {
+            Element html = document.body().parent();
+            assert html.tagName().equalsIgnoreCase("html");
+            themeSettings.getHtmlAttributes()
+                    .forEach((key, value) -> html.attr(key, value));
         }
     }
 
@@ -925,7 +927,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .isProductionMode();
         String result = getBootstrapJS();
         JsonObject appConfig = context.getApplicationParameters();
-appConfig.put(ApplicationConstants.UI_TAG, context.getUI().getElement().getTag());
+        appConfig.put(ApplicationConstants.UI_TAG,
+                context.getUI().getElement().getTag());
 
         int indent = 0;
         if (!productionMode) {
@@ -985,7 +988,7 @@ appConfig.put(ApplicationConstants.UI_TAG, context.getUI().getElement().getTag()
         appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
                 deploymentConfiguration.getEs5FrontendPrefix());
         appConfig.put(ApplicationConstants.UI_ELEMENT_ID,
-                        deploymentConfiguration.getRootElementId());
+                deploymentConfiguration.getRootElementId());
 
         if (!productionMode) {
             JsonObject versionInfo = Json.createObject();
