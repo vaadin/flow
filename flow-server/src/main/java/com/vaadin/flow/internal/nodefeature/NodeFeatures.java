@@ -129,7 +129,7 @@ public final class NodeFeatures {
     public static final int ATTACH_EXISTING_ELEMENT = 22;
 
     /**
-     * {@link VirtualChildrenList} Id for {@link BasicTypeValue}.
+     * Id for {@link BasicTypeValue}.
      */
     public static final int BASIC_TYPE_VALUE = 23;
 
@@ -137,6 +137,11 @@ public final class NodeFeatures {
      * Id for {@link VirtualChildrenList}.
      */
     public static final int VIRTUAL_CHILDREN = 24;
+
+    /**
+     * Id for {@link ReturnChannelMap}.
+     */
+    public static final int RETURN_CHANNEL_MAP = 25;
 
     private NodeFeatures() {
         // Only static

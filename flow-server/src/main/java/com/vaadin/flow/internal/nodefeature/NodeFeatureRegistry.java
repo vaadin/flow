@@ -98,6 +98,10 @@ public class NodeFeatureRegistry {
         registerFeature(VirtualChildrenList.class, VirtualChildrenList::new,
                 NodeFeatures.VIRTUAL_CHILDREN);
 
+        /* Supplementary generic stuff */
+        registerFeature(ReturnChannelMap.class, ReturnChannelMap::new,
+                NodeFeatures.RETURN_CHANNEL_MAP);
+
         /* PolymerTemplate stuff */
         registerFeature(PolymerEventListenerMap.class,
                 PolymerEventListenerMap::new,
