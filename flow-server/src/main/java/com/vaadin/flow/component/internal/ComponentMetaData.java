@@ -338,7 +338,7 @@ public class ComponentMetaData {
                         "/node_modules/@vaadin/$1.js")
                 .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html",
                         "/node_modules/@polymer/$1.js")
-                .replaceFirst("^(.*frontend/.*/[^/]+-[^/]+)\\.html", "$1.js");
+                .replaceFirst("^frontend://(.+)\\.html$", "/frontend/$1.js");
 
         return jsModule(module, htmlImport.loadMode());
     }

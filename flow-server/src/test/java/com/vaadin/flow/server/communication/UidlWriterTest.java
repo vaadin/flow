@@ -472,7 +472,7 @@ public class UidlWriterTest {
         JsonArray eagerDependencies = response.getArray(LoadMode.EAGER.name());
         assertEquals(
                 "Expected to have exactly 3 eager dependencies in uidl, actual: %d",
-                eagerDependencies.length(), 3);
+                3, eagerDependencies.length());
 
         List<Class<?>> expectedClassOrder = Arrays
                 .asList(SuperParentClass.class, ParentClass.class,
@@ -581,11 +581,8 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
-        if (mocks.getDeploymentConfiguration().isBowerMode()) {
-            assertEquals(19, dependenciesMap.size());
-        } else {
-            assertEquals(16, dependenciesMap.size());
-        }
+
+        assertEquals(19, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
@@ -627,6 +624,11 @@ public class UidlWriterTest {
             assertDependency("interface-" + JS_MODULE_NAME, JS_MODULE_NAME,
                     dependenciesMap);
             assertDependency(JS_MODULE_NAME, JS_MODULE_NAME, dependenciesMap);
+
+            assertDependency("/frontend/0.js", JS_MODULE_NAME, dependenciesMap);
+            // parent router layouts
+            assertDependency("/frontend/1.js", JS_MODULE_NAME, dependenciesMap);
+            assertDependency("/frontend/2.js", JS_MODULE_NAME, dependenciesMap);
         }
         assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);

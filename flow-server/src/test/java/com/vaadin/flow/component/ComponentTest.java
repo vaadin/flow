@@ -28,13 +28,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -52,11 +45,14 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
-
 import elemental.json.Json;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 @NotThreadSafe
 public class ComponentTest {
@@ -294,6 +290,8 @@ public class ComponentTest {
                 return session;
             }
         };
+        ui.getInternals().setSession(session);
+
         UI.setCurrent(ui);
     }
 
@@ -723,7 +721,8 @@ public class ComponentTest {
         ui.addAttachListener(e -> {
             initialAttach.set(e.isInitialAttach());
         });
-        ui.getInternals().setSession(new VaadinSession(new MockVaadinServletService()));
+        ui.getInternals()
+                .setSession(new VaadinSession(new MockVaadinServletService()));
         Assert.assertTrue(initialAttach.get());
         // UI is never detached and reattached
     }
@@ -1056,13 +1055,11 @@ public class ComponentTest {
 
     @Test
     public void usesComponent() {
-        UsesComponentWithDependencies s = new UsesComponentWithDependencies();
-        UI ui = new MockUI();
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setBowerMode(true);
-        Mockito.when(ui.getInternals().getSession().getConfiguration())
-                .thenReturn(configuration);
-        ui.getInternals().addComponentDependencies(s.getClass());
+        UI ui = UI.getCurrent();
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
+        ui.getInternals()
+                .addComponentDependencies(UsesComponentWithDependencies.class);
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
@@ -1080,14 +1077,12 @@ public class ComponentTest {
 
     @Test
     public void usesChain() {
-        UIInternals internals = new MockUI().getInternals();
-
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setBowerMode(true);
-        Mockito.when(internals.getSession().getConfiguration()).thenReturn(configuration);
+        UIInternals internals = UI.getCurrent().getInternals();
+        mocks.getDeploymentConfiguration().setBowerMode(true);
 
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
+
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
         Assert.assertEquals(5, pendingDependencies.size());
