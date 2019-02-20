@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 
-
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
  * <p>
@@ -52,6 +51,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  */
 public class DevModeHandler implements Serializable {
 
+    static final String WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 60 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
@@ -61,15 +61,17 @@ public class DevModeHandler implements Serializable {
     static final String WEBPACK_CONFIG = "webpack.config.js";
     static final String WEBPACK_SERVER = "node_modules/.bin/webpack-dev-server";
 
-    private static Process exec;
-
     // For testing purposes
     DevModeHandler() {
     }
 
     private DevModeHandler(File directory, File webpack, File webpackConfig) {
-        if (exec != null && exec.isAlive()) {
-            getLogger().info("Webpack is already running.");
+        if (checkWebpackConnection()) {
+            if (Boolean.getBoolean(WEBPACK_RUNNING)) {
+                getLogger().trace("Webpack already running.");
+            } else {
+                throw new RuntimeException("There is another server already listening to port " + WEBPACK_PORT);
+            }
             return;
         }
 
@@ -84,16 +86,14 @@ public class DevModeHandler implements Serializable {
             process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
         }
 
-        process.command(new String[] {
-            webpack.getAbsolutePath(),
-            "--config", webpackConfig.getAbsolutePath(),
-            "--port", WEBPACK_PORT.toString()
-        });
+        process.command(new String[] { webpack.getAbsolutePath(), "--config", webpackConfig.getAbsolutePath(), "--port",
+                WEBPACK_PORT.toString() });
 
         try {
-            exec = process.start();
-
+            Process exec = process.start();
             Runtime.getRuntime().addShutdownHook(new Thread(exec::destroy));
+            System.setProperty(WEBPACK_RUNNING, "true");
+
             logStream(exec.getInputStream());
             logStream(exec.getErrorStream());
 
@@ -133,8 +133,7 @@ public class DevModeHandler implements Serializable {
 
         File webpackConfig = new File(WEBPACK_CONFIG);
         if (!webpackConfig.canRead()) {
-            getLogger()
-                    .warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
+            getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
             return null;
         }
 
@@ -166,12 +165,7 @@ public class DevModeHandler implements Serializable {
     public boolean serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String requestFilename = getRequestFilename(request);
 
-        URL uri = new URL(WEBPACK_HOST + ":" + WEBPACK_PORT + requestFilename);
-
-        HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
-        connection.setRequestMethod(request.getMethod());
-        connection.setReadTimeout(DEFAULT_TIMEOUT);
-        connection.setConnectTimeout(DEFAULT_TIMEOUT);
+        HttpURLConnection connection = prepareConnection(requestFilename, request.getMethod());
 
         // Copies all the headers from the original request
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -188,7 +182,7 @@ public class DevModeHandler implements Serializable {
             return false;
         }
 
-        getLogger().debug("Served resource by webpack: {} {}", responseCode, uri);
+        getLogger().debug("Served resource by webpack: {} {}", responseCode, requestFilename);
 
         // Copies response headers
         connection.getHeaderFields().forEach((header, values) -> {
@@ -206,6 +200,25 @@ public class DevModeHandler implements Serializable {
         response.sendError(responseCode);
 
         return true;
+    }
+
+    private boolean checkWebpackConnection() {
+        try {
+            prepareConnection("/", "GET").getResponseCode();
+            return true;
+        } catch (IOException e) {
+            getLogger().debug("Error checking webpack dev server connection", e);
+        }
+        return false;
+    }
+
+    private HttpURLConnection prepareConnection(String path, String method) throws IOException {
+        URL uri = new URL(WEBPACK_HOST + ":" + WEBPACK_PORT + path);
+        HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
+        connection.setRequestMethod(method);
+        connection.setReadTimeout(DEFAULT_TIMEOUT);
+        connection.setConnectTimeout(DEFAULT_TIMEOUT);
+        return connection;
     }
 
     private void logStream(InputStream input) {
