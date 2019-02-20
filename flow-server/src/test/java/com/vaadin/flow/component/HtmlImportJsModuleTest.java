@@ -35,11 +35,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.mockito.verification.VerificationMode;
 
 public class HtmlImportJsModuleTest {
 
@@ -74,17 +72,20 @@ public class HtmlImportJsModuleTest {
         Mockito.when(node.isEnabledSelf()).thenReturn(true);
 
         // Used only for HtmlImport (isBowerMode = true).
-        DependencyTreeCache<String> dependencyCache = Mockito.mock(DependencyTreeCache.class);
+        DependencyTreeCache<String> dependencyCache = Mockito
+                .mock(DependencyTreeCache.class);
 
-        Mockito.when(dependencyCache.getDependencies(Mockito.anyString())).thenAnswer(new Answer<Object>() {
-            public Object answer(InvocationOnMock invocation) {
-                Set set = new HashSet<>(1);
-                set.add(invocation.getArguments()[0]);
-                return set;
-            }
-        });
+        Mockito.when(dependencyCache.getDependencies(Mockito.anyString()))
+                .thenAnswer(new Answer<Object>() {
+                    public Object answer(InvocationOnMock invocation) {
+                        Set set = new HashSet<>(1);
+                        set.add(invocation.getArguments()[0]);
+                        return set;
+                    }
+                });
 
-        Mockito.when(service.getHtmlImportDependencyCache()).thenReturn(dependencyCache);
+        Mockito.when(service.getHtmlImportDependencyCache())
+                .thenReturn(dependencyCache);
     }
 
     @Test
@@ -143,8 +144,10 @@ public class HtmlImportJsModuleTest {
                     loadModeArgumentCaptor.capture());
         }
 
-        Assert.assertEquals("Incorrect import value.", importValue, valueArgumentCaptor.getValue());
-        Assert.assertEquals("Incorrect import load mode.", importLoadMode, loadModeArgumentCaptor.getValue());
+        Assert.assertEquals("Incorrect import value.", importValue,
+                valueArgumentCaptor.getValue());
+        Assert.assertEquals("Incorrect import load mode.", importLoadMode,
+                loadModeArgumentCaptor.getValue());
     }
 
     @HtmlImport(value = "frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html", loadMode = LoadMode.LAZY)

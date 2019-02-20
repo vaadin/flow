@@ -177,14 +177,15 @@ public class ComponentMetaData {
                     .addAll(getHtmlImportDependencies(service, componentClass));
 
         } else {
-            List<JsModule> jsModules = AnnotationReader.getJsModuleAnnotations(componentClass);
+            List<JsModule> jsModules = AnnotationReader
+                    .getJsModuleAnnotations(componentClass);
 
             // Ignore @HtmlImport(s) when @JsModule(s) present.
             if (!jsModules.isEmpty()) {
                 dependencyInfo.jsModules.addAll(jsModules);
             } else {
-                dependencyInfo.jsModules
-                        .addAll(getHtmlImportAsJsModuleAnnotations(componentClass));
+                dependencyInfo.jsModules.addAll(
+                        getHtmlImportAsJsModuleAnnotations(componentClass));
             }
         }
 
@@ -333,8 +334,10 @@ public class ComponentMetaData {
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
         String module = value
-                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html", "/node_modules/@vaadin/$1.js")
-                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html", "/node_modules/@polymer/$1.js")
+                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html",
+                        "/node_modules/@vaadin/$1.js")
+                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html",
+                        "/node_modules/@polymer/$1.js")
                 .replaceFirst("^(.*frontend/.*/[^/]+-[^/]+)\\.html", "$1.js");
 
         return jsModule(module, htmlImport.loadMode());
