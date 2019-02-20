@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
@@ -39,7 +40,7 @@ public class NpmTemplateParserTest {
     }
 
     @Test
-    public void should_FindCorrectlyDataInStats() {
+    public void should_FindCorrectDataInStats() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
@@ -61,8 +62,7 @@ public class NpmTemplateParserTest {
     }
 
     @Test
-    public void should_FindCorrectlyDataInBeverageStats() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+    public void should_FindCorrectDataInBeverageStats() {
         Mockito.when(configuration
                 .getStringProperty(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn("META-INF/resources/stats-beverage.json");
@@ -87,7 +87,7 @@ public class NpmTemplateParserTest {
     }
 
     @Test
-    public void should_NotUseStats_when_LocalFileTemplateExists() {
+    public void shouldnt_UseStats_when_LocalFileTemplateExists() {
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(LikeableView.class, "likeable-element-view",
@@ -107,6 +107,21 @@ public class NpmTemplateParserTest {
                         .tag().toString());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void should_throwException_when_LocalFileNotFound() {
+        Mockito.when(configuration
+                .getStringProperty(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn("META-INF/resources/foo-bar.json");
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        instance.getTemplateContent(FooView.class, "foo-view", service);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void should_throwException_when_ResourceNotFoundInStatsFile() {
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        instance.getTemplateContent(FooView.class, "foo-view", service);
+    }
+
     @Tag("likeable-element")
     @JsModule("./frontend/LikeableElement.js")
     public class Likeable extends PolymerTemplate<TemplateModel> {
@@ -118,8 +133,14 @@ public class NpmTemplateParserTest {
     }
 
     @Tag("review-list")
-    @JsModule("./src/views/reviewslist/reviews-list.js")
+    @HtmlImport("frontend://src/views/reviewslist/reviews-list.html")
+    @JsModule("./src/views/reviewslist/reviews-list")
     public class ReviewList extends PolymerTemplate<TemplateModel> {
+    }
+
+    @Tag("foo-view")
+    @JsModule("/bar/foo.js")
+    public class FooView extends PolymerTemplate<TemplateModel> {
     }
 
 }
