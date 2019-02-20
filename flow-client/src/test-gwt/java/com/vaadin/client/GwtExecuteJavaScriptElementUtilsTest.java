@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import com.vaadin.client.communication.ServerConnector;
+import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -22,11 +24,14 @@ import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.json.Json;
+import elemental.json.JsonArray;
 
 public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
@@ -260,6 +265,59 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
         assertEquals("bar", tree.syncedProperty.getValue());
         assertEquals("foo", tree.syncedProperty.getName());
+    }
+
+    public void testReturnChannel_passedToExecJavaScript_messageSentToServer() {
+        ApplicationConfiguration applicationConfiguration = new ApplicationConfiguration();
+        applicationConfiguration.setApplicationId("test");
+
+        // Pass a number to the channel
+        String expression = "$0(2)";
+
+        int expectedNodeId = 10;
+        int expectedChannelId = 20;
+
+        int[] runCountHolder = { 0 };
+
+        ExecuteJavaScriptProcessor processor = new ExecuteJavaScriptProcessor(
+                new Registry() {
+                    {
+                        set(StateTree.class, new StateTree(this));
+                        set(ApplicationConfiguration.class,
+                                applicationConfiguration);
+                        set(ServerConnector.class, new ServerConnector(this) {
+                            @Override
+                            public void sendReturnChannelMessage(
+                                    int stateNodeId, int channelId,
+                                    JsonArray arguments) {
+                                assertEquals(expectedNodeId, stateNodeId);
+                                assertEquals(expectedChannelId, channelId);
+                                assertEquals(
+                                        "Args array should contain the value passed to the channel function",
+                                        "[2]", arguments.toJson());
+
+                                runCountHolder[0]++;
+                            }
+                        });
+                    }
+                });
+
+        JsonArray serializedChannel = Json.createArray();
+        serializedChannel.set(0, JsonCodec.RETURN_CHANNEL_TYPE);
+        serializedChannel.set(1, expectedNodeId);
+        serializedChannel.set(2, expectedChannelId);
+
+        JsonArray invocation = Json.createArray();
+        // Assign channel as $0
+        invocation.set(0, serializedChannel);
+        invocation.set(1, expression);
+
+        JsonArray invocations = Json.createArray();
+        invocations.set(0, invocation);
+
+        processor.execute(invocations);
+
+        assertEquals(1, runCountHolder[0]);
     }
 
     private void setupShadowRoot() {
