@@ -322,8 +322,7 @@ public class ComponentMetaData {
             Class<? extends Component> componentClass) {
         return AnnotationReader.getHtmlImportAnnotations(componentClass)
                 .stream()
-                .map(htmlImport -> getHtmlImportAsJsModuleAnnotation(
-                        htmlImport))
+                .map(ComponentMetaData::getHtmlImportAsJsModuleAnnotation)
                 .filter(Objects::nonNull).collect(Collectors.toList());
     }
 
