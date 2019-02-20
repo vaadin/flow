@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -170,17 +172,30 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        dependencyInfo.htmlImports
-                .addAll(getHtmlImportDependencies(service, componentClass));
-        dependencyInfo.javaScripts.addAll(AnnotationReader
-                .getJavaScriptAnnotations(componentClass));
-        dependencyInfo.styleSheets.addAll(AnnotationReader
-                .getStyleSheetAnnotations(componentClass));
-        dependencyInfo.jsModules.addAll(AnnotationReader
-                .getJsModuleAnnotations(componentClass));
+        if (service.getDeploymentConfiguration().isBowerMode()) {
+            dependencyInfo.htmlImports
+                    .addAll(getHtmlImportDependencies(service, componentClass));
 
-        List<Uses> usesList = AnnotationReader
-                .getAnnotationsFor(componentClass, Uses.class);
+        } else {
+            List<JsModule> jsModules = AnnotationReader
+                    .getJsModuleAnnotations(componentClass);
+
+            // Ignore @HtmlImport(s) when @JsModule(s) present.
+            if (!jsModules.isEmpty()) {
+                dependencyInfo.jsModules.addAll(jsModules);
+            } else {
+                dependencyInfo.jsModules.addAll(
+                        getHtmlImportAsJsModuleAnnotations(componentClass));
+            }
+        }
+
+        dependencyInfo.javaScripts.addAll(
+                AnnotationReader.getJavaScriptAnnotations(componentClass));
+        dependencyInfo.styleSheets.addAll(
+                AnnotationReader.getStyleSheetAnnotations(componentClass));
+
+        List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
+                Uses.class);
         for (Uses uses : usesList) {
             Class<? extends Component> otherClass = uses.value();
             if (!scannedClasses.contains(otherClass)) {
@@ -236,7 +251,8 @@ public class ComponentMetaData {
         String importPath = SharedUtil.prefixIfRelative(htmlImport.value(),
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
-        DependencyTreeCache<String> cache = service.getHtmlImportDependencyCache();
+        DependencyTreeCache<String> cache = service
+                .getHtmlImportDependencyCache();
 
         Set<String> dependencies = cache.getDependencies(importPath);
 
@@ -300,6 +316,52 @@ public class ComponentMetaData {
             infos.put(method.getName(), new SynchronizedPropertyInfo(
                     propertyName, eventNames, annotation.allowUpdates()));
         }
+    }
+
+    private static Collection<JsModule> getHtmlImportAsJsModuleAnnotations(
+            Class<? extends Component> componentClass) {
+        return AnnotationReader.getHtmlImportAnnotations(componentClass)
+                .stream()
+                .map(ComponentMetaData::getHtmlImportAsJsModuleAnnotation)
+                .filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    private static JsModule getHtmlImportAsJsModuleAnnotation(
+            HtmlImport htmlImport) {
+
+        String value = SharedUtil.prefixIfRelative(htmlImport.value(),
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+
+        String module = value
+                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html",
+                        "/node_modules/@vaadin/$1.js")
+                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html",
+                        "/node_modules/@polymer/$1.js")
+                .replaceFirst("^frontend://(.+)\\.html$", "/frontend/$1.js");
+
+        return jsModule(module, htmlImport.loadMode());
+    }
+
+    private static JsModule jsModule(final String value,
+            final LoadMode loadMode) {
+
+        return new JsModule() {
+
+            @Override
+            public String value() {
+                return value;
+            }
+
+            @Override
+            public LoadMode loadMode() {
+                return loadMode;
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return JsModule.class;
+            }
+        };
     }
 
 }
