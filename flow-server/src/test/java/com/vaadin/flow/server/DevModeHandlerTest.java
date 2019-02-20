@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.server;
 
+import static com.vaadin.flow.server.DevModeHandler.IS_UNIX;
 import static com.vaadin.flow.server.DevModeHandler.WEBAPP_FOLDER;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_PORT;
+import static com.vaadin.flow.server.DevModeHandler.WEBPACK_RUNNING;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.DevModeHandler.createInstance;
-import static com.vaadin.flow.server.DevModeHandler.IS_UNIX;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
@@ -59,6 +60,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
+@SuppressWarnings("restriction")
 public class DevModeHandlerTest {
 
     private DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
@@ -93,6 +95,7 @@ public class DevModeHandlerTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
+        System.clearProperty(WEBPACK_RUNNING);
     }
 
     @Test
@@ -104,31 +107,56 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_NotCreateInstance_When_ProductionMode() {
+    public void shouldNot_CreateInstance_When_ProductionMode() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         assertNull(createInstance(configuration));
     }
 
     @Test
-    public void should_NotCreateInstance_When_BowerMode() {
+    public void shouldNot_CreateInstance_When_BowerMode() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         assertNull(createInstance(configuration));
     }
 
     @Test
-    public void should_NotCreateInstance_When_WebpackNotInstalled() {
+    public void should_RunWebpack_When_WebpackNotListening() throws Exception {
+        System.setProperty(WEBPACK_RUNNING, "true");
+        createInstance(configuration);
+        if (IS_UNIX) {
+            assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void should_ThrowException_When_anotherServerRunning() throws Exception {
+        httpServer = prepareHttpServer(HTTP_OK, "bar");
+        createInstance(configuration);
+    }
+
+    @Test
+    public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
+        System.setProperty(WEBPACK_RUNNING, "true");
+        httpServer = prepareHttpServer(HTTP_OK, "bar");
+        createInstance(configuration);
+        if (IS_UNIX) {
+            assertFalse(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
+        }
+    }
+
+    @Test
+    public void shouldNot_CreateInstance_When_WebpackNotInstalled() {
         new File(WEBPACK_SERVER).delete();
         assertNull(createInstance(configuration));
     }
 
     @Test
-    public void should_NotCreateInstance_When_WebpackIsNotExecutable() {
+    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() {
         new File(WEBPACK_SERVER).setExecutable(false);
         assertNull(createInstance(configuration));
     }
 
     @Test
-    public void should_NotCreateInstance_When_WebpackNotConfigured() {
+    public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
         new File(WEBPACK_CONFIG).delete();
         assertNull(createInstance(configuration));
     }
@@ -140,7 +168,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_NotHandleOtherRequests() {
+    public void shouldNot_HandleOtherRequests() {
         HttpServletRequest request = prepareRequest("/foo.bar");
         assertFalse(new DevModeHandler().isDevModeRequest(request));
     }
@@ -151,7 +179,7 @@ public class DevModeHandlerTest {
         new DevModeHandler().serveDevModeRequest(request, null);
     }
 
-    @Test()
+    @Test
     public void should_ReturnTrue_When_WebpackResponseOK() throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
@@ -161,7 +189,7 @@ public class DevModeHandlerTest {
         assertEquals(HTTP_OK, responseStatus);
     }
 
-    @Test()
+    @Test
     public void should_ReturnFalse_When_WebpackResponseNotFound() throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
@@ -171,7 +199,7 @@ public class DevModeHandlerTest {
         assertEquals(0, responseStatus);
     }
 
-    @Test()
+    @Test
     public void should_ReturnTrue_When_OtherResponseCodes() throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
@@ -189,7 +217,7 @@ public class DevModeHandlerTest {
         servlet.service(request, response);
     }
 
-    @Test()
+    @Test
     public void servlet_should_GetValidResponse_When_WebpackListening() throws Exception {
         VaadinServlet servlet = prepareServlet();
         HttpServletRequest request = prepareRequest("/foo.js");
@@ -222,6 +250,7 @@ public class DevModeHandlerTest {
         Mockito.doAnswer(invocation -> "bar").when(request).getHeader("foo");
         return request;
     }
+
     private HttpServletResponse prepareResponse() throws IOException {
         responseStatus = 0;
         HttpServletResponse response = mock(HttpServletResponse.class);
