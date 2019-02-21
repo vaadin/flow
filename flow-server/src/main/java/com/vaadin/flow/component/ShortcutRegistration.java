@@ -458,7 +458,8 @@ public class ShortcutRegistration implements Registration, Serializable {
                         listenOnComponent,
                         KeyDownEvent.class,
                         e -> {
-                            if (lifecycleOwner.isVisible()) {
+                            if (lifecycleOwner.isVisible() && lifecycleOwner
+                                    .getElement().isEnabled()) {
                                 invokeShortcutEventListener();
                             }
                         },
