@@ -38,9 +38,13 @@ public class ShortcutsView extends Div {
     private ShortcutRegistration flipFloppingRegistration;
 
     public ShortcutsView() {
+        Paragraph blur = new Paragraph();
+        blur.setId("blur");
         Input actual = new Input();
         actual.setId("actual");
         actual.setValue("testing...");
+
+        add(actual, blur);
 
         // clickShortcutWorks
         NativeButton button = new NativeButton();
@@ -62,7 +66,18 @@ public class ShortcutsView extends Div {
         Shortcuts.addShortcutListener(invisibleP, () -> actual
                 .setValue("invisibleP"), Key.KEY_V).withAlt();
 
-        add(actual, button, input, invisibleP);
+        add(button, input, invisibleP);
+
+        // shortcutOnlyWorksWhenComponentIsEnabled
+        NativeButton disabledButton = new NativeButton();
+        disabledButton.addClickListener(event -> {
+            actual.setValue("DISABLED CLICKED");
+            disabledButton.setEnabled(false);
+        });
+        disabledButton.addClickShortcut(Key.KEY_U, KeyModifier.SHIFT,
+                KeyModifier.CONTROL);
+
+        add(disabledButton);
 
         // listenOnScopesTheShortcut
         Div subview = new Div();
@@ -128,8 +143,7 @@ public class ShortcutsView extends Div {
 
         NativeButton clickButton1 = new NativeButton("CB1",
                 event -> actual.setValue("click: " + clickInput1.getValue()));
-        ShortcutRegistration r1 =
-                clickButton1.addClickShortcut(Key.ENTER).listenOn(wrapper1);
+        clickButton1.addClickShortcut(Key.ENTER).listenOn(wrapper1);
 
         NativeButton clickButton2 = new NativeButton("CB2",
                 event -> actual.setValue("click: " + clickInput2.getValue()));
