@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -23,6 +24,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
+
 
 /**
  * An in-memory data provider for listing components that display hierarchical
@@ -79,18 +81,16 @@ public class TreeDataProvider<T>
     @Override
     public int getChildCount(
             HierarchicalQuery<T, SerializablePredicate<T>> query) {
-        if (query.getFilter().isPresent()) {
-            Stream<T> childStream = getFilteredStream(
-                    treeData.getChildren(query.getParent()).stream(),
-                    query.getFilter());
-            return (int) childStream.skip(query.getOffset())
-                    .limit(query.getLimit()).count();
-        }
+        Stream<T> items;
+
         if (query.getParent() != null) {
-            return treeData.getChildren(query.getParent()).size();
+            items = treeData.getChildren(query.getParent()).stream();
         } else {
-            return treeData.getRootItems().size();
+            items = treeData.getRootItems().stream();
         }
+
+        return (int) getFilteredStream(items,
+                query.getFilter()).skip(query.getOffset()).limit(query.getLimit()).count();
     }
 
     @Override
@@ -141,11 +141,16 @@ public class TreeDataProvider<T>
         refreshAll();
     }
 
+    private Stream<T> flatten(T parent) {
+        return Stream.concat(Stream.of(parent), treeData.getChildren(parent).stream().flatMap(o -> flatten(o)));
+    }
+
     private Stream<T> getFilteredStream(Stream<T> stream,
-            Optional<SerializablePredicate<T>> queryFilter) {
+                                        Optional<SerializablePredicate<T>> queryFilter) {
         if (filter != null) {
-            stream = stream.filter(filter);
+            stream = stream.filter(parent -> flatten(parent).anyMatch(filter));
         }
+
         return queryFilter.map(stream::filter).orElse(stream);
     }
 }
