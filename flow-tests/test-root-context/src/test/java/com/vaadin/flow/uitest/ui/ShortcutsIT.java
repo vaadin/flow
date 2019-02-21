@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.util.function.Supplier;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -31,12 +34,13 @@ public class ShortcutsIT extends ChromeBrowserTest {
     @Before
     public void before() {
         open();
+        resetKeys();
     }
 
     @Test
     public void clickShortcutWorks() {
         sendKeys(Keys.ALT, "b");
-        Assert.assertEquals("button", getActual());
+        assertActualEquals("button");
     }
 
     @Test
@@ -51,31 +55,46 @@ public class ShortcutsIT extends ChromeBrowserTest {
     @Test
     public void shortcutsOnlyWorkWhenComponentIsVisible() {
         sendKeys(Keys.ALT, "v");
-        Assert.assertEquals("invisibleP", getActual());
+        assertActualEquals("invisibleP");
 
         // make the paragraph disappear
         sendKeys(Keys.ALT, "i");
-        Assert.assertEquals("toggled!", getActual());
+        assertActualEquals("toggled!");
 
         sendKeys(Keys.ALT, "v");
-        Assert.assertEquals("toggled!", getActual()); // did not change
+        assertActualEquals("toggled!"); // did not change
 
         // make the paragraph appear
         sendKeys(Keys.ALT, "i");
-        Assert.assertEquals("toggled!", getActual());
+        assertActualEquals("toggled!");
 
         sendKeys(Keys.ALT, "v");
-        Assert.assertEquals("invisibleP", getActual());
+        assertActualEquals("invisibleP");
+    }
+
+    @Test
+    public void shortcutOnlyWorksWhenComponentIsEnabled() {
+        sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
+
+        // clicking the button disables it, and clicking again should not have
+        // and effect
+        assertActualEquals("DISABLED CLICKED");
+
+        resetActual();
+        assertActualEquals("testing...");
+
+        sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
+        assertActualEquals("testing...");
     }
 
     @Test
     public void listenOnScopesTheShortcut() {
         sendKeys(Keys.ALT, "s");
-        Assert.assertEquals("testing...", getActual()); // nothing happened
+        assertActualEquals("testing..."); // nothing happened
 
         WebElement innerInput = findElement(By.id("focusTarget"));
         innerInput.sendKeys(Keys.ALT, "s");
-        Assert.assertEquals("subview", getActual());
+        assertActualEquals("subview");
 
         // using the shortcut prevented "s" from being written
         Assert.assertEquals("", innerInput.getText());
@@ -84,35 +103,35 @@ public class ShortcutsIT extends ChromeBrowserTest {
     @Test
     public void shortcutsOnlyWorkWhenComponentIsAttached() {
         sendKeys(Keys.ALT, "a");
-        Assert.assertEquals("testing...", getActual()); // nothing happens
+        assertActualEquals("testing..."); // nothing happens
 
         // attaches the component
         sendKeys(Keys.ALT, "y");
-        Assert.assertEquals("toggled!", getActual());
+        assertActualEquals("toggled!");
 
         sendKeys(Keys.ALT, "a");
-        Assert.assertEquals("attachable", getActual());
+        assertActualEquals("attachable");
 
         // detaches the component
         sendKeys(Keys.ALT, "y");
-        Assert.assertEquals("toggled!", getActual());
+        assertActualEquals("toggled!");
 
         sendKeys(Keys.ALT, "a");
-        Assert.assertEquals("toggled!", getActual()); // nothing happens
+        assertActualEquals("toggled!"); // nothing happens
     }
 
     @Test
     public void modifyingShortcutShouldChangeShortcutEvent() {
         // the shortcut in this test flips its own modifiers
         sendKeys(Keys.ALT, "g");
-        Assert.assertEquals("Alt", getActual());
+        assertActualEquals("Alt");
 
         sendKeys("G");
-        Assert.assertEquals("Shift", getActual());
+        assertActualEquals("Shift");
 
         // check that things revert back.
         sendKeys(Keys.ALT, "g");
-        Assert.assertEquals("Alt", getActual());
+        assertActualEquals("Alt");
     }
 
     @Test
@@ -120,20 +139,28 @@ public class ShortcutsIT extends ChromeBrowserTest {
         WebElement textField1 = findElement(By.id("click-input-1"));
         WebElement textField2 = findElement(By.id("click-input-2"));
 
-        // ClickButton1: has default values
+        // ClickButton1: allows browser's default behavior
         textField1.sendKeys("value 1", Keys.ENTER);
 
-        Assert.assertEquals("click: value 1", getActual());
+        assertActualEquals("click: value 1");
 
-        // ClickButton2: prevents key default behavior
+        // ClickButton2: prevents browser's default behavior
         textField2.sendKeys("value 2", Keys.ENTER);
 
-        Assert.assertEquals("click: ", getActual());
+        assertActualEquals("click: ");
     }
 
-    private String getActual() {
+    private void assertActualEquals(String expected) {
+        Assert.assertEquals(expected,
+                findElement(By.id("actual")).getAttribute("value"));
+    }
+
+    private void resetActual() {
         WebElement actual = findElement(By.id("actual"));
-        return actual.getAttribute("value");
+        WebElement blur = findElement(By.id("blur"));
+        actual.clear();
+        actual.sendKeys("testing...");
+        blur.click();
     }
 
     private void sendKeys(CharSequence... keys) {
