@@ -377,7 +377,7 @@ public final class PolymerUtils {
      */
     public static native boolean isPolymerElement(Element htmlNode)
     /*-{
-        return (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
+        return htmlNode.ready !== undefined;
     }-*/;
 
     /**
