@@ -24,6 +24,7 @@ import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
+
 /**
  * An in-memory data provider for listing components that display hierarchical
  * data. Uses an instance of {@link TreeData} as its source of data.
@@ -79,18 +80,16 @@ public class TreeDataProvider<T>
     @Override
     public int getChildCount(
             HierarchicalQuery<T, SerializablePredicate<T>> query) {
-        if (query.getFilter().isPresent()) {
-            Stream<T> childStream = getFilteredStream(
-                    treeData.getChildren(query.getParent()).stream(),
-                    query.getFilter());
-            return (int) childStream.skip(query.getOffset())
-                    .limit(query.getLimit()).count();
-        }
+        Stream<T> items;
+
         if (query.getParent() != null) {
-            return treeData.getChildren(query.getParent()).size();
+            items = treeData.getChildren(query.getParent()).stream();
         } else {
-            return treeData.getRootItems().size();
+            items = treeData.getRootItems().stream();
         }
+
+        return (int) getFilteredStream(items,
+                query.getFilter()).skip(query.getOffset()).limit(query.getLimit()).count();
     }
 
     @Override
