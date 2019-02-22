@@ -16,32 +16,29 @@
 package com.vaadin.flow.push.osgi;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 
-import com.vaadin.flow.osgi.support.OsgiVaadinContributor;
 import com.vaadin.flow.osgi.support.OsgiVaadinStaticResource;
 
 /**
- * Push resources registration.
+ * Push static resources registration.
  *
  * @author Vaadin Ltd
  *
  */
-@Component(immediate = true, service = OsgiVaadinContributor.class)
-public class PushOsgiContributor
-        implements OsgiVaadinContributor, Serializable {
+@Component(immediate = true, service = OsgiVaadinStaticResource.class)
+public class PushOsgiStaticResource
+        implements OsgiVaadinStaticResource, Serializable {
 
     @Override
-    public List<OsgiVaadinStaticResource> getContributions() {
-        return Arrays.asList(OsgiVaadinStaticResource.create(
-                "/META-INF/resources/VAADIN/static/push/vaadinPush-min.js",
-                "/VAADIN/static/push/vaadinPush-min.js"),
-                OsgiVaadinStaticResource.create(
-                        "/META-INF/resources/VAADIN/static/push/vaadinPush.js",
-                        "/VAADIN/static/push/vaadinPush.js"));
+    public String getPath() {
+        return "/META-INF/resources/VAADIN/static/push";
+    }
+
+    @Override
+    public String getAlias() {
+        return "/VAADIN/static/push";
     }
 
 }
