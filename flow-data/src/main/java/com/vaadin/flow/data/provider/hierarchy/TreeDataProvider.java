@@ -141,16 +141,11 @@ public class TreeDataProvider<T>
         refreshAll();
     }
 
-    private Stream<T> flatten(T parent) {
-        return Stream.concat(Stream.of(parent), treeData.getChildren(parent).stream().flatMap(o -> flatten(o)));
-    }
-
     private Stream<T> getFilteredStream(Stream<T> stream,
-                                        Optional<SerializablePredicate<T>> queryFilter) {
+            Optional<SerializablePredicate<T>> queryFilter) {
         if (filter != null) {
-            stream = stream.filter(parent -> flatten(parent).anyMatch(filter));
+            stream = stream.filter(filter);
         }
-
         return queryFilter.map(stream::filter).orElse(stream);
     }
 }
