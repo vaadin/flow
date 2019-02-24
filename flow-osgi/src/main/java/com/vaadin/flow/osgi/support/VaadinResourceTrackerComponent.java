@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -64,7 +65,7 @@ public class VaadinResourceTrackerComponent {
         private final String path;
         private final Bundle bundle;
 
-        private volatile HttpContext context;
+        private final AtomicReference<HttpContext> context = new AtomicReference<HttpContext>();
 
         Delegate(String alias, String path, Bundle bundle) {
             this.alias = alias;
@@ -72,14 +73,15 @@ public class VaadinResourceTrackerComponent {
             this.bundle = bundle;
         }
 
-        void init(HttpService service) {
-            context = service.createDefaultHttpContext();
+        boolean init(HttpService service) {
+            return context.compareAndSet(null,
+                    service.createDefaultHttpContext());
         }
 
         @Override
         public boolean handleSecurity(HttpServletRequest request,
                 HttpServletResponse response) throws IOException {
-            return context.handleSecurity(request, response);
+            return context.get().handleSecurity(request, response);
         }
 
         @Override
@@ -89,7 +91,7 @@ public class VaadinResourceTrackerComponent {
 
         @Override
         public String getMimeType(String name) {
-            return context.getMimeType(name);
+            return context.get().getMimeType(name);
         }
     }
 
@@ -162,9 +164,10 @@ public class VaadinResourceTrackerComponent {
     void activate() throws NamespaceException {
         synchronized (resourceToRegistration) {
             for (Delegate registration : resourceToRegistration.values()) {
-                registration.init(httpService);
-                httpService.registerResources(registration.alias,
-                        registration.path, registration);
+                if (registration.init(httpService)) {
+                    httpService.registerResources(registration.alias,
+                            registration.path, registration);
+                }
             }
         }
     }
@@ -189,11 +192,13 @@ public class VaadinResourceTrackerComponent {
             Bundle bundle, Long serviceId) throws NamespaceException {
         Delegate registration = new Delegate(resource.getAlias(),
                 resource.getPath(), bundle);
-        resourceToRegistration.put(serviceId, registration);
-        if (httpService != null) {
-            registration.init(httpService);
-            httpService.registerResources(registration.alias, registration.path,
-                    registration);
+        synchronized (resourceToRegistration) {
+            resourceToRegistration.put(serviceId, registration);
+            if (httpService != null) {
+                registration.init(httpService);
+                httpService.registerResources(registration.alias,
+                        registration.path, registration);
+            }
         }
     }
 
