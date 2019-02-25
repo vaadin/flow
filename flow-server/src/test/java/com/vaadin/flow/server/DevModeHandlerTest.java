@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.DevModeHandler.IS_UNIX;
+import static com.vaadin.flow.server.DevModeHandler.*;
 import static com.vaadin.flow.server.DevModeHandler.WEBAPP_FOLDER;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_PORT;
-import static com.vaadin.flow.server.DevModeHandler.WEBPACK_RUNNING;
+import static com.vaadin.flow.server.DevModeHandler.PARAM_WEBPACK_RUNNING;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.DevModeHandler.createInstance;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
@@ -73,16 +73,22 @@ public class DevModeHandlerTest {
     public void setup() throws IOException {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        createWebpackScript("Compiled", 1000);
+    }
 
+    private void createWebpackScript(String readyString, int milliSecondsToRun) throws IOException {
         new File(WEBAPP_FOLDER).mkdirs();
-
         File serverFile = new File(WEBPACK_SERVER);
         serverFile.getParentFile().mkdirs();
         serverFile.createNewFile();
         serverFile.setExecutable(true);
+        int sleep = milliSecondsToRun / 1000;
         if (IS_UNIX) {
-            Files.write(Paths.get(serverFile.toURI()),
-                    ("#!/bin/sh\n" + "echo Started $0 $* | tee -a " + TEST_FILE).getBytes());
+            Files.write(Paths.get(serverFile.toURI()), (
+                "#!/bin/sh\n"
+                + "echo Started $0 $* | tee -a " + TEST_FILE + "\n"
+                + "echo [wdm]: " + readyString + ".\n"
+                + "sleep " + sleep + "\n").getBytes());
         }
         new File(WEBPACK_CONFIG).createNewFile();
     }
@@ -95,7 +101,7 @@ public class DevModeHandlerTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
-        System.clearProperty(WEBPACK_RUNNING);
+        System.clearProperty(PARAM_WEBPACK_RUNNING);
     }
 
     @Test
@@ -104,6 +110,20 @@ public class DevModeHandlerTest {
         if (IS_UNIX) {
             assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
         }
+    }
+
+    @Test(expected = Exception.class)
+    public void should_Fail_When_WebpackPrematurelyExit() throws Exception {
+        createWebpackScript("Foo", 0);
+        createInstance(configuration);
+    }
+
+    @Test
+    public void should_CreateInstance_After_TimeoutWaitingForStartMagic() throws Exception {
+        System.setProperty(PARAM_WEBPACK_TIMEOUT, "500");
+        createWebpackScript("Foo", 1000);
+        assertNotNull(createInstance(configuration));
+        assertTrue(Boolean.getBoolean(PARAM_WEBPACK_RUNNING));
     }
 
     @Test
@@ -120,7 +140,7 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
-        System.setProperty(WEBPACK_RUNNING, "true");
+        System.setProperty(PARAM_WEBPACK_RUNNING, "true");
         createInstance(configuration);
         if (IS_UNIX) {
             assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
@@ -135,12 +155,18 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
-        System.setProperty(WEBPACK_RUNNING, "true");
+        System.setProperty(PARAM_WEBPACK_RUNNING, "true");
         httpServer = prepareHttpServer(HTTP_OK, "bar");
         createInstance(configuration);
         if (IS_UNIX) {
             assertFalse(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
         }
+    }
+
+    @Test
+    public void shouldNot_CreateInstance_When_WebappFolderNotFound() throws Exception {
+        FileUtils.deleteDirectory(new File(WEBAPP_FOLDER));
+        assertNull(createInstance(configuration));
     }
 
     @Test
