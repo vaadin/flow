@@ -1,6 +1,11 @@
 package com.vaadin.tests.server.component;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.OutputStream;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -14,10 +19,6 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamVariable;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
 
 public class FlowClassesSerializableTest extends ClassesSerializableTest {
 
@@ -61,6 +62,13 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         } finally {
             UI.setCurrent(null);
         }
+    }
+
+    @Override
+    protected Stream<String> getExcludedPatterns() {
+        return Stream.concat(Stream.of(
+                "com\\.vaadin\\.flow\\.push\\.osgi\\.PushOsgiStaticResource"),
+                super.getExcludedPatterns());
     }
 
     private static class MyStreamVariable implements StreamVariable {
