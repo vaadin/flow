@@ -19,6 +19,7 @@ import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.Text;
 
 /**
  * Component representing a <code>&lt;header&gt;</code> element.
@@ -34,6 +35,15 @@ public class Header extends HtmlContainer implements ClickNotifier<Header> {
      */
     public Header() {
         super();
+    }
+
+    /**
+     * Creates a new header with given text content.
+     * 
+     * @param textContent the text to be shown in the header
+     */
+    public Header(String textContent) {
+        add(new Text(textContent));
     }
 
     /**
