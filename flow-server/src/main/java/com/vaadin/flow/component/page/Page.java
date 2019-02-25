@@ -362,16 +362,20 @@ public class Page implements Serializable {
     
     /**
      * Change the current page in the browser.
+     * @param url
+     *            url to change the current page
      */
     public void setLocation(String url) {
-    	executeJavaScript("window.location.replace("+url+");");
+        executeJavaScript("window.location.replace("+url+");");
     }
     
     /**
      * Open window in browser.
+     * @param url
+     *            url to open new window
      */
     public void open(String url) {
-    	executeJavaScript("window.open("+url+");");
+        executeJavaScript("window.open("+url+");");
     }
 
     /**
