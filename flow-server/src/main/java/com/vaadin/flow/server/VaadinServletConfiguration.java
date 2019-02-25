@@ -35,18 +35,24 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * params defined in <code>web.xml</code> or the <code>@WebServlet</code>
  * annotation take precedence over values defined in this annotation.
  *
+ * @deprecated Leftover from Vaadin Framework 8 where the developer typically
+ *             defines their own servlet class. Starting from Flow 1.0, a
+ *             servlet is automatically registered and this annotation serves
+ *             very little purpose.
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Deprecated
 public @interface VaadinServletConfiguration {
     /**
      * Defines the init parameter name for methods in
      * {@link VaadinServletConfiguration}.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)

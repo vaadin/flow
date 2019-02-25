@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -303,6 +304,11 @@ public class BootstrapHandlerTest {
             return Arrays.asList(
                     "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
         }
+
+        @Override
+        public Map<String, String> getHtmlAttributes(String variant) {
+            return Collections.singletonMap("foo", "bar");
+        }
     }
 
     @Route("")
@@ -392,7 +398,8 @@ public class BootstrapHandlerTest {
         // Update sessionRegistry due to after init change of global registry
         SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(session,
                 service);
-        Mockito.when(session.getAttribute(SessionRouteRegistry.class)).thenReturn(sessionRegistry);
+        Mockito.when(session.getAttribute(SessionRouteRegistry.class))
+                .thenReturn(sessionRegistry);
 
         testUI.getInternals().setSession(session);
 
@@ -1131,6 +1138,22 @@ public class BootstrapHandlerTest {
         Assert.assertTrue("Custom style should have been added to head.",
                 allElements.stream().map(Element::toString)
                         .anyMatch(s -> s.equals(expected)));
+    }
+
+    @Test
+    public void themeContents_htmlAttributesAreAddedToHtmlTag() {
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Element html = page.body().parent();
+
+        // self check
+        Assert.assertEquals("html", html.tagName());
+
+        Assert.assertEquals("bar", html.attr("foo"));
     }
 
     @Test
