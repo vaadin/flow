@@ -359,6 +359,20 @@ public class Page implements Serializable {
     public void reload() {
         executeJavaScript("window.location.reload();");
     }
+    
+    /**
+     * Change the current page in the browser.
+     */
+    public void setLocation(String url) {
+    	executeJavaScript("window.location.replace("+url+");");
+    }
+    
+    /**
+     * Open window in browser.
+     */
+    public void open(String url) {
+    	executeJavaScript("window.open("+url+");");
+    }
 
     /**
      * Adds a new {@link BrowserWindowResizeListener} to this UI. The listener
