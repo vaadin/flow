@@ -4,7 +4,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 class MyComponentElement extends PolymerElement {
   static get template() {
     return html`
-        <div id="button">Click</div>
+        <button id="button">Click</button>
         <div id="content"></div>
 `;
   }
