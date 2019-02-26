@@ -265,7 +265,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             return uriResolver;
         }
-        
+
         /**
          * Checks if the application is running in production mode.
          *
@@ -275,7 +275,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         public boolean isProductionMode() {
             return request.getService().getDeploymentConfiguration()
                     .isProductionMode();
-        }       
+        }
 
         /**
          * Gets an annotation from the topmost class in the current navigation
@@ -496,9 +496,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             insertElements(dependency, document.head()::appendChild);
         }
 
-        if (themeSettings.getBodyAttributes() != null) {
-            themeSettings.getBodyAttributes()
-                    .forEach((key, value) -> document.body().attr(key, value));
+        if (themeSettings.getHtmlAttributes() != null) {
+            Element html = document.body().parent();
+            assert html.tagName().equalsIgnoreCase("html");
+            themeSettings.getHtmlAttributes()
+                    .forEach((key, value) -> html.attr(key, value));
         }
     }
 
@@ -583,10 +585,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
                 initialUIDL);
         setupFrameworkLibraries(head, initialUIDL, context);
-        
+
         return context.getSession().getConfiguration().isBowerMode()
-                ? applyUserDependencies(head, context, dependenciesToProcessOnServer)
-                : Collections.emptyList();
+            ? applyUserDependencies(head, context, dependenciesToProcessOnServer)
+            : Collections.emptyList();
     }
 
     private static List<Element> applyUserDependencies(Element head,
@@ -640,7 +642,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             JsonObject initialUIDL, BootstrapContext context) {
         inlineEs6Collections(head, context);
         if (context.getSession().getConfiguration().isBowerMode()) {
-            appendWebComponentsPolyfillsBower(head, context);
+            appendWebComponentsPolyfills(head, context);
         } else {
             appendWebComponentsPolyfillsNpm(head);
         }
@@ -775,7 +777,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static void appendWebComponentsPolyfillsBower(Element head,
+    private static void appendWebComponentsPolyfills(Element head,
             BootstrapContext context) {
         VaadinSession session = context.getSession();
         DeploymentConfiguration config = session.getConfiguration();
@@ -814,7 +816,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void appendWebComponentsPolyfillsNpm(Element head) {
-        head.appendChild(createJsModuleElement("/build/index.js", false));
+       head.appendChild(createJsModuleElement("/build/index.js", false));
     }
 
     private static Element createInlineJavaScriptElement(
@@ -951,7 +953,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .isProductionMode();
         String result = getBootstrapJS();
         JsonObject appConfig = context.getApplicationParameters();
-appConfig.put(ApplicationConstants.UI_TAG, context.getUI().getElement().getTag());
+        appConfig.put(ApplicationConstants.UI_TAG,
+                context.getUI().getElement().getTag());
 
         int indent = 0;
         if (!productionMode) {
@@ -1011,7 +1014,7 @@ appConfig.put(ApplicationConstants.UI_TAG, context.getUI().getElement().getTag()
         appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
                 deploymentConfiguration.getEs5FrontendPrefix());
         appConfig.put(ApplicationConstants.UI_ELEMENT_ID,
-                        deploymentConfiguration.getRootElementId());
+                deploymentConfiguration.getRootElementId());
 
         if (!productionMode) {
             JsonObject versionInfo = Json.createObject();
