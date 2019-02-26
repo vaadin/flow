@@ -78,7 +78,7 @@ public class DevModeHandler implements Serializable {
     private DevModeHandler(File directory, File webpack, File webpackConfig) {
         if (checkWebpackConnection()) {
             if (Boolean.getBoolean(PARAM_WEBPACK_RUNNING)) {
-                getLogger().info("Webpack is running at " + WEBPACK_HOST + ":" + WEBPACK_PORT);
+                getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, WEBPACK_PORT);
             } else {
                 throw new IllegalStateException("There is another server already listening to port " + WEBPACK_PORT);
             }
@@ -109,10 +109,10 @@ public class DevModeHandler implements Serializable {
                     Thread.sleep(Integer.getInteger(PARAM_WEBPACK_TIMEOUT,
                             Integer.getInteger(PARAM_WEBPACK_TIMEOUT, DEFAULT_TIMEOUT_FOR_PATTERN)));
                     synchronized (this) {
-                        notify();
+                        notify(); //NOSONAR
                     }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    getLogger().error("Excpeiont in the timer waiting for webpack ready", e);
                 }
             });
             timer.start();
@@ -121,7 +121,7 @@ public class DevModeHandler implements Serializable {
             logStream(exec.getInputStream(), OUTPUT_PATTERN);
 
             synchronized (this) {
-                this.wait();
+                this.wait();//NOSONAR
             }
 
             if (timer.isAlive()) {
@@ -268,19 +268,19 @@ public class DevModeHandler implements Serializable {
                     // DevModeHandler to continue
                     if (notify && pattern.matcher(line).find()) {
                         synchronized (this) {
-                            notify();
+                            notify();//NOSONAR
                         }
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                getLogger().error("Exception when reading webpack output.", e);
             }
 
             // Process closed stream, means that it exited, notify
             // DevModeHandler to continue
             if (notify) {
                 synchronized (this) {
-                    notify();
+                    notify();//NOSONAR
                 }
             }
         });
