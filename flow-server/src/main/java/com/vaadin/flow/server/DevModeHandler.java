@@ -28,6 +28,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +52,16 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  */
 public class DevModeHandler implements Serializable {
 
-    static final String WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
+    static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
+    static final String PARAM_WEBPACK_TIMEOUT = "vaadin.devmode.webpack.timeout";
+
+    // It's not possible to know whether webpack is ready unless reading output messages.
+    // When webpack finishes, it writes either a `Compiled` or `Failed` as the last line
+    private static final Pattern OUTPUT_PATTERN = Pattern.compile(": (Compiled|Failed)");
+    // If after this time in millisecs, the pattern was not found, we unlock the process
+    // and continue. It might happen if webpack changes their output without advise.
+    private static final int DEFAULT_TIMEOUT_FOR_PATTERN = 10000;
+
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 60 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
@@ -67,8 +77,8 @@ public class DevModeHandler implements Serializable {
 
     private DevModeHandler(File directory, File webpack, File webpackConfig) {
         if (checkWebpackConnection()) {
-            if (Boolean.getBoolean(WEBPACK_RUNNING)) {
-                getLogger().trace("Webpack already running.");
+            if (Boolean.getBoolean(PARAM_WEBPACK_RUNNING)) {
+                getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, WEBPACK_PORT);
             } else {
                 throw new IllegalStateException("There is another server already listening to port " + WEBPACK_PORT);
             }
@@ -92,16 +102,40 @@ public class DevModeHandler implements Serializable {
         try {
             Process exec = process.start();
             Runtime.getRuntime().addShutdownHook(new Thread(exec::destroy));
-            System.setProperty(WEBPACK_RUNNING, "true");
 
-            logStream(exec.getInputStream());
-            logStream(exec.getErrorStream());
+            // Start a timer to avoid waiting for ever if pattern not found in webpack output.
+            Thread timer = new Thread(() -> {
+                try {
+                    Thread.sleep(Integer.getInteger(PARAM_WEBPACK_TIMEOUT,
+                            Integer.getInteger(PARAM_WEBPACK_TIMEOUT, DEFAULT_TIMEOUT_FOR_PATTERN)));
+                    synchronized (this) {
+                        notify(); //NOSONAR
+                    }
+                } catch (Exception e) {
+                    getLogger().error("Excpeiont in the timer waiting for webpack ready", e);
+                }
+            });
+            timer.start();
 
-            // webpack takes a while to listen
-            Thread.sleep(2000);
-        } catch (Exception e) {
+            logStream(exec.getErrorStream(), null);
+            logStream(exec.getInputStream(), OUTPUT_PATTERN);
+
+            synchronized (this) {
+                this.wait();//NOSONAR
+            }
+
+            if (timer.isAlive()) {
+                timer.interrupt();
+            }
+
+            if (!exec.isAlive()) {
+                throw new IllegalStateException("Webpack exited prematurely");
+            }
+        } catch (IOException | InterruptedException e) {
             getLogger().error(e.getMessage(), e);
         }
+
+        System.setProperty(PARAM_WEBPACK_RUNNING, "true");
     }
 
     /**
@@ -221,19 +255,37 @@ public class DevModeHandler implements Serializable {
         return connection;
     }
 
-    private void logStream(InputStream input) {
-        Thread t = new Thread(() -> {
+    // mirrors a stream to logger, and check whether a pattern is found in the output.
+    private void logStream(InputStream input, Pattern pattern) {
+        boolean notify = pattern != null;
+
+        Thread thread = new Thread(() -> {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
             try {
                 for (String line; ((line = reader.readLine()) != null);) {
                     getLogger().info(line);
+                    // We found the started pattern in stream, notify
+                    // DevModeHandler to continue
+                    if (notify && pattern.matcher(line).find()) {
+                        synchronized (this) {
+                            notify();//NOSONAR
+                        }
+                    }
                 }
             } catch (IOException e) {
-                getLogger().trace(e.getMessage(), e);
+                getLogger().error("Exception when reading webpack output.", e);
+            }
+
+            // Process closed stream, means that it exited, notify
+            // DevModeHandler to continue
+            if (notify) {
+                synchronized (this) {
+                    notify();//NOSONAR
+                }
             }
         });
-        t.setName("webpack");
-        t.start();
+        thread.setName("webpack");
+        thread.start();
     }
 
     private void writeStream(ServletOutputStream outputStream, InputStream inputStream) throws IOException {
