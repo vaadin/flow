@@ -200,7 +200,7 @@ public class StreamResource extends AbstractStreamResource {
      * @return this resource
      */
     public StreamResource setContentType(String contentType) {
-        if (resolver == null) {
+        if (contentType == null) {
             throw new IllegalArgumentException("Content type cannot be null");
         }
         setContentTypeResolver((resource, context) -> contentType);
