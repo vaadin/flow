@@ -55,8 +55,12 @@ public class DevModeHandler implements Serializable {
     static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
     static final String PARAM_WEBPACK_TIMEOUT = "vaadin.devmode.webpack.timeout";
 
-    private static final Pattern MAGIC_OUTPUT_PATTERN = Pattern.compile(": (Compiled|Failed)");
-    private static final int DEFAULT_TIMEOUT_FOR_MAGIC_OUTPUT = 10000;
+    // It's not possible to know whether webpack is ready unless reading output messages.
+    // When webpack finishes, it writes either a `Compiled` or `Failed` as the last line
+    private static final Pattern OUTPUT_PATTERN = Pattern.compile(": (Compiled|Failed)");
+    // If after this time in millisecs, the pattern was not found, we unlock the process
+    // and continue. It might happen if webpack changes their output without advise.
+    private static final int DEFAULT_TIMEOUT_FOR_PATTERN = 10000;
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 60 * 1000;
@@ -99,11 +103,31 @@ public class DevModeHandler implements Serializable {
             Process exec = process.start();
             Runtime.getRuntime().addShutdownHook(new Thread(exec::destroy));
 
+            // Start a timer to avoid waiting for ever if pattern not found in webpack output.
+            Thread timer = new Thread(() -> {
+                try {
+                    Thread.sleep(Integer.getInteger(PARAM_WEBPACK_TIMEOUT,
+                            Integer.getInteger(PARAM_WEBPACK_TIMEOUT, DEFAULT_TIMEOUT_FOR_PATTERN)));
+                    synchronized (this) {
+                        notify();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            timer.start();
+
             logStream(exec.getErrorStream(), null);
-            logStream(exec.getInputStream(), MAGIC_OUTPUT_PATTERN);
+            logStream(exec.getInputStream(), OUTPUT_PATTERN);
+
             synchronized (this) {
                 this.wait();
             }
+
+            if (timer.isAlive()) {
+                timer.interrupt();
+            }
+
             if (!exec.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
@@ -231,33 +255,16 @@ public class DevModeHandler implements Serializable {
         return connection;
     }
 
+    // mirrors a stream to logger, and check whether a pattern is found in the output.
     private void logStream(InputStream input, Pattern pattern) {
         boolean notify = pattern != null;
 
         Thread thread = new Thread(() -> {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-            if (notify) {
-                // Timer for notifying DevModeHandler
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(Integer.getInteger(PARAM_WEBPACK_TIMEOUT,
-                                Integer.getInteger(PARAM_WEBPACK_TIMEOUT, DEFAULT_TIMEOUT_FOR_MAGIC_OUTPUT)));
-                        // timeout looking for pattern
-                        if (notify) {
-                            synchronized (this) {
-                                notify();
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
-            }
-
             try {
                 for (String line; ((line = reader.readLine()) != null);) {
                     getLogger().info(line);
-                    // We found the started magic word in stream, notify
+                    // We found the started pattern in stream, notify
                     // DevModeHandler to continue
                     if (notify && pattern.matcher(line).find()) {
                         synchronized (this) {

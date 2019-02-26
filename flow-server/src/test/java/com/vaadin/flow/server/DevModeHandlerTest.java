@@ -119,9 +119,9 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_CreateInstance_After_TimeoutWaitingForStartMagic() throws Exception {
-        System.setProperty(PARAM_WEBPACK_TIMEOUT, "500");
-        createWebpackScript("Foo", 1000);
+    public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
+        System.setProperty(PARAM_WEBPACK_TIMEOUT, "1000");
+        createWebpackScript("Foo", 3000);
         assertNotNull(createInstance(configuration));
         assertTrue(Boolean.getBoolean(PARAM_WEBPACK_RUNNING));
     }
