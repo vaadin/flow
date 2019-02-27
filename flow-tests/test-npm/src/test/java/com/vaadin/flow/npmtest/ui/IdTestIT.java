@@ -16,24 +16,13 @@
 package com.vaadin.flow.npmtest.ui;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.parallel.setup.SetupDriver;
 
 public class IdTestIT extends ChromeBrowserTest {
-    @Before
-    @Override
-    public void setup() throws Exception {
-        WebDriver driver = new SetupDriver().setupLocalDriver(
-                getRunLocallyBrowser(), getRunLocallyBrowserVersion());
-        setDriver(driver);
-    }
-    
     @Override
     protected String getTestPath() {
         return "/";
