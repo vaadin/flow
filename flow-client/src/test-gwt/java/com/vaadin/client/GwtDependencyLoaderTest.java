@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +47,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
 
         List<String> loadingStyles = new ArrayList<>();
         List<String> loadingScripts = new ArrayList<>();
-        List<String> loadingModules = new ArrayList<>();
         List<String> loadingHtml = new ArrayList<>();
 
         @Override
@@ -72,21 +69,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 boolean defer) {
             loadingScripts.add(scriptUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, scriptUrl));
-        }
-
-        @Override
-        public void loadModule(String moduleUrl,
-                ResourceLoadListener resourceLoadListener) {
-            loadingModules.add(moduleUrl);
-            resourceLoadListener.onLoad(new ResourceLoadEvent(this, moduleUrl));
-        }
-
-        @Override
-        public void loadModule(String moduleUrl,
-                ResourceLoadListener resourceLoadListener, boolean async,
-                boolean defer) {
-            loadingModules.add(moduleUrl);
-            resourceLoadListener.onLoad(new ResourceLoadEvent(this, moduleUrl));
         }
 
         @Override
@@ -120,14 +102,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
             resourceLoadListener
                     .onLoad(new ResourceLoadEvent(this, styleSheetContents));
         }
-
-        @Override
-        public void inlineModule(String styleSheetContents,
-                ResourceLoadListener resourceLoadListener) {
-            loadingModules.add(styleSheetContents);
-            resourceLoadListener
-                    .onLoad(new ResourceLoadEvent(this, styleSheetContents));
-        }
     }
 
     private MockResourceLoader mockResourceLoader;
@@ -153,19 +127,15 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
 
     public void testAllEagerDependenciesAreLoadedFirst() {
         String eagerJsUrl = "https://foo.bar/eager_script.js";
-        String eagerJsModuleUrl = "https://foo.bar/eager_script.mjs";
         String eagerHtmlUrl = "https://foo.bar/eager_page.html";
         String eagerCssUrl = "https://foo.bar/eager_style.css";
 
         String lazyJsUrl = "https://foo.bar/script.js";
-        String lazyJsModuleUrl = "https://foo.bar/script.mjs";
         String lazyHtmlUrl = "https://foo.bar/page.html";
         String lazyCssUrl = "https://foo.bar/style.css";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.JS_MODULE, lazyJsModuleUrl,
                         LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
                         LoadMode.LAZY).toJson(),
@@ -174,8 +144,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
 
                 new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
                         LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.JS_MODULE, eagerJsModuleUrl,
-                        LoadMode.EAGER).toJson(),
                 new Dependency(Dependency.Type.HTML_IMPORT, eagerHtmlUrl,
                         LoadMode.EAGER).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
@@ -183,9 +151,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
 
         assertEquals(Arrays.asList(eagerJsUrl, lazyJsUrl),
                 mockResourceLoader.loadingScripts);
-
-        assertEquals(Arrays.asList(eagerJsModuleUrl, lazyJsModuleUrl),
-                mockResourceLoader.loadingModules);
 
         assertEquals("2 style files should be imported, eager first",
                 Arrays.asList(eagerCssUrl, lazyCssUrl),
@@ -199,8 +164,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
     public void testEnsureLazyDependenciesLoadedInOrder() {
         String jsUrl1 = "/1.js";
         String jsUrl2 = "/2.js";
-        String jsModuleUrl1 = "/1.mjs";
-        String jsModuleUrl2 = "/2.mjs";
         String cssUrl1 = "/1.css";
         String cssUrl2 = "/2.css";
         String htmlUrl1 = "/1.html";
@@ -210,10 +173,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
                         LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.JAVASCRIPT, jsUrl2,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.JS_MODULE, jsModuleUrl1,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.JS_MODULE, jsModuleUrl2,
                         LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
                         LoadMode.LAZY).toJson(),
@@ -228,11 +187,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 "jsUrl1 should come before jsUrl2, because it was added earlier",
                 Arrays.asList(jsUrl1, jsUrl2),
                 mockResourceLoader.loadingScripts);
-
-        assertEquals(
-                "jsUrl1 should come before jsUrl2, because it was added earlier",
-                Arrays.asList(jsModuleUrl1, jsModuleUrl2),
-                mockResourceLoader.loadingModules);
 
         assertEquals(
                 "cssUrl1 should come before cssUrl2, because it was added earlier",
@@ -250,10 +204,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String lazyJsUrl = "/lazy.js";
         String inlineJsContents = "/inline.js";
 
-        String eagerJsModuleUrl = "/eagerModule.js";
-        String lazyJsModuleUrl = "/lazyModule.js";
-        String inlineJsModuleContents = "/inlineModule.js";
-
         String eagerCssUrl = "/eager.css";
         String lazyCssUrl = "/lazy.css";
         String inlineCssContents = "/inline.css";
@@ -268,13 +218,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
                         LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
-                        LoadMode.EAGER).toJson(),
-
-                createInlineDependency(Dependency.Type.JS_MODULE,
-                        inlineJsModuleContents),
-                new Dependency(Dependency.Type.JS_MODULE, lazyJsModuleUrl,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.JS_MODULE, eagerJsModuleUrl,
                         LoadMode.EAGER).toJson(),
 
                 createInlineDependency(Dependency.Type.STYLESHEET,
@@ -299,11 +242,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 Stream.of(eagerJsUrl, inlineJsContents, lazyJsUrl)
                         .collect(Collectors.toSet()),
                 new HashSet<>(mockResourceLoader.loadingScripts));
-
-        assertEquals("All modules should be added",
-                Stream.of(eagerJsModuleUrl, inlineJsModuleContents, lazyJsModuleUrl)
-                        .collect(Collectors.toSet()),
-                new HashSet<>(mockResourceLoader.loadingModules));
 
         assertEquals("All type of dependencies should be added",
                 Stream.of(eagerCssUrl, inlineCssContents, lazyCssUrl)
