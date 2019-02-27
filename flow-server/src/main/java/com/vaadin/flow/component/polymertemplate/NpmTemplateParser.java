@@ -37,6 +37,7 @@ import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.FakeBrowser;
+import com.vaadin.flow.server.startup.NpmBundleFilter;
 import com.vaadin.flow.shared.ui.Dependency;
 
 import elemental.json.JsonObject;
@@ -83,6 +84,9 @@ public class NpmTemplateParser implements TemplateParser {
 
         DependencyFilter.FilterContext filterContext = new DependencyFilter.FilterContext(service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {
+            if (filter instanceof NpmBundleFilter) {
+                continue;
+            }
             dependencies = filter.filter(new ArrayList<>(dependencies), filterContext);
         }
 

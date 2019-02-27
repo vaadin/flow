@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.sun.prism.shader.DrawEllipse_ImagePattern_Loader;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,11 +37,13 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.JsonException;
 
@@ -72,6 +75,7 @@ public class BundleFilterFactoryTest {
         mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES6,
                 Constants.FRONTEND_URL_ES6_DEFAULT_VALUE);
+        mocks.getDeploymentConfiguration().setBowerMode(true);
     }
 
     @After
@@ -219,11 +223,11 @@ public class BundleFilterFactoryTest {
             mocks.getServlet().addServletContextResource(frontend + bundleName);
         }
 
-        List<BundleDependencyFilter> filters = new BundleFilterFactory()
+        List<DependencyFilter> filters = new BundleFilterFactory()
                 .createFilters(mocks.getService()).collect(Collectors.toList());
 
         // BundleDependencyFilter for ES6 and ES5 should be added
-        Assert.assertEquals(filters.size(), 2);
+        Assert.assertEquals(2, filters.size());
 
         List<Dependency> dependencies = IntStream.range(0, 6)
                 .mapToObj(number -> new Dependency(Dependency.Type.HTML_IMPORT,
@@ -257,5 +261,45 @@ public class BundleFilterFactoryTest {
         Assert.assertTrue(filteredResult.containsAll(filtered));
         Assert.assertEquals(filteredResult.size(), filtered.size());
         Assert.assertEquals(unfilteredResult, dependencies);
+    }
+
+    @Test
+    public void bundleFilterInNpmMode_replacesAllJsModules() {
+        MockDeploymentConfiguration deploymentConfiguration = mocks
+                .getDeploymentConfiguration();
+        deploymentConfiguration.setBowerMode(false);
+        deploymentConfiguration
+                .setApplicationOrSystemProperty(Constants.JS_MODULE_BUNDLE_NAME,
+                        "myBundle");
+        deploymentConfiguration
+                .setApplicationOrSystemProperty(Constants.JS_MODULE_BUNDLE_PATH,
+                        "output");
+
+        List<DependencyFilter> filters = new BundleFilterFactory()
+                .createFilters(mocks.getService()).collect(Collectors.toList());
+
+        // NpmBundleFilter handles both ES6 and ES5
+        Assert.assertEquals(filters.size(), 1);
+
+        List<Dependency> dependencies = IntStream.range(0, 6).mapToObj(
+                number -> new Dependency(Dependency.Type.JS_MODULE,
+                        "dependency-" + number, LoadMode.EAGER))
+                .collect(Collectors.toList());
+
+        List<Dependency> es6Results = filters.get(0).filter(dependencies,
+                new FilterContext(null, FakeBrowser.getEs6()));
+        List<Dependency> es5Results = filters.get(0).filter(dependencies,
+                new FilterContext(null, FakeBrowser.getEs5()));
+
+        Assert.assertEquals(
+                "Filtered result should only have one es6 dependency", 1,
+                es6Results.size());
+        Assert.assertEquals(
+                "Filtered result should only have one es5 dependency", 1,
+                es5Results.size());
+
+        Assert.assertEquals("Bundle should be the es6 bundle", "output/myBundle.js", es6Results.get(0).getUrl());
+        Assert.assertEquals("Bundle should be the es5 bundle", "output/myBundle.es5.js",
+                es5Results.get(0).getUrl());
     }
 }

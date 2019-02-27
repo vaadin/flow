@@ -117,6 +117,16 @@ public final class Constants implements Serializable {
      */
     public static final String STATISTICS_JSON = "statistics.file.path";
 
+    /**
+     * Configuration for setting the js_module bundle path.
+     */
+    public static final String JS_MODULE_BUNDLE_PATH = "module.bundle.es6";
+
+    /**
+     * Configuration for setting the js_module bundle name.
+     */
+    public static final String JS_MODULE_BUNDLE_NAME = "module.bundle.es5";
+
     private Constants() {
         // prevent instantiation constants class only
     }

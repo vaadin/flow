@@ -31,7 +31,9 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -60,18 +62,35 @@ public class BundleFilterFactory implements Serializable {
      * @return a stream of bundle filters, or an empty stream if no bundle
      *         filter should be used
      */
-    public Stream<BundleDependencyFilter> createFilters(VaadinService service) {
-        if (!service.getDeploymentConfiguration()
-                .useCompiledFrontendResources()) {
+    public Stream<DependencyFilter> createFilters(VaadinService service) {
+        DeploymentConfiguration deploymentConfiguration = service
+                .getDeploymentConfiguration();
+        if (!deploymentConfiguration.useCompiledFrontendResources()) {
             return Stream.empty();
         }
 
-        return Stream
-                .of(createBundleFilterForBrowser(FakeBrowser.getEs6(), service),
-                        createBundleFilterForBrowser(FakeBrowser.getEs5(),
-                                service))
-                .flatMap(maybeFilter -> maybeFilter.map(Stream::of)
-                        .orElseGet(Stream::empty));
+        if (deploymentConfiguration.isBowerMode()) {
+            return Stream.of(createBundleFilterForBrowser(FakeBrowser.getEs6(),
+                    service),
+                    createBundleFilterForBrowser(FakeBrowser.getEs5(), service))
+                    .flatMap(maybeFilter -> maybeFilter.map(Stream::of)
+                            .orElseGet(Stream::empty));
+        }
+        String bundlePath = getBundleFilePath(deploymentConfiguration);
+        String bundleName = deploymentConfiguration
+                .getStringProperty(Constants.JS_MODULE_BUNDLE_NAME, "index");
+        return Stream.of(new NpmBundleFilter(bundlePath + bundleName + ".js",
+                bundlePath + bundleName + ".es5.js"));
+    }
+
+    private String getBundleFilePath(
+            DeploymentConfiguration deploymentConfiguration) {
+        String path = deploymentConfiguration
+                .getStringProperty(Constants.JS_MODULE_BUNDLE_PATH, "build/");
+        if (!path.endsWith("/")) {
+            return path + "/";
+        }
+        return path;
     }
 
     private Optional<BundleDependencyFilter> createBundleFilterForBrowser(

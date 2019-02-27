@@ -55,6 +55,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.startup.NpmBundleFilter;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.VaadinUriResolver;
@@ -1440,6 +1441,7 @@ public class BootstrapHandlerTest {
     @Test
     public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
         mocks.setBrowserEs6(false);
+        mocks.getDeploymentConfiguration().setBowerMode(true);
         mocks.getServlet().addServletContextResource(
                 "/frontend/bower_components/webcomponentsjs/webcomponents-loader.js");
         Element head = initTestUI();
@@ -1451,11 +1453,45 @@ public class BootstrapHandlerTest {
     @Test
     public void es6IsSupported_noPolyfillsLoaded() {
         mocks.setBrowserEs6(true);
+        mocks.getDeploymentConfiguration().setBowerMode(true);
 
         Element head = initTestUI();
 
         checkInlinedScript(head, "es6-collections.js", false);
         checkInlinedScript(head, "babel-helpers.min.js", false);
+    }
+
+    @Test
+    public void es6NotSupported_correctJsBundleLoaded() {
+        mocks.setBrowserEs6(false);
+        List<DependencyFilter> filters = (List<DependencyFilter>) service
+                .getDependencyFilters();
+        filters.add(
+                new NpmBundleFilter("build/index.js", "build/index.es5.js"));
+
+        Element head = initTestUI();
+
+        Optional<Element> foundElement = head.getElementsByTag("script")
+                .stream().filter(script -> script.attr("src")
+                        .equals("build/index.es5.js")).findFirst();
+        Assert.assertTrue(foundElement.isPresent());
+    }
+
+    @Test
+    public void es6IsSupported_correctJsBundleLoaded() {
+        mocks.setBrowserEs6(true);
+        List<DependencyFilter> filters = (List<DependencyFilter>) service
+                .getDependencyFilters();
+        filters.add(
+                new NpmBundleFilter("build/index.js", "build/index.es5.js"));
+
+        Element head = initTestUI();
+
+        Optional<Element> foundElement = head.getElementsByTag("script")
+                .stream()
+                .filter(script -> script.attr("src").equals("build/index.js"))
+                .findFirst();
+        Assert.assertTrue(foundElement.isPresent());
     }
 
     @Test // UIInitListeners

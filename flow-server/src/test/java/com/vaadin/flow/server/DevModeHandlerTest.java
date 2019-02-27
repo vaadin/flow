@@ -50,8 +50,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.sun.net.httpserver.HttpServer;
@@ -62,6 +65,9 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 @SuppressWarnings("restriction")
 public class DevModeHandlerTest {
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     private DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
 
@@ -112,8 +118,14 @@ public class DevModeHandlerTest {
         }
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void should_Fail_When_WebpackPrematurelyExit() throws Exception {
+        // Windows will fail on a `java.io.IOException: CreateProcess error=193, %1 is not a valid Win32 application`
+        // which is caught and only logged.
+        if(IS_UNIX) {
+            exception.expect(Exception.class);
+        }
+
         createWebpackScript("Foo", 0);
         createInstance(configuration);
     }
@@ -177,8 +189,10 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() {
-        new File(WEBPACK_SERVER).setExecutable(false);
-        assertNull(createInstance(configuration));
+        boolean systemImplementsExecutable = new File(WEBPACK_SERVER).setExecutable(false);
+        if(systemImplementsExecutable) {
+            assertNull(createInstance(configuration));
+        }
     }
 
     @Test

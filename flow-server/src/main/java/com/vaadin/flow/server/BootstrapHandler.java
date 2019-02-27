@@ -636,7 +636,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void setupFrameworkLibraries(Element head,
             JsonObject initialUIDL, BootstrapContext context) {
         inlineEs6Collections(head, context);
-        appendWebComponentsPolyfills(head, context);
+        if(context.getSession().getConfiguration().isBowerMode()) {
+            appendWebComponentsPolyfills(head, context);
+        }
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));

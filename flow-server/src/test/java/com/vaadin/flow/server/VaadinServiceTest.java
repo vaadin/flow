@@ -282,6 +282,7 @@ public class VaadinServiceTest {
                 return true;
             }
         };
+        configuration.setBowerMode(true);
 
         // Service that pretends to have a proper bundle
         MockVaadinServletService service = new MockVaadinServletService(

@@ -1,5 +1,7 @@
 package com.vaadin.flow.component.polymertemplate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Assert;
@@ -14,7 +16,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.NpmBundleFilter;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 public class NpmTemplateParserTest {
@@ -27,8 +31,9 @@ public class NpmTemplateParserTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(service.getDependencyFilters())
-                .thenReturn(Collections.emptyList());
+        Mockito.when(service.getDependencyFilters()).thenReturn(Collections
+                .singletonList(new NpmBundleFilter("build/index.js",
+                        "build/index.es5.js")));
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
         Mockito.when(configuration

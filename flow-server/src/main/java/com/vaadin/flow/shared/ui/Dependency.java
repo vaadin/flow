@@ -66,8 +66,8 @@ public class Dependency implements Serializable {
      * URL.
      * <p>
      * A relative URL is expanded to use the {@code frontend://} prefix. URLs
-     * with a defined protocol and absolute URLs without a protocol are used
-     * as-is.
+     * with a defined protocol, absolute URLs without a protocol and JS_MODULES
+     * are used as-is.
      * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols, specified at
@@ -82,17 +82,45 @@ public class Dependency implements Serializable {
      *            details
      */
     public Dependency(Type type, String url, LoadMode loadMode) {
+        this(type, url, loadMode, !Type.JS_MODULE.equals(type));
+    }
+
+    /**
+     * Creates a new dependency of the given type, to be loaded from the given
+     * URL.
+     * <p>
+     * A relative URL is expanded to use the {@code frontend://} prefix if
+     * autoprefix is true. URLs with a defined protocol and absolute URLs
+     * without a protocol are used as-is.
+     * <p>
+     * The URL is passed through the translation mechanism before loading, so
+     * custom protocols, specified at
+     * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
+     *
+     * @param type
+     *         the type of the dependency, not {@code null}
+     * @param url
+     *         the URL to load the dependency from, not {@code null}
+     * @param loadMode
+     *         determines dependency load mode, refer to {@link LoadMode} for
+     *         details
+     * @param autoprefix
+     *         {@code true} if the given dependency should have the prefix
+     *         automatically added
+     */
+    public Dependency(Type type, String url, LoadMode loadMode,
+            boolean autoprefix) {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
         assert type != null;
 
         this.type = type;
-        if (type.equals(Type.JS_MODULE)) {
-            this.url = url;
-        } else {
+        if (autoprefix) {
             this.url = SharedUtil.prefixIfRelative(url,
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        } else {
+            this.url = url;
         }
         this.loadMode = loadMode;
     }
