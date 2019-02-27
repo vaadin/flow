@@ -38,6 +38,9 @@ import com.vaadin.flow.dom.Element;
 public interface HasComponents extends HasElement, HasEnabled {
     /**
      * Adds the given components as children of this component.
+     * <p>
+     * In case the any of the specified components has already been added to
+     * another parent, it will be removed from there and added to this one.
      *
      * @param components
      *            the components to add
@@ -102,6 +105,9 @@ public interface HasComponents extends HasElement, HasEnabled {
     /**
      * Adds the given component as child of this component at the specific
      * index.
+     * <p>
+     * In case the specified component has already been added to another parent,
+     * it will be removed from there and added to this one.
      *
      * @param index
      *            the index, where the component will be added. The index must
@@ -122,6 +128,9 @@ public interface HasComponents extends HasElement, HasEnabled {
 
     /**
      * Adds the given component as the first child of this component.
+     * <p>
+     * In case the specified component has already been added to another parent,
+     * it will be removed from there and added to this one.
      *
      * @param component
      *            the component to add, value should not be null
