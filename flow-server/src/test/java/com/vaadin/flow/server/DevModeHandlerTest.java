@@ -86,9 +86,10 @@ public class DevModeHandlerTest {
         if (IS_UNIX) {
             Files.write(Paths.get(serverFile.toURI()), (
                 "#!/bin/sh\n"
-                + "echo Started $0 $* | tee -a " + TEST_FILE + "\n"
-                + "echo [wdm]: " + readyString + ".\n"
-                + "sleep " + sleep + "\n").getBytes());
+                + "echo 'Started $0 '$* | tee -a " + TEST_FILE + "\n"
+                + "echo '[wdm]: " + readyString + ".'\n"
+                + "sleep " + sleep + "\n"
+                + "echo 'Version: webpack 4.x\n").getBytes());
         }
         new File(WEBPACK_CONFIG).createNewFile();
     }

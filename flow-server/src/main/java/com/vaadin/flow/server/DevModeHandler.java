@@ -111,8 +111,8 @@ public class DevModeHandler implements Serializable {
                     synchronized (this) {
                         notify(); //NOSONAR
                     }
-                } catch (Exception e) {
-                    getLogger().error("Excpeiont in the timer waiting for webpack ready", e);
+                } catch (InterruptedException ignore) { //NOSONAR
+                    // Ignore, we do not want messages or traces in logs
                 }
             });
             timer.start();
@@ -124,12 +124,12 @@ public class DevModeHandler implements Serializable {
                 this.wait();//NOSONAR
             }
 
-            if (timer.isAlive()) {
-                timer.interrupt();
-            }
-
             if (!exec.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
+            }
+
+            if (timer.isAlive()) {
+                timer.interrupt();
             }
         } catch (IOException | InterruptedException e) {
             getLogger().error(e.getMessage(), e);
