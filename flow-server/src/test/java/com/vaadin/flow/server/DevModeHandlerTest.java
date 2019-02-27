@@ -123,7 +123,7 @@ public class DevModeHandlerTest {
         // Windows will fail on a `java.io.IOException: CreateProcess error=193, %1 is not a valid Win32 application`
         // which is caught and only logged.
         if(IS_UNIX) {
-            exception.expect(Exception.class);
+            exception.expect(InterruptedException.class);
         }
 
         createWebpackScript("Foo", 0);
