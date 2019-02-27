@@ -87,6 +87,12 @@ import elemental.json.impl.JsonUtil;
  * @since 1.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
+
+    private static final String PROP_JS_MODULE_ES6 = "vaadin.es6.module";
+    private static final String PROP_JS_MODULE_ES5 = "vaadin.es5.module";
+    private static final String JS_MODULE_ES6 = "build/index.js";
+    private static final String JS_MODULE_ES5 = "build/index.es5.js";
+
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -431,8 +437,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 initialPageSettings -> handleInitialPageSettings(context, head,
                         initialPageSettings));
 
-        /* Append any theme elements to initial page. */
-        handleThemeContents(context, document);
+        if (context.getSession().getConfiguration().isBowerMode()) {
+            /* Append any theme elements to initial page. */
+            handleThemeContents(context, document);
+        }
 
         if (!context.isProductionMode()) {
             exportUsageStatistics(document);
@@ -558,7 +566,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .filter(item -> !(item instanceof Document)
                             && element.equals(item.parent()))
                     .forEach(action::accept);
-        } else {
+        } else if (element != null) {
             action.accept(element);
         }
     }
@@ -636,7 +644,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void setupFrameworkLibraries(Element head,
             JsonObject initialUIDL, BootstrapContext context) {
         inlineEs6Collections(head, context);
-        appendWebComponentsPolyfills(head, context);
+
+        if (context.getSession().getConfiguration().isBowerMode()) {
+            appendWebComponentsPolyfills(head, context);
+        } else {
+            head.appendChild(createJavaScriptElement(System.getProperty(PROP_JS_MODULE_ES6, JS_MODULE_ES6))
+                    .attr("type", "module"));
+            head.appendChild(createJavaScriptElement(System.getProperty(PROP_JS_MODULE_ES5, JS_MODULE_ES5))
+                    .attr("nomodule", ""));
+        }
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -645,6 +661,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendChild(getBootstrapScript(initialUIDL, context));
         head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
     }
+
 
     private static void inlineEs6Collections(Element head,
             BootstrapContext context) {
@@ -826,15 +843,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return jsElement;
     }
 
-    private static Element createJsModuleElement(String sourceUrl,
-            boolean defer) {
-        Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
-                .attr("type", "module").attr(DEFER_ATTRIBUTE, defer);
-        if (sourceUrl != null) {
-            jsElement = jsElement.attr("src", sourceUrl);
-        }
-        return jsElement;
-    }
 
     private static Element createJavaScriptElement(String sourceUrl) {
         return createJavaScriptElement(sourceUrl, true);
@@ -858,7 +866,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             dependencyElement = createJavaScriptElement(url, !inlineElement);
             break;
         case JS_MODULE:
-            dependencyElement = createJsModuleElement(url, !inlineElement);
+            dependencyElement = null;
             break;
         case HTML_IMPORT:
             dependencyElement = createHtmlImportElement(url);
