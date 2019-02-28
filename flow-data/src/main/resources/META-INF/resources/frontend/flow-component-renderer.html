@@ -103,13 +103,17 @@
           this._asyncAttachRenderedComponentIfAble();
         } else if (this.firstChild !== renderedComponent){
           this.replaceChild(renderedComponent, this.firstChild);
+          this._defineFocusTarget();
           this.onComponentRendered();
+
         } else {
+          this._defineFocusTarget();
           this.onComponentRendered();
         }
       } else {
         if (renderedComponent) {
           this.appendChild(renderedComponent);
+          this._defineFocusTarget();
           this.onComponentRendered();
         } else {
           this._asyncAttachRenderedComponentIfAble();
@@ -135,6 +139,38 @@
 
     onComponentRendered(){
       // subclasses can override this method to execute custom logic on resize
+    }
+
+    /* Setting the `focus-target` attribute to the first focusable descendant
+    starting from the firstChild necessary for the focus to be delegated
+    within the flow-component-renderer when used inside a vaadin-grid cell  */
+    _defineFocusTarget(){
+      var focusable = this._getFirstFocusableDescendant(this.firstChild);
+      if(focusable !== null) {
+        focusable.setAttribute('focus-target', 'true');
+      }
+    }
+
+    _getFirstFocusableDescendant(node){
+      if(this._isFocusable(node)) {
+        return node;
+      }
+      for (var child of node.children) {
+        var focusable = this._getFirstFocusableDescendant(child);
+        if(focusable !== null) {
+          return focusable;
+        }
+      }
+      return null;
+    }
+
+    _isFocusable(node){
+      if (node.hasAttribute("disabled")
+              || node.hasAttribute("hidden")) {
+        return false;
+      }
+
+      return node.tabIndex === 0;
     }
 
   }
