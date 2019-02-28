@@ -148,24 +148,26 @@ public class DevModeHandler implements Serializable {
      * @return the instance in case everything is alright, null otherwise
      */
     public static DevModeHandler createInstance(DeploymentConfiguration configuration) {
+        String baseDir = System.getProperty("project.basedir", System.getProperty("user.dir", ".")) + "/";
+
         if (configuration.isBowerMode() || configuration.isProductionMode()) {
             getLogger().trace("Instance not created because not in npm-dev mode");
             return null;
         }
 
-        File directory = new File(WEBAPP_FOLDER).getAbsoluteFile();
+        File directory = new File(baseDir + WEBAPP_FOLDER).getAbsoluteFile();
         if (!directory.exists()) {
             getLogger().warn("Instance not created because cannot change to '{}'", directory);
             return null;
         }
 
-        File webpack = new File(WEBPACK_SERVER);
+        File webpack = new File(baseDir + WEBPACK_SERVER);
         if (!webpack.canExecute()) {
             getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
             return null;
         }
 
-        File webpackConfig = new File(WEBPACK_CONFIG);
+        File webpackConfig = new File(baseDir + WEBPACK_CONFIG);
         if (!webpackConfig.canRead()) {
             getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
             return null;

@@ -66,6 +66,10 @@
                             <name>vaadin.bowerMode</name>
                             <value>false</value>
                         </systemProperty>
+                        <systemProperty>
+                            <name>project.basedir</name>
+                            <value>${project.basedir}</value>
+                        </systemProperty>
                     </systemProperties>
                 </configuration>
             </plugin>
