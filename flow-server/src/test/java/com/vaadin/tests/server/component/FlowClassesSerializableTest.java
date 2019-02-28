@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.OutputStream;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -62,13 +61,6 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         } finally {
             UI.setCurrent(null);
         }
-    }
-
-    @Override
-    protected Stream<String> getExcludedPatterns() {
-        return Stream.concat(Stream.of(
-                "com\\.vaadin\\.flow\\.push\\.osgi\\.PushOsgiStaticResource"),
-                super.getExcludedPatterns());
     }
 
     private static class MyStreamVariable implements StreamVariable {
