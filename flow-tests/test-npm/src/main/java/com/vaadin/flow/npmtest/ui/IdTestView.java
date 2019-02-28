@@ -22,7 +22,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.npmtest.ui.IdTestView.MyModel;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
@@ -30,9 +29,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 @Tag("my-component")
 @HtmlImport("frontend://my-component.html")
 @JsModule("./my-component.js")
-public class IdTestView extends PolymerTemplate<MyModel> {
-    public interface MyModel extends TemplateModel {
-    }
+public class IdTestView extends PolymerTemplate<TemplateModel> {
 
     @Id
     NativeButton button;
