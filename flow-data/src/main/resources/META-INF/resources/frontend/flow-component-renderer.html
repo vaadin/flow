@@ -146,22 +146,29 @@
     within the flow-component-renderer when used inside a vaadin-grid cell  */
     _defineFocusTarget(){
       var focusable = this._getFirstFocusableDescendant(this.firstChild);
-      if(focusable !== null) focusable.setAttribute('focus-target', 'true');
+      if(focusable !== null) {
+        focusable.setAttribute('focus-target', 'true');
+      }
     }
 
     _getFirstFocusableDescendant(node){
-      if(this._isFocusable(node)) return node;
+      if(this._isFocusable(node)) {
+        return node;
+      }
       for (var child of node.children) {
-        if(this._isFocusable(child)) return child;
         var focusable = this._getFirstFocusableDescendant(child);
-        if(focusable !== null) return focusable;
+        if(focusable !== null) {
+          return focusable;
+        }
       }
       return null;
     }
 
     _isFocusable(node){
       if (node.hasAttribute("disabled")
-              || node.style.hasAttribute("hidden")) return false;
+              || node.hasAttribute("hidden")) {
+        return false;
+      }
 
       return node.tabIndex === 0;
     }
