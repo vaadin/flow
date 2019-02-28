@@ -146,6 +146,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.osgi\\.support\\.VaadinResourceTrackerComponent(\\$.*)?",
                 "com\\.vaadin\\.flow\\.client\\.osgi\\..*",
                 "com\\.vaadin\\.flow\\.data\\.osgi\\..*",
+                "com\\.vaadin\\.flow\\.push\\.osgi\\.PushOsgiStaticResource",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
 
