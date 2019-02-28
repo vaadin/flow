@@ -88,11 +88,6 @@ import elemental.json.impl.JsonUtil;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
-    private static final String PROP_JS_MODULE_ES6 = "vaadin.es6.module";
-    private static final String PROP_JS_MODULE_ES5 = "vaadin.es5.module";
-    private static final String JS_MODULE_ES6 = "build/index.js";
-    private static final String JS_MODULE_ES5 = "build/index.es5.js";
-
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -648,9 +643,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (context.getSession().getConfiguration().isBowerMode()) {
             appendWebComponentsPolyfills(head, context);
         } else {
-            head.appendChild(createJavaScriptElement(System.getProperty(PROP_JS_MODULE_ES6, JS_MODULE_ES6))
+            head.appendChild(createJavaScriptElement(context.getSession().getConfiguration().getJsModuleBundle())
                     .attr("type", "module"));
-            head.appendChild(createJavaScriptElement(System.getProperty(PROP_JS_MODULE_ES5, JS_MODULE_ES5))
+            head.appendChild(createJavaScriptElement(context.getSession().getConfiguration().getJsModuleBundleEs5())
                     .attr("nomodule", ""));
         }
 

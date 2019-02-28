@@ -30,10 +30,10 @@ public final class Constants implements Serializable {
     public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.vaadin1";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
-    
+
     /** enable it if your project is a Polymer 2.0 one, should be removed in V15 */
     public static final String SERVLET_PARAMETER_BOWER_MODE = "bowerMode";
-    
+
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed
     public static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
@@ -45,6 +45,10 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
+
+    public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
+    public static final String JSBUNDLE_DEFAULT_VALUE = "build/index.js";
+
     /**
      * Configuration name for the parameter that determines whether Brotli
      * compression should be used for static resources in cases when a

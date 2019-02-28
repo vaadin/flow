@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.function;
 
+import static com.vaadin.flow.server.Constants.JSBUNDLE_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_JSBUNDLE;
+
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.function.Function;
@@ -40,15 +43,15 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if in production mode, false otherwise.
      */
     boolean isProductionMode();
-    
+
     /**
      * Returns whether Vaadin is running in bower mode.
-     * 
+     *
      * NOTE: bower mode will be unsupported in future versions.
      *
      * @return true if in bower mode, false otherwise.
      */
-    boolean isBowerMode();    
+    boolean isBowerMode();
 
     /**
      * Returns whether the server provides timing info to the client.
@@ -332,5 +335,33 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default boolean isBrotli() {
         return getBooleanProperty(Constants.SERVLET_PARAMETER_BROTLI, false);
+    }
+
+    /**
+     * Determines the main application file to load when starting the
+     * application for browsers supporting ES6 imports.
+     *
+     * The default value is <code>build/index.js</code> but it can be changed by
+     * setting the {@link Constants#SERVLET_PARAMETER_JSBUNDLE}.
+     *
+     * @return the ES6 bundle path
+     */
+    default String getJsModuleBundle() {
+        return getStringProperty(SERVLET_PARAMETER_JSBUNDLE, JSBUNDLE_DEFAULT_VALUE);
+    }
+
+    /**
+     * Determines the main application file to load when starting the
+     * application for browsers supporting ES6 imports
+     *
+     * It returns the value returned by
+     * {@link DeploymentConfiguration#getJsModuleBundle()} but adding the
+     * <code>.es5</code> fragment before the extension, so by default it will
+     * return <code>build/index.es5.js</code>
+     *
+     * @return the ES5 bundle path
+     */
+    default String getJsModuleBundleEs5() {
+        return getJsModuleBundle().replaceFirst("(\\.[^\\.]+)$", ".es5$1");
     }
 }
