@@ -160,8 +160,8 @@
     }
 
     _isFocusable(node){
-      if (node.hasAttribute("disabled")
-              || node.style.hasAttribute("hidden")) return false;
+      if (!(node instanceof HTMLElement) || node.hasAttribute("disabled")
+              || node.hasAttribute("hidden")) return false;
 
       return node.tabIndex === 0;
     }
