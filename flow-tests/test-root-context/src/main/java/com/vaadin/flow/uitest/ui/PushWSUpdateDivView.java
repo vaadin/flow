@@ -15,23 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.Route;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-@Category(IgnoreOSGi.class)
-public class PushSettingsIT extends ChromeBrowserTest {
-    @Test
-    public void pushSetting() {
-        open();
-
-        String modeText = findElement(By.id("pushMode")).getText();
-
-        Assert.assertEquals("Push mode: AUTOMATIC", modeText);
-    }
+@Push
+@Route("com.vaadin.flow.uitest.ui.PushWSUpdateDivView")
+public class PushWSUpdateDivView extends AbstractPushUpdateDivView {
 
 }
