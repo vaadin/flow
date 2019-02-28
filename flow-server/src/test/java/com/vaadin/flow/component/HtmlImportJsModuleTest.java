@@ -20,6 +20,14 @@ package com.vaadin.flow.component;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.DependencyTreeCache;
@@ -31,13 +39,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ui.LoadMode;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 public class HtmlImportJsModuleTest {
 
@@ -138,16 +139,13 @@ public class HtmlImportJsModuleTest {
         if (isBowerMode) {
             Mockito.verify(page).addHtmlImport(valueArgumentCaptor.capture(),
                     loadModeArgumentCaptor.capture());
-
+            Assert.assertEquals("Incorrect import value.", importValue,
+                    valueArgumentCaptor.getValue());
+            Assert.assertEquals("Incorrect import load mode.", importLoadMode,
+                    loadModeArgumentCaptor.getValue());            
         } else {
-            Mockito.verify(page).addJsModule(valueArgumentCaptor.capture(),
-                    loadModeArgumentCaptor.capture());
+            Mockito.verify(page, Mockito.never()).addHtmlImport(Mockito.anyString());
         }
-
-        Assert.assertEquals("Incorrect import value.", importValue,
-                valueArgumentCaptor.getValue());
-        Assert.assertEquals("Incorrect import load mode.", importLoadMode,
-                loadModeArgumentCaptor.getValue());
     }
 
     @HtmlImport(value = "frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html", loadMode = LoadMode.LAZY)

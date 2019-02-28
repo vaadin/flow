@@ -1024,6 +1024,9 @@ public class BootstrapHandlerTest {
     @Test // 3197
     public void theme_contents_are_appended_to_head()
             throws InvalidRouteConfigurationException {
+
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MyThemeTest.class));
 
@@ -1054,9 +1057,52 @@ public class BootstrapHandlerTest {
                         .anyMatch(s -> s.equals(expected)));
     }
 
+    @Test
+    public void theme_not_appended_to_head_in_npm()
+            throws InvalidRouteConfigurationException {
+
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertTrue("Custom style should not have been added to head.",
+                allElements.stream().map(Object::toString)
+                        .noneMatch(element -> element.equals(
+                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
+    }
+
+    @Test // 3197
+    public void index_appended_to_head_in_npm()
+            throws InvalidRouteConfigurationException {
+
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertTrue("index.js should be added to head for ES6 browsers.",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<script type=\"module\" defer src=\"build/index.js\"></script>")));
+
+        Assert.assertTrue("index.js should be added to head for ES5 browsers.",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<script type=\"text/javascript\" defer src=\"build/index.es5.js\" nomodule=\"\"></script>")));
+    }
+
     @Test // 3333
     public void theme_contents_are_appended_to_head_for_alias_route()
             throws InvalidRouteConfigurationException {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         HttpServletRequest request = createRequest();
         Mockito.doAnswer(invocation -> "/alias").when(request).getPathInfo();
         VaadinServletRequest aliasRequest = new VaadinServletRequest(request,
@@ -1110,6 +1156,9 @@ public class BootstrapHandlerTest {
     @Test // 3384
     public void theme_contents_added_also_when_theme_in_super_class()
             throws InvalidRouteConfigurationException {
+
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(ExtendingView.class));
 
@@ -1142,6 +1191,8 @@ public class BootstrapHandlerTest {
 
     @Test
     public void themeContents_htmlAttributesAreAddedToHtmlTag() {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MyThemeTest.class));
 
@@ -1439,6 +1490,8 @@ public class BootstrapHandlerTest {
 
     @Test
     public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         mocks.setBrowserEs6(false);
         mocks.getServlet().addServletContextResource(
                 "/frontend/bower_components/webcomponentsjs/webcomponents-loader.js");

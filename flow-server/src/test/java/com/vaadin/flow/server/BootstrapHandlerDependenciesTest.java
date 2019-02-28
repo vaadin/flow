@@ -32,7 +32,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
@@ -61,16 +60,12 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
-    @JsModule(value = "lazy.mjs", loadMode = LoadMode.LAZY)
-    @JsModule(value = "lazy.mjs", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
     @JavaScript(value = "inline.js", loadMode = LoadMode.INLINE)
-    @JsModule(value = "inline.mjs", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE)
     @HtmlImport(value = "inline.html", loadMode = LoadMode.INLINE)
     @JavaScript("eager.js")
-    @JsModule("eager.mjs")
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
     @HtmlImport("eager.html")
@@ -81,15 +76,12 @@ public class BootstrapHandlerDependenciesTest {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("lazy.js", LoadMode.LAZY);
-            getPage().addJsModule("lazy.mjs", LoadMode.LAZY);
             getPage().addStyleSheet("lazy.css", LoadMode.LAZY);
             getPage().addHtmlImport("lazy.html", LoadMode.LAZY);
             getPage().addJavaScript("inline.js", LoadMode.INLINE);
-            getPage().addJsModule("inline.mjs", LoadMode.INLINE);
             getPage().addStyleSheet("inline.css", LoadMode.INLINE);
             getPage().addHtmlImport("inline.html", LoadMode.INLINE);
             getPage().addJavaScript("eager.js");
-            getPage().addJsModule("eager.mjs");
             getPage().addStyleSheet("context://eager-relative.css");
             getPage().addStyleSheet("eager.css");
             getPage().addHtmlImport("eager.html");
@@ -139,8 +131,6 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript("1.js")
     @JavaScript("2.js")
-    @JsModule("1.mjs")
-    @JsModule("2.mjs")
     @StyleSheet("1.css")
     @StyleSheet("2.css")
     @HtmlImport("1.html")
@@ -150,8 +140,6 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
-    @JsModule(value = "1.mjs", loadMode = LoadMode.LAZY)
-    @JsModule(value = "2.mjs", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "1.css", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "2.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "1.html", loadMode = LoadMode.LAZY)
@@ -161,8 +149,6 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
     @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
-    @JsModule(value = "1.mjs", loadMode = LoadMode.INLINE)
-    @JsModule(value = "2.mjs", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "1.css", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "2.css", loadMode = LoadMode.INLINE)
     @HtmlImport(value = "1.html", loadMode = LoadMode.INLINE)
@@ -175,8 +161,6 @@ public class BootstrapHandlerDependenciesTest {
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js");
             getPage().addJavaScript("2.js");
-            getPage().addJsModule("1.mjs");
-            getPage().addJsModule("2.mjs");
             getPage().addStyleSheet("1.css");
             getPage().addStyleSheet("2.css");
             getPage().addHtmlImport("1.html");
@@ -189,8 +173,6 @@ public class BootstrapHandlerDependenciesTest {
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.LAZY);
             getPage().addJavaScript("2.js", LoadMode.LAZY);
-            getPage().addJsModule("1.mjs", LoadMode.LAZY);
-            getPage().addJsModule("2.mjs", LoadMode.LAZY);
             getPage().addStyleSheet("1.css", LoadMode.LAZY);
             getPage().addStyleSheet("2.css", LoadMode.LAZY);
             getPage().addHtmlImport("1.html", LoadMode.LAZY);
@@ -203,8 +185,6 @@ public class BootstrapHandlerDependenciesTest {
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.INLINE);
             getPage().addJavaScript("2.js", LoadMode.INLINE);
-            getPage().addJsModule("1.mjs", LoadMode.INLINE);
-            getPage().addJsModule("2.mjs", LoadMode.INLINE);
             getPage().addStyleSheet("1.css", LoadMode.INLINE);
             getPage().addStyleSheet("2.css", LoadMode.INLINE);
             getPage().addHtmlImport("1.html", LoadMode.INLINE);
@@ -271,6 +251,7 @@ public class BootstrapHandlerDependenciesTest {
 
         mocks = new MockServletServiceSessionSetup();
         mocks.getDeploymentConfiguration().setBowerMode(true);
+
         service = mocks.getService();
         TestVaadinServlet servlet = mocks.getServlet();
         for (String type : new String[] { "html", "js", "css" }) {
@@ -282,11 +263,6 @@ public class BootstrapHandlerDependenciesTest {
                     "/frontend/2." + type);
         }
         servlet.addServletContextResource("/frontend/new.js");
-        
-        servlet.addServletContextResource("inline.mjs", "inline.mjs");
-        servlet.addServletContextResource("1.mjs", "1.mjs");
-        servlet.addServletContextResource("2.mjs", "2.mjs");
-
     }
 
     @After
