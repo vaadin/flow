@@ -639,14 +639,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void setupFrameworkLibraries(Element head,
             JsonObject initialUIDL, BootstrapContext context) {
         inlineEs6Collections(head, context);
+        
+        DeploymentConfiguration conf = context.getSession().getConfiguration();
 
-        if (context.getSession().getConfiguration().isBowerMode()) {
+        if (conf.isBowerMode()) {
             appendWebComponentsPolyfills(head, context);
         } else {
-            head.appendChild(createJavaScriptElement(context.getSession().getConfiguration().getJsModuleBundle())
-                    .attr("type", "module"));
-            head.appendChild(createJavaScriptElement(context.getSession().getConfiguration().getJsModuleBundleEs5())
-                    .attr("nomodule", ""));
+            head.appendChild(createJavaScriptElement(conf.getJsModuleBundle()).attr("type", "module"));
+            head.appendChild(createJavaScriptElement(conf.getJsModuleBundleEs5()).attr("nomodule", ""));
         }
 
         if (context.getPushMode().isEnabled()) {
