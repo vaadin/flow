@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import java.util.function.Supplier;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +23,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -135,17 +132,21 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void clickShortcutAllowsKeyDefaults() {
+    public void clickShortcutAllowsKeyDefaults() throws InterruptedException {
         WebElement textField1 = findElement(By.id("click-input-1"));
         WebElement textField2 = findElement(By.id("click-input-2"));
 
         // ClickButton1: allows browser's default behavior
-        textField1.sendKeys("value 1", Keys.ENTER);
+        textField1.sendKeys("value 1");
+        Thread.sleep(100);
+        textField1.sendKeys(Keys.ENTER);
 
         assertActualEquals("click: value 1");
 
         // ClickButton2: prevents browser's default behavior
-        textField2.sendKeys("value 2", Keys.ENTER);
+        textField2.sendKeys("value 2");
+        Thread.sleep(100);
+        textField2.sendKeys(Keys.ENTER);
 
         assertActualEquals("click: ");
     }
