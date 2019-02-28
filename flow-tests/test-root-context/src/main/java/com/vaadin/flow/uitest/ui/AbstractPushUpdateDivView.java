@@ -24,12 +24,8 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.router.Route;
 
-@Push
-@Route("com.vaadin.flow.uitest.ui.UpdateDivView")
-public class UpdateDivView extends Div {
+public class AbstractPushUpdateDivView extends Div {
     private AtomicInteger count = new AtomicInteger();
 
     private final ScheduledExecutorService service = Executors
@@ -39,7 +35,7 @@ public class UpdateDivView extends Div {
 
     private static final int MAX_UPDATE = 50;
 
-    public UpdateDivView() {
+    public AbstractPushUpdateDivView() {
         setId("push-update");
     }
 
