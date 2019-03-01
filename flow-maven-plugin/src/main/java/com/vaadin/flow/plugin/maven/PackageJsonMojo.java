@@ -15,21 +15,13 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.BufferedWriter;
+
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -46,6 +38,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 /**
+ * Goal that updates package.json file with @NpmPackage annotations defined in the classpath.
  */
 @Mojo(name = "package-json", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class PackageJsonMojo extends AbstractMojo {
@@ -59,7 +52,7 @@ public class PackageJsonMojo extends AbstractMojo {
 
         Log log = this.getLog();
 
-        log.info("Looking for npm packages");
+        log.info("Looking for npm packages...");
 
         AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(
                 projectClassPathUrls);
@@ -77,75 +70,39 @@ public class PackageJsonMojo extends AbstractMojo {
 
         packages.addAll(htmlImports);
 
-        for (String npmPackage : packages) {
-            log.info(npmPackage);
-        }
+        log.info("Found " + packages.size() + " npm packages.");
+        log.info("Waiting for npm to update package.json...");
 
-        log.info("Found " + packages.size() + " npm packages");
-
-        packages.add("@webcomponents/webcomponentsjs");
-
-        Set<String> devPackages = new HashSet<>();
-        devPackages.add("copy-webpack-plugin");
-        devPackages.add("webpack");
-        devPackages.add("webpack-cli");
-        devPackages.add("webpack-dev-server");
-        devPackages.add("webpack-plugin-install-deps");
-
-        savePackageJson(packages, devPackages);
+        savePackageJson(packages);
     }
 
-    private void savePackageJson(Set<String> dependencies,
-            Set<String> devDependencies) {
-        BufferedWriter writer = null;
+    private void savePackageJson(Set<String> dependencies) {
+
+        List<String> command = new ArrayList<>(5 + dependencies.size());
+        command.add("npm");
+        command.add("install");
+        command.add("--save");
+        command.add("--package-lock-only");
+        command.add("--no-package-lock");
+        command.addAll(dependencies);
+
+        ProcessBuilder builder = new ProcessBuilder(command);
+
+        Log log = this.getLog();
         try {
-            writer = new BufferedWriter(new FileWriter("package.json"));
 
-            writer.write("{\n");
-
-            writeDependencies("dependencies", dependencies, writer);
-
-            writer.write(",\n");
-
-            writeDependencies("devDependencies", devDependencies, writer);
-
-            writer.write("\n}\n");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            final Process process = builder.start();
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                log.info(line);
             }
-        }
-    }
-
-    private void writeDependencies(String name, Set<String> dependencies,
-            BufferedWriter writer) throws IOException {
-        writer.write("  \"" + name + "\": {\n");
-
-        boolean addDelimiter = false;
-        for (String npmPackage : dependencies) {
-            if (addDelimiter) {
-                writer.write(",\n");
-
-            } else {
-                addDelimiter = true;
-            }
-
-            writer.write("    \"");
-            writer.write(npmPackage);
-            writer.write("\"");
-
-            writer.write(" : \"latest\"");
+        } catch (Exception e) {
+            log.error(e);
         }
 
-        writer.write("\n  }");
     }
 
     private Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
