@@ -51,9 +51,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.sun.net.httpserver.HttpServer;
@@ -70,9 +68,6 @@ public class DevModeHandlerTest {
     private static final String TEST_FILE = "webpack-out.test";
     private HttpServer httpServer;
     private int responseStatus;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setup() throws IOException {
@@ -117,13 +112,8 @@ public class DevModeHandlerTest {
         }
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void should_Fail_When_WebpackPrematurelyExit() throws Exception {
-        if(IS_UNIX) {
-            exception.expect(IllegalStateException.class);
-            exception.expectMessage("Webpack exited prematurely");
-        }
-
         createWebpackScript("Foo", 0);
         createInstance(configuration);
     }
@@ -187,11 +177,8 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() {
-        // The set executable doesn't work in Windows and will always return false
-        boolean systemImplementsExecutable = new File(WEBPACK_SERVER).setExecutable(false);
-        if(systemImplementsExecutable) {
-            assertNull(createInstance(configuration));
-        }
+        new File(WEBPACK_SERVER).setExecutable(false);
+        assertNull(createInstance(configuration));
     }
 
     @Test
