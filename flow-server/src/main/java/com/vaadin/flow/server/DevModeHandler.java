@@ -112,7 +112,7 @@ public class DevModeHandler implements Serializable {
                         notify(); //NOSONAR
                     }
                 } catch (Exception e) {
-                    getLogger().error("Exception in the timer waiting for webpack ready", e);
+                    getLogger().error("Excpeiont in the timer waiting for webpack ready", e);
                 }
             });
             timer.start();
