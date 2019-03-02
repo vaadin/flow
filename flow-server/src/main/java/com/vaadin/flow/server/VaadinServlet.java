@@ -79,6 +79,7 @@ public class VaadinServlet extends HttpServlet {
                 .getDeploymentConfiguration();
 
         devmodeHandler = DevModeHandler.createInstance(deploymentConfiguration);
+
         staticFileHandler = createStaticFileHandler(servletService);
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
@@ -89,6 +90,7 @@ public class VaadinServlet extends HttpServlet {
 
         servletInitialized();
         CurrentInstance.clearAll();
+
     }
 
     /**
@@ -484,6 +486,9 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
+        if (devmodeHandler != null) {
+            devmodeHandler.destroy();
+        }
         getService().destroy();
     }
 
