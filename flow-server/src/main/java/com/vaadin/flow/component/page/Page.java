@@ -20,8 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -387,6 +391,104 @@ public class Page implements Serializable {
             executeJavaScript(LazyJsLoader.WINDOW_LISTENER_JS, resizeReceiver);
         }
         return resizeReceiver.addListener(resizeListener);
+    }
+
+    /**
+     * Opens the given url in a window with the given name.
+     * <p>
+     * The supplied {@code windowName} is used as the target name in a
+     * window.open call in the client. This means that special values such as
+     * "_blank", "_self", "_top", "_parent" have special meaning. An empty or
+     * <code>null</code> window name is also a special case.
+     * </p>
+     * <p>
+     * "", null and "_self" as {@code windowName} all causes the URL to be
+     * opened in the current window, replacing any old contents. For
+     * downloadable content you should avoid "_self" as "_self" causes the
+     * client to skip rendering of any other changes as it considers them
+     * irrelevant (the page will be replaced by the response from the URL). This
+     * can speed up the opening of a URL, but it might also put the client side
+     * into an inconsistent state if the window content is not completely
+     * replaced e.g., if the URL is downloaded instead of displayed in the
+     * browser.
+     * </p>
+     * <p>
+     * "_blank" as {@code windowName} causes the URL to always be opened in a
+     * new window or tab (depends on the browser and browser settings).
+     * </p>
+     * <p>
+     * "_top" and "_parent" as {@code windowName} works as specified by the HTML
+     * standard.
+     * </p>
+     * <p>
+     * Any other {@code windowName} will open the URL in a window with that
+     * name, either by opening a new window/tab in the browser or by replacing
+     * the contents of an existing window with that name.
+     * </p>
+     *
+     * @param url
+     *            the URL to open.
+     * @param windowName
+     *            the name of the window.
+     */
+    public void open(String url, String windowName) {
+        open(url, windowName, -1, -1);
+    }
+
+    /**
+     * Opens the given URL in a window with the given size and name. For
+     * more information on the meaning of {@code windowName}, see
+     * {@link #open(String, String)}.
+     *
+     * @param url
+     *            the URL to open.
+     * @param windowName
+     *            the name of the window.
+     * @param width
+     *            the width of the window in pixels
+     * @param height
+     *            the height of the window in pixels
+     */
+    public void open(String url, String windowName, int width, int height) {
+        Map<String, Object> openOption = new HashMap<>();
+
+        if (width >= 0) {
+            openOption.put("width", width);
+        }
+
+        if (height >= 0) {
+            openOption.put("height", height);
+        }
+
+        String windowFeatures = openOption
+                .entrySet()
+                .stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining(","));
+
+        executeJavaScript("window.open($0, $1, $2)", url, windowName, windowFeatures);
+    }
+
+    /**
+     * Navigates this page to the given URI. The contents of this page in the
+     * browser is replaced with whatever is returned for the given URI.
+     *
+     * @param uri
+     *            the URI to show
+     */
+    public void setLocation(String uri) {
+        open(uri, "_self");
+    }
+
+    /**
+     * Navigates this page to the given URI. The contents of this page in the
+     * browser is replaced with whatever is returned for the given URI.
+     *
+     * @param uri
+     *            the URI to show
+     */
+    public void setLocation(URI uri) {
+        setLocation(uri.toString());
     }
 
     private static class LazyJsLoader implements Serializable {

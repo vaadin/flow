@@ -1,5 +1,6 @@
 package com.vaadin.flow.uitest.ui;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -7,6 +8,7 @@ import org.openqa.selenium.Keys;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.openqa.selenium.WebDriver;
 
 public class PageIT extends ChromeBrowserTest {
 
@@ -65,5 +67,39 @@ public class PageIT extends ChromeBrowserTest {
         findElement(By.id("reload")).click();
         input = $(InputTextElement.class).id("input");
         Assert.assertEquals("", input.getValue());
+    }
+
+    @Test
+    public void testSetLocation() {
+        open();
+
+        findElement(By.id("setLocation")).click();
+        Assert.assertThat(getDriver().getCurrentUrl(),
+                Matchers.startsWith("https://www.google.com"));
+    }
+
+    @Test
+    public void testOpenUrl() {
+        open();
+
+        findElement(By.id("open")).click();
+        Assert.assertThat(
+                getDriver().switchTo().window("secondwindow").getCurrentUrl(),
+                Matchers.startsWith("https://www.google.com")
+        );
+    }
+
+    @Test
+    public void testOpenUrlWithSizedWindow() {
+        open();
+
+        findElement(By.id("openWithSize")).click();
+        WebDriver newWindow = getDriver().switchTo().window("sizewindow");
+        Assert.assertThat(newWindow.getCurrentUrl(),
+                Matchers.startsWith("https://www.google.com"));
+
+        Assert.assertEquals(newWindow.manage().window().getSize().getWidth(), 400);
+        // if not headless driver, window will have extra 28px for the address bar.
+        Assert.assertEquals(newWindow.manage().window().getSize().getHeight(), isHeadless() ? 400 : 428);
     }
 }

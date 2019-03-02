@@ -38,7 +38,27 @@ public class PageView extends AbstractDivView {
             getPage().reload();
         });
 
-        add(input, updateButton, overrideButton, reloadButton);
+        String url = "https://www.google.com";
+
+        Div setLocationButton = new Div();
+        setLocationButton.setId("setLocation");
+        setLocationButton.setText("Set page location");
+        setLocationButton.addClickListener(e -> getPage().setLocation(url));
+
+        Div openButton = new Div();
+        openButton.setId("open");
+        openButton.setText("Open url");
+        openButton.addClickListener(e -> getPage().open(url, "secondwindow"));
+
+        Div openWithSizeButton = new Div();
+        openWithSizeButton.setId("openWithSize");
+        openWithSizeButton.setText("Open url in a window with height and width");
+        openWithSizeButton.addClickListener(e -> {
+            getPage().open(url, "sizewindow", 400, 400);
+        });
+
+        add(input, updateButton, overrideButton, reloadButton,
+                setLocationButton, openButton, openWithSizeButton);
     }
 
 }
