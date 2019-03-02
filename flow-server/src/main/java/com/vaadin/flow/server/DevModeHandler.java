@@ -25,10 +25,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
+import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -65,25 +69,31 @@ public class DevModeHandler implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 60 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
-    static final Integer WEBPACK_PORT = 8081;
     static final Boolean IS_UNIX = !System.getProperty("os.name").matches("(?i).*windows.*");
-    static final String WEBAPP_FOLDER = "src/main/webapp/";
-    static final String WEBPACK_CONFIG = "webpack.config.js";
-    static final String WEBPACK_SERVER = "node_modules/.bin/webpack-dev-server";
+
+    // This fixes maven tests in multi-module execution 
+    static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
+    static final String WEBAPP_FOLDER = BASEDIR + "/src/main/webapp/";
+    static final String WEBPACK_CONFIG = BASEDIR + "/webpack.config.js";
+    static final String WEBPACK_SERVER = BASEDIR + "/node_modules/.bin/webpack-dev-server";
+
+    private int port;
+    private Process exec;
 
     // For testing purposes
-    DevModeHandler() {
+    DevModeHandler(int port) {
+        this.port = port;
     }
 
-    private DevModeHandler(File directory, File webpack, File webpackConfig) {
-        if (checkWebpackConnection()) {
-            if (Boolean.getBoolean(PARAM_WEBPACK_RUNNING)) {
-                getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, WEBPACK_PORT);
-            } else {
-                throw new IllegalStateException("There is another server already listening to port " + WEBPACK_PORT);
-            }
+    private DevModeHandler(File directory, File webpack, File webpackConfig) throws IOException {
+
+        port = Integer.getInteger(PARAM_WEBPACK_RUNNING, 0);
+        if (port > 0 && checkWebpackConnection()) {
+            getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, port);
             return;
         }
+
+        port = getFreePort();
 
         getLogger().info("Starting Webpack in dev mode ...");
         ProcessBuilder process = new ProcessBuilder();
@@ -95,13 +105,25 @@ public class DevModeHandler implements Serializable {
         if (IS_UNIX) {
             process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
         }
-
-        process.command(new String[] { webpack.getAbsolutePath(), "--config", webpackConfig.getAbsolutePath(), "--port",
-                WEBPACK_PORT.toString() });
+        
+        process.command(new String[] { webpack.getAbsolutePath(), "--config", webpackConfig.getAbsolutePath(),
+                "--port", String.valueOf(port) });
+        
+        getLogger().info("Running:\n "
+                + "        command: {}\n "
+                + "      arguments: {}\n "
+                + "            dir: {}\n "
+                + "       user.dir: {}\n "
+                + "project.basedir: {}",
+                webpack.getAbsolutePath(),
+                process.command().stream().collect(Collectors.joining()),
+                new File( "." ).getCanonicalPath(),
+                System.getProperty("user.dir"),
+                System.getProperty("project.basedir"));
 
         try {
-            Process exec = process.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(exec::destroy));
+            exec = process.start();
+            Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
 
             // Start a timer to avoid waiting for ever if pattern not found in webpack output.
             Thread timer = new Thread(() -> {
@@ -111,8 +133,8 @@ public class DevModeHandler implements Serializable {
                     synchronized (this) {
                         notify(); //NOSONAR
                     }
-                } catch (Exception e) {
-                    getLogger().error("Exception in the timer waiting for webpack ready", e);
+                } catch (InterruptedException ignore) { //NOSONAR
+                    getLogger().trace("Webpack timmer interrupted");
                 }
             });
             timer.start();
@@ -124,18 +146,18 @@ public class DevModeHandler implements Serializable {
                 this.wait();//NOSONAR
             }
 
-            if (timer.isAlive()) {
-                timer.interrupt();
-            }
-
             if (!exec.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
+            }
+
+            if (timer.isAlive()) {
+                timer.interrupt();
             }
         } catch (IOException | InterruptedException e) {
             getLogger().error(e.getMessage(), e);
         }
 
-        System.setProperty(PARAM_WEBPACK_RUNNING, "true");
+        System.setProperty(PARAM_WEBPACK_RUNNING, String.valueOf(port));
     }
 
     /**
@@ -146,8 +168,10 @@ public class DevModeHandler implements Serializable {
      * @param configuration
      *            deployment configuration
      * @return the instance in case everything is alright, null otherwise
+     * @throws IOException
      */
-    public static DevModeHandler createInstance(DeploymentConfiguration configuration) {
+    public static DevModeHandler createInstance(DeploymentConfiguration configuration) throws IOException {
+
         if (configuration.isBowerMode() || configuration.isProductionMode()) {
             getLogger().trace("Instance not created because not in npm-dev mode");
             return null;
@@ -247,7 +271,7 @@ public class DevModeHandler implements Serializable {
     }
 
     private HttpURLConnection prepareConnection(String path, String method) throws IOException {
-        URL uri = new URL(WEBPACK_HOST + ":" + WEBPACK_PORT + path);
+        URL uri = new URL(WEBPACK_HOST + ":" + port + path);
         HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
         connection.setRequestMethod(method);
         connection.setReadTimeout(DEFAULT_TIMEOUT);
@@ -303,5 +327,19 @@ public class DevModeHandler implements Serializable {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger("c.v.f.s." + DevModeHandler.class.getSimpleName());
+    }
+
+    public void destroy() {
+      if (exec != null && exec.isAlive()) {
+        exec.destroy();
+        getLogger().info("Webpack server stopped");
+      }
+    }
+
+    static int getFreePort() throws IOException {
+        ServerSocket s = new ServerSocket(0);
+        s.setReuseAddress(true);
+        s.close();
+        return s.getLocalPort();
     }
 }
