@@ -1,12 +1,14 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.html.testbench.InputTextElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
-import com.vaadin.flow.component.html.testbench.InputTextElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import java.util.ArrayList;
 
 public class PageIT extends ChromeBrowserTest {
 
@@ -65,5 +67,26 @@ public class PageIT extends ChromeBrowserTest {
         findElement(By.id("reload")).click();
         input = $(InputTextElement.class).id("input");
         Assert.assertEquals("", input.getValue());
+    }
+
+    @Test
+    public void testSetLocation() {
+        open();
+
+        findElement(By.id("setLocation")).click();
+        Assert.assertThat(getDriver().getCurrentUrl(),
+                Matchers.endsWith("BaseHrefView"));
+    }
+
+    @Test
+    public void testOpenUrlInNewTab() {
+        open();
+
+        findElement(By.id("open")).click();
+        ArrayList<String> tabs = new ArrayList<>(getDriver().getWindowHandles());
+        Assert.assertThat(
+                getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
+                Matchers.endsWith("BaseHrefView")
+        );
     }
 }
