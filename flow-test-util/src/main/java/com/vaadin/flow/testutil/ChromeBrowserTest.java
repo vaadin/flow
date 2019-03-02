@@ -48,6 +48,8 @@ import com.vaadin.testbench.parallel.Browser;
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
 
+    private boolean headless;
+
     /**
      * A method that sets up the chrome driver path in a system variable.
      */
@@ -60,8 +62,10 @@ public class ChromeBrowserTest extends ViewOrUITest {
     @Override
     public void setup() throws Exception {
         if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
+            headless = true;
             setDriver(createHeadlessChromeDriver());
         } else {
+            headless = false;
             super.setup();
         }
     }
@@ -85,5 +89,14 @@ public class ChromeBrowserTest extends ViewOrUITest {
         }
 
         return getBrowserCapabilities(Browser.CHROME);
+    }
+
+    /**
+     * Checks if the driver is headless.
+     *
+     * @return {@code true} if the driver is headless, {@code false} otherwise
+     */
+    public boolean isHeadless() {
+        return headless;
     }
 }
