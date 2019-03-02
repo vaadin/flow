@@ -2,9 +2,13 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.BeforeEnterEvent;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PageView", layout = ViewTestLayout.class)
 public class PageView extends AbstractDivView {
@@ -38,7 +42,23 @@ public class PageView extends AbstractDivView {
             getPage().reload();
         });
 
-        add(input, updateButton, overrideButton, reloadButton);
+        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest.getCurrent();
+        HttpServletRequest httpServletRequest = request.getHttpServletRequest();
+        String url = httpServletRequest.getRequestURI()
+                .replace(PageView.class.getName(), BaseHrefView.class.getName());
+
+        Div setLocationButton = new Div();
+        setLocationButton.setId("setLocation");
+        setLocationButton.setText("Set page location");
+        setLocationButton.addClickListener(e -> getPage().setLocation(url));
+
+        Div openButton = new Div();
+        openButton.setId("open");
+        openButton.setText("Open url in a new tab");
+        openButton.addClickListener(e -> getPage().open(url));
+
+        add(input, updateButton, overrideButton, reloadButton,
+                setLocationButton, openButton);
     }
 
 }
