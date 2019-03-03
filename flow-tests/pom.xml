@@ -30,6 +30,7 @@
         <module>test-material-theme</module>
         <module>servlet-containers</module>
         <module>test-web-components</module>
+        <module>test-npm</module>
     </modules>
 
     <properties>
