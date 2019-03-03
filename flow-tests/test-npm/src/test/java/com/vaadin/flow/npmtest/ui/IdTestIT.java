@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.npmtest.ui;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -28,5 +31,17 @@ public class IdTestIT extends ChromeBrowserTest {
     @Test
     public void testIds() {
         open();
+        waitForElementPresent(By.tagName("my-component"));
+
+        WebElement myComponent = findElement(By.tagName("my-component"));
+        WebElement content = getInShadowRoot(myComponent, By.id("content"));
+        Assert.assertEquals("", content.getText());
+
+        WebElement button = getInShadowRoot(myComponent, By.id("button"));
+        button.click();
+        Assert.assertEquals("1", content.getText());
+
+        button.click();
+        Assert.assertEquals("2", content.getText());
     }
 }
