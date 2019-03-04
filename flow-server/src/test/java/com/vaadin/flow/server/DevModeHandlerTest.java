@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.DevModeHandler.*;
+import static com.vaadin.flow.server.DevModeHandler.IS_UNIX;
+import static com.vaadin.flow.server.DevModeHandler.PARAM_WEBPACK_RUNNING;
+import static com.vaadin.flow.server.DevModeHandler.PARAM_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBAPP_FOLDER;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.DevModeHandler.WEBPACK_PORT;
-import static com.vaadin.flow.server.DevModeHandler.PARAM_WEBPACK_RUNNING;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.DevModeHandler.createInstance;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
@@ -80,6 +80,7 @@ public class DevModeHandlerTest {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         createWebpackScript("Compiled", 1000);
+        System.setProperty("MTEST", "true");
     }
 
     private void createWebpackScript(String readyString, int milliSecondsToRun) throws IOException {
@@ -92,8 +93,9 @@ public class DevModeHandlerTest {
         if (IS_UNIX) {
             Files.write(Paths.get(serverFile.toURI()), (
                 "#!/bin/sh\n"
-                + "echo Started $0 $* | tee -a " + TEST_FILE + "\n"
-                + "echo [wdm]: " + readyString + ".\n"
+                + "set -x\n"
+                + "echo \"Started $0 $*\" | tee -a " + TEST_FILE + "\n"
+                + "echo \"[wdm]: " + readyString + ".\"\n"
                 + "sleep " + sleep + "\n").getBytes());
         }
         new File(WEBPACK_CONFIG).createNewFile();
@@ -108,10 +110,11 @@ public class DevModeHandlerTest {
             httpServer.stop(0);
         }
         System.clearProperty(PARAM_WEBPACK_RUNNING);
+        System.clearProperty("MTEST");
     }
 
     @Test
-    public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() {
+    public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
         assertNotNull(createInstance(configuration));
         if (IS_UNIX) {
             assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
@@ -121,7 +124,7 @@ public class DevModeHandlerTest {
     @Test
     @Ignore("Ignored due to failing rate on CI")
     public void should_Fail_When_WebpackPrematurelyExit() throws Exception {
-        if(IS_UNIX) {
+        if (IS_UNIX) {
             exception.expect(IllegalStateException.class);
             exception.expectMessage("Webpack exited prematurely");
         }
@@ -135,40 +138,32 @@ public class DevModeHandlerTest {
         System.setProperty(PARAM_WEBPACK_TIMEOUT, "1000");
         createWebpackScript("Foo", 3000);
         assertNotNull(createInstance(configuration));
-        assertTrue(Boolean.getBoolean(PARAM_WEBPACK_RUNNING));
+        assertTrue(Integer.getInteger(PARAM_WEBPACK_RUNNING, 0) > 0);
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_ProductionMode() {
+    public void shouldNot_CreateInstance_When_ProductionMode() throws Exception {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         assertNull(createInstance(configuration));
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_BowerMode() {
+    public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         assertNull(createInstance(configuration));
     }
 
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
-        System.setProperty(PARAM_WEBPACK_RUNNING, "true");
         createInstance(configuration);
         if (IS_UNIX) {
             assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
         }
     }
 
-    @Test(expected = RuntimeException.class)
-    public void should_ThrowException_When_anotherServerRunning() throws Exception {
-        httpServer = prepareHttpServer(HTTP_OK, "bar");
-        createInstance(configuration);
-    }
-
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
-        System.setProperty(PARAM_WEBPACK_RUNNING, "true");
-        httpServer = prepareHttpServer(HTTP_OK, "bar");
+        prepareHttpServer(HTTP_OK, "bar");
         createInstance(configuration);
         if (IS_UNIX) {
             assertFalse(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
@@ -182,13 +177,13 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotInstalled() {
+    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {
         new File(WEBPACK_SERVER).delete();
         assertNull(createInstance(configuration));
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() {
+    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() throws Exception {
         // The set executable doesn't work in Windows and will always return false
         boolean systemImplementsExecutable = new File(WEBPACK_SERVER).setExecutable(false);
         if(systemImplementsExecutable) {
@@ -197,7 +192,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
+    public void shouldNot_CreateInstance_When_WebpackNotConfigured() throws Exception {
         new File(WEBPACK_CONFIG).delete();
         assertNull(createInstance(configuration));
     }
@@ -205,28 +200,28 @@ public class DevModeHandlerTest {
     @Test
     public void should_HandleJavaScriptRequests() {
         HttpServletRequest request = prepareRequest("/foo.js");
-        assertTrue(new DevModeHandler().isDevModeRequest(request));
+        assertTrue(new DevModeHandler(0).isDevModeRequest(request));
     }
 
     @Test
     public void shouldNot_HandleOtherRequests() {
         HttpServletRequest request = prepareRequest("/foo.bar");
-        assertFalse(new DevModeHandler().isDevModeRequest(request));
+        assertFalse(new DevModeHandler(0).isDevModeRequest(request));
     }
 
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening() throws IOException {
         HttpServletRequest request = prepareRequest("/foo.js");
-        new DevModeHandler().serveDevModeRequest(request, null);
+        new DevModeHandler(0).serveDevModeRequest(request, null);
     }
 
     @Test
     public void should_ReturnTrue_When_WebpackResponseOK() throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        httpServer = prepareHttpServer(HTTP_OK, "bar");
+        int port = prepareHttpServer(HTTP_OK, "bar");
 
-        assertTrue(new DevModeHandler().serveDevModeRequest(request, response));
+        assertTrue(new DevModeHandler(port).serveDevModeRequest(request, response));
         assertEquals(HTTP_OK, responseStatus);
     }
 
@@ -234,9 +229,9 @@ public class DevModeHandlerTest {
     public void should_ReturnFalse_When_WebpackResponseNotFound() throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        httpServer = prepareHttpServer(HTTP_NOT_FOUND, "");
+        int port = prepareHttpServer(HTTP_NOT_FOUND, "");
 
-        assertFalse(new DevModeHandler().serveDevModeRequest(request, response));
+        assertFalse(new DevModeHandler(port).serveDevModeRequest(request, response));
         assertEquals(0, responseStatus);
     }
 
@@ -244,9 +239,9 @@ public class DevModeHandlerTest {
     public void should_ReturnTrue_When_OtherResponseCodes() throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        httpServer = prepareHttpServer(HTTP_UNAUTHORIZED, "");
+        int port = prepareHttpServer(HTTP_UNAUTHORIZED, "");
 
-        assertTrue(new DevModeHandler().serveDevModeRequest(request, response));
+        assertTrue(new DevModeHandler(port).serveDevModeRequest(request, response));
         assertEquals(HTTP_UNAUTHORIZED, responseStatus);
     }
 
@@ -260,11 +255,11 @@ public class DevModeHandlerTest {
 
     @Test
     public void servlet_should_GetValidResponse_When_WebpackListening() throws Exception {
-        VaadinServlet servlet = prepareServlet();
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        httpServer = prepareHttpServer(HTTP_OK, "");
-        servlet.service(request, response);
+        prepareHttpServer(HTTP_OK, "");
+
+        prepareServlet().service(request, response);
         assertEquals(HTTP_OK, responseStatus);
     }
 
@@ -302,14 +297,16 @@ public class DevModeHandlerTest {
         return response;
     }
 
-    private HttpServer prepareHttpServer(int status, String response) throws Exception {
-        HttpServer httpServer = HttpServer.create(new InetSocketAddress(WEBPACK_PORT), 0);
+    private int prepareHttpServer(int status, String response) throws Exception {
+        int port = DevModeHandler.getFreePort();
+        httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         httpServer.createContext("/", exchange -> {
             exchange.sendResponseHeaders(status, response.length());
             exchange.getResponseBody().write(response.getBytes());
             exchange.close();
         });
         httpServer.start();
-        return httpServer;
+        System.setProperty(PARAM_WEBPACK_RUNNING, String.valueOf(port));
+        return port;
     }
 }
