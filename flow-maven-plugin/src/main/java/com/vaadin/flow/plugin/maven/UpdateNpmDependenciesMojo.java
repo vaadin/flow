@@ -51,6 +51,8 @@ import org.codehaus.plexus.util.FileUtils;
 @Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
+    public static final String PACKAGE_JSON = "package.json";
+
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
@@ -82,19 +84,19 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
         boolean packageFileOK = true;
 
-        if (!FileUtils.fileExists("package.json")) {
+        if (!FileUtils.fileExists(PACKAGE_JSON)) {
 
             packages.add("@webcomponents/webcomponentsjs");
 
             log.info("Creating package.json...");
 
             try {
-                FileUtils.fileWrite("package.json", "{}");
+                FileUtils.fileWrite(PACKAGE_JSON, "{}");
             } catch (IOException e) {
                 log.error(e);
             }
 
-            if (!FileUtils.fileExists("package.json")) {
+            if (!FileUtils.fileExists(PACKAGE_JSON)) {
                 log.error("Failed to create package.json file.");
                 packageFileOK = false;
             }
@@ -109,7 +111,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     }
 
     private void savePackageJson(Set<String> dependencies) {
-        if (dependencies.size() == 0) {
+        if (dependencies.isEmpty()) {
             return;
 
         } else {

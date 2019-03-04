@@ -71,7 +71,7 @@ public class UpdateNpmDependenciesMojoTest {
 
     @After
     public void teardown() throws IOException {
-        FileUtils.fileDelete("package.json");
+        FileUtils.fileDelete(UpdateNpmDependenciesMojo.PACKAGE_JSON);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class UpdateNpmDependenciesMojoTest {
 
         updateNpmDependenciesMojo.execute();
 
-        String packageJson = FileUtils.fileRead("package.json");
+        String packageJson = FileUtils.fileRead(UpdateNpmDependenciesMojo.PACKAGE_JSON);
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
                 packageJson.contains("@vaadin/vaadin-button"));
@@ -91,11 +91,11 @@ public class UpdateNpmDependenciesMojoTest {
     public void mavenGoal_packageJsonExists()
             throws IllegalAccessException, IOException {
 
-        FileUtils.fileWrite("package.json", "{}");
+        FileUtils.fileWrite(UpdateNpmDependenciesMojo.PACKAGE_JSON, "{}");
 
         updateNpmDependenciesMojo.execute();
 
-        String packageJson = FileUtils.fileRead("package.json");
+        String packageJson = FileUtils.fileRead(UpdateNpmDependenciesMojo.PACKAGE_JSON);
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
                 packageJson.contains("@vaadin/vaadin-button"));
