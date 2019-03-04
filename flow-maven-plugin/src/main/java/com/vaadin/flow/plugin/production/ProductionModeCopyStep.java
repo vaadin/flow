@@ -206,9 +206,9 @@ public class ProductionModeCopyStep {
      *
      * @param frontendDirectory
      *         the directory to copy files into, not {@code null}
-     * @param commaSeparatedWildcardPathExclusions
-     *         comma separated wildcard exclusions to exclude files, can be
-     *         {@code null} if no files are excluded
+     * @param commaSeparatedWildcardPathInclusions
+     *         comma separated wildcard to include files, can be
+     *         {@code null} if no files are included
      * @param jsResourcePath
      *         path to get the js files from
      * @throws UncheckedIOException

@@ -90,19 +90,22 @@ public class ProductionModeCopyStepTest {
         new ProductionModeCopyStep(Arrays.asList(getWebJarData(version, artifactId), getWebJarData(version, prefixedArtifactId)));
     }
 
-
     @Test
     public void jarWithJSNoInclusions_nothingGetsCopied() {
         File outputDirectory = testDirectory.getRoot();
-        assertTrue("No files should be in output directory before the beginning", TestUtils.listFilesRecursively(outputDirectory).isEmpty());
+        assertTrue(
+                "No files should be in output directory before the beginning",
+                TestUtils.listFilesRecursively(outputDirectory).isEmpty());
 
+        new ProductionModeCopyStep(Collections
+                .singleton(getWebJarData("10.0.0-alpha1", "TimeSelector")))
+                .copyFrontendJavaScriptFiles(outputDirectory, null,
+                        "META-INF/frontend");
 
-        new ProductionModeCopyStep(Collections.singleton(
-                getWebJarData("10.0.0-alpha1", "TimeSelector")))
-                .copyFrontendJavaScriptFiles(outputDirectory, null,  "META-INF/frontend");
-
-        List<String> resultingFiles = TestUtils.listFilesRecursively(outputDirectory);
-        assertTrue("No files should have been copied from the test Jar", resultingFiles.isEmpty());
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
+        assertTrue("No files should have been copied from the test Jar",
+                resultingFiles.isEmpty());
     }
 
     @Test
@@ -149,8 +152,8 @@ public class ProductionModeCopyStepTest {
 
         new ProductionModeCopyStep(Collections
                 .singleton(getWebJarData("10.0.0-alpha1", "TimeSelector")))
-                .copyFrontendJavaScriptFiles(outputDirectory, "**/*.js,**/*.html",
-                        "META-INF");
+                .copyFrontendJavaScriptFiles(outputDirectory,
+                        "**/*.js,**/*.html", "META-INF");
 
         List<String> resultingFiles = TestUtils
                 .listFilesRecursively(outputDirectory);
@@ -168,28 +171,37 @@ public class ProductionModeCopyStepTest {
                         .count());
 
         assertTrue("Missing 'frontend/test/test.js'", resultingFiles.stream()
-                .filter(path -> path
-                        .endsWith("frontend"+File.separator+"test" + File.separator + "test.js"))
-                .findFirst().isPresent());
-        assertTrue("Missing 'frontend/CircleSelector.js'", resultingFiles.stream()
-                .filter(path -> path.endsWith("frontend"+File.separator+"CircleSelector.js")).findFirst()
-                .isPresent());
-        assertTrue("Missing 'frontend/PopupSelector.js'", resultingFiles.stream()
-                .filter(path -> path.endsWith("frontend"+File.separator+"PopupSelector.js")).findFirst()
-                .isPresent());
+                .filter(path -> path.endsWith(
+                        "frontend" + File.separator + "test" + File.separator
+                                + "test.js")).findFirst().isPresent());
+        assertTrue("Missing 'frontend/CircleSelector.js'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "frontend" + File.separator + "CircleSelector.js"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'frontend/PopupSelector.js'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "frontend" + File.separator + "PopupSelector.js"))
+                        .findFirst().isPresent());
         assertTrue("Missing 'frontend/TimeSelector.js'", resultingFiles.stream()
-                .filter(path -> path.endsWith("frontend"+File.separator+"TimeSelector.js")).findFirst()
-                .isPresent());
+                .filter(path -> path.endsWith(
+                        "frontend" + File.separator + "TimeSelector.js"))
+                .findFirst().isPresent());
 
-        assertTrue("Missing 'resources/frontend/CircleSelector.html'", resultingFiles.stream()
-                .filter(path -> path.endsWith("resources"+File.separator+"frontend"+File.separator+"CircleSelector.html")).findFirst()
-                .isPresent());
-        assertTrue("Missing 'resources/frontend/PopupSelector.html'", resultingFiles.stream()
-                .filter(path -> path.endsWith("resources"+File.separator+"frontend"+File.separator+"PopupSelector.html")).findFirst()
-                .isPresent());
-        assertTrue("Missing 'resources/frontend/TimeSelector.html'", resultingFiles.stream()
-                .filter(path -> path.endsWith("resources"+File.separator+"frontend"+File.separator+"TimeSelector.html")).findFirst()
-                .isPresent());
+        assertTrue("Missing 'resources/frontend/CircleSelector.html'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "resources" + File.separator + "frontend"
+                                + File.separator + "CircleSelector.html"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'resources/frontend/PopupSelector.html'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "resources" + File.separator + "frontend"
+                                + File.separator + "PopupSelector.html"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'resources/frontend/TimeSelector.html'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "resources" + File.separator + "frontend"
+                                + File.separator + "TimeSelector.html"))
+                        .findFirst().isPresent());
     }
 
     @Test

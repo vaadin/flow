@@ -176,12 +176,17 @@ public class JarContentsManager {
      * @throws UncheckedIOException     if {@link IOException} occurs during the operation, for instance, when jar file specified is not a jar file
      */
     public void copyIncludedFilesFromJarTrimmingBasePath(File jar, String jarDirectoryToCopyFrom, File outputDirectory, String... wildcardPathInclusions) {
+        requireFileExistence(jar);
+
+        if (!Objects.requireNonNull(outputDirectory).isDirectory()) {
+            throw new IllegalArgumentException(String.format("Expect '%s' to be an existing directory", outputDirectory));
+        }
+
         String basePath = normalizeJarBasePath(jarDirectoryToCopyFrom);
 
         try (JarFile jarFile = new JarFile(jar, false)) {
             jarFile.stream().filter(file -> !file.isDirectory())
-                    .filter(file -> file.getName().toLowerCase(Locale.ENGLISH)
-                            .startsWith(basePath.toLowerCase(Locale.ENGLISH)))
+                    .filter(file -> file.getName().toLowerCase(Locale.ENGLISH).startsWith(basePath.toLowerCase(Locale.ENGLISH)))
                     .filter(file -> includeFile(file, wildcardPathInclusions))
                     .forEach(jarEntry -> copyJarEntryTrimmingBasePath(jarFile,
                             jarEntry, basePath, outputDirectory));
