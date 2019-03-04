@@ -155,8 +155,9 @@
       if(this._isFocusable(node)) {
         return node;
       }
-      for (var child of node.children) {
-        var focusable = this._getFirstFocusableDescendant(child);
+      var childrenArray = Array.from(node.children);
+      for (var i = 0; i < childrenArray.length; i++) {
+        var focusable = this._getFirstFocusableDescendant(childrenArray[i]);
         if(focusable !== null) {
           return focusable;
         }
