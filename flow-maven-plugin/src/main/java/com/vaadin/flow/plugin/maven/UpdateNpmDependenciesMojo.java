@@ -42,13 +42,14 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Goal that updates package.json file with @NpmPackage annotations defined in
  * the classpath.
  */
 @Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
-public class PackageJsonMojo extends AbstractMojo {
+public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -78,12 +79,43 @@ public class PackageJsonMojo extends AbstractMojo {
         packages.addAll(htmlImports);
 
         log.info("Found " + packages.size() + " npm packages.");
-        log.info("Waiting for npm to update package.json...");
 
-        savePackageJson(packages);
+        boolean packageFileOK = true;
+
+        if (!FileUtils.fileExists("package.json")) {
+
+            packages.add("@webcomponents/webcomponentsjs");
+
+            log.info("Creating package.json...");
+
+            try {
+                FileUtils.fileWrite("package.json", "{}");
+            } catch (IOException e) {
+                log.error(e);
+            }
+
+            if (!FileUtils.fileExists("package.json")) {
+                log.error("Failed to create package.json file.");
+                packageFileOK = false;
+            }
+        }
+
+        if (packageFileOK) {
+            savePackageJson(packages);
+
+        } else {
+            log.error("Failing to write packages into package.json.");
+        }
     }
 
     private void savePackageJson(Set<String> dependencies) {
+        if (dependencies.size() == 0) {
+            return;
+
+        } else {
+            this.getLog().info("Waiting for npm to update package.json...");
+        }
+
         List<String> command = new ArrayList<>(5 + dependencies.size());
         command.add("npm");
         command.add("install");
@@ -104,9 +136,8 @@ public class PackageJsonMojo extends AbstractMojo {
     private void logProcessOutput(Process process) {
         Log log = this.getLog();
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream(),
-                        StandardCharsets.UTF_8));) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                process.getInputStream(), StandardCharsets.UTF_8));) {
 
             String line;
             while ((line = reader.readLine()) != null) {
