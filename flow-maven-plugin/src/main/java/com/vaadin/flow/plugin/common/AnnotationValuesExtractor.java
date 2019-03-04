@@ -18,6 +18,9 @@ package com.vaadin.flow.plugin.common;
 
 import java.lang.annotation.Annotation;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,12 +75,37 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
         Stream<Class<?>> concat = getAnnotatedClasses(
                 annotationInProjectContext);
         return concat
-                .map(type -> type
-                        .getAnnotationsByType(annotationInProjectContext))
+                .map(type -> type.getAnnotationsByType(annotationInProjectContext))
                 .flatMap(Stream::of)
                 .map(annotation -> invokeAnnotationMethod(annotation,
                         valueGetterMethodName))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Get all classes annotated with a specific annotation and return a map
+     * with class as key and a list with all the values found in each annotation
+     *
+     * @param annotationClass
+     *            the annotation class
+     * @param valueGetterMethodName
+     *            method names to call to get data from
+     * @return a map of classes and their annotation values
+     */
+    public Map<Class<?>, Set<String>> getAnnotatedClasses(Class<? extends Annotation> annotationClass,
+            String valueGetterMethodName) {
+
+        Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(
+                annotationClass.getName());
+
+        Stream<Class<?>> classes = getAnnotatedClasses(annotationInProjectContext);
+
+        return classes.collect(Collectors.toMap(entry -> entry,
+                entry -> Arrays.stream(entry.getAnnotations())
+                        .filter(annotation -> annotation.annotationType().getCanonicalName()
+                                .equals(annotationClass.getCanonicalName()))
+                        .map(annotation -> invokeAnnotationMethod(annotation, valueGetterMethodName))
+                        .collect(Collectors.toSet())));
     }
 
 }

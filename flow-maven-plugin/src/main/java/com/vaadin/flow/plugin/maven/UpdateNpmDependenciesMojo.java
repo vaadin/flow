@@ -58,7 +58,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        URL[] projectClassPathUrls = getProjectClassPathUrls();
+        URL[] projectClassPathUrls = getProjectClassPathUrls(project);
 
         Log log = this.getLog();
 
@@ -151,24 +151,21 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         }
     }
 
-    private Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
-        return htmlImports.stream().map(this::getHtmlImportNpmPackage)
+    static Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
+        return htmlImports.stream().map(UpdateNpmDependenciesMojo::getHtmlImportNpmPackage)
                 .filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
-    private String getHtmlImportNpmPackage(String htmlImport) {
-
+    static String getHtmlImportNpmPackage(String htmlImport) {
         String module = htmlImport
-                .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$",
-                        "@vaadin/$1")
-                .replaceFirst(
-                        "^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$",
-                        "@polymer/$1");
-
+                .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$", "@vaadin/$1")
+                .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
+                .replaceFirst("^frontend://(.*)$", "./$1")
+                .replaceFirst("\\.html$", ".js");
         return Objects.equals(module, htmlImport) ? null : module;
     }
 
-    private URL[] getProjectClassPathUrls() {
+    static URL[] getProjectClassPathUrls(MavenProject project) {
         final List<String> runtimeClasspathElements;
         try {
             runtimeClasspathElements = project.getRuntimeClasspathElements();
