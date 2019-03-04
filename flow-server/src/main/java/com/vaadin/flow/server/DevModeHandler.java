@@ -329,16 +329,14 @@ public class DevModeHandler implements Serializable {
     /**
      * Returns an available tcp port in the system.
      *
-     * @return
-     * @throws IOException
+     * @return a port number which is not busy
      */
     static int getFreePort() {
         try (ServerSocket s = new ServerSocket(0)) {
             s.setReuseAddress(true);
             return s.getLocalPort();
         } catch (IOException e) {
-            getLogger().error("Unable to find a free port for webpack", e);
-            return 0;
+            throw new IllegalStateException("Unable to find a free port for running webpack", e);
         }
     }
 }
