@@ -6,6 +6,7 @@
         <goals>
           <goal>copy-production-files</goal>
           <goal>package-for-production</goal>
+          <goal>update-npm-dependencies</goal>
         </goals>
       </pluginExecutionFilter>
       <action>

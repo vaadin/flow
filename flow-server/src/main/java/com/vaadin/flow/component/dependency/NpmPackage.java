@@ -14,26 +14,23 @@
  * the License.
  *
  */
-
 package com.vaadin.flow.component.dependency;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Annotation for defining an NPM package dependency on a {@link Component}
  * class which includes one or more JS modules. The JS Modules can be defined
- * using {@link JsModule} annotation on the same {@link Component}.
- * For adding multiple NPM packages files for a single component, you can
- * use this annotation multiple times.
+ * using {@link JsModule} annotation on the same {@link Component}. For adding
+ * multiple NPM packages files for a single component, you can use this
+ * annotation multiple times.
  * <p>
  * Declared NPM packages will be bundled by flow-maven-plugin in a package.json
  * file, making sure that only one dependency is created.
