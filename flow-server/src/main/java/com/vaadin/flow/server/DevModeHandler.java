@@ -106,6 +106,8 @@ public class DevModeHandler implements Serializable {
 
         process.command(new String[] { webpack.getAbsolutePath(), "--config", webpackConfig.getAbsolutePath(),
                 "--port", String.valueOf(port) });
+        
+        System.err.println(">>>>>>> ----- MCM DevModeHandler Start " +  port + " " +  new File("").getAbsolutePath());
 
         if (getLogger().isInfoEnabled()) {
             getLogger().info("Running:\n "

@@ -67,6 +67,7 @@ public class VaadinServlet extends HttpServlet {
      */
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
+        System.err.println(">>>>>> ----- MCM VaadinServlet init");
         CurrentInstance.clearAll();
         super.init(servletConfig);
         try {
