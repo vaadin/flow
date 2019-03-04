@@ -84,7 +84,6 @@ public class PackageJsonMojo extends AbstractMojo {
     }
 
     private void savePackageJson(Set<String> dependencies) {
-
         List<String> command = new ArrayList<>(5 + dependencies.size());
         command.add("npm");
         command.add("install");
@@ -95,22 +94,23 @@ public class PackageJsonMojo extends AbstractMojo {
 
         ProcessBuilder builder = new ProcessBuilder(command);
 
+        try {
+            logProcessOutput(builder.start());
+        } catch (IOException e) {
+            this.getLog().error(e);
+        }
+    }
+
+    private void logProcessOutput(Process process) {
         Log log = this.getLog();
 
-        try {
-            final Process process = builder.start();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(),
+                        StandardCharsets.UTF_8));) {
 
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8));) {
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    log.info(line);
-                }
-
-            } catch (IOException e) {
-                log.error(e);
+            String line;
+            while ((line = reader.readLine()) != null) {
+                log.info(line);
             }
 
         } catch (IOException e) {
