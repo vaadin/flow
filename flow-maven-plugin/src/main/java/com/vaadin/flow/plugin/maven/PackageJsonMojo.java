@@ -15,13 +15,18 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -38,9 +43,10 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Goal that updates package.json file with @NpmPackage annotations defined in the classpath.
+ * Goal that updates package.json file with @NpmPackage annotations defined in
+ * the classpath.
  */
-@Mojo(name = "package-json", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
+@Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class PackageJsonMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
@@ -87,20 +93,29 @@ public class PackageJsonMojo extends AbstractMojo {
         command.addAll(dependencies);
 
         ProcessBuilder builder = new ProcessBuilder(command);
+        BufferedReader reader = null;
 
         Log log = this.getLog();
         try {
-
             final Process process = builder.start();
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(
-                            process.getInputStream()));
+            reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 log.info(line);
             }
+
         } catch (Exception e) {
             log.error(e);
+
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
         }
 
     }
