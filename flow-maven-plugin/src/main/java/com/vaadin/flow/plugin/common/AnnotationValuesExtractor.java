@@ -18,9 +18,7 @@ package com.vaadin.flow.plugin.common;
 
 import java.lang.annotation.Annotation;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -84,7 +82,8 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
 
     /**
      * Get all classes annotated with a specific annotation and return a map
-     * with class as key and a list with all the values found in each annotation
+     * with class as key and a list with the annotation values found per class.
+     * Note that we use a set because the annotation might be repeatable.
      *
      * @param annotationClass
      *            the annotation class
