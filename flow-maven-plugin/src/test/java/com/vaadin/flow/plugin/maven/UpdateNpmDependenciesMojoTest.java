@@ -14,17 +14,18 @@
  * the License.
  *
  */
-
 package com.vaadin.flow.plugin.maven;
 
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.PACKAGE_JSON;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -39,74 +40,74 @@ public class UpdateNpmDependenciesMojoTest {
 
     MavenProject project;
 
-    UpdateNpmDependenciesMojo updateNpmDependenciesMojo = new UpdateNpmDependenciesMojo();
+    UpdateNpmDependenciesMojo mojo = new UpdateNpmDependenciesMojo();
+
+    String packageJson;
 
     @Before
-    public void setup() throws IOException,
-            DependencyResolutionRequiredException, IllegalAccessException {
+    public void setup() throws IOException, DependencyResolutionRequiredException, IllegalAccessException {
         project = Mockito.mock(MavenProject.class);
+        Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
+        File tmp = File.createTempFile("foo", "");
+        tmp.delete();
+        packageJson = tmp.getParent() + "/" + PACKAGE_JSON;
+
+        System.err.println(packageJson);
+
+        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmp.getParent());
+        ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
+    }
+
+    static List<String> getClassPath() {
+        // Add folder with test classes
+        List<String> classPaths = new ArrayList<>(Arrays.asList("target/test-classes"));
+
+        // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-
         URL[] urls = ((URLClassLoader) classLoader).getURLs();
-        List<String> classPaths = new ArrayList<>(urls.length);
-
         for (URL url : urls) {
             classPaths.add(url.getFile());
         }
-
-        // Make sure current test's classpath is included.
-        String testClassPath = UpdateNpmDependenciesMojoTest.class.getProtectionDomain()
-                .getCodeSource().getLocation().getFile();
-        if (!classPaths.contains(testClassPath)) {
-            classPaths.add(testClassPath);
-        }
-
-        Mockito.when(project.getRuntimeClasspathElements())
-                .thenReturn(classPaths);
-
-        ReflectionUtils.setVariableValueInObject(updateNpmDependenciesMojo, "project",
-                project);
+        return classPaths;
     }
 
     @After
     public void teardown() throws IOException {
-        FileUtils.fileDelete(UpdateNpmDependenciesMojo.PACKAGE_JSON);
+        FileUtils.fileDelete(packageJson);
     }
 
     @Test
     public void mavenGoal_packageJsonMissing() throws IOException {
+        Assert.assertFalse(FileUtils.fileExists(packageJson));
 
-        updateNpmDependenciesMojo.execute();
+        mojo.execute();
 
-        String packageJson = FileUtils.fileRead(UpdateNpmDependenciesMojo.PACKAGE_JSON);
+        String content = FileUtils.fileRead(packageJson);
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
-                packageJson.contains("@vaadin/vaadin-button"));
+                content.contains("@vaadin/vaadin-button"));
         Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
-                packageJson.contains("@webcomponents/webcomponentsjs"));
+                content.contains("@webcomponents/webcomponentsjs"));
+        Assert.assertTrue("Missing @polymer/iron-icon package",
+                content.contains("@polymer/iron-icon"));
     }
 
     @Test
     public void mavenGoal_packageJsonExists()
             throws IllegalAccessException, IOException {
 
-        FileUtils.fileWrite(UpdateNpmDependenciesMojo.PACKAGE_JSON, "{}");
+        FileUtils.fileWrite(packageJson, "{}");
 
-        updateNpmDependenciesMojo.execute();
+        mojo.execute();
 
-        String packageJson = FileUtils.fileRead(UpdateNpmDependenciesMojo.PACKAGE_JSON);
+        String content = FileUtils.fileRead(packageJson);
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
-                packageJson.contains("@vaadin/vaadin-button"));
+                content.contains("@vaadin/vaadin-button"));
         Assert.assertTrue(
                 "@webcomponents/webcomponentsjs exists though it shouldn't",
-                !packageJson.contains("@webcomponents/webcomponentsjs"));
+                !content.contains("@webcomponents/webcomponentsjs"));
     }
-
-    @NpmPackage("@vaadin/vaadin-button")
-    class ButtonComponent extends Component {
-
-    }
-
 }
