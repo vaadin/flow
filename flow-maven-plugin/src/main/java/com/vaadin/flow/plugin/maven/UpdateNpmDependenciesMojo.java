@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
@@ -54,6 +56,8 @@ import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 @Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
+    private static final String VALUE = "value";
+
     public static final String PACKAGE_JSON = "package.json";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
@@ -66,7 +70,8 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     private String npmFolder;
 
     /**
-     * Enable or disable legacy components annotated only with {@link HtmlImport}.
+     * Enable or disable legacy components annotated only with
+     * {@link HtmlImport}.
      */
     @Parameter(defaultValue = "true")
     private boolean convertHtml;
@@ -83,32 +88,31 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
         AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
 
-        Map<Class<?>, Set<String>> classesWithNpmPackage = annotationValuesExtractor.getAnnotatedClasses(NpmPackage.class,
-                "value");
+        Map<Class<?>, Set<String>> classesWithNpmPackage = annotationValuesExtractor
+                .getAnnotatedClasses(NpmPackage.class, VALUE);
 
         classes.putAll(classesWithNpmPackage);
 
         if (convertHtml) {
             Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
-                    .getAnnotatedClasses(HtmlImport.class, "value");
+                    .getAnnotatedClasses(HtmlImport.class, VALUE);
 
-            Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor.getAnnotatedClasses(JsModule.class,
-                    "value");
+            Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor
+                    .getAnnotatedClasses(JsModule.class, VALUE);
 
             // Remove classes with HtmlImport that already have npm annotations
             classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
                     .filter(entry -> !classesWithNpmPackage.containsKey(entry.getKey())
                             && !classesWithJsModule.containsKey(entry.getKey()))
-                    .collect(
-                            Collectors.toMap(entry -> entry.getKey(), entry -> getHtmlImportNpmPackages(entry.getValue())));
+                    .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
 
             classes.putAll(classesWithHtmlImport);
         }
 
-        Set<String> dependencies = new HashSet<String>();
+        Set<String> dependencies = new HashSet<>();
 
         classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
-            // exclude local dependencies (those starting with `.`  or `/`
+            // exclude local dependencies (those starting with `.` or `/`
             if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$")) {
                 dependencies.add(s);
             }
@@ -122,7 +126,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
                 updateDependencies(dependencies);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -184,6 +188,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
                 .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
                 .replaceFirst("^frontend://(.*)$", "./$1")
                 .replaceFirst("\\.html$", ".js")
+                .replaceFirst("^([a-z].*\\.js)$", "./$1")
                 ; // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
     }

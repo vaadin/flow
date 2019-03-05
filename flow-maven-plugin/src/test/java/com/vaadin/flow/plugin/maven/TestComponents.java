@@ -39,13 +39,13 @@ public class TestComponents {
     }
 
     @NpmPackage("@vaadin/vaadin-element-mixin")
-    @JsModule("vaadin-npm-component/vaadin-npm-component.js")
+    @JsModule("foo-dir/vaadin-npm-component.js")
     public static class VaadinNpmComponent extends Component {
     }
 
     @HtmlImport("frontend://bower_components/vaadin-element-mixin/vaadin-mixed-component.html")
     @NpmPackage("@vaadin/vaadin-element-mixin")
-    @JsModule("vaadin-component/vaadin-mixed-component.js")
+    @JsModule("bar-dir/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -84,13 +85,15 @@ public class UpdateImportsMojo extends AbstractMojo {
 
             classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
                     .filter(entry -> !classesWithJsModule.containsKey(entry.getKey())).collect(
-                            Collectors.toMap(entry -> entry.getKey(), entry -> getHtmlImportNpmPackages(entry.getValue())));
+                            Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
 
             classes.putAll(classesWithHtmlImport);
         }
 
-        Set<String> jsModules = new HashSet<String>();
-        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> jsModules.add(s)));
+        Set<String> jsModules = new HashSet<>();
+        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(
+                // add `./` prefix to everything starting with letters
+                s -> jsModules.add(s.replaceFirst("(?i)^([a-z])", "./$1"))));
 
         String content = jsModules.stream().map(s -> "import '" + s + "';").collect(Collectors.joining("\n"));
         try {
@@ -108,7 +111,9 @@ public class UpdateImportsMojo extends AbstractMojo {
         }
         getLog().info("Updating JS imports to file: " + out.getAbsolutePath());
 
-        out.createNewFile();
-        Files.write(Paths.get(out.toURI()), content.getBytes());
+        if (out.canWrite() || out.createNewFile()) {
+            Files.write(Paths.get(out.toURI()), content.getBytes("UTF-8"));
+        }
+
     }
 }

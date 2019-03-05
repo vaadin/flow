@@ -64,11 +64,12 @@ public class UpdateImportsMojoTest {
 
         Arrays.asList(
                 "@polymer/iron-icon",
+                "./foo-dir/vaadin-npm-component.js",
+                "./bar-dir/vaadin-mixed-component.js",
                 "@vaadin/vaadin-element-mixin",
-                "vaadin-npm-component/vaadin-npm-component.js",
                 "./local-p3-template.js",
-                "./local-p2-template.js",
-                "vaadin-component/vaadin-mixed-component.js")
+                "./foo.js",
+                "./local-p2-template.js")
         .forEach(s -> Assert.assertTrue(content.contains("import '" + s + "';")));
     }
 }
