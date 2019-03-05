@@ -89,8 +89,10 @@ public class UpdateImportsMojo extends AbstractMojo {
             classes.putAll(classesWithHtmlImport);
         }
 
-        Set<String> jsModules = new HashSet<String>();
-        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> jsModules.add(s)));
+        Set<String> jsModules = new HashSet<>();
+        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(
+                // add `./` prefix to everything starting with letters
+                s -> jsModules.add(s.replaceFirst("(?i)^([a-z])", "./$1"))));
 
         String content = jsModules.stream().map(s -> "import '" + s + "';").collect(Collectors.joining("\n"));
         try {
@@ -108,7 +110,9 @@ public class UpdateImportsMojo extends AbstractMojo {
         }
         getLog().info("Updating JS imports to file: " + out.getAbsolutePath());
 
-        out.createNewFile();
-        Files.write(Paths.get(out.toURI()), content.getBytes());
+        if (out.canWrite() || out.createNewFile()) {
+            Files.write(Paths.get(out.toURI()), content.getBytes("UTF-8"));
+        }
+
     }
 }

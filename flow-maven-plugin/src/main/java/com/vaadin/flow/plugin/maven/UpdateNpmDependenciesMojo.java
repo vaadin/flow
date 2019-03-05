@@ -54,6 +54,8 @@ import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 @Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
+    private static final String VALUE = "value";
+
     public static final String PACKAGE_JSON = "package.json";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
@@ -66,7 +68,8 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     private String npmFolder;
 
     /**
-     * Enable or disable legacy components annotated only with {@link HtmlImport}.
+     * Enable or disable legacy components annotated only with
+     * {@link HtmlImport}.
      */
     @Parameter(defaultValue = "true")
     private boolean convertHtml;
@@ -83,24 +86,24 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
         AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
 
-        Map<Class<?>, Set<String>> classesWithNpmPackage = annotationValuesExtractor.getAnnotatedClasses(NpmPackage.class,
-                "value");
+        Map<Class<?>, Set<String>> classesWithNpmPackage = annotationValuesExtractor
+                .getAnnotatedClasses(NpmPackage.class, VALUE);
 
         classes.putAll(classesWithNpmPackage);
 
         if (convertHtml) {
             Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
-                    .getAnnotatedClasses(HtmlImport.class, "value");
+                    .getAnnotatedClasses(HtmlImport.class, VALUE);
 
-            Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor.getAnnotatedClasses(JsModule.class,
-                    "value");
+            Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor
+                    .getAnnotatedClasses(JsModule.class, VALUE);
 
             // Remove classes with HtmlImport that already have npm annotations
             classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
                     .filter(entry -> !classesWithNpmPackage.containsKey(entry.getKey())
                             && !classesWithJsModule.containsKey(entry.getKey()))
-                    .collect(
-                            Collectors.toMap(entry -> entry.getKey(), entry -> getHtmlImportNpmPackages(entry.getValue())));
+                    .collect(Collectors.toMap(entry -> entry.getKey(),
+                            entry -> getHtmlImportNpmPackages(entry.getValue())));
 
             classes.putAll(classesWithHtmlImport);
         }
@@ -108,7 +111,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         Set<String> dependencies = new HashSet<String>();
 
         classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
-            // exclude local dependencies (those starting with `.`  or `/`
+            // exclude local dependencies (those starting with `.` or `/`
             if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$")) {
                 dependencies.add(s);
             }
@@ -184,6 +187,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
                 .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
                 .replaceFirst("^frontend://(.*)$", "./$1")
                 .replaceFirst("\\.html$", ".js")
+                .replaceFirst("^([a-z].*\\.js)$", "./$1")
                 ; // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
     }
