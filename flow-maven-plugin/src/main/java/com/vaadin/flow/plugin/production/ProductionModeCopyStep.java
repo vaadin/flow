@@ -176,7 +176,7 @@ public class ProductionModeCopyStep {
         LOGGER.info("Copying web application files to '{}'", outputDirectory);
         FlowPluginFileUtils.forceMkdir(outputDirectory);
 
-        String[] wildcardExclusions = getWildcardExclusions(commaSeparatedWildcardPathExclusions);
+        String[] wildcardExclusions = getWildcardPaths(commaSeparatedWildcardPathExclusions);
 
         if (frontendWorkingDirectory != null && frontendWorkingDirectory.isDirectory()) {
             try {
@@ -200,6 +200,36 @@ public class ProductionModeCopyStep {
         }
     }
 
+    /**
+     * Copies files from earlier specified jars and {@code
+     * frontendWorkingDirectory}, applying exclusions specified to all files.
+     *
+     * @param frontendDirectory
+     *         the directory to copy files into, not {@code null}
+     * @param commaSeparatedWildcardPathInclusions
+     *         comma separated wildcard to include files, can be
+     *         {@code null} if no files are included
+     * @param jsResourcePath
+     *         path to get the js files from
+     * @throws UncheckedIOException
+     *         if any {@link IOException} occurs during other file operations
+     */
+    public void copyFrontendJavaScriptFiles(File frontendDirectory,
+            String commaSeparatedWildcardPathInclusions,
+            String jsResourcePath) {
+        LOGGER.info("Copying frontend '.js' files to '{}'", frontendDirectory);
+        FlowPluginFileUtils.forceMkdir(frontendDirectory);
+
+        String[] wildcardInclusions = getWildcardPaths(
+                commaSeparatedWildcardPathInclusions);
+
+        for (File jarFile : nonWebJars) {
+            jarContentsManager
+                    .copyIncludedFilesFromJarTrimmingBasePath(jarFile, jsResourcePath,
+                            frontendDirectory, wildcardInclusions);
+        }
+    }
+
     private FileFilter generateFilterWithExclusions(String... pathExclusions) {
         if (pathExclusions == null || pathExclusions.length == 0) {
             return null;
@@ -207,11 +237,11 @@ public class ProductionModeCopyStep {
         return pathname -> Stream.of(pathExclusions).noneMatch(exclusionRule -> FilenameUtils.wildcardMatch(pathname.getName(), exclusionRule));
     }
 
-    private String[] getWildcardExclusions(String commaSeparatedWildcardPathExclusions) {
-        if (commaSeparatedWildcardPathExclusions == null || commaSeparatedWildcardPathExclusions.isEmpty()) {
+    private String[] getWildcardPaths(String commaSeparatedWildcardPaths) {
+        if (commaSeparatedWildcardPaths == null || commaSeparatedWildcardPaths.isEmpty()) {
             return new String[0];
         }
         // regex: remove all spaces next to commas
-        return commaSeparatedWildcardPathExclusions.trim().replaceAll("[\\s]*,[\\s]*", ",").split(",");
+        return commaSeparatedWildcardPaths.trim().replaceAll("[\\s]*,[\\s]*", ",").split(",");
     }
 }

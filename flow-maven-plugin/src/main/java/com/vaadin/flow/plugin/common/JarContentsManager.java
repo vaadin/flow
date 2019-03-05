@@ -163,6 +163,40 @@ public class JarContentsManager {
         }
     }
 
+    /**
+     * Copies files matching the inclusion filters from the jar file to the output directory.
+     *
+     * @param jar                    jar file to look for files in, not {@code null}
+     * @param jarDirectoryToCopyFrom a path relative to jar root, only files from this path will be copied, can be {@code null}, which is treated as a root of the jar.
+     *                               Files will be copied relative to this path (i.e. only path part after this path is preserved in output directory)
+     * @param outputDirectory        the directory to copy files to, not {@code null}
+     * @param wildcardPathInclusions wildcard inclusions that are used to check each path against before copying
+     * @throws IllegalArgumentException if jar file specified is not a file or does not exist or if output directory is not a directory or does not exist
+     * @throws NullPointerException     if jar file or output directory is {@code null}
+     * @throws UncheckedIOException     if {@link IOException} occurs during the operation, for instance, when jar file specified is not a jar file
+     */
+    public void copyIncludedFilesFromJarTrimmingBasePath(File jar, String jarDirectoryToCopyFrom, File outputDirectory, String... wildcardPathInclusions) {
+        requireFileExistence(jar);
+
+        if (!Objects.requireNonNull(outputDirectory).isDirectory()) {
+            throw new IllegalArgumentException(String.format("Expect '%s' to be an existing directory", outputDirectory));
+        }
+
+        String basePath = normalizeJarBasePath(jarDirectoryToCopyFrom);
+
+        try (JarFile jarFile = new JarFile(jar, false)) {
+            jarFile.stream().filter(file -> !file.isDirectory())
+                    .filter(file -> file.getName().toLowerCase(Locale.ENGLISH).startsWith(basePath.toLowerCase(Locale.ENGLISH)))
+                    .filter(file -> includeFile(file, wildcardPathInclusions))
+                    .forEach(jarEntry -> copyJarEntryTrimmingBasePath(jarFile,
+                            jarEntry, basePath, outputDirectory));
+        } catch (IOException e) {
+            throw new UncheckedIOException(String.format(
+                    "Failed to extract files from jarFile '%s' to directory '%s'",
+                    jar, outputDirectory), e);
+        }
+    }
+
     private String normalizeJarBasePath(String rawPath) {
         if (rawPath == null || rawPath.isEmpty()) {
             return "";
@@ -173,6 +207,12 @@ public class JarContentsManager {
     private boolean isFileIncluded(ZipEntry file, String... pathExclusions) {
         String filePath = file.getName();
         return Stream.of(pathExclusions).noneMatch(exclusionRule -> FilenameUtils.wildcardMatch(filePath, exclusionRule));
+    }
+
+
+    private boolean includeFile(ZipEntry file, String... pathInclusions) {
+        String filePath = file.getName();
+        return Stream.of(pathInclusions).anyMatch(inclusionRule -> FilenameUtils.wildcardMatch(filePath, inclusionRule));
     }
 
     private void copyJarEntryTrimmingBasePath(JarFile jarFile, ZipEntry jarEntry, String basePath, File outputDirectory) {
