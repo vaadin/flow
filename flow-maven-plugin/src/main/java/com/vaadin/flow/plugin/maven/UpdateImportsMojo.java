@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getProjectC
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -39,6 +40,7 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
+import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 
 /**
  * Goal that updates flow-imports.js file with @JsModule and @HtmlImport
@@ -47,11 +49,20 @@ import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 @Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class UpdateImportsMojo extends AbstractMojo {
 
-    static final String IMPORTS_FILE_PARAMETER = "vaadin.imports.file";
-    static final String IMPORTS_FILE_DEFAULT = "src/main/webapp/frontend/main.js";
-
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
+
+    /**
+     * Name of the JavaScript file to update.
+     */
+    @Parameter(defaultValue = "src/main/webapp/frontend/main.js")
+    private String jsFile;
+
+    /**
+     * Enable or disable legacy components annotated only with {@link HtmlImport}.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean convertHtml;
 
     @Override
     public void execute() {
@@ -61,37 +72,41 @@ public class UpdateImportsMojo extends AbstractMojo {
 
         AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
 
-        Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
-                .getAnnotatedClasses(HtmlImport.class, "value");
-
         Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor.getAnnotatedClasses(JsModule.class,
                 "value");
 
-        classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
-                .filter(entry -> !classesWithJsModule.containsKey(entry.getKey())).collect(
-                        Collectors.toMap(entry -> entry.getKey(), entry -> getHtmlImportNpmPackages(entry.getValue())));
-
         Map<Class<?>, Set<String>> classes = new HashMap<>(classesWithJsModule);
-        classes.putAll(classesWithHtmlImport);
+
+        if (convertHtml) {
+            Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
+                    .getAnnotatedClasses(HtmlImport.class, "value");
+
+
+            classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
+                    .filter(entry -> !classesWithJsModule.containsKey(entry.getKey())).collect(
+                            Collectors.toMap(entry -> entry.getKey(), entry -> getHtmlImportNpmPackages(entry.getValue())));
+
+            classes.putAll(classesWithHtmlImport);
+        }
 
         Set<String> jsModules = new HashSet<String>();
         classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> jsModules.add(s)));
 
         String content = jsModules.stream().map(s -> "import '" + s + "';").collect(Collectors.joining("\n"));
         try {
-            saveFile(content);
+            updateJsFile(content);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
-    private void saveFile(String content) throws IOException {
-        File out = new File(System.getProperty(IMPORTS_FILE_PARAMETER, IMPORTS_FILE_DEFAULT));
+    private void updateJsFile(String content) throws IOException {
+        File out = new File(jsFile);
         if (out.getParentFile() != null && !out.getParentFile().exists()) {
             getLog().info("creating Folder: " + out.getParentFile().getAbsolutePath());
-            out.getParentFile().mkdirs();
+            FlowPluginFileUtils.forceMkdir(out.getParentFile());
         }
-        getLog().info("Saving imports to file: " + out.getAbsolutePath());
+        getLog().info("Updating JS imports to file: " + out.getAbsolutePath());
 
         out.createNewFile();
         Files.write(Paths.get(out.toURI()), content.getBytes());

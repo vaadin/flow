@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,22 +18,19 @@ package com.vaadin.flow.plugin.maven;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
@@ -43,6 +40,12 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
+
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
+import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 
 /**
  * Goal that updates package.json file with @NpmPackage annotations defined in
@@ -56,68 +59,84 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
+    /**
+     * The folder where `package.json` file is located. Default is current dir.
+     */
+    @Parameter(defaultValue = "./")
+    private String npmFolder;
+
+    /**
+     * Enable or disable legacy components annotated only with {@link HtmlImport}.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean convertHtml;
+
+    private Log log = getLog();
+
     @Override
     public void execute() {
         URL[] projectClassPathUrls = getProjectClassPathUrls(project);
 
-        Log log = this.getLog();
-
         log.info("Looking for npm packages...");
 
-        AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(
-                projectClassPathUrls);
+        Map<Class<?>, Set<String>> classes = new HashMap<>();
 
-        Map<Class<? extends Annotation>, Set<String>> npmPackagesMap = annotationValuesExtractor
-                .extractAnnotationValues(
-                        Collections.singletonMap(NpmPackage.class, "value"));
-        Map<Class<? extends Annotation>, Set<String>> htmlImportsMap = annotationValuesExtractor
-                .extractAnnotationValues(
-                        Collections.singletonMap(HtmlImport.class, "value"));
+        AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
 
-        Set<String> packages = npmPackagesMap.get(NpmPackage.class);
-        Set<String> htmlImports = getHtmlImportNpmPackages(
-                htmlImportsMap.get(HtmlImport.class));
+        Map<Class<?>, Set<String>> classesWithNpmPackage = annotationValuesExtractor.getAnnotatedClasses(NpmPackage.class,
+                "value");
 
-        packages.addAll(htmlImports);
+        classes.putAll(classesWithNpmPackage);
 
-        log.info("Found " + packages.size() + " npm packages.");
+        if (convertHtml) {
+            Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
+                    .getAnnotatedClasses(HtmlImport.class, "value");
 
-        boolean packageFileOK = true;
+            Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor.getAnnotatedClasses(JsModule.class,
+                    "value");
 
-        if (!FileUtils.fileExists(PACKAGE_JSON)) {
+            // Remove classes with HtmlImport that already have npm annotations
+            classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
+                    .filter(entry -> !classesWithNpmPackage.containsKey(entry.getKey())
+                            && !classesWithJsModule.containsKey(entry.getKey()))
+                    .collect(
+                            Collectors.toMap(entry -> entry.getKey(), entry -> getHtmlImportNpmPackages(entry.getValue())));
 
-            packages.add("@webcomponents/webcomponentsjs");
-
-            log.info("Creating package.json...");
-
-            try {
-                FileUtils.fileWrite(PACKAGE_JSON, "{}");
-            } catch (IOException e) {
-                log.error(e);
-            }
-
-            if (!FileUtils.fileExists(PACKAGE_JSON)) {
-                log.error("Failed to create package.json file.");
-                packageFileOK = false;
-            }
+            classes.putAll(classesWithHtmlImport);
         }
 
-        if (packageFileOK) {
-            savePackageJson(packages);
+        Set<String> dependencies = new HashSet<String>();
 
-        } else {
-            log.error("Failing to write packages into package.json.");
+        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
+            // exclude local dependencies (those starting with `.`  or `/`
+            if (s.matches("[^./].*")) {
+                dependencies.add(s);
+            }
+        }));
+
+        try {
+            if (!dependencies.isEmpty()) {
+                if (createPackageJsonFile()) {
+                    dependencies.add("@webcomponents/webcomponentsjs");
+                }
+                updateDependencies(dependencies);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void savePackageJson(Set<String> dependencies) {
-        if (dependencies.isEmpty()) {
-            return;
-
-        } else {
-            this.getLog().info("Waiting for npm to update package.json...");
+    private boolean createPackageJsonFile() throws IOException {
+        String packageFile = npmFolder + "/" + PACKAGE_JSON;
+        if (!FileUtils.fileExists(packageFile)) {
+            log.info("Creating a default " + packageFile);
+            FileUtils.fileWrite(packageFile, "{}");
+            return true;
         }
+        return false;
+    }
 
+    private void updateDependencies(Set<String> dependencies) throws IOException {
         List<String> command = new ArrayList<>(5 + dependencies.size());
         command.add("npm");
         command.add("install");
@@ -126,24 +145,27 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         command.add("--no-package-lock");
         command.addAll(dependencies);
 
-        ProcessBuilder builder = new ProcessBuilder(command);
+        log.info("Updating npm dependencies\n " + command.stream().collect(Collectors.joining(" ")));
 
-        try {
-            logProcessOutput(builder.start());
-        } catch (IOException e) {
-            this.getLog().error(e);
+        ProcessBuilder builder = new ProcessBuilder(command);
+        builder.directory(new File(npmFolder));
+
+        Process process = builder.start();
+        logStream(process.getInputStream());
+        logStream(process.getErrorStream());
+        if (process.exitValue() != 0) {
+            getLog().error(
+                    ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
         }
     }
 
-    private void logProcessOutput(Process process) {
-        Log log = this.getLog();
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                process.getInputStream(), StandardCharsets.UTF_8));) {
-
+    private void logStream(InputStream input) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));) {
             String line;
             while ((line = reader.readLine()) != null) {
-                log.info(line);
+                if (!line.isEmpty() && !line.contains("npm WARN")) {
+                    log.info(line);
+                }
             }
 
         } catch (IOException e) {
@@ -152,16 +174,17 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     }
 
     static Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
-        return htmlImports.stream().map(UpdateNpmDependenciesMojo::getHtmlImportNpmPackage)
-                .filter(Objects::nonNull).collect(Collectors.toSet());
+        return htmlImports.stream().map(UpdateNpmDependenciesMojo::getHtmlImportNpmPackage).filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     static String getHtmlImportNpmPackage(String htmlImport) {
-        String module = htmlImport
+        String module = htmlImport // @formatter:off
                 .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$", "@vaadin/$1")
                 .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
                 .replaceFirst("^frontend://(.*)$", "./$1")
-                .replaceFirst("\\.html$", ".js");
+                .replaceFirst("\\.html$", ".js")
+                ; // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
     }
 
@@ -170,12 +193,10 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         try {
             runtimeClasspathElements = project.getRuntimeClasspathElements();
         } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to retrieve runtime classpath elements from project '%s'",
-                    project), e);
+            throw new IllegalStateException(
+                    String.format("Failed to retrieve runtime classpath elements from project '%s'", project), e);
         }
-        return runtimeClasspathElements.stream().map(File::new)
-                .map(FlowPluginFileUtils::convertToUrl).toArray(URL[]::new);
+        return runtimeClasspathElements.stream().map(File::new).map(FlowPluginFileUtils::convertToUrl)
+                .toArray(URL[]::new);
     }
-
 }
