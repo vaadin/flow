@@ -37,6 +37,11 @@ import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 public interface HasValueChangeMode extends Serializable {
 
     /**
+     * Default value change timeout for textual inputs in milliseconds.
+     */
+    int DEFAULT_CHANGE_TIMEOUT = 400;
+
+    /**
      * Gets current value change mode of the component.
      *
      * @return current value change mode of the component, or {@code null} if

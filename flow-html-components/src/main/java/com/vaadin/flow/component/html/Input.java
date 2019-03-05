@@ -24,6 +24,8 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.data.value.HasValueChangeMode;
+import com.vaadin.flow.data.value.ValueChangeMode;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
@@ -33,7 +35,7 @@ import com.vaadin.flow.component.Tag;
  */
 @Tag(Tag.INPUT)
 public class Input extends AbstractSinglePropertyField<Input, String>
-        implements Focusable<Input>, HasSize, HasStyle {
+        implements Focusable<Input>, HasSize, HasStyle, HasValueChangeMode {
 
     private static final PropertyDescriptor<String, Optional<String>> placeholderDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("placeholder", "");
@@ -41,13 +43,16 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
             .attributeWithDefault("type", "text");
 
+    private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
+
+    private ValueChangeMode currentMode;
+
     /**
      * Creates a new input without any specific type.
      */
     public Input() {
         super("value", "", false);
-
-        setSynchronizedEvent("change");
+        setValueChangeMode(ValueChangeMode.ON_CHANGE);
     }
 
     /**
@@ -96,4 +101,42 @@ public class Input extends AbstractSinglePropertyField<Input, String>
         return get(typeDescriptor);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The default value is {@link ValueChangeMode#ON_CHANGE}.
+     */
+    @Override
+    public ValueChangeMode getValueChangeMode() {
+        return currentMode;
+    }
+
+    @Override
+    public void setValueChangeMode(ValueChangeMode valueChangeMode) {
+        currentMode = valueChangeMode;
+        setSynchronizedEvent(
+                ValueChangeMode.eventForMode(valueChangeMode, "input"));
+        applyChangeTimeout();
+    }
+
+    @Override
+    public void setValueChangeTimeout(int valueChangeTimeout) {
+        this.valueChangeTimeout = valueChangeTimeout;
+        applyChangeTimeout();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The default value is {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
+     */
+    @Override
+    public int getValueChangeTimeout() {
+        return valueChangeTimeout;
+    }
+
+    private void applyChangeTimeout() {
+        ValueChangeMode.applyChangeTimeout(currentMode, valueChangeTimeout,
+                getSynchronizationRegistration());
+    }
 }
