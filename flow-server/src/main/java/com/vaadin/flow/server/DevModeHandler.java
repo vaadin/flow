@@ -72,7 +72,7 @@ public class DevModeHandler implements Serializable {
     static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
     static final String WEBAPP_FOLDER = BASEDIR + "/src/main/webapp/";
     static final String WEBPACK_CONFIG = BASEDIR + "/webpack.config.js";
-    static final String WEBPACK_SERVER = BASEDIR + "/node_modules/.bin/webpack-dev-server";
+    static final String WEBPACK_SERVER = BASEDIR + "/node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
     private transient Process exec;
@@ -103,7 +103,7 @@ public class DevModeHandler implements Serializable {
             process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
         }
 
-        process.command(new String[] { webpack.getAbsolutePath(), "--config", webpackConfig.getAbsolutePath(),
+        process.command(new String[] { "node", webpack.getAbsolutePath(), "--config", webpackConfig.getAbsolutePath(),
                 "--port", String.valueOf(port) });
 
         try {
@@ -119,7 +119,7 @@ public class DevModeHandler implements Serializable {
                         notify(); //NOSONAR
                     }
                 } catch (InterruptedException ignore) { //NOSONAR
-                    getLogger().trace("Webpack timmer interrupted");
+                    getLogger().trace("Webpack timer interrupted");
                 }
             });
             timer.start();
