@@ -77,8 +77,7 @@ public class DevModeHandlerTest {
     @Before
     public void setup() throws IOException {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        createWebpackScript("Compiled", 1000);
+        createWebpackScript("Compiled", 100);
         System.setProperty("MTEST", "true");
     }
 
@@ -114,6 +113,7 @@ public class DevModeHandlerTest {
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
         assertNotNull(createInstance(configuration));
         assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
+        Thread.sleep(150);
     }
 
     @Test
@@ -128,10 +128,11 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
-        System.setProperty(PARAM_WEBPACK_TIMEOUT, "1000");
-        createWebpackScript("Foo", 3000);
+        System.setProperty(PARAM_WEBPACK_TIMEOUT, "100");
+        createWebpackScript("Foo", 300);
         assertNotNull(createInstance(configuration));
         assertTrue(Integer.getInteger(PARAM_WEBPACK_RUNNING, 0) > 0);
+        Thread.sleep(350);
     }
 
     @Test
@@ -144,12 +145,14 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         assertNull(createInstance(configuration));
+        Thread.sleep(150);
     }
 
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
         createInstance(configuration);
         assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
+        Thread.sleep(150);
     }
 
     @Test
@@ -161,18 +164,20 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_CreateInstance_When_WebappFolderNotFound() throws Exception {
+        Thread.sleep(150);
         FileUtils.deleteDirectory(new File(WEBAPP_FOLDER));
         assertNull(createInstance(configuration));
+        Thread.sleep(150);
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {
+    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {Thread.sleep(150);
         new File(WEBPACK_SERVER).delete();
         assertNull(createInstance(configuration));
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() throws Exception {
+    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable()  {
         // The set executable doesn't work in Windows and will always return false
         boolean systemImplementsExecutable = new File(WEBPACK_SERVER).setExecutable(false);
         if(systemImplementsExecutable) {
@@ -181,7 +186,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotConfigured() throws Exception {
+    public void shouldNot_CreateInstance_When_WebpackNotConfigured()  {
         new File(WEBPACK_CONFIG).delete();
         assertNull(createInstance(configuration));
     }
@@ -240,6 +245,7 @@ public class DevModeHandlerTest {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
         servlet.service(request, response);
+        Thread.sleep(150);
     }
 
     @Test

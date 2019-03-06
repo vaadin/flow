@@ -171,6 +171,10 @@ public class DevModeHandler implements Serializable {
         if (!webpack.canExecute()) {
             getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
             return null;
+        } else if(!webpack.exists()) {
+            getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
+                    webpack);
+            return null;
         }
 
         File webpackConfig = new File(WEBPACK_CONFIG);
