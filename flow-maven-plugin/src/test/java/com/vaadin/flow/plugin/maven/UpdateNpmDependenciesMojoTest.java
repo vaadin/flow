@@ -100,11 +100,12 @@ public class UpdateNpmDependenciesMojoTest {
         FileUtils.fileWrite(packageJson, "{}");
         long timestamp1 = FileUtils.getFile(packageJson).lastModified();
 
-        Thread.sleep(1000);
+        // need to sleep because timestamp is in seconds
+        sleep(1000);
         mojo.execute();
         long timestamp2 = FileUtils.getFile(packageJson).lastModified();
 
-        Thread.sleep(1000);
+        sleep(1000);
         mojo.execute();
         long timestamp3 = FileUtils.getFile(packageJson).lastModified();
 
@@ -117,5 +118,9 @@ public class UpdateNpmDependenciesMojoTest {
         Assert.assertTrue(
                 "@webcomponents/webcomponentsjs exists though it shouldn't",
                 !content.contains("@webcomponents/webcomponentsjs"));
+    }
+
+    static void sleep(int ms) throws InterruptedException {
+        Thread.sleep(ms); //NOSONAR
     }
 }

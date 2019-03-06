@@ -31,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.*;
 
 public class UpdateImportsMojoTest {
 
@@ -80,7 +80,8 @@ public class UpdateImportsMojoTest {
         mojo.execute();
         long timestamp1 = FileUtils.getFile(importsFile).lastModified();
 
-        Thread.sleep(1000);
+        // need to sleep because timestamp is in seconds
+        sleep(1000);
         mojo.execute();
         long timestamp2 = FileUtils.getFile(importsFile).lastModified();
 
