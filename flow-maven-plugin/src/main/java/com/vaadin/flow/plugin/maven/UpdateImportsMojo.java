@@ -37,6 +37,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -60,7 +61,8 @@ public class UpdateImportsMojo extends AbstractMojo {
     private String jsFile;
 
     /**
-     * Enable or disable legacy components annotated only with {@link HtmlImport}.
+     * Enable or disable legacy components annotated only with
+     * {@link HtmlImport}.
      */
     @Parameter(defaultValue = "true")
     private boolean convertHtml;
@@ -82,22 +84,32 @@ public class UpdateImportsMojo extends AbstractMojo {
             Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
                     .getAnnotatedClasses(HtmlImport.class, "value");
 
-
             classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
-                    .filter(entry -> !classesWithJsModule.containsKey(entry.getKey())).collect(
-                            Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
+                    .filter(entry -> !classesWithJsModule.containsKey(entry.getKey()))
+                    .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
 
             classes.putAll(classesWithHtmlImport);
         }
 
-        Set<String> jsModules = new HashSet<>();
-        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(
-                // add `./` prefix to everything starting with letters
-                s -> jsModules.add(s.replaceFirst("(?i)^([a-z])", "./$1"))));
-
-        String content = jsModules.stream().map(s -> "import '" + s + "';").collect(Collectors.joining("\n"));
         try {
-            updateJsFile(content);
+            String current = FileUtils.fileExists(jsFile) ? FileUtils.fileRead(jsFile) : "";
+
+            Set<String> jsModules = new HashSet<>();
+            classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(fileName -> {
+                // add `./` prefix to everything starting with letters
+                fileName = fileName.replaceFirst("(?i)^([a-z])", "./$1");
+                if (!current.contains(fileName)) {
+                    jsModules.add(fileName);
+                }
+            }));
+
+            if (jsModules.isEmpty()) {
+                getLog().info("No js modules to update");
+            } else {
+                String content = jsModules.stream().map(s -> "import '" + s + "';").collect(Collectors.joining("\n"));
+                updateJsFile(content + "\n");
+            }
+
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

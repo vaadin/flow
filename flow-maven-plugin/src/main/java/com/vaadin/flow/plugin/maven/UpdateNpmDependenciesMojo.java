@@ -49,6 +49,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 /**
  * Goal that updates package.json file with @NpmPackage annotations defined in
  * the classpath.
@@ -109,20 +112,24 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
             classes.putAll(classesWithHtmlImport);
         }
 
-        Set<String> dependencies = new HashSet<>();
-
-        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
-            // exclude local dependencies (those starting with `.` or `/`
-            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$")) {
-                dependencies.add(s);
-            }
-        }));
-
         try {
-            if (!dependencies.isEmpty()) {
-                if (createPackageJsonFile()) {
-                    dependencies.add("@webcomponents/webcomponentsjs");
+            JsonObject currentDeps = parsePackage();
+
+            Set<String> dependencies = new HashSet<>();
+            classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
+                // exclude local dependencies (those starting with `.` or `/`
+                if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)) {
+                    dependencies.add(s);
                 }
+            }));
+
+            if (createPackageJsonFile()) {
+                dependencies.add("@webcomponents/webcomponentsjs");
+            }
+
+            if (dependencies.isEmpty()) {
+                log.info("No npm packages to update");
+            } else {
                 updateDependencies(dependencies);
             }
         } catch (IOException e) {
@@ -161,6 +168,17 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
             getLog().error(
                     ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
         }
+    }
+
+    private JsonObject parsePackage() throws IOException {
+        String packageFile = npmFolder + "/" + PACKAGE_JSON;
+        if (FileUtils.fileExists(packageFile)) {
+            JsonObject o = Json.parse(FileUtils.fileRead(packageFile));
+            if (o.hasKey("dependencies")) {
+                return o.getObject("dependencies");
+            }
+        }
+        return Json.createObject();
     }
 
     private void logStream(InputStream input) {
