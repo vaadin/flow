@@ -75,7 +75,6 @@ public class DevModeHandler implements Serializable {
     static final String WEBPACK_SERVER = BASEDIR + "/node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
-    private transient Process exec;
 
     // For testing purposes
     DevModeHandler(int port) {
@@ -107,8 +106,8 @@ public class DevModeHandler implements Serializable {
                 "--port", String.valueOf(port) });
 
         try {
-            exec = process.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
+            Process exec = process.start();
+            Runtime.getRuntime().addShutdownHook(new Thread(exec::destroy));
 
             // Start a timer to avoid waiting for ever if pattern not found in webpack output.
             Thread timer = new Thread(() -> {
@@ -315,19 +314,6 @@ public class DevModeHandler implements Serializable {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger("c.v.f.s." + DevModeHandler.class.getSimpleName());
-    }
-
-    /**
-     * Call this method to stop webpack.
-     *
-     * It should be run whenever the servlet using this handler is destroyed or
-     * the runtime exists, so as we don not leave any webpack running as a daemon.
-     */
-    public void destroy() {
-      if (exec != null && exec.isAlive()) {
-        exec.destroy();
-        getLogger().info("Webpack server stopped");
-      }
     }
 
     /**

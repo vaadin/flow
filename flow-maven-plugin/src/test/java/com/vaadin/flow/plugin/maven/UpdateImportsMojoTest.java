@@ -31,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.*;
 
 public class UpdateImportsMojoTest {
 
@@ -58,7 +58,9 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_updateMainJsFile() throws IOException {
+    public void should_UpdateMainJsFile() throws IOException {
+        Assert.assertFalse(FileUtils.fileExists(importsFile));
+
         mojo.execute();
         String content = FileUtils.fileRead(importsFile);
 
@@ -70,6 +72,19 @@ public class UpdateImportsMojoTest {
                 "./local-p3-template.js",
                 "./foo.js",
                 "./local-p2-template.js")
-        .forEach(s -> Assert.assertTrue(content.contains("import '" + s + "';")));
+        .forEach(s -> Assert.assertTrue(s + " not found in:\n" + content, content.contains(s)));
+    }
+
+    @Test
+    public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
+        mojo.execute();
+        long timestamp1 = FileUtils.getFile(importsFile).lastModified();
+
+        // need to sleep because timestamp is in seconds
+        sleep(1000);
+        mojo.execute();
+        long timestamp2 = FileUtils.getFile(importsFile).lastModified();
+
+        Assert.assertTrue(timestamp1 == timestamp2);
     }
 }

@@ -486,9 +486,6 @@ public class VaadinServlet extends HttpServlet {
     @Override
     public void destroy() {
         super.destroy();
-        if (devmodeHandler != null) {
-            devmodeHandler.destroy();
-        }
         getService().destroy();
     }
 
