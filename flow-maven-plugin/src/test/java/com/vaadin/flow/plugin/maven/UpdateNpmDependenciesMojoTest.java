@@ -95,19 +95,32 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     @Test
-    public void mavenGoal_packageJsonExists()
-            throws IllegalAccessException, IOException {
+    public void mavenGoal_packageJsonExists() throws Exception {
 
         FileUtils.fileWrite(packageJson, "{}");
+        long timestamp1 = FileUtils.getFile(packageJson).lastModified();
 
+        // need to sleep because timestamp is in seconds
+        sleep(1000);
         mojo.execute();
+        long timestamp2 = FileUtils.getFile(packageJson).lastModified();
+
+        sleep(1000);
+        mojo.execute();
+        long timestamp3 = FileUtils.getFile(packageJson).lastModified();
+
+        Assert.assertTrue(timestamp1 < timestamp2);
+        Assert.assertTrue(timestamp2 == timestamp3);
 
         String content = FileUtils.fileRead(packageJson);
-
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
                 content.contains("@vaadin/vaadin-button"));
         Assert.assertTrue(
                 "@webcomponents/webcomponentsjs exists though it shouldn't",
                 !content.contains("@webcomponents/webcomponentsjs"));
+    }
+
+    static void sleep(int ms) throws InterruptedException {
+        Thread.sleep(ms); //NOSONAR
     }
 }
