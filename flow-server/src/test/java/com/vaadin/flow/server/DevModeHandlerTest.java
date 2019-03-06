@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.DevModeHandler.IS_UNIX;
 import static com.vaadin.flow.server.DevModeHandler.PARAM_WEBPACK_RUNNING;
 import static com.vaadin.flow.server.DevModeHandler.PARAM_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBAPP_FOLDER;
@@ -78,8 +77,7 @@ public class DevModeHandlerTest {
     @Before
     public void setup() throws IOException {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        createWebpackScript("Compiled", 1000);
+        createWebpackScript("Compiled", 100);
         System.setProperty("MTEST", "true");
     }
 
@@ -89,15 +87,13 @@ public class DevModeHandlerTest {
         serverFile.getParentFile().mkdirs();
         serverFile.createNewFile();
         serverFile.setExecutable(true);
-        int sleep = milliSecondsToRun / 1000;
-        if (IS_UNIX) {
-            Files.write(Paths.get(serverFile.toURI()), (
-                "#!/bin/sh\n"
-                + "set -x\n"
-                + "echo \"Started $0 $*\" | tee -a " + TEST_FILE + "\n"
-                + "echo \"[wdm]: " + readyString + ".\"\n"
-                + "sleep " + sleep + "\n").getBytes());
-        }
+        Files.write(Paths.get(serverFile.toURI()), (
+            "#!/usr/bin/env node\n" +
+            "const fs = require('fs');\n" + 
+            "const args = String(process.argv);\n" + 
+            "fs.writeFileSync('" + TEST_FILE + "', args);\n" + 
+            "console.log(args + '\\n[wps]: Compiled.');\n" + 
+            "setTimeout(() => {}, " + milliSecondsToRun + ");\n").getBytes());
         new File(WEBPACK_CONFIG).createNewFile();
     }
 
@@ -116,18 +112,15 @@ public class DevModeHandlerTest {
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
         assertNotNull(createInstance(configuration));
-        if (IS_UNIX) {
-            assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
-        }
+        assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
+        Thread.sleep(150);
     }
 
     @Test
     @Ignore("Ignored due to failing rate on CI")
     public void should_Fail_When_WebpackPrematurelyExit() throws Exception {
-        if (IS_UNIX) {
-            exception.expect(IllegalStateException.class);
-            exception.expectMessage("Webpack exited prematurely");
-        }
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Webpack exited prematurely");
 
         createWebpackScript("Foo", 0);
         createInstance(configuration);
@@ -135,10 +128,11 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
-        System.setProperty(PARAM_WEBPACK_TIMEOUT, "1000");
-        createWebpackScript("Foo", 3000);
+        System.setProperty(PARAM_WEBPACK_TIMEOUT, "100");
+        createWebpackScript("Foo", 300);
         assertNotNull(createInstance(configuration));
         assertTrue(Integer.getInteger(PARAM_WEBPACK_RUNNING, 0) > 0);
+        Thread.sleep(350);
     }
 
     @Test
@@ -151,39 +145,39 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         assertNull(createInstance(configuration));
+        Thread.sleep(150);
     }
 
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
         createInstance(configuration);
-        if (IS_UNIX) {
-            assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
-        }
+        assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
+        Thread.sleep(150);
     }
 
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         prepareHttpServer(HTTP_OK, "bar");
         createInstance(configuration);
-        if (IS_UNIX) {
-            assertFalse(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
-        }
+        assertFalse(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
     }
 
     @Test
     public void shouldNot_CreateInstance_When_WebappFolderNotFound() throws Exception {
+        Thread.sleep(150);
         FileUtils.deleteDirectory(new File(WEBAPP_FOLDER));
         assertNull(createInstance(configuration));
+        Thread.sleep(150);
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {
+    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {Thread.sleep(150);
         new File(WEBPACK_SERVER).delete();
         assertNull(createInstance(configuration));
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() throws Exception {
+    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable()  {
         // The set executable doesn't work in Windows and will always return false
         boolean systemImplementsExecutable = new File(WEBPACK_SERVER).setExecutable(false);
         if(systemImplementsExecutable) {
@@ -192,7 +186,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotConfigured() throws Exception {
+    public void shouldNot_CreateInstance_When_WebpackNotConfigured()  {
         new File(WEBPACK_CONFIG).delete();
         assertNull(createInstance(configuration));
     }
@@ -251,6 +245,7 @@ public class DevModeHandlerTest {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
         servlet.service(request, response);
+        Thread.sleep(150);
     }
 
     @Test
