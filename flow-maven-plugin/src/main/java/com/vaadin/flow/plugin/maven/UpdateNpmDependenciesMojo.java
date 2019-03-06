@@ -130,7 +130,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
             if (dependencies.isEmpty()) {
                 log.info("No npm packages to update");
             } else {
-                updateDependencies(dependencies);
+                updateDependencies(dependencies.stream().sorted().collect(Collectors.toList()));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -147,7 +147,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         return false;
     }
 
-    private void updateDependencies(Set<String> dependencies) throws IOException {
+    private void updateDependencies(List<String> dependencies) throws IOException {
         List<String> command = new ArrayList<>(5 + dependencies.size());
         command.add("npm");
         command.add("install");

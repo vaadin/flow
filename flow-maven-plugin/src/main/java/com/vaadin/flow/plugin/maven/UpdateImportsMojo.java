@@ -24,6 +24,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -106,7 +107,8 @@ public class UpdateImportsMojo extends AbstractMojo {
             if (jsModules.isEmpty()) {
                 getLog().info("No js modules to update");
             } else {
-                String content = jsModules.stream().map(s -> "import '" + s + "';").collect(Collectors.joining("\n"));
+                String content = jsModules.stream().sorted(Comparator.reverseOrder()).map(s -> "import '" + s + "';")
+                        .collect(Collectors.joining("\n"));
                 updateJsFile(content + "\n");
             }
 
