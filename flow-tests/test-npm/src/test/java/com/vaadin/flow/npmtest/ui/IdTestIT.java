@@ -34,7 +34,7 @@ public class IdTestIT extends ChromeBrowserTest {
     @Test
     public void testIds() {
         open();
-        waitUntillWithMessage(ExpectedConditions
+        waitUntilWithMessage(ExpectedConditions
                         .presenceOfElementLocated(By.tagName("my-component")),
                 "Failed to load my-component", 25);
 
@@ -63,10 +63,10 @@ public class IdTestIT extends ChromeBrowserTest {
 
     private void waitUntillWithMessage(ExpectedCondition<?> condition,
             String message) {
-        waitUntillWithMessage(condition, message, 10);
+        waitUntilWithMessage(condition, message, 10);
     }
 
-    private void waitUntillWithMessage(ExpectedCondition<?> condition,
+    private void waitUntilWithMessage(ExpectedCondition<?> condition,
             String message, long time) {
         try {
             waitUntil(condition, time);
