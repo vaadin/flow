@@ -69,7 +69,7 @@ public class IdTestIT extends ChromeBrowserTest {
     private void waitUntillWithMessage(ExpectedCondition<?> condition,
             String message, long time) {
         try {
-            waitUntil(condition);
+            waitUntil(condition, time);
         } catch (TimeoutException te) {
             Assert.fail(message);
         }
