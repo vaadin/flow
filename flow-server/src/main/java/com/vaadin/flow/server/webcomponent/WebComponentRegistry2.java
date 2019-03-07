@@ -43,7 +43,7 @@ public class WebComponentRegistry2 implements Serializable {
      */
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
-    private Map<String, WebComponentBuilder<? extends Component>> componentDefinitions;
+    private Map<String, WebComponentBuilder<? extends Component>> componentBuilders;
 
     /**
      * Protected constructor for internal OSGi extensions.
@@ -70,8 +70,8 @@ public class WebComponentRegistry2 implements Serializable {
     protected WebComponentBuilder<? extends Component> getWebComponentBuilder(String tag) {
         configurationLock.lock();
         try {
-            if (componentDefinitions != null) {
-                return componentDefinitions.get(tag);
+            if (componentBuilders != null) {
+                return componentBuilders.get(tag);
             }
         } finally {
             configurationLock.unlock();
@@ -90,7 +90,7 @@ public class WebComponentRegistry2 implements Serializable {
         configurationLock.lock();
         try {
             if (builders.isEmpty()) {
-                componentDefinitions = Collections.unmodifiableMap(
+                componentBuilders = Collections.unmodifiableMap(
                         Collections.emptyMap());
             }
             else {
@@ -99,7 +99,7 @@ public class WebComponentRegistry2 implements Serializable {
                                 WebComponentBuilder::getWebComponentTag,
                                 b -> b));
 
-                componentDefinitions = Collections.unmodifiableMap(map);
+                componentBuilders = Collections.unmodifiableMap(map);
             }
         } finally {
             configurationLock.unlock();
@@ -120,7 +120,7 @@ public class WebComponentRegistry2 implements Serializable {
             Set<WebComponentBuilder<? extends Component>> builders) {
         configurationLock.lock();
         try {
-            if (componentDefinitions != null) {
+            if (componentBuilders != null) {
                 return false;
             }
 
@@ -141,7 +141,7 @@ public class WebComponentRegistry2 implements Serializable {
         configurationLock.lock();
         try {
             return Collections.unmodifiableSet(new HashSet<>(
-                    componentDefinitions.values()));
+                    componentBuilders.values()));
         } finally {
             configurationLock.unlock();
         }
