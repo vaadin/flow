@@ -19,6 +19,10 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 public interface WebComponentExporter<C extends Component> {
+    // TODO: could be replaced by {@code
+    //  ReflectTools::getGenericInterfaceType} magic?
+    Class<C> getComponentClass();
+
     String getTag();
 
     void define(WebComponentDefinition<C> configuration);

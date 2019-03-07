@@ -16,11 +16,13 @@
 
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 
-public interface PropertyConfiguration<C extends Component, P> {
+public interface PropertyConfiguration<C extends Component, P> extends Serializable {
     PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler);
 
     PropertyConfiguration<C, P> readOnly();
