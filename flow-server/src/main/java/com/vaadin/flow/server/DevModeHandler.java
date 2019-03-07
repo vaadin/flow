@@ -64,7 +64,7 @@ public class DevModeHandler implements Serializable {
     private static final int DEFAULT_TIMEOUT_FOR_PATTERN = 10000;
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
-    private static final int DEFAULT_TIMEOUT = 60 * 1000;
+    private static final int DEFAULT_TIMEOUT = 120 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
     static final Boolean IS_UNIX = !System.getProperty("os.name").matches("(?i).*windows.*");
 
@@ -222,6 +222,7 @@ public class DevModeHandler implements Serializable {
         // Send the request
         int responseCode = connection.getResponseCode();
         if (responseCode == HTTP_NOT_FOUND) {
+            getLogger().debug("Resource not served by webpack {}", requestFilename);
             // webpack cannot access the resource, return false so as flow can
             // handle it
             return false;

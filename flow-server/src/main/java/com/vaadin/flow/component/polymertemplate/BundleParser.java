@@ -183,6 +183,9 @@ public final class BundleParser {
                     // Replace the flow frontend protocol
                     .replaceFirst("^frontend://", ".");
 
+            // Remove query-string used by webpack modules like babel (e.g ?babel-target=es6)
+            name = name.replaceFirst("\\?.+$", "");
+
             // Do check on the original fileName and the alternative one
             if (name.endsWith(fileName) || name.endsWith(alternativeName)) {
                 source = module.getString(SOURCE);

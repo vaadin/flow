@@ -29,9 +29,10 @@ module.exports = {
           JSON.stringify(compilation.getStats().toJson(), null, 2), done);
       });
     },
-    new CopyWebpackPlugin(
-      ['webcomponentsjs/**/*'],
-      { context: path.resolve(__dirname, 'node_modules', '@webcomponents') }
-    ),
+
+    new CopyWebpackPlugin([{
+      from: path.resolve(__dirname, 'node_modules/@webcomponents/webcomponentsjs'),
+      to: 'build/webcomponentsjs/',
+    }]),
   ]
 };
