@@ -17,9 +17,13 @@
 package com.vaadin.flow.function;
 
 import static com.vaadin.flow.server.Constants.JSBUNDLE_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_JSBUNDLE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -363,5 +367,18 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default String getJsModuleBundleEs5() {
         return getJsModuleBundle().replaceFirst("(\\.[^\\.]+)$", ".es5$1");
+    }
+
+    /**
+     * Returns an array with polyfills to be loaded when the app is loaded.
+     *
+     * The default value is <code>build/webcomponentsjs/webcomponents-loader.js</code>
+     * but it can be changed by setting the {@link Constants#SERVLET_PARAMETER_POLYFILLS}
+     * as a comma separated list of JS files to load.
+     *
+     * @return polyfills to load
+     */
+    default List<String> getPolyfills() {
+        return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS, POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
     }
 }

@@ -1075,7 +1075,7 @@ public class BootstrapHandlerTest {
                                 "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
     }
 
-    @Test // 3197
+    @Test
     public void index_appended_to_head_in_npm()
             throws InvalidRouteConfigurationException {
 
@@ -1087,15 +1087,21 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, testUI));
 
         Elements allElements = page.head().getAllElements();
-        Assert.assertTrue("index.js should be added to head for ES6 browsers.",
+
+        Assert.assertTrue("webcomponents-loader.js should be added to head. (not deferred)",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<script type=\"text/javascript\" src=\"build/webcomponentsjs/webcomponents-loader.js\"></script>")));
+
+        Assert.assertTrue("index.js should be added to head for ES6 browsers. (deferred and type module)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
                                 "<script type=\"module\" defer src=\"build/index.js\"></script>")));
 
-        Assert.assertTrue("index.js should be added to head for ES5 browsers.",
+        Assert.assertTrue("index.js should be added to head for ES5 browsers. (deferred and nomodule)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" defer src=\"build/index.es5.js\" nomodule=\"\"></script>")));
+                                "<script type=\"text/javascript\" defer src=\"build/index.es5.js\" nomodule></script>")));
     }
 
     @Test // 3333
