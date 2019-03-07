@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,22 +91,37 @@ public class NpmTemplateParser implements TemplateParser {
             if (dependency.getType() != Dependency.Type.JS_MODULE) {
                 continue;
             }
+
             String url = dependency.getUrl();
 
             // Use source file
             InputStream content = getClass().getClassLoader().getResourceAsStream(url);
+
             String source = content != null ? streamToString(content) : null;
             if (source != null) {
                 getLogger().debug("Found sources for the tag '{}' in '{}'", tag, url);
             } else {
-                // Use stats file
                 String stats = service.getDeploymentConfiguration().getStringProperty(Constants.STATISTICS_JSON,
-                        "META-INF/resources/stats.json");
+                        Constants.STATISTICS_JSON_DEFAULT).replaceFirst("^/", "");
 
+                // Use stats file via resources
                 content = getClass().getClassLoader().getResourceAsStream(stats);
+
+                if (content == null) {
+                    // Use stats file via webcontext
+                    URL statsUrl = service.getStaticResource(stats);
+                    if (statsUrl != null) {
+                        try {
+                            statsUrl.openConnection();
+                            content = statsUrl.openStream();
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                }
                 if (content == null) {
                     throw new IllegalStateException(
-                            String.format("Can't find resource '%s' or '%s'" + "via the ClassLoader", url, stats));
+                            String.format("Can't find resource '%s' or '%s'" + "via the ClassLoader or webcontext", url, stats));
                 }
 
                 updateCache(url, streamToString(content));
