@@ -18,7 +18,10 @@ package com.vaadin.flow.npmtest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -31,9 +34,22 @@ public class IdTestIT extends ChromeBrowserTest {
     @Test
     public void testIds() {
         open();
-        waitForElementPresent(By.tagName("my-component"));
+        waitUntillWithMessage(ExpectedConditions
+                        .presenceOfElementLocated(By.tagName("my-component")),
+                "Failed to load my-component", 25);
 
         WebElement myComponent = findElement(By.tagName("my-component"));
+
+        // wait for shadow root to be available
+        waitUntillWithMessage(driver -> getCommandExecutor()
+                .executeScript("return arguments[0].shadowRoot", myComponent)
+                != null, "Failed to load shadowroot for 'my-component'");
+
+        waitUntillWithMessage(webDriver -> ((WebElement) getCommandExecutor()
+                .executeScript("return arguments[0].shadowRoot", myComponent))
+                .findElements(By.id("content")).stream().findFirst()
+                .isPresent(), "Failed to load content element from shadowroot");
+
         WebElement content = getInShadowRoot(myComponent, By.id("content"));
         Assert.assertEquals("", content.getText());
 
@@ -43,5 +59,19 @@ public class IdTestIT extends ChromeBrowserTest {
 
         button.click();
         Assert.assertEquals("2", content.getText());
+    }
+
+    private void waitUntillWithMessage(ExpectedCondition<?> condition,
+            String message) {
+        waitUntillWithMessage(condition, message, 10);
+    }
+
+    private void waitUntillWithMessage(ExpectedCondition<?> condition,
+            String message, long time) {
+        try {
+            waitUntil(condition);
+        } catch (TimeoutException te) {
+            Assert.fail(message);
+        }
     }
 }
