@@ -65,7 +65,7 @@ public class NpmTemplateParserTest {
     public void should_FindCorrectDataInBeverageStats() {
         Mockito.when(configuration
                 .getStringProperty(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn("META-INF/resources/stats-beverage.json");
+                .thenReturn("/build/stats-beverage.json");
 
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance

@@ -118,10 +118,17 @@ public final class Constants implements Serializable {
      * The file path for WebPack profile statistics json file to use to
      * determine template contents.
      * <p>
-     * File needs to be available for the ClassLoader as a resource, for
-     * instance 'META-INF/resources/stats.json'
+     * File needs to be available either for the ClassLoader as a resource, or
+     * as a static web resource. By default it returns the value in
+     * {@link Constants#STATISTICS_JSON_DEFAULT}
      */
     public static final String STATISTICS_JSON = "statistics.file.path";
+
+    /**
+     * Default path for the WebPack profile statistics json file. It can be
+     * modifyied by setting the system property "statistics.file.path".
+     */
+    public static final String STATISTICS_JSON_DEFAULT = "/build/stats.json";
 
     private Constants() {
         // prevent instantiation constants class only
