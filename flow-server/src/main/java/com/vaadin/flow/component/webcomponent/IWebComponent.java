@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Component;
 
 import elemental.json.JsonValue;
@@ -22,7 +24,7 @@ import elemental.json.JsonValue;
 /**
  * WebComponent to be configured by {@link InstanceConfigurator}
  */
-public interface IWebComponent<C extends Component> {
+public interface IWebComponent<C extends Component> extends Serializable {
     void fireEvent(String eventName);
 
     void fireEvent(String eventName, JsonValue objectData);
