@@ -21,7 +21,9 @@ public class UnsupportedBrowserHandlerTest {
     private ArgumentCaptor<String> pageCapture = ArgumentCaptor.forClass(String.class);
     private PrintWriter writer;
 
-    private void initMocks(boolean forceReloadCookie, boolean isTooOldToFunctionProperly, boolean isIE, boolean isProductionMode) throws IOException {
+    private void initMocks(boolean forceReloadCookie, boolean isTooOldToFunctionProperly, boolean isIE,
+            boolean isProductionMode, boolean isBowerMode) throws IOException {
+
         request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request.getHeader("Cookie")).thenReturn(forceReloadCookie ? UnsupportedBrowserHandler.FORCE_LOAD_COOKIE : null);
 
@@ -36,6 +38,7 @@ public class UnsupportedBrowserHandlerTest {
 
         DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(isProductionMode);
+        Mockito.when(configuration.isBowerMode()).thenReturn(isBowerMode);
 
         session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.getBrowser()).thenReturn(webBrowser);
@@ -47,7 +50,7 @@ public class UnsupportedBrowserHandlerTest {
 
     @Test
     public void testUnsupportedBrowserHandler_validBrowserInProductionMode_doesntHandleRequest() throws IOException {
-        initMocks(false, false, false, true);
+        initMocks(false, false, false, true, false);
 
         Assert.assertFalse("Should not handle the request", handler.synchronizedHandleRequest(session, request, response));
         Mockito.verify(writer, Mockito.never()).write(Mockito.anyString());
@@ -55,7 +58,7 @@ public class UnsupportedBrowserHandlerTest {
 
     @Test
     public void testUnsupportedBrowserHandler_validBrowserInDevelopmentMode_doesntHandleRequest() throws IOException {
-        initMocks(false, false, false, false);
+        initMocks(false, false, false, false, false);
 
         Assert.assertFalse("Should not handle the request", handler.synchronizedHandleRequest(session, request, response));
         Mockito.verify(writer, Mockito.never()).write(Mockito.anyString());
@@ -63,7 +66,7 @@ public class UnsupportedBrowserHandlerTest {
 
     @Test
     public void testUnsupportedBrowserHandler_tooOldBrowser_returnsUnsupportedBrowserPage() throws IOException {
-        initMocks(false, true, false, false);
+        initMocks(false, true, false, false, false);
 
         Assert.assertTrue("Request should have been handled", handler.synchronizedHandleRequest(session, request, response));
 
@@ -74,7 +77,7 @@ public class UnsupportedBrowserHandlerTest {
 
     @Test
     public void testUnsupportedBrowserHandler_tooOldBrowserWithForceReloadCookie_doesntHandleRequest() throws IOException {
-        initMocks(true, true, false, false);
+        initMocks(true, true, false, false, false);
 
         Assert.assertFalse("Should not handle the request", handler.synchronizedHandleRequest(session, request, response));
         Mockito.verify(writer, Mockito.never()).write(Mockito.anyString());
@@ -82,7 +85,7 @@ public class UnsupportedBrowserHandlerTest {
 
     @Test
     public void testUnsupportedBrowserHandler_IE11WithProductionMode_doesntHandleRequest() throws IOException {
-        initMocks(false, false, true, true);
+        initMocks(false, false, true, true, false);
 
         Assert.assertFalse("Should not handle the request", handler.synchronizedHandleRequest(session, request, response));
         Mockito.verify(writer, Mockito.never()).write(Mockito.anyString());
@@ -90,7 +93,7 @@ public class UnsupportedBrowserHandlerTest {
 
     @Test
     public void testUnsupportedBrowserHandler_IE11WithDevelopmentModeAndForceReload_doesntHandleRequest() throws IOException {
-        initMocks(true, false, true, false);
+        initMocks(true, false, true, false, false);
 
         Assert.assertFalse("Should not handle the request", handler.synchronizedHandleRequest(session, request, response));
         Mockito.verify(writer, Mockito.never()).write(Mockito.anyString());
@@ -98,7 +101,7 @@ public class UnsupportedBrowserHandlerTest {
 
     @Test
     public void testUnsupportedBrowserHandler_IE11WithDevelopmentMode_returnsIE11RequiresProductionModePage() throws IOException {
-        initMocks(false, false, true, false);
+        initMocks(false, false, true, false, true);
 
         Assert.assertTrue("Request should have been handled", handler.synchronizedHandleRequest(session, request, response));
 
