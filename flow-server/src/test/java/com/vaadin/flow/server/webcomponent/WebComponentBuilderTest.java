@@ -35,7 +35,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -111,20 +110,13 @@ public class WebComponentBuilderTest {
 
         WebComponentExporter<MyComponent> exporter = new WebComponentExporter<MyComponent>() {
             @Override
-            public Class<MyComponent> getComponentClass() {
-                return null;
-            }
-
-            @Override
             public String getTag() {
                 // returning null should force the thing to use @Tag
                 return null;
             }
 
             @Override
-            public void define(WebComponentDefinition<MyComponent> configuration) {
-
-            }
+            public void define(WebComponentDefinition<MyComponent> configuration) { }
         };
 
         // TODO...
@@ -283,13 +275,6 @@ public class WebComponentBuilderTest {
     }
 
     public class MyComponentExporter implements WebComponentExporter<MyComponent> {
-
-        @Override
-        public Class<MyComponent> getComponentClass() {
-            // TODO: this should not be needed if everything goes fine
-            fail();
-            return null;
-        }
 
         @Override
         public String getTag() {

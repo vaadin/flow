@@ -52,6 +52,8 @@ import elemental.json.JsonValue;
  */
 public class WebComponentGenerator2 {
 
+    private static final String INDENTATION = "    ";
+
     private WebComponentGenerator2() {
     }
 
@@ -105,8 +107,8 @@ public class WebComponentGenerator2 {
         replacements.put("TagCamel", SharedUtil
                 .capitalize(SharedUtil.dashSeparatedToCamelCase(tag)));
 
-//        replacements.put("PropertyMethods", getPropertyMethods(
-//                propertyDataSet.stream().map(PropertyData2::getName)));
+        replacements.put("PropertyMethods", getPropertyMethods(
+                propertyDataSet.stream().map(PropertyData2::getName)));
 
         replacements.put("Properties",
                 getPropertyDefinitions(propertyDataSet));
@@ -152,6 +154,8 @@ public class WebComponentGenerator2 {
                 prop.put(propertyValue, (Double) property.getInitialValue());
             } else if (property.getType() == Integer.class) {
                 prop.put(propertyValue, (Integer) property.getInitialValue());
+            } else if (property.getType() == String.class) {
+                prop.put(propertyValue, (String) property.getInitialValue());
             } else if (JsonValue.class.isAssignableFrom(property.getType())) {
                 prop.put(propertyValue, (JsonValue) property.getInitialValue());
             }
@@ -172,5 +176,18 @@ public class WebComponentGenerator2 {
 
     private static String getSyncMethod(String property) {
         return "_sync_" + property;
+    }
+
+    private static String getPropertyMethods(Stream<String> properties) {
+        StringBuilder methods = new StringBuilder();
+        properties.forEach(property -> {
+            methods.append(INDENTATION);
+            methods.append(getSyncMethod(property));
+            methods.append("(newValue, oldValue) { ");
+            methods.append("this._sync('").append(property)
+                    .append("', newValue);");
+            methods.append("}\n");
+        });
+        return methods.toString();
     }
 }
