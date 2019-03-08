@@ -23,7 +23,7 @@ import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 
 import elemental.json.JsonValue;
 
-public class DummyWebComponentInterfacer<C extends Component> implements IWebComponent<C> {
+class DummyWebComponentInterfacer<C extends Component> implements IWebComponent<C> {
 
     @Override
     public void fireEvent(String eventName) {

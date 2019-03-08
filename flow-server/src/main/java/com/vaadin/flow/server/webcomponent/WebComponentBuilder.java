@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.IWebComponent;
 import com.vaadin.flow.component.webcomponent.InstanceConfigurator;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
@@ -143,12 +144,19 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
         SerializableBiConsumer<C, Object> onChangeHandler =
                 propertyConfiguration.getOnChangeHandler();
 
-        onChangeHandler.accept(componentReference, value);
+        if (onChangeHandler != null) {
+            onChangeHandler.accept(componentReference, value);
+        }
+        // TODO: should we log about the missing handler?
     }
 
     @Override
     public Set<PropertyData2<?>> getPropertyDataSet() {
         return propertyConfigurationMap.values().stream().map(PropertyConfigurationImp::getPropertyData).collect(Collectors.toSet());
+    }
+
+    PropertyData2<?> getPropertyData(String propertyName) {
+        return propertyConfigurationMap.get(propertyName).getPropertyData();
     }
 
     @Override
@@ -166,9 +174,11 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
         if (componentReference == null) {
             componentReference = instantiator.getOrCreate(this.getComponentClass());
 
-            // TODO: real IWebComponent impl
-            instanceConfigurator.accept(new DummyWebComponentInterfacer<>(),
-                    componentReference);
+            if (instanceConfigurator != null) {
+                // TODO: real IWebComponent impl
+                instanceConfigurator.accept(new DummyWebComponentInterfacer<>(),
+                        componentReference);
+            }
         }
 
         return componentReference;
