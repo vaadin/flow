@@ -94,75 +94,72 @@ public class NpmTemplateParser implements TemplateParser {
             }
 
             String url = dependency.getUrl();
-
-            // Use source file
-            InputStream content = getClass().getClassLoader().getResourceAsStream(url);
-
-            String source = content != null ? streamToString(content) : null;
-            if (source != null) {
-                getLogger().debug("Found sources for the tag '{}' in '{}'", tag, url);
-            } else {
-                String stats = service.getDeploymentConfiguration()
-                        .getStringProperty(Constants.STATISTICS_JSON, Constants.STATISTICS_JSON_DEFAULT)
-                        // Remove absolute
-                        .replaceFirst("^/", "");
-
-                // Try stats as a resource from the class path
-                content = getClass().getClassLoader().getResourceAsStream(stats);
-
-                // Else, try stats as a web resource
-                if (content == null) {
-                    try {
-                        // Read from filesystem (in production or when webpack outputs to webapp folder)
-                        URL statsUrl = service.getStaticResource("/" + stats);
-
-                        // Otherwise, ask webpack via http if in dev-mode
-                        if (statsUrl == null && !service.getDeploymentConfiguration().isProductionMode()) {
-                            String port = System.getProperty(DevModeHandler.PARAM_WEBPACK_RUNNING);
-                            if (port != null) {
-                                statsUrl = new URL("http://localhost:" + port + "/" + stats);
-                            }
-                        }
-
-                        if (statsUrl != null) {
-                            statsUrl.openConnection();
-                            content = statsUrl.openStream();
-                        }
-                    } catch (IOException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }
-
-                if (content == null) {
-                    throw new IllegalStateException(String.format(
-                            "Can't find resource '%s' or '%s'" + "via the ClassLoader or webcontext", url, stats));
-                }
-
-                updateCache(url, streamToString(content));
-                source = cache.get(url);
-
-                if (source == null) {
-                    throw new IllegalStateException(
-                            String.format("Can't find sources for '%s' resource in the '%s' file.", url, stats));
-                }
-
-                getLogger().debug("Found sources for the tag '{}' in '{}'", tag, stats);
+            String source = getSourcesFromTemplate(tag, url);
+            if (source == null) {
+                source = getSourcesFromStats(service, tag, url);
             }
-            Element templateElement = BundleParser.parseTemplateElement(url, source);
 
-            // Wrap template with an element with id, to look like a P2 template
-            Element parent = new Element(tag);
-            parent.attr("id", tag);
-            templateElement.appendTo(parent);
+            if (source != null) {
+                // Template needs to be wrapped in an element with id, to look like a P2 template
+                Element parent = new Element(tag);
+                parent.attr("id", tag);
 
-            return new TemplateData(url, templateElement);
+                Element templateElement = BundleParser.parseTemplateElement(url, source);
+                templateElement.appendTo(parent);
+
+                return new TemplateData(url, templateElement);
+            }
         }
+
         throw new IllegalStateException(String.format("Couldn't find the " + "definition of the element with tag '%s' "
                 + "in any template file declared using '@%s' annotations. "
                 + "Check the availability of the template files in your WAR "
                 + "file or provide alternative implementation of the "
                 + "method getTemplateContent() which should return an element "
                 + "representing the content of the template file", tag, JsModule.class.getSimpleName()));
+    }
+
+    private String getSourcesFromTemplate(String tag, String url) {
+        InputStream content = getClass().getClassLoader().getResourceAsStream(url);
+        if (content != null) {
+            getLogger().debug("Found sources from the tag '{}' in '{}'", tag, url);
+            return streamToString(content);
+        }
+        return null;
+    }
+
+    private String getSourcesFromStats(VaadinService service, String tag, String url) {
+        String stats = service.getDeploymentConfiguration()
+                .getStringProperty(Constants.STATISTICS_JSON, Constants.STATISTICS_JSON_DEFAULT)
+                // Remove absolute
+                .replaceFirst("^/", "");
+
+        try {
+            // Read from filesystem, this is for production or in devmode when
+            // webpack outputs to the webapp folder
+            URL statsUrl = service.getStaticResource("/" + stats);
+
+            // Otherwise, stats file is not accessible by flow, then ask webpack
+            // via http
+            if (statsUrl == null && !service.getDeploymentConfiguration().isProductionMode()) {
+                String port = System.getProperty(DevModeHandler.PARAM_WEBPACK_RUNNING);
+                if (port != null) {
+                    statsUrl = new URL("http://localhost:" + port + "/" + stats);
+                }
+            }
+
+            if (statsUrl != null) {
+                statsUrl.openConnection();
+                updateCache(url, streamToString(statsUrl.openStream()));
+                getLogger().debug("Found sources for the tag '{}' in '{}'", tag, stats);
+                return cache.get(url);
+
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return null;
     }
 
     private void updateCache(String url, String fileContents) {
