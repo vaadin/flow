@@ -22,12 +22,9 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
-import org.atmosphere.cpr.ApplicationConfig;
-import org.atmosphere.cpr.AtmosphereFramework;
+import org.atmosphere.client.TrackMessageSizeInterceptor;
+import org.atmosphere.cpr.*;
 import org.atmosphere.cpr.AtmosphereFramework.AtmosphereHandlerWrapper;
-import org.atmosphere.cpr.AtmosphereHandler;
-import org.atmosphere.cpr.AtmosphereRequestImpl;
-import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
@@ -216,6 +213,13 @@ public class PushRequestHandler
 
         try {
             atmosphere.init(vaadinServletConfig);
+
+            // Ensure the client-side knows how to split the message stream
+            // into individual messages when using certain transports
+            AtmosphereInterceptor trackMessageSize = new TrackMessageSizeInterceptor();
+            trackMessageSize.configure(atmosphere.getAtmosphereConfig());
+            atmosphere.interceptor(trackMessageSize);
+
         } catch (ServletException e) {
             throw new RuntimeException("Atmosphere init failed", e);
         }
