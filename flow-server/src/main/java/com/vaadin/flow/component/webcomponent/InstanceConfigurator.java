@@ -22,4 +22,6 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 
 @FunctionalInterface
 public interface InstanceConfigurator<C extends Component> extends SerializableBiConsumer<IWebComponent<C>, C> {
+    @Override
+    void accept(IWebComponent<C> webComponent, C component);
 }

@@ -76,7 +76,7 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
         return Objects.hash(componentClass, propertyName, propertyType);
     }
 
-    public SerializableBiConsumer<C, Object> getOnChangeHandler() {
+    SerializableBiConsumer<C, Object> getOnChangeHandler() {
         return (c, o) -> onChangeHandler.accept(c, (P)o);
     }
 
