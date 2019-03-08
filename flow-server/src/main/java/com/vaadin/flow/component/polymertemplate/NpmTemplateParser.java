@@ -35,6 +35,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.FakeBrowser;
@@ -101,27 +102,40 @@ public class NpmTemplateParser implements TemplateParser {
             if (source != null) {
                 getLogger().debug("Found sources for the tag '{}' in '{}'", tag, url);
             } else {
-                String stats = service.getDeploymentConfiguration().getStringProperty(Constants.STATISTICS_JSON,
-                        Constants.STATISTICS_JSON_DEFAULT).replaceFirst("^/", "");
+                String stats = service.getDeploymentConfiguration()
+                        .getStringProperty(Constants.STATISTICS_JSON, Constants.STATISTICS_JSON_DEFAULT)
+                        // Remove absolute
+                        .replaceFirst("^/", "");
 
-                // Use stats file via resources
+                // Try stats as a resource from the class path
                 content = getClass().getClassLoader().getResourceAsStream(stats);
 
+                // Else, try stats as a web resource
                 if (content == null) {
-                    // Use stats file via webcontext
-                    URL statsUrl = service.getStaticResource(stats);
-                    if (statsUrl != null) {
-                        try {
+                    try {
+                        // Read from filesystem (in production or when webpack outputs to webapp folder)
+                        URL statsUrl = service.getStaticResource("/" + stats);
+
+                        // Otherwise, ask webpack via http if in dev-mode
+                        if (statsUrl == null && !service.getDeploymentConfiguration().isProductionMode()) {
+                            String port = System.getProperty(DevModeHandler.PARAM_WEBPACK_RUNNING);
+                            if (port != null) {
+                                statsUrl = new URL("http://localhost:" + port + "/" + stats);
+                            }
+                        }
+
+                        if (statsUrl != null) {
                             statsUrl.openConnection();
                             content = statsUrl.openStream();
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e);
                         }
+                    } catch (IOException e) {
+                        throw new IllegalStateException(e);
                     }
                 }
+
                 if (content == null) {
-                    throw new IllegalStateException(
-                            String.format("Can't find resource '%s' or '%s'" + "via the ClassLoader or webcontext", url, stats));
+                    throw new IllegalStateException(String.format(
+                            "Can't find resource '%s' or '%s'" + "via the ClassLoader or webcontext", url, stats));
                 }
 
                 updateCache(url, streamToString(content));
@@ -136,8 +150,7 @@ public class NpmTemplateParser implements TemplateParser {
             }
             Element templateElement = BundleParser.parseTemplateElement(url, source);
 
-            // Wrap template with an element with id, to look like a P2
-            // template
+            // Wrap template with an element with id, to look like a P2 template
             Element parent = new Element(tag);
             parent.attr("id", tag);
             templateElement.appendTo(parent);
