@@ -175,8 +175,8 @@ public class WebComponentRegistryInitializer2Test {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {
-            configuration.addProperty(DUPLICATE_PROPERTY_NAME, "component");
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty(DUPLICATE_PROPERTY_NAME, "component");
         }
     }
 
@@ -188,8 +188,8 @@ public class WebComponentRegistryInitializer2Test {
         }
 
         @Override
-        public void define(WebComponentDefinition<UserBox> configuration) {
-            configuration.addProperty("user", "box");
+        public void define(WebComponentDefinition<UserBox> definition) {
+            definition.addProperty("user", "box");
         }
     }
 
@@ -201,7 +201,7 @@ public class WebComponentRegistryInitializer2Test {
         }
 
         @Override
-        public void define(WebComponentDefinition<InvalidName> configuration) {
+        public void define(WebComponentDefinition<InvalidName> definition) {
             // PASS
         }
     }
@@ -213,11 +213,11 @@ public class WebComponentRegistryInitializer2Test {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {
-            super.define(configuration);
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            super.define(definition);
 
             // overwrites a property - BAD!
-            configuration.addProperty(DUPLICATE_PROPERTY_NAME, "something");
+            definition.addProperty(DUPLICATE_PROPERTY_NAME, "something");
         }
     }
 
@@ -229,8 +229,8 @@ public class WebComponentRegistryInitializer2Test {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {
-            configuration.addProperty("name", "something");
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty("name", "something");
         }
     }
 
@@ -242,7 +242,7 @@ public class WebComponentRegistryInitializer2Test {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {
+        public void define(WebComponentDefinition<MyComponent> definition) {
 
         }
     }
@@ -255,9 +255,9 @@ public class WebComponentRegistryInitializer2Test {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {
-            configuration.addProperty(DUPLICATE_PROPERTY_NAME, "two");
-            configuration.addProperty(DUPLICATE_PROPERTY_NAME, "four");
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty(DUPLICATE_PROPERTY_NAME, "two");
+            definition.addProperty(DUPLICATE_PROPERTY_NAME, "four");
         }
     }
 }

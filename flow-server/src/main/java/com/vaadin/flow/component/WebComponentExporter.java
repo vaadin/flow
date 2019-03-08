@@ -22,5 +22,5 @@ public interface WebComponentExporter<C extends Component> {
 
     String getTag();
 
-    void define(WebComponentDefinition<C> configuration);
+    void define(WebComponentDefinition<C> definition);
 }

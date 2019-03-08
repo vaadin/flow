@@ -116,7 +116,7 @@ public class WebComponentBuilderTest {
             }
 
             @Override
-            public void define(WebComponentDefinition<MyComponent> configuration) { }
+            public void define(WebComponentDefinition<MyComponent> definition) { }
         };
 
         // TODO...
@@ -282,7 +282,7 @@ public class WebComponentBuilderTest {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {
+        public void define(WebComponentDefinition<MyComponent> definition) {
             // this is where WebComponentBuilder would be normally accessed
             // by the user but this tests uses it's interfaces directly.
         }

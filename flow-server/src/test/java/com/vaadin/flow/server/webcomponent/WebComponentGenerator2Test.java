@@ -105,12 +105,12 @@ public class WebComponentGenerator2Test {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {
-            configuration.addProperty("response", "hello")
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty("response", "hello")
                     .onChange(MyComponent::setMessage);
-            configuration.addProperty("integerValue", Integer.class)
+            definition.addProperty("integerValue", Integer.class)
                     .onChange(MyComponent::setIntegerValue);
-            configuration.addProperty("message", "")
+            definition.addProperty("message", "")
                     .onChange(MyComponent::setMessage);
         }
     }
