@@ -41,11 +41,14 @@ public class IdTestIT extends ChromeBrowserTest {
         WebElement myComponent = findElement(By.tagName("my-component"));
 
         // wait for polymer initalisation
-        waitUntillWithMessage(driver -> getCommandExecutor()
-                .executeScript("return arguments[0].constructor.polymerElementVersion !== undefined", myComponent), "Failed to load constructor.polymerElementVersion for 'my-component'");
+        waitUntillWithMessage(driver -> getCommandExecutor().executeScript(
+                "return arguments[0].constructor.polymerElementVersion !== undefined",
+                myComponent),
+                "Failed to load constructor.polymerElementVersion for 'my-component'");
 
         waitUntillWithMessage(driver -> getCommandExecutor()
-                .executeScript("return arguments[0].$ !== undefined", myComponent), "Failed to load $ for 'my-component'");
+                .executeScript("return arguments[0].$ !== undefined",
+                        myComponent), "Failed to load $ for 'my-component'");
 
         waitUntillWithMessage(webDriver -> ((WebElement) getCommandExecutor()
                 .executeScript("return arguments[0].shadowRoot", myComponent))
