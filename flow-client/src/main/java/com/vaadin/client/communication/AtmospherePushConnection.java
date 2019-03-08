@@ -661,7 +661,7 @@ public class AtmospherePushConnection implements PushConnection {
             reconnectInterval: 5000,
             timeout: -1,
             maxReconnectOnClose: 10000000,
-            trackMessageLength: false,
+            trackMessageLength: true,
             enableProtocol: true,
             handleOnlineOffline: false,
             messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
