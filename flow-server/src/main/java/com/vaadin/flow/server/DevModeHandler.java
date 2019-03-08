@@ -53,7 +53,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  */
 public class DevModeHandler implements Serializable {
 
-    static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
+    public static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
     static final String PARAM_WEBPACK_TIMEOUT = "vaadin.devmode.webpack.timeout";
 
     // It's not possible to know whether webpack is ready unless reading output messages.
@@ -61,7 +61,7 @@ public class DevModeHandler implements Serializable {
     private static final Pattern OUTPUT_PATTERN = Pattern.compile(": (Compiled|Failed)");
     // If after this time in millisecs, the pattern was not found, we unlock the process
     // and continue. It might happen if webpack changes their output without advise.
-    private static final int DEFAULT_TIMEOUT_FOR_PATTERN = 10000;
+    private static final int DEFAULT_TIMEOUT_FOR_PATTERN = 60000;
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
