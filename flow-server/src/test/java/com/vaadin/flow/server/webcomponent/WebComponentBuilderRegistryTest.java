@@ -194,7 +194,7 @@ public class WebComponentBuilderRegistryTest {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {}
+        public void define(WebComponentDefinition<MyComponent> definition) {}
     }
 
     public static class MyComponentExporter2 implements WebComponentExporter<MyComponent> {
@@ -205,7 +205,7 @@ public class WebComponentBuilderRegistryTest {
         }
 
         @Override
-        public void define(WebComponentDefinition<MyComponent> configuration) {}
+        public void define(WebComponentDefinition<MyComponent> definition) {}
     }
 
     public static class UserBoxExporter implements WebComponentExporter<UserBox> {
@@ -216,6 +216,6 @@ public class WebComponentBuilderRegistryTest {
         }
 
         @Override
-        public void define(WebComponentDefinition<UserBox> configuration) {}
+        public void define(WebComponentDefinition<UserBox> definition) {}
     }
 }
