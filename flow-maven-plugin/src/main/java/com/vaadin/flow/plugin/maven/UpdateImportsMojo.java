@@ -15,24 +15,28 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getHtmlImportNpmPackages;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getProjectClassPathUrls;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
+import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -41,10 +45,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getHtmlImportNpmPackages;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getProjectClassPathUrls;
 
 /**
  * Goal that updates flow-imports.js file with @JsModule and @HtmlImport
@@ -68,6 +70,15 @@ public class UpdateImportsMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "true")
     private boolean convertHtml;
+
+    private final List<String> lumoJsFiles = Arrays.asList(new String[] {
+            "@vaadin/vaadin-lumo-styles/color.js",
+            "@vaadin/vaadin-lumo-styles/typography.js",
+            "@vaadin/vaadin-lumo-styles/sizing.js",
+            "@vaadin/vaadin-lumo-styles/spacing.js",
+            "@vaadin/vaadin-lumo-styles/style.js",
+            "@vaadin/vaadin-lumo-styles/icons.js"
+    });
 
     @Override
     public void execute() {
@@ -94,23 +105,31 @@ public class UpdateImportsMojo extends AbstractMojo {
         }
 
         try {
-            String current = FileUtils.fileExists(jsFile) ? FileUtils.fileRead(jsFile) : "";
+            Pattern pattern = Pattern.compile("^import\\s*'(.*)'\\s*;$");
+
+            List<String> current = FileUtils.fileExists(jsFile) ? FileUtils.loadFile(new File(jsFile)) : Collections.EMPTY_LIST;
+            Set<String> existingJsModules = current.stream()
+                    .map(jsImport -> pattern.matcher(jsImport).replaceFirst("$1"))
+                    .collect(Collectors.toSet());
 
             Set<String> jsModules = new HashSet<>();
+
+            // Add Lumo files manually.
+            jsModules.addAll(lumoJsFiles);
+
             classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(fileName -> {
                 // add `./` prefix to everything starting with letters
                 fileName = fileName.replaceFirst("(?i)^([a-z])", "./$1");
-                if (!current.contains(fileName)) {
-                    jsModules.add(fileName);
-                }
+                jsModules.add(fileName);
             }));
 
-            if (jsModules.isEmpty()) {
+            if (existingJsModules.equals(jsModules)) {
                 getLog().info("No js modules to update");
+
             } else {
                 String content = jsModules.stream().sorted(Comparator.reverseOrder()).map(s -> "import '" + s + "';")
                         .collect(Collectors.joining("\n"));
-                updateJsFile("\n" + content + "\n");
+                replaceJsFile(content + "\n");
             }
 
         } catch (IOException e) {
@@ -118,7 +137,7 @@ public class UpdateImportsMojo extends AbstractMojo {
         }
     }
 
-    private void updateJsFile(String content) throws IOException {
+    private void replaceJsFile(String content) throws IOException {
         File out = new File(jsFile);
         if (out.getParentFile() != null && !out.getParentFile().exists()) {
             getLog().info("creating Folder: " + out.getParentFile().getAbsolutePath());
@@ -127,7 +146,7 @@ public class UpdateImportsMojo extends AbstractMojo {
         getLog().info("Updating JS imports to file: " + out.getAbsolutePath());
 
         if (out.canWrite() || out.createNewFile()) {
-            Files.write(Paths.get(out.toURI()), content.getBytes("UTF-8"), StandardOpenOption.APPEND);
+            Files.write(Paths.get(out.toURI()), content.getBytes("UTF-8"));
         }
 
     }
