@@ -24,6 +24,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -109,7 +110,7 @@ public class UpdateImportsMojo extends AbstractMojo {
             } else {
                 String content = jsModules.stream().sorted(Comparator.reverseOrder()).map(s -> "import '" + s + "';")
                         .collect(Collectors.joining("\n"));
-                updateJsFile(content + "\n");
+                updateJsFile("\n" + content + "\n");
             }
 
         } catch (IOException e) {
@@ -126,7 +127,7 @@ public class UpdateImportsMojo extends AbstractMojo {
         getLog().info("Updating JS imports to file: " + out.getAbsolutePath());
 
         if (out.canWrite() || out.createNewFile()) {
-            Files.write(Paths.get(out.toURI()), content.getBytes("UTF-8"));
+            Files.write(Paths.get(out.toURI()), content.getBytes("UTF-8"), StandardOpenOption.APPEND);
         }
 
     }
