@@ -38,51 +38,43 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WebComponentRegistry2Test {
+public class WebComponentBuilderRegistryTest {
 
     private static final String MY_COMPONENT_TAG = "my-component";
     private static final String USER_BOX_TAG = "user-box";
 
-    protected WebComponentRegistry2 registry;
+    protected WebComponentBuilderRegistry registry;
 
-    protected WebComponentExporter<MyComponent> myComponentExporter;
     protected WebComponentBuilder<MyComponent> myComponentBuilder;
-
-    protected WebComponentExporter<UserBox> userBoxExporter;
     protected WebComponentBuilder<UserBox> userBoxBuilder;
 
 
     @Before
     public void init() {
-        registry = WebComponentRegistry2
+        registry = WebComponentBuilderRegistry
                 .getInstance(mock(ServletContext.class));
 
-        myComponentExporter = mock(WebComponentExporter.class);
-        when(myComponentExporter.getTag()).thenReturn(MY_COMPONENT_TAG);
-
-        userBoxExporter = mock(WebComponentExporter.class);
-        when(userBoxExporter.getTag()).thenReturn(USER_BOX_TAG);
-
-        myComponentBuilder = new WebComponentBuilder<>(myComponentExporter);
-        userBoxBuilder = new WebComponentBuilder<>(userBoxExporter);
+        myComponentBuilder = new WebComponentBuilder<>(new MyComponentExporter());
+        userBoxBuilder = new WebComponentBuilder<>(new UserBoxExporter());
     }
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(WebComponentRegistry2.class, registry.getClass());
+        Assert.assertEquals(WebComponentBuilderRegistry.class, registry.getClass());
     }
 
     @Test
     public void setWebComponents_allCanBeFoundInRegistry() {
-        Set<WebComponentBuilder<? extends Component>> webComponents =
+        Set<WebComponentBuilder<? extends Component>> builders =
                 asSet(myComponentBuilder, userBoxBuilder);
 
         Assert.assertTrue("Registry should have accepted the webComponents",
-                registry.setWebComponentBuilders(webComponents));
+                registry.setWebComponentBuilders(builders));
 
         Assert.assertEquals("Expected two targets to be registered", 2,
                 registry.getWebComponentBuilders().size());
@@ -101,19 +93,40 @@ public class WebComponentRegistry2Test {
     }
 
     @Test
+    public void getWebComponentBuildersForComponent_findsAllBuildersForAComponent() {
+        WebComponentBuilder<MyComponent> myComponentBuilder2nd =
+                new WebComponentBuilder<>(new MyComponentExporter2());
+
+        Set<WebComponentBuilder<? extends Component>> builders =
+                asSet(myComponentBuilder, myComponentBuilder2nd, userBoxBuilder);
+
+        registry.setWebComponentBuilders(builders);
+
+        Set<WebComponentBuilder<MyComponent>> set =
+                registry.getWebComponentBuildersForComponent(MyComponent.class);
+
+        Assert.assertEquals("Builder set should contain two builders", 2,
+                set.size());
+
+        Assert.assertTrue("Builder set should contain both MyComponent " +
+                "builders", set.containsAll(asSet(myComponentBuilder,
+                myComponentBuilder2nd)));
+    }
+
+    @Test
     public void setWebComponentsTwice_onlyFirstSetIsAccepted() {
-        Set<WebComponentBuilder<? extends Component>> webComponents1st =
+        Set<WebComponentBuilder<? extends Component>> builders1st =
                 asSet(myComponentBuilder);
 
-        Set<WebComponentBuilder<? extends Component>> webComponents2nd =
+        Set<WebComponentBuilder<? extends Component>> builders2nd =
                 asSet(userBoxBuilder);
 
         Assert.assertTrue("Registry should have accepted the WebComponents",
-                registry.setWebComponentBuilders(webComponents1st));
+                registry.setWebComponentBuilders(builders1st));
 
         Assert.assertFalse(
                 "Registry should not accept a second set of WebComponents.",
-                registry.setWebComponentBuilders(webComponents2nd));
+                registry.setWebComponentBuilders(builders2nd));
 
         Assert.assertEquals(
                 "Builders from the first Set should have been added",
@@ -163,7 +176,7 @@ public class WebComponentRegistry2Test {
 
     }
 
-    private <T> Set<T> asSet(T... things) {
+    protected  <T> Set<T> asSet(T... things) {
         return new HashSet<>(Arrays.asList(things));
     }
 
@@ -171,5 +184,38 @@ public class WebComponentRegistry2Test {
     }
 
     public class UserBox extends Component {
+    }
+
+    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+
+        @Override
+        public String getTag() {
+            return "my-component";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<MyComponent> configuration) {}
+    }
+
+    public static class MyComponentExporter2 implements WebComponentExporter<MyComponent> {
+
+        @Override
+        public String getTag() {
+            return "my-component-2";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<MyComponent> configuration) {}
+    }
+
+    public static class UserBoxExporter implements WebComponentExporter<UserBox> {
+
+        @Override
+        public String getTag() {
+            return "user-box";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<UserBox> configuration) {}
     }
 }
