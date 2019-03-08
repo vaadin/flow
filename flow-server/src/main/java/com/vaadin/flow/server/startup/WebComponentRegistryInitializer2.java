@@ -38,7 +38,7 @@ import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.webcomponent.WebComponentBuilder;
-import com.vaadin.flow.server.webcomponent.WebComponentRegistry2;
+import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
 
 /**
  *
@@ -55,7 +55,7 @@ public class WebComponentRegistryInitializer2
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
-        WebComponentRegistry2 instance = WebComponentRegistry2
+        WebComponentBuilderRegistry instance = WebComponentBuilderRegistry
                 .getInstance(servletContext);
         if (set == null || set.isEmpty()) {
             instance.setWebComponentBuilders(Collections.emptySet());
@@ -64,7 +64,6 @@ public class WebComponentRegistryInitializer2
         Set<Class<?>> exporterClasses = set.stream()
                 .filter(WebComponentExporter.class::isAssignableFrom)
                 .filter(c -> !c.isInterface())
-                //.map(clazz -> (Class<WebComponentExporter<?extends Component>>) clazz)
                 .collect(Collectors.toSet());
         Set<WebComponentExporter<? extends Component>> exporters;
 
@@ -75,17 +74,26 @@ public class WebComponentRegistryInitializer2
         Set<WebComponentBuilder<? extends Component>> builders =
                 constructBuilders(exporters);
 
-        //exporters.forEach(this::validateMethodsAndProperties);
-
         instance.setWebComponentBuilders(builders);
     }
 
     private Set<WebComponentBuilder<? extends Component>> constructBuilders(Set<WebComponentExporter<? extends Component>> exporters) {
-        return exporters.stream().map((Function<WebComponentExporter<? extends Component>, ? extends WebComponentBuilder<? extends Component>>) WebComponentBuilder::new).collect(Collectors.toSet());
+        return exporters.stream()
+                .map(exporter -> {
+                    try {
+                        return new WebComponentBuilder<>(exporter);
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException(String.format(
+                                "Invalid exporter '%s': %s",
+                                exporter.getClass().getCanonicalName(),
+                                e.getMessage()));
+                    }
+                }).collect(Collectors.toSet());
     }
 
     private Set<WebComponentExporter<? extends Component>> constructExporters(
             Set<Class<?>> exporterClasses) {
+
         Instantiator instantiator = VaadinService.getCurrent().getInstantiator();
         return exporterClasses.stream().map(instantiator::getOrCreate)
                 .map(o -> (WebComponentExporter<? extends Component>)o)
@@ -127,60 +135,17 @@ public class WebComponentRegistryInitializer2
             for (WebComponentExporter<? extends Component> exporter : exporterSet) {
                 String tag = exporter.getTag();
                 if (items.containsKey(tag)) {
-                    String message = String.format("Found two " +
-                                    "WebComponentExporter classes '%s' " +
-                                    "and '%s' for the tag name '%s'",
-                            items.get(tag).getName(), exporter.getClass(), tag);
+                    String message = String.format(
+                            "Found two %s classes '%s' and '%s' for the tag " +
+                                    "name '%s'. Tag must be unique.",
+                            WebComponentExporter.class.getSimpleName(),
+                            items.get(tag).getCanonicalName(),
+                            exporter.getClass().getCanonicalName(),
+                            tag);
                     throw new IllegalArgumentException(message);
                 }
                 items.put(tag, exporter.getClass());
             }
         }
-    }
-
-    protected void validateMethodsAndProperties(Class<?> webComponent) {
-        Set<String> methods = getWebComponentMethods(webComponent);
-        Set<String> propertyFields = getWebComponentPropertyFields(
-                webComponent);
-
-        Set<String> duplicates = methods.stream()
-                .filter(propertyFields::contains).collect(Collectors.toSet());
-
-        if (!duplicates.isEmpty()) {
-            String message = String
-                    .format("In the WebComponent '%s' there is a method and a property for the name(s) %s",
-                            webComponent, duplicates);
-            throw new IllegalArgumentException(message);
-        }
-    }
-
-    private Set<String> getWebComponentPropertyFields(Class<?> webComponent) {
-        Set<String> propertyFields = new HashSet<>();
-
-        if (webComponent.getSuperclass() != null) {
-            propertyFields.addAll(getWebComponentPropertyFields(
-                    webComponent.getSuperclass()));
-        }
-        Stream.of(webComponent.getDeclaredFields())
-                .filter(field -> WebComponentProperty.class
-                        .isAssignableFrom(field.getType())).map(Field::getName)
-                .forEach(propertyFields::add);
-
-        return propertyFields;
-    }
-
-    private Set<String> getWebComponentMethods(Class<?> webComponent) {
-        Set<String> methods = new HashSet<>();
-
-        if (webComponent.getSuperclass() != null) {
-            methods.addAll(
-                    getWebComponentMethods(webComponent.getSuperclass()));
-        }
-        Stream.of(webComponent.getDeclaredMethods()).filter(method -> method
-                .isAnnotationPresent(WebComponentMethod.class))
-                .map(method -> method.getAnnotation(WebComponentMethod.class))
-                .forEach(annotation -> methods.add(annotation.value()));
-
-        return methods;
     }
 }

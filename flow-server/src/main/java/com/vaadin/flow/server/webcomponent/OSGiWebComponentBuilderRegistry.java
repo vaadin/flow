@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Component;
  * Data collector component for collecting web components in an OSGi
  * environment.
  */
-public class OSGiWebComponentRegistry2 extends WebComponentRegistry2 {
+public class OSGiWebComponentBuilderRegistry extends WebComponentBuilderRegistry {
 
     @Override
     public boolean setWebComponentBuilders(

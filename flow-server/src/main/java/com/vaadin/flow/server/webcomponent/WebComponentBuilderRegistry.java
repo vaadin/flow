@@ -30,11 +30,11 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 
 /**
- * Registry for storing available web component implementations.
+ * Registry for storing available web component builder implementations.
  *
  * @since
  */
-public class WebComponentRegistry2 implements Serializable {
+public class WebComponentBuilderRegistry implements Serializable {
 
     /**
      * Lock used to ensure there's only one update going on at once.
@@ -48,7 +48,7 @@ public class WebComponentRegistry2 implements Serializable {
     /**
      * Protected constructor for internal OSGi extensions.
      */
-    protected WebComponentRegistry2() {
+    protected WebComponentBuilderRegistry() {
     }
 
     /**
@@ -72,6 +72,25 @@ public class WebComponentRegistry2 implements Serializable {
         try {
             if (componentBuilders != null) {
                 return componentBuilders.get(tag);
+            }
+        } finally {
+            configurationLock.unlock();
+        }
+        return null;
+    }
+
+    /**
+     * @param componentClass
+     * @return
+     */
+    protected <T extends Component> Set<WebComponentBuilder<T>> getWebComponentBuildersForComponent(Class<T> componentClass) {
+        configurationLock.lock();
+        try {
+            if (componentBuilders != null) {
+                return componentBuilders.values().stream()
+                        .filter(b -> componentClass.equals(b.getComponentClass()))
+                        .map(b -> (WebComponentBuilder<T>)b)
+                        .collect(Collectors.toSet());
             }
         } finally {
             configurationLock.unlock();
@@ -154,42 +173,42 @@ public class WebComponentRegistry2 implements Serializable {
      *         servlet context to get registry for
      * @return WebComponentRegistry instance
      */
-    public static WebComponentRegistry2 getInstance(
+    public static WebComponentBuilderRegistry getInstance(
             ServletContext servletContext) {
         assert servletContext != null;
 
         Object attribute;
         synchronized (servletContext) {
             attribute = servletContext
-                    .getAttribute(WebComponentRegistry2.class.getName());
+                    .getAttribute(WebComponentBuilderRegistry.class.getName());
 
             if (attribute == null) {
                 attribute = createRegistry(servletContext);
                 servletContext
-                        .setAttribute(WebComponentRegistry2.class.getName(),
+                        .setAttribute(WebComponentBuilderRegistry.class.getName(),
                                 attribute);
             }
         }
 
-        if (attribute instanceof WebComponentRegistry2) {
-            return (WebComponentRegistry2) attribute;
+        if (attribute instanceof WebComponentBuilderRegistry) {
+            return (WebComponentBuilderRegistry) attribute;
         } else {
             throw new IllegalStateException(
                     "Unknown servlet context attribute value: " + attribute);
         }
     }
 
-    private static WebComponentRegistry2 createRegistry(ServletContext context) {
+    private static WebComponentBuilderRegistry createRegistry(ServletContext context) {
         if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
-            return new WebComponentRegistry2();
+            return new WebComponentBuilderRegistry();
         }
         Object attribute = OSGiAccess.getInstance().getOsgiServletContext()
-                .getAttribute(WebComponentRegistry2.class.getName());
+                .getAttribute(WebComponentBuilderRegistry.class.getName());
         if (attribute != null
-                && attribute instanceof OSGiWebComponentRegistry) {
-            return (WebComponentRegistry2) attribute;
+                && attribute instanceof OSGiWebComponentBuilderRegistry) {
+            return (WebComponentBuilderRegistry) attribute;
         }
 
-        return new OSGiWebComponentRegistry2();
+        return new OSGiWebComponentBuilderRegistry();
     }
 }
