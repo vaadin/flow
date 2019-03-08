@@ -165,7 +165,7 @@
     }
 
     _isFocusable(node){
-      if (node.hasAttribute("disabled")
+      if (node.hasAttribute && node.hasAttribute("disabled")
               || node.hasAttribute("hidden")) {
         return false;
       }
