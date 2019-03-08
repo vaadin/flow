@@ -20,7 +20,14 @@ import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClas
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
@@ -62,17 +69,14 @@ public class UpdateImportsMojoTest {
         Assert.assertFalse(FileUtils.fileExists(importsFile));
 
         mojo.execute();
-        String content = FileUtils.fileRead(importsFile);
 
-        Arrays.asList(
+        assertContainsImports(true,
                 "@polymer/iron-icon",
                 "./foo-dir/vaadin-npm-component.js",
                 "./bar-dir/vaadin-mixed-component.js",
-                "@vaadin/vaadin-element-mixin",
-                "./local-p3-template.js",
+                "@vaadin/vaadin-element-mixin", "./local-p3-template.js",
                 "./foo.js",
-                "./local-p2-template.js")
-        .forEach(s -> Assert.assertTrue(s + " not found in:\n" + content, content.contains(s)));
+                "./local-p2-template.js");
     }
 
     @Test
@@ -87,4 +91,105 @@ public class UpdateImportsMojoTest {
 
         Assert.assertTrue(timestamp1 == timestamp2);
     }
+
+    @Test
+    public void should_ContainLumoThemeFiles() throws IOException {
+        mojo.execute();
+
+        assertContainsImports(true,
+                "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/sizing.js",
+                "@vaadin/vaadin-lumo-styles/spacing.js",
+                "@vaadin/vaadin-lumo-styles/style.js",
+                "@vaadin/vaadin-lumo-styles/icons.js");
+    }
+
+    @Test
+    public void should_AddImports() throws IOException {
+        mojo.execute();
+        removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
+                "./local-p2-template.js");
+        assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
+                "./local-p2-template.js");
+        
+        mojo.execute();
+        assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
+                "./local-p2-template.js");
+    }
+
+    @Test
+    public void should_removeImports() throws IOException {
+        mojo.execute();
+        addImports("./added-import.js");
+        assertContainsImports(true, "./added-import.js");
+
+        mojo.execute();
+        assertContainsImports(false, "./added-import.js");
+    }
+
+    @Test
+    public void should_AddRemove_Imports() throws IOException {
+        mojo.execute();
+
+        removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
+                "./local-p2-template.js");
+        addImports("./added-import.js");
+
+        assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
+                "./local-p2-template.js");
+        assertContainsImports(true, "./added-import.js");
+
+        mojo.execute();
+
+        assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
+                "./local-p2-template.js");
+        assertContainsImports(false, "./added-import.js");
+    }
+
+    private void assertContainsImports(boolean contains, String... imports) throws IOException {
+        String content = FileUtils.fileRead(importsFile);
+
+        if (contains) {
+            Arrays.asList(imports)
+                    .forEach(s -> Assert.assertTrue(
+                            s + " not found in:\n" + content,
+                            content.contains(s)));
+        } else {
+            Arrays.asList(imports).forEach(s -> Assert.assertFalse(
+                    s + " found in:\n" + content, content.contains(s)));
+        }
+    }
+
+    private void removeImports(String... imports) throws IOException {
+        List<String> importsList = Arrays.asList(imports);
+
+        List<String> current = FileUtils.loadFile(new File(importsFile));
+
+        Set<String> removed = current.stream()
+                .filter(line -> importsList.stream()
+                        .filter(jsImport -> line.contains(jsImport)).findAny()
+                        .isPresent())
+                .collect(Collectors.toSet());
+
+        current.removeAll(removed);
+
+        String content = current.stream().collect(Collectors.joining("\n"));
+
+        replaceJsFile(content + "\n");
+    }
+
+    private void addImports(String... imports) throws IOException {
+        String content = Arrays.asList(imports).stream().map(s -> "import '" + s + "';")
+                .collect(Collectors.joining("\n"));
+
+        replaceJsFile(content + "\n", StandardOpenOption.APPEND);
+    }
+
+    private void replaceJsFile(String content, OpenOption... options)
+            throws IOException {
+        Files.write(Paths.get(new File(importsFile).toURI()),
+                content.getBytes("UTF-8"), options);
+    }
+
 }
