@@ -37,6 +37,9 @@ public enum ValueChangeMode {
     /**
      * On every user event, schedule a synchronization after a defined interval,
      * cancelling the currently-scheduled event if any.
+     * <p>
+     * The recommended default timeout for input fields is
+     * {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
      */
     LAZY,
 
