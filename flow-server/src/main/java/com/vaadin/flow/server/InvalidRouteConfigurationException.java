@@ -32,5 +32,4 @@ public class InvalidRouteConfigurationException extends RuntimeException {
     public InvalidRouteConfigurationException(String message) {
         super(message);
     }
-
 }
