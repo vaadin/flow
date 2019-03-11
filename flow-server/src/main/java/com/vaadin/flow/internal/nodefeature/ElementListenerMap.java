@@ -58,6 +58,9 @@ public class ElementListenerMap extends NodeMap {
      */
     public static final String ALWAYS_TRUE_FILTER = "1";
 
+    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES
+            = EnumSet.of(DebouncePhase.LEADING);
+
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
@@ -65,9 +68,6 @@ public class ElementListenerMap extends NodeMap {
         private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
         public void addDebouncePhases(int timeout, Set<DebouncePhase> phases) {
-            if (phases == null) {
-                phases = EnumSet.noneOf(DebouncePhase.class);
-            }
             debounceSettings.merge(Integer.valueOf(timeout), phases,
                     (phases1, phases2) -> {
                         EnumSet<DebouncePhase> merge = EnumSet.copyOf(phases1);
@@ -110,7 +110,7 @@ public class ElementListenerMap extends NodeMap {
         private String filter;
 
         private int debounceTimeout = 0;
-        private EnumSet<DebouncePhase> debouncePhases = null;
+        private EnumSet<DebouncePhase> debouncePhases = NO_TIMEOUT_PHASES;
         private List<SerializableRunnable> unregisterHandlers;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
@@ -118,6 +118,11 @@ public class ElementListenerMap extends NodeMap {
             this.listenerMap = listenerMap;
             this.type = type;
             this.origin = origin;
+        }
+
+        @Override
+        public String getEventType() {
+            return type;
         }
 
         @Override
@@ -204,7 +209,7 @@ public class ElementListenerMap extends NodeMap {
             debounceTimeout = timeout;
 
             if (timeout == 0) {
-                debouncePhases = null;
+                debouncePhases = NO_TIMEOUT_PHASES;
             } else {
                 debouncePhases = EnumSet.of(firstPhase, additionalPhases);
             }
@@ -214,12 +219,18 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
+        @Override
+        public int getDebounceTimeout() {
+            return debounceTimeout;
+        }
+
+        @Override
+        public Set<DebouncePhase> getDebouncePhases() {
+            return Collections.unmodifiableSet(debouncePhases);
+        }
+
         public boolean matchesPhase(DebouncePhase phase) {
-            if (debouncePhases == null) {
-                return phase == DebouncePhase.LEADING;
-            } else {
-                return debouncePhases.contains(phase);
-            }
+            return debouncePhases.contains(phase);
         }
 
         @Override
@@ -347,7 +358,7 @@ public class ElementListenerMap extends NodeMap {
              * listeners are still notified.
              */
             ensureExpression.apply(ALWAYS_TRUE_FILTER).addDebouncePhases(0,
-                    Collections.singleton(DebouncePhase.LEADING));
+                    NO_TIMEOUT_PHASES);
         }
 
         return expressions;

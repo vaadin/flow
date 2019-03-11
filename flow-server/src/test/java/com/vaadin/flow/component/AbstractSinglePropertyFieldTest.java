@@ -17,11 +17,12 @@ package com.vaadin.flow.component;
 
 import java.lang.reflect.Method;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.function.SerializableRunnable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -35,6 +36,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
+import org.mockito.Mockito;
 
 public class AbstractSinglePropertyFieldTest {
     @Rule
@@ -58,10 +60,6 @@ public class AbstractSinglePropertyFieldTest {
             super.setSynchronizedEvent(synchronizedEventName);
         }
 
-        List<String> getSynchronizedEvents() {
-            return getElement().getSynchronizedPropertyEvents()
-                    .collect(Collectors.toList());
-        }
     }
 
     @Test
@@ -112,43 +110,44 @@ public class AbstractSinglePropertyFieldTest {
     }
 
     @Test
-    public void synchronizedProperty_default() {
+    public void synchronizedEvent_default() {
         StringField stringField = new StringField();
 
-        List<String> synchronizedProperties = stringField
-                .getSynchronizedEvents();
-        Assert.assertEquals(Arrays.asList("property-changed"),
-                synchronizedProperties);
+        Assert.assertEquals("property-changed",
+                stringField.getSynchronizationRegistration().getEventType());
     }
 
     @Test
-    public void synchronizedProperty_redefined() {
+    public void synchronizedEvent_redefined() {
         StringField stringField = new StringField();
+        DomListenerRegistration origReg = stringField.getSynchronizationRegistration();
+        SerializableRunnable unregisterListener = Mockito.mock(SerializableRunnable.class);
+        origReg.onUnregister(unregisterListener);
+
         stringField.setSynchronizedEvent("blur");
-
-        List<String> synchronizedProperties = stringField
-                .getSynchronizedEvents();
-        Assert.assertEquals(Arrays.asList("blur"), synchronizedProperties);
+        DomListenerRegistration recentReg = stringField.getSynchronizationRegistration();
+        Mockito.verify(unregisterListener).run();
+        Assert.assertNotSame(origReg, recentReg);
+        Assert.assertEquals("blur", recentReg.getEventType());
     }
 
     @Test
-    public void synchronizedProperty_null_noSynchronization() {
+    public void synchronizedEvent_null_noSynchronization() {
         StringField stringField = new StringField();
-        stringField.setSynchronizedEvent(null);
+        SerializableRunnable unregisterListener = Mockito.mock(SerializableRunnable.class);
+        stringField.getSynchronizationRegistration().onUnregister(unregisterListener);
 
-        List<String> synchronizedProperties = stringField
-                .getSynchronizedEvents();
-        Assert.assertEquals(Arrays.asList(), synchronizedProperties);
+        stringField.setSynchronizedEvent(null);
+        Assert.assertNull(stringField.getSynchronizationRegistration());
+        Mockito.verify(unregisterListener).run();
     }
 
     @Test
     public void synchronizedEvent_camelCaseProperty_dashCaseEvent() {
         StringField stringField = new StringField("immediateValue");
 
-        List<String> synchronizedProperties = stringField
-                .getSynchronizedEvents();
-        Assert.assertEquals(Arrays.asList("immediate-value-changed"),
-                synchronizedProperties);
+        Assert.assertEquals("immediate-value-changed",
+                stringField.getSynchronizationRegistration().getEventType());
     }
 
     @Tag("tag")
