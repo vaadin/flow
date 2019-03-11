@@ -32,6 +32,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
@@ -58,7 +59,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     @SuppressWarnings("unchecked")
     private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
             ElementChildrenList.class, ShadowRootHost.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class };
+            AttachExistingElementFeature.class, VirtualChildrenList.class,
+            ReturnChannelMap.class };
 
     /**
      * Gets the one and only instance.

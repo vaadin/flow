@@ -97,6 +97,8 @@ public class NodeFeatureTest {
         expectedIds.put(BasicTypeValue.class, NodeFeatures.BASIC_TYPE_VALUE);
         expectedIds.put(VirtualChildrenList.class,
                 NodeFeatures.VIRTUAL_CHILDREN);
+        expectedIds.put(ReturnChannelMap.class,
+                NodeFeatures.RETURN_CHANNEL_MAP);
 
         return expectedIds;
     }
@@ -147,6 +149,9 @@ public class NodeFeatureTest {
                 ElementClassList.class, ElementAttributeMap.class,
                 ElementListenerMap.class, SynchronizedPropertiesList.class,
                 SynchronizedPropertyEventsList.class, VirtualChildrenList.class,
+
+                /* Supplementary generic stuff */
+                ReturnChannelMap.class,
 
                 /* PolymerTemplate stuff */
                 PolymerEventListenerMap.class, PolymerServerEventHandlers.class,

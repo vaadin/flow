@@ -212,6 +212,29 @@ public class ServerConnector {
         sendMessage(message);
     }
 
+    /**
+     * Sends a return channel message to the server.
+     *
+     * @param stateNodeId
+     *            the id of the state node that owns the channel.
+     * @param channelId
+     *            the id of the channel.
+     * @param arguments
+     *            array of arguments passed to the channel, not
+     *            <code>null</code>.
+     */
+    public void sendReturnChannelMessage(int stateNodeId, int channelId,
+            JsonArray arguments) {
+        JsonObject message = Json.createObject();
+
+        message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_CHANNEL);
+        message.put(JsonConstants.RPC_NODE, stateNodeId);
+        message.put(JsonConstants.RPC_CHANNEL, channelId);
+        message.put(JsonConstants.RPC_CHANNEL_ARGUMENTS, arguments);
+
+        sendMessage(message);
+    }
+
     private void sendMessage(JsonObject message) {
         ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
         rpcQueue.add(message);
