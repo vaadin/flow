@@ -48,11 +48,23 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     private ValueChangeMode currentMode;
 
     /**
-     * Creates a new input without any specific type.
+     * Creates a new input without any specific type,
+     * with {@link ValueChangeMode#ON_CHANGE ON_CHANGE} value change mode.
      */
     public Input() {
+        this(ValueChangeMode.ON_CHANGE);
+    }
+
+    /**
+     * Creates a new input without any specific type.
+     *
+     * @param valueChangeMode
+     *            initial value change mode, or <code>null</code>
+     *            to disable the value synchronization
+     */
+    public Input(ValueChangeMode valueChangeMode) {
         super("value", "", false);
-        setValueChangeMode(ValueChangeMode.ON_CHANGE);
+        setValueChangeMode(valueChangeMode);
     }
 
     /**
@@ -101,11 +113,6 @@ public class Input extends AbstractSinglePropertyField<Input, String>
         return get(typeDescriptor);
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * The default value is {@link ValueChangeMode#ON_CHANGE}.
-     */
     @Override
     public ValueChangeMode getValueChangeMode() {
         return currentMode;
