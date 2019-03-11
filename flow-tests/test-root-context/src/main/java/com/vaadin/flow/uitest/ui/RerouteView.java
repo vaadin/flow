@@ -43,7 +43,7 @@ public class RerouteView extends AbstractDivView {
 
         CheckBox checkbox = new CheckBox("RerouteToError");
         checkbox.setId("check");
-        checkbox.addValuehangeListener(event -> {
+        checkbox.addValueChangeListener(event -> {
             reroute = checkbox.isChecked();
         });
         add(button);
@@ -73,7 +73,8 @@ public class RerouteView extends AbstractDivView {
         public CheckBox() {
             input = new Input();
             input.getElement().setAttribute("type", "checkbox");
-            input.getElement().synchronizeProperty("checked", "false");
+            input.getElement().addPropertyChangeListener("checked",
+                    "change", event -> {});
             add(input);
         }
 
@@ -83,7 +84,7 @@ public class RerouteView extends AbstractDivView {
             add(captionLabel);
         }
 
-        public Registration addValuehangeListener(
+        public Registration addValueChangeListener(
                 ValueChangeListener<ValueChangeEvent<String>> listener) {
             return input.addValueChangeListener(listener);
         }
