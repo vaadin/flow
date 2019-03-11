@@ -15,15 +15,17 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -127,7 +129,8 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         routeRegistryInitializer.onStartup(
                 Stream.of(NavigationTargetBar.class, NavigationTargetBar2.class)
-                        .collect(Collectors.toSet()), servletContext);
+                        .collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test
@@ -890,8 +893,8 @@ public class RouteRegistryInitializerTest {
                 Parent.class.getName(),
                 RootConfiguratorWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(
-                Stream.of(RootConfiguratorWithParent.class)
+        routeRegistryInitializer
+                .onStartup(Stream.of(RootConfiguratorWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -1439,4 +1442,111 @@ public class RouteRegistryInitializerTest {
                 errorTargetEntry.getNavigationTarget());
     }
 
+    @Test
+    public void registerClassesWithSameRoute_abstractClass_subclass_subclassIsRegistered()
+            throws ServletException {
+        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+        classes.add(AbstractRouteTarget.class);
+        classes.add(BaseRouteTarget.class);
+        routeRegistryInitializer.onStartup(classes, servletContext);
+
+        Assert.assertEquals(BaseRouteTarget.class,
+                registry.getNavigationTarget("foo").get());
+    }
+
+    @Test
+    public void registerClassesWithSameRoute_class_abstractSuperClass_subclassIsRegistered()
+            throws ServletException {
+        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+        classes.add(BaseRouteTarget.class);
+        classes.add(AbstractRouteTarget.class);
+        routeRegistryInitializer.onStartup(classes, servletContext);
+
+        Assert.assertEquals(BaseRouteTarget.class,
+                registry.getNavigationTarget("foo").get());
+    }
+
+    @Test
+    public void registerClassesWithSameRoute_class_subclass_subclassIsRegistered()
+            throws ServletException {
+        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+        classes.add(BaseRouteTarget.class);
+        classes.add(SuperRouteTarget.class);
+        routeRegistryInitializer.onStartup(classes, servletContext);
+
+        Assert.assertEquals(SuperRouteTarget.class,
+                registry.getNavigationTarget("foo").get());
+    }
+
+    @Test
+    public void registerClassesWithSameRoute_class_superClass_subclassIsRegistered()
+            throws ServletException {
+        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+        classes.add(SuperRouteTarget.class);
+        classes.add(BaseRouteTarget.class);
+        routeRegistryInitializer.onStartup(classes, servletContext);
+
+        Assert.assertEquals(SuperRouteTarget.class,
+                registry.getNavigationTarget("foo").get());
+    }
+
+    @Test(expected = ServletException.class)
+    public void registerClassesWithSameRoute_absatrctClass_unrelatedClass_throws()
+            throws ServletException {
+        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+        classes.add(AbstractRouteTarget.class);
+        classes.add(OtherRouteTarget.class);
+        routeRegistryInitializer.onStartup(classes, servletContext);
+    }
+
+    @Test(expected = ServletException.class)
+    public void registerClassesWithSameRoute_unrelatedClass_abstractClass_throws()
+            throws ServletException {
+        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+        classes.add(OtherRouteTarget.class);
+        classes.add(AbstractRouteTarget.class);
+        routeRegistryInitializer.onStartup(classes, servletContext);
+    }
+
+    @Test(expected = ServletException.class)
+    public void registerClassesWithSameRoute_class_unrelatedClass_throws()
+            throws ServletException {
+        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+        classes.add(BaseRouteTarget.class);
+        classes.add(OtherRouteTarget.class);
+        routeRegistryInitializer.onStartup(classes, servletContext);
+    }
+
+    @Test(expected = ServletException.class)
+    public void registerClassesWithSameRoute_unrelatedClass_class_throws()
+            throws ServletException {
+        LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
+        classes.add(OtherRouteTarget.class);
+        classes.add(BaseRouteTarget.class);
+        routeRegistryInitializer.onStartup(classes, servletContext);
+    }
+
+    @Tag(Tag.DIV)
+    @Route("foo")
+    private abstract static class AbstractRouteTarget extends Component {
+
+    }
+
+    @Tag(Tag.DIV)
+    @Route("foo")
+    private static class BaseRouteTarget extends AbstractRouteTarget {
+
+    }
+
+    @Tag(Tag.DIV)
+    @Route("foo")
+    private static class SuperRouteTarget extends BaseRouteTarget {
+
+    }
+
+    @Tag(Tag.DIV)
+    @Route("foo")
+    private static class OtherRouteTarget extends Component {
+
+    }
 }
