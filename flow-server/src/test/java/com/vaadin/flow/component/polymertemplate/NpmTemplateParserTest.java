@@ -122,6 +122,34 @@ public class NpmTemplateParserTest {
         instance.getTemplateContent(FooView.class, "foo-view", service);
     }
 
+    @Test
+    public void bableStats_shouldAlwaysParseCorrectly() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn("build/babel_stats.json");
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateParser.TemplateData templateContent = instance
+                .getTemplateContent(MyComponent.class, "my-component", service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "my-component",
+                templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'button'",
+                "button",
+                templateContent.getTemplateElement().getElementById("button")
+                        .tag().toString());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'content'",
+                "div",
+                templateContent.getTemplateElement().getElementById("content")
+                        .tag().toString());
+    }
+
     @Tag("likeable-element")
     @JsModule("./frontend/LikeableElement.js")
     public class Likeable extends PolymerTemplate<TemplateModel> {
@@ -143,4 +171,8 @@ public class NpmTemplateParserTest {
     public class FooView extends PolymerTemplate<TemplateModel> {
     }
 
+    @Tag("likeable-element")
+    @JsModule("./my-component.js")
+    public class MyComponent extends PolymerTemplate<TemplateModel> {
+    }
 }
