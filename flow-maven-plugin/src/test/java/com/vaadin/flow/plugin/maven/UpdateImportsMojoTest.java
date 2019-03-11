@@ -112,7 +112,7 @@ public class UpdateImportsMojoTest {
                 "./local-p2-template.js");
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
-        
+
         mojo.execute();
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
@@ -147,7 +147,8 @@ public class UpdateImportsMojoTest {
         assertContainsImports(false, "./added-import.js");
     }
 
-    private void assertContainsImports(boolean contains, String... imports) throws IOException {
+    private void assertContainsImports(boolean contains, String... imports)
+            throws IOException {
         String content = FileUtils.fileRead(importsFile);
 
         if (contains) {
@@ -180,7 +181,8 @@ public class UpdateImportsMojoTest {
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.asList(imports).stream().map(s -> "import '" + s + "';")
+        String content = Arrays.asList(imports).stream()
+                .map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 
         replaceJsFile(content + "\n", StandardOpenOption.APPEND);

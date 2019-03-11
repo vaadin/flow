@@ -107,9 +107,11 @@ public class UpdateImportsMojo extends AbstractMojo {
         try {
             Pattern pattern = Pattern.compile("^import\\s*'(.*)'\\s*;$");
 
-            List<String> current = FileUtils.fileExists(jsFile) ? FileUtils.loadFile(new File(jsFile)) : Collections.EMPTY_LIST;
-            Set<String> existingJsModules = current.stream()
-                    .map(jsImport -> pattern.matcher(jsImport).replaceFirst("$1"))
+            List<String> current = FileUtils.fileExists(jsFile)
+                    ? FileUtils.loadFile(new File(jsFile))
+                    : Collections.emptyList();
+            Set<String> existingJsModules = current.stream().map(
+                    jsImport -> pattern.matcher(jsImport).replaceFirst("$1"))
                     .collect(Collectors.toSet());
 
             Set<String> jsModules = new HashSet<>();
