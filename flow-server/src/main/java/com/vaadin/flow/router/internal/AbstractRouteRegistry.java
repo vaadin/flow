@@ -176,7 +176,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      * @return current state of the registry as a value object
      */
     public ConfiguredRoutes getConfiguration() {
-        return editing == null ? configuredRoutes : editing;
+        if (configurationLock.isHeldByCurrentThread() && editing != null) {
+            return editing;
+        }
+        return configuredRoutes;
     }
 
     @Override
