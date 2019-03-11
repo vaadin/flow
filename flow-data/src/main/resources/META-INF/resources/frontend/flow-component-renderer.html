@@ -24,6 +24,13 @@
       this._runChrome72ShadowDomBugWorkaround();
     }
 
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      if(this._observer){
+        this._observer.disconnect();
+      }
+    }
+
   /* workaround for issue vaadin/flow#5025 */
     _runChrome72ShadowDomBugWorkaround() {
       const userAgent = navigator.userAgent;
@@ -42,6 +49,20 @@
               this.style.visibility = '';
               debouncedNotifyResize();
             });
+
+            /* workaround for issue vaadin/vaadin-grid-flow#557 */
+            this._observer = new Polymer.FlattenedNodesObserver(this, (info) => {
+              if(info.addedNodes &&  info.addedNodes[0] instanceof Vaadin.ComboBoxElement){
+              var combo = info.addedNodes[0];
+              combo.style.visibility = 'hidden';
+              requestAnimationFrame(() => {
+                combo.style.visibility = '';
+              debouncedNotifyResize();
+            });
+            }
+
+          });
+
           }
         }
       }
