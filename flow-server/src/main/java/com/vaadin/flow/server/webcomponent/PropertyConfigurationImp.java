@@ -28,7 +28,7 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
     private Class<C> componentClass;
     private String propertyName;
     private Class<P> propertyType;
-    private P defaultValue;
+    private P value;
 
     // configuration
     private boolean readOnly = false;
@@ -39,7 +39,7 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
         this.componentClass = componentType;
         this.propertyName = propertyName;
         this.propertyType = propertyType;
-        this.defaultValue = defaultValue;
+        this.value = defaultValue;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
     }
 
     PropertyData2<P> getPropertyData() {
-        return new PropertyData2<>(propertyName, propertyType, defaultValue);
+        return new PropertyData2<>(propertyName, propertyType, value);
     }
 
     @Override
@@ -86,5 +86,31 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
 
     public Class<P> getPropertyType() {
         return this.propertyType;
+    }
+
+    public void updateProperty(C componentReference, Object value) {
+        if (value != null && value.getClass() != propertyType) {
+            // TODO: throw a specific exception here
+            throw new RuntimeException(String.format("Parameter 'value' is of" +
+                            " the wrong type: onChangeHandler of the property " +
+                            "expected to receive %s but found %s instead.",
+                    propertyType.getCanonicalName(),
+                    value.getClass().getName()));
+        }
+        P newValue = (P)value;
+        boolean propagate = false;
+
+        if (this.value != null) {
+            propagate = !this.value.equals(newValue);
+        }
+        else if (newValue != null) {
+            propagate = true;
+        }
+
+        this.value = newValue;
+
+        if (propagate && onChangeHandler != null) {
+            onChangeHandler.accept(componentReference, newValue);
+        }
     }
 }
