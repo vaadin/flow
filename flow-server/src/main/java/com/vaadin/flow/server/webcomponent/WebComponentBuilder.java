@@ -128,26 +128,12 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
                             PropertyConfiguration.class.getSimpleName(), propertyName));
         }
 
+        // TODO: print into log instead, if this happens
         if (propertyConfiguration.isReadOnly()) {
             throw new InvalidParameterException("Property '%s' is read-only!");
         }
 
-        if (value != null && value.getClass() != propertyConfiguration.getPropertyType()) {
-            // TODO: throw a specific exception here
-            throw new RuntimeException(String.format("Parameter 'value' is of" +
-                    " the wrong type: onChangeHandler of the property " +
-                            "expected to receive %s but found %s instead.",
-                    propertyConfiguration.getPropertyType().getName(),
-                    value.getClass().getName()));
-        }
-
-        SerializableBiConsumer<C, Object> onChangeHandler =
-                propertyConfiguration.getOnChangeHandler();
-
-        if (onChangeHandler != null) {
-            onChangeHandler.accept(componentReference, value);
-        }
-        // TODO: should we log about the missing handler?
+        propertyConfiguration.updateProperty(componentReference, value);
     }
 
     @Override

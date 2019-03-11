@@ -16,12 +16,14 @@
 
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
+
 /**
  * JavaScript event options
  *
  * TODO: write more
  */
-public class EventOptions {
+public class EventOptions implements Serializable {
     private boolean bubbles = false;
     private boolean cancelable = false;
     private boolean composed = false;
