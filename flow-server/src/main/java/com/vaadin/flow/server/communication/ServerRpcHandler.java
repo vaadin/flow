@@ -438,6 +438,7 @@ public class ServerRpcHandler implements Serializable {
             list.add(new PublishedServerEventHandlerRpcHandler());
             list.add(new AttachExistingElementRpcHandler());
             list.add(new AttachTemplateChildRpcHandler());
+            list.add(new ReturnChannelHandler());
             return list;
         }
     }
