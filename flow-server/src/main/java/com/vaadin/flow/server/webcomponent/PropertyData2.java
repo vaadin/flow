@@ -21,69 +21,26 @@ import java.util.Objects;
 /**
  * Value object containing information of a WebComponent property field.
  */
-public class PropertyData2<P> implements Serializable {
-
-    private final String name;
-    private final Class<P> type;
-    private final P initialValue;
-
-    /**
-     * Public constructor.
-     *
-     * @param name
-     *         name of property
-     * @param type
-     *         property value class type
-     * @param initialValue
-     *         initial value as a String
-     */
-    public PropertyData2(String name, Class<P> type, P initialValue) {
-        Objects.requireNonNull(name, "Property needs to have a name");
-        Objects.requireNonNull(type, "Property needs to expose type");
-        this.name = name;
-        this.type = type;
-        this.initialValue = initialValue;
-    }
+public interface PropertyData2<P> extends Serializable {
 
     /**
      * Getter for the property name.
      *
      * @return property name
      */
-    public String getName() {
-        return name;
-    }
+    String getName();
 
     /**
      * Getter for the property value class type.
      *
      * @return value class type
      */
-    public Class<P> getType() {
-        return type;
-    }
+    Class<P> getType();
 
     /**
      * Getter for the initial value if given.
      *
      * @return initial value or {@code null} if none given
      */
-    public P getInitialValue() {
-        return initialValue;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof PropertyData2) {
-            PropertyData2 other = (PropertyData2) obj;
-            return getName().equals(other.getName()) && getType()
-                    .equals(other.getType());
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, type);
-    }
+    P getValue();
 }

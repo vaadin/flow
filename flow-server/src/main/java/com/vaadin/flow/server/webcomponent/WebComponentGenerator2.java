@@ -16,27 +16,16 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.component.webcomponent.WebComponentMethod;
-import com.vaadin.flow.component.webcomponent.WebComponentProperty;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -146,18 +135,18 @@ public class WebComponentGenerator2 {
 
         prop.put("type", property.getType().getSimpleName());
 
-        if (property.getInitialValue() != null) {
+        if (property.getValue() != null) {
             String propertyValue = "value";
             if (property.getType() == Boolean.class) {
-                prop.put(propertyValue, (Boolean) property.getInitialValue());
+                prop.put(propertyValue, (Boolean) property.getValue());
             } else if (property.getType() == Double.class) {
-                prop.put(propertyValue, (Double) property.getInitialValue());
+                prop.put(propertyValue, (Double) property.getValue());
             } else if (property.getType() == Integer.class) {
-                prop.put(propertyValue, (Integer) property.getInitialValue());
+                prop.put(propertyValue, (Integer) property.getValue());
             } else if (property.getType() == String.class) {
-                prop.put(propertyValue, (String) property.getInitialValue());
+                prop.put(propertyValue, (String) property.getValue());
             } else if (JsonValue.class.isAssignableFrom(property.getType())) {
-                prop.put(propertyValue, (JsonValue) property.getInitialValue());
+                prop.put(propertyValue, (JsonValue) property.getValue());
             }
             else {
                 throw new UnsuppertedPropertyType(String.format("%s " +
