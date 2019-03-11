@@ -58,7 +58,7 @@ public class ElementListenerMap extends NodeMap {
      */
     public static final String ALWAYS_TRUE_FILTER = "1";
 
-    private final static EnumSet<DebouncePhase> NO_TIMEOUT_PHASES
+    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES
             = EnumSet.of(DebouncePhase.LEADING);
 
     // Server-side only data
