@@ -1,15 +1,13 @@
 package com.vaadin.flow.router;
 
-import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletContext;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +25,8 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouteConfigurationTest {
@@ -61,7 +61,7 @@ public class RouteConfigurationTest {
      * Get registry by handing the session lock correctly.
      *
      * @param session
-     *         target vaadin session
+     *            target vaadin session
      * @return session route registry for session if exists or new.
      */
     private SessionRouteRegistry getRegistry(VaadinSession session) {
@@ -75,39 +75,15 @@ public class RouteConfigurationTest {
     }
 
     @Test
-    public void routeConfigurationUpdateLock_newConfigurationIsGottenOnlyAfterUnlock() {
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(getRegistry(session));
-
-        routeConfiguration.update(() -> {
-            routeConfiguration
-                    .setRoute("", MyRoute.class, Collections.emptyList());
-
-            Assert.assertTrue("Registry should still remain empty",
-                    routeConfiguration.getAvailableRoutes().isEmpty());
-
-            routeConfiguration
-                    .setRoute("path", Secondary.class, Collections.emptyList());
-
-            Assert.assertTrue("Registry should still remain empty",
-                    routeConfiguration.getAvailableRoutes().isEmpty());
-        });
-
-        Assert.assertEquals(
-                "After unlock registry should be updated for others to configure with new data",
-                2, routeConfiguration.getAvailableRoutes().size());
-    }
-
-    @Test
     public void isRouteRegistered_returnsCorrectly() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(getRegistry(session));
 
         routeConfiguration.update(() -> {
-            routeConfiguration
-                    .setRoute("", MyRoute.class, Collections.emptyList());
-            routeConfiguration
-                    .setRoute("path", Secondary.class, Collections.emptyList());
+            routeConfiguration.setRoute("", MyRoute.class,
+                    Collections.emptyList());
+            routeConfiguration.setRoute("path", Secondary.class,
+                    Collections.emptyList());
         });
 
         Assert.assertTrue("Registered 'MyRoute.class' should return true",
@@ -126,8 +102,8 @@ public class RouteConfigurationTest {
         routeConfiguration.update(() -> {
             routeConfiguration.setRoute("", MyRoute.class);
             routeConfiguration.setRoute("path", Secondary.class);
-            routeConfiguration
-                    .setRoute("parents", MiddleLayout.class, MainLayout.class);
+            routeConfiguration.setRoute("parents", MiddleLayout.class,
+                    MainLayout.class);
         });
 
         Assert.assertEquals(
@@ -169,8 +145,8 @@ public class RouteConfigurationTest {
                 "'url' with no parameters should not have returned a class",
                 urlRoute.isPresent());
 
-        urlRoute = routeConfiguration
-                .getRoute("url", Collections.singletonList("param"));
+        urlRoute = routeConfiguration.getRoute("url",
+                Collections.singletonList("param"));
         Assert.assertTrue("'url' with parameters should have returned a class",
                 urlRoute.isPresent());
         Assert.assertEquals("'url' registration should be Url", Url.class,
@@ -329,22 +305,23 @@ public class RouteConfigurationTest {
         routeConfiguration.update(() -> {
             routeConfiguration.getHandledRegistry().clean();
             Arrays.asList(MyRoute.class, MyInfo.class, MyPalace.class,
-                    MyModular.class).forEach(routeConfiguration::setAnnotatedRoute);
+                    MyModular.class)
+                    .forEach(routeConfiguration::setAnnotatedRoute);
         });
 
         Mockito.verify(registry).update(Mockito.any());
 
-        Mockito.verify(registry)
-                .setRoute("home", MyRoute.class, Collections.emptyList());
+        Mockito.verify(registry).setRoute("home", MyRoute.class,
+                Collections.emptyList());
 
-        Mockito.verify(registry)
-                .setRoute("info", MyInfo.class, Collections.emptyList());
+        Mockito.verify(registry).setRoute("info", MyInfo.class,
+                Collections.emptyList());
 
-        Mockito.verify(registry)
-                .setRoute("palace", MyPalace.class, Collections.emptyList());
+        Mockito.verify(registry).setRoute("palace", MyPalace.class,
+                Collections.emptyList());
 
-        Mockito.verify(registry)
-                .setRoute("modular", MyModular.class, Collections.emptyList());
+        Mockito.verify(registry).setRoute("modular", MyModular.class,
+                Collections.emptyList());
     }
 
     @Test
@@ -355,9 +332,8 @@ public class RouteConfigurationTest {
 
         routeConfiguration.setAnnotatedRoute(MyRouteWithAliases.class);
 
-        Mockito.verify(registry)
-                .setRoute("withAliases", MyRouteWithAliases.class,
-                        Collections.emptyList());
+        Mockito.verify(registry).setRoute("withAliases",
+                MyRouteWithAliases.class, Collections.emptyList());
         Mockito.verify(registry).setRoute("version", MyRouteWithAliases.class,
                 Collections.emptyList());
         Mockito.verify(registry).setRoute("person", MyRouteWithAliases.class,
@@ -388,8 +364,8 @@ public class RouteConfigurationTest {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
 
-        routeConfiguration
-                .setParentAnnotatedRoute("middle", MiddleLayout.class);
+        routeConfiguration.setParentAnnotatedRoute("middle",
+                MiddleLayout.class);
 
         Mockito.verify(registry).setRoute("middle", MiddleLayout.class,
                 Collections.singletonList(MainLayout.class));

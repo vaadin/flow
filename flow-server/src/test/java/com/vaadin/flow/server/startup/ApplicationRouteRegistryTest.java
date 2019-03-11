@@ -1,6 +1,5 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,12 +9,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.vaadin.flow.router.RouteBaseData;
-import com.vaadin.flow.server.RouteRegistry;
+import javax.servlet.ServletContext;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.router.RouteBaseData;
+import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance inside OSGi container.
@@ -175,27 +177,6 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Result(String value) {
             this.value = value;
         }
-    }
-
-    @Test
-    public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
-        getTestedRegistry().update(() -> {
-            getTestedRegistry().setRoute("", MyRoute.class,
-                    Collections.emptyList());
-
-            Assert.assertTrue("Registry should still remain empty",
-                    getTestedRegistry().getRegisteredRoutes().isEmpty());
-
-            getTestedRegistry().setRoute("path", Secondary.class,
-                    Collections.emptyList());
-
-            Assert.assertTrue("Registry should still remain empty",
-                    getTestedRegistry().getRegisteredRoutes().isEmpty());
-        });
-
-        Assert.assertEquals(
-                "After unlock registry should be updated for others to configure with new data",
-                2, getTestedRegistry().getRegisteredRoutes().size());
     }
 
     @Test

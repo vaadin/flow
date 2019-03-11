@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.Route;
@@ -13,9 +17,6 @@ import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.shared.Registration;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class AbstractRouteRegistryTest {
 
@@ -41,26 +42,6 @@ public class AbstractRouteRegistryTest {
                 return Optional.empty();
             }
         };
-    }
-
-    @Test
-    public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
-
-        registry.update(() -> {
-            registry.setRoute("", MyRoute.class, Collections.emptyList());
-
-            Assert.assertTrue("Registry should still remain empty",
-                    registry.getRegisteredRoutes().isEmpty());
-
-            registry.setRoute("path", Secondary.class, Collections.emptyList());
-
-            Assert.assertTrue("Registry should still remain empty",
-                    registry.getRegisteredRoutes().isEmpty());
-        });
-
-        Assert.assertEquals(
-                "After unlock registry should be updated for others to configure with new data",
-                2, registry.getRegisteredRoutes().size());
     }
 
     @Test
