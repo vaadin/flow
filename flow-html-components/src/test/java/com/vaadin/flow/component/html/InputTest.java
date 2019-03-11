@@ -15,9 +15,21 @@
  */
 package com.vaadin.flow.component.html;
 
+import com.vaadin.flow.data.value.HasValueChangeMode;
+import com.vaadin.flow.data.value.ValueChangeMode;
+
+import java.beans.IntrospectionException;
+
 public class InputTest extends ComponentTest {
 
     // Actual test methods in super class
+
+    @Override
+    public void setup() throws IntrospectionException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+        whitelistProperty("valueChangeMode");
+        whitelistProperty("valueChangeTimeout");
+        super.setup();
+    }
 
     @Override
     protected void addProperties() {

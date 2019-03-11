@@ -19,10 +19,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -31,14 +28,12 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DebounceSynchronizePropertyView", layout = ViewTestLayout.class)
-public class DebounceSynchronizePropertyView extends AbstractDivView {
+public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronizeView {
     private final HtmlComponent input = new HtmlComponent("input");
     private final Element inputElement = input.getElement();
-    private final Div messages = new Div();
 
     public DebounceSynchronizePropertyView() {
         input.getElement().setAttribute("id", "input");
-        messages.getElement().setAttribute("id", "messages");
 
         Component eagerToggle = createModeToggle("Eager (every keypress)",
                 "eager");
@@ -47,13 +42,12 @@ public class DebounceSynchronizePropertyView extends AbstractDivView {
                         .setFilter("element.value.length % 2 === 0"));
         Component debounceToggle = createModeToggle(
                 "Debounce (when typing pauses)", "debounce",
-                registration -> registration.debounce(1000));
-        Component lazyToggle = createModeToggle("Lazy (while typing)", "lazy",
-                registration -> registration.debounce(1000,
-                        DebouncePhase.LEADING, DebouncePhase.INTERMEDIATE));
+                registration -> registration.debounce(CHANGE_TIMEOUT));
+        Component throttleToggle = createModeToggle("Throttle (while typing)", "throttle",
+                registration -> registration.throttle(CHANGE_TIMEOUT));
 
-        add(eagerToggle, filteredToggle, debounceToggle, lazyToggle, input,
-                messages);
+        add(eagerToggle, filteredToggle, debounceToggle, throttleToggle, input);
+        addChangeMessagesDiv();
     }
 
     private Component createModeToggle(String caption, String id,
@@ -72,8 +66,7 @@ public class DebounceSynchronizePropertyView extends AbstractDivView {
 
                     registration = inputElement.addPropertyChangeListener(
                             "value", "input",
-                            propertyChange -> messages.add(new Paragraph(
-                                    "Value: " + propertyChange.getValue())));
+                            propertyChange -> addChangeMessage(propertyChange.getValue()));
 
                     configurator.accept(registration);
                 } else {
