@@ -20,6 +20,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 
 /**
@@ -32,9 +34,9 @@ public class TestComponents {
 
     @HtmlImport("frontend://bower_components/iron-icon/iron-icon.html")
     class IconComponent extends Component {
-    }    
+    }
 
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/vaadin-bower-component.html")
+    @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/foo-component.html")
     public static class VaadinBowerComponent extends Component {
     }
 
@@ -43,9 +45,9 @@ public class TestComponents {
     public static class VaadinNpmComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/vaadin-mixed-component.html")
+    @HtmlImport("frontend://bower_components/vaadin-element-mixin/foo-component.html")
     @NpmPackage("@vaadin/vaadin-element-mixin")
-    @JsModule("bar-dir/vaadin-mixed-component.js")
+    @JsModule("vaadin-dir/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
 
@@ -54,10 +56,12 @@ public class TestComponents {
     }
 
     @JsModule("./local-p3-template.js")
+    @Theme(value = Lumo.class, variant = Lumo.DARK)
     public static class LocalP3Template extends Component {
-    }    
+    }
 
     @HtmlImport("foo.html")
     public static class FlatImport extends Component {
-    }    
+    }
+
 }

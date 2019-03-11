@@ -110,18 +110,18 @@ public abstract class ClassPathIntrospector {
     }
 
     /**
-     * Get the String value of the method {@code methodName} from the
+     * Get the value of the method {@code methodName} from the
      * {@code target} annotation.
      *
      * @param target
      *            the target annotation
      * @param methodName
      *            the method name to execute
-     * @return the String representation of the execution result
+     * @return the Value of the execution result
      */
-    protected String invokeAnnotationMethod(Annotation target,
+    protected <T> T invokeAnnotationMethod(Annotation target,
             String methodName) {
-        return String.valueOf(doInvokeAnnotationMethod(target, methodName));
+        return (T)doInvokeAnnotationMethod(target, methodName);
     }
 
     /**
