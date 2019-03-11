@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
@@ -85,7 +86,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
             PolymerServerEventHandlers.class, ClientCallableHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class };
+            AttachExistingElementFeature.class, VirtualChildrenList.class,
+            ReturnChannelMap.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
