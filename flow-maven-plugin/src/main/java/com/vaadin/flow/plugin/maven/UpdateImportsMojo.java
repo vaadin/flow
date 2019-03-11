@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getHtmlImportJsModules;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getProjectClassPathUrls;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -30,23 +31,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.FileUtils;
+import org.apache.maven.shared.utils.io.FileUtils;
 
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getHtmlImportNpmPackages;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getProjectClassPathUrls;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
+import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 /**
  * Goal that updates flow-imports.js file with @JsModule and @HtmlImport
@@ -71,15 +73,6 @@ public class UpdateImportsMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean convertHtml;
 
-    private final List<String> lumoJsFiles = Arrays.asList(new String[] {
-            "@vaadin/vaadin-lumo-styles/color.js",
-            "@vaadin/vaadin-lumo-styles/typography.js",
-            "@vaadin/vaadin-lumo-styles/sizing.js",
-            "@vaadin/vaadin-lumo-styles/spacing.js",
-            "@vaadin/vaadin-lumo-styles/style.js",
-            "@vaadin/vaadin-lumo-styles/icons.js"
-    });
-
     @Override
     public void execute() {
         URL[] projectClassPathUrls = getProjectClassPathUrls(project);
@@ -88,55 +81,91 @@ public class UpdateImportsMojo extends AbstractMojo {
 
         AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
 
+        ThemeDefinition themeDef = getThemeDefinition(annotationValuesExtractor);
+
         Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor.getAnnotatedClasses(JsModule.class,
                 "value");
 
-        Map<Class<?>, Set<String>> classes = new HashMap<>(classesWithJsModule);
+        Set<String> themeImports = annotationValuesExtractor.getClassAnnotationValues(themeDef.getTheme(),
+                JsModule.class, "value");
 
+        Map<Class<?>, Set<String>> classes = new HashMap<>(classesWithJsModule);
         if (convertHtml) {
             Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
                     .getAnnotatedClasses(HtmlImport.class, "value");
 
+            if (themeImports.isEmpty()) {
+                themeImports = getHtmlImportJsModules(annotationValuesExtractor
+                        .getClassAnnotationValues(themeDef.getTheme(), HtmlImport.class, "value"));
+            }
+
             classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
                     .filter(entry -> !classesWithJsModule.containsKey(entry.getKey()))
-                    .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
+                    .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportJsModules(entry.getValue())));
 
             classes.putAll(classesWithHtmlImport);
         }
 
         try {
-            Pattern pattern = Pattern.compile("^import\\s*'(.*)'\\s*;$");
-
-            List<String> current = FileUtils.fileExists(jsFile)
-                    ? FileUtils.loadFile(new File(jsFile))
+            List<String> current = FileUtils.fileExists(jsFile) ? FileUtils.loadFile(new File(jsFile))
                     : Collections.emptyList();
-            Set<String> existingJsModules = current.stream().map(
-                    jsImport -> pattern.matcher(jsImport).replaceFirst("$1"))
+
+            themeImports = themeImports.stream().map(s -> "import '" + s + "';").collect(Collectors.toSet());
+
+            AbstractTheme theme = (AbstractTheme) Class.forName(themeDef.getTheme().getCanonicalName()).newInstance();
+
+            Set<String> variants = theme.getHtmlAttributes(themeDef.getVariant()).entrySet().stream()
+                    .map(e -> "document.body.setAttribute('" + e.getKey() + "', '" + e.getValue() + "');")
                     .collect(Collectors.toSet());
 
             Set<String> jsModules = new HashSet<>();
-
-            // Add Lumo files manually.
-            jsModules.addAll(lumoJsFiles);
-
             classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(fileName -> {
                 // add `./` prefix to everything starting with letters
                 fileName = fileName.replaceFirst("(?i)^([a-z])", "./$1");
-                jsModules.add(fileName);
+
+                // TODO(manolo): disabled because not all files have corresponding themed
+                // eg vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
+                // but vaadin-upload/src/vaadin-upload-file.js does not
+                // adjust theme (eg replace src/ with theme/lumo)
+                // if (fileName.matches(".*vaadin-[^/]+/" + theme.getBaseUrl() + ".*")) {
+                    // fileName = theme.translateUrl(fileName);
+                //}
+
+                jsModules.add("import '" + fileName + "';");
             }));
 
-            if (existingJsModules.equals(jsModules)) {
-                getLog().info("No js modules to update");
+            List<String> concat = Stream.concat(Stream.concat(variants.stream(), themeImports.stream()),
+                    jsModules.stream().sorted(Comparator.reverseOrder())).collect(Collectors.toList());
 
+            if (concat.equals(current)) {
+                getLog().info("No js modules to update");
             } else {
-                String content = jsModules.stream().sorted(Comparator.reverseOrder()).map(s -> "import '" + s + "';")
-                        .collect(Collectors.joining("\n"));
+                String content = concat.stream().collect(Collectors.joining("\n"));
                 replaceJsFile(content + "\n");
             }
-
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    private ThemeDefinition getThemeDefinition(AnnotationValuesExtractor annotationValuesExtractor) {
+        Map<ThemeDefinition, Class<?>> themes = annotationValuesExtractor.getThemeDefinitions();
+
+        ThemeDefinition themeDef = themes.isEmpty() ? new ThemeDefinition(Lumo.class, "")
+                : themes.keySet().iterator().next();
+
+        if (themes.size() > 1) {
+            getLog().warn(
+                    "Found multiple themes for the application, vaadin-flow would only consider the first one\n"
+                            + themes.entrySet().stream()
+                                    .map(e -> "   theme:" + e.getKey().getTheme().getName() + " "
+                                            + e.getKey().getVariant() + " in class: " + e.getValue().getName())
+                                    .collect(Collectors.joining("\n")));
+        }
+
+        getLog().info("Using theme " + themeDef.getTheme().getName()
+                + (themeDef.getVariant().isEmpty() ? "" : (" variant: " + themeDef.getVariant())));
+        return themeDef;
     }
 
     private void replaceJsFile(String content) throws IOException {

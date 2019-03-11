@@ -195,9 +195,25 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         }
     }
 
+    static Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
+        return htmlImports.stream().map(UpdateNpmDependenciesMojo::getHtmlImportJsModule).filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
     static Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
         return htmlImports.stream().map(UpdateNpmDependenciesMojo::getHtmlImportNpmPackage).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    static String getHtmlImportJsModule(String htmlImport) {
+        String module = htmlImport // @formatter:off
+                .replaceFirst("^.*bower_components/(vaadin-[^/]*/.*)\\.html$", "@vaadin/$1.js")
+                .replaceFirst("^.*bower_components/((iron|paper)-[^/]*/.*)\\.html$", "@polymer/$1.js")
+                .replaceFirst("^frontend://(.*)$", "./$1")
+                .replaceFirst("\\.html$", ".js")
+                .replaceFirst("^([a-z].*\\.js)$", "./$1")
+                ; // @formatter:on
+        return Objects.equals(module, htmlImport) ? null : module;
     }
 
     static String getHtmlImportNpmPackage(String htmlImport) {

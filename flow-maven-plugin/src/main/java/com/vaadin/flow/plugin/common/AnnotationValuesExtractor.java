@@ -19,10 +19,14 @@ package com.vaadin.flow.plugin.common;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Collects annotation values from all classes or jars specified.
@@ -75,9 +79,53 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
         return concat
                 .map(type -> type.getAnnotationsByType(annotationInProjectContext))
                 .flatMap(Stream::of)
-                .map(annotation -> invokeAnnotationMethod(annotation,
+                .map(annotation -> (String)invokeAnnotationMethod(annotation,
                         valueGetterMethodName))
                 .collect(Collectors.toSet());
+    }
+
+
+    /**
+     * Extracts annotation values from the annotations of the given class. Each
+     * annotation value is retrieved by calling a method by name specified. *
+     *
+     * @param clazz
+     *            the annotated class
+     * @param annotationClass
+     *            the annotation
+     * @param valueGetterMethodName
+     *            the getter name used for values
+     * @return a set of all values when the annotation is repeatable
+     */
+    public Set<String> getClassAnnotationValues(Class<?> clazz, Class<? extends Annotation> annotationClass,
+            String valueGetterMethodName) {
+        Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(
+                annotationClass.getName());
+
+        return Arrays.asList(clazz.getAnnotationsByType(annotationInProjectContext)).stream()
+                .map(annotation -> (String) invokeAnnotationMethod(annotation, valueGetterMethodName))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Get theme definitions for all classes theme annotated.
+     *
+     * @return a map of {@link ThemeDefinition}
+     */
+    public Map<ThemeDefinition, Class<?>> getThemeDefinitions() {
+        Map<ThemeDefinition, Class<?>> map = new LinkedHashMap<>();
+
+        Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(Theme.class.getName());
+
+        getAnnotatedClasses(annotationInProjectContext).forEach(entry -> {
+            Arrays.stream(entry.getAnnotations()).forEach(annotation -> {
+                if (annotation.annotationType().getCanonicalName().equals(Theme.class.getCanonicalName())) {
+                    map.put(new ThemeDefinition(invokeAnnotationMethod(annotation, "value"),
+                            invokeAnnotationMethod(annotation, "variant")), entry);
+                }
+            });
+        });
+        return map;
     }
 
     /**
@@ -103,7 +151,7 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
                 entry -> Arrays.stream(entry.getAnnotations())
                         .filter(annotation -> annotation.annotationType().getCanonicalName()
                                 .equals(annotationClass.getCanonicalName()))
-                        .map(annotation -> invokeAnnotationMethod(annotation, valueGetterMethodName))
+                        .map(annotation -> (String)invokeAnnotationMethod(annotation, valueGetterMethodName))
                         .collect(Collectors.toSet())));
     }
 
