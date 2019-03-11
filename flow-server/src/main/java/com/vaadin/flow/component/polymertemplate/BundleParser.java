@@ -148,8 +148,13 @@ public final class BundleParser {
         NodeUtil.visitPreOrder(parseResult.ast, visitor,
                 Predicates.alwaysTrue());
 
-        Document templateDocument = Jsoup
-                .parse(visitor.getterContent.get(TEMPLATE_TAG_NAME));
+        Document templateDocument;
+
+        if(visitor.getterContent.containsKey(TEMPLATE_TAG_NAME)) {
+            templateDocument = Jsoup.parse(visitor.getterContent.get(TEMPLATE_TAG_NAME));
+        } else {
+            templateDocument = new Document("");
+        }
 
         Element template = templateDocument.createElement(TEMPLATE_TAG_NAME);
 
@@ -172,6 +177,11 @@ public final class BundleParser {
         }
         if (source == null && validKey(module, NAME, STRING) && validKey(module, SOURCE, STRING)) {
             String name = module.getString(NAME);
+
+            // If the found module is
+            if (name.endsWith("es5")) {
+                return source;
+            }
 
             // append `.js` extension if not yet as webpack does
             fileName = fileName.replaceFirst("(\\.js|)$", ".js");
