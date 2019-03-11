@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 
 import java.security.InvalidParameterException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -138,11 +139,11 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
 
     @Override
     public Set<PropertyData2<?>> getPropertyDataSet() {
-        return propertyConfigurationMap.values().stream().map(PropertyConfigurationImp::getPropertyData).collect(Collectors.toSet());
+        return new HashSet<>(propertyConfigurationMap.values());
     }
 
     PropertyData2<?> getPropertyData(String propertyName) {
-        return propertyConfigurationMap.get(propertyName).getPropertyData();
+        return propertyConfigurationMap.get(propertyName);
     }
 
     @Override

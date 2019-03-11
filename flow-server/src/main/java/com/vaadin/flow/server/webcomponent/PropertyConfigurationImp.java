@@ -23,7 +23,7 @@ import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 // TODO: this bad-boy replaces PropertyData
-public class PropertyConfigurationImp<C extends Component, P> implements PropertyConfiguration<C, P> {
+public class PropertyConfigurationImp<C extends Component, P> implements PropertyConfiguration<C, P>, PropertyData2<P> {
     // property
     private Class<C> componentClass;
     private String propertyName;
@@ -48,10 +48,6 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
                 "cannot be null!");
         this.onChangeHandler = onChangeHandler;
         return null;
-    }
-
-    PropertyData2<P> getPropertyData() {
-        return new PropertyData2<>(propertyName, propertyType, value);
     }
 
     @Override
@@ -112,5 +108,20 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
         if (propagate && onChangeHandler != null) {
             onChangeHandler.accept(componentReference, newValue);
         }
+    }
+
+    @Override
+    public String getName() {
+        return propertyName;
+    }
+
+    @Override
+    public Class<P> getType() {
+        return propertyType;
+    }
+
+    @Override
+    public P getValue() {
+        return value;
     }
 }

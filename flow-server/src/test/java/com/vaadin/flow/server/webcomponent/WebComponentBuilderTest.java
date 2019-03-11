@@ -59,27 +59,26 @@ public class WebComponentBuilderTest {
         builder.addProperty("boolean", true);
         builder.addProperty("double", 1.0);
 
-        assertEquals(builder.getPropertyData("int").getInitialValue(), 1);
-        assertEquals(builder.getPropertyData("string").getInitialValue(),
+        assertEquals(builder.getPropertyData("int").getValue(), 1);
+        assertEquals(builder.getPropertyData("string").getValue(),
                 "string");
-        assertEquals(builder.getPropertyData("boolean").getInitialValue(),
+        assertEquals(builder.getPropertyData("boolean").getValue(),
                 true);
-        assertEquals(builder.getPropertyData("double").getInitialValue(), 1.0);
+        assertEquals(builder.getPropertyData("double").getValue(), 1.0);
 
         // complex types:
-
         Bean bean = new Bean();
         bean.setInteger(5);
 
         // 1) free types
         builder.addProperty("bean", Bean.class, bean);
-        assertEquals(builder.getPropertyData("bean").getInitialValue(), bean);
+        assertEquals(builder.getPropertyData("bean").getValue(), bean);
 
         // 2) JsonValue
         JsonValue value = JsonSerializer.toJson(bean);
         builder.addProperty("json", value);
 
-        assertEquals(builder.getPropertyData("json").getInitialValue(), value);
+        assertEquals(builder.getPropertyData("json").getValue(), value);
     }
 
     @Test(expected = RuntimeException.class)
