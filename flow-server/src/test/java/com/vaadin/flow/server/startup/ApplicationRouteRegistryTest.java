@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -180,6 +181,49 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     }
 
     @Test
+    public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
+        CountDownLatch waitReaderThread = new CountDownLatch(1);
+        CountDownLatch waitUpdaterThread = new CountDownLatch(2);
+
+        Thread readerThread = new Thread() {
+            @Override
+            public void run() {
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        getTestedRegistry().getRegisteredRoutes().isEmpty());
+
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        getTestedRegistry().getRegisteredRoutes().isEmpty());
+
+                waitReaderThread.countDown();
+            }
+        };
+
+        readerThread.start();
+
+        getTestedRegistry().update(() -> {
+            getTestedRegistry().setRoute("", MyRoute.class,
+                    Collections.emptyList());
+
+            waitUpdaterThread.countDown();
+
+            getTestedRegistry().setRoute("path", Secondary.class,
+                    Collections.emptyList());
+
+            waitUpdaterThread.countDown();
+            awaitCountDown(waitReaderThread);
+
+        });
+
+        Assert.assertEquals(
+                "After unlock registry should be updated for others to configure with new data",
+                2, getTestedRegistry().getRegisteredRoutes().size());
+    }
+
+    @Test
     public void routeChangeListener_correctChangesAreReturned() {
         List<RouteBaseData> added = new ArrayList<>();
         List<RouteBaseData> removed = new ArrayList<>();
@@ -317,6 +361,14 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     @Override
     protected RouteRegistry getTestedRegistry() {
         return registry;
+    }
+
+    private void awaitCountDown(CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
     }
 
 }

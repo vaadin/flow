@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 import javax.servlet.ServletContext;
 
@@ -72,6 +73,55 @@ public class RouteConfigurationTest {
         } finally {
             session.unlock();
         }
+    }
+
+    @Test
+    public void routeConfigurationUpdateLock_configurationIsUpdatedOnlyAfterUnlock() {
+        CountDownLatch waitReaderThread = new CountDownLatch(1);
+        CountDownLatch waitUpdaterThread = new CountDownLatch(2);
+
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        Thread readerThread = new Thread() {
+            @Override
+            public void run() {
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        routeConfiguration.getAvailableRoutes().isEmpty());
+
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        routeConfiguration.getAvailableRoutes().isEmpty());
+
+                waitReaderThread.countDown();
+            }
+        };
+
+        readerThread.start();
+
+        routeConfiguration.update(() -> {
+            routeConfiguration.setRoute("", MyRoute.class,
+                    Collections.emptyList());
+
+            waitUpdaterThread.countDown();
+
+            routeConfiguration.setRoute("path", Secondary.class,
+                    Collections.emptyList());
+
+            waitUpdaterThread.countDown();
+            try {
+                waitReaderThread.await();
+            } catch (InterruptedException e) {
+                Assert.fail();
+            }
+        });
+
+        Assert.assertEquals(
+                "After unlock registry should be updated for others to configure with new data",
+                2, routeConfiguration.getAvailableRoutes().size());
     }
 
     @Test
@@ -369,6 +419,14 @@ public class RouteConfigurationTest {
 
         Mockito.verify(registry).setRoute("middle", MiddleLayout.class,
                 Collections.singletonList(MainLayout.class));
+    }
+
+    private void awaitCountDown(CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
     }
 
     @Tag("div")

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,6 +43,40 @@ public class AbstractRouteRegistryTest {
                 return Optional.empty();
             }
         };
+    }
+
+    @Test
+    public void lockingConfiguration_configurationIsUpdatedOnlyAfterUnlock() {
+        CountDownLatch waitReaderThread = new CountDownLatch(1);
+        CountDownLatch waitUpdaterThread = new CountDownLatch(2);
+
+        Thread readerThread = new Thread() {
+            @Override
+            public void run() {
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        registry.getRegisteredRoutes().isEmpty());
+
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        registry.getRegisteredRoutes().isEmpty());
+
+                waitReaderThread.countDown();
+            }
+        };
+
+        readerThread.start();
+
+        registry.update(() -> {
+            registry.setRoute("", MyRoute.class, Collections.emptyList());
+            registry.setRoute("path", Secondary.class, Collections.emptyList());
+        });
+
+        Assert.assertEquals(
+                "After unlock registry should be updated for others to configure with new data",
+                2, registry.getRegisteredRoutes().size());
     }
 
     @Test
@@ -225,6 +260,14 @@ public class AbstractRouteRegistryTest {
         registry.setRoute("away", MyRoute.class, Collections.emptyList());
 
         Assert.assertEquals("No new event should have fired", 1, events.size());
+    }
+
+    private void awaitCountDown(CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
     }
 
     @Tag("div")

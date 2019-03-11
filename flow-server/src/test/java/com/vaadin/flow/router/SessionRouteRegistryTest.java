@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -676,6 +677,48 @@ public class SessionRouteRegistryTest {
     }
 
     @Test
+    public void lockingConfiguration_configurationIsUpdatedOnlyAfterUnlockk() {
+        CountDownLatch waitReaderThread = new CountDownLatch(1);
+        CountDownLatch waitUpdaterThread = new CountDownLatch(2);
+
+        SessionRouteRegistry registry = getRegistry(session);
+
+        Thread readerThread = new Thread() {
+            @Override
+            public void run() {
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        getRegistry(session).getRegisteredRoutes().isEmpty());
+
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        getRegistry(session).getRegisteredRoutes().isEmpty());
+
+                waitReaderThread.countDown();
+            }
+        };
+
+        readerThread.start();
+
+        registry.update(() -> {
+            registry.setRoute("", MyRoute.class, Collections.emptyList());
+
+            waitUpdaterThread.countDown();
+
+            registry.setRoute("path", Secondary.class, Collections.emptyList());
+
+            waitUpdaterThread.countDown();
+            awaitCountDown(waitReaderThread);
+        });
+
+        Assert.assertEquals(
+                "After unlock registry should be updated for others to configure with new data",
+                2, getRegistry(session).getRegisteredRoutes().size());
+    }
+
+    @Test
     public void routeChangeListener_correctChangesAreReturned() {
         SessionRouteRegistry registry = getRegistry(session);
 
@@ -888,6 +931,14 @@ public class SessionRouteRegistryTest {
                 "No new event should have been received for application scope",
                 2, events.size());
 
+    }
+
+    private void awaitCountDown(CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
     }
 
     @Tag("div")
