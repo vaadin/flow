@@ -5,6 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -13,9 +18,6 @@ import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.shared.Registration;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class AbstractRouteRegistryTest {
 
@@ -44,18 +46,32 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
+    public void lockingConfiguration_configurationIsUpdatedOnlyAfterUnlock() {
+        CountDownLatch waitReaderThread = new CountDownLatch(1);
+        CountDownLatch waitUpdaterThread = new CountDownLatch(2);
+
+        Thread readerThread = new Thread() {
+            @Override
+            public void run() {
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        registry.getRegisteredRoutes().isEmpty());
+
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        registry.getRegisteredRoutes().isEmpty());
+
+                waitReaderThread.countDown();
+            }
+        };
+
+        readerThread.start();
 
         registry.update(() -> {
             registry.setRoute("", MyRoute.class, Collections.emptyList());
-
-            Assert.assertTrue("Registry should still remain empty",
-                    registry.getRegisteredRoutes().isEmpty());
-
             registry.setRoute("path", Secondary.class, Collections.emptyList());
-
-            Assert.assertTrue("Registry should still remain empty",
-                    registry.getRegisteredRoutes().isEmpty());
         });
 
         Assert.assertEquals(
@@ -244,6 +260,14 @@ public class AbstractRouteRegistryTest {
         registry.setRoute("away", MyRoute.class, Collections.emptyList());
 
         Assert.assertEquals("No new event should have fired", 1, events.size());
+    }
+
+    private void awaitCountDown(CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
     }
 
     @Tag("div")
