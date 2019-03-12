@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,24 +19,17 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponentMethod;
-import com.vaadin.flow.component.webcomponent.WebComponentProperty;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.webcomponent.WebComponentBuilder;
 import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
 
@@ -94,10 +87,24 @@ public class WebComponentRegistryInitializer2
     private Set<WebComponentExporter<? extends Component>> constructExporters(
             Set<Class<?>> exporterClasses) {
 
-        Instantiator instantiator = VaadinService.getCurrent().getInstantiator();
-        return exporterClasses.stream().map(instantiator::getOrCreate)
-                .map(o -> (WebComponentExporter<? extends Component>)o)
-                .collect(Collectors.toSet());
+        //Instantiator instantiator = VaadinService.getCurrent()
+        // .getInstantiator();
+
+        Set<WebComponentExporter<? extends Component>> set = new HashSet<>();
+        WebComponentExporter<? extends Component> webComponentExporter;
+        for (Class<?> exporterClass : exporterClasses) {
+            try {
+                webComponentExporter=
+                    (WebComponentExporter<? extends Component>) exporterClass.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(String.format("Could not construct %s " +
+                        "from %s!", WebComponentExporter.class.getName(),
+                        exporterClass.getCanonicalName()), e);
+            }
+            set.add(webComponentExporter);
+        }
+
+        return set;
     }
 
     /**

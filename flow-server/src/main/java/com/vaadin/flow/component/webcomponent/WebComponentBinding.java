@@ -14,13 +14,19 @@
  * the License.
  */
 
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.webcomponent;
 
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.Component;
 
-public interface WebComponentExporter<C extends Component> {
+public interface WebComponentBinding<C extends Component> {
 
-    String getTag();
+    void updateProperty(String propertyName, Object value);
 
-    void define(WebComponentDefinition<C> definition);
+    C getComponent();
+
+    Class<?> getPropertyType(String propertyName);
+
+    boolean hasProperty(String propertyName);
+
+    void updateProperties();
 }

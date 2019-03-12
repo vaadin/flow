@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -37,7 +35,7 @@ import elemental.json.JsonValue;
 public class WebComponentWrapper2 extends Component {
 
     private final Component child;
-    private final WebComponentConfiguration webComponentConfiguration;
+    private final WebComponentBinding<?> webComponentBinding;
 
     // Disconnect timeout
     private Registration disconnectRegistration;
@@ -48,17 +46,18 @@ public class WebComponentWrapper2 extends Component {
      *
      * @param tag
      *         web component tag
-     * @param child
-     *         actual web component instance
+     * @param webComponentBinding
+     *         binding contains {@link Component} wrapped by this {@code
+     *         component} and associated web component property instances.
      */
-    public WebComponentWrapper2(String tag, Component child,
-                                WebComponentConfiguration webComponentConfiguration) {
+    public WebComponentWrapper2(String tag,
+                                WebComponentBinding<?> webComponentBinding) {
         super(new Element(tag));
 
-        this.child = child;
+        this.child = webComponentBinding.getComponent();
         getElement().appendChild(child.getElement());
 
-        this.webComponentConfiguration = webComponentConfiguration;
+        this.webComponentBinding = webComponentBinding;
     }
 
     /**
@@ -73,7 +72,7 @@ public class WebComponentWrapper2 extends Component {
     @ClientCallable
     public void sync(String property, JsonValue newValue) {
         try {
-            if (webComponentConfiguration.hasProperty(property)) {
+            if (webComponentBinding.hasProperty(property)) {
                 setNewFieldValue(property, newValue);
             } else {
                 LoggerFactory.getLogger(child.getClass())
@@ -127,41 +126,15 @@ public class WebComponentWrapper2 extends Component {
 
     private void setNewFieldValue(String property, JsonValue newValue) {
         Class<?> propertyType =
-                webComponentConfiguration.getPropertyType(property);
+                webComponentBinding.getPropertyType(property);
 
         if (JsonCodec.canEncodeWithoutTypeInfo(propertyType)) {
             Object value = JsonCodec.decodeAs(newValue, propertyType);
-            webComponentConfiguration.deliverPropertyUpdate(property, value);
+            webComponentBinding.updateProperty(property, value);
         } else {
             throw new IllegalArgumentException(
                     String.format("Received value was not convertible to '%s'",
                             propertyType.getName()));
         }
-    }
-
-    /**
-     * Get all fields published to the client side as properties.
-     *
-     * @param webComponent
-     *         component to get all fields for
-     * @return map containing property name and {@link Field}
-     * TODO: remove or replace?
-     */
-    private static HashMap<String, Field> getPropertyFields(
-            Class<?> webComponent) {
-        HashMap<String, Field> fields = new HashMap<>();
-
-        // Collect first inherited methods so they can be overridden by the child
-        if (webComponent.getSuperclass() != null) {
-            fields.putAll(getPropertyFields(webComponent.getSuperclass()));
-        }
-
-        for (Field field : webComponent.getDeclaredFields()) {
-            if (WebComponentProperty.class.isAssignableFrom(field.getType())) {
-                fields.put(field.getName(), field);
-            }
-        }
-
-        return fields;
     }
 }
