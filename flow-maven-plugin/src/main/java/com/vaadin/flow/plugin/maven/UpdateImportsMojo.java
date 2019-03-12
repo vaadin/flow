@@ -55,7 +55,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * Goal that updates flow-imports.js file with @JsModule and @HtmlImport
  * annotations defined in the classpath.
  */
-@Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
+@Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
 public class UpdateImportsMojo extends AbstractMojo {
 
     private static final String VALUE = "value";
@@ -111,8 +111,6 @@ public class UpdateImportsMojo extends AbstractMojo {
 
             classes.putAll(classesWithHtmlImport);
         }
-
-        themeModules = themeModules.stream().map(s -> "import '" + s + "';").collect(Collectors.toSet());
 
         try {
             List<String> current = FileUtils.fileExists(jsFile) ? FileUtils.loadFile(new File(jsFile))

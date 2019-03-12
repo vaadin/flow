@@ -56,7 +56,7 @@ import elemental.json.JsonObject;
  * Goal that updates package.json file with @NpmPackage annotations defined in
  * the classpath.
  */
-@Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
+@Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
 public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     private static final String VALUE = "value";
