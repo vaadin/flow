@@ -27,6 +27,4 @@ public interface WebComponentBinding<C extends Component> {
     Class<?> getPropertyType(String propertyName);
 
     boolean hasProperty(String propertyName);
-
-    void updateProperties();
 }

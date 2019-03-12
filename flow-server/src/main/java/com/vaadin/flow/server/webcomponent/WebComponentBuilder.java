@@ -146,7 +146,7 @@ public class WebComponentBuilder<C extends Component>
                 new WebComponentBindingImpl<>(componentReference,
                         propertyBindings);
 
-        binding.updateProperties();
+        binding.updatePropertiesToComponent();
 
         return binding;
     }

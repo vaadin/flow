@@ -80,8 +80,7 @@ public class WebComponentBindingImpl<C extends Component> implements WebComponen
         return properties.containsKey(propertyName);
     }
 
-    @Override
-    public void updateProperties() {
-        properties.forEach((key, value) -> updateProperty(key, value.getValue()));
+    void updatePropertiesToComponent() {
+        properties.forEach((key, value) -> value.notifyValueChange());
     }
 }

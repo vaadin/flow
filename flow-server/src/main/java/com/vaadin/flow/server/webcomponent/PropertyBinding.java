@@ -53,8 +53,8 @@ public class PropertyBinding<P> {
         }
         this.value = newValue;
 
-        if (updated && listener != null) {
-            listener.accept(this.value);
+        if (updated) {
+            notifyValueChange();
         }
     }
 
@@ -72,6 +72,12 @@ public class PropertyBinding<P> {
 
     public boolean isReadOnly() {
         return data.isReadOnly();
+    }
+
+    void notifyValueChange() {
+        if (listener != null) {
+            listener.accept(this.value);
+        }
     }
 
     @Override
