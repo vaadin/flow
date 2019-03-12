@@ -36,7 +36,8 @@ public class TestComponents {
     class IconComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/foo-component.html")
+    @HtmlImport("frontend://bower_components/vaadin-foo-component/src/vaadin-foo-component.html")
+    @HtmlImport("frontend://bower_components/vaadin-foo-component/src/something-else.html")
     public static class VaadinBowerComponent extends Component {
     }
 
@@ -47,7 +48,7 @@ public class TestComponents {
 
     @HtmlImport("frontend://bower_components/vaadin-element-mixin/foo-component.html")
     @NpmPackage("@vaadin/vaadin-element-mixin")
-    @JsModule("vaadin-dir/src/vaadin-mixed-component.js")
+    @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
 
