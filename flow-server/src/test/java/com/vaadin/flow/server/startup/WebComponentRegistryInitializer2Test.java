@@ -153,7 +153,7 @@ public class WebComponentRegistryInitializer2Test {
 
     public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
         @Override
-        public String getTag() {
+        public String tag() {
             return "my-component";
         }
 
@@ -166,7 +166,7 @@ public class WebComponentRegistryInitializer2Test {
     public static class UserBoxExporter implements WebComponentExporter<UserBox> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "user-box";
         }
 
@@ -179,7 +179,7 @@ public class WebComponentRegistryInitializer2Test {
     public static class InvalidNameExporter implements WebComponentExporter<InvalidName> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "invalid";
         }
 
@@ -191,7 +191,7 @@ public class WebComponentRegistryInitializer2Test {
 
     public static class ExtendingExporter extends MyComponentExporter {
         @Override
-        public String getTag() {
+        public String tag() {
             return "tag-1";
         }
 
@@ -207,7 +207,7 @@ public class WebComponentRegistryInitializer2Test {
     public static class SiblingExporter implements WebComponentExporter<MyComponent> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "my-component-sibling";
         }
 
@@ -220,7 +220,7 @@ public class WebComponentRegistryInitializer2Test {
     public static class DuplicateTagExporter implements WebComponentExporter<MyComponent> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "my-component";
         }
 
@@ -233,7 +233,7 @@ public class WebComponentRegistryInitializer2Test {
     public static class DuplicatePropertyExporter implements WebComponentExporter<MyComponent> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "tag-2";
         }
 

@@ -100,7 +100,7 @@ public class WebComponentGenerator2Test {
     public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "tag";
         }
 

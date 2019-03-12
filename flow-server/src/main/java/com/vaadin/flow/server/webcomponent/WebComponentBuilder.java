@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -52,7 +51,7 @@ public class WebComponentBuilder<C extends Component>
             new HashMap<>();
 
     public WebComponentBuilder(WebComponentExporter<C> exporter) {
-        if (exporter.getTag() == null) {
+        if (exporter.tag() == null) {
             throw new InvalidParameterException(String.format(
                     "WebComponentExporter %s gave a null tag. Please provide " +
                             "a non-null tag for the web component!",
@@ -102,7 +101,7 @@ public class WebComponentBuilder<C extends Component>
     }
 
     public String getWebComponentTag() {
-        return exporter.getTag();
+        return exporter.tag();
     }
 
     @Override

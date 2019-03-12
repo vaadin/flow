@@ -21,7 +21,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 public class ClientSelectExporter implements WebComponentExporter<ClientSelect2> {
     @Override
-    public String getTag() {
+    public String tag() {
         return "client-select";
     }
 
