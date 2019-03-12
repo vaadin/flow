@@ -155,6 +155,9 @@
       if(this._isFocusable(node)) {
         return node;
       }
+      if ( !node.children ){
+          return null;
+      }
       for (var i = 0; i < node.children.length; i++) {
         var focusable = this._getFirstFocusableDescendant(node.children[i]);
         if(focusable !== null) {
@@ -165,8 +168,8 @@
     }
 
     _isFocusable(node){
-      if (node.hasAttribute("disabled")
-              || node.hasAttribute("hidden")) {
+      if (node.hasAttribute && typeof node.hasAttribute === 'function' && 
+              (node.hasAttribute("disabled") || node.hasAttribute("hidden"))) {
         return false;
       }
 
