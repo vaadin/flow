@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.http.conn.UnsupportedSchemeException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -78,7 +79,6 @@ public class UpdateImportsMojo extends AbstractMojo {
     @Override
     public void execute() {
 
-
         URL[] projectClassPathUrls = getProjectClassPathUrls(project);
 
         getLog().info("Looking for imports ...");
@@ -118,10 +118,9 @@ public class UpdateImportsMojo extends AbstractMojo {
             AbstractTheme theme = (AbstractTheme) Class.forName(themeDefinition.getTheme().getCanonicalName()).newInstance();
 
             Set<String> jsModules = new HashSet<>();
-            classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(fileName -> {
-                // add `./` prefix to everything starting with letters
-                jsModules.add(fileName.replaceFirst("(?i)^([a-z])", "./$1"));
-            }));
+            classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(fileName -> jsModules.add(
+                    // add `./` prefix to everything starting with letters
+                    fileName.replaceFirst("(?i)^([a-z])", "./$1"))));
 
             Stream<String> variantStream = theme.getHtmlAttributes(themeDefinition.getVariant()).entrySet().stream()
                     .map(e -> "document.body.setAttribute('" + e.getKey() + "', '" + e.getValue() + "');");
@@ -132,6 +131,7 @@ public class UpdateImportsMojo extends AbstractMojo {
                 // TODO(manolo): disabled because not all files have corresponding themed one.
                 // eg vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
                 // but vaadin-upload/src/vaadin-upload-file.js does not.
+                // ticket: https://github.com/vaadin/flow/issues/5244
                 if (fileName.matches(".*(vaadin-[^/]+)/" + theme.getBaseUrl() + "\\1\\.(js|html)")) {
                     fileName = theme.translateUrl(fileName);
                 }
@@ -147,7 +147,7 @@ public class UpdateImportsMojo extends AbstractMojo {
                 replaceJsFile(content + "\n");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
