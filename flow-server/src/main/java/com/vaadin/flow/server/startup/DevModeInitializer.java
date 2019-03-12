@@ -16,13 +16,18 @@
 package com.vaadin.flow.server.startup;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DevModeHandler;
 
+/**
+ * Static class for starting the {@link DevModeHandler} and getting
+ * instance information for a running instance.
+ */
 public final class DevModeInitializer implements Serializable {
 
-    private static DevModeHandler devmodeHandler;
+    private static AtomicReference<DevModeHandler> devmodeHandler = new AtomicReference<>();
 
     /**
      * Start the dev mode handler if none has been started yet.
@@ -31,9 +36,8 @@ public final class DevModeInitializer implements Serializable {
      *         deployment configuration
      */
     public static void start(DeploymentConfiguration configuration) {
-        if (devmodeHandler == null) {
-            devmodeHandler = DevModeHandler.createInstance(configuration);
-        }
+        devmodeHandler.compareAndSet(null,
+                DevModeHandler.createInstance(configuration));
     }
 
     /**
@@ -42,6 +46,6 @@ public final class DevModeInitializer implements Serializable {
      * @return devModeHandler or {@code null} if not started
      */
     public static DevModeHandler getDevModeHandler() {
-        return devmodeHandler;
+        return devmodeHandler.get();
     }
 }
