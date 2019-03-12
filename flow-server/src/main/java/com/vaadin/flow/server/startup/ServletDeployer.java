@@ -123,11 +123,13 @@ public class ServletDeployer implements ServletContextListener {
         if(DevModeInitializer.getDevModeHandler() == null) {
             ServletRegistration vaadinServlet = findVaadinServlet(context);
 
-            DeploymentConfiguration deploymentConfiguration = createDeploymentConfiguration(
-                    new StubServletConfig(context, vaadinServlet),
-                    vaadinServlet.getClass());
+            if(vaadinServlet != null) {
+                DeploymentConfiguration deploymentConfiguration = createDeploymentConfiguration(
+                        new StubServletConfig(context, vaadinServlet),
+                        vaadinServlet.getClass());
 
-            new DevModeInitializer().start(deploymentConfiguration);
+                new DevModeInitializer().start(deploymentConfiguration);
+            }
         }
     }
 
