@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -150,7 +149,7 @@ public class WebComponentGenerator2 {
                 prop.put(propertyValue, (JsonValue) property.getDefaultValue());
             }
             else {
-                throw new UnsuppertedPropertyType(String.format("%s " +
+                throw new UnsupportedPropertyType(String.format("%s " +
                         "is not a currently supported type for a Property. " +
                                 "Please use %s instead.",
                         property.getType().getSimpleName(),

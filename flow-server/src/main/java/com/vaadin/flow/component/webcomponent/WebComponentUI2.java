@@ -72,7 +72,7 @@ public class WebComponentUI2 extends UI {
         }
 
         WebComponentBinding<?> binding =
-                webComponentConfiguration.get().bind(Instantiator.get(this));
+                webComponentConfiguration.get().createBinding(Instantiator.get(this));
 
         WebComponentWrapper2 wrapper = new WebComponentWrapper2(tag, binding);
 

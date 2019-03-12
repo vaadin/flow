@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import java.security.InvalidParameterException;
 import java.util.Set;
 
 import org.junit.Before;
@@ -25,6 +26,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.JsonSerializer;
@@ -46,7 +48,7 @@ public class WebComponentBuilderTest {
     private WebComponentBuilder<MyComponent> builder;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         myComponentExporter = new MyComponentExporter();
 
         builder = new WebComponentBuilder<>(myComponentExporter);
@@ -59,36 +61,38 @@ public class WebComponentBuilderTest {
         builder.addProperty("boolean", true);
         builder.addProperty("double", 1.0);
 
-        assertEquals(builder.getPropertyData("int").getValue(), 1);
-        assertEquals(builder.getPropertyData("string").getValue(),
-                "string");
-        assertEquals(builder.getPropertyData("boolean").getValue(),
-                true);
-        assertEquals(builder.getPropertyData("double").getValue(), 1.0);
+        assertProperty(builder,"int", 1);
+        assertProperty(builder, "string", "string");
+        assertProperty(builder, "boolean", true);
+        assertProperty(builder, "double", 1.0);
 
-        // complex types:
+        // JsonValue
         Bean bean = new Bean();
         bean.setInteger(5);
 
-        // 1) free types
-        builder.addProperty("bean", Bean.class, bean);
-        assertEquals(builder.getPropertyData("bean").getValue(), bean);
-
-        // 2) JsonValue
         JsonValue value = JsonSerializer.toJson(bean);
         builder.addProperty("json", value);
 
-        assertEquals(builder.getPropertyData("json").getValue(), value);
+        assertProperty(builder, "json", value);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void addProperty_samePropertyNameTwiceThrows() {
+    @Test
+    public void addProperty_propertyWithTheSameNameGetsOverwritten() {
         builder.addProperty("int", 1);
 
         assertTrue(builder.hasProperty("int"));
 
-        // should throw - TODO: better exception type
         builder.addProperty("int", 2);
+
+        assertEquals("Builder should have one property", 1,
+                builder.getPropertyDataSet().size());
+
+        assertProperty(builder, "int", 2);
+    }
+
+    @Test(expected = UnsupportedPropertyType.class)
+    public void addProperty_throwsOnUnsupportedTypes() {
+        builder.addProperty("bean", Bean.class);
     }
 
     @Ignore
@@ -102,29 +106,9 @@ public class WebComponentBuilderTest {
         assertEquals(TAG, builder.getWebComponentTag());
     }
 
-    @Ignore
-    @Test
-    public void getWebComponentTag_setByTagAnnotationOnTheComponent() {
-        assertEquals(TAG, builder.getWebComponentTag());
-
-        WebComponentExporter<MyComponent> exporter = new WebComponentExporter<MyComponent>() {
-            @Override
-            public String getTag() {
-                // returning null should force the thing to use @Tag
-                return null;
-            }
-
-            @Override
-            public void define(WebComponentDefinition<MyComponent> definition) { }
-        };
-
-        // TODO...
-    }
-
-    @Ignore
-    @Test
+    @Test(expected = InvalidParameterException.class)
     public void builderCreatingFailsIfNoTagAvailable() {
-        // TODO: no getTag() override and no @Tag on Component
+        builder = new WebComponentBuilder<>(new NoTagExporter());
     }
 
     @Test
@@ -146,15 +130,15 @@ public class WebComponentBuilderTest {
 
         builder.addProperty("int", 0).onChange(MyComponent::update);
 
-        MyComponent instantiatedComponent =
-                builder.getComponentInstance(instantiator);
+        WebComponentBinding<MyComponent> binding =
+                builder.createBinding(instantiator);
 
-        assertNotNull(instantiatedComponent);
+        assertNotNull(binding);
 
-        builder.deliverPropertyUpdate("int", 1);
+        binding.updateProperty("int", 1);
 
         assertEquals("Component should have been updated", 1,
-                instantiatedComponent.getValue());
+                binding.getComponent().getValue());
     }
 
     @Test
@@ -184,11 +168,14 @@ public class WebComponentBuilderTest {
         Instantiator instantiator = mock(Instantiator.class);
         when(instantiator.getOrCreate(MyComponent.class)).thenReturn(myComponent);
 
-        MyComponent instantiatedComponent =
-                builder.getComponentInstance(instantiator);
+        WebComponentBinding<MyComponent> binding =
+                builder.createBinding(instantiator);
 
-        assertNotNull(instantiatedComponent);
-        assertTrue(instantiatedComponent.getFlip());
+        assertNotNull("Binding should not be null", binding);
+        assertNotNull("Binding's component should not be null",
+                binding.getComponent());
+        assertTrue("InstanceConfigurator should have set 'flip' to true",
+                binding.getComponent().getFlip());
     }
 
     @Test
@@ -198,11 +185,14 @@ public class WebComponentBuilderTest {
         Instantiator instantiator = mock(Instantiator.class);
         when(instantiator.getOrCreate(MyComponent.class)).thenReturn(myComponent);
 
-        MyComponent instantiatedComponent =
-                builder.getComponentInstance(instantiator);
+        WebComponentBinding<MyComponent> binding =
+                builder.createBinding(instantiator);
 
-        assertNotNull(instantiatedComponent);
-        assertFalse(instantiatedComponent.getFlip());
+        assertNotNull("Binding should not be null", binding);
+        assertNotNull("Binding's component should not be null",
+                binding.getComponent());
+        assertFalse("'flip' should have been false",
+                binding.getComponent().getFlip());
     }
 
     @Test
@@ -247,7 +237,7 @@ public class WebComponentBuilderTest {
         }
     }
 
-    public class Bean {
+    public static class Bean {
         protected int integer = 0;
         public Bean() {}
 
@@ -273,7 +263,7 @@ public class WebComponentBuilderTest {
         }
     }
 
-    public class MyComponentExporter implements WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
 
         @Override
         public String getTag() {
@@ -285,5 +275,31 @@ public class WebComponentBuilderTest {
             // this is where WebComponentBuilder would be normally accessed
             // by the user but this tests uses it's interfaces directly.
         }
+    }
+
+    public static class NoTagExporter implements WebComponentExporter<MyComponent> {
+
+        @Override
+        public String getTag() {
+            return null;
+        }
+
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            // this is where WebComponentBuilder would be normally accessed
+            // by the user but this tests uses it's interfaces directly.
+        }
+    }
+
+
+
+    private static final void assertProperty(WebComponentBuilder<?> builder,
+                                             String property, Object value) {
+        PropertyData2<?> data = builder.getPropertyDataSet().stream()
+                .filter(d -> d.getName().equals(property))
+                .findFirst().orElse(null);
+
+        assertNotNull("Property " + property + " should not be null", data);
+        assertEquals(value, data.getDefaultValue());
     }
 }

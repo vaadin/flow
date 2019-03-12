@@ -50,20 +50,22 @@ public class WebComponentWrapper2Test {
     private static final String INT_PROPERTY = "integerValue";
 
     private MyComponent component;
+    private WebComponentBinding<MyComponent> binding;
     private WebComponentConfiguration<MyComponent> configuration;
 
     @Before
     public void init() {
         configuration = new WebComponentBuilder<>(new MyComponentExporter());
         // this needs to be called or things break
-        component = configuration.getComponentInstance(new MockInstantiator());
+        binding = configuration.createBinding(new MockInstantiator());
+        component = binding.getComponent();
     }
 
 
     @Test
     public void wrappedMyComponent_syncSetsCorrectValuesToFields() {
         WebComponentWrapper2 wrapper = new WebComponentWrapper2("my-component",
-                component, configuration);
+                binding);
 
         wrapper.sync(MSG_PROPERTY, Json.create("MyMessage"));
 
@@ -81,7 +83,7 @@ public class WebComponentWrapper2Test {
     @Test
     public void wrappedComponentPropertyListener_listenerFiredWithCorrectValuesOnSync() {
         WebComponentWrapper2 wrapper = new WebComponentWrapper2("my-component",
-                component, configuration);
+                binding);
 
         wrapper.sync(MSG_PROPERTY, Json.create("one"));
         wrapper.sync(INT_PROPERTY, Json.create(2));
@@ -108,7 +110,7 @@ public class WebComponentWrapper2Test {
     public void extendingWebComponent_inheritedFieldsAreAvailableAndOverridden() {
         MyExtension component = new MyExtension();
         WebComponentWrapper2 wrapper = new WebComponentWrapper2("my-extension",
-                component, configuration);
+                binding);
 
         // TODO
 
@@ -128,7 +130,7 @@ public class WebComponentWrapper2Test {
         Mockito.when(ui.getInternals()).thenReturn(internals);
 
         WebComponentWrapper2 wrapper = new WebComponentWrapper2("my-component",
-                component, configuration) {
+                binding) {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
@@ -193,7 +195,7 @@ public class WebComponentWrapper2Test {
         Mockito.when(ui.getInternals()).thenReturn(internals);
 
         WebComponentWrapper2 wrapper = new WebComponentWrapper2("my-component",
-                component, configuration) {
+                binding) {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);

@@ -17,12 +17,14 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.security.InvalidParameterException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -34,7 +36,15 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectTools;
 
-public class WebComponentBuilder<C extends Component> implements WebComponentDefinition<C>, WebComponentConfiguration<C> {
+import elemental.json.JsonValue;
+
+public class WebComponentBuilder<C extends Component>
+        implements WebComponentDefinition<C>, WebComponentConfiguration<C> {
+    // TODO: get rid of these and json (de)serialize on the spot
+    private static final List<Class> SUPPORTED_TYPES = Arrays.asList(
+            Boolean.class, String.class, Integer.class, Double.class,
+            JsonValue.class);
+
     private Class<C> componentClass = null;
     private WebComponentExporter<C> exporter;
     private InstanceConfigurator<C> instanceConfigurator;
@@ -42,20 +52,29 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
             new HashMap<>();
 
     public WebComponentBuilder(WebComponentExporter<C> exporter) {
+        if (exporter.getTag() == null) {
+            throw new InvalidParameterException(String.format(
+                    "WebComponentExporter %s gave a null tag. Please provide " +
+                            "a non-null tag for the web component!",
+                    exporter.getClass().getCanonicalName()));
+        }
+
         this.exporter = exporter;
         this.exporter.define(this);
     }
 
     @Override
-    public <P> PropertyConfiguration<C, P> addProperty(String name, Class<P> type, P defaultValue) {
+    public <P> PropertyConfiguration<C, P> addProperty(
+            String name, Class<P> type, P defaultValue) {
         Objects.requireNonNull(name, "Parameter 'name' cannot be null!");
         Objects.requireNonNull(type, "Parameter 'type' cannot be null!");
 
-        if (propertyConfigurationMap.containsKey(name)) {
-            throw new InvalidParameterException(String.format( "Property '%s'" +
-                    " has already been registered! WebComponent cannot have " +
-                            "multiple properties with the same name.",
-                    name));
+        if (!isSupportedType(type)) {
+            throw new UnsupportedPropertyType(String.format("PropertyConfiguration " +
+                    "cannot handle type %s. Use any of %s instead.",
+                    type.getCanonicalName(),
+                    SUPPORTED_TYPES.stream().map(Class::getSimpleName)
+                            .collect(Collectors.joining(", "))));
         }
 
         PropertyConfigurationImp<C, P> configurationImp =
@@ -104,15 +123,17 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
     }
 
     @Override
-    public WebComponentBinding<C> bind(Instantiator instantiator) {
+    public WebComponentBinding<C> createBinding(Instantiator instantiator) {
         Objects.requireNonNull(instantiator, "Parameter 'instantiator' must not" +
                 " be null!");
 
         C componentReference = instantiator.getOrCreate(this.getComponentClass());
 
         // TODO: real IWebComponent impl
-        instanceConfigurator.accept(new DummyWebComponentInterfacer<>(),
-                componentReference);
+        if (instanceConfigurator != null) {
+            instanceConfigurator.accept(new DummyWebComponentInterfacer<>(),
+                    componentReference);
+        }
 
         Set<PropertyBinding<?>> propertyBindings =
                 propertyConfigurationMap.values().stream()
@@ -149,5 +170,9 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
     @Override
     public boolean hasProperty(String propertyName) {
         return propertyConfigurationMap.containsKey(propertyName);
+    }
+
+    private static boolean isSupportedType(Class clazz) {
+        return SUPPORTED_TYPES.contains(clazz);
     }
 }

@@ -101,7 +101,7 @@ public class WebComponentGenerator2Test {
 
         @Override
         public String getTag() {
-            return null;
+            return "tag";
         }
 
         @Override
