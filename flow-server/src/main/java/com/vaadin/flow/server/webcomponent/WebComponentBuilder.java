@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@ package com.vaadin.flow.server.webcomponent;
 
 import java.security.InvalidParameterException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,13 +26,12 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.IWebComponent;
 import com.vaadin.flow.component.webcomponent.InstanceConfigurator;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
+import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.ReflectTools;
 
 public class WebComponentBuilder<C extends Component> implements WebComponentDefinition<C>, WebComponentConfiguration<C> {
@@ -42,7 +40,6 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
     private InstanceConfigurator<C> instanceConfigurator;
     private Map<String, PropertyConfigurationImp<C, ?>> propertyConfigurationMap =
             new HashMap<>();
-    private C componentReference;
 
     public WebComponentBuilder(WebComponentExporter<C> exporter) {
         this.exporter = exporter;
@@ -92,58 +89,46 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
     @Override
     public Class<?> getPropertyType(String propertyName) {
         if (propertyConfigurationMap.containsKey(propertyName)) {
-            return propertyConfigurationMap.get(propertyName).getPropertyType();
+            return propertyConfigurationMap.get(propertyName).getPropertyData().getType();
         } else {
             // TODO: or should we throw here?
             return null;
         }
     }
 
-    /**
-     * TODO: write this
-     * {@link #getComponentInstance(Instantiator)} must be called before
-     * calling this method
-     *
-     * @param propertyName
-     * @param value
-     *
-     */
-    @Override
-    public void deliverPropertyUpdate(String propertyName, Object value) {
-        Objects.requireNonNull(propertyName, "Parameter 'propertyName' must " +
-                "not be null!");
-
-        if (componentReference == null) {
-            throw new IllegalStateException(String.format("%s" +
-                    "::getComponentInstance must be called before calling " +
-                    "this method!",
-                    WebComponentConfiguration.class.getSimpleName()));
-        }
-
-        PropertyConfigurationImp<C, ?> propertyConfiguration =
-                propertyConfigurationMap.get(propertyName);
-
-        if (propertyConfiguration == null) {
-            throw new InvalidParameterException(
-                    String.format("No %s found for propertyName '%s'!",
-                            PropertyConfiguration.class.getSimpleName(), propertyName));
-        }
-
-        // TODO: print into log instead, if this happens
-        if (propertyConfiguration.isReadOnly()) {
-            throw new InvalidParameterException("Property '%s' is read-only!");
-        }
-
-        propertyConfiguration.updateProperty(componentReference, value);
-    }
-
     @Override
     public Set<PropertyData2<?>> getPropertyDataSet() {
-        return new HashSet<>(propertyConfigurationMap.values());
+        return propertyConfigurationMap.values().stream()
+                .map(PropertyConfigurationImp::getPropertyData)
+                .collect(Collectors.toSet());
     }
 
-    PropertyData2<?> getPropertyData(String propertyName) {
-        return propertyConfigurationMap.get(propertyName);
+    @Override
+    public WebComponentBinding<C> bind(Instantiator instantiator) {
+        Objects.requireNonNull(instantiator, "Parameter 'instantiator' must not" +
+                " be null!");
+
+        C componentReference = instantiator.getOrCreate(this.getComponentClass());
+
+        // TODO: real IWebComponent impl
+        instanceConfigurator.accept(new DummyWebComponentInterfacer<>(),
+                componentReference);
+
+        Set<PropertyBinding<?>> propertyBindings =
+                propertyConfigurationMap.values().stream()
+                        .map(pc -> new PropertyBinding<>(
+                                pc.getPropertyData(),
+                                v -> pc.getOnChangeHandler()
+                                        .accept(componentReference, v)))
+                        .collect(Collectors.toSet());
+
+        WebComponentBindingImpl<C> binding =
+                new WebComponentBindingImpl<>(componentReference,
+                        propertyBindings);
+
+        binding.updateProperties();
+
+        return binding;
     }
 
     @Override
@@ -154,21 +139,6 @@ public class WebComponentBuilder<C extends Component> implements WebComponentDef
                     exporter.getClass(), WebComponentExporter.class);
         }
         return componentClass;
-    }
-
-    @Override
-    public C getComponentInstance(Instantiator instantiator) {
-        if (componentReference == null) {
-            componentReference = instantiator.getOrCreate(this.getComponentClass());
-
-            if (instanceConfigurator != null) {
-                // TODO: real IWebComponent impl
-                instanceConfigurator.accept(new DummyWebComponentInterfacer<>(),
-                        componentReference);
-            }
-        }
-
-        return componentReference;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -135,18 +136,18 @@ public class WebComponentGenerator2 {
 
         prop.put("type", property.getType().getSimpleName());
 
-        if (property.getValue() != null) {
+        if (property.getDefaultValue() != null) {
             String propertyValue = "value";
             if (property.getType() == Boolean.class) {
-                prop.put(propertyValue, (Boolean) property.getValue());
+                prop.put(propertyValue, (Boolean) property.getDefaultValue());
             } else if (property.getType() == Double.class) {
-                prop.put(propertyValue, (Double) property.getValue());
+                prop.put(propertyValue, (Double) property.getDefaultValue());
             } else if (property.getType() == Integer.class) {
-                prop.put(propertyValue, (Integer) property.getValue());
+                prop.put(propertyValue, (Integer) property.getDefaultValue());
             } else if (property.getType() == String.class) {
-                prop.put(propertyValue, (String) property.getValue());
+                prop.put(propertyValue, (String) property.getDefaultValue());
             } else if (JsonValue.class.isAssignableFrom(property.getType())) {
-                prop.put(propertyValue, (JsonValue) property.getValue());
+                prop.put(propertyValue, (JsonValue) property.getDefaultValue());
             }
             else {
                 throw new UnsuppertedPropertyType(String.format("%s " +

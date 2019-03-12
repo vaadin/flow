@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,24 +22,17 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
-// TODO: this bad-boy replaces PropertyData
-public class PropertyConfigurationImp<C extends Component, P> implements PropertyConfiguration<C, P>, PropertyData2<P> {
-    // property
+public class PropertyConfigurationImp<C extends Component, P> implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
-    private String propertyName;
-    private Class<P> propertyType;
-    private P value;
-
-    // configuration
-    private boolean readOnly = false;
+    private final PropertyData2<P> data;
     private SerializableBiConsumer<C, P> onChangeHandler = null;
 
     public PropertyConfigurationImp(Class<C> componentType, String propertyName,
                                     Class<P> propertyType, P defaultValue) {
+
+        data = new PropertyData2<>(propertyName, propertyType, false,
+                defaultValue);
         this.componentClass = componentType;
-        this.propertyName = propertyName;
-        this.propertyType = propertyType;
-        this.value = defaultValue;
     }
 
     @Override
@@ -52,7 +45,7 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
 
     @Override
     public PropertyConfiguration<C, P> readOnly() {
-        readOnly = true;
+        data.setReadOnly(true);
         return this;
     }
 
@@ -60,68 +53,22 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
     public boolean equals(Object obj) {
         if (obj instanceof PropertyConfigurationImp) {
             PropertyConfigurationImp other = (PropertyConfigurationImp) obj;
-            return propertyName.equals(other.propertyName)
-                    && componentClass.equals(other.componentClass)
-                    && propertyType.equals(other.propertyType);
+            return data.equals(other.data)
+                    && componentClass.equals(other.componentClass);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(componentClass, propertyName, propertyType);
+        return Objects.hash(componentClass, data);
     }
 
     SerializableBiConsumer<C, Object> getOnChangeHandler() {
         return (c, o) -> onChangeHandler.accept(c, (P)o);
     }
 
-    public boolean isReadOnly() {
-        return readOnly;
-    }
-
-    public Class<P> getPropertyType() {
-        return this.propertyType;
-    }
-
-    public void updateProperty(C componentReference, Object value) {
-        if (value != null && value.getClass() != propertyType) {
-            // TODO: throw a specific exception here
-            throw new RuntimeException(String.format("Parameter 'value' is of" +
-                            " the wrong type: onChangeHandler of the property " +
-                            "expected to receive %s but found %s instead.",
-                    propertyType.getCanonicalName(),
-                    value.getClass().getName()));
-        }
-        P newValue = (P)value;
-        boolean propagate = false;
-
-        if (this.value != null) {
-            propagate = !this.value.equals(newValue);
-        }
-        else if (newValue != null) {
-            propagate = true;
-        }
-
-        this.value = newValue;
-
-        if (propagate && onChangeHandler != null) {
-            onChangeHandler.accept(componentReference, newValue);
-        }
-    }
-
-    @Override
-    public String getName() {
-        return propertyName;
-    }
-
-    @Override
-    public Class<P> getType() {
-        return propertyType;
-    }
-
-    @Override
-    public P getValue() {
-        return value;
+    public PropertyData2<P> getPropertyData() {
+        return data;
     }
 }

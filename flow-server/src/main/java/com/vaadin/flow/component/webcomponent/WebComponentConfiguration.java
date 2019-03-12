@@ -28,13 +28,11 @@ public interface WebComponentConfiguration<C extends Component> {
 
     Class<?> getPropertyType(String propertyName);
 
-    void deliverPropertyUpdate(String propertyName, Object value);
-
     Class<C> getComponentClass();
-
-    C getComponentInstance(Instantiator instantiator);
 
     Class<WebComponentExporter<C>> getExporterClass();
 
     Set<PropertyData2<?>> getPropertyDataSet();
+
+    WebComponentBinding<C> bind(Instantiator instantiator);
 }
