@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -87,7 +88,7 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
 
     /**
      * Extracts annotation values from the annotations of the given class. Each
-     * annotation value is retrieved by calling a method by name specified. *
+     * annotation value is retrieved by calling a method by name specified.
      *
      * @param clazz
      *            the annotated class
@@ -107,6 +108,8 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
                 .collect(Collectors.toSet());
     }
 
+
+
     /**
      * Get theme definitions for all theme annotated classes.
      *
@@ -125,6 +128,12 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
                 }
             });
         });
+
+        if (map.size() == 0) {
+            Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader("com.vaadin.flow.theme.lumo.Lumo");
+            map.put(new ThemeDefinition(lumo, ""), null);
+        }
+
         return map;
     }
 
