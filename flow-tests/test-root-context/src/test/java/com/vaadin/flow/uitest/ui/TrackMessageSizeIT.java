@@ -15,17 +15,14 @@
  *
  */
 
-package com.vaadin.flow.uitest.ui.push;
+package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testcategory.PushTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
 
-@Category(PushTests.class)
 public class TrackMessageSizeIT extends ChromeBrowserTest {
 
     @Test
