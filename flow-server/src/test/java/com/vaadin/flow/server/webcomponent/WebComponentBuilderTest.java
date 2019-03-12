@@ -273,7 +273,7 @@ public class WebComponentBuilderTest {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             // this is where WebComponentBuilder would be normally accessed
-            // by the user but this tests uses it's interfaces directly.
+            // by the user but this tests uses its interfaces directly.
         }
     }
 
@@ -287,7 +287,7 @@ public class WebComponentBuilderTest {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             // this is where WebComponentBuilder would be normally accessed
-            // by the user but this tests uses it's interfaces directly.
+            // by the user but this tests uses its interfaces directly.
         }
     }
 
