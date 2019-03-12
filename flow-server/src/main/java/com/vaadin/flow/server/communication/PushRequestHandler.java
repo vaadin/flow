@@ -152,7 +152,7 @@ public class PushRequestHandler
     }
 
     /**
-     * Initializes Atmosphere for the given ServletConfiguration
+     * Initializes Atmosphere for the given ServletConfiguration.
      *
      * @param vaadinServletConfig
      *            The servlet configuration for the servlet which should have

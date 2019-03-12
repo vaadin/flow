@@ -48,7 +48,7 @@ public class LongPollingMultipleThreadsView extends AbstractDivView {
     private UI ui;
 
     public LongPollingMultipleThreadsView() {
-        setId("push-update");
+        this.setId("push-update");
         NativeButton startButton = new NativeButton("start", event -> this.start());
         startButton.setId("start-button");
         add(startButton, label);
@@ -75,22 +75,21 @@ public class LongPollingMultipleThreadsView extends AbstractDivView {
     private void doWork() {
         try {
             Thread.sleep((int) (Math.random() * 10));
-
-            // Simulate some new piece of data coming in on a background thread and getting put into the display.
-            List<Long> copy;
-            synchronized (itemRegistry) {
-                itemRegistry.add(System.currentTimeMillis());
-
-                // Copy the list so we're not accessing the shared registry concurrently.
-                copy = new ArrayList<>(itemRegistry);
-            }
-
-            ui.access(() -> updateDiv(copy));
-
         }
-        catch (Exception ex) {
-            ex.printStackTrace();
+        catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
         }
+
+        // Simulate some new piece of data coming in on a background thread and getting put into the display.
+        List<Long> copy;
+        synchronized (itemRegistry) {
+            itemRegistry.add(System.currentTimeMillis());
+
+            // Copy the list so we're not accessing the shared registry concurrently.
+            copy = new ArrayList<>(itemRegistry);
+        }
+
+        ui.access(() -> updateDiv(copy));
 
     }
 
