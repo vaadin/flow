@@ -16,19 +16,8 @@
 
 package com.vaadin.flow.server.communication;
 
-import java.io.IOException;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-
-import org.atmosphere.cache.UUIDBroadcasterCache;
-import org.atmosphere.client.TrackMessageSizeInterceptor;
-import org.atmosphere.cpr.*;
-import org.atmosphere.cpr.AtmosphereFramework.AtmosphereHandlerWrapper;
-import org.atmosphere.interceptor.HeartbeatInterceptor;
-import org.atmosphere.util.VoidAnnotationProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.RequestHandler;
@@ -43,6 +32,20 @@ import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushConstants;
+import java.io.IOException;
+import org.atmosphere.cache.UUIDBroadcasterCache;
+import org.atmosphere.client.TrackMessageSizeInterceptor;
+import org.atmosphere.cpr.ApplicationConfig;
+import org.atmosphere.cpr.AtmosphereFramework;
+import org.atmosphere.cpr.AtmosphereFramework.AtmosphereHandlerWrapper;
+import org.atmosphere.cpr.AtmosphereHandler;
+import org.atmosphere.cpr.AtmosphereInterceptor;
+import org.atmosphere.cpr.AtmosphereRequestImpl;
+import org.atmosphere.cpr.AtmosphereResponseImpl;
+import org.atmosphere.interceptor.HeartbeatInterceptor;
+import org.atmosphere.util.VoidAnnotationProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles requests to open a push (bidirectional) communication channel between
