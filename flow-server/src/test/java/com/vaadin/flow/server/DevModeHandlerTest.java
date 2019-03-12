@@ -58,7 +58,6 @@ import org.mockito.Mockito;
 
 import com.sun.net.httpserver.HttpServer;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.startup.DevModeInitializer;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -260,7 +259,7 @@ public class DevModeHandlerTest {
     }
 
     private VaadinServlet prepareServlet() throws ServletException {
-        DevModeInitializer.start(configuration);
+        DevModeHandler.start(configuration);
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
