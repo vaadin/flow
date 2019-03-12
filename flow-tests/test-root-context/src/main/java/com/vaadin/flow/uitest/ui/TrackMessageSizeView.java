@@ -25,10 +25,10 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.IOUtils;
 
 @Route("com.vaadin.flow.uitest.ui.TrackMessageSizeView")
 public class TrackMessageSizeView extends Div {
@@ -119,27 +119,12 @@ public class TrackMessageSizeView extends Div {
 
     private String getFileContent(String filename, VaadinServletService service) {
         ServletContext sc = service.getServlet().getServletContext();
-        try {
-            InputStream inputStream = sc.getResourceAsStream(filename);
 
-            return inputStream != null ? readFromInputStream(inputStream) : null;
-
+        try(InputStream inputStream = sc.getResourceAsStream(filename)) {
+            return inputStream != null ? IOUtils.toString(inputStream, StandardCharsets.UTF_8.name()) : null;
         } catch ( IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private String readFromInputStream(InputStream inputStream)
-            throws IOException {
-        StringBuilder resultStringBuilder = new StringBuilder();
-        try (BufferedReader br
-                     = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                resultStringBuilder.append(line).append("\n");
-            }
-        }
-        return resultStringBuilder.toString();
     }
 
     public void log(String log){
