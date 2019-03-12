@@ -55,7 +55,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class UpdateImportsMojo extends AbstractMojo {
 
     private static final String VALUE = "value";
-    public static final String MAIN_JS = "src/main/webapp/frontend/main.js";
+    public static final String MAIN_JS = "frontend/main.js";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
