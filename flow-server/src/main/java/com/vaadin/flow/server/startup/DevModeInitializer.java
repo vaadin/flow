@@ -1,9 +1,11 @@
 package com.vaadin.flow.server.startup;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DevModeHandler;
 
-public class DevModeInitializer {
+public class DevModeInitializer implements Serializable {
 
     private static DevModeHandler devmodeHandler;
 
