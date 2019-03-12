@@ -189,7 +189,7 @@ public class WebComponentBuilderRegistryTest {
     public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "my-component";
         }
 
@@ -200,7 +200,7 @@ public class WebComponentBuilderRegistryTest {
     public static class MyComponentExporter2 implements WebComponentExporter<MyComponent> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "my-component-2";
         }
 
@@ -211,7 +211,7 @@ public class WebComponentBuilderRegistryTest {
     public static class UserBoxExporter implements WebComponentExporter<UserBox> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return "user-box";
         }
 

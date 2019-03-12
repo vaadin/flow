@@ -116,7 +116,7 @@ public class WebComponentRegistryInitializer2
     protected void validateComponentName(
             Set<WebComponentExporter<? extends Component>> exporterSet) {
         for (WebComponentExporter<? extends Component> exporter : exporterSet) {
-            String tag = exporter.getTag();
+            String tag = exporter.tag();
             if (!CustomElementNameValidator.isCustomElementName(tag)) {
                 String msg = String
                         .format("Tag name '%s' given by '%s' is not a valid " +
@@ -135,12 +135,12 @@ public class WebComponentRegistryInitializer2
      */
     protected void validateDistinct(
             Set<WebComponentExporter<? extends Component>> exporterSet) {
-        long count = exporterSet.stream().map(WebComponentExporter::getTag)
+        long count = exporterSet.stream().map(WebComponentExporter::tag)
                 .distinct().count();
         if (exporterSet.size() != count) {
             Map<String, Class<?>> items = new HashMap<>();
             for (WebComponentExporter<? extends Component> exporter : exporterSet) {
-                String tag = exporter.getTag();
+                String tag = exporter.tag();
                 if (items.containsKey(tag)) {
                     String message = String.format(
                             "Found two %s classes '%s' and '%s' for the tag " +

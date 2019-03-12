@@ -20,7 +20,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 public interface WebComponentExporter<C extends Component> {
 
-    String getTag();
+    String tag();
 
     void define(WebComponentDefinition<C> definition);
 }

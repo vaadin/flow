@@ -266,7 +266,7 @@ public class WebComponentBuilderTest {
     public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return TAG;
         }
 
@@ -280,7 +280,7 @@ public class WebComponentBuilderTest {
     public static class NoTagExporter implements WebComponentExporter<MyComponent> {
 
         @Override
-        public String getTag() {
+        public String tag() {
             return null;
         }
 
