@@ -15,29 +15,27 @@
  *
  */
 
-package com.vaadin.flow.uitest.ui.push;
+package com.vaadin.flow.uitest.ui;
 
 import javax.servlet.ServletContext;
 
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.shared.ui.Transport;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.apache.commons.io.IOUtils;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
-public class TrackMessageSizeUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.TrackMessageSizeView")
+public class TrackMessageSizeView extends Div {
 
     public static final String LOG_ELEMENT_ID = "logId";
 
     private Element logElement;
-
 
     private String testMethod = "function testSequence(expected, data) {\n"
             + "    var request = {trackMessageLength: true, messageDelimiter: '|'};\n"
@@ -55,11 +53,7 @@ public class TrackMessageSizeUI extends UI {
             + "    }" + "}\n";
 
 
-
-    @Override
-    protected void init(VaadinRequest request) {
-        getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
-        getPushConfiguration().setTransport(Transport.LONG_POLLING);
+    public TrackMessageSizeView() {
 
         logElement = ElementFactory.createDiv().setAttribute("id",
                 LOG_ELEMENT_ID);
@@ -70,7 +64,6 @@ public class TrackMessageSizeUI extends UI {
         logElement.getNode()
                 .runWhenAttached(ui -> ui.getPage().executeJavaScript(
                         methodImplementation + testMethod + buildTestCase(), logElement));
-
 
     }
 
@@ -89,65 +82,68 @@ public class TrackMessageSizeUI extends UI {
                 + "testSequence([' ', 'b'], ['1| 1|b']);\n"
                 + "testSequence([' ', 'b'], ['1| ','1|b']);\n"
                 + "testSequence([' ', 'b'], ['1|',' 1|b']);\n"
-                + "$0.innerHTML = 'All tests run';\n";
+                + "if($0.innerHTML === '') { \n"
+                + "    $0.innerHTML = 'All tests run'; "
+                + "}\n";
     }
 
     private String findMethodImplementation() {
         String filename = "/VAADIN/static/push/vaadinPush.js";
-        URL resourceURL = findResourceURL(filename,
-                (VaadinServletService) VaadinService.getCurrent());
-        if (resourceURL == null) {
+
+        String content = getFileContent(filename, (VaadinServletService) VaadinService.getCurrent());
+
+        if (content == null) {
             log("Can't find " + filename);
             return null;
         }
 
+        // Find the function inside the script content
+        int startIndex = content.indexOf("function _trackMessageSize");
+        if (startIndex == -1) {
+            log("function not found");
+            return null;
+        }
+
+        // Assumes there's a /** comment before the next function
+        int endIndex = content.indexOf("/**", startIndex);
+        if (endIndex == -1) {
+            log("End of function not found");
+            return null;
+        }
+
+        content = content.substring(startIndex, endIndex);
+        content = content.replaceAll("jQuery", "jQueryVaadin");
+        return content;
+
+    }
+
+    private String getFileContent(String filename, VaadinServletService service) {
+        ServletContext sc = service.getServlet().getServletContext();
         try {
-            String string = IOUtils.toString(resourceURL);
+            InputStream inputStream = sc.getResourceAsStream(filename);
 
-            // Find the function inside the script content
-            int startIndex = string.indexOf("function _trackMessageSize");
-            if (startIndex == -1) {
-                log("function not found");
-                return null;
-            }
+            return inputStream != null ? readFromInputStream(inputStream) : null;
 
-            // Assumes there's a /** comment before the next function
-            int endIndex = string.indexOf("/**", startIndex);
-            if (endIndex == -1) {
-                log("End of function not found");
-                return null;
-            }
-
-            string = string.substring(startIndex, endIndex);
-            string = string.replaceAll("jQuery", "jQueryVaadin");
-            return string;
-        } catch (IOException e) {
+        } catch ( IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private URL findResourceURL(String filename, VaadinServletService service) {
-        ServletContext sc = service.getServlet().getServletContext();
-        URL resourceUrl;
-        try {
-            resourceUrl = sc.getResource(filename);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        if (resourceUrl == null) {
-            // try if requested file is found from classloader
-
-            // strip leading "/" otherwise stream from JAR wont work
-            if (filename.startsWith("/")) {
-                filename = filename.substring(1);
+    private String readFromInputStream(InputStream inputStream)
+            throws IOException {
+        StringBuilder resultStringBuilder = new StringBuilder();
+        try (BufferedReader br
+                     = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                resultStringBuilder.append(line).append("\n");
             }
-
-            resourceUrl = service.getClassLoader().getResource(filename);
         }
-        return resourceUrl;
+        return resultStringBuilder.toString();
     }
 
     public void log(String log){
         logElement.setText(log);
     }
+
 }
