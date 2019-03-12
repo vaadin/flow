@@ -34,5 +34,5 @@ public interface WebComponentConfiguration<C extends Component> {
 
     Set<PropertyData2<?>> getPropertyDataSet();
 
-    WebComponentBinding<C> bind(Instantiator instantiator);
+    WebComponentBinding<C> createBinding(Instantiator instantiator);
 }

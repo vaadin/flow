@@ -133,33 +133,16 @@ public class WebComponentRegistryInitializer2Test {
     }
 
     @Test
-    public void duplicatePropertyRegistration_initializerThrowsException() throws ServletException {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(String.format(
-                "Invalid exporter '%s': Property '%s' has already been " +
-                        "registered! WebComponent cannot have multiple " +
-                        "properties with the same name.",
-                DuplicatePropertyExporter.class.getCanonicalName(), DUPLICATE_PROPERTY_NAME));
-
+    public void duplicatePropertyRegistration_doesNotCauseIssues() throws ServletException {
         initializer.onStartup(Collections.singleton(DuplicatePropertyExporter.class), servletContext);
     }
 
     @Test
-    public void duplicatePropertyRegistrationBetweenParentAndChild_initializerThrowsException() throws ServletException {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(String.format(
-                "Invalid exporter '%s': Property '%s' has already been " +
-                        "registered! WebComponent cannot have multiple " +
-                        "properties with the same name.",
-                ExtendingExporter.class.getCanonicalName(), DUPLICATE_PROPERTY_NAME));
-
+    public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues() throws ServletException {
         initializer.onStartup(Collections.singleton(ExtendingExporter.class), servletContext);
     }
 
     public static class MyComponent extends Component {
-    }
-
-    public static class MyDuplicateComponent extends Component {
     }
 
     public static class UserBox extends Component {
