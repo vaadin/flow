@@ -78,12 +78,13 @@ public class UpdateImportsMojoTest {
                 "@vaadin/vaadin-lumo-styles/color.js",
                 "@polymer/iron-icon/iron-icon.js",
                 "./foo-dir/vaadin-npm-component.js",
-                "./vaadin-dir/theme/lumo/vaadin-mixed-component.js",
-                "@vaadin/vaadin-element-mixin/theme/lumo/foo-component.js",
+                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "@vaadin/vaadin-foo-component/theme/lumo/vaadin-foo-component.js",
+                "@vaadin/vaadin-foo-component/src/something-else.js",
                 "./local-p3-template.js",
                 "@polymer/iron-icon",
                 "./foo-dir/vaadin-npm-component.js",
-                "@vaadin/vaadin-element-mixin", "./local-p3-template.js",
+                "./local-p3-template.js",
                 "./foo.js",
                 "./local-p2-template.js");
     }

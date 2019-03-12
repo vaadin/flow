@@ -108,7 +108,7 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
     }
 
     /**
-     * Get theme definitions for all classes theme annotated.
+     * Get theme definitions for all theme annotated classes.
      *
      * @return a map of {@link ThemeDefinition}
      */
@@ -148,11 +148,7 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
         Stream<Class<?>> classes = getAnnotatedClasses(annotationInProjectContext);
 
         return classes.collect(Collectors.toMap(entry -> entry,
-                entry -> Arrays.stream(entry.getAnnotations())
-                        .filter(annotation -> annotation.annotationType().getCanonicalName()
-                                .equals(annotationClass.getCanonicalName()))
-                        .map(annotation -> (String)invokeAnnotationMethod(annotation, valueGetterMethodName))
-                        .collect(Collectors.toSet())));
+                entry -> getClassAnnotationValues(entry, annotationClass, valueGetterMethodName)));
     }
 
 }
