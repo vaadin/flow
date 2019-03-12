@@ -120,14 +120,13 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
 
         Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(Theme.class.getName());
 
-        getAnnotatedClasses(annotationInProjectContext).forEach(entry -> {
-            Arrays.stream(entry.getAnnotations()).forEach(annotation -> {
-                if (annotation.annotationType().getCanonicalName().equals(Theme.class.getCanonicalName())) {
-                    map.put(new ThemeDefinition(invokeAnnotationMethod(annotation, "value"),
-                            invokeAnnotationMethod(annotation, "variant")), entry);
-                }
-            });
-        });
+        getAnnotatedClasses(annotationInProjectContext)
+                .forEach(entry -> Arrays.stream(entry.getAnnotations()).forEach(annotation -> {
+                    if (annotation.annotationType().getCanonicalName().equals(Theme.class.getCanonicalName())) {
+                        map.put(new ThemeDefinition(invokeAnnotationMethod(annotation, "value"),
+                                invokeAnnotationMethod(annotation, "variant")), entry);
+                    }
+                }));
 
         if (map.size() == 0) {
             Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader("com.vaadin.flow.theme.lumo.Lumo");

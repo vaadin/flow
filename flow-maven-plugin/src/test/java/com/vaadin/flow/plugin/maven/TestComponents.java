@@ -36,8 +36,8 @@ public class TestComponents {
     class IconComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-foo-component/src/vaadin-foo-component.html")
-    @HtmlImport("frontend://bower_components/vaadin-foo-component/src/something-else.html")
+    @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/vaadin-element-mixin.html")
+    @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/something-else.html")
     public static class VaadinBowerComponent extends Component {
     }
 
