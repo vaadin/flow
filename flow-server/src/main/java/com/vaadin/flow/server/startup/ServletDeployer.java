@@ -120,6 +120,15 @@ public class ServletDeployer implements ServletContextListener {
                         "/frontend/*");
             }
         }
+        if(DevModeInitializer.getDevModeHandler() == null) {
+            ServletRegistration vaadinServlet = findVaadinServlet(context);
+
+            DeploymentConfiguration deploymentConfiguration = createDeploymentConfiguration(
+                    new StubServletConfig(context, vaadinServlet),
+                    vaadinServlet.getClass());
+
+            new DevModeInitializer().start(deploymentConfiguration);
+        }
     }
 
     private Collection<DeploymentConfiguration> getServletConfigurations(

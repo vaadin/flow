@@ -31,6 +31,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -51,7 +52,7 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
-    private DevModeHandler devmodeHandler;
+    private DevModeHandler devmodeHandler = DevModeInitializer.getDevModeHandler();
     private WebJarServer webJarServer;
 
     /**
@@ -77,8 +78,6 @@ public class VaadinServlet extends HttpServlet {
 
         DeploymentConfiguration deploymentConfiguration = servletService
                 .getDeploymentConfiguration();
-
-        devmodeHandler = DevModeHandler.createInstance(deploymentConfiguration);
 
         staticFileHandler = createStaticFileHandler(servletService);
         if (deploymentConfiguration.areWebJarsEnabled()) {
