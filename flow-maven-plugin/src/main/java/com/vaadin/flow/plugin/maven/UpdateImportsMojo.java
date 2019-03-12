@@ -48,7 +48,6 @@ import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
-import com.vaadin.flow.theme.lumo.Lumo;
 
 
 /**
@@ -155,9 +154,6 @@ public class UpdateImportsMojo extends AbstractMojo {
     private ThemeDefinition getThemeDefinition(AnnotationValuesExtractor annotationValuesExtractor) {
         Map<ThemeDefinition, Class<?>> themes = annotationValuesExtractor.getThemeDefinitions();
 
-        ThemeDefinition themeDef = themes.isEmpty() ? new ThemeDefinition(Lumo.class, "")
-                : themes.keySet().iterator().next();
-
         if (themes.size() > 1) {
             getLog().warn(
                     "Found multiple themes for the application, vaadin-flow would only consider the first one\n"
@@ -167,6 +163,7 @@ public class UpdateImportsMojo extends AbstractMojo {
                                     .collect(Collectors.joining("\n")));
         }
 
+        ThemeDefinition themeDef = themes.keySet().iterator().next();
         getLog().info("Using theme " + themeDef.getTheme().getName()
                 + (themeDef.getVariant().isEmpty() ? "" : (" variant: " + themeDef.getVariant())));
         return themeDef;
