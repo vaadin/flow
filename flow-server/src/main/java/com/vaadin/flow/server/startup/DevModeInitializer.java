@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.startup;
 
 import java.io.Serializable;
@@ -5,14 +20,27 @@ import java.io.Serializable;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DevModeHandler;
 
-public class DevModeInitializer implements Serializable {
+public final class DevModeInitializer implements Serializable {
 
     private static DevModeHandler devmodeHandler;
 
-    public void start(DeploymentConfiguration configuration) {
-        devmodeHandler = DevModeHandler.createInstance(configuration);
+    /**
+     * Start the dev mode handler if none has been started yet.
+     *
+     * @param configuration
+     *         deployment configuration
+     */
+    public static void start(DeploymentConfiguration configuration) {
+        if (devmodeHandler == null) {
+            devmodeHandler = DevModeHandler.createInstance(configuration);
+        }
     }
 
+    /**
+     * Get the instantiated DevModeHandler.
+     *
+     * @return devModeHandler or {@code null} if not started
+     */
     public static DevModeHandler getDevModeHandler() {
         return devmodeHandler;
     }

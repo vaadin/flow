@@ -128,7 +128,7 @@ public class ServletDeployer implements ServletContextListener {
                         new StubServletConfig(context, vaadinServlet),
                         vaadinServlet.getClass());
 
-                new DevModeInitializer().start(deploymentConfiguration);
+                DevModeInitializer.start(deploymentConfiguration);
             }
         }
     }

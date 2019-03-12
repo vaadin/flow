@@ -79,7 +79,7 @@ public class VaadinServlet extends HttpServlet {
                 .getDeploymentConfiguration();
 
         if (devmodeHandler == null) {
-            new DevModeInitializer().start(deploymentConfiguration);
+            DevModeInitializer.start(deploymentConfiguration);
         }
 
         staticFileHandler = createStaticFileHandler(servletService);

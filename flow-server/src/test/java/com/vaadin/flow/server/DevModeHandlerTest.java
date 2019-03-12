@@ -260,7 +260,7 @@ public class DevModeHandlerTest {
     }
 
     private VaadinServlet prepareServlet() throws ServletException {
-        new DevModeInitializer().start(configuration);
+        DevModeInitializer.start(configuration);
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
