@@ -73,7 +73,7 @@ public class DevModeHandler implements Serializable {
 
     // This fixes maven tests in multi-module execution
     static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
-    static final String WEBAPP_FOLDER = BASEDIR + "/webapp/";
+    static final String WEBAPP_FOLDER = BASEDIR + "./";
     static final String WEBPACK_CONFIG = BASEDIR + "/webpack.config.js";
     static final String WEBPACK_SERVER = BASEDIR + "/node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 

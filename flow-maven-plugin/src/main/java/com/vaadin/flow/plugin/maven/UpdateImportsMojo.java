@@ -66,7 +66,7 @@ public class UpdateImportsMojo extends AbstractMojo {
     /**
      * Name of the JavaScript file to update.
      */
-    @Parameter(defaultValue = "webapp/frontend/main.js")
+    @Parameter(defaultValue = "./frontend/main.js")
     private String jsFile;
 
     /**
