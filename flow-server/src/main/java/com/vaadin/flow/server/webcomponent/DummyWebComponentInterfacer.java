@@ -16,14 +16,16 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.EventOptions;
-import com.vaadin.flow.component.webcomponent.IWebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 
 import elemental.json.JsonValue;
 
-class DummyWebComponentInterfacer<C extends Component> implements IWebComponent<C> {
+class DummyWebComponentInterfacer<C extends Component> implements WebComponent<C> {
 
     @Override
     public void fireEvent(String eventName) {
@@ -41,12 +43,13 @@ class DummyWebComponentInterfacer<C extends Component> implements IWebComponent<
     }
 
     @Override
-    public <P> void setProperty(PropertyConfiguration<C, P> propertyConfiguration, P value) {
+    public <P extends Serializable> void setProperty(PropertyConfiguration<C, P> propertyConfiguration, P value) {
 
     }
 
     @Override
-    public <P> P getProperty(PropertyConfiguration<C, P> propertyConfiguration) {
+    public <P extends Serializable> P getProperty(PropertyConfiguration<C, P> propertyConfiguration) {
         return null;
     }
+
 }

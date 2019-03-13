@@ -21,7 +21,7 @@ import java.util.Objects;
 /**
  * Value object containing information of a WebComponent property field.
  */
-public final class PropertyData<P> implements Serializable {
+public final class PropertyData<P extends Serializable> implements Serializable {
     // TODO: final might be too harsh - might need to update these
     private final String name;
     private final Class<P> type;

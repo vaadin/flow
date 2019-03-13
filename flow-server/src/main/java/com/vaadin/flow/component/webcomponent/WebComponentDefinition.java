@@ -26,7 +26,7 @@ import elemental.json.JsonValue;
 
 public abstract class WebComponentDefinition<C extends Component> implements Serializable {
 
-    protected abstract  <P> PropertyConfiguration<C, P> addProperty(
+    protected abstract  <P extends Serializable> PropertyConfiguration<C, P> addProperty(
             String name, Class<P> type, P defaultValue);
 
 //    default <P> PropertyConfiguration<C, P> addProperty(

@@ -24,7 +24,7 @@ import elemental.json.JsonValue;
 /**
  * WebComponent to be configured by {@link InstanceConfigurator}
  */
-public interface IWebComponent<C extends Component> extends Serializable {
+public interface WebComponent<C extends Component> extends Serializable {
     void fireEvent(String eventName);
 
     void fireEvent(String eventName, JsonValue objectData);
@@ -32,8 +32,8 @@ public interface IWebComponent<C extends Component> extends Serializable {
     void fireEvent(String eventName, JsonValue objectData,
                    EventOptions options);
 
-    <P> void setProperty(
+    <P extends Serializable> void setProperty(
             PropertyConfiguration<C, P> propertyConfiguration, P value);
 
-    <P> P getProperty(PropertyConfiguration<C, P> propertyConfiguration);
+    <P extends Serializable> P getProperty(PropertyConfiguration<C, P> propertyConfiguration);
 }

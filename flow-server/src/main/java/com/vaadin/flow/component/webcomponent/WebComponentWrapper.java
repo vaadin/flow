@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ import elemental.json.JsonValue;
 public class WebComponentWrapper extends Component {
 
     private final Component child;
-    private final WebComponentBinding<?> webComponentBinding;
+    private final WebComponentBinding<? extends Serializable> webComponentBinding;
 
     // Disconnect timeout
     private Registration disconnectRegistration;
@@ -125,11 +126,11 @@ public class WebComponentWrapper extends Component {
     }
 
     private void setNewFieldValue(String property, JsonValue newValue) {
-        Class<?> propertyType =
+        Class<? extends Serializable> propertyType =
                 webComponentBinding.getPropertyType(property);
 
         if (JsonCodec.canEncodeWithoutTypeInfo(propertyType)) {
-            Object value = JsonCodec.decodeAs(newValue, propertyType);
+            Serializable value = JsonCodec.decodeAs(newValue, propertyType);
             webComponentBinding.updateProperty(property, value);
         } else {
             throw new IllegalArgumentException(
