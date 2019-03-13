@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 
@@ -121,15 +122,20 @@ public class Html extends Component {
         Attributes attrs = root.attributes();
 
         Component.setElement(this, new Element(root.tagName()));
-        attrs.forEach(a -> {
-            String name = a.getKey();
-            String value = a.getValue();
-            getElement().setAttribute(name, value);
-        });
+        attrs.forEach(this::setAttribute);
 
         doc.outputSettings().prettyPrint(false);
         setInnerHtml(root.html());
 
+    }
+
+    private void setAttribute(Attribute attribute) {
+        String name = attribute.getKey();
+        String value = attribute.getValue();
+        if (value == null) {
+            value = "";
+        }
+        getElement().setAttribute(name, value);
     }
 
     /**
