@@ -21,28 +21,21 @@ import java.util.Objects;
 /**
  * Value object containing information of a WebComponent property field.
  */
-public class PropertyData implements Serializable {
-
+public final class PropertyData<P> implements Serializable {
+    // TODO: final might be too harsh - might need to update these
     private final String name;
-    private final Class<?> type;
-    private final String initialValue;
+    private final Class<P> type;
+    private final P defaultValue;
+    private boolean readOnly;
 
-    /**
-     * Public constructor.
-     *
-     * @param name
-     *         name of property
-     * @param type
-     *         property value class type
-     * @param initialValue
-     *         initial value as a String
-     */
-    public PropertyData(String name, Class<?> type, String initialValue) {
-        Objects.requireNonNull(name, "Property needs to have a name");
-        Objects.requireNonNull(type, "Property needs to expose type");
+    public PropertyData(String name, Class<P> type, boolean readOnly,
+                        P defaultValue) {
+        Objects.requireNonNull(name, "Parameter 'name' must not be null!");
+        Objects.requireNonNull(type, "Parameter 'type' must not be null!");
         this.name = name;
         this.type = type;
-        this.initialValue = initialValue;
+        this.readOnly = readOnly;
+        this.defaultValue = defaultValue;
     }
 
     /**
@@ -59,31 +52,50 @@ public class PropertyData implements Serializable {
      *
      * @return value class type
      */
-    public Class<?> getType() {
+    public Class<P> getType() {
         return type;
     }
 
     /**
      * Getter for the initial value if given.
      *
-     * @return initial string value or {@code null} if none given
+     * @return initial value or {@code null} if none given
      */
-    public String getInitialValue() {
-        return initialValue;
+    public P getDefaultValue() {
+        return defaultValue;
+    }
+
+    /**
+     * Checks if the property is a read-only value.
+     *
+     * @return is read-only
+     */
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    /**
+     * TODO!
+     * @param readOnly
+     */
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof PropertyData) {
             PropertyData other = (PropertyData) obj;
-            return getName().equals(other.getName()) && getType()
-                    .equals(other.getType());
+            return name.equals(other.name) && type.equals(other.type) && (
+                    (defaultValue == null && other.defaultValue == null)
+                            || (defaultValue != null && defaultValue
+                            .equals(other.defaultValue)));
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, type);
     }
 }

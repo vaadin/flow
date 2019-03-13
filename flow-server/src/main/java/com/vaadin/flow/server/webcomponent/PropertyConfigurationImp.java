@@ -24,13 +24,14 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 
 public class PropertyConfigurationImp<C extends Component, P> implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
-    private final PropertyData2<P> data;
-    private SerializableBiConsumer<C, P> onChangeHandler = null;
+    private final PropertyData<P> data;
+    private SerializableBiConsumer<C, Object> onChangeHandler = null;
+    private SerializableBiConsumer<C, P> typedOnChangeHandler = null;
 
     public PropertyConfigurationImp(Class<C> componentType, String propertyName,
                                     Class<P> propertyType, P defaultValue) {
 
-        data = new PropertyData2<>(propertyName, propertyType, false,
+        data = new PropertyData<>(propertyName, propertyType, false,
                 defaultValue);
         this.componentClass = componentType;
     }
@@ -39,8 +40,9 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
     public PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
         Objects.requireNonNull(onChangeHandler, "Parameter 'onChangeHandler' " +
                 "cannot be null!");
-        this.onChangeHandler = onChangeHandler;
-        return null;
+        this.typedOnChangeHandler = onChangeHandler;
+        this.onChangeHandler = (c, o) -> this.typedOnChangeHandler.accept(c, (P)o);
+        return this;
     }
 
     @Override
@@ -65,10 +67,10 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
     }
 
     SerializableBiConsumer<C, Object> getOnChangeHandler() {
-        return (c, o) -> onChangeHandler.accept(c, (P)o);
+        return onChangeHandler;
     }
 
-    public PropertyData2<P> getPropertyData() {
+    public PropertyData<P> getPropertyData() {
         return data;
     }
 }

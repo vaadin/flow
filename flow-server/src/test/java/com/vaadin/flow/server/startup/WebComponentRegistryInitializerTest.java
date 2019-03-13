@@ -1,3 +1,19 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
@@ -16,27 +32,36 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentMethod;
-import com.vaadin.flow.component.webcomponent.WebComponentProperty;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
+import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
+
+import static org.mockito.Mockito.when;
 
 public class WebComponentRegistryInitializerTest {
+    private static final String DUPLICATE_PROPERTY_NAME = "one";
 
     private WebComponentRegistryInitializer initializer;
     @Mock
-    private WebComponentRegistry registry;
+    private WebComponentBuilderRegistry registry;
     @Mock
     private ServletContext servletContext;
+    @Mock
+    private VaadinService vaadinService;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         initializer = new WebComponentRegistryInitializer();
-        Mockito.when(servletContext
-                .getAttribute(WebComponentRegistry.class.getName()))
+        when(servletContext
+                .getAttribute(WebComponentBuilderRegistry.class.getName()))
                 .thenReturn(registry);
+
+        VaadinService.setCurrent(vaadinService);
+        when(vaadinService.getInstantiator()).thenReturn(new MockInstantiator());
     }
 
     @Rule
@@ -44,7 +69,8 @@ public class WebComponentRegistryInitializerTest {
 
     @Test
     public void onStartUp() throws ServletException {
-        initializer.onStartup(Stream.of(MyComponent.class, UserBox.class)
+        initializer.onStartup(Stream.of(MyComponentExporter.class,
+                UserBoxExporter.class)
                 .collect(Collectors.toSet()), servletContext);
     }
 
@@ -57,7 +83,20 @@ public class WebComponentRegistryInitializerTest {
                     "WebComponentRegistryInitializer.onStartup should not throw with null argument");
         }
         // Expect a call to setWebComponents even if we have an empty or null set
-        Mockito.verify(registry).setWebComponents(Collections.emptyMap());
+        Mockito.verify(registry).setWebComponentBuilders(Collections.emptySet());
+    }
+
+    @Test
+    public void onStartUp_noExceptionForMultipleCorrectExportsOfTheSameComponent() {
+        try {
+            initializer.onStartup(Stream.of(MyComponentExporter.class,
+                    SiblingExporter.class)
+                    .collect(Collectors.toSet()), servletContext);
+        } catch (Exception e) {
+            Assert.fail(
+                    "WebComponentRegistryInitializer.onStartup should not " +
+                            "throw with 'sibling' exporters");
+        }
     }
 
     @Test
@@ -68,7 +107,7 @@ public class WebComponentRegistryInitializerTest {
             Assert.fail(
                     "WebComponentRegistryInitializer.onStartup should not throw with empty set");
         }
-        Mockito.verify(registry).setWebComponents(Collections.emptyMap());
+        Mockito.verify(registry).setWebComponentBuilders(Collections.emptySet());
     }
 
     @Test
@@ -76,7 +115,7 @@ public class WebComponentRegistryInitializerTest {
             throws ServletException {
         expectedEx.expect(IllegalArgumentException.class);
         initializer.onStartup(
-                Stream.of(MyComponent.class, MyDuplicateComponent.class)
+                Stream.of(MyComponentExporter.class, DuplicateTagExporter.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -85,69 +124,123 @@ public class WebComponentRegistryInitializerTest {
             throws ServletException {
         expectedEx.expect(InvalidCustomElementNameException.class);
         expectedEx.expectMessage(String.format(
-                "WebComponent name '%s' for '%s' is not a valid custom element name.",
-                "invalid", InvalidName.class.getCanonicalName()));
+                "Tag name '%s' given by '%s' is not a valid custom element " +
+                        "name.",
+                "invalid", InvalidNameExporter.class.getCanonicalName()));
 
-        initializer.onStartup(Collections.singleton(InvalidName.class),
+        initializer.onStartup(Collections.singleton(InvalidNameExporter.class),
                 servletContext);
     }
 
     @Test
-    public void duplicatePropertyRegistration_initializerThrowsException() throws ServletException {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(String.format(
-                "In the WebComponent '%s' there is a method and a property for the name(s) %s",
-                Duplicates.class, "[message]"));
-
-        initializer.onStartup(Collections.singleton(Duplicates.class), servletContext);
+    public void duplicatePropertyRegistration_doesNotCauseIssues() throws ServletException {
+        initializer.onStartup(Collections.singleton(DuplicatePropertyExporter.class), servletContext);
     }
 
     @Test
-    public void duplicatePropertyRegistrationBetweenParentAndChild_initializerThrowsException() throws ServletException {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(String.format(
-                "In the WebComponent '%s' there is a method and a property for the name(s) %s",
-                Extending.class, "[message]"));
-
-        initializer.onStartup(Collections.singleton(Extending.class), servletContext);
+    public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues() throws ServletException {
+        initializer.onStartup(Collections.singleton(ExtendingExporter.class), servletContext);
     }
 
-    @WebComponent("my-component")
-    public class MyComponent extends Component {
+    public static class MyComponent extends Component {
     }
 
-    @WebComponent("my-component")
-    public class MyDuplicateComponent extends Component {
+    public static class UserBox extends Component {
     }
 
-    @WebComponent("user-box")
-    public class UserBox extends Component {
+    public static class InvalidName extends Component {
     }
 
-    @WebComponent("invalid")
-    public class InvalidName extends Component {
-    }
+    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+        @Override
+        public String tag() {
+            return "my-component";
+        }
 
-    @WebComponent("duplicate-properties")
-    public class Duplicates extends Component {
-        protected WebComponentProperty<String> message = new WebComponentProperty<>(
-                String.class);
-
-        @WebComponentMethod("message")
-        private void setMessage(String message) {
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty(DUPLICATE_PROPERTY_NAME, "component");
         }
     }
 
-    @WebComponent("parent-wc")
-    public class ParentComponent extends Component {
-        protected WebComponentProperty<String> message = new WebComponentProperty<>(
-                String.class);
+    public static class UserBoxExporter implements WebComponentExporter<UserBox> {
+
+        @Override
+        public String tag() {
+            return "user-box";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<UserBox> definition) {
+            definition.addProperty("user", "box");
+        }
     }
 
-    @WebComponent("extending-wc")
-    public class Extending extends ParentComponent {
-        @WebComponentMethod("message")
-        private void setMessage(String message) {
+    public static class InvalidNameExporter implements WebComponentExporter<InvalidName> {
+
+        @Override
+        public String tag() {
+            return "invalid";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<InvalidName> definition) {
+            // PASS
+        }
+    }
+
+    public static class ExtendingExporter extends MyComponentExporter {
+        @Override
+        public String tag() {
+            return "tag-1";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            super.define(definition);
+
+            // overwrites a property - BAD!
+            definition.addProperty(DUPLICATE_PROPERTY_NAME, "something");
+        }
+    }
+
+    public static class SiblingExporter implements WebComponentExporter<MyComponent> {
+
+        @Override
+        public String tag() {
+            return "my-component-sibling";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty("name", "something");
+        }
+    }
+
+    public static class DuplicateTagExporter implements WebComponentExporter<MyComponent> {
+
+        @Override
+        public String tag() {
+            return "my-component";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+
+        }
+    }
+
+    public static class DuplicatePropertyExporter implements WebComponentExporter<MyComponent> {
+
+        @Override
+        public String tag() {
+            return "tag-2";
+        }
+
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty(DUPLICATE_PROPERTY_NAME, "two");
+            definition.addProperty(DUPLICATE_PROPERTY_NAME, "four");
         }
     }
 }

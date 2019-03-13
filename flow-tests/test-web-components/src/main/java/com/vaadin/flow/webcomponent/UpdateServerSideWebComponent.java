@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,10 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.WebComponent;
 import com.vaadin.flow.component.html.Div;
 
-@WebComponent("sswc-push")
 public class UpdateServerSideWebComponent extends Div {
 
     private AtomicInteger count = new AtomicInteger();

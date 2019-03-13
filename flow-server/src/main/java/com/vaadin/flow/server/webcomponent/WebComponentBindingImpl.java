@@ -51,7 +51,7 @@ public class WebComponentBindingImpl<C extends Component> implements WebComponen
         if (propertyBinding == null) {
             throw new InvalidParameterException(
                     String.format("No %s found for propertyName '%s'!",
-                            PropertyData2.class.getSimpleName(), propertyName));
+                            PropertyData.class.getSimpleName(), propertyName));
         }
 
         // TODO: print into log instead, if this happens

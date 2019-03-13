@@ -33,12 +33,14 @@ import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.ReflectTools;
 
 import elemental.json.JsonValue;
 
 public class WebComponentBuilder<C extends Component>
-        implements WebComponentDefinition<C>, WebComponentConfiguration<C> {
+        extends WebComponentDefinition<C>
+        implements WebComponentConfiguration<C> {
     // TODO: get rid of these and json (de)serialize on the spot
     private static final List<Class> SUPPORTED_TYPES = Arrays.asList(
             Boolean.class, String.class, Integer.class, Double.class,
@@ -90,15 +92,15 @@ public class WebComponentBuilder<C extends Component>
         this.instanceConfigurator = configurator;
     }
 
-    @Override
-    public <P> PropertyConfiguration<C, List<P>> addListProperty(String name, Class<P> entryClass) {
-        return null;
-    }
-
-    @Override
-    public <P> PropertyConfiguration<C, List<P>> addListProperty(String name, List<P> defaultValue) {
-        return null;
-    }
+//    @Override
+//    public <P> PropertyConfiguration<C, List<P>> addListProperty(String name, Class<P> entryClass) {
+//        return null;
+//    }
+//
+//    @Override
+//    public <P> PropertyConfiguration<C, List<P>> addListProperty(String name, List<P> defaultValue) {
+//        return null;
+//    }
 
     public String getWebComponentTag() {
         return exporter.tag();
@@ -115,7 +117,7 @@ public class WebComponentBuilder<C extends Component>
     }
 
     @Override
-    public Set<PropertyData2<?>> getPropertyDataSet() {
+    public Set<PropertyData<?>> getPropertyDataSet() {
         return propertyConfigurationMap.values().stream()
                 .map(PropertyConfigurationImp::getPropertyData)
                 .collect(Collectors.toSet());
@@ -126,7 +128,13 @@ public class WebComponentBuilder<C extends Component>
         Objects.requireNonNull(instantiator, "Parameter 'instantiator' must not" +
                 " be null!");
 
-        C componentReference = instantiator.getOrCreate(this.getComponentClass());
+        final C componentReference =
+                instantiator.getOrCreate(this.getComponentClass());
+
+        if (componentReference == null) {
+            throw new RuntimeException("Failed to instantiate a new " +
+                    this.getComponentClass().getCanonicalName());
+        }
 
         // TODO: real IWebComponent impl
         if (instanceConfigurator != null) {
@@ -136,10 +144,15 @@ public class WebComponentBuilder<C extends Component>
 
         Set<PropertyBinding<?>> propertyBindings =
                 propertyConfigurationMap.values().stream()
-                        .map(pc -> new PropertyBinding<>(
-                                pc.getPropertyData(),
-                                v -> pc.getOnChangeHandler()
-                                        .accept(componentReference, v)))
+                        .map(propertyConfig -> {
+                            SerializableBiConsumer<C, Object> consumer =
+                                    propertyConfig.getOnChangeHandler();
+                            return new PropertyBinding<>(
+                                    propertyConfig.getPropertyData(),
+                                    consumer == null ? null : value ->
+                                            consumer.accept(componentReference,
+                                                    value));
+                        })
                         .collect(Collectors.toSet());
 
         WebComponentBindingImpl<C> binding =

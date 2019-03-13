@@ -17,7 +17,6 @@
 package com.vaadin.flow.component.webcomponent;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponent;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 @FunctionalInterface

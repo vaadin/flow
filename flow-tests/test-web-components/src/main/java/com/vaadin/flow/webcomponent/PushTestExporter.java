@@ -19,14 +19,14 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-public class PushTestExporter implements WebComponentExporter<UpdateServerSideWebComponent2> {
+public class PushTestExporter implements WebComponentExporter<UpdateServerSideWebComponent> {
     @Override
     public String tag() {
         return "sswc-push";
     }
 
     @Override
-    public void define(WebComponentDefinition<UpdateServerSideWebComponent2> definition) {
+    public void define(WebComponentDefinition<UpdateServerSideWebComponent> definition) {
         // UpdateServerSideWebComponent does not have any properties
     }
 }
