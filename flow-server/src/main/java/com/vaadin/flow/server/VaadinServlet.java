@@ -15,17 +15,16 @@
  */
 package com.vaadin.flow.server;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Optional;
-import java.util.Properties;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Optional;
+import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -51,7 +50,7 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
-    private DevModeHandler devmodeHandler;
+    private DevModeHandler devmodeHandler = DevModeHandler.getDevModeHandler();
     private WebJarServer webJarServer;
 
     /**
@@ -77,8 +76,6 @@ public class VaadinServlet extends HttpServlet {
 
         DeploymentConfiguration deploymentConfiguration = servletService
                 .getDeploymentConfiguration();
-
-        devmodeHandler = DevModeHandler.createInstance(deploymentConfiguration);
 
         staticFileHandler = createStaticFileHandler(servletService);
         if (deploymentConfiguration.areWebJarsEnabled()) {

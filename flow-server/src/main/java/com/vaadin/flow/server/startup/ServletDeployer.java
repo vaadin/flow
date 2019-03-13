@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
+import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 
@@ -118,6 +119,17 @@ public class ServletDeployer implements ServletContextListener {
             if (hasDevelopmentMode) {
                 createServletIfNotExists(context, "frontendFilesServlet",
                         "/frontend/*");
+            }
+        }
+        if(DevModeHandler.getDevModeHandler() == null) {
+            ServletRegistration vaadinServlet = findVaadinServlet(context);
+
+            if(vaadinServlet != null) {
+                DeploymentConfiguration deploymentConfiguration = createDeploymentConfiguration(
+                        new StubServletConfig(context, vaadinServlet),
+                        vaadinServlet.getClass());
+
+                DevModeHandler.start(deploymentConfiguration);
             }
         }
     }

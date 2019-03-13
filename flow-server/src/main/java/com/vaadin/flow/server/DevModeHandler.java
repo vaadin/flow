@@ -29,6 +29,7 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletOutputStream;
@@ -52,6 +53,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * @since 2.0
  */
 public class DevModeHandler implements Serializable {
+
+    private static AtomicReference<DevModeHandler> devmodeHandler = new AtomicReference<>();
 
     public static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
     static final String PARAM_WEBPACK_TIMEOUT = "vaadin.devmode.webpack.timeout";
@@ -142,6 +145,25 @@ public class DevModeHandler implements Serializable {
         }
 
         System.setProperty(PARAM_WEBPACK_RUNNING, String.valueOf(port));
+    }
+    /**
+     * Start the dev mode handler if none has been started yet.
+     *
+     * @param configuration
+     *         deployment configuration
+     */
+    public static void start(DeploymentConfiguration configuration) {
+        devmodeHandler.compareAndSet(null,
+                DevModeHandler.createInstance(configuration));
+    }
+
+    /**
+     * Get the instantiated DevModeHandler.
+     *
+     * @return devModeHandler or {@code null} if not started
+     */
+    public static DevModeHandler getDevModeHandler() {
+        return devmodeHandler.get();
     }
 
     /**
