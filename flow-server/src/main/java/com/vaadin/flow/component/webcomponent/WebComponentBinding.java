@@ -20,13 +20,44 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.Component;
 
+/**
+ * Binds a {@link WebComponent} instance to {@link Component} instance.
+ *
+ * @param <C> exported component type
+ */
 public interface WebComponentBinding<C extends Component> extends Serializable {
 
+    /**
+     * Updates a property bound to the {@code component}. If the property has
+     * an attached listener, the {@code value} is also delivered to the
+     * listener. If the {@code value} is {@code null}, the property is set to
+     * its default value (which could be {@code null}.
+     *
+     * @param propertyName  name of the property
+     * @param value         new value to set for the property
+     */
     void updateProperty(String propertyName, Serializable value);
 
+    /**
+     * Retrieves the bound {@link Component} instance.
+     *
+     * @return {@code component} instance
+     */
     C getComponent();
 
+    /**
+     * Retrieve the type of a property's value.
+     *
+     * @param propertyName  name of the property
+     * @return property type
+     */
     Class<? extends Serializable> getPropertyType(String propertyName);
 
+    /**
+     * Does the component binding have a property identified by given name.
+     *
+     * @param propertyName  name of the property
+     * @return  has property
+     */
     boolean hasProperty(String propertyName);
 }

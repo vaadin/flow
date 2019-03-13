@@ -24,51 +24,103 @@ import com.vaadin.flow.component.Component;
 
 import elemental.json.JsonValue;
 
-public abstract class WebComponentDefinition<C extends Component> implements Serializable {
+/**
+ * {@code WebComponentDefinition} is used by
+ * {@link com.vaadin.flow.component.WebComponentExporter} to define a
+ * {@link Component} as a {@code web component}. Call the {@code addProperty
+ * (String, ?)} variants to add properties to the web component, and {@code
+ * setInstanceConfigurator(InstanceConfigurator)} to configure the exported
+ * web component and wrapped {@code component}.
+ *
+ * @param <C>   type of the {@code component} being exported.
+ */
+public abstract class WebComponentDefinition<C extends Component>
+        implements Serializable {
 
     protected abstract  <P extends Serializable> PropertyConfiguration<C, P> addProperty(
             String name, Class<P> type, P defaultValue);
 
-//    default <P> PropertyConfiguration<C, P> addProperty(
-//            String name, Class<P> type) {
-//        return addProperty(name, type, null);
-//    }
-
+    /**
+     * Add an {@code Integer} property to the exported web component
+     * identified by {@code name}.
+     *
+     * @param name
+     *          name of the property
+     * @param defaultValue
+     *          default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
     public PropertyConfiguration<C, Integer> addProperty(
             String name, int defaultValue) {
         return addProperty(name, Integer.class, defaultValue);
     }
 
+    /**
+     * Add an {@code Double} property to the exported web component
+     * identified by {@code name}.
+     *
+     * @param name
+     *          name of the property
+     * @param defaultValue
+     *          default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
     public PropertyConfiguration<C, Double> addProperty(
             String name, double defaultValue) {
         return addProperty(name, Double.class, defaultValue);
     }
 
+    /**
+     * Add an {@code String} property to the exported web component
+     * identified by {@code name}.
+     *
+     * @param name
+     *          name of the property
+     * @param defaultValue
+     *          default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
     public PropertyConfiguration<C, String> addProperty(
             String name, String defaultValue) {
         return addProperty(name, String.class, defaultValue);
     }
 
+    /**
+     * Add an {@code Boolean} property to the exported web component
+     * identified by {@code name}.
+     *
+     * @param name
+     *          name of the property
+     * @param defaultValue
+     *          default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
     public PropertyConfiguration<C, Boolean> addProperty(
             String name, boolean defaultValue) {
         return addProperty(name, Boolean.class, defaultValue);
     }
 
+    /**
+     * Add an {@code JsonValue} property to the exported web component
+     * identified by {@code name}.
+     *
+     * @param name
+     *          name of the property
+     * @param defaultValue
+     *          default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
     public PropertyConfiguration<C, JsonValue> addProperty(
             String name, JsonValue defaultValue) {
         return addProperty(name, JsonValue.class, defaultValue);
     }
 
+    /**
+     * Set {@link InstanceConfigurator} which is invoked when the web
+     * component is being constructed. Allows configuring the produced
+     * instances of {@link WebComponent} and exported {@code component}.
+     *
+     * @param configurator configurator instance
+     */
     public abstract void  setInstanceConfigurator(InstanceConfigurator<C> configurator);
-//
-//    public abstract void <P> PropertyConfiguration<C, List<P>> addListProperty(
-//            String name, Class<P> entryClass);
-//
-//    <P> PropertyConfiguration<C, List<P>> addListProperty(String name,
-//                                                          List<P> defaultValue);
-//
-//    default <P> PropertyConfiguration<C, List<P>> addListProperty(
-//            String name, P... defaultValues) {
-//        return addListProperty(name, Arrays.asList(defaultValues));
-//    }
 }

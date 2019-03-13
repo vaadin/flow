@@ -51,8 +51,8 @@ public class WebComponentWrapper extends Component {
      *         binding contains {@link Component} wrapped by this {@code
      *         component} and associated web component property instances.
      */
-    public WebComponentWrapper(String tag,
-                               WebComponentBinding<?> webComponentBinding) {
+    public WebComponentWrapper(String tag, WebComponentBinding<?
+            extends Component> webComponentBinding) {
         super(new Element(tag));
 
         this.child = webComponentBinding.getComponent();

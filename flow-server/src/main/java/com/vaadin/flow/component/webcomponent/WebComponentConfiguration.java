@@ -24,16 +24,66 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 
-public interface WebComponentConfiguration<C extends Component> extends Serializable {
+/**
+ * {@code WebComponentConfiguration} is constructed based on
+ * {@link WebComponentExporter} - each exported {@code component} has one
+ * configuration.
+ * <p>
+ * The configuration is used to construct the web component, and further-more
+ * the {@code WebComponentBinding}.
+ *
+ * @param <C> type of the component
+ */
+public interface WebComponentConfiguration<C extends Component>
+        extends Serializable {
+
+    /**
+     * Check if the configuration has a property identified by the {@code
+     * propertyName}.
+     *
+     * @param propertyName  name of the property
+     * @return has property
+     */
     boolean hasProperty(String propertyName);
 
+    /**
+     * Retrieve the type of a property's value.
+     *
+     * @param propertyName  name of the property
+     * @return property type
+     */
     Class<? extends Serializable> getPropertyType(String propertyName);
 
+    /**
+     * Retrieve the type of the component.
+     *
+     * @return component type
+     */
     Class<C> getComponentClass();
 
+    /**
+     * Retrieve the type of the exporter's class.
+     *
+     * @return exporter type
+     */
     Class<WebComponentExporter<C>> getExporterClass();
 
+    /**
+     * Set of all the {@link PropertyData} objects defining the web
+     * component's properties.
+     *
+     * @return set of {@code PropertyData}
+     */
     Set<PropertyData<? extends Serializable>> getPropertyDataSet();
 
+    /**
+     * Creates a {@link WebComponentBinding} which is a distinct web
+     * component based on this configuration. Each {@code binding} has an
+     * instance of the component type being exported. Each binding is mapped
+     * to single element in the embedding context.
+     *
+     * @param instantiator  Vaadin {@link Instantiator}
+     * @return web component binding
+     */
     WebComponentBinding<C> createBinding(Instantiator instantiator);
 }

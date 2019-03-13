@@ -24,6 +24,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 /**
  * Interface used to configure a single property on a web component created
  * by subclassing {@link com.vaadin.flow.component.WebComponentExporter}.
+ * Offers a fluent API for configuring the property.
  *
  * @param <C>   type of the {@code component} exported as a web component
  * @param <P>   type of the property exposed on the web component
@@ -67,6 +68,7 @@ public interface PropertyConfiguration<C extends Component, P extends Serializab
     PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler);
 
     /**
+     * Mark the property as read-only. It cannot be written to by the client.
      *
      * @return this {@code PropertyConfiguration}
      */
