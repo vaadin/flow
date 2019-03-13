@@ -17,6 +17,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +39,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.*;
 
 public class UpdateImportsMojoTest {
 
@@ -71,10 +71,20 @@ public class UpdateImportsMojoTest {
         mojo.execute();
 
         assertContainsImports(true,
+                "document.body.setAttribute('theme', 'dark');",
+                "@vaadin/vaadin-lumo-styles/icons.js",
+                "@vaadin/vaadin-lumo-styles/spacing.js",
+                "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/color.js",
+                "@polymer/iron-icon/iron-icon.js",
+                "./foo-dir/vaadin-npm-component.js",
+                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
+                "@vaadin/vaadin-element-mixin/src/something-else.js",
+                "./local-p3-template.js",
                 "@polymer/iron-icon",
                 "./foo-dir/vaadin-npm-component.js",
-                "./bar-dir/vaadin-mixed-component.js",
-                "@vaadin/vaadin-element-mixin", "./local-p3-template.js",
+                "./local-p3-template.js",
                 "./foo.js",
                 "./local-p2-template.js");
     }
