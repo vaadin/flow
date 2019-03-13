@@ -21,11 +21,11 @@ import java.util.Objects;
 import com.vaadin.flow.function.SerializableConsumer;
 
 public class PropertyBinding<P> {
-    private PropertyData2<P> data;
+    private PropertyData<P> data;
     private SerializableConsumer<P> listener;
     private P value;
 
-    public PropertyBinding(PropertyData2<P> data,
+    public PropertyBinding(PropertyData<P> data,
                            SerializableConsumer<P> listener) {
         Objects.requireNonNull(data, "Parameter 'data' must not be null!");
         this.data = data;

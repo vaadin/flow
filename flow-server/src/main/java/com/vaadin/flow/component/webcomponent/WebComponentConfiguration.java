@@ -21,7 +21,7 @@ import java.util.Set;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.webcomponent.PropertyData2;
+import com.vaadin.flow.server.webcomponent.PropertyData;
 
 public interface WebComponentConfiguration<C extends Component> {
     boolean hasProperty(String propertyName);
@@ -32,7 +32,7 @@ public interface WebComponentConfiguration<C extends Component> {
 
     Class<WebComponentExporter<C>> getExporterClass();
 
-    Set<PropertyData2<?>> getPropertyDataSet();
+    Set<PropertyData<?>> getPropertyDataSet();
 
     WebComponentBinding<C> createBinding(Instantiator instantiator);
 }

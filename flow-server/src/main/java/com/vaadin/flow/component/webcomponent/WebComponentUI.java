@@ -29,7 +29,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
@@ -59,21 +59,22 @@ public class WebComponentUI extends UI {
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<Class<? extends Component>> webComponent = WebComponentRegistry
+        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration =
+                WebComponentBuilderRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext())
-                .getWebComponent(tag);
+                .getWebComponentConfiguration(tag);
 
-        if (!webComponent.isPresent()) {
+        if (!webComponentConfiguration.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class)
                     .warn("Received connect request for non existing WebComponent '{}'",
                             tag);
             return;
         }
 
-        Component wcInstance = Instantiator.get(this)
-                .getOrCreate(webComponent.get());
+        WebComponentBinding<?> binding =
+                webComponentConfiguration.get().createBinding(Instantiator.get(this));
 
-        WebComponentWrapper wrapper = new WebComponentWrapper(tag, wcInstance);
+        WebComponentWrapper wrapper = new WebComponentWrapper(tag, binding);
 
         getElement().getStateProvider()
                 .appendVirtualChild(getElement().getNode(),

@@ -90,17 +90,6 @@ public class WebComponentBuilderTest {
         assertProperty(builder, "int", 2);
     }
 
-    @Test(expected = UnsupportedPropertyType.class)
-    public void addProperty_throwsOnUnsupportedTypes() {
-        builder.addProperty("bean", Bean.class);
-    }
-
-    @Ignore
-    @Test
-    public void addListProperty() {
-        // TODO: these might be goner
-    }
-
     @Test
     public void getWebComponentTag() {
         assertEquals(TAG, builder.getWebComponentTag());
@@ -148,7 +137,7 @@ public class WebComponentBuilderTest {
         builder.addProperty("boolean", true);
         builder.addProperty("double", 1.0);
 
-        Set<PropertyData2<?>> set = builder.getPropertyDataSet();
+        Set<PropertyData<?>> set = builder.getPropertyDataSet();
 
         assertEquals(4, set.size());
     }
@@ -295,7 +284,7 @@ public class WebComponentBuilderTest {
 
     private static final void assertProperty(WebComponentBuilder<?> builder,
                                              String property, Object value) {
-        PropertyData2<?> data = builder.getPropertyDataSet().stream()
+        PropertyData<?> data = builder.getPropertyDataSet().stream()
                 .filter(d -> d.getName().equals(property))
                 .findFirst().orElse(null);
 

@@ -19,15 +19,15 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-public class ClientSelectExporter implements WebComponentExporter<ClientSelect2> {
+public class ClientSelectExporter implements WebComponentExporter<ClientSelect> {
     @Override
     public String tag() {
         return "client-select";
     }
 
     @Override
-    public void define(WebComponentDefinition<ClientSelect2> definition) {
+    public void define(WebComponentDefinition<ClientSelect> definition) {
         definition.addProperty("show", false)
-                .onChange(ClientSelect2::setMessageVisible);
+                .onChange(ClientSelect::setMessageVisible);
     }
 }

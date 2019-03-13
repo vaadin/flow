@@ -24,50 +24,51 @@ import com.vaadin.flow.component.Component;
 
 import elemental.json.JsonValue;
 
-public interface WebComponentDefinition<C extends Component> extends Serializable {
+public abstract class WebComponentDefinition<C extends Component> implements Serializable {
 
-    <P> PropertyConfiguration<C, P> addProperty(String name, Class<P> type, P defaultValue);
+    protected abstract  <P> PropertyConfiguration<C, P> addProperty(
+            String name, Class<P> type, P defaultValue);
 
-    default <P> PropertyConfiguration<C, P> addProperty(
-            String name, Class<P> type) {
-        return addProperty(name, type, null);
-    }
+//    default <P> PropertyConfiguration<C, P> addProperty(
+//            String name, Class<P> type) {
+//        return addProperty(name, type, null);
+//    }
 
-    default PropertyConfiguration<C, Integer> addProperty(
+    public PropertyConfiguration<C, Integer> addProperty(
             String name, int defaultValue) {
         return addProperty(name, Integer.class, defaultValue);
     }
 
-    default PropertyConfiguration<C, Double> addProperty(
+    public PropertyConfiguration<C, Double> addProperty(
             String name, double defaultValue) {
         return addProperty(name, Double.class, defaultValue);
     }
 
-    default PropertyConfiguration<C, String> addProperty(
+    public PropertyConfiguration<C, String> addProperty(
             String name, String defaultValue) {
         return addProperty(name, String.class, defaultValue);
     }
 
-    default PropertyConfiguration<C, Boolean> addProperty(
+    public PropertyConfiguration<C, Boolean> addProperty(
             String name, boolean defaultValue) {
         return addProperty(name, Boolean.class, defaultValue);
     }
 
-    default PropertyConfiguration<C, JsonValue> addProperty(
+    public PropertyConfiguration<C, JsonValue> addProperty(
             String name, JsonValue defaultValue) {
         return addProperty(name, JsonValue.class, defaultValue);
     }
 
-    void setInstanceConfigurator(InstanceConfigurator<C> configurator);
-
-    <P> PropertyConfiguration<C, List<P>> addListProperty(
-            String name, Class<P> entryClass);
-
-    <P> PropertyConfiguration<C, List<P>> addListProperty(String name,
-                                                          List<P> defaultValue);
-
-    default <P> PropertyConfiguration<C, List<P>> addListProperty(
-            String name, P... defaultValues) {
-        return addListProperty(name, Arrays.asList(defaultValues));
-    }
+    public abstract void  setInstanceConfigurator(InstanceConfigurator<C> configurator);
+//
+//    public abstract void <P> PropertyConfiguration<C, List<P>> addListProperty(
+//            String name, Class<P> entryClass);
+//
+//    <P> PropertyConfiguration<C, List<P>> addListProperty(String name,
+//                                                          List<P> defaultValue);
+//
+//    default <P> PropertyConfiguration<C, List<P>> addListProperty(
+//            String name, P... defaultValues) {
+//        return addListProperty(name, Arrays.asList(defaultValues));
+//    }
 }

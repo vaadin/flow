@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -39,8 +35,7 @@ import elemental.json.JsonValue;
 public class WebComponentWrapper extends Component {
 
     private final Component child;
-    private final HashMap<String, Field> fields;
-    private final HashMap<String, Method> methods;
+    private final WebComponentBinding<?> webComponentBinding;
 
     // Disconnect timeout
     private Registration disconnectRegistration;
@@ -51,17 +46,18 @@ public class WebComponentWrapper extends Component {
      *
      * @param tag
      *         web component tag
-     * @param child
-     *         actual web component instance
+     * @param webComponentBinding
+     *         binding contains {@link Component} wrapped by this {@code
+     *         component} and associated web component property instances.
      */
-    public WebComponentWrapper(String tag, Component child) {
+    public WebComponentWrapper(String tag,
+                               WebComponentBinding<?> webComponentBinding) {
         super(new Element(tag));
 
-        this.child = child;
+        this.child = webComponentBinding.getComponent();
         getElement().appendChild(child.getElement());
 
-        this.fields = getPropertyFields(child.getClass());
-        this.methods = getPropertyMethods(child.getClass());
+        this.webComponentBinding = webComponentBinding;
     }
 
     /**
@@ -75,22 +71,14 @@ public class WebComponentWrapper extends Component {
      */
     @ClientCallable
     public void sync(String property, JsonValue newValue) {
-        if (methods.containsKey(property) && fields.containsKey(property)) {
-            String message = String
-                    .format("The property '%s' exists both as a method and a field.",
-                            property);
-            throw new IllegalStateException(message);
-        }
         try {
-            if (methods.containsKey(property)) {
-                setNewMethodValue(property, newValue);
-            } else if (fields.containsKey(property)) {
+            if (webComponentBinding.hasProperty(property)) {
                 setNewFieldValue(property, newValue);
             } else {
                 LoggerFactory.getLogger(child.getClass())
-                        .error("No method found for {}", property);
+                        .error("No match found for {}", property);
             }
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        } catch (IllegalArgumentException e) {
             LoggerFactory.getLogger(child.getClass())
                     .error("Failed to synchronise property '{}'", property, e);
         }
@@ -136,95 +124,17 @@ public class WebComponentWrapper extends Component {
         }
     }
 
-    private void setNewMethodValue(String property, JsonValue newValue)
-            throws IllegalAccessException, InvocationTargetException {
-        Method method = methods.get(property);
-        boolean accessible = method.isAccessible();
-        method.setAccessible(true);
+    private void setNewFieldValue(String property, JsonValue newValue) {
+        Class<?> propertyType =
+                webComponentBinding.getPropertyType(property);
 
-        Class<?>[] parameterTypes = method.getParameterTypes();
-
-        if (JsonCodec.canEncodeWithoutTypeInfo(parameterTypes[0])) {
-            method.invoke(child,
-                    JsonCodec.decodeAs(newValue, parameterTypes[0]));
+        if (JsonCodec.canEncodeWithoutTypeInfo(propertyType)) {
+            Object value = JsonCodec.decodeAs(newValue, propertyType);
+            webComponentBinding.updateProperty(property, value);
         } else {
             throw new IllegalArgumentException(
-                    String.format("Received value wasn't convertible to '%s'",
-                            parameterTypes[0].getName()));
+                    String.format("Received value was not convertible to '%s'",
+                            propertyType.getName()));
         }
-
-        method.setAccessible(accessible);
-    }
-
-    private void setNewFieldValue(String property, JsonValue newValue)
-            throws IllegalAccessException {
-        Field field = fields.get(property);
-        boolean accessible = field.isAccessible();
-        field.setAccessible(true);
-        WebComponentProperty fieldProperty = (WebComponentProperty) field
-                .get(child);
-
-        if (JsonCodec.canEncodeWithoutTypeInfo(fieldProperty.getValueType())) {
-            fieldProperty.set(JsonCodec
-                    .decodeAs(newValue, fieldProperty.getValueType()));
-        } else {
-            throw new IllegalArgumentException(
-                    String.format("Received value wasn't convertible to '%s'",
-                            fieldProperty.getValueType().getName()));
-        }
-
-        field.setAccessible(accessible);
-    }
-
-    /**
-     * Get all methods published to the client side as properties.
-     *
-     * @param webComponent
-     *         component to get all methods for
-     * @return map containing property name and {@link Method}
-     */
-    private static HashMap<String, Method> getPropertyMethods(
-            Class<?> webComponent) {
-        HashMap<String, Method> methods = new HashMap<>();
-
-        // Collect first inherited methods so they can be overridden by the child
-        if (webComponent.getSuperclass() != null) {
-            methods.putAll(getPropertyMethods(webComponent.getSuperclass()));
-        }
-
-        for (Method method : webComponent.getDeclaredMethods()) {
-            WebComponentMethod ann = method
-                    .getAnnotation(WebComponentMethod.class);
-            if (ann != null) {
-                methods.put(ann.value(), method);
-            }
-        }
-
-        return methods;
-    }
-
-    /**
-     * Get all fields published to the client side as properties.
-     *
-     * @param webComponent
-     *         component to get all fields for
-     * @return map containing property name and {@link Field}
-     */
-    private static HashMap<String, Field> getPropertyFields(
-            Class<?> webComponent) {
-        HashMap<String, Field> fields = new HashMap<>();
-
-        // Collect first inherited methods so they can be overridden by the child
-        if (webComponent.getSuperclass() != null) {
-            fields.putAll(getPropertyFields(webComponent.getSuperclass()));
-        }
-
-        for (Field field : webComponent.getDeclaredFields()) {
-            if (WebComponentProperty.class.isAssignableFrom(field.getType())) {
-                fields.put(field.getName(), field);
-            }
-        }
-
-        return fields;
     }
 }
