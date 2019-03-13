@@ -46,7 +46,6 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 
@@ -113,15 +112,22 @@ public class UpdateImportsMojo extends AbstractMojo {
         try {
             List<String> current = FileUtils.fileExists(jsFile) ? FileUtils.loadFile(new File(jsFile))
                     : Collections.emptyList();
+            
+            // It's not possible to cast to AbstractTheme here as a type since it's load by the different classloader.
+            // Thus we use reflection here to invoke those methods in the different context.
+            Object themeInstance = annotationValuesExtractor
+                    .loadClassInProjectClassLoader(themeDefinition.getTheme().getCanonicalName()).newInstance();
 
-            AbstractTheme theme = (AbstractTheme) Class.forName(themeDefinition.getTheme().getCanonicalName()).newInstance();
+            Map<String, String> htmlAttributes = annotationValuesExtractor.doInvokeMethod(themeInstance,
+                    "getHtmlAttributes", themeDefinition.getVariant());
+            String baseUrl = annotationValuesExtractor.doInvokeMethod(themeInstance, "getBaseUrl");
 
             Set<String> jsModules = new HashSet<>();
             classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(fileName -> jsModules.add(
                     // add `./` prefix to everything starting with letters
                     fileName.replaceFirst("(?i)^([a-z])", "./$1"))));
 
-            Stream<String> variantStream = theme.getHtmlAttributes(themeDefinition.getVariant()).entrySet().stream()
+            Stream<String> variantStream = htmlAttributes.entrySet().stream()
                     .map(e -> "document.body.setAttribute('" + e.getKey() + "', '" + e.getValue() + "');");
 
             Stream<String> themeStream = themeModules.stream().map(s -> "import '" + s + "';");
@@ -131,13 +137,15 @@ public class UpdateImportsMojo extends AbstractMojo {
                 // eg vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
                 // but vaadin-upload/src/vaadin-upload-file.js does not.
                 // ticket: https://github.com/vaadin/flow/issues/5244
-                if (fileName.matches(".*(vaadin-[^/]+)/" + theme.getBaseUrl() + "\\1\\.(js|html)")) {
-                    fileName = theme.translateUrl(fileName);
+                if (fileName.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
+                    fileName = annotationValuesExtractor.doInvokeMethod(themeInstance,  "translateUrl",
+                            fileName);
                 }
                 return "import '" + fileName + "';";
-             });
+            });
 
-            List<String> concat = Stream.concat(Stream.concat(variantStream, themeStream), importStream).collect(Collectors.toList());
+            List<String> concat = Stream.concat(Stream.concat(variantStream, themeStream), importStream)
+                    .collect(Collectors.toList());
 
             if (concat.equals(current)) {
                 getLog().info("No js modules to update");
