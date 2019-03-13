@@ -16,15 +16,17 @@
 
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Component;
 
-public interface WebComponentBinding<C extends Component> {
+public interface WebComponentBinding<C extends Component> extends Serializable {
 
-    void updateProperty(String propertyName, Object value);
+    void updateProperty(String propertyName, Serializable value);
 
     C getComponent();
 
-    Class<?> getPropertyType(String propertyName);
+    Class<? extends Serializable> getPropertyType(String propertyName);
 
     boolean hasProperty(String propertyName);
 }

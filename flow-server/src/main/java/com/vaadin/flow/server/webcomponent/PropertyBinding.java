@@ -16,11 +16,13 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import java.io.Serializable;
+import java.security.InvalidParameterException;
 import java.util.Objects;
 
 import com.vaadin.flow.function.SerializableConsumer;
 
-public class PropertyBinding<P> {
+public class PropertyBinding<P extends Serializable> implements Serializable {
     private PropertyData<P> data;
     private SerializableConsumer<P> listener;
     private P value;
@@ -33,16 +35,31 @@ public class PropertyBinding<P> {
         this.value = data.getDefaultValue();
     }
 
-    public void updateValue(Object value) {
+    public void updateValue(Serializable value) {
         if (value != null && value.getClass() != getType()) {
             // TODO: throw a specific exception here
-            throw new RuntimeException(String.format("Parameter 'value' is of" +
-                            " the wrong type: onChangeHandler of the property " +
-                            "expected to receive %s but found %s instead.",
+            throw new InvalidParameterException(String.format("Parameter " +
+                            "'value' is of the wrong type: onChangeHandler of" +
+                            " the property expected to receive %s but found " +
+                            "%s instead.",
                     getType().getCanonicalName(),
                     value.getClass().getCanonicalName()));
         }
+
+        if (isReadOnly()) {
+            throw new IllegalStateException(String.format("Property '%s' of " +
+                    "type '%s' is read-only and cannot be updated!",
+                    getName(),
+                    getType().getCanonicalName()));
+        }
+
         P newValue = (P)value;
+
+        // null values are always set to default value (which might still be
+        // null for some types)
+        if (newValue == null) {
+            newValue = data.getDefaultValue();
+        }
 
         boolean updated = false;
         if (this.value != null && !this.value.equals(newValue)) {

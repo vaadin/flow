@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.Map;
 import java.util.Objects;
@@ -25,12 +26,13 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 
-public class WebComponentBindingImpl<C extends Component> implements WebComponentBinding<C> {
+public class WebComponentBindingImpl<C extends Component>
+        implements WebComponentBinding<C>, Serializable {
     private C component;
-    private Map<String, PropertyBinding<?>> properties;
+    private Map<String, PropertyBinding<? extends Serializable>> properties;
 
     public WebComponentBindingImpl(C component,
-                               Set<PropertyBinding<?>> properties) {
+                               Set<PropertyBinding<? extends Serializable>> properties) {
         Objects.requireNonNull(component, "Parameter 'component' must not be " +
                 "null!");
         Objects.requireNonNull(properties, "Parameter 'properties' must not " +
@@ -42,7 +44,7 @@ public class WebComponentBindingImpl<C extends Component> implements WebComponen
     }
 
     @Override
-    public void updateProperty(String propertyName, Object value) {
+    public void updateProperty(String propertyName, Serializable value) {
         Objects.requireNonNull(propertyName, "Parameter 'propertyName' must " +
                 "not be null!");
 
@@ -68,7 +70,7 @@ public class WebComponentBindingImpl<C extends Component> implements WebComponen
     }
 
     @Override
-    public Class<?> getPropertyType(String propertyName) {
+    public Class<? extends Serializable> getPropertyType(String propertyName) {
         if (hasProperty(propertyName)) {
             return properties.get(propertyName).getType();
         }

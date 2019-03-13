@@ -16,17 +16,17 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
-public class PropertyConfigurationImp<C extends Component, P> implements PropertyConfiguration<C, P> {
+public class PropertyConfigurationImp<C extends Component, P extends Serializable> implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
     private final PropertyData<P> data;
-    private SerializableBiConsumer<C, Object> onChangeHandler = null;
-    private SerializableBiConsumer<C, P> typedOnChangeHandler = null;
+    private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
 
     public PropertyConfigurationImp(Class<C> componentType, String propertyName,
                                     Class<P> propertyType, P defaultValue) {
@@ -40,8 +40,7 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
     public PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
         Objects.requireNonNull(onChangeHandler, "Parameter 'onChangeHandler' " +
                 "cannot be null!");
-        this.typedOnChangeHandler = onChangeHandler;
-        this.onChangeHandler = (c, o) -> this.typedOnChangeHandler.accept(c, (P)o);
+        this.onChangeHandler = (c, o) -> onChangeHandler.accept(c, (P) o);
         return this;
     }
 
@@ -66,7 +65,7 @@ public class PropertyConfigurationImp<C extends Component, P> implements Propert
         return Objects.hash(componentClass, data);
     }
 
-    SerializableBiConsumer<C, Object> getOnChangeHandler() {
+    SerializableBiConsumer<C, Serializable> getOnChangeHandler() {
         return onChangeHandler;
     }
 

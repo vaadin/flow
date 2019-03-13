@@ -16,9 +16,11 @@
 
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-public interface WebComponentExporter<C extends Component> {
+public interface WebComponentExporter<C extends Component> extends Serializable {
 
     String tag();
 

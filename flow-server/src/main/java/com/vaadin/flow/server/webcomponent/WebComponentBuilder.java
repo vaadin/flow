@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class WebComponentBuilder<C extends Component>
     private Class<C> componentClass = null;
     private WebComponentExporter<C> exporter;
     private InstanceConfigurator<C> instanceConfigurator;
-    private Map<String, PropertyConfigurationImp<C, ?>> propertyConfigurationMap =
+    private Map<String, PropertyConfigurationImp<C, ? extends Serializable>> propertyConfigurationMap =
             new HashMap<>();
 
     public WebComponentBuilder(WebComponentExporter<C> exporter) {
@@ -65,7 +66,7 @@ public class WebComponentBuilder<C extends Component>
     }
 
     @Override
-    public <P> PropertyConfiguration<C, P> addProperty(
+    public <P extends Serializable> PropertyConfiguration<C, P> addProperty(
             String name, Class<P> type, P defaultValue) {
         Objects.requireNonNull(name, "Parameter 'name' cannot be null!");
         Objects.requireNonNull(type, "Parameter 'type' cannot be null!");
@@ -107,7 +108,7 @@ public class WebComponentBuilder<C extends Component>
     }
 
     @Override
-    public Class<?> getPropertyType(String propertyName) {
+    public Class<? extends Serializable> getPropertyType(String propertyName) {
         if (propertyConfigurationMap.containsKey(propertyName)) {
             return propertyConfigurationMap.get(propertyName).getPropertyData().getType();
         } else {
@@ -142,10 +143,10 @@ public class WebComponentBuilder<C extends Component>
                     componentReference);
         }
 
-        Set<PropertyBinding<?>> propertyBindings =
+        Set<PropertyBinding<? extends Serializable>> propertyBindings =
                 propertyConfigurationMap.values().stream()
                         .map(propertyConfig -> {
-                            SerializableBiConsumer<C, Object> consumer =
+                            SerializableBiConsumer<C, Serializable> consumer =
                                     propertyConfig.getOnChangeHandler();
                             return new PropertyBinding<>(
                                     propertyConfig.getPropertyData(),

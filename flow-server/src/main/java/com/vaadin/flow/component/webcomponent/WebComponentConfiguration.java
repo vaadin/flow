@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
@@ -23,16 +24,16 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 
-public interface WebComponentConfiguration<C extends Component> {
+public interface WebComponentConfiguration<C extends Component> extends Serializable {
     boolean hasProperty(String propertyName);
 
-    Class<?> getPropertyType(String propertyName);
+    Class<? extends Serializable> getPropertyType(String propertyName);
 
     Class<C> getComponentClass();
 
     Class<WebComponentExporter<C>> getExporterClass();
 
-    Set<PropertyData<?>> getPropertyDataSet();
+    Set<PropertyData<? extends Serializable>> getPropertyDataSet();
 
     WebComponentBinding<C> createBinding(Instantiator instantiator);
 }
