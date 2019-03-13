@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -88,7 +89,7 @@ public class UpdateImportsMojo extends AbstractMojo {
         Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor.getAnnotatedClasses(JsModule.class,
                 VALUE);
 
-        Set<String> themeModules = annotationValuesExtractor.getClassAnnotationValues(themeDefinition.getTheme(),
+        final Set<String> themeModules = annotationValuesExtractor.getClassAnnotationValues(themeDefinition.getTheme(),
                 JsModule.class, VALUE);
 
         Map<Class<?>, Set<String>> classes = new HashMap<>(classesWithJsModule);
@@ -98,8 +99,8 @@ public class UpdateImportsMojo extends AbstractMojo {
                     .getAnnotatedClasses(HtmlImport.class, VALUE);
 
             if (themeModules.isEmpty()) {
-                themeModules = getHtmlImportJsModules(annotationValuesExtractor
-                        .getClassAnnotationValues(themeDefinition.getTheme(), HtmlImport.class, VALUE));
+                themeModules.addAll(getHtmlImportJsModules(annotationValuesExtractor
+                        .getClassAnnotationValues(themeDefinition.getTheme(), HtmlImport.class, VALUE)));
             }
 
             classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
@@ -112,7 +113,7 @@ public class UpdateImportsMojo extends AbstractMojo {
         try {
             List<String> current = FileUtils.fileExists(jsFile) ? FileUtils.loadFile(new File(jsFile))
                     : Collections.emptyList();
-            
+
             // It's not possible to cast to AbstractTheme here as a type since it's load by the different classloader.
             // Thus we use reflection here to invoke those methods in the different context.
             Object themeInstance = annotationValuesExtractor
@@ -120,6 +121,8 @@ public class UpdateImportsMojo extends AbstractMojo {
 
             Map<String, String> htmlAttributes = annotationValuesExtractor.doInvokeMethod(themeInstance,
                     "getHtmlAttributes", themeDefinition.getVariant());
+            List<String> headerContents = annotationValuesExtractor.doInvokeMethod(themeInstance, "getHeaderInlineContents");
+
             String baseUrl = annotationValuesExtractor.doInvokeMethod(themeInstance, "getBaseUrl");
 
             Set<String> jsModules = new HashSet<>();
@@ -127,24 +130,35 @@ public class UpdateImportsMojo extends AbstractMojo {
                     // add `./` prefix to everything starting with letters
                     fileName.replaceFirst("(?i)^([a-z])", "./$1"))));
 
-            Stream<String> variantStream = htmlAttributes.entrySet().stream()
-                    .map(e -> "document.body.setAttribute('" + e.getKey() + "', '" + e.getValue() + "');");
+            List<String> themeConfig = new ArrayList<>();
+            if (!headerContents.isEmpty()) {
+                themeConfig.add("const div = document.createElement('div');");
+                headerContents.forEach(html -> {
+                    themeConfig.add("div.innerHTML = '" + html.replaceAll("(?m)(^\\s+|\\s?\n)", "") + "';");
+                    themeConfig.add("document.head.insertBefore(div.firstElementChild, document.head.firstChild);");
+                });
+            }
+            htmlAttributes.entrySet().forEach(
+                    e -> themeConfig.add("document.body.setAttribute('" + e.getKey() + "', '" + e.getValue() + "');"));
 
             Stream<String> themeStream = themeModules.stream().map(s -> "import '" + s + "';");
 
-            Stream<String> importStream = jsModules.stream().sorted(Comparator.reverseOrder()).map(fileName -> {
-                // TODO(manolo): disabled because not all files have corresponding themed one.
-                // eg vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
-                // but vaadin-upload/src/vaadin-upload-file.js does not.
-                // ticket: https://github.com/vaadin/flow/issues/5244
-                if (fileName.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
-                    fileName = annotationValuesExtractor.doInvokeMethod(themeInstance,  "translateUrl",
-                            fileName);
-                }
-                return "import '" + fileName + "';";
-            });
+            Stream<String> importStream = jsModules.stream().sorted(Comparator.reverseOrder())
+                    // Do not repeat modules already defined in theme
+                    .filter(fileName -> !themeModules.contains(fileName))
+                    .map(fileName -> {
+                        // TODO(manolo): disabled because not all files have corresponding themed one.
+                        // eg vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
+                        // but vaadin-upload/src/vaadin-upload-file.js does not.
+                        // ticket: https://github.com/vaadin/flow/issues/5244
+                        if (fileName.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
+                            fileName = annotationValuesExtractor.doInvokeMethod(themeInstance, "translateUrl",
+                                    fileName);
+                        }
+                        return "import '" + fileName + "';";
+                    });
 
-            List<String> concat = Stream.concat(Stream.concat(variantStream, themeStream), importStream)
+            List<String> concat = Stream.concat(Stream.concat(themeConfig.stream(), themeStream), importStream)
                     .collect(Collectors.toList());
 
             if (concat.equals(current)) {
