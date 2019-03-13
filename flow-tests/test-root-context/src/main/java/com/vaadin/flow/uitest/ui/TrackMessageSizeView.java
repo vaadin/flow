@@ -17,20 +17,24 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.shared.ui.Transport;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 
 @Route("com.vaadin.flow.uitest.ui.TrackMessageSizeView")
+@Push(transport= Transport.LONG_POLLING)
 public class TrackMessageSizeView extends Div {
 
     public static final String LOG_ELEMENT_ID = "logId";
@@ -90,10 +94,17 @@ public class TrackMessageSizeView extends Div {
     private String findMethodImplementation() {
         String filename = "/VAADIN/static/push/vaadinPush.js";
 
-        String content = getFileContent(filename, (VaadinServletService) VaadinService.getCurrent());
+        VaadinRequest request = VaadinRequest.getCurrent();
+
+        HttpServletRequest httpServletRequest = ((VaadinServletRequest) request).getHttpServletRequest();
+
+        String jsPath = httpServletRequest.getRequestURL().toString().replace(httpServletRequest.getRequestURI(), filename);
+
+
+        String content = getFileContent(jsPath);
 
         if (content == null) {
-            log("Can't find " + filename);
+            log("Can't find " + jsPath);
             return null;
         }
 
@@ -117,11 +128,15 @@ public class TrackMessageSizeView extends Div {
 
     }
 
-    private String getFileContent(String filename, VaadinServletService service) {
-        ServletContext sc = service.getServlet().getServletContext();
-
-        try(InputStream inputStream = sc.getResourceAsStream(filename)) {
-            return inputStream != null ? IOUtils.toString(inputStream, StandardCharsets.UTF_8.name()) : null;
+    private String getFileContent(String filename) {
+        URL url = null;
+        try {
+             url = new URL(filename);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return url != null ? IOUtils.toString(url, StandardCharsets.UTF_8.name()) : null;
         } catch ( IOException e) {
             throw new RuntimeException(e);
         }
