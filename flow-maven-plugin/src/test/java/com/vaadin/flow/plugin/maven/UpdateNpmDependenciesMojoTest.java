@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -42,7 +44,7 @@ public class UpdateNpmDependenciesMojoTest {
 
     UpdateNpmDependenciesMojo mojo = new UpdateNpmDependenciesMojo();
 
-    String packageJson;
+    String packageJsonFileName;
 
     @Before
     public void setup() throws IOException, DependencyResolutionRequiredException, IllegalAccessException {
@@ -51,9 +53,9 @@ public class UpdateNpmDependenciesMojoTest {
 
         File tmp = File.createTempFile("foo", "");
         tmp.delete();
-        packageJson = tmp.getParent() + "/" + PACKAGE_JSON;
+        packageJsonFileName = tmp.getParent() + "/" + PACKAGE_JSON;
 
-        System.err.println(packageJson);
+        System.err.println(packageJsonFileName);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmp.getParent());
@@ -75,52 +77,78 @@ public class UpdateNpmDependenciesMojoTest {
 
     @After
     public void teardown() throws IOException {
-        FileUtils.fileDelete(packageJson);
+        FileUtils.fileDelete(packageJsonFileName);
     }
 
     @Test
     public void mavenGoal_packageJsonMissing() throws IOException {
-        Assert.assertFalse(FileUtils.fileExists(packageJson));
+        Assert.assertFalse(FileUtils.fileExists(packageJsonFileName));
 
         mojo.execute();
 
-        String content = FileUtils.fileRead(packageJson);
-
-        Assert.assertTrue("Missing @vaadin/vaadin-button package",
-                content.contains("@vaadin/vaadin-button"));
-        Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
-                content.contains("@webcomponents/webcomponentsjs"));
-        Assert.assertTrue("Missing @polymer/iron-icon package",
-                content.contains("@polymer/iron-icon"));
+        assertPackageJsonContent();
     }
 
     @Test
     public void mavenGoal_packageJsonExists() throws Exception {
 
-        FileUtils.fileWrite(packageJson, "{}");
-        long timestamp1 = FileUtils.getFile(packageJson).lastModified();
+        FileUtils.fileWrite(packageJsonFileName, "{}");
+        long timestamp1 = FileUtils.getFile(packageJsonFileName).lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
         mojo.execute();
-        long timestamp2 = FileUtils.getFile(packageJson).lastModified();
+        long timestamp2 = FileUtils.getFile(packageJsonFileName).lastModified();
 
         sleep(1000);
         mojo.execute();
-        long timestamp3 = FileUtils.getFile(packageJson).lastModified();
+        long timestamp3 = FileUtils.getFile(packageJsonFileName).lastModified();
 
         Assert.assertTrue(timestamp1 < timestamp2);
         Assert.assertTrue(timestamp2 == timestamp3);
 
-        String content = FileUtils.fileRead(packageJson);
+        assertPackageJsonContent();
+    }
+
+    private void assertPackageJsonContent() throws IOException {
+        JsonObject packageJson = getPackageJson();
+
+        JsonObject dependencies = packageJson.getObject("dependencies");
+
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
-                content.contains("@vaadin/vaadin-button"));
-        Assert.assertTrue(
-                "@webcomponents/webcomponentsjs exists though it shouldn't",
-                !content.contains("@webcomponents/webcomponentsjs"));
+                dependencies.hasKey("@vaadin/vaadin-button"));
+        Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
+                dependencies.hasKey("@webcomponents/webcomponentsjs"));
+        Assert.assertTrue("Missing @polymer/iron-icon package",
+                dependencies.hasKey("@polymer/iron-icon"));
+
+        JsonObject devDependencies = packageJson.getObject("devDependencies");
+
+        Assert.assertTrue("Missing webpack dev package",
+                devDependencies.hasKey("webpack"));
+        Assert.assertTrue("Missing webpack-cli dev package",
+                devDependencies.hasKey("webpack-cli"));
+        Assert.assertTrue("Missing webpack-dev-server dev package",
+                devDependencies.hasKey("webpack-dev-server"));
+        Assert.assertTrue("Missing webpack-plugin-install-deps dev package",
+                devDependencies.hasKey("webpack-plugin-install-deps"));
+        Assert.assertTrue("Missing webpack-babel-multi-target-plugin dev package",
+                devDependencies.hasKey("webpack-babel-multi-target-plugin"));
+        Assert.assertTrue("Missing copy-webpack-plugin dev package",
+                devDependencies.hasKey("copy-webpack-plugin"));
     }
 
     static void sleep(int ms) throws InterruptedException {
         Thread.sleep(ms); //NOSONAR
     }
+
+    private JsonObject getPackageJson() throws IOException {
+        if (FileUtils.fileExists(packageJsonFileName)) {
+            return Json.parse(FileUtils.fileRead(packageJsonFileName));
+
+        } else {
+            return Json.createObject();
+        }
+    }
+
 }
