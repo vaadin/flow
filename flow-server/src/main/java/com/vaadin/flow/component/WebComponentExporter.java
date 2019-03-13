@@ -20,9 +20,48 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
+/**
+ * Interface for exporting {@link Component components} as embeddable web
+ * components. These web components can be embedded into non-Vaadin
+ * applications.
+ * <p>
+ * Example of exporting {@code MyComponent} component:
+ * <pre>
+ * {@code
+ * public class Exporter implements WebComponentExporter<MyComponent>() {
+ *    @literal @Override
+ *     public void tag() {
+ *         return "my-component";
+ *     }
+ *
+ *    @literal @Override
+ *     public void define(WebComponentDefinition<MyComponent> definition) {
+ *         definition.addProperty("name", "John Doe")
+ *                 .onChange(MyComponent::setName);
+ *     }
+ * }
+ * </pre>
+ *
+ * @param <C> type of the component to export
+ */
 public interface WebComponentExporter<C extends Component> extends Serializable {
 
+    /**
+     * Defines the tag name of the exported web-component. If the method
+     * returns null when the web component is being constructed, an exception
+     * will be thrown.
+     *
+     * @return tag name. Use {@code }dash-separated-name} with at least one dash
+     */
     String tag();
 
+    /**
+     * Called by the web component export process. Use the given
+     * {@link WebComponentDefinition} to define web component's properties,
+     * and how the properties interact with the {@link Component} being
+     * exported.
+     *
+     * @param definition instance used to define the component.
+     */
     void define(WebComponentDefinition<C> definition);
 }
