@@ -16,7 +16,7 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.PACKAGE_JSON;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +36,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.plugin.TestUtils;
+
 public class UpdateNpmDependenciesMojoTest {
 
     MavenProject project;
@@ -43,21 +45,27 @@ public class UpdateNpmDependenciesMojoTest {
     UpdateNpmDependenciesMojo mojo = new UpdateNpmDependenciesMojo();
 
     String packageJson;
+    String webpackConfig;
+
+    private URL testResource;
 
     @Before
     public void setup() throws IOException, DependencyResolutionRequiredException, IllegalAccessException {
+
+        testResource = TestUtils.getTestResource(WEBPACK_CONFIG);
+
         project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
         File tmp = File.createTempFile("foo", "");
         tmp.delete();
         packageJson = tmp.getParent() + "/" + PACKAGE_JSON;
-
-        System.err.println(packageJson);
+        webpackConfig = tmp.getParent() + "/" + WEBPACK_CONFIG;
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmp.getParent());
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
     }
 
     static List<String> getClassPath() {
@@ -76,6 +84,7 @@ public class UpdateNpmDependenciesMojoTest {
     @After
     public void teardown() throws IOException {
         FileUtils.fileDelete(packageJson);
+        FileUtils.fileDelete(webpackConfig);
     }
 
     @Test
@@ -92,25 +101,32 @@ public class UpdateNpmDependenciesMojoTest {
                 content.contains("@webcomponents/webcomponentsjs"));
         Assert.assertTrue("Missing @polymer/iron-icon package",
                 content.contains("@polymer/iron-icon"));
+
+        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
     }
 
     @Test
     public void mavenGoal_packageJsonExists() throws Exception {
 
         FileUtils.fileWrite(packageJson, "{}");
-        long timestamp1 = FileUtils.getFile(packageJson).lastModified();
+        long tsPackage1 = FileUtils.getFile(packageJson).lastModified();
+        long tsWebpack1 = FileUtils.getFile(webpackConfig).lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
         mojo.execute();
-        long timestamp2 = FileUtils.getFile(packageJson).lastModified();
+        long tsPackage2 = FileUtils.getFile(packageJson).lastModified();
+        long tsWebpack2 = FileUtils.getFile(webpackConfig).lastModified();
 
         sleep(1000);
         mojo.execute();
-        long timestamp3 = FileUtils.getFile(packageJson).lastModified();
+        long tsPackage3 = FileUtils.getFile(packageJson).lastModified();
+        long tsWebpack3 = FileUtils.getFile(webpackConfig).lastModified();
 
-        Assert.assertTrue(timestamp1 < timestamp2);
-        Assert.assertTrue(timestamp2 == timestamp3);
+        Assert.assertTrue(tsPackage1 < tsPackage2);
+        Assert.assertTrue(tsWebpack1 < tsWebpack2);
+        Assert.assertTrue(tsPackage2 == tsPackage3);
+        Assert.assertTrue(tsWebpack2 == tsWebpack3);
 
         String content = FileUtils.fileRead(packageJson);
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
