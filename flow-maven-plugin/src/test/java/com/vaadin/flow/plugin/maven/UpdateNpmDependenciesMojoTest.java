@@ -146,8 +146,6 @@ public class UpdateNpmDependenciesMojoTest {
                 devDependencies.hasKey("webpack-cli"));
         Assert.assertTrue("Missing webpack-dev-server dev package",
                 devDependencies.hasKey("webpack-dev-server"));
-        Assert.assertTrue("Missing webpack-plugin-install-deps dev package",
-                devDependencies.hasKey("webpack-plugin-install-deps"));
         Assert.assertTrue("Missing webpack-babel-multi-target-plugin dev package",
                 devDependencies.hasKey("webpack-babel-multi-target-plugin"));
         Assert.assertTrue("Missing copy-webpack-plugin dev package",

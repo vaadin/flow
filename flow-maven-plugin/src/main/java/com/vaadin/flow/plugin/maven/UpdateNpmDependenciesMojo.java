@@ -199,7 +199,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         } else {
             updateDependencies(
                     dependencies.stream().sorted().collect(Collectors.toList()),
-                    "--saveDev");
+                    "--save-dev");
         }
 
     }
