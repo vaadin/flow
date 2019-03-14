@@ -25,6 +25,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -123,25 +125,12 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         }
 
         try {
-            JsonObject currentDeps = parsePackage();
+            JsonObject packageJson = getPackageJson();
 
-            Set<String> dependencies = new HashSet<>();
-            classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
-                // exclude local dependencies (those starting with `.` or `/`
-                if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)) {
-                    dependencies.add(s);
-                }
-            }));
+            updatePackageJsonDependencies(packageJson, classes);
 
-            if (createPackageJsonFile()) {
-                dependencies.add("@webcomponents/webcomponentsjs");
-            }
+            updatePackageJsonDevDependencies(packageJson);
 
-            if (dependencies.isEmpty()) {
-                log.info("No npm packages to update");
-            } else {
-                updateDependencies(dependencies.stream().sorted().collect(Collectors.toList()));
-            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -169,26 +158,60 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         }
     }
 
-    private boolean createPackageJsonFile() throws IOException {
-        String packageFile = npmFolder + "/" + PACKAGE_JSON;
-        if (!FileUtils.fileExists(packageFile)) {
-            log.info("Creating a default " + packageFile);
-            FileUtils.fileWrite(packageFile, "{}");
-            return true;
+    private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes) throws IOException {
+        JsonObject currentDeps = packageJson.getObject("dependencies");
+
+        Set<String> dependencies = new HashSet<>();
+        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
+            // exclude local dependencies (those starting with `.` or `/`
+            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)) {
+                dependencies.add(s);
+            }
+        }));
+
+        if (!currentDeps.hasKey("@webcomponents/webcomponentsjs")) {
+            dependencies.add("@webcomponents/webcomponentsjs");
         }
-        return false;
+
+        if (dependencies.isEmpty()) {
+            log.info("No npm packages to update");
+        } else {
+            updateDependencies(
+                    dependencies.stream().sorted().collect(Collectors.toList()),
+                    "--save");
+        }
     }
 
-    private void updateDependencies(List<String> dependencies) throws IOException {
+    private void updatePackageJsonDevDependencies(JsonObject packageJson) throws IOException {
+        JsonObject currentDeps = packageJson.getObject("devDependencies");
+
+        Set<String> dependencies = new HashSet<>();
+        dependencies.add("webpack");
+        dependencies.add("webpack-cli");
+        dependencies.add("webpack-dev-server");
+        dependencies.add("webpack-babel-multi-target-plugin");
+        dependencies.add("copy-webpack-plugin");
+
+        dependencies.removeAll(Arrays.asList(currentDeps.keys()));
+
+        if (dependencies.isEmpty()) {
+            log.info("No npm dev packages to update");
+        } else {
+            updateDependencies(
+                    dependencies.stream().sorted().collect(Collectors.toList()),
+                    "--saveDev");
+        }
+
+    }
+
+    private void updateDependencies(List<String> dependencies, String... npmInstallArgs) throws IOException {
         List<String> command = new ArrayList<>(5 + dependencies.size());
         command.add("npm");
         command.add("install");
-        command.add("--save");
-        command.add("--package-lock-only");
-        command.add("--no-package-lock");
+        command.addAll(Arrays.asList(npmInstallArgs));
         command.addAll(dependencies);
 
-        log.info("Updating npm dependencies\n " + command.stream().collect(Collectors.joining(" ")));
+        log.info("Updating package.json...\n " + command.stream().collect(Collectors.joining(" ")));
 
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(new File(npmFolder));
@@ -202,15 +225,30 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         }
     }
 
-    private JsonObject parsePackage() throws IOException {
+    private JsonObject getPackageJson() throws IOException {
+
+        JsonObject packageJson;
+
         String packageFile = npmFolder + "/" + PACKAGE_JSON;
         if (FileUtils.fileExists(packageFile)) {
-            JsonObject o = Json.parse(FileUtils.fileRead(packageFile));
-            if (o.hasKey("dependencies")) {
-                return o.getObject("dependencies");
-            }
+            packageJson = Json.parse(FileUtils.fileRead(packageFile));
+
+        } else {
+            log.info("Creating a default " + packageFile);
+            FileUtils.fileWrite(packageFile, "{}");
+            packageJson = Json.createObject();
         }
-        return Json.createObject();
+
+        ensureMissingObject(packageJson,"dependencies");
+        ensureMissingObject(packageJson,"devDependencies");
+
+        return packageJson;
+    }
+
+    private void ensureMissingObject(JsonObject packageJson, String name) {
+        if (!packageJson.hasKey(name)) {
+            packageJson.put(name, Json.createObject());
+        }
     }
 
     private void logStream(InputStream input) {
