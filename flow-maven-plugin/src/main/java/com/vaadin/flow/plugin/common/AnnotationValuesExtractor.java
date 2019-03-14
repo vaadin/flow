@@ -112,7 +112,6 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
 
     /**
      * Get theme definitions for all theme annotated classes.
-     * @param log
      *
      * @return a map of {@link ThemeDefinition}
      */
