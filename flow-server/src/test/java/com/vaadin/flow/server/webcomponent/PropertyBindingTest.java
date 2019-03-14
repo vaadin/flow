@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class PropertyBindingTest {
 
@@ -39,11 +40,8 @@ public class PropertyBindingTest {
     PropertyData<String> stringData_null = new PropertyData<>("string",
             String.class, false, null);
 
-
-
     @Test
     public void updateValue() {
-
         PropertyBinding<Integer> binding_noListener =
                 new PropertyBinding<>(intData, null);
 
@@ -76,7 +74,7 @@ public class PropertyBindingTest {
     }
 
     @Test
-    public void addValue_primitiveTypeListener() {
+    public void updateValue_primitiveTypeListener() {
         PrimitiveIntListener listener = new PrimitiveIntListener();
 
         PropertyBinding<Integer> binding =
@@ -90,7 +88,7 @@ public class PropertyBindingTest {
         Assert.assertEquals(0, listener.value);
     }
 
-    @Test public void addValue_stringCanBeSetToNullIfDefault() {
+    @Test public void updateValue_stringCanBeSetToNullIfDefault() {
         StringListener listener = new StringListener();
 
         PropertyBinding<String> binding_emptyDefault =
@@ -117,12 +115,27 @@ public class PropertyBindingTest {
         Assert.assertNull(listener.value);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void addValue_throwsWhenReadOnly() {
+    @Test
+    public void updateValue_listenerNotInvokedWhenValueDoesNotChange() {
+        IntConsumer consumer = new IntConsumer();
+        SerializableConsumer<Integer> spy = spy(consumer);
+        PropertyBinding<Integer> binding =
+                new PropertyBinding<>(intData, spy);
+
+        binding.updateValue(0);
+
+        verifyZeroInteractions(spy);
+    }
+
+    @Test
+    public void updateValue_ignoresWhenReadOnly() {
         PropertyBinding<Integer> binding =
                 new PropertyBinding<>(intData_readOnly, null);
 
         binding.updateValue(1);
+
+        Assert.assertEquals("Value should not have changed", 0,
+                (int) binding.getValue());
     }
 
     @Test

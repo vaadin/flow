@@ -16,7 +16,12 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-public class UnsupportedPropertyType extends RuntimeException {
+/**
+ * {@code UnsupportedPropertyTypeException} is throw when
+ * {@link com.vaadin.flow.component.WebComponentExporter} tries to register a
+ * property encasing an unsupported value type.
+ */
+public class UnsupportedPropertyTypeException extends RuntimeException {
     /**
      * Constructs a new runtime exception with the specified detail message.
      * The cause is not initialized, and may subsequently be initialized by a
@@ -25,7 +30,7 @@ public class UnsupportedPropertyType extends RuntimeException {
      * @param   message   the detail message. The detail message is saved for
      *          later retrieval by the {@link #getMessage()} method.
      */
-    public UnsupportedPropertyType(String message) {
+    public UnsupportedPropertyTypeException(String message) {
         super(message);
     }
 }

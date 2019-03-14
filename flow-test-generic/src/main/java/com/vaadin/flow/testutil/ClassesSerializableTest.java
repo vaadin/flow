@@ -119,8 +119,6 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletVerifier",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.WebComponentRegistryInitializer",
-                "com\\.vaadin\\.flow\\.server\\.startup\\" +
-                        ".WebComponentRegistryInitializer2",
                 "com\\.vaadin\\.flow\\.server\\.VaadinResponse",
                 "com\\.vaadin\\.flow\\.component\\.Key",
                 "com\\.vaadin\\.flow\\.server\\.VaadinRequest",
@@ -151,8 +149,6 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.push\\.osgi\\.PushOsgiStaticResource",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
-                "com\\.vaadin\\.flow\\.server\\.webcomponent\\" +
-                        ".WebComponentGenerator2",
 
                 //Various test classes
                 ".*\\.test(s)?\\..*",

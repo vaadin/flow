@@ -29,7 +29,6 @@ public class WebComponentGeneratorTest {
 
     @Test
     public void generatedReplacementMapContainsExpectedEntries() {
-        // this is usually constructed automatically:
         WebComponentBuilder<MyComponent> builder =
                 new WebComponentBuilder<>(new MyComponentExporter());
 

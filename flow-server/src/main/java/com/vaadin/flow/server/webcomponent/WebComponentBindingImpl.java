@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
+import com.vaadin.flow.di.Instantiator;
 
 public class WebComponentBindingImpl<C extends Component>
         implements WebComponentBinding<C>, Serializable {
@@ -43,6 +44,11 @@ public class WebComponentBindingImpl<C extends Component>
                 PropertyBinding::getName, p -> p));
     }
 
+    /**
+     * {@inheritDoc}
+     * @param propertyName  name of the property
+     * @param value         new value to set for the property
+     */
     @Override
     public void updateProperty(String propertyName, Serializable value) {
         Objects.requireNonNull(propertyName, "Parameter 'propertyName' must " +
@@ -56,19 +62,23 @@ public class WebComponentBindingImpl<C extends Component>
                             PropertyData.class.getSimpleName(), propertyName));
         }
 
-        // TODO: print into log instead, if this happens
-        if (propertyBinding.isReadOnly()) {
-            throw new InvalidParameterException("Property '%s' is read-only!");
-        }
-
         propertyBinding.updateValue(value);
     }
 
+    /**
+     * {@inheritDoc}
+     * @return bound component
+     */
     @Override
     public C getComponent() {
         return component;
     }
 
+    /**
+     * {@inheritDoc}
+     * @param propertyName  name of the property
+     * @return
+     */
     @Override
     public Class<? extends Serializable> getPropertyType(String propertyName) {
         if (hasProperty(propertyName)) {
@@ -77,11 +87,21 @@ public class WebComponentBindingImpl<C extends Component>
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     * @param propertyName  name of the property
+     * @return has parameter
+     */
     @Override
     public boolean hasProperty(String propertyName) {
         return properties.containsKey(propertyName);
     }
 
+    /**
+     * Called by {@link WebComponentBuilder#createBinding(Instantiator)} once
+     * the instance has been successfully constructed. Reports the current
+     * (default) values to the bound component.
+     */
     void updatePropertiesToComponent() {
         properties.forEach((key, value) -> value.notifyValueChange());
     }

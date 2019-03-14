@@ -89,10 +89,12 @@ public class WebComponentRegistryInitializer
 
         Set<WebComponentExporter<? extends Component>> set = new HashSet<>();
         WebComponentExporter<? extends Component> webComponentExporter;
+
         for (Class<?> exporterClass : exporterClasses) {
             try {
                 webComponentExporter =
-                        (WebComponentExporter<? extends Component>) exporterClass.newInstance();
+                        (WebComponentExporter<? extends Component>)
+                                exporterClass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(String.format("Could not construct %s " +
                         "from %s!", WebComponentExporter.class.getName(),
