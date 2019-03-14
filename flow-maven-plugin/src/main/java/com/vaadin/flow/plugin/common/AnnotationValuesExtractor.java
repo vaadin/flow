@@ -37,6 +37,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 public class AnnotationValuesExtractor extends ClassPathIntrospector {
 
+    public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
+
     /**
      * Prepares the class to extract annotations from the project classes
      * specified.
@@ -108,10 +110,9 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
                 .collect(Collectors.toSet());
     }
 
-
-
     /**
      * Get theme definitions for all theme annotated classes.
+     * @param log
      *
      * @return a map of {@link ThemeDefinition}
      */
@@ -129,11 +130,26 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
                 }));
 
         if (map.size() == 0) {
-            Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader("com.vaadin.flow.theme.lumo.Lumo");
-            map.put(new ThemeDefinition(lumo, ""), null);
+            try {
+                Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader(LUMO);
+                map.put(new ThemeDefinition(lumo, ""), null);
+            } catch (IllegalStateException ignore) { //NOSONAR
+            }
         }
 
         return map;
+    }
+
+    public static class NoopTheme implements AbstractTheme {
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
     }
 
     /**
