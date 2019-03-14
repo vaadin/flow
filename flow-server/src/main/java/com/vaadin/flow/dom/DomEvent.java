@@ -40,12 +40,15 @@ public class DomEvent extends EventObject {
      * Creates a new DOM event.
      *
      * @param source
-     *            the element for which the event is fired, not
+     *            the element on which the listener has been attached, not
      *            <code>null</code>
      * @param eventType
      *            the type of the event, not <code>null</code>
      * @param eventData
      *            additional data related to the event, not <code>null</code>
+     *
+     * @see Element#addEventListener(String, DomEventListener)
+     * @see DomEventListener
      */
     public DomEvent(Element source, String eventType, JsonObject eventData) {
         super(source);
@@ -68,6 +71,14 @@ public class DomEvent extends EventObject {
         }
     }
 
+    /**
+     * Returns the element on which the listener has been attached.
+     *
+     * @return The element on which the listener has been attached.
+     *
+     * @see Element#addEventListener(String, DomEventListener)
+     * @see Element#addEventListener(String, DomEventListener, String...)
+     */
     @Override
     public Element getSource() {
         return (Element) super.getSource();
