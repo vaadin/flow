@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { BabelMultiTargetPlugin } = require('webpack-babel-multi-target-plugin');
 
 const baseDir = path.resolve(__dirname);
 const inputFolder = baseDir + '/src/main/webapp/frontend';
@@ -22,7 +23,42 @@ module.exports = {
     path: outputFolder
   },
 
+  module: {
+    rules: [{
+      test: /\.js$/,
+      use: [BabelMultiTargetPlugin.loader()]
+    }]
+  },
+
   plugins: [
+
+    // Transpile with babel, and produce different bundles per browser
+    new BabelMultiTargetPlugin({
+      babel: {
+        presetOptions: {
+          useBuiltIns: false // polyfills are provided from webcomponents-loader.js
+        }
+      },
+      targets: {
+        'es6': {
+          browsers: [
+            'last 2 Chrome major versions',
+            'last 2 ChromeAndroid major versions',
+            'last 2 Edge major versions',
+            'last 2 Firefox major versions',
+            'last 2 Safari major versions',
+            'last 2 iOS major versions'
+          ],
+        },
+        'es5': {
+          browsers: [
+            'ie 11'
+          ],
+          tagAssetsWithKey: true, // append a suffix to the file name
+        }
+      }
+    }),
+
     // Generates the `stats.json` file which is used by flow to read templates for
     // server `@Id` binding
     function (compiler) {
@@ -40,4 +76,3 @@ module.exports = {
     }]),
   ]
 };
-
