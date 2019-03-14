@@ -65,29 +65,29 @@ public class OSGiWebComponentBuilderRegistryTest extends WebComponentBuilderRegi
     }
 
     @Override
-    public void setWebComponentsTwice_onlyFirstSetIsAccepted() {
+    public void setBuildersTwice_onlyFirstSetIsAccepted() {
         // OSGi accepts setting the web components multiple times.
         // NO-OP
     }
 
     @Test
-    public void setWebComponentsTwice_allSetsAcceptedLastSetValid() {
+    public void setBuildersTwice_allSetsAcceptedLastSetValid() {
         Set<WebComponentBuilder<? extends Component>> builders = asSet(
                 myComponentBuilder);
 
         Assert.assertTrue("Registry should have accepted the " +
                         "WebComponentBuilder",
-                registry.setWebComponentBuilders(builders));
+                registry.setBuilders(builders));
 
         Assert.assertTrue(
                 "OSGi registry should have accept the second set of " +
                         "WebComponentBuilders.",
-                registry.setWebComponentBuilders(asSet(userBoxBuilder)));
+                registry.setBuilders(asSet(userBoxBuilder)));
 
         Assert.assertNotEquals("Stored WebComponents should be the latest set.",
-                builders, registry.getWebComponentBuilders());
+                builders, registry.getBuilders());
         Assert.assertEquals(asSet(userBoxBuilder),
-                registry.getWebComponentBuilders());
+                registry.getBuilders());
     }
 
     @Override
@@ -103,7 +103,7 @@ public class OSGiWebComponentBuilderRegistryTest extends WebComponentBuilderRegi
                         // Add random sleep for better possibility to run at same time
                         Thread.sleep(new Random().nextInt(200));
                         return new AtomicBoolean(
-                                registry.setWebComponentBuilders(asSet(
+                                registry.setBuilders(asSet(
                                         myComponentBuilder)));
                     };
                     return callable;

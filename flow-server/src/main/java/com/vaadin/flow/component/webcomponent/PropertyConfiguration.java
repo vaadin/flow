@@ -36,9 +36,9 @@ public interface PropertyConfiguration<C extends Component, P extends Serializab
      * when the property's value changes on the client-side. If the property
      * value is {@code null} for a property type which should not receive
      * null-values, such as {@code double}, the method will be called with
-     * the property's default value. The default value is set by calling
-     * {@link WebComponentDefinition#addProperty(String, double)} or one of
-     * its variants.
+     * the property's default value. The default value is set by
+     * {@link WebComponentDefinition} when {@code addProperty(propertyName,
+     * defaultValue} is called.
      *
      * In the following example we export {@code MyComponent} as a web
      * component. The {@code MyComponent} class has a method {@code setName}
@@ -48,11 +48,7 @@ public interface PropertyConfiguration<C extends Component, P extends Serializab
      * <pre>
      * {@code
      * public class Exporter implements WebComponentExporter<MyComponent>() {
-     *    @literal @Override
-     *     public void tag() {
-     *         return "my-component";
-     *     }
-     *
+     *     // ... define the web component
      *    @literal @Override
      *     public void define(WebComponentDefinition<MyComponent> definition) {
      *         definition.addProperty("name", "John Doe")
@@ -61,11 +57,13 @@ public interface PropertyConfiguration<C extends Component, P extends Serializab
      * }
      * </pre>
      *
-     * @param onChangeHandler   {component's} method which is called with the
-     *                          property value
+     * @param onChangeHandler
+     *              {@code component}'s method which is called with
+     *              the property value
      * @return this {@code PropertyConfiguration}
      */
-    PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler);
+    PropertyConfiguration<C, P> onChange(
+            SerializableBiConsumer<C, P> onChangeHandler);
 
     /**
      * Mark the property as read-only. It cannot be written to by the client.

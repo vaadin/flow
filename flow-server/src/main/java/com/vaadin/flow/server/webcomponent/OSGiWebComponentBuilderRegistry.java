@@ -26,7 +26,7 @@ import com.vaadin.flow.component.Component;
 public class OSGiWebComponentBuilderRegistry extends WebComponentBuilderRegistry {
 
     @Override
-    public boolean setWebComponentBuilders(
+    public boolean setBuilders(
             Set<WebComponentBuilder<? extends Component>> components) {
 
         updateRegistry(components);

@@ -41,7 +41,6 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class WebComponentBuilderRegistryTest {
 
@@ -69,26 +68,26 @@ public class WebComponentBuilderRegistryTest {
     }
 
     @Test
-    public void setWebComponents_allCanBeFoundInRegistry() {
+    public void setBuilders_allCanBeFoundInRegistry() {
         Set<WebComponentBuilder<? extends Component>> builders =
                 asSet(myComponentBuilder, userBoxBuilder);
 
         Assert.assertTrue("Registry should have accepted the webComponents",
-                registry.setWebComponentBuilders(builders));
+                registry.setBuilders(builders));
 
         Assert.assertEquals("Expected two targets to be registered", 2,
-                registry.getWebComponentBuilders().size());
+                registry.getBuilders().size());
 
         Assert.assertEquals(
                 "Tag 'my-component' should have returned " +
                         "'WebComponentBuilder' matching MyComponent",
                 myComponentBuilder,
-                registry.getWebComponentBuilder(MY_COMPONENT_TAG));
+                registry.getBuilder(MY_COMPONENT_TAG));
         Assert.assertEquals(
                 "Tag 'user-box' should have returned 'WebComponentBuilder' " +
                         "matching UserBox",
                 userBoxBuilder,
-                registry.getWebComponentBuilder(USER_BOX_TAG));
+                registry.getBuilder(USER_BOX_TAG));
 
     }
 
@@ -100,10 +99,10 @@ public class WebComponentBuilderRegistryTest {
         Set<WebComponentBuilder<? extends Component>> builders =
                 asSet(myComponentBuilder, myComponentBuilder2nd, userBoxBuilder);
 
-        registry.setWebComponentBuilders(builders);
+        registry.setBuilders(builders);
 
         Set<WebComponentBuilder<MyComponent>> set =
-                registry.getWebComponentBuildersForComponent(MyComponent.class);
+                registry.getBuildersByComponentType(MyComponent.class);
 
         Assert.assertEquals("Builder set should contain two builders", 2,
                 set.size());
@@ -114,7 +113,7 @@ public class WebComponentBuilderRegistryTest {
     }
 
     @Test
-    public void setWebComponentsTwice_onlyFirstSetIsAccepted() {
+    public void setBuildersTwice_onlyFirstSetIsAccepted() {
         Set<WebComponentBuilder<? extends Component>> builders1st =
                 asSet(myComponentBuilder);
 
@@ -122,20 +121,20 @@ public class WebComponentBuilderRegistryTest {
                 asSet(userBoxBuilder);
 
         Assert.assertTrue("Registry should have accepted the WebComponents",
-                registry.setWebComponentBuilders(builders1st));
+                registry.setBuilders(builders1st));
 
         Assert.assertFalse(
                 "Registry should not accept a second set of WebComponents.",
-                registry.setWebComponentBuilders(builders2nd));
+                registry.setBuilders(builders2nd));
 
         Assert.assertEquals(
                 "Builders from the first Set should have been added",
-                myComponentBuilder, registry.getWebComponentBuilder("my" +
+                myComponentBuilder, registry.getBuilder("my" +
                         "-component"));
 
         Assert.assertNull(
                 "Components from the second Set should not have been added",
-                registry.getWebComponentBuilder("user-box"));
+                registry.getBuilder("user-box"));
     }
 
     @Test
@@ -150,7 +149,7 @@ public class WebComponentBuilderRegistryTest {
                     Callable<AtomicBoolean> callable = () -> {
                         // Add random sleep for better possibility to run at same time
                         Thread.sleep(new Random().nextInt(200));
-                        return new AtomicBoolean(registry.setWebComponentBuilders(
+                        return new AtomicBoolean(registry.setBuilders(
                                 asSet(myComponentBuilder)));
                     };
                     return callable;

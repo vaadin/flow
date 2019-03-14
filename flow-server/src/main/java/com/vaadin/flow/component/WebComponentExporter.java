@@ -51,7 +51,8 @@ public interface WebComponentExporter<C extends Component> extends Serializable 
      * returns null when the web component is being constructed, an exception
      * will be thrown.
      *
-     * @return tag name. Use {@code }dash-separated-name} with at least one dash
+     * @return  tag name. Note that custom element names require a dash to be
+     *          used in them; they can't be single words, i.e. "custom-tag".
      */
     String tag();
 

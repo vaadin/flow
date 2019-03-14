@@ -25,12 +25,13 @@ import com.vaadin.flow.component.Component;
 import elemental.json.JsonValue;
 
 /**
- * {@code WebComponentDefinition} is used by
- * {@link com.vaadin.flow.component.WebComponentExporter} to define a
- * {@link Component} as a {@code web component}. Call the {@code addProperty
- * (String, ?)} variants to add properties to the web component, and {@code
- * setInstanceConfigurator(InstanceConfigurator)} to configure the exported
- * web component and wrapped {@code component}.
+ * {@code WebComponentDefinition} defines the tag and properties of the
+ * {@link Component} being exported as a web component.
+ * <p>
+ * Call the {@code addProperty (String, ?)} variants to add properties to the
+ * web component. If the component instance needs to be configured further
+ * after its creation, or property updates need to be pushed to the client,
+ * call {@link #setInstanceConfigurator(InstanceConfigurator)}.
  *
  * @param <C>   type of the {@code component} being exported.
  */

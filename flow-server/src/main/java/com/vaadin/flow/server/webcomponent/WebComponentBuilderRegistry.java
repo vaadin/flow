@@ -59,15 +59,16 @@ public class WebComponentBuilderRegistry implements Serializable {
      *         custom element tag
      * @return Optional containing a web component matching given tag
      */
-    public Optional<WebComponentConfiguration<? extends Component>> getWebComponentConfiguration(String tag) {
-        return Optional.ofNullable(getWebComponentBuilder(tag));
+    public Optional<WebComponentConfiguration<? extends Component>> getConfiguration(String tag) {
+        return Optional.ofNullable(getBuilder(tag));
     }
 
     /**
      * @param tag
-     * @return
+     *          tag name of the web component
+     * @return {@link WebComponentBuilder} by the tag
      */
-    protected WebComponentBuilder<? extends Component> getWebComponentBuilder(String tag) {
+    protected WebComponentBuilder<? extends Component> getBuilder(String tag) {
         configurationLock.lock();
         try {
             if (componentBuilders != null) {
@@ -80,10 +81,10 @@ public class WebComponentBuilderRegistry implements Serializable {
     }
 
     /**
-     * @param componentClass
-     * @return
+     * @param componentClass    type of the exported {@link Component}
+     * @return  set of {@link WebComponentBuilder} or an empty set.
      */
-    protected <T extends Component> Set<WebComponentBuilder<T>> getWebComponentBuildersForComponent(Class<T> componentClass) {
+    protected <T extends Component> Set<WebComponentBuilder<T>> getBuildersByComponentType(Class<T> componentClass) {
         configurationLock.lock();
         try {
             if (componentBuilders != null) {
@@ -95,7 +96,7 @@ public class WebComponentBuilderRegistry implements Serializable {
         } finally {
             configurationLock.unlock();
         }
-        return null;
+        return Collections.emptySet();
     }
 
     /**
@@ -126,7 +127,7 @@ public class WebComponentBuilderRegistry implements Serializable {
     }
 
     /**
-     * Register all available web components to the registry.
+     * Register all available web components builders to the registry.
      * <p>
      * This can be done only once and any following set should only return
      * false.
@@ -135,7 +136,7 @@ public class WebComponentBuilderRegistry implements Serializable {
      *         map of components to register
      * @return true if set successfully or false if not set
      */
-    public boolean setWebComponentBuilders(
+    public boolean setBuilders(
             Set<WebComponentBuilder<? extends Component>> builders) {
         configurationLock.lock();
         try {
@@ -152,11 +153,11 @@ public class WebComponentBuilderRegistry implements Serializable {
     }
 
     /**
-     * Get map containing all registered web components.
+     * Get map containing all registered web component builders.
      *
-     * @return unmodifiable map of all web components in registry
+     * @return unmodifiable set of web component builders in registry
      */
-    public Set<WebComponentBuilder<? extends Component>> getWebComponentBuilders() {
+    public Set<WebComponentBuilder<? extends Component>> getBuilders() {
         configurationLock.lock();
         try {
             return Collections.unmodifiableSet(new HashSet<>(
