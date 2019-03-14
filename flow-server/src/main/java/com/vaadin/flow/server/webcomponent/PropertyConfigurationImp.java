@@ -25,7 +25,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 
 public class PropertyConfigurationImp<C extends Component, P extends Serializable> implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
-    private final PropertyData<P> data;
+    private PropertyData<P> data;
     private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
 
     public PropertyConfigurationImp(Class<C> componentType, String propertyName,
@@ -36,17 +36,28 @@ public class PropertyConfigurationImp<C extends Component, P extends Serializabl
         this.componentClass = componentType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
         Objects.requireNonNull(onChangeHandler, "Parameter 'onChangeHandler' " +
                 "cannot be null!");
+        if (this.onChangeHandler != null) {
+            throw new IllegalStateException(String.format("onChangeHandler " +
+                    "for property %s has already been set and cannot be " +
+                    "overwritten!", data.getName()));
+        }
         this.onChangeHandler = (c, o) -> onChangeHandler.accept(c, (P) o);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PropertyConfiguration<C, P> readOnly() {
-        data.setReadOnly(true);
+        data = new PropertyData<>(data, true);
         return this;
     }
 
@@ -69,6 +80,11 @@ public class PropertyConfigurationImp<C extends Component, P extends Serializabl
         return onChangeHandler;
     }
 
+    /**
+     * Computed {@link PropertyData} based on the configuration details.
+     *
+     * @return {@code PropertyData} value object
+     */
     public PropertyData<P> getPropertyData() {
         return data;
     }

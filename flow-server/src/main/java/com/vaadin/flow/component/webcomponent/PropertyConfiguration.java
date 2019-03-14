@@ -32,14 +32,17 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 public interface PropertyConfiguration<C extends Component, P extends Serializable> extends Serializable {
 
     /**
-     * Sets a Property change handler. The {@code onChangeHandler} is called
+     * Sets a Property change handler. {@code onChange} can only be called
+     * once - multiple calls will throw an exception.
+     * <p>
+     * The {@code onChangeHandler} is called
      * when the property's value changes on the client-side. If the property
      * value is {@code null} for a property type which should not receive
      * null-values, such as {@code double}, the method will be called with
      * the property's default value. The default value is set by
      * {@link WebComponentDefinition} when {@code addProperty(propertyName,
      * defaultValue} is called.
-     *
+     * <p>
      * In the following example we export {@code MyComponent} as a web
      * component. The {@code MyComponent} class has a method {@code setName}
      * which will be called in response to changes to the registered property

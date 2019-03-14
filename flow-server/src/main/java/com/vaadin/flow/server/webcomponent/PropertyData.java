@@ -22,12 +22,17 @@ import java.util.Objects;
  * Value object containing information of a WebComponent property field.
  */
 public final class PropertyData<P extends Serializable> implements Serializable {
-    // TODO: final might be too harsh - might need to update these
     private final String name;
     private final Class<P> type;
     private final P defaultValue;
-    private boolean readOnly;
+    private final boolean readOnly;
 
+    /**
+     * @param name          name of the property
+     * @param type          type of the property value
+     * @param readOnly      is the property read-only (on the client-side)
+     * @param defaultValue  default value for the property
+     */
     public PropertyData(String name, Class<P> type, boolean readOnly,
                         P defaultValue) {
         Objects.requireNonNull(name, "Parameter 'name' must not be null!");
@@ -36,6 +41,16 @@ public final class PropertyData<P extends Serializable> implements Serializable 
         this.type = type;
         this.readOnly = readOnly;
         this.defaultValue = defaultValue;
+    }
+
+    /**
+     * Copy-constructor, which allows for changing the {@code readOnly} flag.
+     *
+     * @param data      base property data
+     * @param readOnly  new read-only value
+     */
+    public PropertyData(PropertyData<P> data, boolean readOnly) {
+        this(data.name, data.type, readOnly, data.defaultValue);
     }
 
     /**
@@ -74,14 +89,6 @@ public final class PropertyData<P extends Serializable> implements Serializable 
         return readOnly;
     }
 
-    /**
-     * TODO!
-     * @param readOnly
-     */
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(name, type);
@@ -91,10 +98,7 @@ public final class PropertyData<P extends Serializable> implements Serializable 
     public boolean equals(Object obj) {
         if (obj instanceof PropertyData) {
             PropertyData other = (PropertyData) obj;
-            return name.equals(other.name) && type.equals(other.type) && (
-                    (defaultValue == null && other.defaultValue == null)
-                            || (defaultValue != null && defaultValue
-                            .equals(other.defaultValue)));
+            return name.equals(other.name) && type.equals(other.type);
         }
         return false;
     }

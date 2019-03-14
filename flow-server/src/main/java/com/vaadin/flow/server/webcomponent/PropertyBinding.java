@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.Objects;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.function.SerializableConsumer;
 
 public class PropertyBinding<P extends Serializable> implements Serializable {
@@ -35,42 +37,43 @@ public class PropertyBinding<P extends Serializable> implements Serializable {
         this.value = data.getDefaultValue();
     }
 
-    public void updateValue(Serializable value) {
-        if (value != null && value.getClass() != getType()) {
-            // TODO: throw a specific exception here
-            throw new InvalidParameterException(String.format("Parameter " +
-                            "'value' is of the wrong type: onChangeHandler of" +
-                            " the property expected to receive %s but found " +
-                            "%s instead.",
-                    getType().getCanonicalName(),
-                    value.getClass().getCanonicalName()));
-        }
-
+    public void updateValue(Serializable newValue) {
         if (isReadOnly()) {
-            throw new IllegalStateException(String.format("Property '%s' of " +
-                    "type '%s' is read-only and cannot be updated!",
-                    getName(),
-                    getType().getCanonicalName()));
+            LoggerFactory.getLogger(WebComponentBindingImpl.class)
+                    .warn(String.format("An attempt was made to write to " +
+                                    "a read-only property '%s' owned by exported " +
+                                    "component %s", getName(),
+                            getType().getCanonicalName()));
+            return;
         }
 
-        P newValue = (P)value;
+        if (newValue != null && newValue.getClass() != getType()) {
+            throw new InvalidParameterException(String.format("Parameter " +
+                            "'newValue' is of the wrong type: onChangeHandler" +
+                            " of the property expected to receive %s but " +
+                            "found %s instead.",
+                    getType().getCanonicalName(),
+                    newValue.getClass().getCanonicalName()));
+        }
+
+        P newTypedValue = (P)newValue;
 
         // null values are always set to default value (which might still be
         // null for some types)
-        if (newValue == null) {
-            newValue = data.getDefaultValue();
+        if (newTypedValue == null) {
+            newTypedValue = data.getDefaultValue();
         }
 
         boolean updated = false;
-        if (this.value != null && !this.value.equals(newValue)) {
+        if (this.value != null && !this.value.equals(newTypedValue)) {
             updated = true;
         }
         else if (newValue != null && !newValue.equals(this.value)) {
             updated = true;
         }
-        this.value = newValue;
 
         if (updated) {
+            this.value = newTypedValue;
             notifyValueChange();
         }
     }
@@ -99,7 +102,7 @@ public class PropertyBinding<P extends Serializable> implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(data);
+        return Objects.hash(data, value);
     }
 
     @Override

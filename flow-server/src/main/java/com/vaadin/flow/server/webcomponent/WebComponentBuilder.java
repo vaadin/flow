@@ -39,6 +39,16 @@ import com.vaadin.flow.internal.ReflectTools;
 
 import elemental.json.JsonValue;
 
+/**
+ * The implementation for {@link WebComponentDefinition} given to the
+ * {@link WebComponentExporter}. {@link WebComponentBuilderRegistry} exposes
+ * the builder to the
+ * {@link com.vaadin.flow.component.webcomponent.WebComponentUI} and
+ * {@link com.vaadin.flow.component.webcomponent.WebComponentWrapper} through
+ * the {@link WebComponentConfiguration} interface.
+ *
+ * @param <C> type of the component being exported
+ */
 public class WebComponentBuilder<C extends Component>
         extends WebComponentDefinition<C>
         implements WebComponentConfiguration<C> {
@@ -72,7 +82,7 @@ public class WebComponentBuilder<C extends Component>
         Objects.requireNonNull(type, "Parameter 'type' cannot be null!");
 
         if (!isSupportedType(type)) {
-            throw new UnsupportedPropertyType(String.format("PropertyConfiguration " +
+            throw new UnsupportedPropertyTypeException(String.format("PropertyConfiguration " +
                     "cannot handle type %s. Use any of %s instead.",
                     type.getCanonicalName(),
                     SUPPORTED_TYPES.stream().map(Class::getSimpleName)
@@ -93,16 +103,6 @@ public class WebComponentBuilder<C extends Component>
         this.instanceConfigurator = configurator;
     }
 
-//    @Override
-//    public <P> PropertyConfiguration<C, List<P>> addListProperty(String name, Class<P> entryClass) {
-//        return null;
-//    }
-//
-//    @Override
-//    public <P> PropertyConfiguration<C, List<P>> addListProperty(String name, List<P> defaultValue) {
-//        return null;
-//    }
-
     public String getWebComponentTag() {
         return exporter.tag();
     }
@@ -112,7 +112,6 @@ public class WebComponentBuilder<C extends Component>
         if (propertyConfigurationMap.containsKey(propertyName)) {
             return propertyConfigurationMap.get(propertyName).getPropertyData().getType();
         } else {
-            // TODO: or should we throw here?
             return null;
         }
     }
@@ -167,7 +166,6 @@ public class WebComponentBuilder<C extends Component>
 
     @Override
     public Class<C> getComponentClass() {
-        // TODO: if this works, exporter.getComponentClass() can be removed
         if (componentClass == null) {
             componentClass = (Class<C>)ReflectTools.getGenericInterfaceType(
                     exporter.getClass(), WebComponentExporter.class);

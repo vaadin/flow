@@ -149,7 +149,7 @@ public class WebComponentGenerator {
                 prop.put(propertyValue, (JsonValue) property.getDefaultValue());
             }
             else {
-                throw new UnsupportedPropertyType(String.format("%s " +
+                throw new UnsupportedPropertyTypeException(String.format("%s " +
                         "is not a currently supported type for a Property. " +
                                 "Please use %s instead.",
                         property.getType().getSimpleName(),
