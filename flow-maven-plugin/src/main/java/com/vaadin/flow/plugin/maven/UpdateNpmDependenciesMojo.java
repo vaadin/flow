@@ -127,7 +127,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     }
 
     private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes) throws IOException {
-        JsonObject currentDeps = getNonNullJsonObject(packageJson, "dependencies");
+        JsonObject currentDeps = packageJson.getObject("dependencies");
 
         Set<String> dependencies = new HashSet<>();
         classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
@@ -151,13 +151,12 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     }
 
     private void updatePackageJsonDevDependencies(JsonObject packageJson) throws IOException {
-        JsonObject currentDeps = getNonNullJsonObject(packageJson, "devDependencies");
+        JsonObject currentDeps = packageJson.getObject("devDependencies");
 
         Set<String> dependencies = new HashSet<>();
         dependencies.add("webpack");
         dependencies.add("webpack-cli");
         dependencies.add("webpack-dev-server");
-        dependencies.add("webpack-plugin-install-deps");
         dependencies.add("webpack-babel-multi-target-plugin");
         dependencies.add("copy-webpack-plugin");
 
@@ -178,8 +177,6 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         command.add("npm");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));
-        command.add("--package-lock-only");
-        command.add("--no-package-lock");
         command.addAll(dependencies);
 
         log.info("Updating package.json...\n " + command.stream().collect(Collectors.joining(" ")));
@@ -197,22 +194,29 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     }
 
     private JsonObject getPackageJson() throws IOException {
+
+        JsonObject packageJson;
+
         String packageFile = npmFolder + "/" + PACKAGE_JSON;
         if (FileUtils.fileExists(packageFile)) {
-            return Json.parse(FileUtils.fileRead(packageFile));
+            packageJson = Json.parse(FileUtils.fileRead(packageFile));
 
         } else {
             log.info("Creating a default " + packageFile);
             FileUtils.fileWrite(packageFile, "{}");
-            return Json.createObject();
+            packageJson = Json.createObject();
         }
+
+        ensureMissingObject(packageJson,"dependencies");
+        ensureMissingObject(packageJson,"devDependencies");
+
+        return packageJson;
     }
 
-    private JsonObject getNonNullJsonObject(JsonObject packageJson, String name) {
-        if (packageJson.hasKey(name)) {
-            return packageJson.getObject(name);
+    private void ensureMissingObject(JsonObject packageJson, String name) {
+        if (!packageJson.hasKey(name)) {
+            packageJson.put(name, Json.createObject());
         }
-        return Json.createObject();
     }
 
     private void logStream(InputStream input) {
