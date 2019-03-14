@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     private static final String VALUE = "value";
 
     public static final String PACKAGE_JSON = "package.json";
+    public static final String WEBPACK_CONFIG = "webpack.config.js";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -78,6 +80,14 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "true")
     private boolean convertHtml;
+
+    /**
+     * Copy the `webapp.config.js` from the specified URL if missing.
+     * Default is the template provided by this plugin.
+     * Leave it blank to disable the feature.
+     */
+    @Parameter(defaultValue = WEBPACK_CONFIG)
+    private String webpackTemplate;
 
     private Log log = getLog();
 
@@ -135,6 +145,28 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+
+        String configFile = npmFolder + "/" + WEBPACK_CONFIG;
+        if (webpackTemplate != null || !webpackTemplate.trim().isEmpty()) {
+            if (FileUtils.fileExists(configFile)) {
+                log.info("File " + configFile + " exists.");
+            } else {
+                URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
+                if (resource == null) {
+                    try {
+                        resource = new URL(webpackTemplate);
+                    } catch (MalformedURLException e) {
+                        log.warn("the webpackTemplate parameter is not a vaild URL " + webpackTemplate);
+                    }
+                }
+                try {
+                    FileUtils.copyURLToFile(resource, new File(configFile));
+                    log.info("Created " + WEBPACK_CONFIG + " from " + resource);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+        }
     }
 
     private boolean createPackageJsonFile() throws IOException {
@@ -189,7 +221,6 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
                     log.info(line);
                 }
             }
-
         } catch (IOException e) {
             log.error(e);
         }
