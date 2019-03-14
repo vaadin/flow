@@ -140,18 +140,6 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
         return map;
     }
 
-    public static class NoopTheme implements AbstractTheme {
-        @Override
-        public String getBaseUrl() {
-            return null;
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return null;
-        }
-    }
-
     /**
      * Get all classes annotated with a specific annotation and return a map
      * with class as key and a list with the annotation values found per class.
