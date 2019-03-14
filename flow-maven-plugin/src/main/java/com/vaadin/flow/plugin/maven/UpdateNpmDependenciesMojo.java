@@ -26,14 +26,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
@@ -207,6 +206,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     private void updateDependencies(List<String> dependencies, String... npmInstallArgs) throws IOException {
         List<String> command = new ArrayList<>(5 + dependencies.size());
         command.add("npm");
+        command.add("--no-package-lock");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));
         command.addAll(dependencies);

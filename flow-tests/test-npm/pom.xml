@@ -112,11 +112,41 @@
                 </plugins>
             </build>
         </profile>
+        <!-- Update npm deps and imports when not in bower mode -->
+        <profile>
+            <id>npm-update</id>
+            <activation>
+                <property>
+                    <name>!vaadin.bowerMode</name>
+                </property>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>flow-maven-plugin</artifactId>
+                        <version>${project.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>update-npm-dependencies</goal>
+                                    <goal>update-imports</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- Install frontend NPM packages if not done yet -->
         <profile>
             <id>npm-install</id>
             <activation>
-                <file><missing>node_modules</missing></file>
+                <file>
+                    <exists>package.json</exists>
+                    <missing>node_modules</missing>
+                </file>
             </activation>
             <build>
                 <plugins>
