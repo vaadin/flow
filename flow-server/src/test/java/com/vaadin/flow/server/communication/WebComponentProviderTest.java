@@ -120,7 +120,7 @@ public class WebComponentProviderTest {
                 .getInstance(servletContext);
         final HashSet<WebComponentBuilder<?>> set = new HashSet<>();
         set.add(new WebComponentBuilder<>(new MyComponentExporter()));
-        registry.setWebComponentBuilders(set);
+        registry.setBuilders(set);
         Mockito.when(servletContext
                 .getAttribute(WebComponentBuilderRegistry.class.getName()))
                 .thenReturn(registry);

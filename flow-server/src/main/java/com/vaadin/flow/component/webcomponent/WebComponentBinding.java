@@ -19,11 +19,16 @@ package com.vaadin.flow.component.webcomponent;
 import java.io.Serializable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Instantiator;
 
 /**
- * Binds a {@link WebComponent} instance to {@link Component} instance.
+ * An internal representation of a web component instance bound to a
+ * {@link Component} instance. Facilitates property updates from the client
+ * to the {@code component}.
  *
  * @param <C> exported component type
+ * @see WebComponentConfiguration#createBinding(Instantiator) for creating
+ *      {@code WebComponentBindings}
  */
 public interface WebComponentBinding<C extends Component> extends Serializable {
 

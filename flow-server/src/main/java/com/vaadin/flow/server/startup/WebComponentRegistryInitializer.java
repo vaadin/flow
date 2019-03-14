@@ -51,12 +51,12 @@ public class WebComponentRegistryInitializer
         WebComponentBuilderRegistry instance = WebComponentBuilderRegistry
                 .getInstance(servletContext);
         if (set == null || set.isEmpty()) {
-            instance.setWebComponentBuilders(Collections.emptySet());
+            instance.setBuilders(Collections.emptySet());
             return;
         }
         Set<Class<?>> exporterClasses = set.stream()
                 .filter(WebComponentExporter.class::isAssignableFrom)
-                .filter(c -> !c.isInterface())
+                .filter(aClass -> !aClass.isInterface())
                 .collect(Collectors.toSet());
         Set<WebComponentExporter<? extends Component>> exporters;
 
@@ -67,7 +67,7 @@ public class WebComponentRegistryInitializer
         Set<WebComponentBuilder<? extends Component>> builders =
                 constructBuilders(exporters);
 
-        instance.setWebComponentBuilders(builders);
+        instance.setBuilders(builders);
     }
 
     private Set<WebComponentBuilder<? extends Component>> constructBuilders(Set<WebComponentExporter<? extends Component>> exporters) {
@@ -87,15 +87,12 @@ public class WebComponentRegistryInitializer
     private Set<WebComponentExporter<? extends Component>> constructExporters(
             Set<Class<?>> exporterClasses) {
 
-        //Instantiator instantiator = VaadinService.getCurrent()
-        // .getInstantiator();
-
         Set<WebComponentExporter<? extends Component>> set = new HashSet<>();
         WebComponentExporter<? extends Component> webComponentExporter;
         for (Class<?> exporterClass : exporterClasses) {
             try {
-                webComponentExporter=
-                    (WebComponentExporter<? extends Component>) exporterClass.newInstance();
+                webComponentExporter =
+                        (WebComponentExporter<? extends Component>) exporterClass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(String.format("Could not construct %s " +
                         "from %s!", WebComponentExporter.class.getName(),

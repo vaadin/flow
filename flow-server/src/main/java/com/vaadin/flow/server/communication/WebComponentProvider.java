@@ -72,7 +72,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
                 WebComponentBuilderRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext())
-                .getWebComponentConfiguration(tag.get());
+                .getConfiguration(tag.get());
 
         if (optionalWebComponentConfiguration.isPresent()) {
             if (cache == null) {

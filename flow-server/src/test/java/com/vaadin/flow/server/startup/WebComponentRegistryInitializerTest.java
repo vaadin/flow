@@ -83,7 +83,7 @@ public class WebComponentRegistryInitializerTest {
                     "WebComponentRegistryInitializer.onStartup should not throw with null argument");
         }
         // Expect a call to setWebComponents even if we have an empty or null set
-        Mockito.verify(registry).setWebComponentBuilders(Collections.emptySet());
+        Mockito.verify(registry).setBuilders(Collections.emptySet());
     }
 
     @Test
@@ -107,7 +107,7 @@ public class WebComponentRegistryInitializerTest {
             Assert.fail(
                     "WebComponentRegistryInitializer.onStartup should not throw with empty set");
         }
-        Mockito.verify(registry).setWebComponentBuilders(Collections.emptySet());
+        Mockito.verify(registry).setBuilders(Collections.emptySet());
     }
 
     @Test

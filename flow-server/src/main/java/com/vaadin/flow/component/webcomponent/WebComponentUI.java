@@ -62,7 +62,7 @@ public class WebComponentUI extends UI {
         Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration =
                 WebComponentBuilderRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext())
-                .getWebComponentConfiguration(tag);
+                .getConfiguration(tag);
 
         if (!webComponentConfiguration.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class)

@@ -25,14 +25,10 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 
 /**
- * {@code WebComponentConfiguration} is constructed based on
- * {@link WebComponentExporter} - each exported {@code component} has one
- * configuration.
- * <p>
  * The configuration is used to construct the web component, and further-more
- * the {@code WebComponentBinding}.
+ * the {@link WebComponentBinding}.
  *
- * @param <C> type of the component
+ * @param <C> type of the component being exported
  */
 public interface WebComponentConfiguration<C extends Component>
         extends Serializable {
