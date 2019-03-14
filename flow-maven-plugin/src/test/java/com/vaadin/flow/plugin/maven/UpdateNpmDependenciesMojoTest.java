@@ -44,7 +44,7 @@ public class UpdateNpmDependenciesMojoTest {
 
     UpdateNpmDependenciesMojo mojo = new UpdateNpmDependenciesMojo();
 
-    String packageJsonFileName;
+    String packageJson;
 
     @Before
     public void setup() throws IOException, DependencyResolutionRequiredException, IllegalAccessException {
@@ -53,9 +53,9 @@ public class UpdateNpmDependenciesMojoTest {
 
         File tmp = File.createTempFile("foo", "");
         tmp.delete();
-        packageJsonFileName = tmp.getParent() + "/" + PACKAGE_JSON;
+        packageJson = tmp.getParent() + "/" + PACKAGE_JSON;
 
-        System.err.println(packageJsonFileName);
+        System.err.println(packageJson);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmp.getParent());
@@ -77,12 +77,12 @@ public class UpdateNpmDependenciesMojoTest {
 
     @After
     public void teardown() throws IOException {
-        FileUtils.fileDelete(packageJsonFileName);
+        FileUtils.fileDelete(packageJson);
     }
 
     @Test
     public void mavenGoal_packageJsonMissing() throws IOException {
-        Assert.assertFalse(FileUtils.fileExists(packageJsonFileName));
+        Assert.assertFalse(FileUtils.fileExists(packageJson));
 
         mojo.execute();
 
@@ -92,17 +92,17 @@ public class UpdateNpmDependenciesMojoTest {
     @Test
     public void mavenGoal_packageJsonExists() throws Exception {
 
-        FileUtils.fileWrite(packageJsonFileName, "{}");
-        long timestamp1 = FileUtils.getFile(packageJsonFileName).lastModified();
+        FileUtils.fileWrite(packageJson, "{}");
+        long timestamp1 = FileUtils.getFile(packageJson).lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
         mojo.execute();
-        long timestamp2 = FileUtils.getFile(packageJsonFileName).lastModified();
+        long timestamp2 = FileUtils.getFile(packageJson).lastModified();
 
         sleep(1000);
         mojo.execute();
-        long timestamp3 = FileUtils.getFile(packageJsonFileName).lastModified();
+        long timestamp3 = FileUtils.getFile(packageJson).lastModified();
 
         Assert.assertTrue(timestamp1 < timestamp2);
         Assert.assertTrue(timestamp2 == timestamp3);
@@ -111,9 +111,9 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJson = getPackageJson();
+        JsonObject packageJsonObject = getPackageJson();
 
-        JsonObject dependencies = packageJson.getObject("dependencies");
+        JsonObject dependencies = packageJsonObject.getObject("dependencies");
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
                 dependencies.hasKey("@vaadin/vaadin-button"));
@@ -122,7 +122,7 @@ public class UpdateNpmDependenciesMojoTest {
         Assert.assertTrue("Missing @polymer/iron-icon package",
                 dependencies.hasKey("@polymer/iron-icon"));
 
-        JsonObject devDependencies = packageJson.getObject("devDependencies");
+        JsonObject devDependencies = packageJsonObject.getObject("devDependencies");
 
         Assert.assertTrue("Missing webpack dev package",
                 devDependencies.hasKey("webpack"));
@@ -143,8 +143,8 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     private JsonObject getPackageJson() throws IOException {
-        if (FileUtils.fileExists(packageJsonFileName)) {
-            return Json.parse(FileUtils.fileRead(packageJsonFileName));
+        if (FileUtils.fileExists(packageJson)) {
+            return Json.parse(FileUtils.fileRead(packageJson));
 
         } else {
             return Json.createObject();
