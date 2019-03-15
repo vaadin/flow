@@ -19,9 +19,7 @@ package com.vaadin.flow.server.webcomponent;
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -37,7 +35,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.startup.EnableOSGiRunner;
 
@@ -72,22 +69,21 @@ public class OSGiWebComponentBuilderRegistryTest extends WebComponentBuilderRegi
 
     @Test
     public void setBuildersTwice_allSetsAcceptedLastSetValid() {
-        Set<WebComponentBuilder<? extends Component>> builders = asSet(
-                myComponentBuilder);
-
         Assert.assertTrue("Registry should have accepted the " +
-                        "WebComponentBuilder",
-                registry.setBuilders(builders));
+                        "WebComponentExporters",
+                registry.setExporters(asMap(MyComponentExporter.class)));
 
         Assert.assertTrue(
                 "OSGi registry should have accept the second set of " +
-                        "WebComponentBuilders.",
-                registry.setBuilders(asSet(userBoxBuilder)));
+                        "WebComponentExporters.",
+                registry.setExporters(asMap(UserBoxExporter.class)));
 
-        Assert.assertNotEquals("Stored WebComponents should be the latest set.",
-                builders, registry.getBuilders());
-        Assert.assertEquals(asSet(userBoxBuilder),
-                registry.getBuilders());
+        Assert.assertEquals("Registry should contain only one builder",
+                1, registry.getBuilders().size());
+
+        Assert.assertEquals("Builder should be linked to UserBox.class",
+                UserBox.class, registry.getBuilder("user-box")
+                        .getComponentClass());
     }
 
     @Override
@@ -100,11 +96,12 @@ public class OSGiWebComponentBuilderRegistryTest extends WebComponentBuilderRegi
         List<Callable<AtomicBoolean>> callables = IntStream.range(0, THREADS)
                 .mapToObj(i -> {
                     Callable<AtomicBoolean> callable = () -> {
-                        // Add random sleep for better possibility to run at same time
+                        // Add random sleep for better possibility to run at
+                        // same time
                         Thread.sleep(new Random().nextInt(200));
                         return new AtomicBoolean(
-                                registry.setBuilders(asSet(
-                                        myComponentBuilder)));
+                                registry.setExporters(asMap(
+                                        MyComponentExporter.class)));
                     };
                     return callable;
                 }).collect(Collectors.toList());

@@ -16,11 +16,9 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import java.security.InvalidParameterException;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
@@ -51,7 +49,7 @@ public class WebComponentBuilderTest {
     public void setUp() {
         myComponentExporter = new MyComponentExporter();
 
-        builder = new WebComponentBuilder<>(myComponentExporter);
+        builder = new WebComponentBuilder<>(TAG, myComponentExporter);
     }
 
     @Test
@@ -93,11 +91,6 @@ public class WebComponentBuilderTest {
     @Test
     public void getWebComponentTag() {
         assertEquals(TAG, builder.getWebComponentTag());
-    }
-
-    @Test(expected = InvalidParameterException.class)
-    public void builderCreatingFailsIfNoTagAvailable() {
-        builder = new WebComponentBuilder<>(new NoTagExporter());
     }
 
     @Test
@@ -252,13 +245,8 @@ public class WebComponentBuilderTest {
         }
     }
 
+    @Tag(TAG)
     public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
-
-        @Override
-        public String tag() {
-            return TAG;
-        }
-
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             // this is where WebComponentBuilder would be normally accessed
@@ -266,23 +254,7 @@ public class WebComponentBuilderTest {
         }
     }
 
-    public static class NoTagExporter implements WebComponentExporter<MyComponent> {
-
-        @Override
-        public String tag() {
-            return null;
-        }
-
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            // this is where WebComponentBuilder would be normally accessed
-            // by the user but this tests uses its interfaces directly.
-        }
-    }
-
-
-
-    private static final void assertProperty(WebComponentBuilder<?> builder,
+    private static void assertProperty(WebComponentBuilder<?> builder,
                                              String property, Object value) {
         PropertyData<?> data = builder.getPropertyDataSet().stream()
                 .filter(d -> d.getName().equals(property))

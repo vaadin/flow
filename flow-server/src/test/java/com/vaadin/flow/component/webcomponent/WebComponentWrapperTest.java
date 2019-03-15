@@ -55,7 +55,8 @@ public class WebComponentWrapperTest {
 
     @Before
     public void init() {
-        configuration = new WebComponentBuilder<>(new MyComponentExporter());
+        configuration = new WebComponentBuilder<>("my-component",
+                new MyComponentExporter());
         // make component available and bind properties to it
         binding = configuration.createBinding(new MockInstantiator());
         component = binding.getComponent();
@@ -111,7 +112,8 @@ public class WebComponentWrapperTest {
     @Test
     public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
         WebComponentConfiguration<MyExtension> configuration =
-                new WebComponentBuilder<>(new MyExtensionExporter());
+                new WebComponentBuilder<>("extended-component",
+                        new MyExtensionExporter());
         WebComponentBinding<MyExtension> binding =
                 configuration.createBinding(new MockInstantiator());
         MyExtension component = binding.getComponent();
@@ -145,7 +147,8 @@ public class WebComponentWrapperTest {
     @Test
     public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
         WebComponentConfiguration<MyComponent> configuration =
-                new WebComponentBuilder<>(new ExtendedExporter());
+                new WebComponentBuilder<>("my-component-extended",
+                        new ExtendedExporter());
         WebComponentBinding<MyComponent> binding =
                 configuration.createBinding(new MockInstantiator());
         MyComponent component = binding.getComponent();
@@ -331,13 +334,8 @@ public class WebComponentWrapperTest {
     public static class Parent extends Component {
     }
 
+    @Tag("my-component")
     public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
-
-        @Override
-        public String tag() {
-            return "my-component";
-        }
-
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             definition.addProperty(MSG_PROPERTY, "")
@@ -347,13 +345,8 @@ public class WebComponentWrapperTest {
         }
     }
 
+    @Tag("extended-component")
     public static class MyExtensionExporter implements WebComponentExporter<MyExtension> {
-
-        @Override
-        public String tag() {
-            return "extended-component";
-        }
-
         @Override
         public void define(WebComponentDefinition<MyExtension> definition) {
             definition.addProperty(MSG_PROPERTY, "")
@@ -363,12 +356,8 @@ public class WebComponentWrapperTest {
         }
     }
 
+    @Tag("my-component-extended")
     public static class ExtendedExporter extends MyComponentExporter {
-        @Override
-        public String tag() {
-            return super.tag() + "-extended";
-        }
-
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             super.define(definition);

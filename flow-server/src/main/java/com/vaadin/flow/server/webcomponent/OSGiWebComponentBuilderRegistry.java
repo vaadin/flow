@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import java.util.Set;
+import java.util.Map;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 
 /**
  * Data collector component for collecting web components in an OSGi
@@ -25,11 +26,14 @@ import com.vaadin.flow.component.Component;
  */
 public class OSGiWebComponentBuilderRegistry extends WebComponentBuilderRegistry {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean setBuilders(
-            Set<WebComponentBuilder<? extends Component>> components) {
+    public boolean setExporters(Map<String, Class<?
+            extends WebComponentExporter<? extends Component>>> exporters) {
 
-        updateRegistry(components);
+        updateRegistry(exporters);
         return true;
     }
 }
