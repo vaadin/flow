@@ -2216,8 +2216,9 @@ public class RouterTest extends RoutingTestBase {
         ui.navigate("loop");
 
         long historyInvocations = ui.getInternals()
-                .dumpPendingJavaScriptInvocations().stream().filter(js -> js
-                        .getExpression().startsWith("history.pushState"))
+                .dumpPendingJavaScriptInvocations().stream()
+                .filter(js -> js.getInvocation().getExpression()
+                        .startsWith("history.pushState"))
                 .count();
         assertEquals(1, historyInvocations);
 
