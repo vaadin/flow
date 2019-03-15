@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,6 +37,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
@@ -42,6 +45,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
 
 import static org.mockito.Mockito.when;
 
+@NotThreadSafe
 public class WebComponentRegistryInitializerTest {
     private static final String DUPLICATE_PROPERTY_NAME = "one";
 
@@ -63,6 +67,11 @@ public class WebComponentRegistryInitializerTest {
 
         VaadinService.setCurrent(vaadinService);
         when(vaadinService.getInstantiator()).thenReturn(new MockInstantiator());
+    }
+
+    @After
+    public void cleanUp() {
+        CurrentInstance.clearAll();
     }
 
     @Rule

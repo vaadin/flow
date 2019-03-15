@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.startup.EnableOSGiRunner;
 
+@NotThreadSafe
 @RunWith(EnableOSGiRunner.class)
 public class OSGiWebComponentBuilderRegistryTest extends WebComponentBuilderRegistryTest {
 

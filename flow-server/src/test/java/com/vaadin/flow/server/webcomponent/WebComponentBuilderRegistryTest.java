@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,12 +46,14 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.mockito.Mockito.mock;
 
+@NotThreadSafe
 public class WebComponentBuilderRegistryTest {
 
     private static final String MY_COMPONENT_TAG = "my-component";
@@ -76,8 +79,8 @@ public class WebComponentBuilderRegistryTest {
     }
 
     @After
-    public void clean() {
-        VaadinService.setCurrent(null);
+    public void cleanUp() {
+        CurrentInstance.clearAll();
     }
 
     @Test
