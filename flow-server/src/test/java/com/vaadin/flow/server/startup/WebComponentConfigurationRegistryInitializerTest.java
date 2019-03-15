@@ -46,7 +46,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class WebComponentConfigurationImplRegistryInitializerTest {
+public class WebComponentConfigurationRegistryInitializerTest {
     private static final String DUPLICATE_PROPERTY_NAME = "one";
 
     private WebComponentConfigurationRegistryInitializer initializer;
