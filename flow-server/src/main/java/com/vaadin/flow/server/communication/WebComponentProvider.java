@@ -42,7 +42,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
 public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private static final String PATH_PREFIX = "/web-component/";
-    public static final String SUFFIX = ".html";
+    private static final String SUFFIX = ".html";
 
     // exporter class to script/html
     private Map<Class<?>, String> cache;
@@ -81,8 +81,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             WebComponentConfiguration<? extends Component> webComponentConfiguration =
                     optionalWebComponentConfiguration.get();
             String generated;
-            if (cache.containsKey(webComponentConfiguration.getExporterClass())) {
-                generated = cache.get(webComponentConfiguration.getExporterClass());
+            if (cache.containsKey(webComponentConfiguration.getClass())) {
+                generated = cache.get(webComponentConfiguration.getClass());
             } else {
                 String uiElement;
                 if (session.getConfiguration().getRootElementId().isEmpty()) {
@@ -95,7 +95,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
                 generated = WebComponentGenerator.generateModule(uiElement,
                         tag.get(), webComponentConfiguration, request);
-                cache.put(webComponentConfiguration.getExporterClass(), generated);
+                cache.put(webComponentConfiguration.getClass(), generated);
             }
 
             IOUtils.write(generated, response.getOutputStream(),

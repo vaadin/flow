@@ -178,11 +178,6 @@ public class WebComponentBuilderTest {
     }
 
     @Test
-    public void getExporterClass() {
-        assertEquals(myComponentExporter.getClass(), builder.getExporterClass());
-    }
-
-    @Test
     public void hasProperty() {
         builder.addProperty("int", 1);
         builder.addProperty("string", "string");
