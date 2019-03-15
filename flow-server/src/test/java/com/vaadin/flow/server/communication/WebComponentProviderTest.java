@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinResponse;
@@ -42,6 +44,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
 
+@NotThreadSafe
 public class WebComponentProviderTest {
 
     @Mock
@@ -68,8 +71,8 @@ public class WebComponentProviderTest {
     }
 
     @After
-    public void clean() {
-        VaadinService.setCurrent(null);
+    public void cleanUp() {
+        CurrentInstance.clearAll();
     }
 
     @Test
