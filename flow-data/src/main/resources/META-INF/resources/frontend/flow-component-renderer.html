@@ -30,11 +30,10 @@
       if (userAgent && userAgent.match('Chrome\/')) {
         // example: ... Chrome/72.0.3626.96 ...
         const majorVersionString = userAgent.split('Chrome\/')[1].split('.')[0];
-        if (majorVersionString && parseInt(majorVersionString) > 71) {
+        if (majorVersionString && parseInt(majorVersionString) === 72) {
           const debouncedNotifyResize = this._getDebouncedNotifyResizeFunction();
 
           // if there is no notifyResize function, then just skip
-
           if (debouncedNotifyResize) {
             this.style.visibility = 'hidden';
             // need to use animation frame instead of timeout or focusing won't work
