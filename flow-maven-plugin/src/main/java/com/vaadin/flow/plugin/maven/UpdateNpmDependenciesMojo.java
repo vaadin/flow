@@ -211,7 +211,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         command.addAll(Arrays.asList(npmInstallArgs));
         command.addAll(dependencies);
 
-        log.info("Updating package.json...\n " + command.stream().collect(Collectors.joining(" ")));
+        log.info("Updating package.json....\n " + command.stream().collect(Collectors.joining(" ")));
 
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(new File(npmFolder));
@@ -219,9 +219,21 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         Process process = builder.start();
         logStream(process.getInputStream());
         logStream(process.getErrorStream());
-        if (process.exitValue() != 0) {
-            getLog().error(
-                    ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
+        try {
+            // At this point some linux & node.js (CI) seems not to have finished.
+            // destroying the process and sleeping helps to get green builds
+            process.destroy();
+            if (process.isAlive()) {
+                getLog().warn("npm process still alive, sleeping 500ms");
+                Thread.sleep(500);
+            }
+            if (process.exitValue() != 0) {
+                getLog().error(
+                        ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
+            }
+            getLog().info("package.json updated");
+        } catch (Exception e) {
+            getLog().error(e);
         }
     }
 
