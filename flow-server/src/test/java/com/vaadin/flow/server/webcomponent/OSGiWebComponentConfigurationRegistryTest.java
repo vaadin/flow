@@ -41,36 +41,36 @@ import com.vaadin.flow.server.startup.EnableOSGiRunner;
 
 @NotThreadSafe
 @RunWith(EnableOSGiRunner.class)
-public class OSGiWebComponentBuilderRegistryTest extends WebComponentBuilderRegistryTest {
+public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
 
     @After
     public void cleanUp() {
         if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
-            OSGiWebComponentBuilderRegistry.getInstance(
+            OSGiWebComponentConfigurationRegistry.getInstance(
                     OSGiAccess.getInstance().getOsgiServletContext());
         }
     }
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(OSGiWebComponentBuilderRegistry.class.getName(),
+        Assert.assertEquals(OSGiWebComponentConfigurationRegistry.class.getName(),
                 registry.getClass().getName());
     }
 
     @Test
     public void assertOsgiRegistryIsServedAsASingleton() {
-        Assert.assertEquals(registry, WebComponentBuilderRegistry
+        Assert.assertEquals(registry, WebComponentConfigurationRegistry
                 .getInstance(Mockito.mock(ServletContext.class)));
     }
 
     @Override
-    public void setBuildersTwice_onlyFirstSetIsAccepted() {
+    public void setConfigurationsTwice_onlyFirstSetIsAccepted() {
         // OSGi accepts setting the web components multiple times.
         // NO-OP
     }
 
     @Override
-    public void setBuilders_gettingBuildersDoesNotAllowAddingMore() {
+    public void setExporters_gettingBuildersDoesNotAllowAddingMore() {
         // OSGi accepts setting the web components multiple times.
         // NO-OP
     }
@@ -87,10 +87,10 @@ public class OSGiWebComponentBuilderRegistryTest extends WebComponentBuilderRegi
                 registry.setExporters(asMap(UserBoxExporter.class)));
 
         Assert.assertEquals("Registry should contain only one builder",
-                1, registry.getBuilders().size());
+                1, registry.getConfigurations().size());
 
         Assert.assertEquals("Builder should be linked to UserBox.class",
-                UserBox.class, registry.getBuilder("user-box")
+                UserBox.class, registry.getConfigurationInternal("user-box")
                         .getComponentClass());
     }
 

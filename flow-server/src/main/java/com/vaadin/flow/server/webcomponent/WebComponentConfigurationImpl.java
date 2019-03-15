@@ -40,7 +40,7 @@ import elemental.json.JsonValue;
 
 /**
  * The implementation for {@link WebComponentDefinition} given to the
- * {@link WebComponentExporter}. {@link WebComponentBuilderRegistry} exposes
+ * {@link WebComponentExporter}. {@link WebComponentConfigurationRegistry} exposes
  * the builder to the
  * {@link com.vaadin.flow.component.webcomponent.WebComponentUI} and
  * {@link com.vaadin.flow.component.webcomponent.WebComponentWrapper} through
@@ -48,7 +48,7 @@ import elemental.json.JsonValue;
  *
  * @param <C> type of the component being exported
  */
-public class WebComponentBuilder<C extends Component>
+public class WebComponentConfigurationImpl<C extends Component>
         extends WebComponentDefinition<C>
         implements WebComponentConfiguration<C> {
     // TODO: get rid of these and json (de)serialize on the spot
@@ -62,7 +62,7 @@ public class WebComponentBuilder<C extends Component>
     private Map<String, PropertyConfigurationImp<C, ? extends Serializable>> propertyConfigurationMap =
             new HashMap<>();
 
-    public WebComponentBuilder(String tag, WebComponentExporter<C> exporter) {
+    public WebComponentConfigurationImpl(String tag, WebComponentExporter<C> exporter) {
         Objects.requireNonNull(tag, "Parameter 'tag' must not be null!");
         Objects.requireNonNull(exporter, "Parameter 'exporter' must not be null!");
 

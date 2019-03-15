@@ -38,7 +38,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentBuilder;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationImpl;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import elemental.json.Json;
@@ -55,7 +55,7 @@ public class WebComponentWrapperTest {
 
     @Before
     public void init() {
-        configuration = new WebComponentBuilder<>("my-component",
+        configuration = new WebComponentConfigurationImpl<>("my-component",
                 new MyComponentExporter());
         // make component available and bind properties to it
         binding = configuration.createBinding(new MockInstantiator());
@@ -112,7 +112,7 @@ public class WebComponentWrapperTest {
     @Test
     public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
         WebComponentConfiguration<MyExtension> configuration =
-                new WebComponentBuilder<>("extended-component",
+                new WebComponentConfigurationImpl<>("extended-component",
                         new MyExtensionExporter());
         WebComponentBinding<MyExtension> binding =
                 configuration.createBinding(new MockInstantiator());
@@ -147,7 +147,7 @@ public class WebComponentWrapperTest {
     @Test
     public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
         WebComponentConfiguration<MyComponent> configuration =
-                new WebComponentBuilder<>("my-component-extended",
+                new WebComponentConfigurationImpl<>("my-component-extended",
                         new ExtendedExporter());
         WebComponentBinding<MyComponent> binding =
                 configuration.createBinding(new MockInstantiator());
