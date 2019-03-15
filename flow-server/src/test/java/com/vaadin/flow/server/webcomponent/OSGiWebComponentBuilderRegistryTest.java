@@ -67,6 +67,12 @@ public class OSGiWebComponentBuilderRegistryTest extends WebComponentBuilderRegi
         // NO-OP
     }
 
+    @Override
+    public void setBuilders_gettingBuildersDoesNotAllowAddingMore() {
+        // OSGi accepts setting the web components multiple times.
+        // NO-OP
+    }
+
     @Test
     public void setBuildersTwice_allSetsAcceptedLastSetValid() {
         Assert.assertTrue("Registry should have accepted the " +

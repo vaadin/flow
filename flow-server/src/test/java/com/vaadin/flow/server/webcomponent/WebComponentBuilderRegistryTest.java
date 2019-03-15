@@ -43,6 +43,7 @@ import org.mockito.MockitoAnnotations;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
@@ -103,6 +104,24 @@ public class WebComponentBuilderRegistryTest {
                         "matching UserBox",
                 UserBox.class,
                 registry.getBuilder(USER_BOX_TAG).getComponentClass());
+    }
+
+
+    @Test
+    public void setBuilders_gettingBuildersDoesNotAllowAddingMore() {
+        registry.setExporters(asMap(MyComponentExporter.class));
+
+        WebComponentConfiguration<? extends Component> conf1 =
+                registry.getBuilder("my-component");
+
+        Assert.assertNotNull(conf1);
+
+        Assert.assertFalse(registry.setExporters(asMap(UserBoxExporter.class)));
+
+        WebComponentConfiguration<? extends Component> conf2 =
+                registry.getBuilder("my-component");
+
+        Assert.assertEquals(conf1, conf2);
     }
 
     @Test

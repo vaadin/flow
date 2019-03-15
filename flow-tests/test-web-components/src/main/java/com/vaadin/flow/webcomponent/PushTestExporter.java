@@ -20,7 +20,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-@Tag("sswc-push")
+@Tag("embedded-push")
 public class PushTestExporter implements WebComponentExporter<UpdateServerSideWebComponent> {
     @Override
     public void define(WebComponentDefinition<UpdateServerSideWebComponent> definition) {
