@@ -38,7 +38,7 @@ import com.vaadin.flow.server.osgi.OSGiAccess;
  *
  * @since
  */
-public class WebComponentBuilderRegistry implements Serializable {
+public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
      * Lock used to ensure there's only one update going on at once.
@@ -49,13 +49,13 @@ public class WebComponentBuilderRegistry implements Serializable {
 
     private Map<String, Class<? extends WebComponentExporter<?
             extends Component>>> exporterClasses;
-    private Map<String, WebComponentBuilder<? extends Component>>
+    private Map<String, WebComponentConfigurationImpl<? extends Component>>
             builderCache = new HashMap<>();
 
     /**
      * Protected constructor for internal OSGi extensions.
      */
-    protected WebComponentBuilderRegistry() {
+    protected WebComponentConfigurationRegistry() {
     }
 
     /**
@@ -67,20 +67,20 @@ public class WebComponentBuilderRegistry implements Serializable {
      * @return Optional containing a web component matching given tag
      */
     public Optional<WebComponentConfiguration<? extends Component>> getConfiguration(String tag) {
-        return Optional.ofNullable(getBuilder(tag));
+        return Optional.ofNullable(getConfigurationInternal(tag));
     }
 
     /**
-     * Retrieves {@link WebComponentBuilder} matching the {@code} tag. If the
+     * Retrieves {@link WebComponentConfigurationImpl} matching the {@code} tag. If the
      * builder is not readily available, attempts to construct it from the
      * web component exporter cache.
      *
      * @param tag
      *          tag name of the web component
-     * @return {@link WebComponentBuilder} by the tag
+     * @return {@link WebComponentConfigurationImpl} by the tag
      */
-    protected WebComponentBuilder<? extends Component> getBuilder(String tag) {
-        WebComponentBuilder<? extends Component> builder = null;
+    protected WebComponentConfigurationImpl<? extends Component> getConfigurationInternal(String tag) {
+        WebComponentConfigurationImpl<? extends Component> builder = null;
         configurationLock.lock();
         try {
             if (exporterClasses != null) {
@@ -95,9 +95,9 @@ public class WebComponentBuilderRegistry implements Serializable {
 
     /**
      * @param componentClass    type of the exported {@link Component}
-     * @return  set of {@link WebComponentBuilder} or an empty set.
+     * @return  set of {@link WebComponentConfiguration} or an empty set.
      */
-    protected <T extends Component> Set<WebComponentBuilder<T>> getBuildersByComponentType(Class<T> componentClass) {
+    public <T extends Component> Set<WebComponentConfiguration<T>> getConfigurationsByComponentType(Class<T> componentClass) {
         configurationLock.lock();
         if (exporterClasses == null) {
             return Collections.emptySet();
@@ -108,7 +108,7 @@ public class WebComponentBuilderRegistry implements Serializable {
             }
             return builderCache.values().stream()
                     .filter(b -> componentClass.equals(b.getComponentClass()))
-                    .map(b -> (WebComponentBuilder<T>)b)
+                    .map(b -> (WebComponentConfiguration<T>)b)
                     .collect(Collectors.toSet());
 
         } finally {
@@ -172,7 +172,7 @@ public class WebComponentBuilderRegistry implements Serializable {
      *
      * @return unmodifiable set of web component builders in registry
      */
-    public Set<WebComponentBuilder<? extends Component>> getBuilders() {
+    public Set<WebComponentConfiguration<? extends Component>> getConfigurations() {
         configurationLock.lock();
         try {
             if (!allBuildersAvailable()) {
@@ -193,43 +193,43 @@ public class WebComponentBuilderRegistry implements Serializable {
      *         servlet context to get registry for
      * @return WebComponentRegistry instance
      */
-    public static WebComponentBuilderRegistry getInstance(
+    public static WebComponentConfigurationRegistry getInstance(
             ServletContext servletContext) {
         assert servletContext != null;
 
         Object attribute;
         synchronized (servletContext) {
             attribute = servletContext
-                    .getAttribute(WebComponentBuilderRegistry.class.getName());
+                    .getAttribute(WebComponentConfigurationRegistry.class.getName());
 
             if (attribute == null) {
                 attribute = createRegistry(servletContext);
                 servletContext
-                        .setAttribute(WebComponentBuilderRegistry.class.getName(),
+                        .setAttribute(WebComponentConfigurationRegistry.class.getName(),
                                 attribute);
             }
         }
 
-        if (attribute instanceof WebComponentBuilderRegistry) {
-            return (WebComponentBuilderRegistry) attribute;
+        if (attribute instanceof WebComponentConfigurationRegistry) {
+            return (WebComponentConfigurationRegistry) attribute;
         } else {
             throw new IllegalStateException(
                     "Unknown servlet context attribute value: " + attribute);
         }
     }
 
-    private static WebComponentBuilderRegistry createRegistry(ServletContext context) {
+    private static WebComponentConfigurationRegistry createRegistry(ServletContext context) {
         if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
-            return new WebComponentBuilderRegistry();
+            return new WebComponentConfigurationRegistry();
         }
         Object attribute = OSGiAccess.getInstance().getOsgiServletContext()
-                .getAttribute(WebComponentBuilderRegistry.class.getName());
+                .getAttribute(WebComponentConfigurationRegistry.class.getName());
         if (attribute != null
-                && attribute instanceof OSGiWebComponentBuilderRegistry) {
-            return (WebComponentBuilderRegistry) attribute;
+                && attribute instanceof OSGiWebComponentConfigurationRegistry) {
+            return (WebComponentConfigurationRegistry) attribute;
         }
 
-        return new OSGiWebComponentBuilderRegistry();
+        return new OSGiWebComponentConfigurationRegistry();
     }
 
     /**
@@ -284,7 +284,7 @@ public class WebComponentBuilderRegistry implements Serializable {
         }
     }
 
-    protected WebComponentBuilder<? extends Component> constructBuilder(
+    protected WebComponentConfigurationImpl<? extends Component> constructBuilder(
             String tag, Class<? extends WebComponentExporter<?
             extends Component>> exporterClass) {
 
@@ -294,6 +294,6 @@ public class WebComponentBuilderRegistry implements Serializable {
         WebComponentExporter<? extends Component> exporter =
                 instantiator.getOrCreate(exporterClass);
 
-        return new WebComponentBuilder<>(tag, exporter);
+        return new WebComponentConfigurationImpl<>(tag, exporter);
     }
 }

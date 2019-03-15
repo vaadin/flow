@@ -24,7 +24,7 @@ import com.vaadin.flow.component.WebComponentExporter;
  * Data collector component for collecting web components in an OSGi
  * environment.
  */
-public class OSGiWebComponentBuilderRegistry extends WebComponentBuilderRegistry {
+public class OSGiWebComponentConfigurationRegistry extends WebComponentConfigurationRegistry {
 
     /**
      * {@inheritDoc}

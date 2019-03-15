@@ -38,18 +38,18 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WebComponentBuilderTest {
+public class WebComponentConfigurationImplTest {
 
     private static final String TAG = "my-component";
 
     private MyComponentExporter myComponentExporter;
-    private WebComponentBuilder<MyComponent> builder;
+    private WebComponentConfigurationImpl<MyComponent> builder;
 
     @Before
     public void setUp() {
         myComponentExporter = new MyComponentExporter();
 
-        builder = new WebComponentBuilder<>(TAG, myComponentExporter);
+        builder = new WebComponentConfigurationImpl<>(TAG, myComponentExporter);
     }
 
     @Test
@@ -249,8 +249,8 @@ public class WebComponentBuilderTest {
         }
     }
 
-    private static void assertProperty(WebComponentBuilder<?> builder,
-                                             String property, Object value) {
+    private static void assertProperty(WebComponentConfigurationImpl<?> builder,
+                                       String property, Object value) {
         PropertyData<?> data = builder.getPropertyDataSet().stream()
                 .filter(d -> d.getName().equals(property))
                 .findFirst().orElse(null);

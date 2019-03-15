@@ -41,17 +41,17 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class WebComponentRegistryInitializerTest {
+public class WebComponentConfigurationImplRegistryInitializerTest {
     private static final String DUPLICATE_PROPERTY_NAME = "one";
 
-    private WebComponentRegistryInitializer initializer;
+    private WebComponentConfigurationRegistryInitializer initializer;
     @Mock
-    private WebComponentBuilderRegistry registry;
+    private WebComponentConfigurationRegistry registry;
     @Mock
     private ServletContext servletContext;
     @Mock
@@ -60,9 +60,9 @@ public class WebComponentRegistryInitializerTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        initializer = new WebComponentRegistryInitializer();
+        initializer = new WebComponentConfigurationRegistryInitializer();
         when(servletContext
-                .getAttribute(WebComponentBuilderRegistry.class.getName()))
+                .getAttribute(WebComponentConfigurationRegistry.class.getName()))
                 .thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);

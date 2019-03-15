@@ -33,7 +33,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
-import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
  * Request handler that supplies the script/html of the WebComponent matching
@@ -70,7 +70,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
-                WebComponentBuilderRegistry.getInstance(
+                WebComponentConfigurationRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext())
                 .getConfiguration(tag.get());
 

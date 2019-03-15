@@ -31,7 +31,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
  *
@@ -42,13 +42,13 @@ import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
  * @since
  */
 @HandlesTypes({ WebComponentExporter.class })
-public class WebComponentRegistryInitializer
+public class WebComponentConfigurationRegistryInitializer
         implements ServletContainerInitializer {
 
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
-        WebComponentBuilderRegistry instance = WebComponentBuilderRegistry
+        WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
                 .getInstance(servletContext);
 
         if (set == null || set.isEmpty()) {
@@ -68,7 +68,7 @@ public class WebComponentRegistryInitializer
 
         Map<String, Class<? extends WebComponentExporter<? extends Component>>>
                 exporterMap = exporterClasses.stream().collect(Collectors.toMap(
-                WebComponentRegistryInitializer::getTag,
+                WebComponentConfigurationRegistryInitializer::getTag,
                 aClass -> aClass));
 
         validateComponentName(exporterMap);
@@ -105,7 +105,7 @@ public class WebComponentRegistryInitializer
     protected void validateDistinct(
             Set<Class<? extends WebComponentExporter<? extends Component>>> exporterSet) {
         long count = exporterSet.stream()
-                .map(WebComponentRegistryInitializer::getTag).distinct()
+                .map(WebComponentConfigurationRegistryInitializer::getTag).distinct()
                 .count();
         if (exporterSet.size() != count) {
             Map<String, Class<?>> items = new HashMap<>();

@@ -42,7 +42,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 @NotThreadSafe
 public class WebComponentProviderTest {
@@ -125,14 +125,14 @@ public class WebComponentProviderTest {
 
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         Mockito.when(request.getContextPath()).thenReturn("");
-        WebComponentBuilderRegistry registry = WebComponentBuilderRegistry
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(servletContext);
         final HashMap<String, Class<? extends WebComponentExporter<?
                 extends Component>>> map = new HashMap<>();
         map.put("my-component", MyComponentExporter.class);
         registry.setExporters(map);
         Mockito.when(servletContext
-                .getAttribute(WebComponentBuilderRegistry.class.getName()))
+                .getAttribute(WebComponentConfigurationRegistry.class.getName()))
                 .thenReturn(registry);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);

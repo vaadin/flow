@@ -98,7 +98,7 @@ public class WebComponentBindingImpl<C extends Component>
     }
 
     /**
-     * Called by {@link WebComponentBuilder#createBinding(Instantiator)} once
+     * Called by {@link WebComponentConfigurationImpl#createBinding(Instantiator)} once
      * the instance has been successfully constructed. Reports the current
      * (default) values to the bound component.
      */
