@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.validation.constraints.Digits;
@@ -31,10 +32,12 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubConstraint;
 import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubSubConstraint;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
@@ -180,12 +183,23 @@ public class BeanBinderTest
         private TestTextField mydate = new TestTextField();
     }
 
+    private UI ui;
+
     @Before
     public void setUp() {
+        ui = new UI();
+        ui.setLocale(Locale.ENGLISH);
+        UI.setCurrent(ui);
+
         binder = new BeanValidationBinder<>(BeanToValidate.class);
         item = new BeanToValidate();
         item.setFirstname("Johannes");
         item.setAge(32);
+    }
+
+    @After
+    public void tearDown() {
+        UI.setCurrent(null);
     }
 
     @Test(expected = IllegalStateException.class)
