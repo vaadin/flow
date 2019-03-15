@@ -32,11 +32,11 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
  * <p>
  * Example of exporting {@code MyComponent} component:
  * <pre>
- * {@code
- *@literal @Tag("my-component")
- * public class Exporter implements WebComponentExporter<MyComponent>() {
- *    @literal @Override
- *     public void define(WebComponentDefinition<MyComponent> definition) {
+ * &#064;Tag("my-component")
+ * public class Exporter implements WebComponentExporter&lt;MyComponent&gt;() {
+ *     &#064;Override
+ *     public void define(WebComponentDefinition&lt;MyComponent&gt;
+ *     definition) {
  *         definition.addProperty("name", "John Doe")
  *                 .onChange(MyComponent::setName);
  *     }
