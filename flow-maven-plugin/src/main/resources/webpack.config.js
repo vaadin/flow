@@ -5,7 +5,7 @@ const { BabelMultiTargetPlugin } = require('webpack-babel-multi-target-plugin');
 
 const baseDir = path.resolve(__dirname);
 const inputFolder = baseDir + '/frontend';
-const outputFolder = baseDir + '/target';
+const outputFolder = baseDir + '';
 const build = 'build';
 
 fs.mkdirSync(`${outputFolder}/${build}`, { recursive: true });
