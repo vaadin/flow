@@ -21,8 +21,6 @@ import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 
 public class HTMLTest {
@@ -115,6 +113,16 @@ public class HTMLTest {
         String expectedInnerHtml = input.replaceAll("^[ ]*<span>", "")
                 .replaceAll("</span>[ ]*$", "");
         Assert.assertEquals(expectedInnerHtml, html.getInnerHtml());
+    }
+
+    @Test
+    public void emptyAttribute_elementIsCreatedAndHasAttribute() {
+        Html html = new Html("<audio controls></audio>");
+
+        Assert.assertEquals("", html.getElement().getAttribute("controls"));
+
+        Assert.assertEquals("<audio controls></audio>",
+                html.getElement().getOuterHTML());
     }
 
 }
