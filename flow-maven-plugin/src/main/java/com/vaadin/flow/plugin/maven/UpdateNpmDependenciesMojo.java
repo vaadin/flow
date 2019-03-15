@@ -221,9 +221,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         logStream(process.getErrorStream());
         try {
             // At this point some linux & node.js (CI) seems not to have finished.
-            // closing streams, process and sleeping helps to green builds
-            process.getInputStream().close();
-            process.getErrorStream().close();
+            // destroying the process and sleeping helps to get green builds
             process.destroy();
             if (process.isAlive()) {
                 getLog().warn("npm process still alive, sleeping 500ms");
