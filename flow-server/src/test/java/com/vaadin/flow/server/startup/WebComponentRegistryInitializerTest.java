@@ -32,6 +32,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
@@ -83,7 +84,7 @@ public class WebComponentRegistryInitializerTest {
                     "WebComponentRegistryInitializer.onStartup should not throw with null argument");
         }
         // Expect a call to setWebComponents even if we have an empty or null set
-        Mockito.verify(registry).setBuilders(Collections.emptySet());
+        Mockito.verify(registry).setExporters(Collections.emptyMap());
     }
 
     @Test
@@ -107,7 +108,7 @@ public class WebComponentRegistryInitializerTest {
             Assert.fail(
                     "WebComponentRegistryInitializer.onStartup should not throw with empty set");
         }
-        Mockito.verify(registry).setBuilders(Collections.emptySet());
+        Mockito.verify(registry).setExporters(Collections.emptyMap());
     }
 
     @Test
@@ -117,6 +118,12 @@ public class WebComponentRegistryInitializerTest {
         initializer.onStartup(
                 Stream.of(MyComponentExporter.class, DuplicateTagExporter.class)
                         .collect(Collectors.toSet()), servletContext);
+    }
+
+    @Test
+    public void missingTagAnnotation_exceptionIsThrown() throws ServletException {
+        expectedEx.expect(IllegalArgumentException.class);
+        initializer.onStartup(Collections.singleton(NoTagExporter.class), servletContext);
     }
 
     @Test
@@ -142,59 +149,41 @@ public class WebComponentRegistryInitializerTest {
         initializer.onStartup(Collections.singleton(ExtendingExporter.class), servletContext);
     }
 
-    public static class MyComponent extends Component {
+    private static class MyComponent extends Component {
     }
 
-    public static class UserBox extends Component {
+    private static class UserBox extends Component {
     }
 
-    public static class InvalidName extends Component {
+    private static class InvalidName extends Component {
     }
 
-    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
-        @Override
-        public String tag() {
-            return "my-component";
-        }
-
+    @Tag("my-component")
+    private static class MyComponentExporter implements WebComponentExporter<MyComponent> {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             definition.addProperty(DUPLICATE_PROPERTY_NAME, "component");
         }
     }
 
-    public static class UserBoxExporter implements WebComponentExporter<UserBox> {
-
-        @Override
-        public String tag() {
-            return "user-box";
-        }
-
+    @Tag("user-box")
+    private static class UserBoxExporter implements WebComponentExporter<UserBox> {
         @Override
         public void define(WebComponentDefinition<UserBox> definition) {
             definition.addProperty("user", "box");
         }
     }
 
-    public static class InvalidNameExporter implements WebComponentExporter<InvalidName> {
-
-        @Override
-        public String tag() {
-            return "invalid";
-        }
-
+    @Tag("invalid")
+    private static class InvalidNameExporter implements WebComponentExporter<InvalidName> {
         @Override
         public void define(WebComponentDefinition<InvalidName> definition) {
             // PASS
         }
     }
 
-    public static class ExtendingExporter extends MyComponentExporter {
-        @Override
-        public String tag() {
-            return "tag-1";
-        }
-
+    @Tag("tag-1")
+    private static class ExtendingExporter extends MyComponentExporter {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             super.define(definition);
@@ -204,43 +193,36 @@ public class WebComponentRegistryInitializerTest {
         }
     }
 
-    public static class SiblingExporter implements WebComponentExporter<MyComponent> {
-
-        @Override
-        public String tag() {
-            return "my-component-sibling";
-        }
-
+    @Tag("my-component-sibling")
+    private static class SiblingExporter implements WebComponentExporter<MyComponent> {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             definition.addProperty("name", "something");
         }
     }
 
-    public static class DuplicateTagExporter implements WebComponentExporter<MyComponent> {
-
-        @Override
-        public String tag() {
-            return "my-component";
-        }
-
+    @Tag("my-component")
+    private static class DuplicateTagExporter implements WebComponentExporter<MyComponent> {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
 
         }
     }
 
-    public static class DuplicatePropertyExporter implements WebComponentExporter<MyComponent> {
-
-        @Override
-        public String tag() {
-            return "tag-2";
-        }
-
+    @Tag("tag-2")
+    private static class DuplicatePropertyExporter implements WebComponentExporter<MyComponent> {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             definition.addProperty(DUPLICATE_PROPERTY_NAME, "two");
             definition.addProperty(DUPLICATE_PROPERTY_NAME, "four");
+        }
+    }
+
+    private static class NoTagExporter implements WebComponentExporter<MyComponent> {
+
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+
         }
     }
 }

@@ -19,18 +19,18 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.webcomponent.WebComponentBuilder;
 import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
 
 /**
@@ -50,78 +50,48 @@ public class WebComponentRegistryInitializer
             throws ServletException {
         WebComponentBuilderRegistry instance = WebComponentBuilderRegistry
                 .getInstance(servletContext);
+
         if (set == null || set.isEmpty()) {
-            instance.setBuilders(Collections.emptySet());
+            instance.setExporters(Collections.emptyMap());
             return;
         }
-        Set<Class<?>> exporterClasses = set.stream()
+
+        Set<Class<? extends WebComponentExporter<? extends Component>>>
+                exporterClasses = set.stream()
                 .filter(WebComponentExporter.class::isAssignableFrom)
                 .filter(aClass -> !aClass.isInterface())
+                .map(aClass -> (Class<? extends WebComponentExporter<?
+                        extends Component>>)aClass)
                 .collect(Collectors.toSet());
-        Set<WebComponentExporter<? extends Component>> exporters;
 
-        exporters = constructExporters(exporterClasses);
-        validateDistinct(exporters);
-        validateComponentName(exporters);
+        validateDistinct(exporterClasses);
 
-        Set<WebComponentBuilder<? extends Component>> builders =
-                constructBuilders(exporters);
+        Map<String, Class<? extends WebComponentExporter<? extends Component>>>
+                exporterMap = exporterClasses.stream().collect(Collectors.toMap(
+                WebComponentRegistryInitializer::getTag,
+                aClass -> aClass));
 
-        instance.setBuilders(builders);
-    }
+        validateComponentName(exporterMap);
 
-    private Set<WebComponentBuilder<? extends Component>> constructBuilders(Set<WebComponentExporter<? extends Component>> exporters) {
-        return exporters.stream()
-                .map(exporter -> {
-                    try {
-                        return new WebComponentBuilder<>(exporter);
-                    } catch (IllegalArgumentException e) {
-                        throw new IllegalArgumentException(String.format(
-                                "Invalid exporter '%s': %s",
-                                exporter.getClass().getCanonicalName(),
-                                e.getMessage()));
-                    }
-                }).collect(Collectors.toSet());
-    }
-
-    private Set<WebComponentExporter<? extends Component>> constructExporters(
-            Set<Class<?>> exporterClasses) {
-
-        Set<WebComponentExporter<? extends Component>> set = new HashSet<>();
-        WebComponentExporter<? extends Component> webComponentExporter;
-
-        for (Class<?> exporterClass : exporterClasses) {
-            try {
-                webComponentExporter =
-                        (WebComponentExporter<? extends Component>)
-                                exporterClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(String.format("Could not construct %s " +
-                        "from %s!", WebComponentExporter.class.getName(),
-                        exporterClass.getCanonicalName()), e);
-            }
-            set.add(webComponentExporter);
-        }
-
-        return set;
+        instance.setExporters(exporterMap);
     }
 
     /**
      * Validate that all web component names are valid custom element names.
      *
-     * @param exporterSet
+     * @param exporterMap
      *         set of web components to validate
      */
     protected void validateComponentName(
-            Set<WebComponentExporter<? extends Component>> exporterSet) {
-        for (WebComponentExporter<? extends Component> exporter : exporterSet) {
-            String tag = exporter.tag();
-            if (!CustomElementNameValidator.isCustomElementName(tag)) {
-                String msg = String
-                        .format("Tag name '%s' given by '%s' is not a valid " +
-                                        "custom element name.",
-                                tag, exporter.getClass().getCanonicalName());
-                throw new InvalidCustomElementNameException(msg);
+            Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporterMap) {
+        for (Map.Entry<String, Class<? extends WebComponentExporter
+                <? extends Component>>> entry : exporterMap.entrySet()) {
+            if (!CustomElementNameValidator.isCustomElementName(
+                    entry.getKey())) {
+                throw new InvalidCustomElementNameException(String.format(
+                        "Tag name '%s' given by '%s' is not a valid custom " +
+                                "element name.", entry.getKey(),
+                        entry.getValue().getCanonicalName()));
             }
         }
     }
@@ -133,25 +103,42 @@ public class WebComponentRegistryInitializer
      *         set of web components to validate
      */
     protected void validateDistinct(
-            Set<WebComponentExporter<? extends Component>> exporterSet) {
-        long count = exporterSet.stream().map(WebComponentExporter::tag)
-                .distinct().count();
+            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterSet) {
+        long count = exporterSet.stream()
+                .map(WebComponentRegistryInitializer::getTag).distinct()
+                .count();
         if (exporterSet.size() != count) {
             Map<String, Class<?>> items = new HashMap<>();
-            for (WebComponentExporter<? extends Component> exporter : exporterSet) {
-                String tag = exporter.tag();
+            for (Class<? extends WebComponentExporter<? extends Component>>
+                    exporter : exporterSet) {
+                String tag = getTag(exporter);
                 if (items.containsKey(tag)) {
                     String message = String.format(
                             "Found two %s classes '%s' and '%s' for the tag " +
                                     "name '%s'. Tag must be unique.",
                             WebComponentExporter.class.getSimpleName(),
                             items.get(tag).getCanonicalName(),
-                            exporter.getClass().getCanonicalName(),
+                            exporter.getCanonicalName(),
                             tag);
                     throw new IllegalArgumentException(message);
                 }
-                items.put(tag, exporter.getClass());
+                items.put(tag, exporter);
             }
         }
+    }
+
+    private static String getTag(Class<? extends WebComponentExporter<?
+            extends Component>> exporterClass) {
+        Tag tag = exporterClass.getAnnotation(Tag.class);
+        if (tag == null) {
+            throw new InvalidParameterException(String.format("%s %s did not " +
+                    "provide a tag! Use %s annotation to provide a tag for " +
+                    "the exported web component.",
+                    WebComponentExporter.class.getSimpleName(),
+                    exporterClass.getCanonicalName(),
+                    Tag.class.getSimpleName()));
+        }
+
+        return tag.value();
     }
 }

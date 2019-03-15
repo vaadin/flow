@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
@@ -30,7 +31,7 @@ public class WebComponentGeneratorTest {
     @Test
     public void generatedReplacementMapContainsExpectedEntries() {
         WebComponentBuilder<MyComponent> builder =
-                new WebComponentBuilder<>(new MyComponentExporter());
+                new WebComponentBuilder<>("tag", new MyComponentExporter());
 
 
         Map<String, String> replacementsMap = WebComponentGenerator
@@ -95,13 +96,8 @@ public class WebComponentGeneratorTest {
         }
     }
 
+    @Tag("tag")
     public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
-
-        @Override
-        public String tag() {
-            return "tag";
-        }
-
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             definition.addProperty("response", "hello")

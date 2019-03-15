@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +27,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 
 /**
@@ -43,7 +47,10 @@ public class WebComponentBuilderRegistry implements Serializable {
      */
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
-    private Map<String, WebComponentBuilder<? extends Component>> componentBuilders;
+    private Map<String, Class<? extends WebComponentExporter<?
+            extends Component>>> exporterClasses;
+    private Map<String, WebComponentBuilder<? extends Component>>
+            builderCache = new HashMap<>();
 
     /**
      * Protected constructor for internal OSGi extensions.
@@ -64,20 +71,26 @@ public class WebComponentBuilderRegistry implements Serializable {
     }
 
     /**
+     * Retrieves {@link WebComponentBuilder} matching the {@code} tag. If the
+     * builder is not readily available, attempts to construct it from the
+     * web component exporter cache.
+     *
      * @param tag
      *          tag name of the web component
      * @return {@link WebComponentBuilder} by the tag
      */
     protected WebComponentBuilder<? extends Component> getBuilder(String tag) {
+        WebComponentBuilder<? extends Component> builder = null;
         configurationLock.lock();
         try {
-            if (componentBuilders != null) {
-                return componentBuilders.get(tag);
+            if (exporterClasses != null) {
+                populateCacheByTag(tag);
+                builder = builderCache.get(tag);
             }
         } finally {
             configurationLock.unlock();
         }
-        return null;
+        return builder;
     }
 
     /**
@@ -86,65 +99,67 @@ public class WebComponentBuilderRegistry implements Serializable {
      */
     protected <T extends Component> Set<WebComponentBuilder<T>> getBuildersByComponentType(Class<T> componentClass) {
         configurationLock.lock();
+        if (exporterClasses == null) {
+            return Collections.emptySet();
+        }
         try {
-            if (componentBuilders != null) {
-                return componentBuilders.values().stream()
-                        .filter(b -> componentClass.equals(b.getComponentClass()))
-                        .map(b -> (WebComponentBuilder<T>)b)
-                        .collect(Collectors.toSet());
+            if (!allBuildersAvailable()) {
+                populateCacheWithMissingBuilders();
             }
+            return builderCache.values().stream()
+                    .filter(b -> componentClass.equals(b.getComponentClass()))
+                    .map(b -> (WebComponentBuilder<T>)b)
+                    .collect(Collectors.toSet());
+
         } finally {
             configurationLock.unlock();
         }
-        return Collections.emptySet();
     }
 
     /**
      * Internal method for updating registry.
      *
-     * @param builders
-     *         map of components to register
+     * @param exporters
+     *         map of web component exporters to register
      */
-    protected void updateRegistry(
-            Set<WebComponentBuilder<? extends Component>> builders) {
+    protected void updateRegistry(Map<String, Class<?
+            extends WebComponentExporter<? extends Component>>> exporters) {
         configurationLock.lock();
         try {
-            if (builders.isEmpty()) {
-                componentBuilders = Collections.unmodifiableMap(
-                        Collections.emptyMap());
+            if (exporters.isEmpty()) {
+                exporterClasses = Collections.emptyMap();
             }
             else {
-                Map<String, WebComponentBuilder<? extends Component>> map =
-                        builders.stream().collect(Collectors.toMap(
-                                WebComponentBuilder::getWebComponentTag,
-                                b -> b));
-
-                componentBuilders = Collections.unmodifiableMap(map);
+                exporterClasses = new HashMap<>(exporters);
             }
+            // since we updated our exporter selection, we need to clear our
+            // builder cache
+            builderCache.clear();
         } finally {
             configurationLock.unlock();
         }
     }
 
     /**
-     * Register all available web components builders to the registry.
+     * Register all available unique web component exporters to the registry.
+     * The builders are instantiated lazily.
      * <p>
      * This can be done only once and any following set should only return
      * false.
      *
-     * @param builders
-     *         map of components to register
+     * @param exporters
+     *         map of web component exporters to register
      * @return true if set successfully or false if not set
      */
-    public boolean setBuilders(
-            Set<WebComponentBuilder<? extends Component>> builders) {
+    public boolean setExporters(Map<String, Class<?
+            extends WebComponentExporter<? extends Component>>> exporters) {
         configurationLock.lock();
         try {
-            if (componentBuilders != null) {
+            if (exporterClasses != null) {
                 return false;
             }
 
-            updateRegistry(builders);
+            updateRegistry(exporters);
             return true;
 
         } finally {
@@ -160,8 +175,12 @@ public class WebComponentBuilderRegistry implements Serializable {
     public Set<WebComponentBuilder<? extends Component>> getBuilders() {
         configurationLock.lock();
         try {
+            if (!allBuildersAvailable()) {
+                populateCacheWithMissingBuilders();
+            }
+
             return Collections.unmodifiableSet(new HashSet<>(
-                    componentBuilders.values()));
+                    builderCache.values()));
         } finally {
             configurationLock.unlock();
         }
@@ -211,5 +230,70 @@ public class WebComponentBuilderRegistry implements Serializable {
         }
 
         return new OSGiWebComponentBuilderRegistry();
+    }
+
+    /**
+     * Adds a builder to the builder cache if one is not already present,
+     * exporters have been set, and a matching exporter is found.
+     *
+     * @param tag   name of the web component
+     */
+    protected void populateCacheByTag(String tag) {
+        configurationLock.lock();
+
+        try {
+            if (builderCache.containsKey(tag)) {
+                return;
+            }
+
+            Class<? extends WebComponentExporter<? extends Component>> exporterClass
+                    = exporterClasses.get(tag);
+
+            if (exporterClass != null) {
+                builderCache.put(tag, constructBuilder(tag, exporterClass));
+                // remove the class reference from the data bank - it has
+                // already been constructed and is no longer needed
+                exporterClasses.remove(tag);
+            }
+        }
+        finally {
+            configurationLock.unlock();
+        }
+    }
+
+    /**
+     * Constructs and adds all the missing builders into the {@code
+     * builderCache} based on the exporters.
+     */
+    protected void populateCacheWithMissingBuilders() {
+        exporterClasses.forEach((key, value) -> builderCache.put(key,
+                constructBuilder(key, value)));
+        // empty the exporter data bank - every builder has been constructed
+        exporterClasses.clear();
+    }
+
+    protected boolean allBuildersAvailable() {
+        configurationLock.lock();
+
+        try {
+            return exporterClasses != null &&
+                    exporterClasses.size() == 0;
+        }
+        finally {
+            configurationLock.unlock();
+        }
+    }
+
+    protected WebComponentBuilder<? extends Component> constructBuilder(
+            String tag, Class<? extends WebComponentExporter<?
+            extends Component>> exporterClass) {
+
+        Instantiator instantiator =
+                VaadinService.getCurrent().getInstantiator();
+
+        WebComponentExporter<? extends Component> exporter =
+                instantiator.getOrCreate(exporterClass);
+
+        return new WebComponentBuilder<>(tag, exporter);
     }
 }

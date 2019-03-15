@@ -57,20 +57,18 @@ public class WebComponentBuilder<C extends Component>
             Boolean.class, String.class, Integer.class, Double.class,
             JsonValue.class);
 
+    private final String tag;
+    private final WebComponentExporter<C> exporter;
     private Class<C> componentClass = null;
-    private WebComponentExporter<C> exporter;
     private InstanceConfigurator<C> instanceConfigurator;
     private Map<String, PropertyConfigurationImp<C, ? extends Serializable>> propertyConfigurationMap =
             new HashMap<>();
 
-    public WebComponentBuilder(WebComponentExporter<C> exporter) {
-        if (exporter.tag() == null) {
-            throw new InvalidParameterException(String.format(
-                    "WebComponentExporter %s gave a null tag. Please provide " +
-                            "a non-null tag for the web component!",
-                    exporter.getClass().getCanonicalName()));
-        }
+    public WebComponentBuilder(String tag, WebComponentExporter<C> exporter) {
+        Objects.requireNonNull(tag, "Parameter 'tag' must not be null!");
+        Objects.requireNonNull(exporter, "Parameter 'exporter' must not be null!");
 
+        this.tag = tag;
         this.exporter = exporter;
         this.exporter.define(this);
     }
@@ -104,7 +102,7 @@ public class WebComponentBuilder<C extends Component>
     }
 
     public String getWebComponentTag() {
-        return exporter.tag();
+        return tag;
     }
 
     @Override

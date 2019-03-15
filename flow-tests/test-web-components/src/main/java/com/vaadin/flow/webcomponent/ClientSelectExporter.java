@@ -16,15 +16,12 @@
 
 package com.vaadin.flow.webcomponent;
 
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
+@Tag("client-select")
 public class ClientSelectExporter implements WebComponentExporter<ClientSelect> {
-    @Override
-    public String tag() {
-        return "client-select";
-    }
-
     @Override
     public void define(WebComponentDefinition<ClientSelect> definition) {
         definition.addProperty("show", false)

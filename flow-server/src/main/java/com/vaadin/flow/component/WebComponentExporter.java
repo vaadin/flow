@@ -22,18 +22,19 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 /**
  * Interface for exporting {@link Component components} as embeddable web
- * components. These web components can be embedded into non-Vaadin
+ * components. The tag of the exporter web component <b>must be</b> defined
+ * using {@link Tag} annotation - otherwise, an exception will be thrown. The
+ * tag must be a non-null, non-empty string with dash-separated words, i.e.
+ * "dash-separated".
+ * <p>
+ * The exported web components can be embedded into non-Vaadin
  * applications.
  * <p>
  * Example of exporting {@code MyComponent} component:
  * <pre>
  * {@code
+ *@literal @Tag("my-component")
  * public class Exporter implements WebComponentExporter<MyComponent>() {
- *    @literal @Override
- *     public void tag() {
- *         return "my-component";
- *     }
- *
  *    @literal @Override
  *     public void define(WebComponentDefinition<MyComponent> definition) {
  *         definition.addProperty("name", "John Doe")
@@ -45,17 +46,6 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
  * @param <C> type of the component to export
  */
 public interface WebComponentExporter<C extends Component> extends Serializable {
-
-    /**
-     * Defines the tag name of the exported web-component. If the method
-     * returns null when the web component is being constructed, an exception
-     * will be thrown.
-     *
-     * @return  tag name. Note that custom element names require a dash to be
-     *          used in them; they can't be single words, i.e. "custom-tag".
-     */
-    String tag();
-
     /**
      * Called by the web component export process. Use the given
      * {@link WebComponentDefinition} to define web component's properties,
