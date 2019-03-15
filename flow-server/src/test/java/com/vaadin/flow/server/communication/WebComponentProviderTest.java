@@ -21,8 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +40,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentBuilder;
 import com.vaadin.flow.server.webcomponent.WebComponentBuilderRegistry;
 
 public class WebComponentProviderTest {
@@ -61,10 +60,16 @@ public class WebComponentProviderTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         Mockito.when(session.getService()).thenReturn(service);
+        VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
 
         provider = new WebComponentProvider();
+    }
+
+    @After
+    public void clean() {
+        VaadinService.setCurrent(null);
     }
 
     @Test
@@ -121,7 +126,7 @@ public class WebComponentProviderTest {
                 .getInstance(servletContext);
         final HashMap<String, Class<? extends WebComponentExporter<?
                 extends Component>>> map = new HashMap<>();
-        map.put("tag", MyComponentExporter.class);
+        map.put("my-component", MyComponentExporter.class);
         registry.setExporters(map);
         Mockito.when(servletContext
                 .getAttribute(WebComponentBuilderRegistry.class.getName()))
