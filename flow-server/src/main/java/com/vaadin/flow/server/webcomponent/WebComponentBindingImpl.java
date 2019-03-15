@@ -77,7 +77,7 @@ public class WebComponentBindingImpl<C extends Component>
     /**
      * {@inheritDoc}
      * @param propertyName  name of the property
-     * @return
+     * @return type of property matching {@code propertyName}
      */
     @Override
     public Class<? extends Serializable> getPropertyType(String propertyName) {

@@ -95,6 +95,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
      * @param componentClass    type of the exported {@link Component}
+     * @param <T>               component
      * @return  set of {@link WebComponentConfiguration} or an empty set.
      */
     public <T extends Component> Set<WebComponentConfiguration<T>> getConfigurationsByComponentType(Class<T> componentClass) {

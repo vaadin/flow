@@ -49,20 +49,20 @@ public interface PropertyConfiguration<C extends Component, P extends Serializab
      * {@code "name"}.
      *
      * <pre>
-     * {@code
-     * public class Exporter implements WebComponentExporter<MyComponent>() {
+     * &#064;Tag("my-component")
+     * public class Exporter implements WebComponentExporter&lt;MyComponent&gt;() {
      *     // ... define the web component
-     *    @literal @Override
-     *     public void define(WebComponentDefinition<MyComponent> definition) {
+     *     &#064;Override
+     *     public void define(WebComponentDefinition&lt;MyComponent&gt;
+     *     definition) {
      *         definition.addProperty("name", "John Doe")
      *                 .onChange(MyComponent::setName);
      *     }
      * }
      * </pre>
      *
-     * @param onChangeHandler
-     *              {@code component}'s method which is called with
-     *              the property value
+     * @param onChangeHandler   {@code component}'s method which is called with
+     *                          the property value
      * @return this {@code PropertyConfiguration}
      */
     PropertyConfiguration<C, P> onChange(
