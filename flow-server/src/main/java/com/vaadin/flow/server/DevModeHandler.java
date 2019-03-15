@@ -106,7 +106,7 @@ public class DevModeHandler implements Serializable {
         }
 
         process.command(new String[] { "node", webpack.getAbsolutePath(), "--config", webpackConfig.getAbsolutePath(),
-                "--port", String.valueOf(port) });
+                "--port", String.valueOf(port), "-d" });
 
         try {
             Process exec = process.start();
