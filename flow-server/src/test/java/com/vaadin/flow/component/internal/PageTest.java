@@ -49,50 +49,46 @@ public class PageTest {
     public void testSetTitle_nullTitle_clearsPendingJsExecution() {
         page.setTitle("foobar");
 
-        Assert.assertEquals(1,
-                ui.getInternals().getPendingJavaScriptInvocations().size());
+        Assert.assertEquals(1, countPendingInvocations());
 
         page.setTitle(null);
 
-        Assert.assertEquals(0,
-                ui.getInternals().getPendingJavaScriptInvocations().size());
+        Assert.assertEquals(0, countPendingInvocations());
     }
 
     @Test
     public void testJavasScriptExecutionCancel() {
-        Assert.assertEquals(0,
-                ui.getInternals().getPendingJavaScriptInvocations().size());
+        Assert.assertEquals(0, countPendingInvocations());
 
         ExecutionCanceler executeJavaScript = page
                 .executeJavaScript("window.alert('$0');", "foobar");
 
-        Assert.assertEquals(1,
-                ui.getInternals().getPendingJavaScriptInvocations().size());
+        Assert.assertEquals(1, countPendingInvocations());
 
         Assert.assertTrue(executeJavaScript.cancelExecution());
 
-        Assert.assertEquals(0,
-                ui.getInternals().getPendingJavaScriptInvocations().size());
+        Assert.assertEquals(0, countPendingInvocations());
     }
 
     @Test
     public void testJavaScriptExecutionTooLateCancel() {
-        Assert.assertEquals(0,
-                ui.getInternals().getPendingJavaScriptInvocations().size());
+        Assert.assertEquals(0, countPendingInvocations());
 
         ExecutionCanceler executeJavaScript = page
                 .executeJavaScript("window.alert('$0');", "foobar");
 
-        Assert.assertEquals(1,
-                ui.getInternals().getPendingJavaScriptInvocations().size());
+        Assert.assertEquals(1, countPendingInvocations());
 
         Assert.assertEquals(1,
                 ui.getInternals().dumpPendingJavaScriptInvocations().size());
 
-        Assert.assertEquals(0,
-                ui.getInternals().getPendingJavaScriptInvocations().size());
+        Assert.assertEquals(0, countPendingInvocations());
 
         Assert.assertFalse(executeJavaScript.cancelExecution());
+    }
+
+    private long countPendingInvocations() {
+        return ui.getInternals().getPendingJavaScriptInvocations().count();
     }
 
 }
