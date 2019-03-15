@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +41,11 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
@@ -99,6 +101,17 @@ public class UIInternals implements Serializable {
          */
         public JavaScriptInvocation(String expression,
                 Serializable... parameters) {
+            /*
+             * To ensure attached elements are actually attached, the parameters
+             * won't be serialized until the phase the UIDL message is created.
+             * To give the user immediate feedback if using a parameter type
+             * that can't be serialized, we do a dry run at this point.
+             */
+            for (Object argument : parameters) {
+                // Throws IAE for unsupported types
+                JsonCodec.encodeWithTypeInfo(argument);
+            }
+
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
         }
@@ -120,7 +133,6 @@ public class UIInternals implements Serializable {
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
-
     }
 
     /**
@@ -142,7 +154,7 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
-    private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+    private List<PendingJavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
     /**
      * The related UI.
@@ -151,7 +163,7 @@ public class UIInternals implements Serializable {
 
     private String title;
 
-    private ExecutionCanceler pendingTitleUpdateCanceler;
+    private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
@@ -470,8 +482,8 @@ public class UIInternals implements Serializable {
 
     private <E> Registration addListener(Class<E> handler, E listener) {
         session.checkHasLock();
-        List<E> list = (List<E>) listeners
-                .computeIfAbsent(handler, key -> new ArrayList<>());
+        List<E> list = (List<E>) listeners.computeIfAbsent(handler,
+                key -> new ArrayList<>());
         list.add(listener);
 
         list.sort((o1, o2) -> {
@@ -499,9 +511,9 @@ public class UIInternals implements Serializable {
      * Get all registered listeners for given navigation handler type.
      *
      * @param handler
-     *         handler to get listeners for
+     *            handler to get listeners for
      * @param <E>
-     *         the handler type
+     *            the handler type
      * @return unmodifiable list of registered listeners for navigation handler
      */
     public <E> List<E> getListeners(Class<E> handler) {
@@ -516,13 +528,11 @@ public class UIInternals implements Serializable {
      *
      * @param invocation
      *            the invocation to add
-     * @return a callback for canceling the execution if not yet sent to browser
      */
-    public ExecutionCanceler addJavaScriptInvocation(
-            JavaScriptInvocation invocation) {
+    public void addJavaScriptInvocation(
+            PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
-        return () -> pendingJsInvocations.remove(invocation);
     }
 
     /**
@@ -530,14 +540,16 @@ public class UIInternals implements Serializable {
      *
      * @return a list of pending JavaScript invocations
      */
-    public List<JavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+    public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
         pendingTitleUpdateCanceler = null;
 
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<JavaScriptInvocation> currentList = pendingJsInvocations;
+        List<PendingJavaScriptInvocation> currentList = getPendingJavaScriptInvocations()
+                .peek(PendingJavaScriptInvocation::setSentToBrowser)
+                .collect(Collectors.toList());
 
         pendingJsInvocations = new ArrayList<>();
 
@@ -552,8 +564,9 @@ public class UIInternals implements Serializable {
      * @return the pending javascript invocations, never <code>null</code>
      */
     // Non-private for testing purposes
-    List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
-        return pendingJsInvocations;
+    Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+        return pendingJsInvocations.stream()
+                .filter(invocation -> !invocation.isCanceled());
     }
 
     /**
@@ -570,7 +583,9 @@ public class UIInternals implements Serializable {
         JavaScriptInvocation invocation = new JavaScriptInvocation(
                 "document.title = $0", title);
 
-        pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
+        pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
+                getStateTree().getRootNode(), invocation);
+        addJavaScriptInvocation(pendingTitleUpdateCanceler);
 
         this.title = title;
     }
@@ -716,13 +731,14 @@ public class UIInternals implements Serializable {
     /**
      * Set the Theme to use for HTML import theme translations.
      * <p>
-     * Note! The set theme will be overridden for each call to {@link
-     * #showRouteTarget(Location, String, Component, List)} if the new theme is
-     * not the same as the set theme.
+     * Note! The set theme will be overridden for each call to
+     * {@link #showRouteTarget(Location, String, Component, List)} if the new
+     * theme is not the same as the set theme.
      * <p>
      * This method is intended for managed internal use only.
      *
-     * @param theme theme implementation to set
+     * @param theme
+     *            theme implementation to set
      */
     public void setTheme(AbstractTheme theme) {
         this.theme = theme;
@@ -940,7 +956,7 @@ public class UIInternals implements Serializable {
      */
     public boolean isDirty() {
         return getStateTree().isDirty()
-                || !getPendingJavaScriptInvocations().isEmpty();
+                || getPendingJavaScriptInvocations().count() != 0;
     }
 
     /**
