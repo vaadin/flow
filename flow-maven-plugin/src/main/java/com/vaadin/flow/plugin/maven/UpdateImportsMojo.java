@@ -59,6 +59,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class UpdateImportsMojo extends AbstractMojo {
 
     private static final String VALUE = "value";
+    public static final String MAIN_JS = "src/main/webapp/frontend/main.js";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -66,7 +67,7 @@ public class UpdateImportsMojo extends AbstractMojo {
     /**
      * Name of the JavaScript file to update.
      */
-    @Parameter(defaultValue = "src/main/webapp/frontend/main.js")
+    @Parameter(defaultValue = "")
     private String jsFile;
 
     /**
@@ -78,6 +79,9 @@ public class UpdateImportsMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        if (jsFile == null || jsFile.isEmpty()) {
+            jsFile = project.getBasedir() + "/" + MAIN_JS;
+        }
 
         URL[] projectClassPathUrls = getProjectClassPathUrls(project);
 

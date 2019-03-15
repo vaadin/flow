@@ -28,9 +28,13 @@ import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -58,6 +62,7 @@ public class DevModeHandler implements Serializable {
 
     public static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
     static final String PARAM_WEBPACK_TIMEOUT = "vaadin.devmode.webpack.timeout";
+    static final String PARAM_WEBPACK_OPTIONS = "vaadin.devmode.webpack.options";
 
     // It's not possible to know whether webpack is ready unless reading output messages.
     // When webpack finishes, it writes either a `Compiled` or `Failed` as the last line
@@ -94,7 +99,6 @@ public class DevModeHandler implements Serializable {
 
         port = getFreePort();
 
-        getLogger().info("Starting Webpack in dev mode ...");
         ProcessBuilder process = new ProcessBuilder();
         process.directory(directory);
 
@@ -105,9 +109,18 @@ public class DevModeHandler implements Serializable {
             process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
         }
 
-        process.command(new String[] { "node", webpack.getAbsolutePath(), "--config", webpackConfig.getAbsolutePath(),
-                "--port", String.valueOf(port), "-d" });
+        List<String> command = new ArrayList<>();
+        command.add("node");
+        command.add(webpack.getAbsolutePath());
+        command.add("--config");
+        command.add(webpackConfig.getAbsolutePath());
+        command.add("--port");
+        command.add(String.valueOf(port));
+        command.addAll(Arrays.asList(System.getProperty(PARAM_WEBPACK_OPTIONS, "-d").split(" +")));
 
+        getLogger().info("Starting Webpack in dev mode\n " + command.stream().collect(Collectors.joining(" ")));
+
+        process.command(command);
         try {
             Process exec = process.start();
             Runtime.getRuntime().addShutdownHook(new Thread(exec::destroy));
@@ -238,7 +251,9 @@ public class DevModeHandler implements Serializable {
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String header = headerNames.nextElement();
-            connection.setRequestProperty(header, request.getHeader(header));
+            connection.setRequestProperty(header,
+                    // Exclude keep-alive
+                    "Connect".equals(header) ? "close" : request.getHeader(header));
         }
 
         // Send the request
@@ -266,6 +281,9 @@ public class DevModeHandler implements Serializable {
 
         // Copies response code
         response.sendError(responseCode);
+
+        // Close request to avoid issues in CI and Chrome
+        response.getOutputStream().close();
 
         return true;
     }

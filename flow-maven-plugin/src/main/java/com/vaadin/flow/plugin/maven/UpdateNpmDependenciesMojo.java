@@ -72,7 +72,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     /**
      * The folder where `package.json` file is located. Default is current dir.
      */
-    @Parameter(defaultValue = "./")
+    @Parameter(defaultValue = "")
     private String npmFolder;
 
     /**
@@ -94,6 +94,12 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+
+        if (npmFolder == null || npmFolder.isEmpty()) {
+            npmFolder = project.getBasedir().getAbsolutePath();
+        }
+
+
         URL[] projectClassPathUrls = getProjectClassPathUrls(project);
 
         log.info("Looking for npm packages...");
