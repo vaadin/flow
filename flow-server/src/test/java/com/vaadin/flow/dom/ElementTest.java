@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,6 +28,7 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -53,6 +53,7 @@ import com.vaadin.tests.util.TestUtil;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {
@@ -2149,7 +2150,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.noArgsMethod()", element);
+        assertPendingJs(ui, "return $0.noArgsMethod()", element);
     }
 
     @Test
@@ -2160,7 +2161,7 @@ public class ElementTest extends AbstractNodeTest {
         element.callFunction("noArgsMethod");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.noArgsMethod()", element);
+        assertPendingJs(ui, "return $0.noArgsMethod()", element);
     }
 
     @Test
@@ -2172,7 +2173,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().removeAllChildren();
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        List<JavaScriptInvocation> invocations = ui.getInternals()
+        List<PendingJavaScriptInvocation> invocations = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         Assert.assertTrue(invocations.isEmpty());
     }
@@ -2190,7 +2191,7 @@ public class ElementTest extends AbstractNodeTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.noArgsMethod()", element);
+        assertPendingJs(ui, "return $0.noArgsMethod()", element);
     }
 
     @Test
@@ -2201,7 +2202,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        assertPendingJs(ui, "$0.method($1)", element, "foo");
+        assertPendingJs(ui, "return $0.method($1)", element, "foo");
 
     }
 
@@ -2213,7 +2214,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.method($1,$2)", element, "foo", 123);
+        assertPendingJs(ui, "return $0.method($1,$2)", element, "foo", 123);
     }
 
     @Test
@@ -2224,7 +2225,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.property.method()", element);
+        assertPendingJs(ui, "return $0.property.method()", element);
     }
 
     @Test
@@ -2235,7 +2236,7 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "$0.property.other.method()", element);
+        assertPendingJs(ui, "return $0.property.other.method()", element);
     }
 
     @Test
@@ -2477,11 +2478,11 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     private void assertPendingJs(UI ui, String js, Serializable... arguments) {
-        List<JavaScriptInvocation> pendingJs = ui.getInternals()
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         JavaScriptInvocation expected = new JavaScriptInvocation(js, arguments);
         Assert.assertEquals(1, pendingJs.size());
-        assertEquals(expected, pendingJs.get(0));
+        assertEquals(expected, pendingJs.get(0).getInvocation());
 
     }
 

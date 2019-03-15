@@ -27,7 +27,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ValueProvider;
 
@@ -35,17 +34,16 @@ public class RendererUtilTest {
 
     private static class TestUIInternals extends UIInternals {
 
-        private List<JavaScriptInvocation> invocations = new ArrayList<>();
+        private List<PendingJavaScriptInvocation> invocations = new ArrayList<>();
 
         public TestUIInternals(UI ui) {
             super(ui);
         }
 
         @Override
-        public ExecutionCanceler addJavaScriptInvocation(
-                JavaScriptInvocation invocation) {
+        public void addJavaScriptInvocation(
+                PendingJavaScriptInvocation invocation) {
             invocations.add(invocation);
-            return () -> true;
         }
 
     }
@@ -122,11 +120,13 @@ public class RendererUtilTest {
 
         Assert.assertEquals(2, internals.invocations.size());
 
-        JavaScriptInvocation invocation = internals.invocations.get(0);
+        JavaScriptInvocation invocation = internals.invocations.get(0)
+                .getInvocation();
 
         Set<String> expressons = new HashSet<>();
         expressons.add(invocation.getExpression());
-        expressons.add(internals.invocations.get(1).getExpression());
+        expressons.add(
+                internals.invocations.get(1).getInvocation().getExpression());
 
         Assert.assertTrue(
                 "The javascript executions don't contain dataHost assignement",

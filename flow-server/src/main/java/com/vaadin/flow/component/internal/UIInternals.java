@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +41,15 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.Page.ExecutionCanceler;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -71,6 +76,8 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import elemental.json.JsonValue;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -99,6 +106,17 @@ public class UIInternals implements Serializable {
          */
         public JavaScriptInvocation(String expression,
                 Serializable... parameters) {
+            /*
+             * To ensure attached elements are actually attached, the parameters
+             * won't be serialized until the phase the UIDL message is created.
+             * To give the user immediate feedback if using a parameter type
+             * that can't be serialized, we do a dry run at this point.
+             */
+            for (Object argument : parameters) {
+                // Throws IAE for unsupported types
+                JsonCodec.encodeWithTypeInfo(argument);
+            }
+
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
         }
@@ -120,7 +138,178 @@ public class UIInternals implements Serializable {
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
+    }
 
+    /**
+     * A pending JavaScript result that can be sent to the client.
+     */
+    public static class PendingJavaScriptInvocation
+            implements PendingJavaScriptResult {
+        private static final String EXECUTION_CANCELED = "Execution canceled";
+
+        private final JavaScriptInvocation invocation;
+        private final StateNode owner;
+
+        private SerializableConsumer<JsonValue> successHandler;
+        private SerializableConsumer<String> errorHandler;
+
+        private boolean sentToBrowser = false;
+        private boolean canceled = false;
+
+        /**
+         * @param owner
+         *            the state node that this invocation is related to, not
+         *            <code>null</code>
+         * @param invocation
+         *            the JavaScript invocation to send, not <code>null</code>
+         */
+        public PendingJavaScriptInvocation(StateNode owner,
+                JavaScriptInvocation invocation) {
+            assert owner != null;
+            assert invocation != null;
+
+            this.owner = owner;
+            this.invocation = invocation;
+        }
+
+        /**
+         * Gets the state node that this invocation belongs to.
+         *
+         * @return the owner state node
+         */
+        public StateNode getOwner() {
+            return owner;
+        }
+
+        /**
+         * Checks if there are any subscribers for the return value of this
+         * expression.
+         *
+         * @return <code>true</code> if the return value should be passed back
+         *         from the client, <code>false</code> if the return value can
+         *         be ignored
+         */
+        public boolean isSubscribed() {
+            return successHandler != null;
+        }
+
+        /**
+         * Completes this invocation with the given return value from the
+         * client. Should only be used if there return value subscribers.
+         *
+         * @param value
+         *            the JSON return value from the client
+         */
+        public void complete(JsonValue value) {
+            assert isSubscribed();
+
+            successHandler.accept(value);
+        }
+
+        /**
+         * Completes this invocation with the given exception value from the
+         * client. Should only be used if there return value subscribers.
+         *
+         * @param value
+         *            the JSON exception value from the client
+         */
+        public void completeExceptionally(JsonValue value) {
+            assert isSubscribed();
+
+            String message = value.asString();
+
+            if (errorHandler != null) {
+                errorHandler.accept(message);
+            } else {
+                getLogger().debug("Ignored error from JavaScript: " + message);
+            }
+        }
+
+        @Override
+        public boolean cancelExecution() {
+            if (sentToBrowser || canceled) {
+                return false;
+            }
+            canceled = true;
+
+            if (errorHandler != null) {
+                errorHandler.accept(EXECUTION_CANCELED);
+            }
+
+            return true;
+        }
+
+        @Override
+        public boolean isSentToBrowser() {
+            return sentToBrowser;
+        }
+
+        // Non-private for testing purposes
+        void setSentToBrowser() {
+            assert !sentToBrowser;
+            sentToBrowser = true;
+        }
+
+        @Override
+        public void then(SerializableConsumer<JsonValue> successHandler,
+                SerializableConsumer<String> errorHandler) {
+            if (successHandler == null) {
+                throw new IllegalArgumentException(
+                        "Success handler cannot be null");
+            }
+
+            if (sentToBrowser) {
+                throw new IllegalStateException(
+                        "Cannot subscribe to the return value after the execution has been sent to the client.");
+            }
+
+            if (canceled) {
+                if (errorHandler != null) {
+                    errorHandler.accept(EXECUTION_CANCELED);
+                }
+
+                return;
+            }
+
+            this.successHandler = combineHandlers(this.successHandler,
+                    successHandler);
+            this.errorHandler = combineHandlers(this.errorHandler,
+                    errorHandler);
+        }
+
+        private static <T> SerializableConsumer<T> combineHandlers(
+                SerializableConsumer<T> first, SerializableConsumer<T> second) {
+            if (first == null) {
+                return second;
+            } else if (second == null) {
+                return first;
+            } else {
+                return value -> {
+                    first.accept(value);
+                    second.accept(value);
+                };
+            }
+        }
+
+        /**
+         * Checks whether this invocation has been canceled.
+         *
+         * @return <code>true</code> if the invocation has been canceled,
+         *         otherwise <code>false</code>
+         */
+        public boolean isCanceled() {
+            return canceled;
+        }
+
+        /**
+         * Gets the underlying JavaScript invocation that this pending
+         * invocation is based on.
+         *
+         * @return the JavaScript invocation, not <code>null</code>
+         */
+        public JavaScriptInvocation getInvocation() {
+            return invocation;
+        }
     }
 
     /**
@@ -142,7 +331,7 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
-    private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+    private List<PendingJavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
     /**
      * The related UI.
@@ -151,7 +340,7 @@ public class UIInternals implements Serializable {
 
     private String title;
 
-    private ExecutionCanceler pendingTitleUpdateCanceler;
+    private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
@@ -470,8 +659,8 @@ public class UIInternals implements Serializable {
 
     private <E> Registration addListener(Class<E> handler, E listener) {
         session.checkHasLock();
-        List<E> list = (List<E>) listeners
-                .computeIfAbsent(handler, key -> new ArrayList<>());
+        List<E> list = (List<E>) listeners.computeIfAbsent(handler,
+                key -> new ArrayList<>());
         list.add(listener);
 
         list.sort((o1, o2) -> {
@@ -499,9 +688,9 @@ public class UIInternals implements Serializable {
      * Get all registered listeners for given navigation handler type.
      *
      * @param handler
-     *         handler to get listeners for
+     *            handler to get listeners for
      * @param <E>
-     *         the handler type
+     *            the handler type
      * @return unmodifiable list of registered listeners for navigation handler
      */
     public <E> List<E> getListeners(Class<E> handler) {
@@ -516,13 +705,11 @@ public class UIInternals implements Serializable {
      *
      * @param invocation
      *            the invocation to add
-     * @return a callback for canceling the execution if not yet sent to browser
      */
-    public ExecutionCanceler addJavaScriptInvocation(
-            JavaScriptInvocation invocation) {
+    public void addJavaScriptInvocation(
+            PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
-        return () -> pendingJsInvocations.remove(invocation);
     }
 
     /**
@@ -530,14 +717,16 @@ public class UIInternals implements Serializable {
      *
      * @return a list of pending JavaScript invocations
      */
-    public List<JavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+    public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
         pendingTitleUpdateCanceler = null;
 
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<JavaScriptInvocation> currentList = pendingJsInvocations;
+        List<PendingJavaScriptInvocation> currentList = getPendingJavaScriptInvocations()
+                .peek(PendingJavaScriptInvocation::setSentToBrowser)
+                .collect(Collectors.toList());
 
         pendingJsInvocations = new ArrayList<>();
 
@@ -552,8 +741,9 @@ public class UIInternals implements Serializable {
      * @return the pending javascript invocations, never <code>null</code>
      */
     // Non-private for testing purposes
-    List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
-        return pendingJsInvocations;
+    Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+        return pendingJsInvocations.stream()
+                .filter(invocation -> !invocation.isCanceled());
     }
 
     /**
@@ -570,7 +760,9 @@ public class UIInternals implements Serializable {
         JavaScriptInvocation invocation = new JavaScriptInvocation(
                 "document.title = $0", title);
 
-        pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
+        pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
+                getStateTree().getRootNode(), invocation);
+        addJavaScriptInvocation(pendingTitleUpdateCanceler);
 
         this.title = title;
     }
@@ -716,13 +908,14 @@ public class UIInternals implements Serializable {
     /**
      * Set the Theme to use for HTML import theme translations.
      * <p>
-     * Note! The set theme will be overridden for each call to {@link
-     * #showRouteTarget(Location, String, Component, List)} if the new theme is
-     * not the same as the set theme.
+     * Note! The set theme will be overridden for each call to
+     * {@link #showRouteTarget(Location, String, Component, List)} if the new
+     * theme is not the same as the set theme.
      * <p>
      * This method is intended for managed internal use only.
      *
-     * @param theme theme implementation to set
+     * @param theme
+     *            theme implementation to set
      */
     public void setTheme(AbstractTheme theme) {
         this.theme = theme;
@@ -940,7 +1133,7 @@ public class UIInternals implements Serializable {
      */
     public boolean isDirty() {
         return getStateTree().isDirty()
-                || !getPendingJavaScriptInvocations().isEmpty();
+                || getPendingJavaScriptInvocations().count() != 0;
     }
 
     /**

@@ -31,8 +31,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
@@ -123,14 +123,17 @@ public class Page implements Serializable {
     /**
      * Callback method for canceling executable javascript set with
      * {@link Page#executeJavaScript(String, Serializable...)}.
+     *
+     * @deprecated superseded by {@link PendingJavaScriptResult}
      */
     @FunctionalInterface
+    @Deprecated
     public interface ExecutionCanceler extends Serializable {
         /**
          * Cancel the javascript execution, if it was not yet sent to the
          * browser for execution.
          *
-         * @return <code>true</code> if the execution was be canceled,
+         * @return <code>true</code> if the execution was canceled,
          *         <code>false</code> if not
          */
         boolean cancelExecution();
@@ -323,25 +326,20 @@ public class Page implements Serializable {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
-     * @return a callback for canceling the execution if not yet sent to browser
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
      */
-    public ExecutionCanceler executeJavaScript(String expression,
+    public PendingJavaScriptResult executeJavaScript(String expression,
             Serializable... parameters) {
-        /*
-         * To ensure attached elements are actually attached, the parameters
-         * won't be serialized until the phase the UIDL message is created. To
-         * give the user immediate feedback if using a parameter type that can't
-         * be serialized, we do a dry run at this point.
-         */
-        for (Object argument : parameters) {
-            // Throws IAE for unsupported types
-            JsonCodec.encodeWithTypeInfo(argument);
-        }
-
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
-        return ui.getInternals().addJavaScriptInvocation(invocation);
+        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
+                ui.getInternals().getStateTree().getRootNode(), invocation);
+
+        ui.getInternals().addJavaScriptInvocation(execution);
+
+        return execution;
     }
 
     /**

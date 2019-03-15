@@ -31,13 +31,14 @@ import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -1561,25 +1562,24 @@ public class Element extends Node<Element> {
      *            the arguments to pass to the function. Must be of a type
      *            supported by the communication mechanism, as defined by
      *            {@link JsonCodec}
+     * @return a pending result that can be used to get a return value from the
+     *         execution
      */
-    public void callFunction(String functionName, Serializable... arguments) {
+    public PendingJavaScriptResult callFunction(String functionName,
+            Serializable... arguments) {
         assert functionName != null;
         assert !functionName
                 .startsWith(".") : "Function name should not start with a dot";
 
-        runBeforeAttachedResponse(ui -> {
-            // $0.method($1,$2,$3)
-            String paramPlaceholderString = IntStream
-                    .range(1, arguments.length + 1).mapToObj(i -> "$" + i)
-                    .collect(Collectors.joining(","));
-            Serializable[] jsParameters = Stream
-                    .concat(Stream.of(this), Stream.of(arguments))
-                    .toArray(Serializable[]::new);
+        // "$1,$2,$3,..."
+        String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
+                .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
+        // Inject the element as $0
+        Stream<Serializable> jsParameters = Stream.concat(Stream.of(this),
+                Stream.of(arguments));
 
-            ui.getPage().executeJavaScript(
-                    "$0." + functionName + "(" + paramPlaceholderString + ")",
-                    jsParameters);
-        });
+        return scheduleJavaScriptInvocation("return $0." + functionName + "("
+                + paramPlaceholderString + ")", jsParameters);
     }
 
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
@@ -1608,34 +1608,43 @@ public class Element extends Node<Element> {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
      */
-    public void executeJavaScript(String expression,
+    public PendingJavaScriptResult executeJavaScript(String expression,
             Serializable... parameters) {
 
         // Add "this" as the last parameter
-        Serializable[] wrappedParameters = Stream
-                .concat(Stream.of(parameters), Stream.of(this))
-                .toArray(Serializable[]::new);
+        Stream<Serializable> wrappedParameters = Stream
+                .concat(Stream.of(parameters), Stream.of(this));
 
         // Wrap in a function that is applied with last parameter as "this"
-        String wrappedExpression = "(function() { " + expression + "}).apply($"
-                + parameters.length + ")";
+        String wrappedExpression = "return (function() { " + expression
+                + "}).apply($" + parameters.length + ")";
 
-        runBeforeAttachedResponse(ui -> ui.getPage()
-                .executeJavaScript(wrappedExpression, wrappedParameters));
+        return scheduleJavaScriptInvocation(wrappedExpression,
+                wrappedParameters);
     }
 
-    /**
-     * Runs the given action right before the next response during which this
-     * element is attached.
-     *
-     * @param action
-     *            the action to run
-     */
-    private void runBeforeAttachedResponse(SerializableConsumer<UI> action) {
-        getNode().runWhenAttached(
-                ui -> ui.getInternals().getStateTree().beforeClientResponse(
-                        getNode(), context -> action.accept(context.getUI())));
+    private PendingJavaScriptResult scheduleJavaScriptInvocation(
+            String expression, Stream<Serializable> parameters) {
+        StateNode node = getNode();
+
+        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
+                parameters.toArray(Serializable[]::new));
+
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                node, invocation);
+
+        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(node, context -> {
+                    if (!pending.isCanceled()) {
+                        context.getUI().getInternals()
+                                .addJavaScriptInvocation(pending);
+                    }
+                }));
+
+        return pending;
     }
 
     /**
