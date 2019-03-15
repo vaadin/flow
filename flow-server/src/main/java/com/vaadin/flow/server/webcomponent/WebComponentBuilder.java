@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -58,8 +57,7 @@ public class WebComponentBuilder<C extends Component>
             JsonValue.class);
 
     private final String tag;
-    private final WebComponentExporter<C> exporter;
-    private Class<C> componentClass = null;
+    private final Class<C> componentClass;
     private InstanceConfigurator<C> instanceConfigurator;
     private Map<String, PropertyConfigurationImp<C, ? extends Serializable>> propertyConfigurationMap =
             new HashMap<>();
@@ -69,8 +67,10 @@ public class WebComponentBuilder<C extends Component>
         Objects.requireNonNull(exporter, "Parameter 'exporter' must not be null!");
 
         this.tag = tag;
-        this.exporter = exporter;
-        this.exporter.define(this);
+        exporter.define(this);
+
+        componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
+                    exporter.getClass(), WebComponentExporter.class);
     }
 
     @Override
@@ -164,16 +164,7 @@ public class WebComponentBuilder<C extends Component>
 
     @Override
     public Class<C> getComponentClass() {
-        if (componentClass == null) {
-            componentClass = (Class<C>)ReflectTools.getGenericInterfaceType(
-                    exporter.getClass(), WebComponentExporter.class);
-        }
         return componentClass;
-    }
-
-    @Override
-    public Class<WebComponentExporter<C>> getExporterClass() {
-        return (Class<WebComponentExporter<C>>) exporter.getClass();
     }
 
     @Override

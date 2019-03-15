@@ -59,13 +59,6 @@ public interface WebComponentConfiguration<C extends Component>
     Class<C> getComponentClass();
 
     /**
-     * Retrieve the type of the exporter's class.
-     *
-     * @return exporter type
-     */
-    Class<WebComponentExporter<C>> getExporterClass();
-
-    /**
      * Set of all the {@link PropertyData} objects defining the web
      * component's properties.
      *
