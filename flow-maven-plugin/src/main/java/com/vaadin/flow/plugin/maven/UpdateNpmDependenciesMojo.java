@@ -21,12 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,27 +91,58 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     private Log log = getLog();
 
+    private AnnotationValuesExtractor annotationValuesExtractor;
+
     @Override
     public void execute() {
+        log.info("Looking for npm packages...");
 
         if (npmFolder == null || npmFolder.isEmpty()) {
             npmFolder = project.getBasedir().getAbsolutePath();
         }
 
+        if (annotationValuesExtractor == null) {
+            URL[] projectClassPathUrls = getProjectClassPathUrls(project);
+            annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
+        }
 
-        URL[] projectClassPathUrls = getProjectClassPathUrls(project);
+        try {
+            Map<Class<?>, Set<String>> classes = annotationValuesExtractor.getAnnotatedClasses(NpmPackage.class, VALUE);
+            classes.putAll(classesWithHtmlImport(classes));
 
-        log.info("Looking for npm packages...");
+            JsonObject packageJson = getPackageJson();
 
-        Map<Class<?>, Set<String>> classes = new HashMap<>();
+            updatePackageJsonDependencies(packageJson, classes);
 
-        AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
+            updatePackageJsonDevDependencies(packageJson);
 
-        Map<Class<?>, Set<String>> classesWithNpmPackage = annotationValuesExtractor
-                .getAnnotatedClasses(NpmPackage.class, VALUE);
+            createWebpackConfig();
 
-        classes.putAll(classesWithNpmPackage);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
+    private void createWebpackConfig() throws IOException {
+        if (webpackTemplate == null || webpackTemplate.trim().isEmpty()) {
+            return;
+        }
+
+        String configFile = npmFolder + "/" + WEBPACK_CONFIG;
+
+        if (FileUtils.fileExists(configFile)) {
+            log.info("No changes to " + configFile);
+        } else {
+            URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
+            if (resource == null) {
+                resource = new URL(webpackTemplate);
+            }
+            FileUtils.copyURLToFile(resource, new File(configFile));
+            log.info("Created " + WEBPACK_CONFIG + " from " + resource);
+        }
+    }
+
+    private Map<Class<?>, Set<String>> classesWithHtmlImport(Map<Class<?>, Set<String>> classesWithNpmPackage) {
         if (convertHtml) {
             Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
                     .getAnnotatedClasses(HtmlImport.class, VALUE);
@@ -121,46 +151,12 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
                     .getAnnotatedClasses(JsModule.class, VALUE);
 
             // Remove classes with HtmlImport that already have npm annotations
-            classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
+            return classesWithHtmlImport.entrySet().stream()
                     .filter(entry -> !classesWithNpmPackage.containsKey(entry.getKey())
                             && !classesWithJsModule.containsKey(entry.getKey()))
                     .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
-
-            classes.putAll(classesWithHtmlImport);
         }
-
-        try {
-            JsonObject packageJson = getPackageJson();
-
-            updatePackageJsonDependencies(packageJson, classes);
-
-            updatePackageJsonDevDependencies(packageJson);
-
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
-        String configFile = npmFolder + "/" + WEBPACK_CONFIG;
-        if (webpackTemplate != null || !webpackTemplate.trim().isEmpty()) {
-            if (FileUtils.fileExists(configFile)) {
-                log.info("File " + configFile + " exists.");
-            } else {
-                URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
-                if (resource == null) {
-                    try {
-                        resource = new URL(webpackTemplate);
-                    } catch (MalformedURLException e) {
-                        log.warn("the webpackTemplate parameter is not a vaild URL " + webpackTemplate);
-                    }
-                }
-                try {
-                    FileUtils.copyURLToFile(resource, new File(configFile));
-                    log.info("Created " + WEBPACK_CONFIG + " from " + resource);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }
-        }
+        return Collections.emptyMap();
     }
 
     private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes) throws IOException {

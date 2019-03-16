@@ -58,7 +58,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  */
 public class DevModeHandler implements Serializable {
 
-    private static AtomicReference<DevModeHandler> devmodeHandler = new AtomicReference<>();
+    private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
     public static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
     static final String PARAM_WEBPACK_TIMEOUT = "vaadin.devmode.webpack.timeout";
@@ -116,9 +116,11 @@ public class DevModeHandler implements Serializable {
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
-        command.addAll(Arrays.asList(System.getProperty(PARAM_WEBPACK_OPTIONS, "-d").split(" +")));
+        command.addAll(Arrays.asList(System.getProperty(PARAM_WEBPACK_OPTIONS, "-d --hot false").split(" +")));
 
-        getLogger().info("Starting Webpack in dev mode\n " + command.stream().collect(Collectors.joining(" ")));
+        if (getLogger().isInfoEnabled()) {
+            getLogger().info("Starting Webpack in dev mode\n {}", command.stream().collect(Collectors.joining(" ")));
+        }
 
         process.command(command);
         try {
@@ -166,7 +168,7 @@ public class DevModeHandler implements Serializable {
      *         deployment configuration
      */
     public static void start(DeploymentConfiguration configuration) {
-        devmodeHandler.compareAndSet(null,
+        atomicHandler.compareAndSet(null,
                 DevModeHandler.createInstance(configuration));
     }
 
@@ -176,7 +178,7 @@ public class DevModeHandler implements Serializable {
      * @return devModeHandler or {@code null} if not started
      */
     public static DevModeHandler getDevModeHandler() {
-        return devmodeHandler.get();
+        return atomicHandler.get();
     }
 
     /**
