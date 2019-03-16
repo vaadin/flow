@@ -209,7 +209,7 @@ public class UITest {
         UI ui = new UI();
         initUI(ui, "", null);
 
-        assertEquals("", ui.getInternals().getActiveViewLocation().getPath());
+        assertEquals("/", ui.getInternals().getActiveViewLocation().getPath());
     }
 
     @Test

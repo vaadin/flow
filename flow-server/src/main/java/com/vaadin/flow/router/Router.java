@@ -217,7 +217,7 @@ public class Router implements Serializable {
 
             NavigationHandler handler = new NavigationStateRenderer(newState);
             return handler.handle(navigationEvent);
-        } else if (!location.getPath().isEmpty()) {
+        } else if (!location.getPath().equals("/")) {
             Location slashToggledLocation = location.toggleTrailingSlash();
             NavigationState slashToggledState = getRouteResolver()
                     .resolve(new ResolveRequest(this, slashToggledLocation));

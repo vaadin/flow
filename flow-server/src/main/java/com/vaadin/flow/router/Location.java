@@ -165,7 +165,8 @@ public class Location implements Serializable {
      * @return the location string, not <code>null</code>
      */
     public String getPath() {
-        return segments.stream().collect(Collectors.joining("/"));
+        String path = String.join("/", segments);
+        return path.isEmpty() ? "/" : path;
     }
 
     /**
