@@ -26,7 +26,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,42 +92,23 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     private Log log = getLog();
 
+    private AnnotationValuesExtractor annotationValuesExtractor;
+
     @Override
     public void execute() {
+        log.info("Looking for npm packages...");
 
         if (npmFolder == null || npmFolder.isEmpty()) {
             npmFolder = project.getBasedir().getAbsolutePath();
         }
 
-
-        URL[] projectClassPathUrls = getProjectClassPathUrls(project);
-
-        log.info("Looking for npm packages...");
-
-        Map<Class<?>, Set<String>> classes = new HashMap<>();
-
-        AnnotationValuesExtractor annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
-
-        Map<Class<?>, Set<String>> classesWithNpmPackage = annotationValuesExtractor
-                .getAnnotatedClasses(NpmPackage.class, VALUE);
-
-        classes.putAll(classesWithNpmPackage);
-
-        if (convertHtml) {
-            Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
-                    .getAnnotatedClasses(HtmlImport.class, VALUE);
-
-            Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor
-                    .getAnnotatedClasses(JsModule.class, VALUE);
-
-            // Remove classes with HtmlImport that already have npm annotations
-            classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
-                    .filter(entry -> !classesWithNpmPackage.containsKey(entry.getKey())
-                            && !classesWithJsModule.containsKey(entry.getKey()))
-                    .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
-
-            classes.putAll(classesWithHtmlImport);
+        if (annotationValuesExtractor == null) {
+            URL[] projectClassPathUrls = getProjectClassPathUrls(project);
+            annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
         }
+
+        Map<Class<?>, Set<String>> classes = annotationValuesExtractor.getAnnotatedClasses(NpmPackage.class, VALUE);
+        classes.putAll(classesWithHtmlImport(classes));
 
         try {
             JsonObject packageJson = getPackageJson();
@@ -135,7 +116,6 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
             updatePackageJsonDependencies(packageJson, classes);
 
             updatePackageJsonDevDependencies(packageJson);
-
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -143,7 +123,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         String configFile = npmFolder + "/" + WEBPACK_CONFIG;
         if (webpackTemplate != null || !webpackTemplate.trim().isEmpty()) {
             if (FileUtils.fileExists(configFile)) {
-                log.info("File " + configFile + " exists.");
+                log.info("No changes to " + configFile);
             } else {
                 URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
                 if (resource == null) {
@@ -161,6 +141,23 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
                 }
             }
         }
+    }
+
+    private Map<Class<?>, Set<String>> classesWithHtmlImport(Map<Class<?>, Set<String>> classesWithNpmPackage) {
+        if (convertHtml) {
+            Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
+                    .getAnnotatedClasses(HtmlImport.class, VALUE);
+
+            Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor
+                    .getAnnotatedClasses(JsModule.class, VALUE);
+
+            // Remove classes with HtmlImport that already have npm annotations
+            return classesWithHtmlImport.entrySet().stream()
+                    .filter(entry -> !classesWithNpmPackage.containsKey(entry.getKey())
+                            && !classesWithJsModule.containsKey(entry.getKey()))
+                    .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
+        }
+        return Collections.emptyMap();
     }
 
     private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes) throws IOException {
