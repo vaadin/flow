@@ -118,7 +118,9 @@ public class DevModeHandler implements Serializable {
         command.add(String.valueOf(port));
         command.addAll(Arrays.asList(System.getProperty(PARAM_WEBPACK_OPTIONS, "-d").split(" +")));
 
-        getLogger().info("Starting Webpack in dev mode\n " + command.stream().collect(Collectors.joining(" ")));
+        if (getLogger().isInfoEnabled()) {
+            getLogger().info("Starting Webpack in dev mode\n {}", command.stream().collect(Collectors.joining(" ")));
+        }
 
         process.command(command);
         try {
