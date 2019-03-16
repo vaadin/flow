@@ -69,6 +69,7 @@ public class BundleFilterFactoryTest {
                 "There is no user session when initializing the filter and test should check it",
                 mocks.getSession());
         mocks.setProductionMode(true);
+        mocks.getDeploymentConfiguration().setBowerMode(true);
         mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES6,
                 Constants.FRONTEND_URL_ES6_DEFAULT_VALUE);

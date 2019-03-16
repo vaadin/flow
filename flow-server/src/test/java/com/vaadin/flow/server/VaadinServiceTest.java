@@ -281,6 +281,10 @@ public class VaadinServiceTest {
             public boolean useCompiledFrontendResources() {
                 return true;
             }
+            @Override
+            public boolean isBowerMode() {
+                return true;
+            };
         };
 
         // Service that pretends to have a proper bundle
