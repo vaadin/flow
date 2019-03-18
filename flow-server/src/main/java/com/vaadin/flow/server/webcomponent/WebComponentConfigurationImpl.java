@@ -145,7 +145,7 @@ public class WebComponentConfigurationImpl<C extends Component>
 
         // TODO: real IWebComponent impl
         if (instanceConfigurator != null) {
-            instanceConfigurator.accept(new DummyWebComponentInterfacer<>(),
+            instanceConfigurator.accept(new WebComponentImpl<>(),
                     componentReference);
         }
 
