@@ -21,11 +21,11 @@ import java.io.Serializable;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 /**
- * Interface for exporting {@link Component components} as embeddable web
- * components. The tag of the exporter web component <b>must be</b> defined
- * using {@link Tag} annotation - otherwise, an exception will be thrown. The
- * tag must be a non-null, non-empty string with dash-separated words, i.e.
- * "dash-separated".
+ * Provides a way to exporter a class which extends {@link Component} as an
+ * embeddable web component The tag of the exporter web component <b>must
+ * be</b> defined using {@link Tag} annotation - otherwise, an exception will
+ * be thrown. The tag must be a non-null, non-empty string with
+ * dash-separated words, i.e. "dash-separated".
  * <p>
  * The exported web components can be embedded into non-Vaadin
  * applications.
