@@ -20,7 +20,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 
 /**
- * A class representing a shadow dom root of an element.
+ * Represents a shadow dom root of an element.
  * <p>
  * The root can be created by {@link Element#attachShadow()}.
  *

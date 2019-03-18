@@ -29,7 +29,7 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * Methods for encoding objects to and from JSON.
+ * Utility for encoding objects to and from JSON.
  * <p>
  * Supported types are
  * <ul>

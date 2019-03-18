@@ -16,22 +16,23 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 
 /**
- * A class that creates {@link DeploymentConfiguration} filled with all
- * parameters specified by the framework users.
+ * Creates {@link DeploymentConfiguration} filled with all parameters specified
+ * by the framework users.
  */
 public final class DeploymentConfigurationFactory implements Serializable {
 
@@ -60,8 +61,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     /**
-     * Creates a {@link DeploymentConfiguration} instance that has
-     * all parameters, specified for the current app without doing checks so
+     * Creates a {@link DeploymentConfiguration} instance that has all
+     * parameters, specified for the current app without doing checks so
      * property states and only returns default.
      *
      * @param systemPropertyBaseClass
@@ -82,7 +83,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     /**
-     * Generate Property containing parameters for with all parameters contained in current application.
+     * Generate Property containing parameters for with all parameters contained
+     * in current application.
+     * 
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
      * @param servletConfig
@@ -148,8 +151,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             VaadinServletConfiguration.InitParameterName name = method
                     .getAnnotation(
                             VaadinServletConfiguration.InitParameterName.class);
-            assert name
-                    != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
+            assert name != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
 
             try {
                 Object value = method.invoke(configuration);
@@ -166,7 +168,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 // This should never happen
                 throw new ServletException(
                         "Could not read @VaadinServletConfiguration value "
-                                + method.getName(), e);
+                                + method.getName(),
+                        e);
             }
         }
 

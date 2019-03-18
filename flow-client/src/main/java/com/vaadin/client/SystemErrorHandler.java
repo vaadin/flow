@@ -28,7 +28,7 @@ import elemental.events.KeyboardEvent;
 import elemental.events.KeyboardEvent.KeyCode;
 
 /**
- * Class handling system errors in the application.
+ * Handles system errors in the application.
  *
  * @author Vaadin Ltd
  * @since 1.0
