@@ -22,8 +22,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark a method to be published and synced on client
- * for the generated server side WebComponent.
+ * Marks a method to be published and synced on client for the generated server
+ * side WebComponent.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })

@@ -69,7 +69,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * A class for splitting a message into multiple fragments of maximum length
+     * Represents a message splitted into multiple fragments of maximum length
      * {@link #FRAGMENT_LENGTH}.
      */
     protected static class FragmentedMessage {
@@ -539,8 +539,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Class which provides information from the Atmosphere configuration
-     * object.
+     * Provides information from the Atmosphere configuration object.
      */
     public static class AtmosphereConfiguration extends AbstractJSO {
 
@@ -591,7 +590,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Class providing data from an Atmosphere response JavaScript object.
+     * Provides data from an Atmosphere response JavaScript object.
      */
     public static class AtmosphereResponse extends AbstractJSO {
 

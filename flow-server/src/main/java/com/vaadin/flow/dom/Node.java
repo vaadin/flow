@@ -26,7 +26,7 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 /**
- * A class representing a node in the DOM.
+ * Represents a node in the DOM.
  * <p>
  * Contains methods for updating and querying hierarchical structure.
  *

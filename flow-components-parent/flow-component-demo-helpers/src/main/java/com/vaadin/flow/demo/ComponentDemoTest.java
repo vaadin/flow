@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.demo;
 
+import static com.vaadin.flow.demo.DemoView.COMPONENT_WITH_VARIANTS_ID;
+import static com.vaadin.flow.demo.DemoView.VARIANT_TOGGLE_BUTTONS_DIV_ID;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,9 +31,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-import static com.vaadin.flow.demo.DemoView.COMPONENT_WITH_VARIANTS_ID;
-import static com.vaadin.flow.demo.DemoView.VARIANT_TOGGLE_BUTTONS_DIV_ID;
 
 /**
  * Base class for the integration tests of component demos.
@@ -63,7 +63,7 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
     }
 
     /**
-     * Method run before each test.
+     * Runs before each test.
      */
     @Before
     public void openDemoPageAndCheckForErrors() {

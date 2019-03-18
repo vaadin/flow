@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletRequest;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -48,8 +51,6 @@ import com.vaadin.flow.server.communication.streaming.StreamingErrorEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.flow.shared.ApplicationConstants;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
@@ -86,7 +87,7 @@ public class StreamReceiverHandler implements Serializable {
 
     /**
      * Handle reception of incoming stream from the client.
-     * 
+     *
      * @param session
      *            The session for the request
      * @param request
@@ -143,8 +144,7 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     /**
-     * Method used to stream content from a multipart request to given
-     * StreamVariable.
+     * Streams content from a multipart request to given StreamVariable.
      * <p>
      * This method takes care of locking the session as needed and does not
      * assume the caller has locked the session. This allows the session to be
@@ -285,7 +285,7 @@ public class StreamReceiverHandler implements Serializable {
      * To adjust this value override the method, and register your own handler
      * in VaadinService.createRequestHandlers(). The default is 500ms, and
      * setting it to 0 effectively restores the old behavior.
-     * 
+     *
      * @return the minimum interval to be used for streaming progress events
      */
     protected int getProgressEventInterval() {

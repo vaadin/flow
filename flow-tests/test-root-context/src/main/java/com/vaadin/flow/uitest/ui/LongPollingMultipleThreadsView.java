@@ -17,6 +17,12 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -25,14 +31,9 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Class for reproducing the bug https://github.com/vaadin/flow/issues/4660
+ * Test for reproducing the bug https://github.com/vaadin/flow/issues/4660
  */
 @Route("com.vaadin.flow.uitest.ui.LongPollingMultipleThreadsView")
 @Push(transport = Transport.LONG_POLLING)
@@ -49,12 +50,13 @@ public class LongPollingMultipleThreadsView extends AbstractDivView {
 
     public LongPollingMultipleThreadsView() {
         this.setId("push-update");
-        NativeButton startButton = new NativeButton("start", event -> this.start());
+        NativeButton startButton = new NativeButton("start",
+                event -> this.start());
         startButton.setId("start-button");
         add(startButton, label);
     }
 
-    private void start(){
+    private void start() {
         synchronized (itemRegistry) {
             itemRegistry.clear();
         }
@@ -75,17 +77,18 @@ public class LongPollingMultipleThreadsView extends AbstractDivView {
     private void doWork() {
         try {
             Thread.sleep((int) (Math.random() * 10));
-        }
-        catch (InterruptedException ex) {
+        } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
         }
 
-        // Simulate some new piece of data coming in on a background thread and getting put into the display.
+        // Simulate some new piece of data coming in on a background thread and
+        // getting put into the display.
         List<Long> copy;
         synchronized (itemRegistry) {
             itemRegistry.add(System.currentTimeMillis());
 
-            // Copy the list so we're not accessing the shared registry concurrently.
+            // Copy the list so we're not accessing the shared registry
+            // concurrently.
             copy = new ArrayList<>(itemRegistry);
         }
 

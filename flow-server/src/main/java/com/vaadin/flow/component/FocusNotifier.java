@@ -53,7 +53,7 @@ public interface FocusNotifier<T extends Component> extends Serializable {
     }
 
     /**
-     * Class that represents the DOM event "focus".
+     * Represents the DOM event "focus".
      *
      * @param <C>
      *            The source component type.
