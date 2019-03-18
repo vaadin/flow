@@ -1,6 +1,4 @@
 node_modules/
-package-lock.json
-src/main/webapp/build/
-package.json
-src/main/webapp/frontend/main.js
+package*.json
 webpack.config.js
+frontend/main.js
