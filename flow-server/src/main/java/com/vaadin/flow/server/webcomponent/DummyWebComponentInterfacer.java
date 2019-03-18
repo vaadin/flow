@@ -29,27 +29,27 @@ class DummyWebComponentInterfacer<C extends Component> implements WebComponent<C
 
     @Override
     public void fireEvent(String eventName) {
-
+        throw new UnsupportedOperationException("Not implemented yet!");
     }
 
     @Override
     public void fireEvent(String eventName, JsonValue objectData) {
-
+        throw new UnsupportedOperationException("Not implemented yet!");
     }
 
     @Override
     public void fireEvent(String eventName, JsonValue objectData, EventOptions options) {
-
+        throw new UnsupportedOperationException("Not implemented yet!");
     }
 
     @Override
     public <P extends Serializable> void setProperty(PropertyConfiguration<C, P> propertyConfiguration, P value) {
-
+        throw new UnsupportedOperationException("Not implemented yet!");
     }
 
     @Override
     public <P extends Serializable> P getProperty(PropertyConfiguration<C, P> propertyConfiguration) {
-        return null;
+        throw new UnsupportedOperationException("Not implemented yet!");
     }
 
 }

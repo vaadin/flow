@@ -23,11 +23,32 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
+/**
+ * Implements the {@link PropertyConfiguration} interface returned by any of the
+ * {@link com.vaadin.flow.component.webcomponent.WebComponentDefinition}'s
+ * {@code addProperty} methods. {@code PropertyConfigurationImpl} stores the
+ * choices to be used by the web component generation process.
+ *
+ * @param <C>   type of the {@code component} being exported
+ * @param <P>   type of the {@code property} owned by the component
+ */
 public class PropertyConfigurationImp<C extends Component, P extends Serializable> implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
     private PropertyData<P> data;
     private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
 
+    /**
+     * Constructs a new {@code PropertyConfigurationImpl} tied to the
+     * exported {@link Component} type given by {@code componentType].
+     *
+     * @param componentType     type of the exported {@code component}
+     * @param propertyName      name of the property
+     * @param propertyType      type of the property
+     * @param defaultValue      default value of the property. If the
+     *                          property type has a primitive version, this
+     *                          value is used when ever the property is being
+     *                          set to a {@code null}.
+     */
     public PropertyConfigurationImp(Class<C> componentType, String propertyName,
                                     Class<P> propertyType, P defaultValue) {
 
@@ -76,6 +97,12 @@ public class PropertyConfigurationImp<C extends Component, P extends Serializabl
         return Objects.hash(componentClass, data);
     }
 
+    /**
+     * Retrieves the {@code onChangeHandler} tied to this property, if on
+     * exists.
+     *
+     * @return handler or {@code null}
+     */
     SerializableBiConsumer<C, Serializable> getOnChangeHandler() {
         return onChangeHandler;
     }
@@ -85,7 +112,7 @@ public class PropertyConfigurationImp<C extends Component, P extends Serializabl
      *
      * @return {@code PropertyData} value object
      */
-    public PropertyData<P> getPropertyData() {
+    PropertyData<P> getPropertyData() {
         return data;
     }
 }

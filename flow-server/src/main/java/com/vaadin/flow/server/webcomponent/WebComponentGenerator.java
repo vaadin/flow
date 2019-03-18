@@ -147,8 +147,7 @@ public class WebComponentGenerator {
                 prop.put(propertyValue, (String) property.getDefaultValue());
             } else if (JsonValue.class.isAssignableFrom(property.getType())) {
                 prop.put(propertyValue, (JsonValue) property.getDefaultValue());
-            }
-            else {
+            } else {
                 throw new UnsupportedPropertyTypeException(String.format("%s " +
                         "is not a currently supported type for a Property. " +
                                 "Please use %s instead.",

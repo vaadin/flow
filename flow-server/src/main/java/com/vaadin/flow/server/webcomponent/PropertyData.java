@@ -20,6 +20,8 @@ import java.util.Objects;
 
 /**
  * Value object containing information of a WebComponent property field.
+ *
+ * @param <P>   type of the property's value
  */
 public final class PropertyData<P extends Serializable> implements Serializable {
     private final String name;
@@ -28,6 +30,9 @@ public final class PropertyData<P extends Serializable> implements Serializable 
     private final boolean readOnly;
 
     /**
+     * Constructs a new {@code PropertyData} instance tied to the type of the
+     * property's value given by {@code type}.
+     *
      * @param name          name of the property
      * @param type          type of the property value
      * @param readOnly      is the property read-only (on the client-side)

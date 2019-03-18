@@ -62,6 +62,15 @@ public class WebComponentConfigurationImpl<C extends Component>
     private Map<String, PropertyConfigurationImp<C, ? extends Serializable>> propertyConfigurationMap =
             new HashMap<>();
 
+    /**
+     * Constructs a new {@code WebComponentConfigurationImp} for a web
+     * component identified by {@code tag}. The constructor calls
+     * {@link WebComponentExporter#define(WebComponentDefinition)} using
+     * itself as the {@link WebComponentDefinition}.
+     *
+     * @param tag       tag name of the web component being exported
+     * @param exporter  exporter, which defines this configuration
+     */
     public WebComponentConfigurationImpl(String tag, WebComponentExporter<C> exporter) {
         Objects.requireNonNull(tag, "Parameter 'tag' must not be null!");
         Objects.requireNonNull(exporter, "Parameter 'exporter' must not be null!");
