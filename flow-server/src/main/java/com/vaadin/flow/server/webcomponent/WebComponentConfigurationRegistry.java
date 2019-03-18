@@ -104,8 +104,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
             if (exporterClasses == null) {
                 return Collections.emptySet();
             }
-            if (!allBuildersAvailable()) {
-                populateCacheWithMissingBuilders();
+            if (!areAllConfigurationsAvailable()) {
+                populateCacheWithMissingConfigurations();
             }
             return builderCache.values().stream()
                     .filter(b -> componentClass.equals(b.getComponentClass()))
@@ -175,8 +175,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
     public Set<WebComponentConfiguration<? extends Component>> getConfigurations() {
         configurationLock.lock();
         try {
-            if (!allBuildersAvailable()) {
-                populateCacheWithMissingBuilders();
+            if (!areAllConfigurationsAvailable()) {
+                populateCacheWithMissingConfigurations();
             }
 
             return Collections.unmodifiableSet(new HashSet<>(
@@ -250,7 +250,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
                     = exporterClasses.get(tag);
 
             if (exporterClass != null) {
-                builderCache.put(tag, constructBuilder(tag, exporterClass));
+                builderCache.put(tag, constructConfigurations(tag, exporterClass));
                 // remove the class reference from the data bank - it has
                 // already been constructed and is no longer needed
                 exporterClasses.remove(tag);
@@ -261,17 +261,17 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
-     * Constructs and adds all the missing builders into the {@code
+     * Constructs and adds all the missing configurations into the {@code
      * builderCache} based on the exporters.
      */
-    protected void populateCacheWithMissingBuilders() {
+    protected void populateCacheWithMissingConfigurations() {
         exporterClasses.forEach((key, value) -> builderCache.put(key,
-                constructBuilder(key, value)));
+                constructConfigurations(key, value)));
         // empty the exporter data bank - every builder has been constructed
         exporterClasses.clear();
     }
 
-    protected boolean allBuildersAvailable() {
+    protected boolean areAllConfigurationsAvailable() {
         configurationLock.lock();
 
         try {
@@ -282,7 +282,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
         }
     }
 
-    protected WebComponentConfigurationImpl<? extends Component> constructBuilder(
+    protected WebComponentConfigurationImpl<? extends Component> constructConfigurations(
             String tag, Class<? extends WebComponentExporter<?
             extends Component>> exporterClass) {
 
