@@ -18,14 +18,14 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 
 /**
- * Interface for listening for a data change events fired by a
- * {@link DataProvider}.
+ * Data change events listener.
  *
  * @author Vaadin Ltd
  * @since 1.0
  *
  * @param <T>
  *            the data type
+ * @see DataProvider
  */
 @FunctionalInterface
 public interface DataProviderListener<T> extends Serializable {

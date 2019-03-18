@@ -28,8 +28,8 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 /**
- * A class that is used to format javadocs for the generated component classes.
- * 
+ * Formats javadocs for the generated component classes.
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */

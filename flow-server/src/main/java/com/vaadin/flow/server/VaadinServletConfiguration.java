@@ -27,9 +27,9 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 /**
- * Annotation for configuring subclasses of {@link VaadinServlet}. For a
- * {@link VaadinServlet} class that has this annotation, the defined values are
- * read during initialization and will be available using
+ * Configures subclasses of {@link VaadinServlet}. For a {@link VaadinServlet}
+ * class that has this annotation, the defined values are read during
+ * initialization and will be available using
  * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
  * as well as from specific methods in {@link DeploymentConfiguration}. Init
  * params defined in <code>web.xml</code> or the <code>@WebServlet</code>

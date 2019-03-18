@@ -52,7 +52,7 @@ import elemental.json.Json;
 import elemental.json.JsonValue;
 
 /**
- * A class representing an element in the DOM.
+ * Represents an element in the DOM.
  * <p>
  * Contains methods for updating and querying various parts of the element, such
  * as attributes.

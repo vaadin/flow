@@ -18,7 +18,7 @@ package com.vaadin.client;
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 /**
- * Class containing the configuration for an application.
+ * Application configuration data.
  * <p>
  * This class is effectively immutable although setters exist to assign the
  * values during construction.
@@ -274,7 +274,7 @@ public class ApplicationConfiguration {
 
     /**
      * Gets the base URL of the frontend components on the server.
-     * 
+     *
      * @return the base URL on the server for the {@literal frontend://}
      *         protocol.
      */
@@ -284,7 +284,7 @@ public class ApplicationConfiguration {
 
     /**
      * Sets the base URL of the frontend components on the server.
-     * 
+     *
      * @param frontendRootUrl
      *            the base URL on the server for the {@literal frontend://}
      *            protocol.
@@ -292,5 +292,4 @@ public class ApplicationConfiguration {
     public void setFrontendRootUrl(String frontendRootUrl) {
         this.frontendRootUrl = frontendRootUrl;
     }
-
 }

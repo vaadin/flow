@@ -22,9 +22,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation used by tests that extend {@link AbstractComponentIT} to setup the
- * path to be tested.
- * 
+ * Setup the path to be tested for the tests that extend
+ * {@link AbstractComponentIT}.
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */
@@ -35,7 +35,7 @@ public @interface TestPath {
 
     /**
      * Gets the URL of the page to be tested.
-     * 
+     *
      * @return the path to be tested
      */
     String value();

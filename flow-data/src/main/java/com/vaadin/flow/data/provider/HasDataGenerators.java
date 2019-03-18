@@ -20,8 +20,8 @@ import java.io.Serializable;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Interface that defines the contract of adding and removing multiple
- * {@link DataGenerator}s to a given object.
+ * Defines the contract of adding and removing multiple {@link DataGenerator}s
+ * to a given object.
  *
  * @author Vaadin Ltd
  * @since 1.0.
