@@ -24,7 +24,7 @@ import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Element;
 
 /**
- * Class representing the loading indicator for Vaadin applications.
+ * The loading indicator for Vaadin applications representation.
  * <p>
  * The loading indicator has four states: "triggered", "first", "second" and
  * "third". When {@link #trigger()} is called the indicator moves to its

@@ -45,7 +45,7 @@ public class ErrorEvent implements Serializable {
     }
 
     /**
-     * Method for finding the error handler for the given session.
+     * Finds the error handler for the given session.
      *
      * @param session
      *            the active session

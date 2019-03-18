@@ -21,16 +21,16 @@ import java.io.Serializable;
  * Listener for receiving changes to {@link WebComponentProperty} value.
  *
  * @param <T>
- *         type of the {@link WebComponentProperty} value
+ *            type of the {@link WebComponentProperty} value
  */
 @FunctionalInterface
 public interface PropertyValueChangeListener<T> extends Serializable {
 
     /**
-     * Method called when target property value has changed.
+     * Notifies when target property value has changed.
      *
      * @param event
-     *         property value change event
+     *            property value change event
      */
     void valueChange(PropertyValueChangeEvent<T> event);
 }

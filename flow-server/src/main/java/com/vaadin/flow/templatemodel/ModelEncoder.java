@@ -21,9 +21,8 @@ import java.lang.reflect.Type;
 import com.googlecode.gentyref.GenericTypeReflector;
 
 /**
- * Interface for implementing type encodings in template models together with
- * the {@link Encode} annotation. Used for enabling the use of types in template
- * model methods that are not natively supported by the framework.
+ * Template models encoder. Used for enabling the use of types in template model
+ * methods that are not natively supported by the framework.
  *
  * @see Encode
  *

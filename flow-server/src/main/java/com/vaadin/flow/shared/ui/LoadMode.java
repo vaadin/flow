@@ -20,8 +20,8 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 
 /**
- * Class that determines a way that dependency is loaded. This mode can be
- * specified when importing dependency either via annotations:
+ * Determines a way that dependency is loaded. This mode can be specified when
+ * importing dependency either via annotations:
  * <ul>
  * <li>{@link JavaScript},
  * <li>{@link StyleSheet},

@@ -21,8 +21,8 @@ import java.util.List;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Interface for clickable renderers.
- * 
+ * Represents a clickable renderer.
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -42,9 +42,8 @@ public interface ClickableRenderer<SOURCE> extends Serializable {
     public interface ItemClickListener<SOURCE> extends Serializable {
 
         /**
-         * Method called when an item is clicked or tapped in the target
-         * component.
-         * 
+         * Notifies when an item is clicked or tapped in the target component.
+         *
          * @param item
          *            the clicked or tapped item
          */
@@ -54,7 +53,7 @@ public interface ClickableRenderer<SOURCE> extends Serializable {
     /**
      * Adds a click listener to the renderer. Events are fired when items are
      * clicked or tapped (for touch devices).
-     * 
+     *
      * @param listener
      *            the listener to receive click events, not <code>null</code>
      * @return a registration that can be used to remove the listener from this
@@ -64,7 +63,7 @@ public interface ClickableRenderer<SOURCE> extends Serializable {
 
     /**
      * Gets all registered listeners.
-     * 
+     *
      * @return an unmodifiable list of registered listeners, not
      *         <code>null</code>
      */
@@ -73,7 +72,7 @@ public interface ClickableRenderer<SOURCE> extends Serializable {
     /**
      * Invoked when an item is clicked or tapped. Registered listeners are
      * notified.
-     * 
+     *
      * @param item
      *            the clicked or tapped item
      * @see #addItemClickListener(ItemClickListener)
