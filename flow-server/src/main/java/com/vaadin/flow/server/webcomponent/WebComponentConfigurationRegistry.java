@@ -47,9 +47,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
-    private Map<String, Class<? extends WebComponentExporter<?
+    private HashMap<String, Class<? extends WebComponentExporter<?
             extends Component>>> exporterClasses = null;
-    private Map<String, WebComponentConfigurationImpl<? extends Component>>
+    private HashMap<String, WebComponentConfigurationImpl<? extends Component>>
             builderCache = new HashMap<>();
 
     /**
@@ -131,7 +131,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
         configurationLock.lock();
         try {
             if (exporters.isEmpty()) {
-                exporterClasses = Collections.emptyMap();
+                exporterClasses = new HashMap<>(0);
             } else {
                 exporterClasses = new HashMap<>(exporters);
             }
