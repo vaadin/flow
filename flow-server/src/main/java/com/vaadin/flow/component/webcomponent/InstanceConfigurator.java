@@ -20,7 +20,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 /**
- * IProvides a way to configure the {@link Component} instance created for the
+ * Provides a way to configure the {@link Component} instance created for the
  * exported web component embedded onto a website. An implementation of this
  * interface is given to
  * {@link WebComponentDefinition#setInstanceConfigurator(InstanceConfigurator)},

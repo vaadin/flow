@@ -39,7 +39,7 @@ public class PropertyConfigurationImp<C extends Component, P extends Serializabl
 
     /**
      * Constructs a new {@code PropertyConfigurationImpl} tied to the
-     * exported {@link Component} type given by {@code componentType].
+     * exported {@link Component} type given by {@code componentType}.
      *
      * @param componentType     type of the exported {@code component}
      * @param propertyName      name of the property
