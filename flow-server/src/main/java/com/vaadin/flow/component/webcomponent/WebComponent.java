@@ -23,6 +23,8 @@ import elemental.json.JsonValue;
 
 /**
  * WebComponent to be configured by {@link InstanceConfigurator}
+ *
+ * @param <C>   {@code component} being exported
  */
 public interface WebComponent<C extends Component> extends Serializable {
     void fireEvent(String eventName);

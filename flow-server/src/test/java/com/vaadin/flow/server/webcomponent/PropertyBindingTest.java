@@ -24,6 +24,7 @@ import org.junit.Test;
 import com.vaadin.flow.function.SerializableConsumer;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -62,7 +63,7 @@ public class PropertyBindingTest {
                 binding_listener.getValue());
 
         // update should have been delivered
-        verify(spy, times(1));
+        verify(spy, times(1)).accept(any());
     }
 
     @Test(expected = InvalidParameterException.class)

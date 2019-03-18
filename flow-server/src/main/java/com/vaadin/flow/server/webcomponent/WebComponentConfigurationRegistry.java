@@ -100,10 +100,10 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     public <T extends Component> Set<WebComponentConfiguration<T>> getConfigurationsByComponentType(Class<T> componentClass) {
         configurationLock.lock();
-        if (exporterClasses == null) {
-            return Collections.emptySet();
-        }
         try {
+            if (exporterClasses == null) {
+                return Collections.emptySet();
+            }
             if (!allBuildersAvailable()) {
                 populateCacheWithMissingBuilders();
             }
@@ -129,8 +129,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
         try {
             if (exporters.isEmpty()) {
                 exporterClasses = Collections.emptyMap();
-            }
-            else {
+            } else {
                 exporterClasses = new HashMap<>(exporters);
             }
             // since we updated our exporter selection, we need to clear our
@@ -256,8 +255,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
                 // already been constructed and is no longer needed
                 exporterClasses.remove(tag);
             }
-        }
-        finally {
+        } finally {
             configurationLock.unlock();
         }
     }
@@ -279,8 +277,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
         try {
             return exporterClasses != null &&
                     exporterClasses.size() == 0;
-        }
-        finally {
+        } finally {
             configurationLock.unlock();
         }
     }

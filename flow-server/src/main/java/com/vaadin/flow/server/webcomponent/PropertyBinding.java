@@ -109,9 +109,10 @@ public class PropertyBinding<P extends Serializable> implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof PropertyBinding) {
             PropertyBinding other = (PropertyBinding) obj;
-            return data.equals(other.data) && (
-                    (value == null && other.value == null)
-                            || (value != null && value.equals(other.value)));
+            boolean valuesAreNull = value == null && other.value == null;
+            boolean valuesAreEqual = valuesAreNull ||
+                    (value != null && value.equals(other.value));
+            return data.equals(other.data) && valuesAreEqual;
         }
         return false;
     }
