@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation marking a class as a WebComponent that is served from the Server.
+ * Marks a class as a WebComponent that is served from the Server.
  * <p>
  * Target component will be served as a generated script to the client.
  */

@@ -44,7 +44,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Class for generating a client-side web component from a Java class.
+ * Generates a client-side web component from a Java class.
  * <p>
  * Current implementation will create a Polymer 2 component that can be served
  * to the client.

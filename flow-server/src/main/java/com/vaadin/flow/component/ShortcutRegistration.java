@@ -619,7 +619,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Class used to wrap a {@link Key} instance. Makes it easier to compare the
+     * Wraps a {@link Key} instance. Makes it easier to compare the
      * keys and store them by hash.
      */
     private static class HashableKey implements Key {
@@ -683,7 +683,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Class for bundling multiple {@link Registration Registrations} together.
+     * Bundles multiple {@link Registration Registrations} together.
      * This is used to group registrations that need to be created and removed
      * together.
      */

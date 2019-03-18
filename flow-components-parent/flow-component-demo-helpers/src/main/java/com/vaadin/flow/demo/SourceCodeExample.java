@@ -19,14 +19,14 @@ import java.io.Serializable;
 
 /**
  * Object that defines a source code example to be shown together with a demo.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public class SourceCodeExample implements Serializable {
 
     /**
-     * Enum that defines which language the source code is in.
+     * Defines which language the source code is in.
      */
     public enum SourceType {
         JAVA, CSS, HTML, UNDEFINED

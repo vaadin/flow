@@ -21,8 +21,8 @@ import com.google.gwt.xhr.client.XMLHttpRequest;
 import elemental.json.JsonObject;
 
 /**
- * Interface for handling problems and other events which occur during
- * communication with the server.
+ * Handles problems and other events which occur during communication with the
+ * server.
  *
  * The handler is responsible for handling any problem in XHR, heartbeat and
  * push connections in a way it sees fit. The default implementation is

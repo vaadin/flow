@@ -23,29 +23,29 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasElement;
 
 /**
- * Mixin interface for components that display a collection of items and can
- * have additional components between the items.
+ * Represents a component that display a collection of items and can have
+ * additional components between the items.
  * <p>
  * The items should be represented by components that implement
  * {@link ItemComponent}. Additionally any type of components can be added at
  * any position with {@link #addComponents(Object, Component...)} or
  * {@link #prependComponents(Object, Component...)}.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
- * 
+ *
  * @param <T>
  *            the type of the displayed items
  */
 public interface HasItemsAndComponents<T> extends HasComponents, HasItems<T> {
 
     /**
-     * Interface for components that are used inside an
-     * {@link HasItemsAndComponents} for representing a single item.
-     * 
+     * Represents a single item component that is used inside an
+     * {@link HasItemsAndComponents}.
+     *
      * @author Vaadin Ltd
- * @since 1.0.
-     * 
+     * @since 1.0.
+     *
      * @param <T>
      *            the type of the displayed item
      */
@@ -99,7 +99,7 @@ public interface HasItemsAndComponents<T> extends HasComponents, HasItems<T> {
 
     /**
      * Gets the index of the child element that represents the given item.
-     * 
+     *
      * @param item
      *            the item to look for
      * @return the index of the child element that represents the item, or -1 if

@@ -28,7 +28,7 @@ import java.io.Serializable;
 public interface LocaleChangeObserver extends Serializable {
 
     /**
-     * Method called when the UI locale is changed.
+     * Notifies when the UI locale is changed.
      *
      * @param event
      *            locale change event with event details

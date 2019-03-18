@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * Interface for a template model. Extending this interface and adding getters
- * and setters makes it possible to easily bind data to a template.
+ * Represents a template model. Extending this interface and adding getters and
+ * setters makes it possible to easily bind data to a template.
  * <p>
  * It is also possible to import a Bean's properties to the model using
  * {@link #importBean(String, Object, Predicate)}
@@ -160,7 +160,7 @@ public interface TemplateModel extends Serializable {
      * @see TemplateModel supported property types
      */
     default void importBean(String modelPath, Object bean,
-                Predicate<String> propertyNameFilter) {
+            Predicate<String> propertyNameFilter) {
         TemplateModelUtil.resolveBeanAndRun(this, modelPath, (type, map) -> {
             type.importProperties(map, bean,
                     new PropertyFilter(propertyNameFilter));

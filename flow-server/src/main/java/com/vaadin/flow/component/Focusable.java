@@ -17,17 +17,14 @@ package com.vaadin.flow.component;
 
 import java.security.InvalidParameterException;
 
-import com.vaadin.flow.shared.Registration;
-
 /**
- * Interface with the methods implemented by components that can gain and lose
- * focus.
+ * Represents a component that can gain and lose focus.
  *
  * @param <T>
  *            the type of the component which implements the interface
  * @see BlurNotifier
  * @see FocusNotifier
- * @author  Vaadin Ltd.
+ * @author Vaadin Ltd.
  * @since
  */
 public interface Focusable<T extends Component>
@@ -139,16 +136,16 @@ public interface Focusable<T extends Component>
      * shortcut.
      *
      * @param key
-     *              primary {@link Key} used to trigger the shortcut. Cannot
-     *              be null.
+     *            primary {@link Key} used to trigger the shortcut. Cannot be
+     *            null.
      * @param keyModifiers
-     *              {@link KeyModifier KeyModifiers} that need to be pressed
-     *              along with the {@code key} for the shortcut to trigger
-     * @return  {@link ShortcutRegistration} for configuring the shortcut and
-     *          removing
+     *            {@link KeyModifier KeyModifiers} that need to be pressed along
+     *            with the {@code key} for the shortcut to trigger
+     * @return {@link ShortcutRegistration} for configuring the shortcut and
+     *         removing
      */
     default ShortcutRegistration addFocusShortcut(Key key,
-                                                  KeyModifier... keyModifiers) {
+            KeyModifier... keyModifiers) {
         if (!(this instanceof Component)) {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
