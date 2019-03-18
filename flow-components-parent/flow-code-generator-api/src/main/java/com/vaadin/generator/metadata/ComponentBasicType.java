@@ -16,8 +16,8 @@
 package com.vaadin.generator.metadata;
 
 /**
- * Enum with all the supported types that are read from the webcomponent and
- * translated to Java types.
+ * Supported types that are read from the webcomponent and translated to Java
+ * types.
  *
  * @see ComponentMetadata
  */

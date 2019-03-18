@@ -24,9 +24,9 @@ import java.util.TimeZone;
 import com.vaadin.flow.shared.BrowserDetails;
 
 /**
- * Class that provides information about the web browser the user is using.
- * Provides information such as browser name and version, screen resolution and
- * IP address.
+ * Provides information about the web browser the user is using. Provides
+ * information such as browser name and version, screen resolution and IP
+ * address.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -571,7 +571,7 @@ public class WebBrowser implements Serializable {
     /**
      * Checks if the browser needs `custom-elements-es5-adapter.js` to be
      * loaded.
-     * 
+     *
      * @return <code>true</code> if the browser needs the adapter,
      *         <code>false</code> otherwise.
      */

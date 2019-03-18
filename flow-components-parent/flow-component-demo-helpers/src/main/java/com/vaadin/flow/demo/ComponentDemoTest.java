@@ -34,7 +34,7 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
     }
 
     /**
-     * Method run before each test.
+     * Runs before each test.
      */
     @Before
     public void openDemoPageAndCheckForErrors() {

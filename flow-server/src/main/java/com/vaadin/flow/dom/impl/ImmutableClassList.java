@@ -25,7 +25,7 @@ import java.util.Iterator;
 import com.vaadin.flow.dom.ClassList;
 
 /**
- * A class list implementation which is immutable.
+ * Immutable class list implementation.
  *
  * @author Vaadin Ltd
  * @since 1.0

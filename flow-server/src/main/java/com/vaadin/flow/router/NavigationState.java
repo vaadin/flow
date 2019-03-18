@@ -24,7 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 
 /**
- * Class containing all relevant information related to a valid navigation.
+ * Contains all relevant information related to a valid navigation.
  *
  * @author Vaadin Ltd
  * @since 1.0.

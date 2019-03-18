@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class that represents a webcomponent's property / method parameter of type object.
+ * Represents a webcomponent's property / method parameter of type object.
  * <p>
  * An example output from Analyzer for the type is:
  * <code>{inputElement: (Element|undefined), value: (string|undefined), invalid: boolean}
@@ -31,7 +31,7 @@ import java.util.List;
 public class ComponentObjectType implements ComponentType {
 
     /**
-     * Class for holding the list of actual types in a ComponentObjectType.
+     * Holds the list of actual types in a ComponentObjectType.
      */
     public static class ComponentObjectTypeInnerType {
 
@@ -90,7 +90,8 @@ public class ComponentObjectType implements ComponentType {
         /**
          * Set this property as optional or not.
          *
-         * @param optional whether the property optional or not
+         * @param optional
+         *            whether the property optional or not
          */
         public void setOptional(boolean optional) {
             this.optional = optional;
@@ -101,9 +102,9 @@ public class ComponentObjectType implements ComponentType {
 
     /**
      * Get the list of actual types contained in this ComponentObjectType.
-     * 
+     *
      * @see ComponentObjectTypeInnerType
-     * 
+     *
      * @return the list of inner types within this ComponentObjectType
      */
     public List<ComponentObjectTypeInnerType> getInnerTypes() {
@@ -112,9 +113,9 @@ public class ComponentObjectType implements ComponentType {
 
     /**
      * Sets the list of actual types contained in this ComponentObjectType.
-     * 
+     *
      * @see ComponentObjectTypeInnerType
-     * 
+     *
      * @param innerTypes
      *            the list of inner types to set
      */

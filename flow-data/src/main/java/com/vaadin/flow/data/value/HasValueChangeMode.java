@@ -22,8 +22,8 @@ import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.HasValue;
 
 /**
- * An interface, denoting that the component is able to change the way its value
- * on the client side is synchronized with the server side.
+ * Denotes that the component is able to change the way its value on the client
+ * side is synchronized with the server side.
  * <p>
  * A class implementing this interface should typically also implement
  * {@link HasValue} even though this is not required on the API level.

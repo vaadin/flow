@@ -19,8 +19,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 /**
- * Interface for navigation targets to resolve their title dynamically
- * at runtime.
+ * Allows to resolve navigation target title dynamically at runtime.
  * <p>
  * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
  * and have a {@link PageTitle} annotation.
@@ -33,7 +32,8 @@ public interface HasDynamicTitle extends Serializable {
 
     /**
      * Gets the title of this navigation target.
-     * @return  the title of this navigation target
+     *
+     * @return the title of this navigation target
      */
     String getPageTitle();
 }

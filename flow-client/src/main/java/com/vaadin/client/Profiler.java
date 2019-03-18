@@ -50,10 +50,10 @@ public class Profiler {
     private static ProfilerResultConsumer consumer;
 
     /**
-     * Class to include using deferred binding to enable the profiling.
+     * Enables the profiling via deferred binding.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     public static class EnabledProfiler extends Profiler {
 
@@ -64,12 +64,12 @@ public class Profiler {
     }
 
     /**
-     * Interface for getting data from the {@link Profiler}.
+     * Provides access to data from the {@link Profiler}.
      * <p>
      * <b>Warning!</b> This interface is most likely to change in the future
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     public interface ProfilerResultConsumer {
         void addProfilerData(Node rootNode, List<Node> totals);
@@ -379,7 +379,7 @@ public class Profiler {
      * Returns time relative to the particular page load time. The value should
      * not be used directly but rather difference between two values returned by
      * this method should be used to compare measurements.
-     * 
+     *
      * @return the relative time in milliseconds
      *
      */

@@ -27,9 +27,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * Annotation for defining HTML dependencies on a {@link Component} class. For
- * adding multiple HTML files for a single component, you can use this
- * annotation multiple times.
+ * Defines HTML dependencies on a {@link Component} class. For adding multiple
+ * HTML files for a single component, you can use this annotation multiple
+ * times.
  * <p>
  * It is guaranteed that dependencies will be loaded only once.
  * <p>

@@ -20,13 +20,13 @@ import java.io.Serializable;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 
 /**
- * The base interface for every interface that handles {@link BeforeLeaveEvent}.
+ * The base interface for every {@link BeforeLeaveEvent} handler.
  */
 @FunctionalInterface
 public interface BeforeLeaveHandler extends Serializable {
 
     /**
-     * Method called before navigation to detaching Component chain is made.
+     * Callback executed before navigation to detaching Component chain is made.
      *
      * @param event
      *            before navigation event with event details
