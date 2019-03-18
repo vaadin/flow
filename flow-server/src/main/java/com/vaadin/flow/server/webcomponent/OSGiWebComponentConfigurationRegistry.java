@@ -13,24 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.webcomponent;
+package com.vaadin.flow.server.webcomponent;
 
-import java.io.Serializable;
+import java.util.Map;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 
 /**
- * Listener for receiving changes to {@link WebComponentProperty} value.
- *
- * @param <T>
- *            type of the {@link WebComponentProperty} value
+ * Data collector component for collecting web components in an OSGi
+ * environment.
  */
-@FunctionalInterface
-public interface PropertyValueChangeListener<T> extends Serializable {
+public class OSGiWebComponentConfigurationRegistry extends WebComponentConfigurationRegistry {
 
     /**
-     * Notifies when target property value has changed.
-     *
-     * @param event
-     *            property value change event
+     * {@inheritDoc}
      */
-    void valueChange(PropertyValueChangeEvent<T> event);
+    @Override
+    public boolean setExporters(Map<String, Class<?
+            extends WebComponentExporter<? extends Component>>> exporters) {
+
+        updateRegistry(exporters);
+        return true;
+    }
 }

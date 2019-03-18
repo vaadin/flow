@@ -13,24 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-public class ReturnChannelIT extends ChromeBrowserTest {
-    @Test
-    public void testReturnChannel() {
-        open();
-
-        WebElement button = findElement(By.id("button"));
-
-        button.click();
-
-        Assert.assertEquals("Click registered: hello", button.getText());
+@Tag("client-select")
+public class ClientSelectExporter implements WebComponentExporter<ClientSelect> {
+    @Override
+    public void define(WebComponentDefinition<ClientSelect> definition) {
+        definition.addProperty("show", false)
+                .onChange(ClientSelect::setMessageVisible);
     }
 }

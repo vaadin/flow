@@ -15,25 +15,25 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
-import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
  * Request handler that supplies the script/html of the WebComponent matching
@@ -42,8 +42,9 @@ import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
 public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private static final String PATH_PREFIX = "/web-component/";
-    public static final String SUFFIX = ".html";
+    private static final String SUFFIX = ".html";
 
+    // exporter class to script/html
     private Map<Class<?>, String> cache;
 
     @Override
@@ -68,18 +69,20 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<Class<? extends Component>> webComponent = WebComponentRegistry
-                .getInstance(
+        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
+                WebComponentConfigurationRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext())
-                .getWebComponent(tag.get());
+                .getConfiguration(tag.get());
 
-        if (webComponent.isPresent()) {
+        if (optionalWebComponentConfiguration.isPresent()) {
             if (cache == null) {
                 cache = new HashMap<>();
             }
+            WebComponentConfiguration<? extends Component> webComponentConfiguration =
+                    optionalWebComponentConfiguration.get();
             String generated;
-            if (cache.containsKey(webComponent.get())) {
-                generated = cache.get(webComponent.get());
+            if (cache.containsKey(webComponentConfiguration.getClass())) {
+                generated = cache.get(webComponentConfiguration.getClass());
             } else {
                 String uiElement;
                 if (session.getConfiguration().getRootElementId().isEmpty()) {
@@ -91,9 +94,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 }
 
                 generated = WebComponentGenerator.generateModule(uiElement,
-                        tag.get(), webComponent.get(),
-                        session.getService().getInstantiator(), request);
-                cache.put(webComponent.get(), generated);
+                        tag.get(), webComponentConfiguration, request);
+                cache.put(webComponentConfiguration.getClass(), generated);
             }
 
             IOUtils.write(generated, response.getOutputStream(),
