@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.plugin.common.AnnotationValuesExtractor.LUMO;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getHtmlImportJsModules;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getProjectClassPathUrls;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -41,11 +39,17 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.utils.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import static com.vaadin.flow.plugin.common.AnnotationValuesExtractor.LUMO;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getHtmlImportJsModules;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getProjectClassPathUrls;
+import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 
 /**
@@ -54,9 +58,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 @Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
 public class UpdateImportsMojo extends AbstractMojo {
-
     private static final String VALUE = "value";
-    public static final String MAIN_JS = "frontend/main.js";
+    private static final String MAIN_JS = "frontend/main.js";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -64,7 +67,7 @@ public class UpdateImportsMojo extends AbstractMojo {
     /**
      * Name of the JavaScript file to update.
      */
-    @Parameter(defaultValue = "")
+    @Parameter()
     private String jsFile;
 
     /**
@@ -133,8 +136,7 @@ public class UpdateImportsMojo extends AbstractMojo {
                     lines.add("document.head.insertBefore(div.firstElementChild, document.head.firstChild);");
                 });
             }
-            htmlAttributes.entrySet().forEach(
-                    e -> lines.add("document.body.setAttribute('" + e.getKey() + "', '" + e.getValue() + "');"));
+            htmlAttributes.forEach((key, value) -> lines.add("document.body.setAttribute('" + key + "', '" + value + "');"));
 
             modules.forEach(module -> {
                 // to-do(manolo): disabled for certain files because not all files have corresponding themed one.
@@ -170,15 +172,23 @@ public class UpdateImportsMojo extends AbstractMojo {
         addClassesWithHtmlImports(classes);
 
         Set<String> jsModules = new HashSet<>();
-        classes.entrySet().stream()
-                // Visit all classes
-                .forEach(entry -> entry.getValue()
-                        // Visit all imports
-                        .forEach(fileName -> jsModules.add(
-                                // add `./` prefix to names starting with letters
-                                fileName.replaceFirst("(?i)^([a-z])", "./$1"))));
+        classes.values().stream().flatMap(Collection::stream)
+                .forEach(fileName -> jsModules.add(
+                        // add `./` prefix to names starting with letters
+                        fileName.replaceFirst("(?i)^([a-z])", "./$1")));
 
-        return jsModules.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toCollection(LinkedHashSet::new));
+        // TODO kb naming and probably refactor all this mess
+        Stream<String> jsImportsStream = annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
+            .flatMap(Collection::stream)
+            // TODO kb look for other usages in the plugin, should be done somewhere already
+            .map(fileName -> fileName.replace(FRONTEND_PROTOCOL_PREFIX,""))
+            .map(fileName ->
+                // add `./` prefix to everything starting with letters
+                fileName.replaceFirst("(?i)^([a-z])", "./$1"));
+
+        return Stream.concat(jsModules.stream(), jsImportsStream)
+            .sorted(Comparator.reverseOrder())
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private void addClassesWithJsModules(Map<Class<?>, Set<String>> classes) {
@@ -228,7 +238,7 @@ public class UpdateImportsMojo extends AbstractMojo {
         } else {
             File out = new File(jsFile);
             FlowPluginFileUtils.forceMkdir(out.getParentFile());
-            FileUtils.fileWrite(out, "UTF-8", newContent.stream().collect(Collectors.joining("\n")));
+            FileUtils.fileWrite(out, "UTF-8", String.join("\n", newContent));
             getLog().info("Updated " + jsFile);
         }
     }
