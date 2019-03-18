@@ -16,32 +16,22 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.webcomponent.WebComponentMethod;
-import com.vaadin.flow.component.webcomponent.WebComponentProperty;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Generates a client-side web component from a Java class.
@@ -52,7 +42,6 @@ import elemental.json.JsonObject;
 public class WebComponentGenerator {
 
     private static final String INDENTATION = "    ";
-    private static final String template = getTemplate();
 
     private WebComponentGenerator() {
     }
@@ -76,22 +65,20 @@ public class WebComponentGenerator {
      *            string for finding the UI element on the client
      * @param tag
      *            web component tag
-     * @param webComponentClass
+     * @param webComponentConfiguration
      *            web component class implementation
-     * @param instantiator
-     *            class instantiator implementation
      * @param request
      *            a vaadin request
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(String uiElement, String tag,
-            Class<? extends Component> webComponentClass,
-            Instantiator instantiator, VaadinRequest request) {
-        Set<PropertyData> webComponentProperties = getPropertyData(
-                webComponentClass, instantiator);
+            WebComponentConfiguration<? extends Component> webComponentConfiguration,
+            VaadinRequest request) {
+        Set<PropertyData<?>> propertyDataSet =
+                webComponentConfiguration.getPropertyDataSet();
 
         Map<String, String> replacements = getReplacementsMap(uiElement, tag,
-                webComponentProperties, getContextPath(request));
+                propertyDataSet, getContextPath(request));
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -101,20 +88,8 @@ public class WebComponentGenerator {
         return template;
     }
 
-    static Set<PropertyData> getPropertyData(
-            Class<? extends Component> webComponentClass,
-            Instantiator instantiator) {
-        Set<PropertyData> webComponentProperties = new HashSet<>();
-
-        webComponentProperties
-                .addAll(getMethodPropertiesWithDefaults(webComponentClass));
-        webComponentProperties
-                .addAll(getFieldProperties(webComponentClass, instantiator));
-        return webComponentProperties;
-    }
-
     static Map<String, String> getReplacementsMap(String uiElement, String tag,
-            Set<PropertyData> webComponentProperties, String contextPath) {
+                                                  Set<PropertyData<?>> propertyDataSet, String contextPath) {
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);
@@ -122,10 +97,10 @@ public class WebComponentGenerator {
                 .capitalize(SharedUtil.dashSeparatedToCamelCase(tag)));
 
         replacements.put("PropertyMethods", getPropertyMethods(
-                webComponentProperties.stream().map(PropertyData::getName)));
+                propertyDataSet.stream().map(PropertyData::getName)));
 
         replacements.put("Properties",
-                getPropertyDefinitions(webComponentProperties));
+                getPropertyDefinitions(propertyDataSet));
 
         replacements.put("RootElement", uiElement);
 
@@ -145,136 +120,41 @@ public class WebComponentGenerator {
         return contextPath;
     }
 
-    private static Set<PropertyData> getFieldProperties(
-            Class<? extends Component> webComponentClass,
-            Instantiator instantiator) {
-
-        List<Field> propertyFields = getPropertyFields(webComponentClass);
-
-        Set<PropertyData> properties = new HashSet<>();
-        if (propertyFields.isEmpty()) {
-            return properties;
-        }
-
-        Component wc = instantiator.getOrCreate(webComponentClass);
-
-        // Add fields in order so any overriding child field is added first
-        // making the parent field not add their property data.
-        for (Field field : propertyFields) {
-            boolean accessible = field.isAccessible();
-            field.setAccessible(true);
-            Class<?> typeClass;
-            Type type = field.getGenericType();
-            if (type instanceof ParameterizedType) {
-                typeClass = GenericTypeReflector.erase(
-                        ((ParameterizedType) type).getActualTypeArguments()[0]);
-            } else {
-                typeClass = GenericTypeReflector.erase(field.getType());
-            }
-            try {
-                Object propertyValue = ((WebComponentProperty) field.get(wc))
-                        .get();
-                properties.add(new PropertyData(field.getName(), typeClass,
-                        propertyValue == null ? null
-                                : propertyValue.toString()));
-            } catch (IllegalAccessException e) {
-                throw new PropertyReadException(
-                        "Failed to get the property value for field '"
-                                + field.getName() + "'",
-                        e);
-            } finally {
-                field.setAccessible(accessible);
-            }
-        }
-
-        return properties;
-    }
-
-    /**
-     * Get all {@link WebComponentProperty} fields for target class and parents.
-     * Fields are set in the order of child first parent last.
-     *
-     * @param webComponentClass
-     *            class to get fields for
-     * @return {@link WebComponentProperty} fields
-     */
-    private static List<Field> getPropertyFields(Class<?> webComponentClass) {
-        List<Field> fields = new ArrayList<>();
-
-        // Add all WebComponent fields for this class
-        fields.addAll(Stream.of(webComponentClass.getDeclaredFields())
-                .filter(field -> WebComponentProperty.class
-                        .isAssignableFrom(field.getType()))
-                .collect(Collectors.toSet()));
-
-        // Add the parent fields after our fields
-        if (webComponentClass.getSuperclass() != null) {
-            fields.addAll(getPropertyFields(webComponentClass.getSuperclass()));
-        }
-
-        return fields;
-    }
-
-    private static Set<PropertyData> getMethodPropertiesWithDefaults(
-            Class<?> webComponentClass) {
-
-        Set<PropertyData> properties = new HashSet<>();
-
-        if (webComponentClass.getSuperclass() != null) {
-            properties.addAll(getMethodPropertiesWithDefaults(
-                    webComponentClass.getSuperclass()));
-        }
-
-        Stream.of(webComponentClass.getDeclaredMethods()).filter(
-                method -> method.isAnnotationPresent(WebComponentMethod.class))
-                .forEach(method -> {
-                    Class<?>[] parameterTypes = method.getParameterTypes();
-                    WebComponentMethod annotation = method
-                            .getAnnotation(WebComponentMethod.class);
-                    PropertyData property = new PropertyData(annotation.value(),
-                            parameterTypes[0], annotation.initialValue());
-                    if (!properties.add(property)) {
-                        properties.remove(property);
-                        properties.add(property);
-                    }
-                });
-
-        return properties;
-    }
-
-    private static String getPropertyDefinitions(Set<PropertyData> properties) {
+    private static String getPropertyDefinitions(Set<PropertyData<?>> properties) {
         JsonObject props = Json.createObject();
 
-        for (PropertyData property : properties) {
+        for (PropertyData<?> property : properties) {
             JsonObject prop = createPropertyDefinition(property);
             props.put(property.getName(), prop);
         }
         return props.toJson();
     }
 
-    private static JsonObject createPropertyDefinition(PropertyData property) {
+    private static JsonObject createPropertyDefinition(PropertyData<?> property) {
         JsonObject prop = Json.createObject();
 
         prop.put("type", property.getType().getSimpleName());
 
-        Class<?> convertedType = ReflectTools
-                .convertPrimitiveType(property.getType());
-        if (property.getInitialValue() != null) {
+        if (property.getDefaultValue() != null) {
             String propertyValue = "value";
-            if (convertedType == Boolean.class) {
-                prop.put(propertyValue, (Boolean) convertedType
-                        .cast(Boolean.valueOf(property.getInitialValue())));
-            } else if (convertedType == Double.class) {
-                prop.put(propertyValue, (Double) convertedType
-                        .cast(Double.valueOf(property.getInitialValue())));
-            } else if (convertedType == Integer.class) {
-                prop.put(propertyValue, (Integer) convertedType
-                        .cast(Integer.valueOf(property.getInitialValue())));
+            if (property.getType() == Boolean.class) {
+                prop.put(propertyValue, (Boolean) property.getDefaultValue());
+            } else if (property.getType() == Double.class) {
+                prop.put(propertyValue, (Double) property.getDefaultValue());
+            } else if (property.getType() == Integer.class) {
+                prop.put(propertyValue, (Integer) property.getDefaultValue());
+            } else if (property.getType() == String.class) {
+                prop.put(propertyValue, (String) property.getDefaultValue());
+            } else if (JsonValue.class.isAssignableFrom(property.getType())) {
+                prop.put(propertyValue, (JsonValue) property.getDefaultValue());
             } else {
-                prop.put(propertyValue, property.getInitialValue());
+                throw new UnsupportedPropertyTypeException(String.format("%s " +
+                        "is not a currently supported type for a Property. " +
+                                "Please use %s instead.",
+                        property.getType().getSimpleName(),
+                        JsonValue.class.getSimpleName()));
             }
         }
-
         prop.put("observer", getSyncMethod(property.getName()));
         prop.put("notify", true);
         prop.put("reflectToAttribute", false);

@@ -1,146 +1,186 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.component.webcomponent;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationImpl;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import elemental.json.Json;
 
 public class WebComponentWrapperTest {
 
+    private static final String MSG_PROPERTY = "message";
+    private static final String INT_PROPERTY = "integerValue";
+    private static final String BOOLEAN_PROPERTY = "booleanValue";
+
+    private MyComponent component;
+    private WebComponentBinding<MyComponent> binding;
+    private WebComponentConfiguration<MyComponent> configuration;
+
+    @Before
+    public void init() {
+        configuration = new WebComponentConfigurationImpl<>("my-component",
+                new MyComponentExporter());
+        // make component available and bind properties to it
+        binding = configuration.createBinding(new MockInstantiator());
+        component = binding.getComponent();
+    }
+
+
     @Test
-    public void wrappedMyComponent_syncSetsCorrectValuesToBothFieldAndMethod() {
-        MyComponent component = new MyComponent();
+    public void wrappedMyComponent_syncSetsCorrectValuesToFields() {
         WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
-                component);
+                binding);
 
-        wrapper.sync("response", Json.create("test value"));
-
-        Assert.assertEquals("Response field should have updated with new value",
-                "test value", component.response.get());
-
-        wrapper.sync("message", Json.create("MyMessage"));
+        wrapper.sync(MSG_PROPERTY, Json.create("MyMessage"));
 
         Assert.assertEquals(
-                "Message should have updated through 'setMessage' method",
+                "Message field should have updated with new value",
                 "MyMessage", component.message);
 
-        wrapper.sync("integerValue", Json.create(10));
+        wrapper.sync(INT_PROPERTY, Json.create(10));
 
         Assert.assertEquals(
                 "IntegerValue field should contain a matching integer value",
-                Integer.valueOf(10), component.integerValue.get());
+                10, component.integerValue);
     }
 
     @Test
     public void wrappedComponentPropertyListener_listenerFiredWithCorrectValuesOnSync() {
-        MyComponent component = new MyComponent();
         WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
-                component);
+                binding);
 
-        List<PropertyValueChangeEvent<?>> events = new ArrayList<>();
+        wrapper.sync(MSG_PROPERTY, Json.create("one"));
+        wrapper.sync(INT_PROPERTY, Json.create(2));
+        wrapper.sync(MSG_PROPERTY, Json.create("three"));
+        wrapper.sync(INT_PROPERTY, Json.create(4));
 
-        component.response.addValueChangeListener(events::add);
-        component.integerValue.addValueChangeListener(events::add);
-
-        wrapper.sync("response", Json.create("update"));
-        wrapper.sync("integerValue", Json.create(15));
-
+        // 3, since creation sets the initial value
         Assert.assertEquals(
-                "Only one event for each sync should have taken place", 2,
-                events.size());
+                "Two string messages should have come through", 3,
+                component.oldMessages.size());
 
-        Assert.assertEquals("First event source should be 'response'",
-                component.response, events.get(0).getSource());
+        // 3, since creation sets the initial value
+        Assert.assertEquals(
+                "Two integer messages should have come through", 3,
+                component.oldIntegers.size());
 
-        Assert.assertEquals("Second event source should be 'integerValue'",
-                component.integerValue, events.get(1).getSource());
+        Assert.assertEquals("String messages arrived in correct order",
+                Arrays.asList("", "one", "three"), component.oldMessages);
 
-        Assert.assertEquals("OldValue should match default value", "hello",
-                events.get(0).getOldValue());
-        Assert.assertEquals("NewValue should match updated value", "update",
-                events.get(0).getNewValue());
-
-        Assert.assertNull("OldValue should be null as no default was given",
-                events.get(1).getOldValue());
-        Assert.assertEquals("New value should be a matching Integer",
-                Integer.valueOf(15), events.get(1).getNewValue());
+        Assert.assertEquals("Integer messages arrived in correct order",
+                Arrays.asList(0, 2,4), component.oldIntegers);
 
     }
 
     @Test
-    public void extendingWebComponent_inheritedFieldsAreAvailableAndOverridden() {
-        MyExtension component = new MyExtension();
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-extension",
-                component);
+    public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
+        WebComponentConfiguration<MyExtension> configuration =
+                new WebComponentConfigurationImpl<>("extended-component",
+                        new MyExtensionExporter());
+        WebComponentBinding<MyExtension> binding =
+                configuration.createBinding(new MockInstantiator());
+        MyExtension component = binding.getComponent();
 
-        List<PropertyValueChangeEvent<?>> events = new ArrayList<>();
+        WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
+                "-component", binding);
 
-        component.response.addValueChangeListener(events::add);
-        component.integerValue.addValueChangeListener(events::add);
+        wrapper.sync(MSG_PROPERTY, Json.create("one"));
+        wrapper.sync(INT_PROPERTY, Json.create(2));
+        wrapper.sync(MSG_PROPERTY, Json.create("three"));
+        wrapper.sync(INT_PROPERTY, Json.create(4));
 
-        wrapper.sync("response", Json.create("update"));
-        wrapper.sync("integerValue", Json.create(15));
-
+        // 3, since creation sets the initial value
         Assert.assertEquals(
-                "First event source should be 'response' from the extending class",
-                component.response, events.get(0).getSource());
+                "Two string messages should have come through", 3,
+                component.oldMessages.size());
 
-        Assert.assertEquals("Second event source should be 'integerValue'",
-                component.integerValue, events.get(1).getSource());
+        // 3, since creation sets the initial value
+        Assert.assertEquals(
+                "Two integer messages should have come through", 3,
+                component.oldIntegers.size());
 
-        Assert.assertEquals("OldValue should match default value", "Hi",
-                events.get(0).getOldValue());
-        Assert.assertEquals("NewValue should match updated value", "update",
-                events.get(0).getNewValue());
+        Assert.assertEquals("String messages arrived in correct order",
+                Arrays.asList("Extended ", "Extended one", "Extended three"),
+                component.oldMessages);
 
-        Assert.assertNull("OldValue should be null as no default was given",
-                events.get(1).getOldValue());
-        Assert.assertEquals("New value should be a matching Integer",
-                Integer.valueOf(15), events.get(1).getNewValue());
+        Assert.assertEquals("Integer messages arrived in correct order",
+                Arrays.asList(0, 2,4), component.oldIntegers);
     }
 
     @Test
-    public void extendingWebComponent_inheritedMethodsAreAvailableAndOverridden() {
-        MyExtension component = new MyExtension();
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-extension",
-                component);
+    public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
+        WebComponentConfiguration<MyComponent> configuration =
+                new WebComponentConfigurationImpl<>("my-component-extended",
+                        new ExtendedExporter());
+        WebComponentBinding<MyComponent> binding =
+                configuration.createBinding(new MockInstantiator());
+        MyComponent component = binding.getComponent();
 
-        wrapper.sync("message", Json.create("MyMessage"));
+        WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
+                "-component", binding);
 
+        wrapper.sync(MSG_PROPERTY, Json.create("one"));
+        wrapper.sync(INT_PROPERTY, Json.create(2));
+        wrapper.sync(MSG_PROPERTY, Json.create("three"));
+        wrapper.sync(INT_PROPERTY, Json.create(4));
+        wrapper.sync(BOOLEAN_PROPERTY, Json.create(true));
+
+        // 3, since creation sets the initial value
         Assert.assertEquals(
-                "Message should have updated through 'setMessage' method",
-                "MyMessage!", component.message);
-    }
+                "Two string messages should have come through", 3,
+                component.oldMessages.size());
 
-    @Test(expected = IllegalStateException.class)
-    public void overlappingFieldAndMethodRegistration_syncFailsWithAnException() {
-        Broken component = new Broken();
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-extension",
-                component);
+        // 3, since creation sets the initial value
+        Assert.assertEquals(
+                "Two integer messages should have come through", 3,
+                component.oldIntegers.size());
 
-        wrapper.sync("message", Json.create("hello"));
+        Assert.assertEquals("String messages arrived in correct order",
+                Arrays.asList("Default", "one", "three"),
+                component.oldMessages);
 
-        Assert.fail(
-                "Synchronisation of property for which both method and field exists should have thrown!");
+        Assert.assertEquals("Integer messages arrived in correct order",
+                Arrays.asList(0, 2, 4), component.oldIntegers);
+
+        Assert.assertTrue("Boolean property should have been set to true",
+                component.booleanValue);
     }
 
     @Test
@@ -156,9 +196,8 @@ public class WebComponentWrapperTest {
                 Mockito.mock(VaadinService.class)));
         Mockito.when(ui.getInternals()).thenReturn(internals);
 
-        MyComponent component = new MyComponent();
         WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
-                component) {
+                binding) {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
@@ -222,9 +261,8 @@ public class WebComponentWrapperTest {
                 Mockito.mock(VaadinService.class)));
         Mockito.when(ui.getInternals()).thenReturn(internals);
 
-        MyComponent component = new MyComponent();
         WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
-                component) {
+                binding) {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
@@ -258,53 +296,77 @@ public class WebComponentWrapperTest {
                 wrapper.getParent().isPresent());
     }
 
-    @WebComponent("my-component")
+    @Tag("my-component")
     public static class MyComponent extends Component {
-
+        ArrayList<String> oldMessages = new ArrayList<>();
+        ArrayList<Integer> oldIntegers = new ArrayList<>();
         protected String message;
-        protected WebComponentProperty<String> response = new WebComponentProperty<>(
-                "hello", String.class);
-        protected WebComponentProperty<Integer> integerValue = new WebComponentProperty<>(
-                Integer.class);
+        int integerValue;
+        boolean booleanValue;
 
         public MyComponent() {
             super(new Element("div"));
         }
 
-        @WebComponentMethod("message")
         public void setMessage(String message) {
+            oldMessages.add(message);
             this.message = message;
         }
 
+        public void setIntegerValue(int integerValue) {
+            this.oldIntegers.add(integerValue);
+            this.integerValue = integerValue;
+        }
+
+        public void setBooleanValue(boolean value) {
+            booleanValue = value;
+        }
     }
 
-    @WebComponent("my-extension")
     public static class MyExtension extends MyComponent {
-
-        protected WebComponentProperty<String> response = new WebComponentProperty<>(
-                "Hi", String.class);
-
-        @WebComponentMethod("message")
-        public void setMyFancyMessage(String extendedMessage) {
-            message = extendedMessage + "!";
-        }
-    }
-
-    @WebComponent("broken-component")
-    public static class Broken extends Component {
-        protected WebComponentProperty<String> message = new WebComponentProperty<>(
-                "", String.class);
-
-        public Broken() {
-            super(new Element("div"));
-        }
-
-        @WebComponentMethod("message")
+        @Override
         public void setMessage(String message) {
+            super.setMessage("Extended " + message);
         }
     }
 
     @Tag("div")
     public static class Parent extends Component {
+    }
+
+    @Tag("my-component")
+    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty(MSG_PROPERTY, "")
+                    .onChange(MyComponent::setMessage);
+            definition.addProperty(INT_PROPERTY, 0)
+                    .onChange(MyComponent::setIntegerValue);
+        }
+    }
+
+    @Tag("extended-component")
+    public static class MyExtensionExporter implements WebComponentExporter<MyExtension> {
+        @Override
+        public void define(WebComponentDefinition<MyExtension> definition) {
+            definition.addProperty(MSG_PROPERTY, "")
+                    .onChange(MyExtension::setMessage);
+            definition.addProperty(INT_PROPERTY, 0)
+                    .onChange(MyExtension::setIntegerValue);
+        }
+    }
+
+    @Tag("my-component-extended")
+    public static class ExtendedExporter extends MyComponentExporter {
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            super.define(definition);
+
+            definition.addProperty(MSG_PROPERTY, "Default")
+                    .onChange(MyComponent::setMessage);
+
+            definition.addProperty(BOOLEAN_PROPERTY, false)
+                    .onChange(MyComponent::setBooleanValue);
+        }
     }
 }
