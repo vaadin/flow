@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.exec.OS;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
@@ -205,7 +206,11 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     private void updateDependencies(List<String> dependencies, String... npmInstallArgs) throws IOException {
         List<String> command = new ArrayList<>(5 + dependencies.size());
-        command.add("npm");
+        if(OS.isFamilyWindows()) {
+            command.add("npm.cmd");
+        } else {
+            command.add("npm");
+        }
         command.add("--no-package-lock");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));
