@@ -16,7 +16,8 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.*;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.PACKAGE_JSON;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.WEBPACK_CONFIG;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -38,7 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.plugin.TestUtils;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class UpdateNpmDependenciesMojoTest {
 
@@ -49,13 +49,8 @@ public class UpdateNpmDependenciesMojoTest {
     String packageJson;
     String webpackConfig;
 
-    private URL testResource;
-
     @Before
     public void setup() throws IOException, DependencyResolutionRequiredException, IllegalAccessException {
-
-        testResource = TestUtils.getTestResource(WEBPACK_CONFIG);
-
         project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 

@@ -27,6 +27,12 @@
             <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server-production-mode</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-dev</artifactId>
@@ -60,20 +66,34 @@
                         </goals>
                     </execution>
                 </executions>
-                    <configuration>
+                <configuration>
                     <systemProperties>
+                        <systemProperty>
+                            <name>vaadin.devmode.webpack.options</name>
+                            <value>--debug</value>
+                        </systemProperty>
                         <systemProperty>
                             <name>project.basedir</name>
                             <value>${project.basedir}</value>
                         </systemProperty>
                     </systemProperties>
-                    </configuration>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets>
-                        <fileset><directory>src/main/webapp/build</directory></fileset>
+                        <fileset>
+                            <directory>src/main/webapp/build/</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>src/main/webapp/frontend/main.js</include>
+                                <include>package*.json</include>
+                                <include>webpack.config.js</include>
+                            </includes>
+                        </fileset>
                     </filesets>
                 </configuration>
             </plugin>
@@ -120,7 +140,6 @@
                     <name>!vaadin.bowerMode</name>
                 </property>
             </activation>
-
             <build>
                 <plugins>
                     <plugin>
@@ -139,12 +158,12 @@
                 </plugins>
             </build>
         </profile>
+
         <!-- Install frontend NPM packages if not done yet -->
         <profile>
             <id>npm-install</id>
             <activation>
                 <file>
-                    <exists>package.json</exists>
                     <missing>node_modules</missing>
                 </file>
             </activation>
@@ -155,15 +174,45 @@
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>npm-install</id>
-                                <phase>validate</phase>
+                                <phase>compile</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
                                     <executable>npm</executable>
                                     <arguments>
                                         <argument>install</argument>
+                                        <argument>--no-package-lock</argument>
                                         <argument>--loglevel</argument>
                                         <argument>info</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Install frontend NPM packages if not done yet -->
+        <profile>
+            <id>run-webpack</id>
+            <activation>
+                <file>
+                    <missing>src/main/webapp/build/index.js</missing>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>node</executable>
+                                    <arguments>
+                                        <argument>node_modules/.bin/webpack</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
