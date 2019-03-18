@@ -24,8 +24,8 @@ import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.dom.DomListenerRegistration;
 
 /**
- * An interface, denoting that the component is able to change the way its value
- * on the client side is synchronized with the server side.
+ * Denotes that the component is able to change the way its value on the client
+ * side is synchronized with the server side.
  * <p>
  * A class implementing this interface should typically also implement
  * {@link HasValue} even though this is not required on the API level.
@@ -60,9 +60,9 @@ public interface HasValueChangeMode extends Serializable {
     void setValueChangeMode(ValueChangeMode valueChangeMode);
 
     /**
-     * Sets how often {@link ValueChangeEvent}s are triggered
-     * when the ValueChangeMode is set to {@link ValueChangeMode#LAZY},
-     * or {@link ValueChangeMode#TIMEOUT}.
+     * Sets how often {@link ValueChangeEvent}s are triggered when the
+     * ValueChangeMode is set to {@link ValueChangeMode#LAZY}, or
+     * {@link ValueChangeMode#TIMEOUT}.
      * <p>
      * Implementations should use
      * {@link ValueChangeMode#applyChangeTimeout(ValueChangeMode, int, DomListenerRegistration)}.
@@ -70,8 +70,9 @@ public interface HasValueChangeMode extends Serializable {
      * @param valueChangeTimeout
      *            the timeout in milliseconds of how often
      *            {@link ValueChangeEvent}s are triggered.
-     * @throws UnsupportedOperationException if neither {@link ValueChangeMode#LAZY},
-     *            nor {@link ValueChangeMode#TIMEOUT} is supported
+     * @throws UnsupportedOperationException
+     *             if neither {@link ValueChangeMode#LAZY}, nor
+     *             {@link ValueChangeMode#TIMEOUT} is supported
      */
     default void setValueChangeTimeout(int valueChangeTimeout) {
         throw new UnsupportedOperationException();
@@ -79,13 +80,14 @@ public interface HasValueChangeMode extends Serializable {
 
     /**
      * Returns the currently set timeout, for how often
-     * {@link ValueChangeEvent}s are triggered when the ValueChangeMode is
-     * set to {@link ValueChangeMode#LAZY}, or {@link ValueChangeMode#TIMEOUT}.
+     * {@link ValueChangeEvent}s are triggered when the ValueChangeMode is set
+     * to {@link ValueChangeMode#LAZY}, or {@link ValueChangeMode#TIMEOUT}.
      *
      * @return the timeout in milliseconds of how often
-     *            {@link ValueChangeEvent}s are triggered.
-     * @throws UnsupportedOperationException if neither {@link ValueChangeMode#LAZY},
-     *            nor {@link ValueChangeMode#TIMEOUT} is supported
+     *         {@link ValueChangeEvent}s are triggered.
+     * @throws UnsupportedOperationException
+     *             if neither {@link ValueChangeMode#LAZY}, nor
+     *             {@link ValueChangeMode#TIMEOUT} is supported
      */
     default int getValueChangeTimeout() {
         throw new UnsupportedOperationException();

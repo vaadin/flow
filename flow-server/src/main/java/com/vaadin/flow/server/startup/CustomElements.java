@@ -30,7 +30,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
 /**
- * A class to store the data about element
+ * Stores the data about element
  * name({@link Tag} annotation name value) relation to
  * all unique classes with corresponding annotation.
  *

@@ -17,8 +17,6 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.UI;
-
 /**
  * Listener for listening to the heartbeat of the application.
  */
@@ -26,10 +24,10 @@ import com.vaadin.flow.component.UI;
 public interface HeartbeatListener extends Serializable {
 
     /**
-     * Method called for a heartbeat received for UI.
+     * Notifies about a heartbeat received for UI.
      *
      * @param event
-     *         heartbeat event containing new value and receiving UI
+     *            heartbeat event containing new value and receiving UI
      */
     void heartbeat(HeartbeatEvent event);
 

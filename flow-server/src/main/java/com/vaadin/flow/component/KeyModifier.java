@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Enumeration of modifier keys.
+ * Modifier keys.
  */
 public enum KeyModifier implements Key {
 

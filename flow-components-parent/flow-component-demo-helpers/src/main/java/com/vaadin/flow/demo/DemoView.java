@@ -87,7 +87,7 @@ public abstract class DemoView extends Component
     }
 
     /**
-     * Method run where the actual view builds its contents.
+     * Builds the content of the view.
      */
     protected abstract void initView();
 

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Class for validating custom-element name according to definition in <a href=
+ * Validates custom-element name according to definition in <a href=
  * "https://www.w3.org/TR/custom-elements/#prod-potentialcustomelementname">Custom
  * element name</a>
  */
@@ -43,7 +43,7 @@ public final class CustomElementNameValidator {
 
     /**
      * Validate that given name is a valid Custom Element name.
-     * 
+     *
      * @param name
      *            Name to validate
      * @return Result containing possible validation error and/or warning

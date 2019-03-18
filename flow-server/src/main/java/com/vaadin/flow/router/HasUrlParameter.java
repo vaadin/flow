@@ -18,8 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 /**
- * Interface for defining url parameters for navigation targets for use in
- * routing.
+ * Defines url parameters for navigation targets for use in routing.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -31,8 +30,7 @@ import java.io.Serializable;
 public interface HasUrlParameter<T> extends Serializable {
 
     /**
-     * Method that is called automatically when navigating to the target that
-     * implements this interface.
+     * Notifies about navigating to the target that implements this interface.
      *
      * @param event
      *            the navigation event that caused the call to this method

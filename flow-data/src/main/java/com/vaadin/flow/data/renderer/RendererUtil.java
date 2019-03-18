@@ -32,8 +32,9 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.Command;
 
 /**
- * Class used internally by components that support {@link TemplateRenderer}. It
- * contains helper methods to register events triggered by rendered templates.
+ * Contains helper methods to register events triggered by rendered templates.
+ * <p>
+ * Used internally by components that support {@link TemplateRenderer}.
  *
  * @author Vaadin Ltd
  * @since 1.0.

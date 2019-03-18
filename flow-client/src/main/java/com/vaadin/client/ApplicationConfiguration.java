@@ -18,7 +18,7 @@ package com.vaadin.client;
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 /**
- * Class containing the configuration for an application.
+ * Application configuration data.
  * <p>
  * This class is effectively immutable although setters exist to assign the
  * values during construction.
@@ -276,7 +276,7 @@ public class ApplicationConfiguration {
 
     /**
      * Gets the base URL of the frontend components on the server.
-     * 
+     *
      * @return the base URL on the server for the {@literal frontend://}
      *         protocol.
      */
@@ -286,7 +286,7 @@ public class ApplicationConfiguration {
 
     /**
      * Sets the base URL of the frontend components on the server.
-     * 
+     *
      * @param frontendRootUrl
      *            the base URL on the server for the {@literal frontend://}
      *            protocol.
@@ -308,7 +308,7 @@ public class ApplicationConfiguration {
      * Set the dom element id to which ui element should be bound.
      *
      * @param uiElementId
-     *         ui id for target dom element, {@code null} for {@literal
+     *            ui id for target dom element, {@code null} for {@literal
      *         <body>}
      */
     public void setUiElementId(String uiElementId) {
@@ -328,7 +328,7 @@ public class ApplicationConfiguration {
      * Set the dom element tag to be used for ui element.
      *
      * @param uiTag
-     *         ui tag for target dom element
+     *            ui tag for target dom element
      */
     public void setUiTag(String uiTag) {
         this.uiTag = uiTag;

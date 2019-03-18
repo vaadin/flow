@@ -25,8 +25,8 @@ import java.io.Serializable;
 public interface UIInitListener extends Serializable {
 
     /**
-     * Method called for a initialized UI.
-     * 
+     * Notifies when UI is initialized .
+     *
      * @param event
      *            event for the initialization
      */

@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+
 /**
- * Class that holds the configuration from the {@link PWA} annotation.
+ * Holds the configuration from the {@link PWA} annotation.
  *
  * Takes {@link PWA} in constructor to fill properties. Sanitizes the input and
  * falls back to default values if {@link PWA} is unavailable ({@code null}).
@@ -248,7 +249,8 @@ public class PwaConfiguration implements Serializable {
     /**
      * Gets the start url of the PWA application.
      *
-     * <p>Used in manifest as start url.
+     * <p>
+     * Used in manifest as start url.
      *
      * @return start url of the PWA application
      */

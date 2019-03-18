@@ -18,8 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 /**
- * Interface for defining a view that handles the exceptions for the set
- * Exception type T.
+ * Defines a view that handles the exceptions for the set Exception type T.
  *
  * @param <T>
  *            type Exception type handled
@@ -31,11 +30,11 @@ import java.io.Serializable;
 public interface HasErrorParameter<T extends Exception> extends Serializable {
 
     /**
-     * Method called before rendering the exception view.
+     * Callback executed before rendering the exception view.
      * <p>
      * Note! returned int should be a valid
      * {@link javax.servlet.http.HttpServletResponse} code
-     * 
+     *
      * @param event
      *            the before navigation event for this request
      * @param parameter

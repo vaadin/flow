@@ -20,26 +20,24 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Class containing the constraints for filtering nested properties.
+ * Contains the constraints for filtering nested properties.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class PropertyFilterDefinition
-        implements Serializable {
+public class PropertyFilterDefinition implements Serializable {
     private int maxNestingDepth;
     private List<String> ignorePackageNamesStartingWith;
 
     /**
-     * Create a property filter with max nesting depth and package names
-     * to ignore.
+     * Create a property filter with max nesting depth and package names to
+     * ignore.
      *
      * @param maxNestingDepth
-     *            The maximum amount of nesting levels for
-     *            sub-properties.
+     *            The maximum amount of nesting levels for sub-properties.
      * @param ignorePackageNamesStartingWith
-     *            Ignore package names that start with this string, for
-     *            example "java.lang".
+     *            Ignore package names that start with this string, for example
+     *            "java.lang".
      */
     public PropertyFilterDefinition(int maxNestingDepth,
             List<String> ignorePackageNamesStartingWith) {
@@ -71,7 +69,8 @@ public class PropertyFilterDefinition
      * @return default property filter
      */
     public static PropertyFilterDefinition getDefaultFilter() {
-        return new PropertyFilterDefinition(BeanPropertySet.NestedBeanPropertyDefinition.MAX_PROPERTY_NESTING_DEPTH,
+        return new PropertyFilterDefinition(
+                BeanPropertySet.NestedBeanPropertyDefinition.MAX_PROPERTY_NESTING_DEPTH,
                 Arrays.asList("java"));
     }
 }
