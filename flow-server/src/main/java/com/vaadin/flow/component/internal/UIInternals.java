@@ -812,9 +812,9 @@ public class UIInternals implements Serializable {
         if (getSession().getConfiguration().isBowerMode()) {
             dependencies.getHtmlImports()
                     .forEach(html -> addHtmlImport(html, page));
-        }
-        dependencies.getJavaScripts()
+            dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
