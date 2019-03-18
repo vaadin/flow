@@ -206,7 +206,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     private void updateDependencies(List<String> dependencies, String... npmInstallArgs) throws IOException {
         List<String> command = new ArrayList<>(5 + dependencies.size());
-        if(OS.isFamilyWindows()) {
+        if (OS.isFamilyWindows()) {
             command.add("npm.cmd");
         } else {
             command.add("npm");
