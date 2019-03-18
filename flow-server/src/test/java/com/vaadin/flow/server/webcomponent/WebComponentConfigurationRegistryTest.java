@@ -80,7 +80,7 @@ public class WebComponentConfigurationRegistryTest {
     }
 
     @After
-    public void cleanUpOSGi() {
+    public void cleanUp() {
         CurrentInstance.clearAll();
     }
 
