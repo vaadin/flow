@@ -15,23 +15,22 @@
  */
 package com.vaadin.flow.spring;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -42,9 +41,9 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -57,8 +56,8 @@ import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletVerifier;
-import com.vaadin.flow.server.startup.WebComponentRegistryInitializer;
-import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
+import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
 
 /**
@@ -201,30 +200,32 @@ public class VaadinServletContextInitializer
 
     }
 
-    private class WebComponentServletContextListener extends
-            WebComponentRegistryInitializer implements ServletContextListener {
+    private class WebComponentServletContextListener implements ServletContextListener {
 
         @SuppressWarnings("unchecked")
         @Override
         public void contextInitialized(ServletContextEvent event) {
-            WebComponentRegistry registry = WebComponentRegistry
+            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(event.getServletContext());
 
-            if (registry.getWebComponents() == null
-                    || registry.getWebComponents().isEmpty()) {
-                Set<Class<? extends Component>> webComponents = findByAnnotation(
-                        getWebComponentPackages(), WebComponent.class)
-                                .map(c -> (Class<? extends Component>) c)
-                                .collect(Collectors.toSet());
+            if (registry.getConfigurations() == null
+                    || registry.getConfigurations().isEmpty()) {
+                WebComponentConfigurationRegistryInitializer initializer =
+                        new WebComponentConfigurationRegistryInitializer();
 
-                validateDistinct(webComponents);
-                validateComponentName(webComponents);
+                Set<Class<?>> webComponentExporters = findBySuperType(
+                        getWebComponentPackages(),
+                        WebComponentExporter.class).collect(Collectors.toSet());
 
-                Map<String, Class<? extends Component>> webComponentMap = webComponents
-                        .stream().collect(Collectors
-                                .toMap(this::getWebComponentName, c -> c));
-
-                registry.setWebComponents(webComponentMap);
+                try {
+                    initializer.onStartup(webComponentExporters, event.getServletContext());
+                } catch (ServletException e) {
+                    throw new RuntimeException(String.format("Failed to " +
+                            "initialize %s",
+                            WebComponentConfigurationRegistry.class
+                                    .getSimpleName()),
+                            e);
+                }
             }
         }
 
@@ -274,10 +275,9 @@ public class VaadinServletContextInitializer
         servletContext
                 .addListener(new AnnotationValidatorServletContextListener());
 
-        // Skip custom web component search if registry already initialized
-        Map<String, Class<? extends Component>> webComponents = WebComponentRegistry
-                .getInstance(servletContext).getWebComponents();
-        if (webComponents == null || webComponents.isEmpty()) {
+        // Skip custom web component builders search if registry already initialized
+        if (!WebComponentConfigurationRegistry.getInstance(servletContext)
+                .hasExporters()) {
             servletContext
                     .addListener(new WebComponentServletContextListener());
         }
