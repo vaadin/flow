@@ -47,9 +47,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
-    private Map<String, Class<? extends WebComponentExporter<?
-            extends Component>>> exporterClasses;
-    private Map<String, WebComponentConfigurationImpl<? extends Component>>
+    private HashMap<String, Class<? extends WebComponentExporter<?
+            extends Component>>> exporterClasses = null;
+    private HashMap<String, WebComponentConfigurationImpl<? extends Component>>
             builderCache = new HashMap<>();
 
     /**
@@ -94,6 +94,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
+     * Get an unmodifiable set containing all registered web component
+     * configurations for a specific {@link Component} type.
+     *
      * @param componentClass    type of the exported {@link Component}
      * @param <T>               component
      * @return  set of {@link WebComponentConfiguration} or an empty set.
@@ -107,10 +110,10 @@ public class WebComponentConfigurationRegistry implements Serializable {
             if (!areAllConfigurationsAvailable()) {
                 populateCacheWithMissingConfigurations();
             }
-            return builderCache.values().stream()
+            return Collections.unmodifiableSet(builderCache.values().stream()
                     .filter(b -> componentClass.equals(b.getComponentClass()))
                     .map(b -> (WebComponentConfiguration<T>)b)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toSet()));
 
         } finally {
             configurationLock.unlock();
@@ -128,7 +131,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
         configurationLock.lock();
         try {
             if (exporters.isEmpty()) {
-                exporterClasses = Collections.emptyMap();
+                exporterClasses = new HashMap<>(0);
             } else {
                 exporterClasses = new HashMap<>(exporters);
             }
@@ -167,10 +170,16 @@ public class WebComponentConfigurationRegistry implements Serializable {
         }
     }
 
+    public boolean hasExporters() {
+        return exporterClasses != null;
+    }
+
     /**
-     * Get map containing all registered web component builders.
+     * Get an unmodifiable set containing all registered web component
+     * configurations.
      *
-     * @return unmodifiable set of web component builders in registry
+     * @return  unmodifiable set of web component builders in registry or
+     *          empty set
      */
     public Set<WebComponentConfiguration<? extends Component>> getConfigurations() {
         configurationLock.lock();
@@ -265,6 +274,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * builderCache} based on the exporters.
      */
     protected void populateCacheWithMissingConfigurations() {
+        if (exporterClasses == null) {
+            return;
+        }
         exporterClasses.forEach((key, value) -> builderCache.put(key,
                 constructConfigurations(key, value)));
         // empty the exporter data bank - every builder has been constructed

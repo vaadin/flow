@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -167,6 +168,26 @@ public class WebComponentConfigurationRegistryTest {
         Assert.assertNull(
                 "Components from the second Set should not have been added",
                 registry.getConfigurationInternal("user-box"));
+    }
+
+    @Test
+    public void getConfigurations_uninitializedReturnsEmptySet() {
+        WebComponentConfigurationRegistry uninitializedRegistry =
+                new WebComponentConfigurationRegistry();
+
+        Set<?> set = uninitializedRegistry.getConfigurations();
+
+        Assert.assertEquals("Configuration set should be empty", 0, set.size());
+    }
+
+    @Test
+    public void hasExporters() {
+        Assert.assertFalse("Should have no exporters", registry.hasExporters());
+
+        registry.setExporters(Collections.emptyMap());
+
+        Assert.assertTrue("Should have exporters, albeit empty",
+                registry.hasExporters());
     }
 
     @Test

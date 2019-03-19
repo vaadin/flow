@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -44,7 +45,7 @@ import com.vaadin.flow.server.startup.EnableOSGiRunner;
 public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
 
     @After
-    public void cleanUp() {
+    public void cleanUpOSGi() {
         if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
             OSGiWebComponentConfigurationRegistry.getInstance(
                     OSGiAccess.getInstance().getOsgiServletContext());
@@ -92,6 +93,21 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
         Assert.assertEquals("Builder should be linked to UserBox.class",
                 UserBox.class, registry.getConfigurationInternal("user-box")
                         .getComponentClass());
+    }
+
+    @Override
+    public void hasExporters() {
+        // being a singleton caused this test to fail when inherited
+
+        OSGiWebComponentConfigurationRegistry registry =
+                new OSGiWebComponentConfigurationRegistry();
+
+        Assert.assertFalse("Should have no exporters", registry.hasExporters());
+
+        registry.setExporters(Collections.emptyMap());
+
+        Assert.assertTrue("Should have exporters, albeit empty",
+                registry.hasExporters());
     }
 
     @Override
