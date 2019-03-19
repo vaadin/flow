@@ -18,7 +18,15 @@ const build = 'build';
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${webappFolder}/${build}/stats.json`;
 // ensure that the output folder is created
-fs.mkdirSync(`${webappFolder}/${build}`, { recursive: true });
+const buildFolder = `${webappFolder}/${build}`;
+try {
+  console.log("Creating " + buildFolder)
+  !fs.existsSync(buildFolder) && fs.mkdirSync(buildFolder, { recursive: true });
+} catch (error) {
+  console.log(error);
+  console.log("Trying second method to create dir " + buildFolder)
+  require('child_process').exec(`mkdir -p ${webappFolder}`);
+}
 
 module.exports = {
   mode: 'production',
