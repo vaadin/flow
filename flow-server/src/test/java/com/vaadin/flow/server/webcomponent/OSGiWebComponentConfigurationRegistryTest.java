@@ -1,9 +1,24 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.server.webcomponent;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -14,61 +29,69 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.startup.EnableOSGiRunner;
 
+@NotThreadSafe
 @RunWith(EnableOSGiRunner.class)
-public class OSGiWebComponentRegistryTest extends WebComponentRegistryTest {
+public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
 
     @After
     public void cleanUp() {
         if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
-            WebComponentRegistry.getInstance(
+            OSGiWebComponentConfigurationRegistry.getInstance(
                     OSGiAccess.getInstance().getOsgiServletContext());
         }
     }
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(OSGiWebComponentRegistry.class.getName(),
+        Assert.assertEquals(OSGiWebComponentConfigurationRegistry.class.getName(),
                 registry.getClass().getName());
     }
 
     @Test
     public void assertOsgiRegistryIsServedAsASingleton() {
-        Assert.assertEquals(registry, WebComponentRegistry
+        Assert.assertEquals(registry, WebComponentConfigurationRegistry
                 .getInstance(Mockito.mock(ServletContext.class)));
     }
 
     @Override
-    public void setWebComponentsTwice_onlyFirstSetIsAccepted() {
+    public void setConfigurationsTwice_onlyFirstSetIsAccepted() {
+        // OSGi accepts setting the web components multiple times.
+        // NO-OP
+    }
+
+    @Override
+    public void setExporters_gettingBuildersDoesNotAllowAddingMore() {
         // OSGi accepts setting the web components multiple times.
         // NO-OP
     }
 
     @Test
-    public void setWebComponentsTwice_allSetsAcceptedLastSetValid() {
-        Map<String, Class<? extends Component>> webComponents = mapWebComponents(
-                MyComponent.class);
-
-        Assert.assertTrue("Registry should have accepted the WebComponents",
-                registry.setWebComponents(webComponents));
+    public void setBuildersTwice_allSetsAcceptedLastSetValid() {
+        Assert.assertTrue("Registry should have accepted the " +
+                        "WebComponentExporters",
+                registry.setExporters(asMap(MyComponentExporter.class)));
 
         Assert.assertTrue(
-                "OSGi registry should have accept the second set of WebComponents.",
-                registry.setWebComponents(mapWebComponents(UserBox.class)));
+                "OSGi registry should have accept the second set of " +
+                        "WebComponentExporters.",
+                registry.setExporters(asMap(UserBoxExporter.class)));
 
-        Assert.assertNotEquals("Stored WebComponents should be the latest set.",
-                webComponents, registry.getWebComponents());
-        Assert.assertEquals(mapWebComponents(UserBox.class),
-                registry.getWebComponents());
+        Assert.assertEquals("Registry should contain only one builder",
+                1, registry.getConfigurations().size());
+
+        Assert.assertEquals("Builder should be linked to UserBox.class",
+                UserBox.class, registry.getConfigurationInternal("user-box")
+                        .getComponentClass());
     }
 
     @Override
@@ -81,10 +104,12 @@ public class OSGiWebComponentRegistryTest extends WebComponentRegistryTest {
         List<Callable<AtomicBoolean>> callables = IntStream.range(0, THREADS)
                 .mapToObj(i -> {
                     Callable<AtomicBoolean> callable = () -> {
-                        // Add random sleep for better possibility to run at same time
+                        // Add random sleep for better possibility to run at
+                        // same time
                         Thread.sleep(new Random().nextInt(200));
-                        return new AtomicBoolean(registry.setWebComponents(
-                                mapWebComponents(MyComponent.class)));
+                        return new AtomicBoolean(
+                                registry.setExporters(asMap(
+                                        MyComponentExporter.class)));
                     };
                     return callable;
                 }).collect(Collectors.toList());

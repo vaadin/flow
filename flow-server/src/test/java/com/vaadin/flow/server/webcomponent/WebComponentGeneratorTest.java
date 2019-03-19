@@ -1,99 +1,42 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.server.webcomponent;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentMethod;
-import com.vaadin.flow.component.webcomponent.WebComponentProperty;
-import com.vaadin.flow.component.webcomponent.WebComponentWrapperTest;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 public class WebComponentGeneratorTest {
 
     @Test
-    public void generatorShouldGenerateAllPropertiesAndMethods() {
-        List<PropertyData> propertyDataSet = new ArrayList<>(
-                WebComponentGenerator.getPropertyData(MyComponent.class,
-                        new MockInstantiator()));
-
-        PropertyData response = new PropertyData("response", String.class,
-                "hello");
-        PropertyData integer = new PropertyData("integerValue", Integer.class,
-                null);
-        PropertyData message = new PropertyData("message", String.class, "");
-
-        Assert.assertTrue("All three properties should have been found",
-                propertyDataSet
-                        .containsAll(Stream.of(response, integer, message)
-                                .collect(Collectors.toSet())));
-
-        Assert.assertEquals("Response initial value should have been 'hello'",
-                response.getInitialValue(),
-                propertyDataSet.get(propertyDataSet.indexOf(response))
-                        .getInitialValue());
-        Assert.assertEquals("IntegerValue shouldn't have a initial value",
-                integer.getInitialValue(),
-                propertyDataSet.get(propertyDataSet.indexOf(integer))
-                        .getInitialValue());
-        Assert.assertEquals(
-                "Method property 'message' init value should be default from the annotation",
-                message.getInitialValue(),
-                propertyDataSet.get(propertyDataSet.indexOf(message))
-                        .getInitialValue());
-
-    }
-
-    @Test
-    public void extendingPropertiesShouldOverrideInGeneratorPropertiesAndMethods() {
-        List<PropertyData> propertyDataSet = new ArrayList<>(
-                WebComponentGenerator.getPropertyData(MyExtension.class,
-                        new MockInstantiator()));
-
-        PropertyData response = new PropertyData("response", String.class,
-                "Hi");
-        PropertyData integer = new PropertyData("integerValue", Integer.class,
-                null);
-        PropertyData message = new PropertyData("message", String.class,
-                "extend");
-
-        Assert.assertTrue("All three properties should have been found",
-                propertyDataSet
-                        .containsAll(Stream.of(response, integer, message)
-                                .collect(Collectors.toSet())));
-
-        Assert.assertEquals("Response initial value should have been 'Hi'",
-                response.getInitialValue(),
-                propertyDataSet.get(propertyDataSet.indexOf(response))
-                        .getInitialValue());
-        Assert.assertEquals("IntegerValue shouldn't have a initial value",
-                integer.getInitialValue(),
-                propertyDataSet.get(propertyDataSet.indexOf(integer))
-                        .getInitialValue());
-        Assert.assertEquals(
-                "Method property 'message' init value should be 'extend'",
-                message.getInitialValue(),
-                propertyDataSet.get(propertyDataSet.indexOf(message))
-                        .getInitialValue());
-    }
-
-    @Test
     public void generatedReplacementMapContainsExpectedEntries() {
-        Set<PropertyData> propertyData = WebComponentGenerator
-                .getPropertyData(MyComponent.class, new MockInstantiator());
+        WebComponentConfigurationImpl<MyComponent> builder =
+                new WebComponentConfigurationImpl<>("tag", new MyComponentExporter());
+
 
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("document.body", "my-component",
-                        propertyData, "/foo");
+                        builder.getPropertyDataSet(), "/foo");
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -125,42 +68,44 @@ public class WebComponentGeneratorTest {
         Assert.assertTrue(properties
                 .contains("\"message\":{\"type\":\"String\",\"value\":\"\""));
         Assert.assertTrue(properties.contains(
-                "\"integerValue\":{\"type\":\"Integer\",\"observer\""));
+                "\"integerValue\":{\"type\":\"Integer\",\"value\":0," +
+                        "\"observer\""));
         Assert.assertTrue(properties.contains(
                 "\"response\":{\"type\":\"String\",\"value\":\"hello\""));
 
     }
 
-    @WebComponent("my-component")
     public static class MyComponent extends Component {
+        // these will be initialized by the callbacks (if this was the real
+        // world)
+        private String response;
+        private int integerValue;
+        private String message;
 
-        protected String message;
-        protected WebComponentProperty<String> response = new WebComponentProperty<>(
-                "hello", String.class);
-        protected WebComponentProperty<Integer> integerValue = new WebComponentProperty<>(
-                Integer.class);
 
-        public MyComponent() {
-            super(new Element("div"));
+        public void setResponse(String response) {
+            this.response = response;
         }
 
-        @WebComponentMethod("message")
+        public void setIntegerValue(int integerValue) {
+            this.integerValue = integerValue;
+        }
+
         public void setMessage(String message) {
             this.message = message;
         }
-
     }
 
-    @WebComponent("my-extension")
-    public static class MyExtension
-            extends WebComponentWrapperTest.MyComponent {
-
-        protected WebComponentProperty<String> response = new WebComponentProperty<>(
-                "Hi", String.class);
-
-        @WebComponentMethod(value = "message", initialValue = "extend")
-        public void setMyFancyMessage(String extendedMessage) {
-            message = extendedMessage + "!";
+    @Tag("tag")
+    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+            definition.addProperty("response", "hello")
+                    .onChange(MyComponent::setMessage);
+            definition.addProperty("integerValue", 0)
+                    .onChange(MyComponent::setIntegerValue);
+            definition.addProperty("message", "")
+                    .onChange(MyComponent::setMessage);
         }
     }
 }

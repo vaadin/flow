@@ -13,23 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.webcomponent;
 
-import java.util.Map;
+package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-/**
- * Data collector component for collecting web components in an OSGi
- * environment.
- */
-public class OSGiWebComponentRegistry extends WebComponentRegistry {
-
+@Tag("embedded-push")
+public class PushTestExporter implements WebComponentExporter<UpdateServerSideWebComponent> {
     @Override
-    public boolean setWebComponents(
-            Map<String, Class<? extends Component>> components) {
-
-        updateRegistry(components);
-        return true;
+    public void define(WebComponentDefinition<UpdateServerSideWebComponent> definition) {
+        // UpdateServerSideWebComponent does not have any properties
     }
 }

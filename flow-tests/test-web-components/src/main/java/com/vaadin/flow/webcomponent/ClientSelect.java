@@ -21,17 +21,10 @@ import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.webcomponent.WebComponentProperty;
 
-@WebComponent("client-select")
 public class ClientSelect extends Div {
-
-    private WebComponentProperty<Boolean> show = new WebComponentProperty<>(
-            false, Boolean.class);
-
     private Span message = new Span();
     private Select select;
 
@@ -45,9 +38,6 @@ public class ClientSelect extends Div {
         Backend.getAllClients().forEach(
                 client -> select.addItem(client, client.getFirsName()));
         select.addValueChangeListener(this::setValue);
-
-        show.addValueChangeListener(
-                event -> message.setVisible(event.getNewValue()));
 
         add(select, message);
     }
@@ -69,5 +59,9 @@ public class ClientSelect extends Div {
         }
 
         message.setText(messageText);
+    }
+
+    public void setMessageVisible(boolean visible) {
+        message.setVisible(visible);
     }
 }

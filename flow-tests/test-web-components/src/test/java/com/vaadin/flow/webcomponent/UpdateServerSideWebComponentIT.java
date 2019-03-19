@@ -51,13 +51,14 @@ public class UpdateServerSideWebComponentIT extends ChromeBrowserTest {
 
         int updateCount = getUpdateCount();
         Assert.assertEquals(
-                "The update count should have reached the maximin 50, but it has value "
+                "The update count should have reached the maximum 50, but it " +
+                        "has value "
                         + updateCount,
                 50, updateCount);
     }
 
     private int getUpdateCount() {
-        TestBenchElement webComponent = $("sswc-push").first();
+        TestBenchElement webComponent = $("embedded-push").first();
         String count = webComponent.getText();
         return Integer.parseInt(count);
     }

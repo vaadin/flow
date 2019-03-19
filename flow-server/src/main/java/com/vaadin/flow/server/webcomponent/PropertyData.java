@@ -20,29 +20,42 @@ import java.util.Objects;
 
 /**
  * Value object containing information of a WebComponent property field.
+ *
+ * @param <P>   type of the property's value
  */
-public class PropertyData implements Serializable {
-
+public final class PropertyData<P extends Serializable> implements Serializable {
     private final String name;
-    private final Class<?> type;
-    private final String initialValue;
+    private final Class<P> type;
+    private final P defaultValue;
+    private final boolean readOnly;
 
     /**
-     * Public constructor.
+     * Constructs a new {@code PropertyData} instance tied to the type of the
+     * property's value given by {@code type}.
      *
-     * @param name
-     *         name of property
-     * @param type
-     *         property value class type
-     * @param initialValue
-     *         initial value as a String
+     * @param name          name of the property
+     * @param type          type of the property value
+     * @param readOnly      is the property read-only (on the client-side)
+     * @param defaultValue  default value for the property
      */
-    public PropertyData(String name, Class<?> type, String initialValue) {
-        Objects.requireNonNull(name, "Property needs to have a name");
-        Objects.requireNonNull(type, "Property needs to expose type");
+    public PropertyData(String name, Class<P> type, boolean readOnly,
+                        P defaultValue) {
+        Objects.requireNonNull(name, "Parameter 'name' must not be null!");
+        Objects.requireNonNull(type, "Parameter 'type' must not be null!");
         this.name = name;
         this.type = type;
-        this.initialValue = initialValue;
+        this.readOnly = readOnly;
+        this.defaultValue = defaultValue;
+    }
+
+    /**
+     * Copy-constructor, which allows for changing the {@code readOnly} flag.
+     *
+     * @param data      base property data
+     * @param readOnly  new read-only value
+     */
+    public PropertyData(PropertyData<P> data, boolean readOnly) {
+        this(data.name, data.type, readOnly, data.defaultValue);
     }
 
     /**
@@ -59,31 +72,39 @@ public class PropertyData implements Serializable {
      *
      * @return value class type
      */
-    public Class<?> getType() {
+    public Class<P> getType() {
         return type;
     }
 
     /**
      * Getter for the initial value if given.
      *
-     * @return initial string value or {@code null} if none given
+     * @return initial value or {@code null} if none given
      */
-    public String getInitialValue() {
-        return initialValue;
+    public P getDefaultValue() {
+        return defaultValue;
+    }
+
+    /**
+     * Checks if the property is a read-only value.
+     *
+     * @return is read-only
+     */
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof PropertyData) {
             PropertyData other = (PropertyData) obj;
-            return getName().equals(other.getName()) && getType()
-                    .equals(other.getType());
+            return name.equals(other.name) && type.equals(other.type);
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, type);
     }
 }

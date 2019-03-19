@@ -1,12 +1,29 @@
-package com.vaadin.flow.server.communication;
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Collections;
+package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,15 +32,19 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponent;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
+@NotThreadSafe
 public class WebComponentProviderTest {
 
     @Mock
@@ -42,10 +63,16 @@ public class WebComponentProviderTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         Mockito.when(session.getService()).thenReturn(service);
+        VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
 
         provider = new WebComponentProvider();
+    }
+
+    @After
+    public void cleanUp() {
+        CurrentInstance.clearAll();
     }
 
     @Test
@@ -98,22 +125,24 @@ public class WebComponentProviderTest {
 
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         Mockito.when(request.getContextPath()).thenReturn("");
-        WebComponentRegistry registry = WebComponentRegistry
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(servletContext);
-        registry.setWebComponents(
-                Collections.singletonMap("my-component", MyComponent.class));
+        final HashMap<String, Class<? extends WebComponentExporter<?
+                extends Component>>> map = new HashMap<>();
+        map.put("my-component", MyComponentExporter.class);
+        registry.setExporters(map);
         Mockito.when(servletContext
-                .getAttribute(WebComponentRegistry.class.getName()))
+                .getAttribute(WebComponentConfigurationRegistry.class.getName()))
                 .thenReturn(registry);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
-        DefaultDeploymentConfiguration configuratio = Mockito
+        DefaultDeploymentConfiguration configuration = Mockito
                 .mock(DefaultDeploymentConfiguration.class);
 
         Mockito.when(response.getOutputStream()).thenReturn(out);
-        Mockito.when(session.getConfiguration()).thenReturn(configuratio);
-        Mockito.when(configuratio.getRootElementId()).thenReturn("");
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.getRootElementId()).thenReturn("");
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
@@ -125,7 +154,16 @@ public class WebComponentProviderTest {
 
     }
 
-    @WebComponent("my-component")
-    public class MyComponent extends Component {
+    @Tag("my-component")
+    public static class MyComponent extends Component {
     }
+
+    @Tag("my-component")
+    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+        @Override
+        public void define(WebComponentDefinition<MyComponent> definition) {
+
+        }
+    }
+
 }
