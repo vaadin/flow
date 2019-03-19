@@ -29,9 +29,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.InstanceConfigurator;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
-import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.webcomponent.WebComponentProxy;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.ReflectTools;
@@ -131,9 +131,11 @@ public class WebComponentConfigurationImpl<C extends Component>
     }
 
     @Override
-    public WebComponentBinding<C> createBinding(Instantiator instantiator) {
+    public void bindProxy(Instantiator instantiator,
+                          WebComponentProxy proxy) {
         Objects.requireNonNull(instantiator, "Parameter 'instantiator' must not" +
                 " be null!");
+        Objects.requireNonNull(proxy, "Parameter 'proxy' must not be null!");
 
         final C componentReference =
                 instantiator.getOrCreate(this.getComponentClass());
@@ -141,12 +143,6 @@ public class WebComponentConfigurationImpl<C extends Component>
         if (componentReference == null) {
             throw new RuntimeException("Failed to instantiate a new " +
                     this.getComponentClass().getCanonicalName());
-        }
-
-        // TODO: real IWebComponent impl
-        if (instanceConfigurator != null) {
-            instanceConfigurator.accept(new WebComponentImpl<>(),
-                    componentReference);
         }
 
         Set<PropertyBinding<? extends Serializable>> propertyBindings =
@@ -166,9 +162,12 @@ public class WebComponentConfigurationImpl<C extends Component>
                 new WebComponentBindingImpl<>(componentReference,
                         propertyBindings);
 
-        binding.updatePropertiesToComponent();
+        if (instanceConfigurator != null) {
+            instanceConfigurator.accept(new WebComponentImpl<>(binding, proxy),
+                    componentReference);
+        }
 
-        return binding;
+        binding.updatePropertiesToComponent();
     }
 
     @Override

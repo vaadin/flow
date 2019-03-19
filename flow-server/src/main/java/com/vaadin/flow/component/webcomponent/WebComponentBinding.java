@@ -27,8 +27,9 @@ import com.vaadin.flow.di.Instantiator;
  * to the {@code component}.
  *
  * @param <C> exported component type
- * @see WebComponentConfiguration#createBinding(Instantiator) for creating
- *      {@code WebComponentBindings}
+ * @see WebComponentConfiguration#bindProxy(Instantiator, WebComponentProxy)
+ *      how {@code WebComponentBinding} is used
+ * @see WebComponentProxy for {@code WebComponentBinding} consumption
  */
 public interface WebComponentBinding<C extends Component> extends Serializable {
 
