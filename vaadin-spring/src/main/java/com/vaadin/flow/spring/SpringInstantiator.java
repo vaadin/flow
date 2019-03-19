@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanInstantiationException;
 import org.springframework.context.ApplicationContext;
 
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -32,7 +33,6 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
  * registered. This implementation uses Spring beans.
  *
  * @author Vaadin Ltd
- *
  */
 public class SpringInstantiator extends DefaultInstantiator {
 
@@ -42,13 +42,11 @@ public class SpringInstantiator extends DefaultInstantiator {
     /**
      * Creates a new spring instantiator instance.
      *
-     * @param service
-     *            the service to use
-     * @param context
-     *            the application context
+     * @param service the service to use
+     * @param context the application context
      */
     public SpringInstantiator(VaadinService service,
-            ApplicationContext context) {
+                              ApplicationContext context) {
         super(service);
         this.context = context;
 
@@ -72,19 +70,45 @@ public class SpringInstantiator extends DefaultInstantiator {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
                         .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
-                                + "falling back to the default behavior",
+                                        + "falling back to the default behavior",
                                 I18NProvider.class.getSimpleName(), beansCount);
             }
             return super.getI18NProvider();
         }
     }
 
+    /**
+     * Hands over an existing bean or tries to instantiate one with the following rules:
+     * <ul>
+     * <li>
+     * If exactly one bean is present in the context, it returns this bean.
+     * </li>
+     * <li>
+     * If no bean is present, it tries to instantiate one.
+     * </li>
+     * <li>
+     * If more than one bean is present, it tries to instantiate one but in case of a
+     * Bean instantiation exception this exception is catched and rethrown with a hint.
+     * Reason for this is, that users may expect it to "use" a bean but have multiple in the context.
+     * So the hint helps them find the problem.
+     * </li>
+     * </ul>
+     */
     @Override
     public <T> T getOrCreate(Class<T> type) {
         if (context.getBeanNamesForType(type).length == 1) {
             return context.getBean(type);
+        } else if (context.getBeanNamesForType(type).length > 1) {
+            try {
+                return context.getAutowireCapableBeanFactory().createBean(type);
+            } catch (BeanInstantiationException e) {
+                throw new BeanInstantiationException(e.getBeanClass(),
+                        "[HINT] This could be caused by more than one suitable beans for autowiring in the context.",
+                        e);
+            }
+        } else {
+            // If there is no bean, try to instantiate one
+            return context.getAutowireCapableBeanFactory().createBean(type);
         }
-
-        return context.getAutowireCapableBeanFactory().createBean(type);
     }
 }

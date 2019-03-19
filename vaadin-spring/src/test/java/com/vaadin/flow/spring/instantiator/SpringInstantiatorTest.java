@@ -26,10 +26,13 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import com.vaadin.flow.spring.SpringInstantiator;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -173,5 +176,63 @@ public class SpringInstantiatorTest {
     public static Instantiator getInstantiator(ApplicationContext context)
             throws ServletException {
         return getService(context, null).getInstantiator();
+    }
+
+    @Test
+    public void getOrCreateBean_noBeansGivenCannotInstantiate_throwsExceptionWithoutHint() {
+        ApplicationContext context = Mockito.mock(ApplicationContext.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(context.getBeanNamesForType(Number.class)).thenReturn(new String[]{});
+        Mockito.when(context.getAutowireCapableBeanFactory().createBean(Number.class)).thenThrow(new BeanInstantiationException(Number.class, "This is an abstract class"));
+        SpringInstantiator instantiator = new SpringInstantiator(null, context);
+
+        try {
+            instantiator.getOrCreate(Number.class);
+        } catch (BeanInstantiationException e) {
+            Assert.assertNotNull(e.getMessage());
+            Assert.assertFalse(e.getMessage().contains("[HINT]"));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void getOrCreateBean_multipleBeansGivenCannotInstantiate_throwsExceptionWithHint() {
+        ApplicationContext context = Mockito.mock(ApplicationContext.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(context.getBeanNamesForType(Number.class)).thenReturn(new String[]{"one", "two"});
+        Mockito.when(context.getAutowireCapableBeanFactory().createBean(Number.class)).thenThrow(new BeanInstantiationException(Number.class, "This is an abstract class"));
+        SpringInstantiator instantiator = new SpringInstantiator(null, context);
+
+        try {
+            instantiator.getOrCreate(Number.class);
+        } catch (BeanInstantiationException e) {
+            Assert.assertNotNull(e.getMessage());
+            Assert.assertTrue(e.getMessage().contains("[HINT]"));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void getOrCreateBean_oneBeanGiven_noException() {
+        ApplicationContext context = Mockito.mock(ApplicationContext.class);
+        Mockito.when(context.getBeanNamesForType(Number.class)).thenReturn(new String[]{"one"});
+        Mockito.when(context.getBean(Number.class)).thenReturn(0);
+        SpringInstantiator instantiator = new SpringInstantiator(null, context);
+
+        Number bean = instantiator.getOrCreate(Number.class);
+
+        Assert.assertEquals(0, bean);
+    }
+
+    @Test
+    public void getOrCreateBean_multipleBeansGivenButCanInstantiate_noException() {
+        ApplicationContext context = Mockito.mock(ApplicationContext.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(context.getBeanNamesForType(String.class)).thenReturn(new String[]{"one", "two"});
+        Mockito.when(context.getAutowireCapableBeanFactory().createBean(String.class)).thenReturn("string");
+        SpringInstantiator instantiator = new SpringInstantiator(null, context);
+
+        String bean = instantiator.getOrCreate(String.class);
+
+        Assert.assertEquals("string", bean);
     }
 }
