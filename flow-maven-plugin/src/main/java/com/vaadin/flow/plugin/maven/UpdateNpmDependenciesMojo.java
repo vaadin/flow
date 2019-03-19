@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.exec.OS;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
@@ -50,10 +52,12 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.plugin.production.ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH;
 
 /**
  * Goal that updates package.json file with @NpmPackage annotations defined in
@@ -73,7 +77,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     /**
      * The folder where `package.json` file is located. Default is current dir.
      */
-    @Parameter(defaultValue = "")
+    @Parameter
     private String npmFolder;
 
     /**
@@ -91,9 +95,10 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     @Parameter(defaultValue = WEBPACK_CONFIG)
     private String webpackTemplate;
 
-    private Log log = getLog();
+    private final Log log = getLog();
 
     private AnnotationValuesExtractor annotationValuesExtractor;
+    private JarContentsManager jarContentsManager;
 
     @Override
     public void execute() {
@@ -130,6 +135,30 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+
+        log.info("Generating the Flow package...");
+
+        if (jarContentsManager == null) {
+            jarContentsManager = new JarContentsManager();
+        }
+
+        File flowFrontendDirectory = Paths.get(npmFolder, "node_modules", "@vaadin", "flow-frontend").toFile();
+        try {
+            if (flowFrontendDirectory.isDirectory()) {
+                FileUtils.cleanDirectory(flowFrontendDirectory);
+            } else {
+                FileUtils.forceMkdir(flowFrontendDirectory);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        project.getArtifacts().stream()
+            .filter(artifact -> "jar".equals(artifact.getType()))
+            .map(Artifact::getFile)
+            .filter(File::isFile)
+            .forEach(jar -> jarContentsManager.copyFilesFromJarTrimmingBasePath(
+                jar, NON_WEB_JAR_RESOURCE_PATH, flowFrontendDirectory));
     }
 
     private void createWebpackConfig() throws IOException {
