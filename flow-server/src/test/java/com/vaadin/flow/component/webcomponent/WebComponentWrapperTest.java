@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -42,6 +43,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationImpl;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import elemental.json.Json;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class WebComponentWrapperTest {
 
@@ -52,22 +55,24 @@ public class WebComponentWrapperTest {
     private MyComponent component;
     private WebComponentBinding<MyComponent> binding;
     private WebComponentConfiguration<MyComponent> configuration;
+    private WebComponentWrapper wrapper;
 
     @Before
     public void init() {
+        wrapper = new WebComponentWrapper("my-component");
         configuration = new WebComponentConfigurationImpl<>("my-component",
                 new MyComponentExporter());
+
+        configuration.bindProxy(new MockInstantiator(), wrapper);
+
         // make component available and bind properties to it
-        binding = configuration.createBinding(new MockInstantiator());
+        binding = wrapper.getWebComponentBinding();
         component = binding.getComponent();
     }
 
 
     @Test
     public void wrappedMyComponent_syncSetsCorrectValuesToFields() {
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
-                binding);
-
         wrapper.sync(MSG_PROPERTY, Json.create("MyMessage"));
 
         Assert.assertEquals(
@@ -83,9 +88,6 @@ public class WebComponentWrapperTest {
 
     @Test
     public void wrappedComponentPropertyListener_listenerFiredWithCorrectValuesOnSync() {
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
-                binding);
-
         wrapper.sync(MSG_PROPERTY, Json.create("one"));
         wrapper.sync(INT_PROPERTY, Json.create(2));
         wrapper.sync(MSG_PROPERTY, Json.create("three"));
@@ -114,12 +116,14 @@ public class WebComponentWrapperTest {
         WebComponentConfiguration<MyExtension> configuration =
                 new WebComponentConfigurationImpl<>("extended-component",
                         new MyExtensionExporter());
-        WebComponentBinding<MyExtension> binding =
-                configuration.createBinding(new MockInstantiator());
-        MyExtension component = binding.getComponent();
 
         WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
-                "-component", binding);
+                "-component");
+
+        configuration.bindProxy(new MockInstantiator(), wrapper);
+
+        MyExtension component =
+                (MyExtension) wrapper.getWebComponentBinding().getComponent();
 
         wrapper.sync(MSG_PROPERTY, Json.create("one"));
         wrapper.sync(INT_PROPERTY, Json.create(2));
@@ -149,12 +153,14 @@ public class WebComponentWrapperTest {
         WebComponentConfiguration<MyComponent> configuration =
                 new WebComponentConfigurationImpl<>("my-component-extended",
                         new ExtendedExporter());
-        WebComponentBinding<MyComponent> binding =
-                configuration.createBinding(new MockInstantiator());
-        MyComponent component = binding.getComponent();
 
         WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
-                "-component", binding);
+                "-component");
+
+        configuration.bindProxy(new MockInstantiator(), wrapper);
+
+        MyComponent component =
+                (MyComponent) wrapper.getWebComponentBinding().getComponent();
 
         wrapper.sync(MSG_PROPERTY, Json.create("one"));
         wrapper.sync(INT_PROPERTY, Json.create(2));
@@ -186,34 +192,34 @@ public class WebComponentWrapperTest {
     @Test
     public void disconnectReconnect_componentIsNotCleaned()
             throws InterruptedException {
-        WebComponentUI ui = Mockito.mock(WebComponentUI.class);
-        Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        WebComponentUI ui = mock(WebComponentUI.class);
+        when(ui.getUI()).thenReturn(Optional.of(ui));
         Element body = new Element("body");
-        Mockito.when(ui.getElement()).thenReturn(body);
+        when(ui.getElement()).thenReturn(body);
 
         UIInternals internals = new UIInternals(ui);
         internals.setSession(new AlwaysLockedVaadinSession(
-                Mockito.mock(VaadinService.class)));
-        Mockito.when(ui.getInternals()).thenReturn(internals);
+                mock(VaadinService.class)));
+        when(ui.getInternals()).thenReturn(internals);
 
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
-                binding) {
+        WebComponentWrapper wrapper = new WebComponentWrapper("my-component") {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
             }
         };
 
+        wrapper.setWebComponentBinding(new MockBinding<>(MyComponent.class));
+
         Component parent = new Parent();
         parent.getElement().appendChild(wrapper.getElement());
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        VaadinSession session = mock(VaadinSession.class);
+        DeploymentConfiguration configuration = mock(DeploymentConfiguration.class);
 
-        Mockito.when(ui.getSession()).thenReturn(session);
-        Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.getWebComponentDisconnect()).thenReturn(1);
+        when(ui.getSession()).thenReturn(session);
+        when(session.getConfiguration()).thenReturn(configuration);
+        when(configuration.getWebComponentDisconnect()).thenReturn(1);
 
         wrapper.disconnected();
 
@@ -234,51 +240,37 @@ public class WebComponentWrapperTest {
                 wrapper.getParent().isPresent());
     }
 
-    private void awaitTerminationAfterShutdown(
-            ScheduledExecutorService threadPool) {
-        threadPool.shutdown();
-        try {
-            if (!threadPool.awaitTermination(2, TimeUnit.SECONDS)) {
-                threadPool.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            threadPool.shutdownNow();
-            Thread.currentThread().interrupt();
-            Assert.fail("Executor was interrupted");
-        }
-    }
-
     @Test
     public void disconnectOnClient_componentIsCleaned()
             throws ExecutionException, InterruptedException {
-        WebComponentUI ui = Mockito.mock(WebComponentUI.class);
-        Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        WebComponentUI ui = mock(WebComponentUI.class);
+        when(ui.getUI()).thenReturn(Optional.of(ui));
         Element body = new Element("body");
-        Mockito.when(ui.getElement()).thenReturn(body);
+        when(ui.getElement()).thenReturn(body);
 
         UIInternals internals = new UIInternals(ui);
         internals.setSession(new AlwaysLockedVaadinSession(
-                Mockito.mock(VaadinService.class)));
-        Mockito.when(ui.getInternals()).thenReturn(internals);
+                mock(VaadinService.class)));
+        when(ui.getInternals()).thenReturn(internals);
 
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-component",
-                binding) {
+        WebComponentWrapper wrapper = new WebComponentWrapper("my-component") {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
             }
         };
 
+        wrapper.setWebComponentBinding(new MockBinding<>(MyComponent.class));
+
         Component parent = new Parent();
         parent.getElement().appendChild(wrapper.getElement());
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        VaadinSession session = mock(VaadinSession.class);
+        DeploymentConfiguration configuration = mock(DeploymentConfiguration.class);
 
-        Mockito.when(ui.getSession()).thenReturn(session);
-        Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.getWebComponentDisconnect()).thenReturn(1);
+        when(ui.getSession()).thenReturn(session);
+        when(session.getConfiguration()).thenReturn(configuration);
+        when(configuration.getWebComponentDisconnect()).thenReturn(1);
 
         wrapper.disconnected();
 
@@ -367,6 +359,35 @@ public class WebComponentWrapperTest {
 
             definition.addProperty(BOOLEAN_PROPERTY, false)
                     .onChange(MyComponent::setBooleanValue);
+        }
+    }
+
+    private static class MockBinding<C extends Component> implements WebComponentBinding<C> {
+        private C component;
+        public MockBinding(Class<C> clazz) {
+            try {
+                component = clazz.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                Assert.fail("Failed to create fake component: " + e.getMessage());
+            }
+        }
+
+        @Override
+        public void updateProperty(String propertyName, Serializable value) { }
+
+        @Override
+        public C getComponent() {
+            return component;
+        }
+
+        @Override
+        public Class<? extends Serializable> getPropertyType(String propertyName) {
+            return Integer.class;
+        }
+
+        @Override
+        public boolean hasProperty(String propertyName) {
+            return true;
         }
     }
 }

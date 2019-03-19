@@ -162,6 +162,8 @@ public class WebComponentConfigurationImpl<C extends Component>
                 new WebComponentBindingImpl<>(componentReference,
                         propertyBindings);
 
+        proxy.setWebComponentBinding(binding);
+
         if (instanceConfigurator != null) {
             instanceConfigurator.accept(new WebComponentImpl<>(binding, proxy),
                     componentReference);

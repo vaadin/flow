@@ -26,7 +26,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.webcomponent.WebComponentProxy;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonSerializer;
 import com.vaadin.flow.server.MockInstantiator;
 
@@ -112,8 +114,12 @@ public class WebComponentConfigurationImplTest {
 
         builder.addProperty("int", 0).onChange(MyComponent::update);
 
+        MockProxy proxy = new MockProxy();
+
+        builder.bindProxy(instantiator, proxy);
+
         WebComponentBinding<MyComponent> binding =
-                builder.createBinding(instantiator);
+                proxy.getWebComponentBinding();
 
         assertNotNull(binding);
 
@@ -150,8 +156,11 @@ public class WebComponentConfigurationImplTest {
         Instantiator instantiator = mock(Instantiator.class);
         when(instantiator.getOrCreate(MyComponent.class)).thenReturn(myComponent);
 
-        WebComponentBinding<MyComponent> binding =
-                builder.createBinding(instantiator);
+        MockProxy proxy = new MockProxy();
+
+        builder.bindProxy(instantiator, proxy);
+
+        WebComponentBinding<MyComponent> binding = proxy.getWebComponentBinding();
 
         assertNotNull("Binding should not be null", binding);
         assertNotNull("Binding's component should not be null",
@@ -167,8 +176,12 @@ public class WebComponentConfigurationImplTest {
         Instantiator instantiator = mock(Instantiator.class);
         when(instantiator.getOrCreate(MyComponent.class)).thenReturn(myComponent);
 
+        MockProxy proxy = new MockProxy();
+
+        builder.bindProxy(instantiator, proxy);
+
         WebComponentBinding<MyComponent> binding =
-                builder.createBinding(instantiator);
+                proxy.getWebComponentBinding();
 
         assertNotNull("Binding should not be null", binding);
         assertNotNull("Binding's component should not be null",
@@ -257,5 +270,23 @@ public class WebComponentConfigurationImplTest {
 
         assertNotNull("Property " + property + " should not be null", data);
         assertEquals(value, data.getDefaultValue());
+    }
+
+    private static class MockProxy implements WebComponentProxy {
+        private WebComponentBinding<? extends Component> binding;
+
+        @Override
+        public void setWebComponentBinding(WebComponentBinding<? extends Component> binding) {
+            this.binding = binding;
+        }
+
+        <T extends Component> WebComponentBinding<T> getWebComponentBinding() {
+            return (WebComponentBinding<T>) binding;
+        }
+
+        @Override
+        public Element getElement() {
+            return null;
+        }
     }
 }

@@ -162,4 +162,12 @@ public class WebComponentWrapper extends Component implements WebComponentProxy 
                     WebComponentProxy.class.getSimpleName()));
         }
     }
+
+    /**
+     * For testing purposes only.
+     * @return  web component binding
+     */
+    protected WebComponentBinding getWebComponentBinding() {
+        return webComponentBinding;
+    }
 }
