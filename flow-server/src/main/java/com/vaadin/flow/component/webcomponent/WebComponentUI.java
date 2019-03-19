@@ -71,10 +71,10 @@ public class WebComponentUI extends UI {
             return;
         }
 
-        WebComponentBinding<?> binding =
-                webComponentConfiguration.get().createBinding(Instantiator.get(this));
+        WebComponentWrapper wrapper = new WebComponentWrapper(tag);
 
-        WebComponentWrapper wrapper = new WebComponentWrapper(tag, binding);
+        webComponentConfiguration.get().bindProxy(Instantiator.get(this),
+                wrapper);
 
         getElement().getStateProvider()
                 .appendVirtualChild(getElement().getNode(),

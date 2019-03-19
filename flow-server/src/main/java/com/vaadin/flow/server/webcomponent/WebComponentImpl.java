@@ -25,6 +25,7 @@ import com.vaadin.flow.component.webcomponent.EventOptions;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
+import com.vaadin.flow.component.webcomponent.WebComponentProxy;
 import com.vaadin.flow.dom.Element;
 
 import elemental.json.Json;
@@ -35,21 +36,21 @@ import elemental.json.JsonValue;
  * @param <C>
  */
 class WebComponentImpl<C extends Component> implements WebComponent<C> {
-    private Component webComponentWrapper;
+    private WebComponentProxy webComponentProxy;
     private WebComponentBinding<C> binding;
 
     /**
      * @param binding
-     * @param webComponentWrapper
+     * @param proxy
      */
     public WebComponentImpl(WebComponentBinding<C> binding,
-                            Component webComponentWrapper) {
+                            WebComponentProxy proxy) {
         Objects.requireNonNull(binding, "Parameter 'binding' must not be " +
                 "null!");
-        Objects.requireNonNull(webComponentWrapper, "Parameter " +
+        Objects.requireNonNull(proxy, "Parameter " +
                 "'webComponentWrapper' must not be null!");
         this.binding = binding;
-        this.webComponentWrapper = webComponentWrapper;
+        this.webComponentProxy = proxy;
     }
 
     @Override
@@ -104,7 +105,7 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
 
     private void setProperty(String propertyName, Object value) {
-        Element element = webComponentWrapper.getElement();
+        Element element = webComponentProxy.getElement();
         if (value == null) {
             element.setPropertyJson(propertyName,
                     Json.createNull());
