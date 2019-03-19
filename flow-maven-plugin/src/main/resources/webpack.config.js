@@ -15,10 +15,17 @@ const frontendFolder = `${baseDir}/frontend`;
 const webappFolder = `${baseDir}/target/generated-frontend`;
 // public path for resources (flow needs /build/index.js /build/stats.json)
 const build = 'build';
+const buildFolder = `${webappFolder}/${build}`;
+// make sure folder is created
+try {
+  !fs.existsSync(buildFolder) && fs.mkdirSync(buildFolder, {recursive: true});
+} catch (error) {
+  // fails in TC
+  console.log(">>>>>", error);
+}
+
 // file which is used by flow to read templates for server `@Id` binding
-const statsFile = `${webappFolder}/${build}/stats.json`;
-// ensure that the output folder is created
-fs.mkdirSync(`${webappFolder}/${build}`, { recursive: true });
+const statsFile = `${buildFolder}/stats.json`;
 
 module.exports = {
   mode: 'production',

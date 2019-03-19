@@ -79,6 +79,8 @@ public class UpdateImportsMojo extends AbstractMojo {
     @Override
     public void execute() {
         getLog().info("Looking for imports ...");
+        
+        System.getProperties().forEach((a, b) -> System.err.println(a + " -> " + b));
 
         if (jsFile == null || jsFile.isEmpty()) {
             jsFile = project.getBasedir() + "/" + MAIN_JS;
