@@ -66,7 +66,7 @@ public class UpdateImportsMojo extends AbstractMojo {
     /**
      * Name of the JavaScript file to update.
      */
-    @Parameter()
+    @Parameter
     private String jsFile;
 
     /**
@@ -172,12 +172,8 @@ public class UpdateImportsMojo extends AbstractMojo {
         // TODO kb naming and probably refactor all this mess
         Stream<String> jsImportsStream = annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
             .flatMap(Collection::stream)
-            // TODO kb look for other usages in the plugin, should be done somewhere already
-            .map(fileName -> fileName.replace(FRONTEND_PROTOCOL_PREFIX,""))
-            .map(fileName ->
-                // add `./` prefix to everything starting with letters
-                fileName.replaceFirst("(?i)^([a-z])", "./$1"));
-
+            // TODO kb verify that paths exist and load those dependencies later somehow?
+            .map(fileName -> fileName.replace(FRONTEND_PROTOCOL_PREFIX,"@vaadin/flow-frontend/"));
         return Stream.concat(jsModules.stream(), jsImportsStream)
             .sorted(Comparator.reverseOrder())
             .collect(Collectors.toCollection(LinkedHashSet::new));
