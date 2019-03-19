@@ -22,11 +22,9 @@ package com.vaadin.flow.component;
  *            the type of the component which implements the interface
  * @see BlurNotifier
  * @see FocusNotifier
-<<<<<<< HEAD
-=======
+ *
  * @author Vaadin Ltd.
  * @since
->>>>>>> 94fc280c3c... Remove redundant words form javadocs (#5294)
  */
 public interface Focusable<T extends Component> extends HasElement,
         BlurNotifier<T>, FocusNotifier<T>, HasEnabled {
