@@ -45,7 +45,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     private static final String SUFFIX = ".html";
 
     // exporter class to script/html
-    private Map<Class<?>, String> cache;
+    private Map<WebComponentConfiguration, String> cache;
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -81,8 +81,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             WebComponentConfiguration<? extends Component> webComponentConfiguration =
                     optionalWebComponentConfiguration.get();
             String generated;
-            if (cache.containsKey(webComponentConfiguration.getClass())) {
-                generated = cache.get(webComponentConfiguration.getClass());
+            if (cache.containsKey(webComponentConfiguration)) {
+                generated = cache.get(webComponentConfiguration);
             } else {
                 String uiElement;
                 if (session.getConfiguration().getRootElementId().isEmpty()) {
@@ -95,7 +95,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
                 generated = WebComponentGenerator.generateModule(uiElement,
                         tag.get(), webComponentConfiguration, request);
-                cache.put(webComponentConfiguration.getClass(), generated);
+                cache.put(webComponentConfiguration, generated);
             }
 
             IOUtils.write(generated, response.getOutputStream(),
