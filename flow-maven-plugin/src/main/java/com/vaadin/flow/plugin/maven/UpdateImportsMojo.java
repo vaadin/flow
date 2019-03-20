@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -46,9 +45,6 @@ import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.plugin.common.AnnotationValuesExtractor.LUMO;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getHtmlImportJsModules;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.getProjectClassPathUrls;
-import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 
 /**
@@ -56,7 +52,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  * annotations defined in the classpath.
  */
 @Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
-public class UpdateImportsMojo extends AbstractMojo {
+public class UpdateImportsMojo extends AbstractNpmMojo {
     private static final String VALUE = "value";
     private static final String MAIN_JS = "src/main/webapp/frontend/main.js";
 
@@ -169,11 +165,9 @@ public class UpdateImportsMojo extends AbstractMojo {
                         // add `./` prefix to names starting with letters
                         fileName.replaceFirst("(?i)^([a-z])", "./$1")));
 
-        // TODO kb naming and probably refactor all this mess
         Stream<String> jsImportsStream = annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
             .flatMap(Collection::stream)
-            // TODO kb verify that paths exist and load those dependencies later somehow?
-            .map(fileName -> fileName.replace(FRONTEND_PROTOCOL_PREFIX,"@vaadin/flow-frontend/"));
+            .map(this::resolveInFlowFrontendDirectory);
         return Stream.concat(jsModules.stream(), jsImportsStream)
             .sorted(Comparator.reverseOrder())
             .collect(Collectors.toCollection(LinkedHashSet::new));
