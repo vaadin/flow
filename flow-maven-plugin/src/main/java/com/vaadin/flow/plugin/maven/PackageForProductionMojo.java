@@ -204,6 +204,7 @@ public class PackageForProductionMojo extends AbstractMojo {
 
         // Do nothing when not in bower mode
         if (!Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            getLog().info("Skipped `package-for-production` goal because `vaadin.bowerMode` is not set.");
             return;
         }
 

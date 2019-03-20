@@ -82,6 +82,7 @@ public class UpdateImportsMojo extends AbstractMojo {
 
         // Do nothing when bower mode
         if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            getLog().info("Skipped `update-imports` goal because `vaadin.bowerMode` is set.");
             return;
         }
 

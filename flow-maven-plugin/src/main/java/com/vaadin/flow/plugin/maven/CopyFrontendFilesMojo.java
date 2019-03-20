@@ -67,6 +67,7 @@ public class CopyFrontendFilesMojo extends AbstractMojo {
     public void execute() {
         // Do nothing when not in bower mode
         if (!Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            getLog().info("Skipped `copy-frontend-files` goal because `vaadin.bowerMode` is not set.");
             return;
         }
 

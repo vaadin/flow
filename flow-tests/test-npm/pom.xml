@@ -91,7 +91,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>${maven.war.plugin.version}</version>
                 <configuration>
                     <webResources>
                         <resource>
@@ -195,7 +195,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
+                        <version>${maven.exec.plugin.version}</version>
                         <executions>
                             <execution>
                                 <phase>compile</phase>
@@ -229,7 +229,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
+                        <version>${maven.exec.plugin.version}</version>
                         <executions>
                             <execution>
                                 <phase>compile</phase>
