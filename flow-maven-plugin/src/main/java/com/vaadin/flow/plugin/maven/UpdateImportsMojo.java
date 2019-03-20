@@ -159,16 +159,16 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
         addClassesWithJsModules(classes);
         addClassesWithHtmlImports(classes);
 
-        Set<String> jsModules = new HashSet<>();
-        classes.values().stream().flatMap(Collection::stream)
-                .forEach(fileName -> jsModules.add(
-                        // add `./` prefix to names starting with letters
-                        fileName.replaceFirst("(?i)^([a-z])", "./$1")));
+        Stream<String> jsModules = classes.values().stream().flatMap(Collection::stream)
+            .map(jsModule ->
+                // add `./` prefix to names starting with letters
+                jsModule.replaceFirst("(?i)^([a-z])", "./$1"));
 
         Stream<String> jsImportsStream = annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
             .flatMap(Collection::stream)
             .map(this::resolveInFlowFrontendDirectory);
-        return Stream.concat(jsModules.stream(), jsImportsStream)
+
+        return Stream.concat(jsModules, jsImportsStream)
             .sorted(Comparator.reverseOrder())
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }

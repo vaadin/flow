@@ -98,6 +98,7 @@ public class UpdateNpmDependenciesMojoTest {
         assertPackageJsonContent();
 
         Assert.assertTrue(FileUtils.fileExists(webpackConfig));
+        Assert.assertTrue(FileUtils.fileExists(mojo.flowPackageDirectory.getAbsolutePath()));
     }
 
     @Test
@@ -124,6 +125,8 @@ public class UpdateNpmDependenciesMojoTest {
         Assert.assertTrue(tsWebpack2 == tsWebpack3);
 
         assertPackageJsonContent();
+
+        Assert.assertTrue(FileUtils.fileExists(mojo.flowPackageDirectory.getAbsolutePath()));
     }
 
     private void assertPackageJsonContent() throws IOException {
