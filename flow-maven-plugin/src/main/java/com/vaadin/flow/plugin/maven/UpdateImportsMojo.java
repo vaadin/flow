@@ -34,7 +34,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.utils.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -55,9 +54,6 @@ import static com.vaadin.flow.plugin.common.AnnotationValuesExtractor.LUMO;
 public class UpdateImportsMojo extends AbstractNpmMojo {
     private static final String VALUE = "value";
     private static final String MAIN_JS = "src/main/webapp/frontend/main.js";
-
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
 
     /**
      * Name of the JavaScript file to update.
