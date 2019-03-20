@@ -16,9 +16,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.PACKAGE_JSON;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.WEBPACK_CONFIG;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -34,13 +31,19 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.PACKAGE_JSON;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.WEBPACK_CONFIG;
 
 public class UpdateNpmDependenciesMojoTest {
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     MavenProject project;
 
@@ -54,13 +57,15 @@ public class UpdateNpmDependenciesMojoTest {
         project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
-        File tmp = File.createTempFile("foo", "");
-        tmp.delete();
-        packageJson = tmp.getParent() + "/" + PACKAGE_JSON;
-        webpackConfig = tmp.getParent() + "/" + WEBPACK_CONFIG;
+        File tmpRoot = temporaryFolder.getRoot();
+        packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
+        webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
+
+        File flowPackageDirectory = temporaryFolder.newFolder("node_modules", "@vaadin", "flow-frontend");
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmp.getParent());
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
+        ReflectionUtils.setVariableValueInObject(mojo, "flowPackageDirectory", flowPackageDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
     }
@@ -79,7 +84,7 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     @After
-    public void teardown() throws IOException {
+    public void teardown() {
         FileUtils.fileDelete(packageJson);
         FileUtils.fileDelete(webpackConfig);
     }
