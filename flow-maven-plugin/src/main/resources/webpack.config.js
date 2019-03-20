@@ -42,12 +42,10 @@ module.exports = {
       targets: {
         'es6': {
           browsers: [
-            'last 2 Chrome major versions',
-            'last 2 ChromeAndroid major versions',
-            'last 2 Edge major versions',
-            'last 2 Firefox major versions',
-            'last 2 Safari major versions',
-            'last 2 iOS major versions'
+            // It guarantees that babel outputs pure es6 in bundle and in stats.json
+            // In the case of browsers no supporting certain feature it will be
+            // covered by the webcomponents-loader.js
+            'last 1 Chrome major versions'
           ],
         },
         'es5': {
