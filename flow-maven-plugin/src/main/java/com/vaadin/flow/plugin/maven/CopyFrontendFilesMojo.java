@@ -29,6 +29,7 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
+import com.vaadin.flow.server.Constants;
 
 /**
  * Goal that copies all JavaScript files into the {@link
@@ -64,6 +65,11 @@ public class CopyFrontendFilesMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        // Do nothing when not in bower mode
+        if (!Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            return;
+        }
+
         List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(artifact -> new ArtifactData(artifact.getFile(),

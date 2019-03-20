@@ -44,6 +44,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 
@@ -78,9 +79,13 @@ public class UpdateImportsMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        getLog().info("Looking for imports ...");
-        
-        System.getProperties().forEach((a, b) -> System.err.println(a + " -> " + b));
+
+        // Do nothing when bower mode
+        if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            return;
+        }
+
+        getLog().info("Looking for imports in the java class-path ...");
 
         if (jsFile == null || jsFile.isEmpty()) {
             jsFile = project.getBasedir() + "/" + MAIN_JS;

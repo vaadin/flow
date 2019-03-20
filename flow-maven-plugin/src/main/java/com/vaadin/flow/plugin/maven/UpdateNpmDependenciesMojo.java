@@ -50,6 +50,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -96,7 +97,13 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        log.info("Looking for npm packages...");
+
+        // Do nothing when bower mode
+        if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            return;
+        }
+
+        log.info("Looking for npm package dependencies in the java class-path ...");
 
         if (npmFolder == null || npmFolder.isEmpty()) {
             npmFolder = project.getBasedir().getAbsolutePath();
@@ -218,7 +225,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         command.addAll(Arrays.asList(npmInstallArgs));
         command.addAll(dependencies);
 
-        log.info("Updating package.json....\n " + command.stream().collect(Collectors.joining(" ")));
+        log.info("Updating package.json and installing npm dependencies ...\n " + command.stream().collect(Collectors.joining(" ")));
 
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(new File(npmFolder));
@@ -238,7 +245,7 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
                 getLog().error(
                         ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
             }
-            getLog().info("package.json updated");
+            getLog().info("package.json updated and npm dependencies installed. ");
         } catch (Exception e) {
             getLog().error(e);
         }
