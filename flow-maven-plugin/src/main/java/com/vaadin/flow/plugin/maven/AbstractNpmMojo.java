@@ -17,7 +17,7 @@ import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 public abstract class AbstractNpmMojo extends AbstractMojo {
-    private static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
+    static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     protected MavenProject project;
