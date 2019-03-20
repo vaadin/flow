@@ -232,15 +232,7 @@ public class UidlWriterTest {
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
 
-        assertEquals(8, dependenciesMap.size());
-        assertDependency("childinterface1-" + JS_TYPE_NAME, JS_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("childinterface2-" + JS_TYPE_NAME, JS_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("child1-" + JS_TYPE_NAME, JS_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("child2-" + JS_TYPE_NAME, JS_TYPE_NAME,
-                dependenciesMap);
+        assertEquals(4, dependenciesMap.size());
         assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
         assertDependency("childinterface2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
@@ -279,7 +271,7 @@ public class UidlWriterTest {
         List<JsonObject> eagerDependencies = dependenciesMap
                 .get(LoadMode.EAGER);
         assertThat("Should have 3 eager dependencies", eagerDependencies,
-                hasSize(2));
+                hasSize(1));
         assertThat("Eager dependencies should not have inline contents",
                 eagerDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
@@ -291,17 +283,17 @@ public class UidlWriterTest {
                                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                                         .length()))
                         .collect(Collectors.toList()),
-                containsInAnyOrder("eager.js", "eager.css"));
+                containsInAnyOrder("eager.css"));
         assertThat("Should have 2 different eager dependency types",
                 eagerDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
                         .collect(Collectors.toList()),
-                containsInAnyOrder(Dependency.Type.JAVASCRIPT, Dependency.Type.STYLESHEET));
+                containsInAnyOrder(Dependency.Type.STYLESHEET));
 
         List<JsonObject> lazyDependencies = dependenciesMap.get(LoadMode.LAZY);
         assertThat("Should have 2 lazy dependencies", lazyDependencies,
-                hasSize(2));
+                hasSize(1));
         assertThat("Lazy dependencies should not have inline contents",
                 lazyDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
@@ -313,13 +305,13 @@ public class UidlWriterTest {
                                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                                         .length()))
                         .collect(Collectors.toList()),
-                containsInAnyOrder("lazy.js", "lazy.css"));
+                containsInAnyOrder("lazy.css"));
         assertThat("Should have 3 different lazy dependency types",
                 lazyDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
                         .collect(Collectors.toList()),
-                containsInAnyOrder(Dependency.Type.JAVASCRIPT, Dependency.Type.STYLESHEET));
+                containsInAnyOrder(Dependency.Type.STYLESHEET));
 
         List<JsonObject> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
@@ -386,7 +378,7 @@ public class UidlWriterTest {
     private void assertInlineDependencies(List<JsonObject> inlineDependencies,
             String expectedPrefix) {
         assertThat("Should have 2 inline dependencies", inlineDependencies,
-                hasSize(2));
+                hasSize(1));
         assertThat("Eager dependencies should not have urls",
                 inlineDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_URL))
@@ -403,13 +395,13 @@ public class UidlWriterTest {
                                 return url.substring(expectedPrefix.length());
                             }
                         }).collect(Collectors.toList()),
-                containsInAnyOrder("inline.js", "inline.css"));
+                containsInAnyOrder("inline.css"));
         assertThat("Should have 3 different inline dependency type",
                 inlineDependencies.stream()
                         .map(json -> json.getString(Dependency.KEY_TYPE))
                         .map(Dependency.Type::valueOf)
                         .collect(Collectors.toList()),
-                containsInAnyOrder(Dependency.Type.JAVASCRIPT, Dependency.Type.STYLESHEET));
+                containsInAnyOrder(Dependency.Type.STYLESHEET));
     }
 
     private UI initializeUIForDependenciesTest(UI ui) throws Exception {
@@ -451,22 +443,10 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
-        assertEquals(10, dependenciesMap.size());
+        assertEquals(4, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
-        assertDependency("UI-parent-" + JS_TYPE_NAME, JS_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("UI-" + JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
-
-        assertDependency("super-" + JS_TYPE_NAME, JS_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("anotherinterface-" + JS_TYPE_NAME, JS_TYPE_NAME,
-                dependenciesMap);
-        assertDependency("interface-" + JS_TYPE_NAME, JS_TYPE_NAME,
-                dependenciesMap);
-        assertDependency(JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
-
         assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
