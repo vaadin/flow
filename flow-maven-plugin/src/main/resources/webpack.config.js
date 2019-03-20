@@ -7,22 +7,19 @@
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { BabelMultiTargetPlugin } = require('webpack-babel-multi-target-plugin');
-const baseDir = require('path').resolve(__dirname);
 
+const baseDir = require('path').resolve(__dirname);
 // the folder of app resources (main.js and flow templates)
 const frontendFolder = `${baseDir}/frontend`;
 // the folder that java takes as webapp context
 const webappFolder = `${baseDir}/target/generated-frontend`;
-// public path for resources (flow needs /build/index.js /build/stats.json)
+
+// public path for resources, must match flow that requests /build/index.js /build/stats.json
 const build = 'build';
+
+// make sure that build folder exists before outputting index.js and stats.js
 const buildFolder = `${webappFolder}/${build}`;
-// make sure folder is created
-try {
-  !fs.existsSync(buildFolder) && fs.mkdirSync(buildFolder, {recursive: true});
-} catch (error) {
-  // fails in TC
-  console.log(">>>>>", error);
-}
+!fs.existsSync(buildFolder) && fs.mkdirSync(buildFolder, { recursive: true });
 
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${buildFolder}/stats.json`;

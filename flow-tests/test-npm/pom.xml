@@ -232,6 +232,20 @@
                         <version>${maven.exec.plugin.version}</version>
                         <executions>
                             <execution>
+                                <id>mkdirs</id>
+                                <phase>initialize</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <longModulepath>false</longModulepath>
+                                    <executable>mkdir</executable>
+                                    <arguments>
+                                        <argument>-p</argument>
+                                        <argument>${project.build.directory}/generated-frontend</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>webpack</id>
                                 <phase>compile</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
