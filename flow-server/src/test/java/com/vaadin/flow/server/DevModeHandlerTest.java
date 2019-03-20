@@ -70,7 +70,6 @@ public class DevModeHandlerTest {
     private static final String TEST_FILE = "webpack-out.test";
     private HttpServer httpServer;
     private int responseStatus;
-    private boolean webpackFolderCreated = false;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -83,11 +82,6 @@ public class DevModeHandlerTest {
     }
 
     private void createWebpackScript(String readyString, int milliSecondsToRun) throws IOException {
-        File dir = new File(WEBAPP_FOLDER);
-        webpackFolderCreated = !dir.isDirectory();
-        if (webpackFolderCreated) {
-          new File(WEBAPP_FOLDER).mkdirs();
-        }
         File serverFile = new File(WEBPACK_SERVER);
         serverFile.getParentFile().mkdirs();
         serverFile.createNewFile();
@@ -105,9 +99,6 @@ public class DevModeHandlerTest {
     @After
     public void teardown() throws IOException {
         FileUtils.deleteDirectory(new File("node_modules"));
-        if (webpackFolderCreated) {
-          FileUtils.deleteDirectory(new File(WEBAPP_FOLDER));
-        }
         FileUtils.deleteQuietly(new File(WEBPACK_CONFIG));
         if (httpServer != null) {
             httpServer.stop(0);
@@ -167,16 +158,6 @@ public class DevModeHandlerTest {
         prepareHttpServer(HTTP_OK, "bar");
         createInstance(configuration);
         assertFalse(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
-    }
-
-    @Test
-    public void shouldNot_CreateInstance_When_WebappFolderNotFound() throws Exception {
-        if (webpackFolderCreated) {
-          Thread.sleep(150);
-          FileUtils.deleteDirectory(new File(WEBAPP_FOLDER));
-          assertNull(createInstance(configuration));
-          Thread.sleep(150);
-        }
     }
 
     @Test
