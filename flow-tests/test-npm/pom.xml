@@ -182,40 +182,6 @@
             </build>
         </profile>
 
-        <!-- Install frontend NPM packages if not done yet -->
-        <profile>
-            <id>npm-install</id>
-            <activation>
-                <file>
-                    <missing>node_modules</missing>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${maven.exec.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <phase>compile</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>npm</executable>
-                                    <arguments>
-                                        <argument>install</argument>
-                                        <argument>--no-package-lock</argument>
-                                        <argument>--loglevel</argument>
-                                        <argument>info</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <!-- Compile frontend for production -->
         <profile>
             <id>run-webpack</id>
@@ -231,6 +197,7 @@
                         <artifactId>exec-maven-plugin</artifactId>
                         <version>${maven.exec.plugin.version}</version>
                         <executions>
+                            <!-- Create build folder. Needed because an issue in TC node version -->
                             <execution>
                                 <id>mkdirs</id>
                                 <phase>initialize</phase>
@@ -244,6 +211,7 @@
                                     </arguments>
                                 </configuration>
                             </execution>
+                            <!-- Create production bundle -->
                             <execution>
                                 <id>webpack</id>
                                 <phase>compile</phase>
