@@ -67,7 +67,7 @@ public class WebComponentWrapper extends Component implements WebComponentProxy 
     public void sync(String property, JsonValue newValue) {
         try {
             if (webComponentBinding.hasProperty(property)) {
-                setNewFieldValue(property, newValue);
+                setNewPropertyValue(property, newValue);
             } else {
                 LoggerFactory.getLogger(child.getClass())
                         .error("No match found for {}", property);
@@ -118,7 +118,7 @@ public class WebComponentWrapper extends Component implements WebComponentProxy 
         }
     }
 
-    private void setNewFieldValue(String property, JsonValue newValue) {
+    private void setNewPropertyValue(String property, JsonValue newValue) {
         checkProxyState();
 
         Class<? extends Serializable> propertyType =

@@ -30,7 +30,7 @@ public class UpdatePropertyIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void indexPageGetsWebComponent_attributeIsReflectedToServer() {
+    public void propertiesWrittenOnServerSideAreUpdatedToWebComponent() {
         open();
 
         waitForElementVisible(By.id("counter"));
@@ -39,22 +39,28 @@ public class UpdatePropertyIT extends ChromeBrowserTest {
 
         WebElement button = clickCounter.findElement(By.tagName("button"));
 
-        Assert.assertEquals("Count should start from 0", 0,
-                getCount());
+        Assert.assertEquals("Count (id:count) should start from 0", 0,
+                getInt("count"));
+        Assert.assertEquals("Count (id:json) should start from 0", 0,
+                getInt("json"));
 
         button.click();
 
-        Assert.assertEquals("Count should be 1", 1,
-                getCount());
+        Assert.assertEquals("Count (id:count) should be 1", 1,
+                getInt("count"));
+        Assert.assertEquals("Count (id:json) should be 1", 1,
+                getInt("json"));
 
         button.click();
 
-        Assert.assertEquals("Count should be 2", 2,
-                getCount());
+        Assert.assertEquals("Count (id:count) should be 2", 2,
+                getInt("count"));
+        Assert.assertEquals("Count (id:json) should be 2", 2,
+                getInt("json"));
     }
 
-    private int getCount() {
-        WebElement count = findElement(By.id("count"));
+    private int getInt(String id) {
+        WebElement count = findElement(By.id(id));
         return Integer.parseInt(count.getText());
     }
 }

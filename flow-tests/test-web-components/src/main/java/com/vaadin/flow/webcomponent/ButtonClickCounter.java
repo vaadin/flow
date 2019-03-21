@@ -22,6 +22,11 @@ import java.util.Set;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.internal.JsonCodec;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 @Tag("click-counter")
 public class ButtonClickCounter extends Div {
@@ -46,6 +51,12 @@ public class ButtonClickCounter extends Div {
     private void publishNumber() {
         listenerSet.forEach(numberListener -> numberListener.handleNumber(
                 clickCounter));
+    }
+
+    public JsonValue getNumberJson() {
+        JsonObject json = Json.createObject();
+        json.put("counter", clickCounter);
+        return json;
     }
 
     public void addListener(NumberListener listener) {
