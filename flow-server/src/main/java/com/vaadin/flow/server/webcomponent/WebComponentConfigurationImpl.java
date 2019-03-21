@@ -17,6 +17,7 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
+import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.InstanceConfigurator;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
@@ -56,6 +58,7 @@ public class WebComponentConfigurationImpl<C extends Component>
             Boolean.class, String.class, Integer.class, Double.class,
             JsonValue.class);
 
+    private final String exporterName;
     private final String tag;
     private final Class<C> componentClass;
     private InstanceConfigurator<C> instanceConfigurator;
@@ -63,23 +66,39 @@ public class WebComponentConfigurationImpl<C extends Component>
             new HashMap<>();
 
     /**
-     * Constructs a new {@code WebComponentConfigurationImp} for a web
-     * component identified by {@code tag}. The constructor calls
+     * Constructs a new {@code WebComponentConfigurationImp} based on the
+     * {@link WebComponentExporter}.
+     * <p>
+     * The constructor calls
      * {@link WebComponentExporter#define(WebComponentDefinition)} using
      * itself as the {@link WebComponentDefinition}.
      *
-     * @param tag       tag name of the web component being exported
      * @param exporter  exporter, which defines this configuration
      */
-    public WebComponentConfigurationImpl(String tag, WebComponentExporter<C> exporter) {
-        Objects.requireNonNull(tag, "Parameter 'tag' must not be null!");
+    public WebComponentConfigurationImpl(WebComponentExporter<C> exporter) {
         Objects.requireNonNull(exporter, "Parameter 'exporter' must not be null!");
 
-        this.tag = tag;
+        Tag tagAnnotation = exporter.getClass().getAnnotation(Tag.class);
+        if (tagAnnotation == null) {
+            throw new InvalidParameterException(String.format("'%s' is " +
+                    "missing @%s annotation!",
+                    exporter.getClass().getCanonicalName(),
+                    Tag.class.getSimpleName()));
+        }
+
+        this.tag = tagAnnotation.value();
+        this.exporterName = exporter.getClass().getCanonicalName();
         exporter.define(this);
 
         componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
                     exporter.getClass(), WebComponentExporter.class);
+
+        if (componentClass == null) {
+            throw new IllegalStateException(String.format("Could not find " +
+                    "the Class of %s exported by '%s'!",
+                    Component.class.getSimpleName(),
+                    WebComponentExporter.class.getCanonicalName()));
+        }
     }
 
     @Override
@@ -143,6 +162,25 @@ public class WebComponentConfigurationImpl<C extends Component>
         if (componentReference == null) {
             throw new RuntimeException("Failed to instantiate a new " +
                     this.getComponentClass().getCanonicalName());
+        }
+
+        /*
+            The tag check cannot be done before the creation of the Component
+             being exported, as the WebComponentConfigurationImpl itself is
+             constructed only when the first request for a web component
+             instance comes in. This is due to the unavailability of
+             Instantiator before VaadinService has been initialized (which
+             happens after collecting all the exporters.
+         */
+        String componentTag = componentReference.getElement().getTag();
+        if (this.tag.equals(componentTag)) {
+            throw new IllegalStateException(String.format(
+                    "WebComponentExporter '%s' cannot share a tag with the " +
+                            "%s instance being exported! Change the tag " +
+                            "from '%s' to something else.",
+                    this.exporterName,
+                    componentReference.getClass().getCanonicalName(),
+                    this.tag));
         }
 
         Set<PropertyBinding<? extends Serializable>> propertyBindings =

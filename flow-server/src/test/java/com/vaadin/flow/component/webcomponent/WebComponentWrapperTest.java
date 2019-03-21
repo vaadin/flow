@@ -21,13 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -60,7 +57,7 @@ public class WebComponentWrapperTest {
     @Before
     public void init() {
         wrapper = new WebComponentWrapper("my-component");
-        configuration = new WebComponentConfigurationImpl<>("my-component",
+        configuration = new WebComponentConfigurationImpl<>(
                 new MyComponentExporter());
 
         configuration.bindProxy(new MockInstantiator(), wrapper);
@@ -114,7 +111,7 @@ public class WebComponentWrapperTest {
     @Test
     public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
         WebComponentConfiguration<MyExtension> configuration =
-                new WebComponentConfigurationImpl<>("extended-component",
+                new WebComponentConfigurationImpl<>(
                         new MyExtensionExporter());
 
         WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
@@ -151,7 +148,7 @@ public class WebComponentWrapperTest {
     @Test
     public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
         WebComponentConfiguration<MyComponent> configuration =
-                new WebComponentConfigurationImpl<>("my-component-extended",
+                new WebComponentConfigurationImpl<>(
                         new ExtendedExporter());
 
         WebComponentWrapper wrapper = new WebComponentWrapper("extension" +

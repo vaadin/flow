@@ -18,15 +18,33 @@
       }
 
       static get properties() {
-        return _Properties_
-
+        return Object.assign({},
+          _Properties_,
+          {
+            _propertyUpdatedFromServer: {
+              type: Object,
+              notify: false,
+              value: {},
+            }
+          });
       }
 
       _PropertyMethods_
 
       _sync(property, newValue) {
         if (this.$server) {
-          this.$server.sync(property, newValue);
+          if (!this._propertyUpdatedFromServer[property]) {
+            this.$server.sync(property, newValue);
+          } else {
+            this._propertyUpdatedFromServer[property] = false;
+          }
+        }
+      }
+
+      _updatePropertyFromServer(property, newValue) {
+        if (this.__proto__.hasOwnProperty(property)) {
+          this._propertyUpdatedFromServer[property] = true;
+          this[property] = newValue;
         }
       }
 
@@ -69,7 +87,9 @@
 
       serverConnected() {
         Object.keys(_TagCamel_.properties).forEach(prop => {
-          this._sync(prop, this[prop]);
+          if (prop !== "_propertyUpdatedFromServer") {
+            this._sync(prop, this[prop]);
+          }
         });
       }
     }
