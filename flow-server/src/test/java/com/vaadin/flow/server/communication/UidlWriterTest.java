@@ -36,7 +36,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
@@ -56,6 +55,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -188,11 +188,8 @@ public class UidlWriterTest {
                 "$0.focus()", element);
         JavaScriptInvocation invocation2 = new JavaScriptInvocation(
                 "console.log($0, $1)", "Lives remaining:", Integer.valueOf(3));
-        List<PendingJavaScriptInvocation> executeJavaScriptList = Stream
-                .of(invocation1, invocation2)
-                .map(invocation -> new PendingJavaScriptInvocation(
-                        element.getNode(), invocation))
-                .collect(Collectors.toList());
+        List<JavaScriptInvocation> executeJavaScriptList = Arrays
+                .asList(invocation1, invocation2);
 
         JsonArray json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);

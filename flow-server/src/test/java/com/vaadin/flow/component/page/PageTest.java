@@ -47,12 +47,12 @@ public class PageTest {
         private Serializable firstParam;
 
         @Override
-        public PendingJavaScriptResult executeJavaScript(String expression,
+        public ExecutionCanceler executeJavaScript(String expression,
                 Serializable... parameters) {
             this.expression = expression;
             firstParam = parameters[0];
             count++;
-            return null;
+            return () -> true;
         }
     };
 

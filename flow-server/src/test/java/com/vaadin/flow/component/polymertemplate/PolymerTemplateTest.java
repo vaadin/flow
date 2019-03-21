@@ -45,7 +45,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -431,11 +430,11 @@ public class PolymerTemplateTest extends HasCurrentService {
             private Page page = new Page(this) {
 
                 @Override
-                public PendingJavaScriptResult executeJavaScript(
-                        String expression, Serializable... parameters) {
+                public ExecutionCanceler executeJavaScript(String expression,
+                        Serializable... parameters) {
                     executionOrder.add(expression);
                     executionParams.add(parameters);
-                    return null;
+                    return () -> true;
                 }
             };
 
