@@ -16,7 +16,6 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
@@ -40,12 +38,13 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 import com.vaadin.flow.plugin.common.RunnerManager;
 import com.vaadin.flow.plugin.production.TranspilationStep;
 import com.vaadin.flow.server.Constants;
+
+import static com.vaadin.flow.plugin.maven.AbstractNpmMojo.getProjectClassPathUrls;
 
 /**
  * Goal that prepares all web files from
@@ -225,7 +224,7 @@ public class PackageForProductionMojo extends AbstractMojo {
 
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
                 bundle, minify, hash, transpileEs6SourceDirectory,
-                new AnnotationValuesExtractor(getProjectClassPathUrls()),
+                new AnnotationValuesExtractor(getProjectClassPathUrls(project)),
                 bundleConfiguration, getFragmentsData(fragments));
 
         FrontendToolsManager frontendToolsManager = new FrontendToolsManager(
@@ -261,19 +260,6 @@ public class PackageForProductionMojo extends AbstractMojo {
                     "Each fragment definition should have a name and list of files to include defined. Got incorrect definition: '%s'",
                     fragment));
         }
-    }
-
-    private URL[] getProjectClassPathUrls() {
-        final List<String> runtimeClasspathElements;
-        try {
-            runtimeClasspathElements = project.getRuntimeClasspathElements();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to retrieve runtime classpath elements from project '%s'",
-                    project), e);
-        }
-        return runtimeClasspathElements.stream().map(File::new)
-                .map(FlowPluginFileUtils::convertToUrl).toArray(URL[]::new);
     }
 
     private ProxyConfig getProxyConfig() {

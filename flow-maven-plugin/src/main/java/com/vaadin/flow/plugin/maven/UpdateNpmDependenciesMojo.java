@@ -25,56 +25,45 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.exec.OS;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.plugin.production.ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH;
 
 /**
  * Goal that updates package.json file with @NpmPackage annotations defined in
  * the classpath.
  */
 @Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
-public class UpdateNpmDependenciesMojo extends AbstractMojo {
+public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
 
     private static final String VALUE = "value";
 
     public static final String PACKAGE_JSON = "package.json";
     public static final String WEBPACK_CONFIG = "webpack.config.js";
-
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
-
-    /**
-     * The folder where `package.json` file is located. Default is current dir.
-     */
-    @Parameter(defaultValue = "")
-    private String npmFolder;
 
     /**
      * Enable or disable legacy components annotated only with
@@ -91,24 +80,25 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
     @Parameter(defaultValue = WEBPACK_CONFIG)
     private String webpackTemplate;
 
-    private Log log = getLog();
+    /**
+     * Files and directories that should not be copied.
+     */
+    @Parameter(name = "excludes", defaultValue = "**/LICENSE*,**/LICENCE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md,**/bower.json,**/package.json,**/package-lock.json", required = true)
+    private String excludes;
 
     private AnnotationValuesExtractor annotationValuesExtractor;
+    private JarContentsManager jarContentsManager;
 
     @Override
     public void execute() {
 
         // Do nothing when bower mode
         if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
-            getLog().info("Skipped `update-npm-dependencies` goal because `vaadin.bowerMode` is set.");
+            log.info("Skipped `update-npm-dependencies` goal because `vaadin.bowerMode` is set.");
             return;
         }
 
         log.info("Looking for npm package dependencies in the java class-path ...");
-
-        if (npmFolder == null || npmFolder.isEmpty()) {
-            npmFolder = project.getBasedir().getAbsolutePath();
-        }
 
         if (annotationValuesExtractor == null) {
             URL[] projectClassPathUrls = getProjectClassPathUrls(project);
@@ -130,6 +120,38 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+
+        log.info("Generating the Flow package...");
+
+        if (jarContentsManager == null) {
+            jarContentsManager = new JarContentsManager();
+        }
+
+        File flowPackage = getFlowPackage();
+        try {
+            if (flowPackage.isDirectory()) {
+                FileUtils.cleanDirectory(flowPackage);
+            } else {
+                FileUtils.forceMkdir(flowPackage);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        project.getArtifacts().stream()
+            .filter(artifact -> "jar".equals(artifact.getType()))
+            .map(Artifact::getFile)
+            .filter(File::isFile)
+            .forEach(jar -> jarContentsManager.copyFilesFromJarTrimmingBasePath(
+                jar, NON_WEB_JAR_RESOURCE_PATH, flowPackage, getWildcardPaths(excludes)));
+    }
+
+    private String[] getWildcardPaths(String commaSeparatedWildcardPaths) {
+        if (commaSeparatedWildcardPaths == null || commaSeparatedWildcardPaths.isEmpty()) {
+            return new String[0];
+        }
+        // regex: remove all spaces next to commas
+        return commaSeparatedWildcardPaths.trim().replaceAll("[\\s]*,[\\s]*", ",").split(",");
     }
 
     private void createWebpackConfig() throws IOException {
@@ -172,12 +194,13 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         JsonObject currentDeps = packageJson.getObject("dependencies");
 
         Set<String> dependencies = new HashSet<>();
-        classes.entrySet().stream().forEach(entry -> entry.getValue().forEach(s -> {
+        classes.values().stream().flatMap(Collection::stream).forEach(s -> {
             // exclude local dependencies (those starting with `.` or `/`
-            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)) {
+            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$")
+                && !currentDeps.hasKey(s) && !s.startsWith(FLOW_PACKAGE)) {
                 dependencies.add(s);
             }
-        }));
+        });
 
         if (!currentDeps.hasKey("@webcomponents/webcomponentsjs")) {
             dependencies.add("@webcomponents/webcomponentsjs");
@@ -226,10 +249,10 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         command.addAll(Arrays.asList(npmInstallArgs));
         command.addAll(dependencies);
 
-        log.info("Updating package.json and installing npm dependencies ...\n " + command.stream().collect(Collectors.joining(" ")));
+        log.info("Updating package.json and installing npm dependencies ...\n " + String.join(" ", command));
 
         ProcessBuilder builder = new ProcessBuilder(command);
-        builder.directory(new File(npmFolder));
+        builder.directory(npmFolder);
 
         Process process = builder.start();
         logStream(process.getInputStream());
@@ -239,16 +262,16 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
             // destroying the process and sleeping helps to get green builds
             process.destroy();
             if (process.isAlive()) {
-                getLog().warn("npm process still alive, sleeping 500ms");
+                log.warn("npm process still alive, sleeping 500ms");
                 Thread.sleep(500);
             }
             if (process.exitValue() != 0) {
-                getLog().error(
+                log.error(
                         ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
             }
-            getLog().info("package.json updated and npm dependencies installed. ");
+            log.info("package.json updated and npm dependencies installed. ");
         } catch (Exception e) {
-            getLog().error(e);
+            log.error(e);
         }
     }
 
@@ -289,49 +312,5 @@ public class UpdateNpmDependenciesMojo extends AbstractMojo {
         } catch (IOException e) {
             log.error(e);
         }
-    }
-
-    static Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
-        return htmlImports.stream().map(UpdateNpmDependenciesMojo::getHtmlImportJsModule).filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-    }
-
-    static Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
-        return htmlImports.stream().map(UpdateNpmDependenciesMojo::getHtmlImportNpmPackage).filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-    }
-
-    static String getHtmlImportJsModule(String htmlImport) {
-        String module = htmlImport // @formatter:off
-                .replaceFirst("^.*bower_components/(vaadin-[^/]*/.*)\\.html$", "@vaadin/$1.js")
-                .replaceFirst("^.*bower_components/((iron|paper)-[^/]*/.*)\\.html$", "@polymer/$1.js")
-                .replaceFirst("^frontend://(.*)$", "./$1")
-                .replaceFirst("\\.html$", ".js")
-                .replaceFirst("^([a-z].*\\.js)$", "./$1")
-                ; // @formatter:on
-        return Objects.equals(module, htmlImport) ? null : module;
-    }
-
-    static String getHtmlImportNpmPackage(String htmlImport) {
-        String module = htmlImport // @formatter:off
-                .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$", "@vaadin/$1")
-                .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
-                .replaceFirst("^frontend://(.*)$", "./$1")
-                .replaceFirst("\\.html$", ".js")
-                .replaceFirst("^([a-z].*\\.js)$", "./$1")
-                ; // @formatter:on
-        return Objects.equals(module, htmlImport) ? null : module;
-    }
-
-    static URL[] getProjectClassPathUrls(MavenProject project) {
-        final List<String> runtimeClasspathElements;
-        try {
-            runtimeClasspathElements = project.getRuntimeClasspathElements();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(
-                    String.format("Failed to retrieve runtime classpath elements from project '%s'", project), e);
-        }
-        return runtimeClasspathElements.stream().map(File::new).map(FlowPluginFileUtils::convertToUrl)
-                .toArray(URL[]::new);
     }
 }

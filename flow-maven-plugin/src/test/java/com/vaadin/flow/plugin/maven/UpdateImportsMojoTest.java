@@ -16,11 +16,9 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
-
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Paths;
@@ -34,34 +32,38 @@ import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-public class UpdateImportsMojoTest {
+import static com.vaadin.flow.plugin.maven.AbstractNpmMojo.FLOW_PACKAGE;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
 
-    private MavenProject project;
-    private UpdateImportsMojo mojo = new UpdateImportsMojo();
+public class UpdateImportsMojoTest {
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     private String importsFile;
+    private final UpdateImportsMojo mojo = new UpdateImportsMojo();
 
     @Before
-    public void setup() throws IOException, DependencyResolutionRequiredException, IllegalAccessException {
-        project = Mockito.mock(MavenProject.class);
+    public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {
+        MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
-        File tmp = File.createTempFile("foo", "");
-        importsFile = tmp.getParent() + "/flow-imports.js";
+        File tmpRoot = temporaryFolder.getRoot();
+        importsFile = new File(tmpRoot, "flow-imports.js").getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "jsFile", importsFile);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
-    }
-
-    @After
-    public void teardown() throws IOException {
-        FileUtils.fileDelete(importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
+        ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "flow-packages");
+        Assert.assertTrue(mojo.getFlowPackage().mkdirs());
     }
 
     @Test
@@ -90,6 +92,36 @@ public class UpdateImportsMojoTest {
                 "./local-p3-template.js",
                 "./foo.js",
                 "./local-p2-template.js");
+    }
+
+    @Test
+    public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws IOException {
+        Assert.assertFalse(FileUtils.fileExists(importsFile));
+
+        Assert.assertTrue(new File(mojo.getFlowPackage(), "foo.js").createNewFile());
+
+        mojo.execute();
+
+        assertContainsImports(true,
+            "const div = document.createElement('div');",
+            "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
+            "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
+            "document.body.setAttribute('theme', 'dark');",
+            "@vaadin/vaadin-lumo-styles/icons.js",
+            "@vaadin/vaadin-lumo-styles/spacing.js",
+            "@vaadin/vaadin-lumo-styles/typography.js",
+            "@vaadin/vaadin-lumo-styles/color.js",
+            "@polymer/iron-icon/iron-icon.js",
+            "./foo-dir/vaadin-npm-component.js",
+            "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+            "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
+            "@vaadin/vaadin-element-mixin/src/something-else.js",
+            "./local-p3-template.js",
+            "@polymer/iron-icon",
+            "./foo-dir/vaadin-npm-component.js",
+            "./local-p3-template.js",
+            String.format("%sfoo.js", FLOW_PACKAGE),
+            "./local-p2-template.js");
     }
 
     @Test
@@ -182,19 +214,18 @@ public class UpdateImportsMojoTest {
 
         Set<String> removed = current.stream()
                 .filter(line -> importsList.stream()
-                        .filter(jsImport -> line.contains(jsImport)).findAny()
-                        .isPresent())
+                        .anyMatch(line::contains))
                 .collect(Collectors.toSet());
 
         current.removeAll(removed);
 
-        String content = current.stream().collect(Collectors.joining("\n"));
+        String content = String.join("\n", current);
 
         replaceJsFile(content + "\n");
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.asList(imports).stream()
+        String content = Arrays.stream(imports)
                 .map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 
@@ -204,7 +235,7 @@ public class UpdateImportsMojoTest {
     private void replaceJsFile(String content, OpenOption... options)
             throws IOException {
         Files.write(Paths.get(new File(importsFile).toURI()),
-                content.getBytes("UTF-8"), options);
+                content.getBytes(StandardCharsets.UTF_8), options);
     }
 
 }

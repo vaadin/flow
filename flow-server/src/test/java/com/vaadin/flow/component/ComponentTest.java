@@ -28,6 +28,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -47,12 +53,8 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
+
 import elemental.json.Json;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 @NotThreadSafe
 public class ComponentTest {
@@ -1103,6 +1105,7 @@ public class ComponentTest {
     public void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
+        mocks.getDeploymentConfiguration().setBowerMode(true);
 
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
@@ -1125,6 +1128,17 @@ public class ComponentTest {
         assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
                 pendingDependencies);
 
+    }
+
+    @Test
+    public void inNpmModeNoJsDependenciesAreAdded() {
+        mocks.getDeploymentConfiguration().setBowerMode(false);
+        UIInternals internals = new MockUI().getInternals();
+        DependencyList dependencyList = internals.getDependencyList();
+
+        internals.addComponentDependencies(CircularDependencies1.class);
+
+        Assert.assertTrue(dependencyList.getPendingSendToClient().isEmpty());
     }
 
     @Test
