@@ -46,8 +46,8 @@ import static org.mockito.Mockito.when;
 public class WebComponentWrapperTest {
 
     private static final String MSG_PROPERTY = "message";
-    private static final String INT_PROPERTY = "integerValue";
-    private static final String BOOLEAN_PROPERTY = "booleanValue";
+    private static final String INT_PROPERTY = "integer-value";
+    private static final String BOOLEAN_PROPERTY = "boolean-value";
 
     private MyComponent component;
     private WebComponentBinding<MyComponent> binding;
