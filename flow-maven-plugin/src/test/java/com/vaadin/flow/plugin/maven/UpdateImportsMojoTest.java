@@ -48,21 +48,22 @@ public class UpdateImportsMojoTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private String importsFile;
-    private File flowPackageDirectory;
     private final UpdateImportsMojo mojo = new UpdateImportsMojo();
 
     @Before
-    public void setup() throws IOException, DependencyResolutionRequiredException, IllegalAccessException {
+    public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {
         MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
-        importsFile = new File(temporaryFolder.getRoot(), "flow-imports.js").getAbsolutePath();
-        flowPackageDirectory = temporaryFolder.newFolder("flow-packages");
+        File tmpRoot = temporaryFolder.getRoot();
+        importsFile = new File(tmpRoot, "flow-imports.js").getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "jsFile", importsFile);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "flowPackageDirectory", flowPackageDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
+        ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "flow-packages");
+        Assert.assertTrue(mojo.getFlowPackage().mkdirs());
     }
 
     @Test
@@ -97,7 +98,7 @@ public class UpdateImportsMojoTest {
     public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws IOException {
         Assert.assertFalse(FileUtils.fileExists(importsFile));
 
-        Assert.assertTrue(new File(flowPackageDirectory, "foo.js").createNewFile());
+        Assert.assertTrue(new File(mojo.getFlowPackage(), "foo.js").createNewFile());
 
         mojo.execute();
 
