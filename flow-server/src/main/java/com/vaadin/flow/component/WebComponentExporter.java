@@ -24,8 +24,15 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
  * Provides a way to exporter a class which extends {@link Component} as an
  * embeddable web component The tag of the exporter web component <b>must
  * be</b> defined using {@link Tag} annotation - otherwise, an exception will
- * be thrown. The tag must be a non-null, non-empty string with
- * dash-separated words, i.e. "dash-separated".
+ * be thrown.
+ * <p>
+ * Limitations regarding the tag are:
+ * <ul>
+ * <li>The tag must be a non-null, non-empty string with
+ * dash-separated words, i.e. "dash-separated".</li>
+ * <li>Exporter cannot share the tag with the component being exported. If
+ * they do, an exception will be thrown during run-time.</li>
+ * </ul>
  * <p>
  * The exported web components can be embedded into non-Vaadin
  * applications.

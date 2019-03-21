@@ -21,6 +21,9 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
+import elemental.json.Json;
+import elemental.json.JsonValue;
+
 @Tag("button-click-counter")
 public class ButtonClickCounterExporter implements WebComponentExporter<ButtonClickCounter> {
     @Override
@@ -28,9 +31,15 @@ public class ButtonClickCounterExporter implements WebComponentExporter<ButtonCl
         PropertyConfiguration<ButtonClickCounter, Integer> property =
                 definition.addProperty("clicks", 0);
 
+        PropertyConfiguration<ButtonClickCounter, JsonValue> jsonProperty =
+                definition.addProperty("clicks-json", Json.createNull());
+
         definition.setInstanceConfigurator((webComponent, component) ->
-                component.addListener(number ->
-                        webComponent.setProperty(property, number)));
+                component.addListener(number -> {
+                    webComponent.setProperty(property, number);
+                    webComponent.setProperty(jsonProperty,
+                            component.getNumberJson());
+        }));
 
     }
 }

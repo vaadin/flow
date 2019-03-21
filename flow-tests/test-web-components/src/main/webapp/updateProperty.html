@@ -28,13 +28,19 @@
 
   <button-click-counter id="counter" clicks="0"></button-click-counter>
   <p id="count">0</p>
+  <p id="json">0</p>
 
   <script>
     var counter = document.getElementById("counter");
     var count = document.getElementById("count");
+    var json = document.getElementById("json");
 
     counter.addEventListener("clicks-changed", () => {
       count.innerHTML = counter.clicks;
+    });
+
+    counter.addEventListener("clicks-json-changed", () => {
+      json.innerHTML = counter["clicks-json"].counter;
     });
   </script>
 

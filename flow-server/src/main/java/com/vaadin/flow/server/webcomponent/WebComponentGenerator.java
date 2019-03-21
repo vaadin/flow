@@ -163,7 +163,7 @@ public class WebComponentGenerator {
     }
 
     private static String getSyncMethod(String property) {
-        return "_sync_" + property;
+        return "_sync_" + SharedUtil.dashSeparatedToCamelCase(property);
     }
 
     private static String getPropertyMethods(Stream<String> properties) {

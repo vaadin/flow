@@ -107,6 +107,12 @@ public class WebComponentConfigurationImpl<C extends Component>
         Objects.requireNonNull(name, "Parameter 'name' cannot be null!");
         Objects.requireNonNull(type, "Parameter 'type' cannot be null!");
 
+        if (!name.toLowerCase().equals(name)) {
+            throw new InvalidParameterException("Property name cannot contain" +
+                    " capital letters. Property name must be lower case and " +
+                    "preferably words should be dash-separated.");
+        }
+
         if (!isSupportedType(type)) {
             throw new UnsupportedPropertyTypeException(String.format("PropertyConfiguration " +
                     "cannot handle type %s. Use any of %s instead.",
