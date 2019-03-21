@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -77,11 +76,11 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
 
         // Do nothing when bower mode
         if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
-            getLog().info("Skipped `update-imports` goal because `vaadin.bowerMode` is set.");
+            log.info("Skipped `update-imports` goal because `vaadin.bowerMode` is set.");
             return;
         }
 
-        getLog().info("Looking for imports in the java class-path ...");
+        log.info("Looking for imports in the java class-path ...");
 
         if (jsFile == null || jsFile.isEmpty()) {
             jsFile = project.getBasedir() + "/" + MAIN_JS;
@@ -97,6 +96,7 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
         Set<String> modules = new LinkedHashSet<>();
         modules.addAll(getThemeModules());
         modules.addAll(getJsModules());
+        modules.addAll(getJavaScriptFiles());
 
         try {
             updateMainJsFile(getMainJsContent(modules));
@@ -163,16 +163,21 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
         addClassesWithJsModules(classes);
         addClassesWithHtmlImports(classes);
 
-        Stream<String> jsModules = classes.values().stream().flatMap(Collection::stream)
-            .map(jsModule ->
+        return classes.values().stream().flatMap(Collection::stream)
+                .map(jsModule ->
                 // add `./` prefix to names starting with letters
-                jsModule.replaceFirst("(?i)^([a-z])", "./$1"));
+                jsModule.replaceFirst("(?i)^([a-z])", "./$1"))
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
 
-        Stream<String> jsImportsStream = annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
+    private Collection<? extends String> getJavaScriptFiles() {
+        return annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
             .flatMap(Collection::stream)
-            .map(this::resolveInFlowFrontendDirectory);
-
-        return Stream.concat(jsModules, jsImportsStream)
+            .map(this::resolveInFlowFrontendDirectory)
+            .map(javaScriptPath ->
+                // add `./` prefix to names starting with letters
+                javaScriptPath.replaceFirst("(?i)^([a-z])", "./$1"))
             .sorted(Comparator.reverseOrder())
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -197,12 +202,12 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
         Map<ThemeDefinition, Class<?>> themes = annotationValuesExtractor.getThemeDefinitions();
 
         if (themes.isEmpty()) {
-           getLog().warn("No theme found for the app nor " + LUMO + " class found in the classpath");
+           log.warn("No theme found for the app nor " + LUMO + " class found in the classpath");
            return null;
         }
 
         if (themes.size() > 1) {
-            getLog().warn(
+            log.warn(
                     "Found multiple themes for the application, vaadin-flow would only consider the first one\n"
                             + themes.entrySet().stream()
                                     .map(e -> "   theme:" + e.getKey().getTheme().getName() + " "
@@ -212,7 +217,7 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
 
 
         ThemeDefinition themeDef = themes.keySet().iterator().next();
-        getLog().info("Using theme " + themeDef.getTheme().getName()
+        log.info("Using theme " + themeDef.getTheme().getName()
                 + (themeDef.getVariant().isEmpty() ? "" : (" variant: " + themeDef.getVariant())));
         return themeDef;
     }
@@ -220,12 +225,12 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
     private void updateMainJsFile(List<String> newContent) throws IOException {
         List<String> oldContent = FileUtils.loadFile(new File(jsFile));
         if (newContent.equals(oldContent)) {
-            getLog().info("No js modules to update");
+            log.info("No js modules to update");
         } else {
             File out = new File(jsFile);
             FlowPluginFileUtils.forceMkdir(out.getParentFile());
             FileUtils.fileWrite(out, "UTF-8", String.join("\n", newContent));
-            getLog().info("Updated " + jsFile);
+            log.info("Updated " + jsFile);
         }
     }
 }

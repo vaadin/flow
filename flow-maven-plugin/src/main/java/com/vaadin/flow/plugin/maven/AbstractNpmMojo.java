@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
@@ -52,6 +53,8 @@ public abstract class AbstractNpmMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "/node_modules/" + FLOW_PACKAGE)
     private String flowPackagePath;
+
+    protected final Log log = getLog();
 
     static URL[] getProjectClassPathUrls(MavenProject project) {
         final List<String> runtimeClasspathElements;

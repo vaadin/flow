@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.exec.OS;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -81,7 +80,11 @@ public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
     @Parameter(defaultValue = WEBPACK_CONFIG)
     private String webpackTemplate;
 
-    private final Log log = getLog();
+    /**
+     * Files and directories that should not be copied.
+     */
+    @Parameter(name = "excludes", defaultValue = "**/LICENSE*,**/LICENCE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md,**/bower.json,**/package.json,**/package-lock.json", required = true)
+    private String excludes;
 
     private AnnotationValuesExtractor annotationValuesExtractor;
     private JarContentsManager jarContentsManager;
@@ -91,7 +94,7 @@ public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
 
         // Do nothing when bower mode
         if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
-            getLog().info("Skipped `update-npm-dependencies` goal because `vaadin.bowerMode` is set.");
+            log.info("Skipped `update-npm-dependencies` goal because `vaadin.bowerMode` is set.");
             return;
         }
 
@@ -140,7 +143,15 @@ public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
             .map(Artifact::getFile)
             .filter(File::isFile)
             .forEach(jar -> jarContentsManager.copyFilesFromJarTrimmingBasePath(
-                jar, NON_WEB_JAR_RESOURCE_PATH, flowPackage));
+                jar, NON_WEB_JAR_RESOURCE_PATH, flowPackage, getWildcardPaths(excludes)));
+    }
+
+    private String[] getWildcardPaths(String commaSeparatedWildcardPaths) {
+        if (commaSeparatedWildcardPaths == null || commaSeparatedWildcardPaths.isEmpty()) {
+            return new String[0];
+        }
+        // regex: remove all spaces next to commas
+        return commaSeparatedWildcardPaths.trim().replaceAll("[\\s]*,[\\s]*", ",").split(",");
     }
 
     private void createWebpackConfig() throws IOException {
@@ -251,16 +262,16 @@ public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
             // destroying the process and sleeping helps to get green builds
             process.destroy();
             if (process.isAlive()) {
-                getLog().warn("npm process still alive, sleeping 500ms");
+                log.warn("npm process still alive, sleeping 500ms");
                 Thread.sleep(500);
             }
             if (process.exitValue() != 0) {
-                getLog().error(
+                log.error(
                         ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
             }
-            getLog().info("package.json updated and npm dependencies installed. ");
+            log.info("package.json updated and npm dependencies installed. ");
         } catch (Exception e) {
-            getLog().error(e);
+            log.error(e);
         }
     }
 
