@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import java.security.InvalidParameterException;
 import java.util.Set;
 
 import org.junit.Before;
@@ -86,6 +87,11 @@ public class WebComponentConfigurationImplTest {
                 config.getPropertyDataSet().size());
 
         assertProperty(config, "int", 2);
+    }
+
+    @Test(expected = InvalidParameterException.class)
+    public void addProperty_doesNotAllowNamesWithCapitalLetters() {
+        config.addProperty("invalidPropertyName", 1);
     }
 
     @Test
