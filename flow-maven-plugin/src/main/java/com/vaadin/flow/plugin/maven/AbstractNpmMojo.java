@@ -46,8 +46,12 @@ public abstract class AbstractNpmMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.basedir}")
     protected File npmFolder;
 
-    @Parameter(defaultValue = "${npmFolder}/node_modules/" + FLOW_PACKAGE)
-    protected File flowPackageDirectory;
+    /**
+     * The relative path to the Flow package. Always relative to
+     * {@link AbstractNpmMojo#npmFolder}.
+     */
+    @Parameter(defaultValue = "/node_modules/" + FLOW_PACKAGE)
+    private String flowPackagePath;
 
     static URL[] getProjectClassPathUrls(MavenProject project) {
         final List<String> runtimeClasspathElements;
@@ -60,6 +64,10 @@ public abstract class AbstractNpmMojo extends AbstractMojo {
         }
         return runtimeClasspathElements.stream().map(File::new)
                 .map(FlowPluginFileUtils::convertToUrl).toArray(URL[]::new);
+    }
+
+    protected File getFlowPackage() {
+        return new File(npmFolder, flowPackagePath);
     }
 
     protected Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
@@ -79,7 +87,7 @@ public abstract class AbstractNpmMojo extends AbstractMojo {
         String pathWithNoProtocols = importPath
                 .replace(FRONTEND_PROTOCOL_PREFIX, "");
         return String.format("%s%s",
-                new File(flowPackageDirectory, pathWithNoProtocols).isFile()
+                new File(getFlowPackage(), pathWithNoProtocols).isFile()
                         ? FLOW_PACKAGE
                         : "./",
                 pathWithNoProtocols);

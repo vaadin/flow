@@ -53,7 +53,7 @@ public class UpdateNpmDependenciesMojoTest {
     String webpackConfig;
 
     @Before
-    public void setup() throws IOException, DependencyResolutionRequiredException, IllegalAccessException {
+    public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {
         project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
@@ -61,11 +61,9 @@ public class UpdateNpmDependenciesMojoTest {
         packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
 
-        File flowPackageDirectory = temporaryFolder.newFolder("node_modules", "@vaadin", "flow-frontend");
-
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
-        ReflectionUtils.setVariableValueInObject(mojo, "flowPackageDirectory", flowPackageDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "node_modules/@vaadin/flow-frontend");
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
     }
@@ -98,7 +96,7 @@ public class UpdateNpmDependenciesMojoTest {
         assertPackageJsonContent();
 
         Assert.assertTrue(FileUtils.fileExists(webpackConfig));
-        Assert.assertTrue(FileUtils.fileExists(mojo.flowPackageDirectory.getAbsolutePath()));
+        Assert.assertTrue(FileUtils.fileExists(mojo.getFlowPackage().getAbsolutePath()));
     }
 
     @Test
@@ -126,7 +124,7 @@ public class UpdateNpmDependenciesMojoTest {
 
         assertPackageJsonContent();
 
-        Assert.assertTrue(FileUtils.fileExists(mojo.flowPackageDirectory.getAbsolutePath()));
+        Assert.assertTrue(FileUtils.fileExists(mojo.getFlowPackage().getAbsolutePath()));
     }
 
     private void assertPackageJsonContent() throws IOException {

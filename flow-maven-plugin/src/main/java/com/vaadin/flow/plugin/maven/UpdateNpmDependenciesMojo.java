@@ -124,11 +124,12 @@ public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
             jarContentsManager = new JarContentsManager();
         }
 
+        File flowPackage = getFlowPackage();
         try {
-            if (flowPackageDirectory.isDirectory()) {
-                FileUtils.cleanDirectory(flowPackageDirectory);
+            if (flowPackage.isDirectory()) {
+                FileUtils.cleanDirectory(flowPackage);
             } else {
-                FileUtils.forceMkdir(flowPackageDirectory);
+                FileUtils.forceMkdir(flowPackage);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -139,7 +140,7 @@ public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
             .map(Artifact::getFile)
             .filter(File::isFile)
             .forEach(jar -> jarContentsManager.copyFilesFromJarTrimmingBasePath(
-                jar, NON_WEB_JAR_RESOURCE_PATH, flowPackageDirectory));
+                jar, NON_WEB_JAR_RESOURCE_PATH, flowPackage));
     }
 
     private void createWebpackConfig() throws IOException {
