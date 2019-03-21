@@ -31,7 +31,7 @@ public class WebComponentGeneratorTest {
     @Test
     public void generatedReplacementMapContainsExpectedEntries() {
         WebComponentConfigurationImpl<MyComponent> builder =
-                new WebComponentConfigurationImpl<>("tag", new MyComponentExporter());
+                new WebComponentConfigurationImpl<>(new MyComponentExporter());
 
 
         Map<String, String> replacementsMap = WebComponentGenerator

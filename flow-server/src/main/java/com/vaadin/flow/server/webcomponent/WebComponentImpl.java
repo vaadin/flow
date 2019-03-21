@@ -22,29 +22,40 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.EventOptions;
-import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentProxy;
 import com.vaadin.flow.dom.Element;
 
-import elemental.json.Json;
 import elemental.json.JsonValue;
 
 /**
  * {@inheritDoc}.
- * @param <C>
+ * @param <C>   {@code component} being exported
  */
 class WebComponentImpl<C extends Component> implements WebComponent<C> {
+    private static final String UPDATE_PROPERTY = "this" +
+            "._updatePropertyFromServer($0, $1);";
+    private static final String UPDATE_PROPERTY_NULL = "this" +
+            "._updatePropertyFromServer($0, null);";
+    private static final String UPDATE_PROPERTY_FORMAT = "this" +
+            "._updatePropertyFromServer($0, %s);";
+
     private WebComponentProxy webComponentProxy;
     private WebComponentBinding<C> binding;
 
     /**
-     * @param binding
-     * @param proxy
+     * Constructs an internal implementation for {@link WebComponent}. {@code
+     * WebComponentImpl} uses {@link WebComponentBinding} to verify properties
+     * and value types given as parameters to its methods. {@link WebComponentProxy}
+     * is the {@code element} which will contain the exported {@code
+     * component} instance (provided by the {@code binding}).
+     * @param binding   binds web component configuration to {@code component X}
+     * @param proxy     host {@code component X} on the embedding page
      */
-    public WebComponentImpl(WebComponentBinding<C> binding,
-                            WebComponentProxy proxy) {
+    WebComponentImpl(WebComponentBinding<C> binding,
+                     WebComponentProxy proxy) {
         Objects.requireNonNull(binding, "Parameter 'binding' must not be " +
                 "null!");
         Objects.requireNonNull(proxy, "Parameter " +
@@ -106,19 +117,27 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
     private void setProperty(String propertyName, Object value) {
         Element element = webComponentProxy.getElement();
+
         if (value == null) {
-            element.setPropertyJson(propertyName,
-                    Json.createNull());
+            element.executeJavaScript(UPDATE_PROPERTY_NULL, propertyName);
         }
 
         if (value instanceof Integer)  {
-            element.setProperty(propertyName, ((Integer)value).doubleValue());
+            element.executeJavaScript(UPDATE_PROPERTY, propertyName,
+                    (Integer)value);
         } else if (value instanceof Double) {
-            element.setProperty(propertyName, (Double)value);
+            element.executeJavaScript(UPDATE_PROPERTY, propertyName,
+                    (Double)value);
         } else if (value instanceof String) {
-            element.setProperty(propertyName, (String)value);
+            element.executeJavaScript(UPDATE_PROPERTY, propertyName,
+                    (String)value);
         } else if (value instanceof JsonValue) {
-            element.setPropertyJson(propertyName, (JsonValue)value);
+            // this is a hack to get around executeJavaScript limitation.
+            // Since properties can take JsonValues, this was needed to allow
+            // that expected behavior.
+            element.executeJavaScript(String.format(UPDATE_PROPERTY_FORMAT,
+                    ((JsonValue)value).toJson()),
+                    propertyName);
         }
     }
 }

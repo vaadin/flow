@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,17 +82,17 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     protected WebComponentConfigurationImpl<? extends Component> getConfigurationInternal(
             String tag) {
-        WebComponentConfigurationImpl<? extends Component> builder = null;
+        WebComponentConfigurationImpl<? extends Component> configuration = null;
         configurationLock.lock();
         try {
             if (exporterClasses != null) {
                 populateCacheByTag(tag);
-                builder = builderCache.get(tag);
+                configuration = builderCache.get(tag);
             }
         } finally {
             configurationLock.unlock();
         }
-        return builder;
+        return configuration;
     }
 
     /**
@@ -174,6 +175,11 @@ public class WebComponentConfigurationRegistry implements Serializable {
         }
     }
 
+    /**
+     * Have {@link WebComponentExporter} been set?
+     * @return  {@code true} if {@link #setExporters(Map)} has been called
+     *          with {@code non-null} value
+     */
     public boolean hasExporters() {
         configurationLock.lock();
         try {
@@ -244,8 +250,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
         Object attribute = OSGiAccess.getInstance().getOsgiServletContext()
                 .getAttribute(
                         WebComponentConfigurationRegistry.class.getName());
-        if (attribute != null
-                && attribute instanceof OSGiWebComponentConfigurationRegistry) {
+        if (attribute instanceof OSGiWebComponentConfigurationRegistry) {
             return (WebComponentConfigurationRegistry) attribute;
         }
 
@@ -271,8 +276,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
                     .get(tag);
 
             if (exporterClass != null) {
-                builderCache.put(tag,
-                        constructConfigurations(tag, exporterClass));
+                builderCache.put(tag, constructConfigurations(exporterClass));
                 // remove the class reference from the data bank - it has
                 // already been constructed and is no longer needed
                 exporterClasses.remove(tag);
@@ -291,7 +295,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             return;
         }
         exporterClasses.forEach((key, value) -> builderCache.put(key,
-                constructConfigurations(key, value)));
+                constructConfigurations(value)));
         // empty the exporter data bank - every builder has been constructed
         exporterClasses.clear();
     }
@@ -307,7 +311,6 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     protected WebComponentConfigurationImpl<? extends Component> constructConfigurations(
-            String tag,
             Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
 
         Instantiator instantiator = VaadinService.getCurrent()
@@ -316,6 +319,6 @@ public class WebComponentConfigurationRegistry implements Serializable {
         WebComponentExporter<? extends Component> exporter = instantiator
                 .getOrCreate(exporterClass);
 
-        return new WebComponentConfigurationImpl<>(tag, exporter);
+        return new WebComponentConfigurationImpl<>(exporter);
     }
 }
