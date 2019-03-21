@@ -30,6 +30,7 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
+import com.vaadin.flow.server.Constants;
 
 /**
  * Goal that copies all production mode files into the
@@ -66,17 +67,23 @@ public class CopyProductionFilesMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        // Do nothing when not in bower mode
+        if (!Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            getLog().info("Skipped `copy-production-files` goal because `vaadin.bowerMode` is not set.");
+            return;
+        }
+
         List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(artifact -> new ArtifactData(artifact.getFile(),
                         artifact.getArtifactId(), artifact.getVersion()))
                 .collect(Collectors.toList());
-        
+
         if(frontendWorkingDirectory == null) {
             // No directory given, try to find from common locations
             final List<String> potentialFrontEndDirectories = Arrays.asList(
                     "src/main/webapp/frontend",
-                    "src/main/resources/META-INF/resources/frontend", 
+                    "src/main/resources/META-INF/resources/frontend",
                     "src/main/resources/public/frontend",
                     "src/main/resources/static/frontend",
                     "src/main/resources/resources/frontend");
@@ -88,7 +95,7 @@ public class CopyProductionFilesMojo extends AbstractMojo {
                 }
             }
         }
-        
+
         new ProductionModeCopyStep(new JarContentsManager(), projectArtifacts)
                 .copyWebApplicationFiles(copyOutputDirectory,
                         frontendWorkingDirectory, excludes);

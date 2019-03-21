@@ -44,6 +44,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 
@@ -55,7 +56,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class UpdateImportsMojo extends AbstractMojo {
 
     private static final String VALUE = "value";
-    public static final String MAIN_JS = "src/main/webapp/frontend/main.js";
+    public static final String MAIN_JS = "frontend/main.js";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -78,7 +79,14 @@ public class UpdateImportsMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        getLog().info("Looking for imports ...");
+
+        // Do nothing when bower mode
+        if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            getLog().info("Skipped `update-imports` goal because `vaadin.bowerMode` is set.");
+            return;
+        }
+
+        getLog().info("Looking for imports in the java class-path ...");
 
         if (jsFile == null || jsFile.isEmpty()) {
             jsFile = project.getBasedir() + "/" + MAIN_JS;

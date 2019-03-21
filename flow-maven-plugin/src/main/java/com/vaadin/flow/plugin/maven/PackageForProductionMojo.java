@@ -45,6 +45,7 @@ import com.vaadin.flow.plugin.common.FrontendDataProvider;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 import com.vaadin.flow.plugin.common.RunnerManager;
 import com.vaadin.flow.plugin.production.TranspilationStep;
+import com.vaadin.flow.server.Constants;
 
 /**
  * Goal that prepares all web files from
@@ -200,6 +201,13 @@ public class PackageForProductionMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+
+        // Do nothing when not in bower mode
+        if (!Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            getLog().info("Skipped `package-for-production` goal because `vaadin.bowerMode` is not set.");
+            return;
+        }
+
         if (transpileOutputDirectory == null) {
             if ("jar".equals(project.getPackaging()) && project.getArtifactMap()
                     .containsKey("com.vaadin:vaadin-spring-boot-starter")) {
