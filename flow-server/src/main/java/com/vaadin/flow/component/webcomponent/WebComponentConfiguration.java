@@ -77,7 +77,6 @@ public interface WebComponentConfiguration<C extends Component>
      * @param instantiator  Vaadin {@link Instantiator}, not null
      * @param proxy         proxy component which wraps the exported {@code
      *                      component C}, not null
-     * @return web component binding
      */
     void bindProxy(Instantiator instantiator,
                    WebComponentProxy proxy);
