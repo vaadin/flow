@@ -184,7 +184,8 @@ public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
         Set<String> dependencies = new HashSet<>();
         classes.values().stream().flatMap(Collection::stream).forEach(s -> {
             // exclude local dependencies (those starting with `.` or `/`
-            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)) {
+            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$")
+                && !currentDeps.hasKey(s) && !s.startsWith(FLOW_PACKAGE)) {
                 dependencies.add(s);
             }
         });
