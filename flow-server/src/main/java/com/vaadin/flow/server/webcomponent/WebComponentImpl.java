@@ -21,11 +21,11 @@ import java.security.InvalidParameterException;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.webcomponent.EventOptions;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
-import com.vaadin.flow.component.webcomponent.WebComponentProxy;
 import com.vaadin.flow.dom.Element;
 
 import elemental.json.JsonValue;
@@ -42,26 +42,26 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
     private static final String UPDATE_PROPERTY_FORMAT = "this" +
             "._updatePropertyFromServer($0, %s);";
 
-    private WebComponentProxy webComponentProxy;
-    private WebComponentBinding<C> binding;
+    private HasElement componentHost;
+    private WebComponentBinding binding;
 
     /**
      * Constructs an internal implementation for {@link WebComponent}. {@code
      * WebComponentImpl} uses {@link WebComponentBinding} to verify properties
-     * and value types given as parameters to its methods. {@link WebComponentProxy}
+     * and value types given as parameters to its methods. {@link HasElement}
      * is the {@code element} which will contain the exported {@code
      * component} instance (provided by the {@code binding}).
      * @param binding   binds web component configuration to {@code component X}
-     * @param proxy     host {@code component X} on the embedding page
+     * @param componentHost     host {@code component X} on the embedding page
      */
-    WebComponentImpl(WebComponentBinding<C> binding,
-                     WebComponentProxy proxy) {
+    WebComponentImpl(WebComponentBinding binding,
+                     HasElement componentHost) {
         Objects.requireNonNull(binding, "Parameter 'binding' must not be " +
                 "null!");
-        Objects.requireNonNull(proxy, "Parameter " +
+        Objects.requireNonNull(componentHost, "Parameter " +
                 "'webComponentWrapper' must not be null!");
         this.binding = binding;
-        this.webComponentProxy = proxy;
+        this.componentHost = componentHost;
     }
 
     @Override
@@ -116,7 +116,7 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
 
     private void setProperty(String propertyName, Object value) {
-        Element element = webComponentProxy.getElement();
+        Element element = componentHost.getElement();
 
         if (value == null) {
             element.executeJavaScript(UPDATE_PROPERTY_NULL, propertyName);

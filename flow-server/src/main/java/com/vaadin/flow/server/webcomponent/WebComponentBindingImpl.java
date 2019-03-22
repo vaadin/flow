@@ -28,7 +28,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.di.Instantiator;
 
 public class WebComponentBindingImpl<C extends Component>
-        implements WebComponentBinding<C>, Serializable {
+        implements WebComponentBinding, Serializable {
     private C component;
     private Map<String, PropertyBinding<? extends Serializable>> properties;
 
@@ -70,7 +70,7 @@ public class WebComponentBindingImpl<C extends Component>
      * @return bound component
      */
     @Override
-    public C getComponent() {
+    public Component getComponent() {
         return component;
     }
 
@@ -98,8 +98,9 @@ public class WebComponentBindingImpl<C extends Component>
     }
 
     /**
-     * Called by {@link WebComponentConfigurationImpl#createBinding(Instantiator)} once
-     * the instance has been successfully constructed. Reports the current
+     * Called by
+     * {@link WebComponentConfigurationImpl#createWebComponentBinding(Instantiator)}
+     * once the instance has been successfully constructed. Reports the current
      * (default) values to the bound component.
      */
     void updatePropertiesToComponent() {

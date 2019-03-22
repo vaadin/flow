@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 
@@ -66,18 +67,32 @@ public interface WebComponentConfiguration<C extends Component>
     Set<PropertyData<? extends Serializable>> getPropertyDataSet();
 
     /**
-     * Creates a {@link WebComponentBinding} and sets it to the given
-     * {@link WebComponentProxy}.
-     * <p>
-     * {@code WebComponentBinding} is a distinct web
-     * component based on this configuration. Each {@code binding} has an
-     * instance of the component type being exported. Each binding is mapped
-     * to single element in the embedding context.
+     * Creates the component instance of type {@link C} using {@code
+     * instantiator} and then constructs a {@link WebComponentBinding} which
+     * allows for pushing property updates to the component {@code C} in a
+     * fashion defined by the associated
+     * {@link com.vaadin.flow.component.WebComponentExporter}.
      *
-     * @param instantiator  Vaadin {@link Instantiator}, not null
-     * @param proxy         proxy component which wraps the exported {@code
-     *                      component C}, not null
+     * @param instantiator  {@link Instantiator} using to construct component
+                            instance
+     * @return  web component binding which can be used by the web component
+     *          host to communicate with the component it is hosting
      */
-    void bindProxy(Instantiator instantiator,
-                   WebComponentProxy proxy);
+    WebComponentBinding createWebComponentBinding(Instantiator instantiator);
+
+    /**
+     * Invokes the {@link InstanceConfigurator} provided by
+     * {@link com.vaadin.flow.component.WebComponentExporter}.
+     * <p>
+     * The {@link WebComponent} implementation provided to the c{@code
+     * configurator} internally uses {@code componentHost} to communicate
+     * with the client-side web component.
+     *
+     * @param binding           binding provided by
+     *                          {@link #createWebComponentBinding(Instantiator)}
+     * @param componentHost     component which hosts the exported component
+     *                          and offers integration with embedding context
+     */
+    void configureWebComponentInstance(WebComponentBinding binding,
+                                       HasElement componentHost);
 }

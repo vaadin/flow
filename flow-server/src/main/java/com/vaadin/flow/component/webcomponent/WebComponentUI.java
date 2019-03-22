@@ -71,10 +71,22 @@ public class WebComponentUI extends UI {
             return;
         }
 
-        WebComponentWrapper wrapper = new WebComponentWrapper(tag);
+        /*
+            Form the two-way binding between the component host
+            (WebComponentWrapper) and the component produces by handling
+            WebComponentExporter.
+            WebComponentBinding offers a method for proxying property updates
+            to the component and the call to configureWebComponentInstance
+            sets up the component-to-host linkage.
+         */
 
-        webComponentConfiguration.get().bindProxy(Instantiator.get(this),
-                wrapper);
+        WebComponentBinding binding =
+                webComponentConfiguration.get().createWebComponentBinding(Instantiator.get(this));
+
+        WebComponentWrapper wrapper = new WebComponentWrapper(tag, binding);
+
+        webComponentConfiguration.get().configureWebComponentInstance(binding, wrapper);
+
 
         getElement().getStateProvider()
                 .appendVirtualChild(getElement().getNode(),
