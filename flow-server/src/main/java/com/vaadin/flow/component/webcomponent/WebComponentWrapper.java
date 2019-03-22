@@ -34,10 +34,10 @@ import elemental.json.JsonValue;
  * Wrapper component for a WebComponent that exposes client callable methods
  * that the client side components expect to be available.
  */
-public class WebComponentWrapper extends Component implements WebComponentProxy {
+public class WebComponentWrapper extends Component {
 
     private Component child;
-    private WebComponentBinding<? extends Serializable> webComponentBinding;
+    private WebComponentBinding webComponentBinding;
 
     // Disconnect timeout
     private Registration disconnectRegistration;
@@ -47,11 +47,19 @@ public class WebComponentWrapper extends Component implements WebComponentProxy 
      * Wrapper class for the server side WebComponent.
      *
      * @param tag
-     *         web component tag
+     *          web component tag
+     * @param binding
+     *          binding that offers methods for delivering property updates
+     *          to the {@code component} being wrapped by {@code
+     *          WebComponentWrapper}
      */
-    public WebComponentWrapper(String tag) {
+    public WebComponentWrapper(String tag, WebComponentBinding binding) {
         super(new Element(tag));
+        Objects.requireNonNull(binding,"Parameter 'binding' must not be null!");
 
+        this.webComponentBinding = binding;
+        this.child = webComponentBinding.getComponent();
+        getElement().appendChild(child.getElement());
     }
 
     /**
@@ -119,8 +127,6 @@ public class WebComponentWrapper extends Component implements WebComponentProxy 
     }
 
     private void setNewPropertyValue(String property, JsonValue newValue) {
-        checkProxyState();
-
         Class<? extends Serializable> propertyType =
                 webComponentBinding.getPropertyType(property);
 
@@ -131,35 +137,6 @@ public class WebComponentWrapper extends Component implements WebComponentProxy 
             throw new IllegalArgumentException(
                     String.format("Received value was not convertible to '%s'",
                             propertyType.getName()));
-        }
-    }
-
-    @Override
-    public void setWebComponentBinding(WebComponentBinding<? extends Component> binding) {
-        Objects.requireNonNull(binding,"Parameter 'binding' must not be null!");
-
-        if (this.webComponentBinding != null) {
-            throw new IllegalStateException("Binding has already been set and" +
-                    " cannot be set again");
-        }
-
-        this.webComponentBinding = binding;
-        this.child = webComponentBinding.getComponent();
-        getElement().appendChild(child.getElement());
-    }
-
-    private void checkProxyState() {
-        if (webComponentBinding == null) {
-            throw new IllegalStateException(String.format("%s has not been " +
-                            "set for the %s implementation!",
-                    WebComponentBinding.class.getSimpleName(),
-                    WebComponentProxy.class.getSimpleName()));
-        }
-
-        if (child == null) {
-            throw new IllegalStateException(String.format("%s is missing the " +
-                            "proxy target - no child is set.",
-                    WebComponentProxy.class.getSimpleName()));
         }
     }
 

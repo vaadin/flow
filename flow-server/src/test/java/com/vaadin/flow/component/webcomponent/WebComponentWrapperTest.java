@@ -60,7 +60,7 @@ public class WebComponentWrapperTest {
         configuration = new WebComponentConfigurationImpl<>(
                 new MyComponentExporter());
 
-        configuration.bindProxy(new MockInstantiator(), wrapper);
+        configuration.configureWebComponentInstance(new MockInstantiator(), wrapper);
 
         // make component available and bind properties to it
         binding = wrapper.getWebComponentBinding();
@@ -117,7 +117,7 @@ public class WebComponentWrapperTest {
         WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
                 "-component");
 
-        configuration.bindProxy(new MockInstantiator(), wrapper);
+        configuration.configureWebComponentInstance(new MockInstantiator(), wrapper);
 
         MyExtension component =
                 (MyExtension) wrapper.getWebComponentBinding().getComponent();
@@ -154,7 +154,7 @@ public class WebComponentWrapperTest {
         WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
                 "-component");
 
-        configuration.bindProxy(new MockInstantiator(), wrapper);
+        configuration.configureWebComponentInstance(new MockInstantiator(), wrapper);
 
         MyComponent component =
                 (MyComponent) wrapper.getWebComponentBinding().getComponent();

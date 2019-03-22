@@ -27,13 +27,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.InstanceConfigurator;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
+import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
-import com.vaadin.flow.component.webcomponent.WebComponentProxy;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.ReflectTools;
@@ -156,11 +157,30 @@ public class WebComponentConfigurationImpl<C extends Component>
     }
 
     @Override
-    public void bindProxy(Instantiator instantiator,
-                          WebComponentProxy proxy) {
-        Objects.requireNonNull(instantiator, "Parameter 'instantiator' must not" +
-                " be null!");
-        Objects.requireNonNull(proxy, "Parameter 'proxy' must not be null!");
+    public void configureWebComponentInstance(WebComponentBinding binding,
+                                              HasElement componentHost) {
+        Objects.requireNonNull(binding, "Parameter 'binding' must not be " +
+                "null!");
+        Objects.requireNonNull(componentHost, "Parameter 'componentHost' must" +
+                " not be null!");
+
+        if (!binding.getComponent().getClass().equals(componentClass)) {
+            throw new InvalidParameterException(String.format("Bound " +
+                    "component's type '%s' provided by 'binding' does not " +
+                    "match the component type of this configuration, '%s'!",
+                    binding.getComponent().getClass().getCanonicalName(),
+                    componentClass.getCanonicalName()));
+        }
+
+        if (instanceConfigurator != null) {
+            instanceConfigurator.accept(new WebComponentImpl<>( binding,
+                            componentHost), (C)binding.getComponent());
+        }
+    }
+
+    @Override
+    public WebComponentBinding createWebComponentBinding(Instantiator instantiator) {
+        assert(instantiator != null);
 
         final C componentReference =
                 instantiator.getOrCreate(this.getComponentClass());
@@ -206,14 +226,9 @@ public class WebComponentConfigurationImpl<C extends Component>
                 new WebComponentBindingImpl<>(componentReference,
                         propertyBindings);
 
-        proxy.setWebComponentBinding(binding);
-
-        if (instanceConfigurator != null) {
-            instanceConfigurator.accept(new WebComponentImpl<>(binding, proxy),
-                    componentReference);
-        }
-
         binding.updatePropertiesToComponent();
+
+        return binding;
     }
 
     @Override

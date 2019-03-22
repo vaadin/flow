@@ -27,7 +27,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
-import com.vaadin.flow.component.webcomponent.WebComponentProxy;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonSerializer;
@@ -120,7 +119,7 @@ public class WebComponentConfigurationImplTest {
 
         MockProxy proxy = new MockProxy();
 
-        config.bindProxy(instantiator, proxy);
+        config.configureWebComponentInstance(instantiator, proxy);
 
         WebComponentBinding<MyComponent> binding =
                 proxy.getWebComponentBinding();
@@ -157,7 +156,7 @@ public class WebComponentConfigurationImplTest {
 
         MockProxy proxy = new MockProxy();
 
-        config.bindProxy(new MockInstantiator(), proxy);
+        config.configureWebComponentInstance(new MockInstantiator(), proxy);
 
         WebComponentBinding<MyComponent> binding = proxy.getWebComponentBinding();
 
@@ -172,7 +171,7 @@ public class WebComponentConfigurationImplTest {
     public void bindProxy_withoutInstanceConfigurator() {
         MockProxy proxy = new MockProxy();
 
-        config.bindProxy(new MockInstantiator(), proxy);
+        config.configureWebComponentInstance(new MockInstantiator(), proxy);
 
         WebComponentBinding<MyComponent> binding =
                 proxy.getWebComponentBinding();
@@ -191,7 +190,7 @@ public class WebComponentConfigurationImplTest {
         WebComponentConfigurationImpl<SharedTagComponent> sharedConfig =
                 new WebComponentConfigurationImpl<>(new SharedTagExporter());
 
-        sharedConfig.bindProxy(new MockInstantiator(), proxy);
+        sharedConfig.configureWebComponentInstance(new MockInstantiator(), proxy);
     }
 
     @Test
