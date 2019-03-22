@@ -23,6 +23,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
@@ -80,12 +81,10 @@ public class WebComponentUI extends UI {
             sets up the component-to-host linkage.
          */
 
-        WebComponentBinding binding =
-                webComponentConfiguration.get().createWebComponentBinding(Instantiator.get(this));
-
-        WebComponentWrapper wrapper = new WebComponentWrapper(tag, binding);
-
-        webComponentConfiguration.get().configureWebComponentInstance(binding, wrapper);
+        Element el = new Element(tag);
+        WebComponentBinding binding = webComponentConfiguration.get()
+                .createWebComponentBinding(Instantiator.get(this), el);
+        WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
 
         getElement().getStateProvider()

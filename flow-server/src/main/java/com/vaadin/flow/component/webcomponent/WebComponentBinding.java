@@ -19,16 +19,19 @@ package com.vaadin.flow.component.webcomponent;
 import java.io.Serializable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 
 /**
  * An internal representation of a web component instance bound to a
  * {@link Component} instance. Facilitates property updates from the client
  * to the {@code component}.
  *
- * @see WebComponentConfiguration#configureWebComponentInstance(WebComponentBinding, com.vaadin.flow.component.HasElement)
- *      how {@code WebComponentBinding} is used
+ * @param <C>   type of the component being exported
+ * @see WebComponentConfiguration#createWebComponentBinding(Instantiator, Element)
+ *      to create {@code WebComponentBindings}
  */
-public interface WebComponentBinding extends Serializable {
+public interface WebComponentBinding<C extends Component> extends Serializable {
 
     /**
      * Updates a property bound to the {@code component}. If the property has
@@ -46,7 +49,7 @@ public interface WebComponentBinding extends Serializable {
      *
      * @return {@code component} instance
      */
-    Component getComponent();
+    C getComponent();
 
     /**
      * Retrieve the type of a property's value.

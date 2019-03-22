@@ -22,6 +22,7 @@ import java.util.Set;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 
 /**
@@ -75,24 +76,11 @@ public interface WebComponentConfiguration<C extends Component>
      *
      * @param instantiator  {@link Instantiator} using to construct component
                             instance
+     * @param el            element which acts as the root element for the
+     *                      {@code component instance}
      * @return  web component binding which can be used by the web component
      *          host to communicate with the component it is hosting
      */
-    WebComponentBinding createWebComponentBinding(Instantiator instantiator);
-
-    /**
-     * Invokes the {@link InstanceConfigurator} provided by
-     * {@link com.vaadin.flow.component.WebComponentExporter}.
-     * <p>
-     * The {@link WebComponent} implementation provided to the c{@code
-     * configurator} internally uses {@code componentHost} to communicate
-     * with the client-side web component.
-     *
-     * @param binding           binding provided by
-     *                          {@link #createWebComponentBinding(Instantiator)}
-     * @param componentHost     component which hosts the exported component
-     *                          and offers integration with embedding context
-     */
-    void configureWebComponentInstance(WebComponentBinding binding,
-                                       HasElement componentHost);
+    WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
+    Element el);
 }
