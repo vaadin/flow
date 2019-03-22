@@ -111,7 +111,7 @@ public interface Focusable<T extends Component>
          * be ready by the time when the function is called.
          */
         getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                .runWhenAttached(ui -> ui.getPage().executeJs(
                         "setTimeout(function(){$0.focus();},0)", getElement()));
     }
 
@@ -124,7 +124,7 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void blur() {
-        getElement().callFunction("blur");
+        getElement().callJsFunction("blur");
     }
 
     /**

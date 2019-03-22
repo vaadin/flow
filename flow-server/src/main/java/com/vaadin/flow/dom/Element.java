@@ -1547,7 +1547,37 @@ public class Element extends Node<Element> {
      * <p>
      * The function will be called after all pending DOM updates have completed,
      * at the same time that
-     * {@link Page#executeJavaScript(String, Serializable...)} calls are
+     * {@link Page#executeJs(String, Serializable...)} calls are
+     * invoked.
+     * <p>
+     * If the element is not attached, the function call will be deferred until
+     * the element is attached.
+     *
+     * @see JsonCodec JsonCodec for supported argument types
+     *
+     * @param functionName
+     *            the name of the function to call, may contain dots to indicate
+     *            a function on a property.
+     * @param arguments
+     *            the arguments to pass to the function. Must be of a type
+     *            supported by the communication mechanism, as defined by
+     *            {@link JsonCodec}
+     *
+     * @deprecated Use {@link #callJsFunction(String,Serializable...)} instead
+     *             since it also allows getting return value back.
+     */
+    @Deprecated
+    public void callFunction(String functionName, Serializable... arguments) {
+        // Ignore return value
+        callJsFunction(functionName, arguments);
+    }
+
+    /**
+     * Calls the given function on the element with the given arguments.
+     * <p>
+     * The function will be called after all pending DOM updates have completed,
+     * at the same time that
+     * {@link Page#executeJs(String, Serializable...)} calls are
      * invoked.
      * <p>
      * If the element is not attached, the function call will be deferred until
@@ -1565,7 +1595,7 @@ public class Element extends Node<Element> {
      * @return a pending result that can be used to get a return value from the
      *         execution
      */
-    public PendingJavaScriptResult callFunction(String functionName,
+    public PendingJavaScriptResult callJsFunction(String functionName,
             Serializable... arguments) {
         assert functionName != null;
         assert !functionName
@@ -1608,10 +1638,46 @@ public class Element extends Node<Element> {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
+     * @deprecated Use {@link #executeJs(String,Serializable...)} instead since
+     *             it also allows getting return value back.
+     */
+    @Deprecated
+    public void executeJavaScript(String expression,
+            Serializable... parameters) {
+        // Ignore return value
+        executeJs(expression, parameters);
+    }
+
+    // When updating JavaDocs here, keep in sync with Page.executeJavaScript
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser in the
+     * context of this element. This element will be available to the expression
+     * as <code>this</code>. The given parameters will be available as variables
+     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
+     * types are:
+     * <ul>
+     * <li>{@link String}
+     * <li>{@link Integer}
+     * <li>{@link Double}
+     * <li>{@link Boolean}
+     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
+     * element instance is not attached when the invocation is sent to the
+     * client)
+     * </ul>
+     * Note that the parameter variables can only be used in contexts where a
+     * JavaScript variable can be used. You should for instance do
+     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
+     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
+     * variables aren't evaluated inside strings or property names.
+     *
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
      */
-    public PendingJavaScriptResult executeJavaScript(String expression,
+    public PendingJavaScriptResult executeJs(String expression,
             Serializable... parameters) {
 
         // Add "this" as the last parameter

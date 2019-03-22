@@ -39,18 +39,16 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         // Callback to run an expression
         NativeRadioButtonGroup<Function<String, PendingJavaScriptResult>> methodSelect = new NativeRadioButtonGroup<>(
                 "Method to use");
-        methodSelect
-                .addOption("Page.executeJavaScript",
-                        UI.getCurrent().getPage()::executeJavaScript)
-                .setId("execPage");
+        methodSelect.addOption("Page.executeJavaScript",
+                UI.getCurrent().getPage()::executeJs).setId("execPage");
         methodSelect
                 .addOption("Element.executeJavaScript",
-                        script -> getElement().executeJavaScript(script))
+                        script -> getElement().executeJs(script))
                 .setId("execElement");
         methodSelect.addOption("Element.callFunction", script -> {
-            getElement().executeJavaScript(
-                    "this.scriptToRun = new Function($0)", script);
-            return getElement().callFunction("scriptToRun");
+            getElement().executeJs("this.scriptToRun = new Function($0)",
+                    script);
+            return getElement().callJsFunction("scriptToRun");
         }).setId("callElement");
 
         // Value expression

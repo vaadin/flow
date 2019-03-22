@@ -30,6 +30,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class JsGrandParentView extends PolymerTemplate<TemplateModel> {
 
     public void updateChildViaClientSide() {
-        getElement().callFunction("updateSubTempate");
+        getElement().callJsFunction("updateSubTempate");
     }
 }

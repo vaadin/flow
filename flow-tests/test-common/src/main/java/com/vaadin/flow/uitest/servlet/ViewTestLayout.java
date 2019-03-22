@@ -90,7 +90,7 @@ public class ViewTestLayout extends Div
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         // Defer value setting until all option elements have been attached
-        UI.getCurrent().getPage().executeJavaScript(
+        UI.getCurrent().getPage().executeJs(
                 "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
                 event.getLocation().getPath());
     }

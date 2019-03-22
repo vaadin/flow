@@ -26,7 +26,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 public class JsInjectedGrandChild extends PolymerTemplate<TemplateModel> {
 
     public JsInjectedGrandChild() {
-        getElement().callFunction("greet");
+        getElement().callJsFunction("greet");
         getElement().setProperty("bar", "foo");
     }
 

@@ -122,6 +122,9 @@ public class ElementTest extends AbstractNodeTest {
         // Possibly returns a remover or a wrapped return value in the future
         ignore.add("callFunction");
         ignore.add("executeJavaScript");
+        // Returns a future-ish thing with access to the return value
+        ignore.add("callJsFunction");
+        ignore.add("executeJs");
 
         // ignore shadow root methods
         ignore.add("attachShadow");
@@ -2146,7 +2149,7 @@ public class ElementTest extends AbstractNodeTest {
     public void callFunctionBeforeAttach() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        element.callFunction("noArgsMethod");
+        element.callJsFunction("noArgsMethod");
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -2158,7 +2161,7 @@ public class ElementTest extends AbstractNodeTest {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
-        element.callFunction("noArgsMethod");
+        element.callJsFunction("noArgsMethod");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "return $0.noArgsMethod()", element);
@@ -2169,7 +2172,7 @@ public class ElementTest extends AbstractNodeTest {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
-        element.callFunction("noArgsMethod");
+        element.callJsFunction("noArgsMethod");
         ui.getElement().removeAllChildren();
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -2183,7 +2186,7 @@ public class ElementTest extends AbstractNodeTest {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
-        element.callFunction("noArgsMethod");
+        element.callJsFunction("noArgsMethod");
 
         Element div = ElementFactory.createDiv();
         ui.getElement().appendChild(div);
@@ -2198,7 +2201,7 @@ public class ElementTest extends AbstractNodeTest {
     public void callFunctionOneParam() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        element.callFunction("method", "foo");
+        element.callJsFunction("method", "foo");
         ui.getElement().appendChild(element);
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
@@ -2210,7 +2213,7 @@ public class ElementTest extends AbstractNodeTest {
     public void callFunctionTwoParams() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        element.callFunction("method", "foo", 123);
+        element.callJsFunction("method", "foo", 123);
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -2221,7 +2224,7 @@ public class ElementTest extends AbstractNodeTest {
     public void callFunctionOnProperty() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        element.callFunction("property.method");
+        element.callJsFunction("property.method");
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -2232,7 +2235,7 @@ public class ElementTest extends AbstractNodeTest {
     public void callFunctionOnSubProperty() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        element.callFunction("property.other.method");
+        element.callJsFunction("property.other.method");
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 

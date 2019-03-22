@@ -80,7 +80,7 @@ public class WebComponentUI extends UI {
                 .appendVirtualChild(getElement().getNode(),
                         wrapper.getElement(), NodeProperties.INJECT_BY_ID,
                         webComponentElementId);
-        wrapper.getElement().executeJavaScript("$0.serverConnected()");
+        wrapper.getElement().executeJs("$0.serverConnected()");
     }
 
     @Override

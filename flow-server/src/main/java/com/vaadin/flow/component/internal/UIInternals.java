@@ -84,7 +84,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class UIInternals implements Serializable {
 
     /**
-     * A {@link Page#executeJavaScript(String, Serializable...)} invocation that
+     * A {@link Page#executeJs(String, Serializable...)} invocation that
      * has not yet been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
