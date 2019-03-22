@@ -45,16 +45,14 @@ public class WebComponentWrapper extends Component {
 
     /**
      * Wrapper class for the server side WebComponent.
-     *
-     * @param tag
-     *          web component tag
+     *  @param el
      * @param binding
      *          binding that offers methods for delivering property updates
      *          to the {@code component} being wrapped by {@code
      *          WebComponentWrapper}
      */
-    public WebComponentWrapper(String tag, WebComponentBinding binding) {
-        super(new Element(tag));
+    public WebComponentWrapper(Element el, WebComponentBinding binding) {
+        super(el);
         Objects.requireNonNull(binding,"Parameter 'binding' must not be null!");
 
         this.webComponentBinding = binding;

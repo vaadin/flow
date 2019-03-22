@@ -36,6 +36,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.ReflectTools;
 
@@ -157,29 +158,7 @@ public class WebComponentConfigurationImpl<C extends Component>
     }
 
     @Override
-    public void configureWebComponentInstance(WebComponentBinding binding,
-                                              HasElement componentHost) {
-        Objects.requireNonNull(binding, "Parameter 'binding' must not be " +
-                "null!");
-        Objects.requireNonNull(componentHost, "Parameter 'componentHost' must" +
-                " not be null!");
-
-        if (!binding.getComponent().getClass().equals(componentClass)) {
-            throw new InvalidParameterException(String.format("Bound " +
-                    "component's type '%s' provided by 'binding' does not " +
-                    "match the component type of this configuration, '%s'!",
-                    binding.getComponent().getClass().getCanonicalName(),
-                    componentClass.getCanonicalName()));
-        }
-
-        if (instanceConfigurator != null) {
-            instanceConfigurator.accept(new WebComponentImpl<>( binding,
-                            componentHost), (C)binding.getComponent());
-        }
-    }
-
-    @Override
-    public WebComponentBinding createWebComponentBinding(Instantiator instantiator) {
+    public WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator, Element el) {
         assert(instantiator != null);
 
         final C componentReference =
@@ -225,6 +204,11 @@ public class WebComponentConfigurationImpl<C extends Component>
         WebComponentBindingImpl<C> binding =
                 new WebComponentBindingImpl<>(componentReference,
                         propertyBindings);
+
+        if (instanceConfigurator != null) {
+            instanceConfigurator.accept(new WebComponentImpl<>(binding, el),
+                    binding.getComponent());
+        }
 
         binding.updatePropertiesToComponent();
 

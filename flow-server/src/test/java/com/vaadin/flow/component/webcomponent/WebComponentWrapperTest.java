@@ -25,6 +25,8 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -49,6 +51,7 @@ public class WebComponentWrapperTest {
     private static final String INT_PROPERTY = "integer-value";
     private static final String BOOLEAN_PROPERTY = "boolean-value";
 
+    private Element element;
     private MyComponent component;
     private WebComponentBinding<MyComponent> binding;
     private WebComponentConfiguration<MyComponent> configuration;
@@ -56,14 +59,14 @@ public class WebComponentWrapperTest {
 
     @Before
     public void init() {
-        wrapper = new WebComponentWrapper("my-component");
+        element = new Element("tag");
         configuration = new WebComponentConfigurationImpl<>(
                 new MyComponentExporter());
 
-        configuration.configureWebComponentInstance(new MockInstantiator(), wrapper);
-
         // make component available and bind properties to it
-        binding = wrapper.getWebComponentBinding();
+        binding = configuration.createWebComponentBinding(
+                new MockInstantiator(), element);
+        wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
     }
 
@@ -114,10 +117,11 @@ public class WebComponentWrapperTest {
                 new WebComponentConfigurationImpl<>(
                         new MyExtensionExporter());
 
-        WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
-                "-component");
-
-        configuration.configureWebComponentInstance(new MockInstantiator(), wrapper);
+        Element el = new Element("local");
+        WebComponentWrapper wrapper =
+                new WebComponentWrapper(el,
+                        configuration.createWebComponentBinding(
+                                new MockInstantiator(), el));
 
         MyExtension component =
                 (MyExtension) wrapper.getWebComponentBinding().getComponent();
@@ -151,10 +155,10 @@ public class WebComponentWrapperTest {
                 new WebComponentConfigurationImpl<>(
                         new ExtendedExporter());
 
-        WebComponentWrapper wrapper = new WebComponentWrapper("extension" +
-                "-component");
-
-        configuration.configureWebComponentInstance(new MockInstantiator(), wrapper);
+        Element el = new Element("local");
+        WebComponentWrapper wrapper = new WebComponentWrapper(el,
+                configuration.createWebComponentBinding(
+                        new MockInstantiator(), el));
 
         MyComponent component =
                 (MyComponent) wrapper.getWebComponentBinding().getComponent();
@@ -199,14 +203,14 @@ public class WebComponentWrapperTest {
                 mock(VaadinService.class)));
         when(ui.getInternals()).thenReturn(internals);
 
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-component") {
+        Element el = new Element("local");
+        WebComponentWrapper wrapper = new WebComponentWrapper(el,
+                new MockBinding(MyComponent.class)) {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
             }
         };
-
-        wrapper.setWebComponentBinding(new MockBinding<>(MyComponent.class));
 
         Component parent = new Parent();
         parent.getElement().appendChild(wrapper.getElement());
@@ -250,14 +254,14 @@ public class WebComponentWrapperTest {
                 mock(VaadinService.class)));
         when(ui.getInternals()).thenReturn(internals);
 
-        WebComponentWrapper wrapper = new WebComponentWrapper("my-component") {
+        Element el = new Element("el");
+        WebComponentWrapper wrapper = new WebComponentWrapper(el,
+                new MockBinding(MyComponent.class)) {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
             }
         };
-
-        wrapper.setWebComponentBinding(new MockBinding<>(MyComponent.class));
 
         Component parent = new Parent();
         parent.getElement().appendChild(wrapper.getElement());

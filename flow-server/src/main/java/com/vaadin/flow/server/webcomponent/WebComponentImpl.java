@@ -42,7 +42,7 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
     private static final String UPDATE_PROPERTY_FORMAT = "this" +
             "._updatePropertyFromServer($0, %s);";
 
-    private HasElement componentHost;
+    private Element componentHost;
     private WebComponentBinding binding;
 
     /**
@@ -55,7 +55,7 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
      * @param componentHost     host {@code component X} on the embedding page
      */
     WebComponentImpl(WebComponentBinding binding,
-                     HasElement componentHost) {
+                     Element componentHost) {
         Objects.requireNonNull(binding, "Parameter 'binding' must not be " +
                 "null!");
         Objects.requireNonNull(componentHost, "Parameter " +
@@ -116,26 +116,25 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
 
     private void setProperty(String propertyName, Object value) {
-        Element element = componentHost.getElement();
 
         if (value == null) {
-            element.executeJavaScript(UPDATE_PROPERTY_NULL, propertyName);
+            componentHost.executeJavaScript(UPDATE_PROPERTY_NULL, propertyName);
         }
 
         if (value instanceof Integer)  {
-            element.executeJavaScript(UPDATE_PROPERTY, propertyName,
+            componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
                     (Integer)value);
         } else if (value instanceof Double) {
-            element.executeJavaScript(UPDATE_PROPERTY, propertyName,
+            componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
                     (Double)value);
         } else if (value instanceof String) {
-            element.executeJavaScript(UPDATE_PROPERTY, propertyName,
+            componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
                     (String)value);
         } else if (value instanceof JsonValue) {
             // this is a hack to get around executeJavaScript limitation.
             // Since properties can take JsonValues, this was needed to allow
             // that expected behavior.
-            element.executeJavaScript(String.format(UPDATE_PROPERTY_FORMAT,
+            componentHost.executeJavaScript(String.format(UPDATE_PROPERTY_FORMAT,
                     ((JsonValue)value).toJson()),
                     propertyName);
         }

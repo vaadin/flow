@@ -37,6 +37,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class WebComponentConfigurationImplTest {
 
@@ -117,12 +118,9 @@ public class WebComponentConfigurationImplTest {
 
         config.addProperty("int", 0).onChange(MyComponent::update);
 
-        MockProxy proxy = new MockProxy();
-
-        config.configureWebComponentInstance(instantiator, proxy);
-
         WebComponentBinding<MyComponent> binding =
-                proxy.getWebComponentBinding();
+                config.createWebComponentBinding(new MockInstantiator(),
+                        mock(Element.class));
 
         assertNotNull(binding);
 
@@ -154,11 +152,9 @@ public class WebComponentConfigurationImplTest {
     public void bindProxy_withInstanceConfigurator() {
         config.setInstanceConfigurator((webComponent, component) -> component.flop());
 
-        MockProxy proxy = new MockProxy();
-
-        config.configureWebComponentInstance(new MockInstantiator(), proxy);
-
-        WebComponentBinding<MyComponent> binding = proxy.getWebComponentBinding();
+        WebComponentBinding<MyComponent> binding =
+                config.createWebComponentBinding(new MockInstantiator(),
+                        mock(Element.class));
 
         assertNotNull("Binding should not be null", binding);
         assertNotNull("Binding's component should not be null",
@@ -169,12 +165,9 @@ public class WebComponentConfigurationImplTest {
 
     @Test
     public void bindProxy_withoutInstanceConfigurator() {
-        MockProxy proxy = new MockProxy();
-
-        config.configureWebComponentInstance(new MockInstantiator(), proxy);
-
         WebComponentBinding<MyComponent> binding =
-                proxy.getWebComponentBinding();
+                config.createWebComponentBinding(new MockInstantiator(),
+                mock(Element.class));
 
         assertNotNull("Binding should not be null", binding);
         assertNotNull("Binding's component should not be null",
@@ -185,12 +178,11 @@ public class WebComponentConfigurationImplTest {
 
     @Test(expected = IllegalStateException.class)
     public void bindProxy_throwsIfExporterSharesTagWithComponent() {
-        MockProxy proxy = new MockProxy();
-
         WebComponentConfigurationImpl<SharedTagComponent> sharedConfig =
                 new WebComponentConfigurationImpl<>(new SharedTagExporter());
 
-        sharedConfig.configureWebComponentInstance(new MockInstantiator(), proxy);
+        sharedConfig.createWebComponentBinding(new MockInstantiator(),
+                mock(Element.class));
     }
 
     @Test
@@ -289,23 +281,5 @@ public class WebComponentConfigurationImplTest {
 
         assertNotNull("Property " + property + " should not be null", data);
         assertEquals(value, data.getDefaultValue());
-    }
-
-    private static class MockProxy implements WebComponentProxy {
-        private WebComponentBinding<? extends Component> binding;
-
-        @Override
-        public void setWebComponentBinding(WebComponentBinding<? extends Component> binding) {
-            this.binding = binding;
-        }
-
-        <T extends Component> WebComponentBinding<T> getWebComponentBinding() {
-            return (WebComponentBinding<T>) binding;
-        }
-
-        @Override
-        public Element getElement() {
-            return null;
-        }
     }
 }
