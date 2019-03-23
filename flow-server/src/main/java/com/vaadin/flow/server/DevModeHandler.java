@@ -74,7 +74,7 @@ public class DevModeHandler implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
-    static final Boolean IS_UNIX = !System.getProperty("os.name").matches("(?i).*windows.*");
+    public static final Boolean IS_UNIX = !System.getProperty("os.name").matches("(?i).*windows.*");
 
     // This fixes maven tests in multi-module execution
     static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));

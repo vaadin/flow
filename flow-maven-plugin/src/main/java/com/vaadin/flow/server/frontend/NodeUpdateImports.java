@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.maven;
+package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +51,7 @@ import static com.vaadin.flow.plugin.common.AnnotationValuesExtractor.LUMO;
  * annotations defined in the classpath.
  */
 @Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
-public class UpdateImportsMojo extends AbstractNpmMojo {
+public class NodeUpdateImports extends NodeUpdater {
     private static final String VALUE = "value";
     private static final String MAIN_JS = "frontend/main.js";
 

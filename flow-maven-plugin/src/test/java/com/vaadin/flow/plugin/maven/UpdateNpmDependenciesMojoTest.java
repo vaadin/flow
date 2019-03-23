@@ -16,6 +16,9 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import static com.vaadin.flow.server.frontend.NodeUpdatePackages.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -36,10 +39,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.frontend.NodeUpdatePackages;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.PACKAGE_JSON;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.WEBPACK_CONFIG;
 
 public class UpdateNpmDependenciesMojoTest {
     @Rule
@@ -47,7 +50,7 @@ public class UpdateNpmDependenciesMojoTest {
 
     MavenProject project;
 
-    UpdateNpmDependenciesMojo mojo = new UpdateNpmDependenciesMojo();
+    NodeUpdatePackages mojo = new NodeUpdatePackages();
 
     String packageJson;
     String webpackConfig;

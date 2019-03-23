@@ -39,16 +39,18 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import static com.vaadin.flow.plugin.maven.AbstractNpmMojo.FLOW_PACKAGE;
+import com.vaadin.flow.server.frontend.NodeUpdateImports;
+
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
+import static com.vaadin.flow.server.frontend.NodeUpdater.FLOW_PACKAGE;
 
 public class UpdateImportsMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private String importsFile;
-    private final UpdateImportsMojo mojo = new UpdateImportsMojo();
+    private final NodeUpdateImports mojo = new NodeUpdateImports();
 
     @Before
     public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {

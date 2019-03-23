@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.maven;
+package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.net.URL;
@@ -35,7 +35,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
 /**
  * Base class for properties and methods related to npm support.
  */
-public abstract class AbstractNpmMojo extends AbstractMojo {
+public abstract class NodeUpdater extends AbstractMojo {
     static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
@@ -49,14 +49,14 @@ public abstract class AbstractNpmMojo extends AbstractMojo {
 
     /**
      * The relative path to the Flow package. Always relative to
-     * {@link AbstractNpmMojo#npmFolder}.
+     * {@link NodeUpdater#npmFolder}.
      */
     @Parameter(defaultValue = "/node_modules/" + FLOW_PACKAGE)
     private String flowPackagePath;
 
     protected final Log log = getLog();
 
-    static URL[] getProjectClassPathUrls(MavenProject project) {
+    public static URL[] getProjectClassPathUrls(MavenProject project) {
         final List<String> runtimeClasspathElements;
         try {
             runtimeClasspathElements = project.getRuntimeClasspathElements();

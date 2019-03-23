@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import static com.vaadin.flow.server.frontend.NodeUpdater.getProjectClassPathUrls;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -43,8 +45,6 @@ import com.vaadin.flow.plugin.common.FrontendToolsManager;
 import com.vaadin.flow.plugin.common.RunnerManager;
 import com.vaadin.flow.plugin.production.TranspilationStep;
 import com.vaadin.flow.server.Constants;
-
-import static com.vaadin.flow.plugin.maven.AbstractNpmMojo.getProjectClassPathUrls;
 
 /**
  * Goal that prepares all web files from

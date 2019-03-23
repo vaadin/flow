@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.maven;
+package com.vaadin.flow.server.frontend;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,7 +58,7 @@ import static com.vaadin.flow.plugin.production.ProductionModeCopyStep.NON_WEB_J
  * the classpath.
  */
 @Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
-public class UpdateNpmDependenciesMojo extends AbstractNpmMojo {
+public class NodeUpdatePackages extends NodeUpdater {
 
     private static final String VALUE = "value";
 
