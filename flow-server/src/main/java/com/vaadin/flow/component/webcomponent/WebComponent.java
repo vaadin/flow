@@ -36,6 +36,4 @@ public interface WebComponent<C extends Component> extends Serializable {
 
     <P extends Serializable> void setProperty(
             PropertyConfiguration<C, P> propertyConfiguration, P value);
-
-    <P extends Serializable> P getProperty(PropertyConfiguration<C, P> propertyConfiguration);
 }

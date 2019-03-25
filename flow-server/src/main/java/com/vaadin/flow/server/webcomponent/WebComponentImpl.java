@@ -29,6 +29,8 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.dom.Element;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -42,6 +44,10 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
             "._updatePropertyFromServer($0, null);";
     private static final String UPDATE_PROPERTY_FORMAT = "this" +
             "._updatePropertyFromServer($0, %s);";
+    private static final String CUSTOM_EVENT = "this.dispatchEvent(new " +
+            "CustomEvent($0, %s));";
+
+    private static final EventOptions BASIC_OPTIONS = new EventOptions();
 
     private Element componentHost;
     private WebComponentBinding binding;
@@ -70,17 +76,30 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
     @Override
     public void fireEvent(String eventName) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+        fireEvent(eventName, Json.createNull(), BASIC_OPTIONS);
     }
 
     @Override
     public void fireEvent(String eventName, JsonValue objectData) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+        fireEvent(eventName, objectData, BASIC_OPTIONS);
     }
 
     @Override
     public void fireEvent(String eventName, JsonValue objectData, EventOptions options) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(eventName, "Parameter 'eventName' must not be " +
+                "null!");
+        Objects.requireNonNull(objectData, "Parameter 'objectData' must not " +
+                "be null!");
+        Objects.requireNonNull(options, "Parameter 'options' must not be null");
+
+        JsonObject object = Json.createObject();
+        object.put("bubbles", options.isBubbles());
+        object.put("cancellable", options.isCancelable());
+        object.put("composed", options.isComposed());
+        object.put("detail", objectData);
+
+        componentHost.executeJavaScript(String.format(CUSTOM_EVENT,
+                object.toJson()), eventName);
     }
 
     @Override
@@ -116,12 +135,6 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
         setProperty(propertyName, value);
     }
-
-    @Override
-    public <P extends Serializable> P getProperty(PropertyConfiguration<C, P> propertyConfiguration) {
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
 
     private void setProperty(String propertyName, Object value) {
 
