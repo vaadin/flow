@@ -175,8 +175,7 @@ public class WebComponentWrapperTest {
     }
 
     @Test
-    public void disconnectReconnect_componentIsNotCleaned()
-            throws InterruptedException {
+    public void disconnectReconnect_componentIsNotCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
         WebComponentWrapper wrapper = constructWrapper(new MyComponentExporter(), element,
@@ -192,19 +191,14 @@ public class WebComponentWrapperTest {
 
         wrapper.reconnect();
 
-        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
-
-        Thread.sleep(1200);
-
-        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
 
         Assert.assertTrue("Wrapper should stay connected on the server",
                 wrapper.getParent().isPresent());
     }
 
     @Test
-    public void disconnectOnClient_componentIsCleaned()
-            throws ExecutionException, InterruptedException {
+    public void disconnectOnClient_componentIsCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
         WebComponentWrapper wrapper = constructWrapper(new MyComponentExporter(), element,
@@ -218,9 +212,7 @@ public class WebComponentWrapperTest {
         Assert.assertTrue("Wrapper should still be connected on the server",
                 wrapper.getParent().isPresent());
 
-        Thread.sleep(1200);
-
-        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
 
         Assert.assertFalse(
                 "Wrapper should have been disconnected also on the server",

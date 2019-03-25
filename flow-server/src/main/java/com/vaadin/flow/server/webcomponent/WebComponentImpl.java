@@ -95,7 +95,11 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
             propertyConfigurationImp =
                     (PropertyConfigurationImp<C, P>) propertyConfiguration;
         } catch (ClassCastException e) {
-            LoggerFactory.getLogger(WebComponentImpl.class).warn(e.toString());
+            LoggerFactory.getLogger(WebComponentImpl.class).warn(String.format(
+                    "Could not cast %s into %s.",
+                    propertyConfiguration.getClass().getCanonicalName(),
+                    PropertyConfiguration.class.getSimpleName()),
+                    e);
             throw new InvalidParameterException(String.format("Parameter " +
                     "'propertyConfiguration' must be an implementation of " +
                     "'%s!", PropertyConfigurationImp.class.getCanonicalName()));
