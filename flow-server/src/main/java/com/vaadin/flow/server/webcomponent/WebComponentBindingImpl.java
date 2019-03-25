@@ -28,11 +28,28 @@ import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Instantiator;
 
+/**
+ * Implementation of {@link WebComponentBinding}.
+ *
+ * @param <C> {@code component} exported as embeddable web component
+ */
 public class WebComponentBindingImpl<C extends Component>
         implements WebComponentBinding<C>, Serializable {
     private C component;
     private Map<String, PropertyBinding<? extends Serializable>> properties;
 
+    /**
+     * Constructs a {@link WebComponentBinding} which consists of a
+     * {@link Component} instance exposed as an embeddable web component and
+     * set of {@link PropertyBinding PropertyBindindings} that the component
+     * exposes as a web component.
+     *
+     * @param component     component which exposes {@code properties} as web
+     *                      component. Not null
+     * @param properties    set of {@code property bindings}. Each binding
+     *                      knows how it is written to the {@code component}.
+     *                      Not null
+     */
     public WebComponentBindingImpl(C component,
                                Set<PropertyBinding<? extends Serializable>> properties) {
         Objects.requireNonNull(component, "Parameter 'component' must not be " +
@@ -91,7 +108,7 @@ public class WebComponentBindingImpl<C extends Component>
     /**
      * {@inheritDoc}
      * @param propertyName  name of the property
-     * @return has parameter
+     * @return has property
      */
     @Override
     public boolean hasProperty(String propertyName) {
