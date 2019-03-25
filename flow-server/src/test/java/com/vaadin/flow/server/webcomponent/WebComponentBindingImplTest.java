@@ -33,7 +33,7 @@ public class WebComponentBindingImplTest {
     private WebComponentBindingImpl<MyComponent> binding;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         HashSet<PropertyBinding<?>> bindings = new HashSet<>();
         bindings.add(new PropertyBinding<>(new PropertyData<>("int",
                 Integer.class, false, 0), null));

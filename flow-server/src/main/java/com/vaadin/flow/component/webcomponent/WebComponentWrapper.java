@@ -46,18 +46,16 @@ public class WebComponentWrapper extends Component {
 
     /**
      * Wrapper class for the server side WebComponent.
-     * @param el
+     * @param rootElement
      *          {@link Element} to which the {@code WebComponentWrapper} is
-     *          bound to. This {@code element} has to be the same element as
-     *          was given to the
-     *          {@link WebComponentConfiguration#createWebComponentBinding(Instantiator, Element)}
+     *          bound to.
      * @param binding
      *          binding that offers methods for delivering property updates
      *          to the {@code component} being wrapped by {@code
      *          WebComponentWrapper}
      */
-    public WebComponentWrapper(Element el, WebComponentBinding binding) {
-        super(el);
+    public WebComponentWrapper(Element rootElement, WebComponentBinding binding) {
+        super(rootElement);
         Objects.requireNonNull(binding,"Parameter 'binding' must not be null!");
 
         this.webComponentBinding = binding;
