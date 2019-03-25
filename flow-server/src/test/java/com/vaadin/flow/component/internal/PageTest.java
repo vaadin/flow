@@ -61,7 +61,7 @@ public class PageTest {
         Assert.assertEquals(0, countPendingInvocations());
 
         ExecutionCanceler executeJavaScript = page
-                .executeJavaScript("window.alert('$0');", "foobar");
+                .executeJs("window.alert('$0');", "foobar");
 
         Assert.assertEquals(1, countPendingInvocations());
 
@@ -75,7 +75,7 @@ public class PageTest {
         Assert.assertEquals(0, countPendingInvocations());
 
         ExecutionCanceler executeJavaScript = page
-                .executeJavaScript("window.alert('$0');", "foobar");
+                .executeJs("window.alert('$0');", "foobar");
 
         Assert.assertEquals(1, countPendingInvocations());
 

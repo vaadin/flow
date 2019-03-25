@@ -71,8 +71,7 @@ public class Page implements Serializable {
             windowResizeListenersSize--;
             if (windowResizeListenersSize == 0) {
                 // remove JS listener
-                getUI().get().getPage().executeJavaScript("$0.resizeRemove()",
-                        this);
+                getUI().get().getPage().executeJs("$0.resizeRemove()", this);
             }
         }
     }
@@ -122,7 +121,7 @@ public class Page implements Serializable {
 
     /**
      * Callback method for canceling executable javascript set with
-     * {@link Page#executeJavaScript(String, Serializable...)}.
+     * {@link Page#executeJs(String, Serializable...)}.
      *
      * @deprecated superseded by {@link PendingJavaScriptResult}
      */
@@ -326,10 +325,44 @@ public class Page implements Serializable {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
+     * @deprecated Use {@link #executeJs(String,Serializable...)} instead since
+     *             it also allows getting return value back.
+     */
+    @Deprecated
+    public void executeJavaScript(String expression,
+            Serializable... parameters) {
+        executeJs(expression, parameters);
+    }
+
+    // When updating JavaDocs here, keep in sync with Element.executeJavaScript
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser. The
+     * given parameters will be available to the expression as variables named
+     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
+     * are:
+     * <ul>
+     * <li>{@link String}
+     * <li>{@link Integer}
+     * <li>{@link Double}
+     * <li>{@link Boolean}
+     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
+     * element instance is not attached when the invocation is sent to the
+     * client)
+     * </ul>
+     * Note that the parameter variables can only be used in contexts where a
+     * JavaScript variable can be used. You should for instance do
+     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
+     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
+     * variables aren't evaluated inside strings or property names.
+     *
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
      */
-    public PendingJavaScriptResult executeJavaScript(String expression,
+    public PendingJavaScriptResult executeJs(String expression,
             Serializable... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
@@ -355,7 +388,7 @@ public class Page implements Serializable {
      * Reloads the page in the browser.
      */
     public void reload() {
-        executeJavaScript("window.location.reload();");
+        executeJs("window.location.reload();");
     }
 
     /**
@@ -382,7 +415,7 @@ public class Page implements Serializable {
         if (resizeReceiver.windowResizeListenersSize == 0) {
             // JS resize listener may be completely disabled if there are not
             // listeners
-            executeJavaScript(LazyJsLoader.WINDOW_LISTENER_JS, resizeReceiver);
+            executeJs(LazyJsLoader.WINDOW_LISTENER_JS, resizeReceiver);
         }
         return resizeReceiver.addListener(resizeListener);
     }

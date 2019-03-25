@@ -125,8 +125,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     public static class CustomComponent extends Component {
 
         public CustomComponent() {
-            getElement().getNode().runWhenAttached(
-                    ui -> ui.getPage().executeJavaScript("foo"));
+            getElement().getNode()
+                    .runWhenAttached(ui -> ui.getPage().executeJs("foo"));
         }
 
     }
@@ -366,8 +366,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     public static class ExecutionChild extends PolymerTemplate<ModelClass> {
         public ExecutionChild() {
             super(new SimpleTemplateParser());
-            getElement().getNode().runWhenAttached(
-                    ui -> ui.getPage().executeJavaScript("bar"));
+            getElement().getNode()
+                    .runWhenAttached(ui -> ui.getPage().executeJs("bar"));
         }
     }
 
@@ -431,8 +431,8 @@ public class PolymerTemplateTest extends HasCurrentService {
             private Page page = new Page(this) {
 
                 @Override
-                public PendingJavaScriptResult executeJavaScript(
-                        String expression, Serializable... parameters) {
+                public PendingJavaScriptResult executeJs(String expression,
+                        Serializable... parameters) {
                     executionOrder.add(expression);
                     executionParams.add(parameters);
                     return null;

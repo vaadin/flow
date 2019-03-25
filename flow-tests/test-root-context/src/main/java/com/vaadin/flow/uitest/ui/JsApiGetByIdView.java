@@ -36,12 +36,12 @@ public class JsApiGetByIdView extends Div {
         add(target);
 
         getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                .runWhenAttached(ui -> ui.getPage().executeJs(
                         "window.jsApiConnector.jsFunction($0, this.$appId, $1)",
                         target, label.getElement().getNode().getId()));
 
         NativeButton button = new NativeButton("Update target",
-                event -> target.getElement().callFunction("operation"));
+                event -> target.getElement().callJsFunction("operation"));
         button.setId("update");
         add(button);
     }

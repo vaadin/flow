@@ -26,7 +26,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 public class JsInjectedElement extends PolymerTemplate<TemplateModel> {
 
     public JsInjectedElement() {
-        getElement().executeJavaScript("this.clientHandler()");
+        getElement().executeJs("this.clientHandler()");
     }
 
     @ClientCallable

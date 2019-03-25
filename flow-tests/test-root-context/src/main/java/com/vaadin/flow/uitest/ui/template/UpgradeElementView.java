@@ -44,7 +44,7 @@ public class UpgradeElementView extends AbstractDivView {
         template.setId("template");
 
         NativeButton button = new NativeButton("Upgrade element",
-                event -> getPage().executeJavaScript(
+                event -> getPage().executeJs(
                         "customElements.define(MyTemplate.is, MyTemplate);"));
         button.setId("upgrade");
         add(template, button);

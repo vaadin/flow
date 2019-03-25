@@ -47,7 +47,7 @@ public class PageTest {
         private Serializable firstParam;
 
         @Override
-        public PendingJavaScriptResult executeJavaScript(String expression,
+        public PendingJavaScriptResult executeJs(String expression,
                 Serializable... parameters) {
             this.expression = expression;
             firstParam = parameters[0];

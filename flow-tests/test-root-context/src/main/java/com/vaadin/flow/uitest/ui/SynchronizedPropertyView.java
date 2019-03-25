@@ -127,7 +127,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
      * {@link #addSyncMultipleProperties()}
      */
     private void valueAsNumberShimForIE11() {
-        getPage().executeJavaScript(
+        getPage().executeJs(
         //@formatter:off
         "var input = document.createElement('input');"
       + "input.setAttribute('type', 'number');"
