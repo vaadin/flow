@@ -40,9 +40,9 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import static com.vaadin.flow.server.Constants.*;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -55,7 +55,6 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private static final String VALUE = "value";
 
-    public static final String PACKAGE_JSON = "package.json";
     public static final String WEBPACK_CONFIG = "webpack.config.js";
 
     private final String webpackTemplate;
@@ -238,7 +237,7 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private JsonObject getPackageJson() throws IOException {
         JsonObject packageJson;
-        File packageFile = new File(npmFolder, PACKAGE_JSON);
+        File packageFile = new File(npmFolder, PACKAGE_JSON_FILE_NAME);
 
         if (packageFile.exists()) {
             packageJson = Json.parse(FileUtils.readFileToString(packageFile, "UTF-8"));

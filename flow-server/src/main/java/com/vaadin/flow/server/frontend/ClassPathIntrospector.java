@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.common;
+package com.vaadin.flow.server.frontend;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.AnnotatedElement;
@@ -36,10 +37,10 @@ import org.reflections.util.ConfigurationBuilder;
  * @since 1.0
  *
  */
-public abstract class ClassPathIntrospector {
+public abstract class ClassPathIntrospector implements Serializable {
 
-    public final ClassLoader projectClassLoader;
-    private final Reflections reflections;
+    transient public final ClassLoader projectClassLoader;
+    transient private final Reflections reflections;
 
     /**
      * Creates a new instance of class path introspector using the

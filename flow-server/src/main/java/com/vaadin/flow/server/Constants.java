@@ -130,6 +130,12 @@ public final class Constants implements Serializable {
      */
     public static final String STATISTICS_JSON_DEFAULT = "/build/stats.json";
 
+    public static final String PACKAGE_JSON_FILE_NAME = "package.json";
+
+    public static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
+
+    public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
+
     private Constants() {
         // prevent instantiation constants class only
     }

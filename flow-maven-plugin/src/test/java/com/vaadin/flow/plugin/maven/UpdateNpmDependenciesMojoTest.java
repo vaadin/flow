@@ -16,8 +16,8 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.Constants.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class UpdateNpmDependenciesMojoTest {
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
         File tmpRoot = temporaryFolder.getRoot();
-        packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
+        packageJson = new File(tmpRoot, PACKAGE_JSON_FILE_NAME).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);

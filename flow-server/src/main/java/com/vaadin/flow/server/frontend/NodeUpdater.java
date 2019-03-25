@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.plugin.production.ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH;
+import static com.vaadin.flow.server.Constants.NON_WEB_JAR_RESOURCE_PATH;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.Objects;
@@ -31,12 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 
 /**
  * Base interface for methods for updating node_js files.
  */
-public abstract class NodeUpdater {
+public abstract class NodeUpdater implements Serializable {
 
     public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
 

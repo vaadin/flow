@@ -37,12 +37,12 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 import com.vaadin.flow.plugin.common.RunnerManager;
 import com.vaadin.flow.plugin.production.TranspilationStep;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
 
 /**
  * Goal that prepares all web files from

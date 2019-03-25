@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.plugin.common;
+package com.vaadin.flow.server.frontend;
 
 import java.lang.annotation.Annotation;
 import java.net.URL;
@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -36,8 +37,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * @since 1.0.
  */
 public class AnnotationValuesExtractor extends ClassPathIntrospector {
-
-    public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
 
     /**
      * Prepares the class to extract annotations from the project classes
@@ -130,7 +129,7 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
 
         if (map.size() == 0) {
             try {
-                Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader(LUMO);
+                Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader(Constants.LUMO);
                 map.put(new ThemeDefinition(lumo, ""), null);
             } catch (IllegalStateException ignore) { //NOSONAR
             }

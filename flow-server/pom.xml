@@ -106,6 +106,13 @@
             <artifactId>gentyref</artifactId>
             <version>1.2.0.vaadin1</version>
         </dependency>
+        
+        <!-- Used for searching npm package and module annotations -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.11</version>
+        </dependency>        
 
         <!-- Closure for parsing javascript sources -->
         <dependency>

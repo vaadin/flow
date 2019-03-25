@@ -38,7 +38,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -225,7 +227,7 @@ public class FrontendDataProvider {
                             + "* if the file is present in one of the regular jar dependencies, it should be located in `%s` directory in the jar",
                     fragmentImportPath, fragmentFile,
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
-                    ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH));
+                    Constants.NON_WEB_JAR_RESOURCE_PATH));
         }
         return fragmentFile;
     }

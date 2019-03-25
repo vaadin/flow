@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.plugin.common.AnnotationValuesExtractor.LUMO;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -38,8 +36,7 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 
@@ -185,7 +182,7 @@ public class NodeUpdateImports extends NodeUpdater {
       Map<ThemeDefinition, Class<?>> themes = annotationValuesExtractor.getThemeDefinitions();
 
       if (themes.isEmpty()) {
-         log().warn("No theme found for the app nor " + LUMO + " class found in the classpath");
+         log().warn("No theme found for the app nor " + Constants.LUMO + " class found in the classpath");
          return null;
       }
 
@@ -211,8 +208,8 @@ public class NodeUpdateImports extends NodeUpdater {
       if (newContent.equals(oldContent)) {
           log().info("No js modules to update");
       } else {
-          FlowPluginFileUtils.forceMkdir(out.getParentFile());
-          FileUtils.write(out, String.join("\n", newContent), "UTF-8");
+          FileUtils.forceMkdir(out.getParentFile());
+          FileUtils.writeStringToFile(out, String.join("\n", newContent), "UTF-8");
           log().info("Updated " + jsFile);
       }
   }
