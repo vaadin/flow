@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.component.webcomponent;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -111,15 +110,8 @@ public class WebComponentWrapperTest {
 
     @Test
     public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
-        WebComponentConfiguration<MyExtension> configuration =
-                new WebComponentConfigurationImpl<>(
-                        new MyExtensionExporter());
-
-        Element el = new Element("local");
-        WebComponentWrapper wrapper =
-                new WebComponentWrapper(el,
-                        configuration.createWebComponentBinding(
-                                new MockInstantiator(), el));
+        WebComponentWrapper wrapper = constructWrapper(
+                new MyExtensionExporter(), null, null);
 
         MyExtension component =
                 (MyExtension) wrapper.getWebComponentBinding().getComponent();
@@ -149,14 +141,8 @@ public class WebComponentWrapperTest {
 
     @Test
     public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
-        WebComponentConfiguration<MyComponent> configuration =
-                new WebComponentConfigurationImpl<>(
-                        new ExtendedExporter());
-
-        Element el = new Element("local");
-        WebComponentWrapper wrapper = new WebComponentWrapper(el,
-                configuration.createWebComponentBinding(
-                        new MockInstantiator(), el));
+        WebComponentWrapper wrapper = constructWrapper(
+                new ExtendedExporter(),null,null);
 
         MyComponent component =
                 (MyComponent) wrapper.getWebComponentBinding().getComponent();
@@ -191,34 +177,11 @@ public class WebComponentWrapperTest {
     @Test
     public void disconnectReconnect_componentIsNotCleaned()
             throws InterruptedException {
-        WebComponentUI ui = mock(WebComponentUI.class);
-        when(ui.getUI()).thenReturn(Optional.of(ui));
-        Element body = new Element("body");
-        when(ui.getElement()).thenReturn(body);
-
-        UIInternals internals = new UIInternals(ui);
-        internals.setSession(new AlwaysLockedVaadinSession(
-                mock(VaadinService.class)));
-        when(ui.getInternals()).thenReturn(internals);
-
-        Element el = new Element("local");
-        WebComponentWrapper wrapper = new WebComponentWrapper(el,
-                new MockBinding(MyComponent.class)) {
-            @Override
-            public Optional<UI> getUI() {
-                return Optional.of(ui);
-            }
-        };
-
-        Component parent = new Parent();
-        parent.getElement().appendChild(wrapper.getElement());
-
-        VaadinSession session = mock(VaadinSession.class);
-        DeploymentConfiguration configuration = mock(DeploymentConfiguration.class);
-
-        when(ui.getSession()).thenReturn(session);
-        when(session.getConfiguration()).thenReturn(configuration);
-        when(configuration.getWebComponentDisconnect()).thenReturn(1);
+        Element element = new Element("tag");
+        WebComponentUI ui = constructWebComponentUI(element);
+        WebComponentWrapper wrapper = constructWrapper(new MyComponentExporter(), element,
+                ui);
+        UIInternals internals = ui.getInternals();
 
         wrapper.disconnected();
 
@@ -242,34 +205,11 @@ public class WebComponentWrapperTest {
     @Test
     public void disconnectOnClient_componentIsCleaned()
             throws ExecutionException, InterruptedException {
-        WebComponentUI ui = mock(WebComponentUI.class);
-        when(ui.getUI()).thenReturn(Optional.of(ui));
-        Element body = new Element("body");
-        when(ui.getElement()).thenReturn(body);
-
-        UIInternals internals = new UIInternals(ui);
-        internals.setSession(new AlwaysLockedVaadinSession(
-                mock(VaadinService.class)));
-        when(ui.getInternals()).thenReturn(internals);
-
-        Element el = new Element("el");
-        WebComponentWrapper wrapper = new WebComponentWrapper(el,
-                new MockBinding(MyComponent.class)) {
-            @Override
-            public Optional<UI> getUI() {
-                return Optional.of(ui);
-            }
-        };
-
-        Component parent = new Parent();
-        parent.getElement().appendChild(wrapper.getElement());
-
-        VaadinSession session = mock(VaadinSession.class);
-        DeploymentConfiguration configuration = mock(DeploymentConfiguration.class);
-
-        when(ui.getSession()).thenReturn(session);
-        when(session.getConfiguration()).thenReturn(configuration);
-        when(configuration.getWebComponentDisconnect()).thenReturn(1);
+        Element element = new Element("tag");
+        WebComponentUI ui = constructWebComponentUI(element);
+        WebComponentWrapper wrapper = constructWrapper(new MyComponentExporter(), element,
+                ui);
+        UIInternals internals = ui.getInternals();
 
         wrapper.disconnected();
 
@@ -285,6 +225,56 @@ public class WebComponentWrapperTest {
         Assert.assertFalse(
                 "Wrapper should have been disconnected also on the server",
                 wrapper.getParent().isPresent());
+    }
+
+    /**
+     * @param exporter  exporter of the correct type, defines C
+     * @param element   nullable root element
+     * @param ui        nullable WebComponentUI
+     * @param <C>       type of the exported component
+     * @return web component wrapper
+     */
+    private static <C extends Component> WebComponentWrapper constructWrapper(
+            WebComponentExporter<C> exporter, Element element,
+            WebComponentUI ui) {
+        if (element == null) {
+            element = new Element("tag");
+        }
+        WebComponentConfiguration<C> configuration =
+                new WebComponentConfigurationImpl<>(exporter);
+        return new WebComponentWrapper(element,
+                configuration.createWebComponentBinding(
+                        new MockInstantiator(), element)) {
+            @Override
+            public Optional<UI> getUI() {
+                return Optional.of(ui);
+            }
+        };
+    }
+
+
+    private static WebComponentUI constructWebComponentUI(Element wrapperElement) {
+        WebComponentUI ui = mock(WebComponentUI.class);
+        when(ui.getUI()).thenReturn(Optional.of(ui));
+        Element body = new Element("body");
+        when(ui.getElement()).thenReturn(body);
+
+        UIInternals internals = new UIInternals(ui);
+        internals.setSession(new AlwaysLockedVaadinSession(
+                mock(VaadinService.class)));
+        when(ui.getInternals()).thenReturn(internals);
+
+        Component parent = new Parent();
+        parent.getElement().appendChild(wrapperElement);
+
+        VaadinSession session = mock(VaadinSession.class);
+        DeploymentConfiguration configuration = mock(DeploymentConfiguration.class);
+
+        when(ui.getSession()).thenReturn(session);
+        when(session.getConfiguration()).thenReturn(configuration);
+        when(configuration.getWebComponentDisconnect()).thenReturn(1);
+
+        return ui;
     }
 
     @Tag("my-component")
@@ -358,35 +348,6 @@ public class WebComponentWrapperTest {
 
             definition.addProperty(BOOLEAN_PROPERTY, false)
                     .onChange(MyComponent::setBooleanValue);
-        }
-    }
-
-    private static class MockBinding<C extends Component> implements WebComponentBinding<C> {
-        private C component;
-        public MockBinding(Class<C> clazz) {
-            try {
-                component = clazz.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                Assert.fail("Failed to create fake component: " + e.getMessage());
-            }
-        }
-
-        @Override
-        public void updateProperty(String propertyName, Serializable value) { }
-
-        @Override
-        public C getComponent() {
-            return component;
-        }
-
-        @Override
-        public Class<? extends Serializable> getPropertyType(String propertyName) {
-            return Integer.class;
-        }
-
-        @Override
-        public boolean hasProperty(String propertyName) {
-            return true;
         }
     }
 }
