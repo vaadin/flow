@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyData;
