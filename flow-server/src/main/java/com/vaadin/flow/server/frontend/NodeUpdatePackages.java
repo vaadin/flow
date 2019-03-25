@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON_FILE_NAME;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +43,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import static com.vaadin.flow.server.Constants.*;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -59,19 +59,17 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private final String webpackTemplate;
 
-    public NodeUpdatePackages(URL[] urls, String webpackTemplate, String npmFolder, String flowPackagePath,
-            boolean convertHtml) {
-        this.projectClassPathUrls = urls;
+    public NodeUpdatePackages(AnnotationValuesExtractor extractor, String webpackTemplate, String npmFolder,
+            String flowPackagePath, boolean convertHtml) {
+        this.annotationValuesExtractor = extractor;
         this.npmFolder = npmFolder;
         this.flowPackagePath = flowPackagePath;
         this.webpackTemplate = webpackTemplate;
         this.convertHtml = convertHtml;
-        annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
     }
 
-    public NodeUpdatePackages() {
-        this(((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs(), WEBPACK_CONFIG, ".",
-                "/node_modules/" + FLOW_PACKAGE, true);
+    public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
+        this(extractor, WEBPACK_CONFIG, ".", "/node_modules/" + FLOW_PACKAGE, true);
     }
 
     @Override
@@ -97,19 +95,6 @@ public class NodeUpdatePackages extends NodeUpdater {
 
             createWebpackConfig();
 
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
-        log().info("Generating the Flow package...");
-
-        File flowPackage = getFlowPackage();
-        try {
-            if (flowPackage.isDirectory()) {
-                FileUtils.cleanDirectory(flowPackage);
-            } else {
-                FileUtils.forceMkdir(flowPackage);
-            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -204,7 +189,7 @@ public class NodeUpdatePackages extends NodeUpdater {
             command.add("npm.cmd");
         } else {
             builder.environment().put("PATH", builder.environment().get("PATH") + ":/usr/local/bin");
-            command.add("/usr/local/bin/npm");
+            command.add("npm");
         }
 
         command.add("--no-package-lock");

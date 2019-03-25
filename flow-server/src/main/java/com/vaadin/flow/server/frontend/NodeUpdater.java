@@ -21,8 +21,8 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,7 +43,7 @@ public abstract class NodeUpdater implements Serializable {
     /**
      * Folder with the <code>package.json</code> file
      */
-     String npmFolder;
+    String npmFolder;
 
     /**
      * The relative path to the Flow package. Always relative to
@@ -57,9 +57,9 @@ public abstract class NodeUpdater implements Serializable {
      */
     boolean convertHtml;
 
-    URL[] projectClassPathUrls;
-
     AnnotationValuesExtractor annotationValuesExtractor;
+
+    private Set<String> flowModules = new HashSet<>();
 
     public abstract void execute();
 
@@ -67,45 +67,43 @@ public abstract class NodeUpdater implements Serializable {
         return new File(npmFolder, flowPackagePath);
     }
 
-    Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
+    protected Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
-    Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
+    protected Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
-    String resolveInFlowFrontendDirectory(String importPath) {
+    protected String resolveInFlowFrontendDirectory(String importPath) {
         if (importPath.startsWith("@")) {
             return importPath;
         }
         String pathWithNoProtocols = importPath.replace(FRONTEND_PROTOCOL_PREFIX, "");
-        URL url = resourceUrlInJars(pathWithNoProtocols);
-        return String.format("%s%s", url != null ? FLOW_PACKAGE : "./", pathWithNoProtocols);
-    }
 
-    private URL resourceUrlInJars(String resource) {
-        URL url = annotationValuesExtractor.projectClassLoader.getResource(
-                NON_WEB_JAR_RESOURCE_PATH + "/" + resource.replaceFirst(FLOW_PACKAGE, ""));
-
-        if (url != null && url.getPath().contains(".jar!")) {
-            installFileToNode(url);
-            return url;
+        if (flowModules.contains(pathWithNoProtocols) || getResourceUrl(pathWithNoProtocols) != null) {
+          flowModules.add(pathWithNoProtocols);
+          return FLOW_PACKAGE + pathWithNoProtocols;
         }
-        return null;
+        return "./" + pathWithNoProtocols;
     }
 
-    private void installFileToNode(URL source) {
-        try {
-            String name = source.getPath().replaceFirst(".*" + NON_WEB_JAR_RESOURCE_PATH, "");
-            File destination = new File(getFlowPackage(), name);
+    protected void installFlowModules() throws IOException {
+        for (String resource : flowModules) {
+            URL source = getResourceUrl(resource);
+            File destination = new File(getFlowPackage(), resource);
             FileUtils.forceMkdir(destination.getParentFile());
             FileUtils.copyURLToFile(source, destination);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
+        log().info("Installed " + flowModules.size() + " " + FLOW_PACKAGE + " modules.");
+    }
+
+    private URL getResourceUrl(String resource) {
+      URL url = annotationValuesExtractor.projectClassLoader.getResource(
+          NON_WEB_JAR_RESOURCE_PATH + "/" + resource.replaceFirst(FLOW_PACKAGE, ""));
+      return url != null && url.getPath().contains(".jar!") ? url : null;
     }
 
     private String htmlImportToJsModule(String htmlImport) {
@@ -114,7 +112,7 @@ public abstract class NodeUpdater implements Serializable {
           .replaceFirst("^.*bower_components/(vaadin-[^/]*/.*)\\.html$", "@vaadin/$1.js")
           .replaceFirst("^.*bower_components/((iron|paper)-[^/]*/.*)\\.html$", "@polymer/$1.js")
           .replaceFirst("\\.html$", ".js")
-      ); // @formatter:on
+        ); // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
     }
 
@@ -124,7 +122,7 @@ public abstract class NodeUpdater implements Serializable {
           .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$", "@vaadin/$1")
           .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
           .replaceFirst("\\.html$", ".js")
-      ); // @formatter:on
+        ); // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
     }
 
