@@ -176,7 +176,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
-     * Have {@link WebComponentExporter} been set?
+     * Checks if {@link WebComponentExporter WebComponentExporters} have been
+     * set.
+     *
      * @return  {@code true} if {@link #setExporters(Map)} has been called
      *          with {@code non-null} value
      */

@@ -161,7 +161,7 @@ public class WebComponentProviderTest {
     }
 
     @Test
-    public void cachesWebComponentResponsesCorrectly() throws IOException {
+    public void providesDifferentGeneratedHTMLForEachExportedComponent() throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
         ServletContext servletContext = Mockito.mock(ServletContext.class);
