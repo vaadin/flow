@@ -48,11 +48,14 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
     /**
      * Constructs an internal implementation for {@link WebComponent}. {@code
      * WebComponentImpl} uses {@link WebComponentBinding} to verify properties
-     * and value types given as parameters to its methods. {@link HasElement}
-     * is the {@code element} which will contain the exported {@code
-     * component} instance (provided by the {@code binding}).
+     * and value types given as parameters to its methods. {@link Element} is
+     * the host element which contains the exported {@code component}
+     * instance (provided by the {@code binding}).
+     *
      * @param binding   binds web component configuration to {@code component X}
      * @param componentHost     host {@code component X} on the embedding page
+     * @see com.vaadin.flow.component.webcomponent.WebComponentWrapper for
+     * the web component host
      */
     WebComponentImpl(WebComponentBinding binding,
                      Element componentHost) {
@@ -90,8 +93,7 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
         try {
             propertyConfigurationImp =
                     (PropertyConfigurationImp<C, P>) propertyConfiguration;
-        }
-        catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             throw new InvalidParameterException(String.format("Parameter " +
                     "'propertyConfiguration' must be an implementation of " +
                     "'%s!", PropertyConfigurationImp.class.getCanonicalName()));
