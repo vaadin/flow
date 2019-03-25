@@ -23,54 +23,55 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class FireEventIT extends ChromeBrowserTest {
+    private static final String N1 = "number1";
+    private static final String N2 = "number2";
+    private static final String SUM = "sum";
+    private static final String ERR = "error";
 
     @Override
     protected String getTestPath() {
-        return "/updateProperty.html";
+        return "/fireEvent.html";
     }
 
     @Test
-    public void propertiesWrittenOnServerSideAreUpdatedToWebComponent() {
+    public void customEventsGetSentToTheClientSide() {
         open();
 
         waitForElementVisible(By.id("calc"));
 
-        WebElement component = findElement(By.id("calc"));
-        WebElement button = component.findElement(By.tagName("button"));
-        WebElement number1 = component.findElement(By.id("number1"));
-        WebElement number2 = component.findElement(By.id("number2"));
+        WebElement button = findElement(By.id("button"));
+        WebElement number1 = findElement(By.id(N1));
+        WebElement number2 = findElement(By.id(N2));
 
-        Assert.assertEquals("Sum should be 0", 0.0,
-                getSum(), 0.0);
-        Assert.assertEquals("Error should be empty", "",
-                getError());
+        Assert.assertEquals("Sum should be 0", "0", value(SUM));
+        Assert.assertEquals("Error should be empty", "", value(ERR));
 
         number1.sendKeys("4.5");
         number2.sendKeys("3.5");
+
+        Assert.assertEquals("4.5", number1.getAttribute("value"));
+        Assert.assertEquals("3.5", number2.getAttribute("value"));
+
         button.click();
 
-        Assert.assertEquals("Sum should be 8", 8.0,
-                getSum(), 0.0);
+        Assert.assertEquals("Sum should be 8", "8", value(SUM));
         Assert.assertEquals("Error should be empty", "",
-                getError());
+                value(ERR));
 
         number1.clear();
         number2.clear();
+
+        Assert.assertEquals("", value(N1));
+        Assert.assertEquals("", value(N2));
+
         button.click();
 
-        Assert.assertEquals("Sum should not have changed", 8.0,
-                getSum(), 0.0);
-        Assert.assertEquals("Error should have been raised", "error here",
-                getError());
+        Assert.assertEquals("Sum should not have changed", "8", value(SUM));
+        Assert.assertEquals("Error should have been raised", "empty String",
+                value(ERR));
     }
 
-    private double getSum() {
-        WebElement count = findElement(By.id("sum"));
-        return Integer.parseInt(count.getText());
-    }
-
-    private String getError() {
-        WebElement count = findElement(By.id("error"));
-        return count.getText();
+    private String value(String id) {
+        return findElement(By.id(id)).getText();
     }
 }

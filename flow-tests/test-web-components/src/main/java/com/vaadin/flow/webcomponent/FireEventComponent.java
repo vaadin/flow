@@ -27,11 +27,9 @@ public class FireEventComponent extends Div {
 
     public FireEventComponent() {
         Input number1 = new Input();
-        number1.setType("number");
         number1.setId("number1");
 
         Input number2 = new Input();
-        number2.setType("number");
         number2.setId("number2");
 
         NativeButton button = new NativeButton("Add numbers");
@@ -48,7 +46,6 @@ public class FireEventComponent extends Div {
                         errorConsumer.accept(e.getMessage());
                     }
                 }
-
             }
         });
 

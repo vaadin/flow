@@ -36,11 +36,11 @@
     var error = document.getElementById("error");
 
     calc.addEventListener("sum-calculated", event => {
-      sum.innerHTML = event.details;
+      sum.innerHTML = event.detail;
     });
 
     calc.addEventListener("sum-error", () => {
-      error.innerHTML = event.details;
+      error.innerHTML = event.detail;
     });
   </script>
 
