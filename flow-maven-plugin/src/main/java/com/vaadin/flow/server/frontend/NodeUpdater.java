@@ -15,102 +15,120 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.plugin.production.ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH;
+import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
-
-import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 
 /**
- * Base class for properties and methods related to npm support.
+ * Base interface for methods for updating node_js files.
  */
-public abstract class NodeUpdater extends AbstractMojo {
-    static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
+public abstract class NodeUpdater {
 
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    protected MavenProject project;
+    public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
 
     /**
-     * The folder where `package.json` file is located. Default is current dir.
+     * Folder with the <code>package.json</code> file
      */
-    @Parameter(defaultValue = "${project.basedir}")
-    protected File npmFolder;
+     String npmFolder;
 
     /**
      * The relative path to the Flow package. Always relative to
-     * {@link NodeUpdater#npmFolder}.
+     * {@link FrontendUpdater#npmFolder()}.
      */
-    @Parameter(defaultValue = "/node_modules/" + FLOW_PACKAGE)
-    private String flowPackagePath;
+    String flowPackagePath;
 
-    protected final Log log = getLog();
+    /**
+     * Enable or disable legacy components annotated only with
+     * {@link HtmlImport}.
+     */
+    boolean convertHtml;
 
-    public static URL[] getProjectClassPathUrls(MavenProject project) {
-        final List<String> runtimeClasspathElements;
-        try {
-            runtimeClasspathElements = project.getRuntimeClasspathElements();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to retrieve runtime classpath elements from project '%s'",
-                    project), e);
-        }
-        return runtimeClasspathElements.stream().map(File::new)
-                .map(FlowPluginFileUtils::convertToUrl).toArray(URL[]::new);
-    }
+    URL[] projectClassPathUrls;
 
-    protected File getFlowPackage() {
+    AnnotationValuesExtractor annotationValuesExtractor;
+
+    public abstract void execute();
+
+    public File getFlowPackage() {
         return new File(npmFolder, flowPackagePath);
     }
 
-    protected Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
-        return htmlImports.stream().map(this::getHtmlImportJsModule)
-                .filter(Objects::nonNull).collect(Collectors.toSet());
+    Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
+        return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
-    protected Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
-        return htmlImports.stream().map(this::getHtmlImportNpmPackage)
-                .filter(Objects::nonNull).collect(Collectors.toSet());
+    Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
+        return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
-    protected String resolveInFlowFrontendDirectory(String importPath) {
+    String resolveInFlowFrontendDirectory(String importPath) {
         if (importPath.startsWith("@")) {
             return importPath;
         }
-        String pathWithNoProtocols = importPath
-                .replace(FRONTEND_PROTOCOL_PREFIX, "");
-        return String.format("%s%s",
-                new File(getFlowPackage(), pathWithNoProtocols).isFile()
-                        ? FLOW_PACKAGE
-                        : "./",
-                pathWithNoProtocols);
+        String pathWithNoProtocols = importPath.replace(FRONTEND_PROTOCOL_PREFIX, "");
+        URL url = resourceUrlInJars(pathWithNoProtocols);
+        return String.format("%s%s", url != null ? FLOW_PACKAGE : "./", pathWithNoProtocols);
     }
 
-    private String getHtmlImportJsModule(String htmlImport) {
-        String module = resolveInFlowFrontendDirectory(htmlImport // @formatter:off
-        .replaceFirst("^.*bower_components/(vaadin-[^/]*/.*)\\.html$", "@vaadin/$1.js")
-        .replaceFirst("^.*bower_components/((iron|paper)-[^/]*/.*)\\.html$", "@polymer/$1.js")
-        .replaceFirst("\\.html$", ".js")
-        ); // @formatter:on
+    private URL resourceUrlInJars(String resource) {
+        URL url = annotationValuesExtractor.projectClassLoader.getResource(
+                NON_WEB_JAR_RESOURCE_PATH + "/" + resource.replaceFirst(FLOW_PACKAGE, ""));
+
+        if (url != null && url.getPath().contains(".jar!")) {
+            installFileToNode(url);
+            return url;
+        }
+        return null;
+    }
+
+    private void installFileToNode(URL source) {
+        try {
+            String name = source.getPath().replaceFirst(".*" + NON_WEB_JAR_RESOURCE_PATH, "");
+            File destination = new File(getFlowPackage(), name);
+            FileUtils.forceMkdir(destination.getParentFile());
+            FileUtils.copyURLToFile(source, destination);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private String htmlImportToJsModule(String htmlImport) {
+        String module = resolveInFlowFrontendDirectory( // @formatter:off
+        htmlImport
+          .replaceFirst("^.*bower_components/(vaadin-[^/]*/.*)\\.html$", "@vaadin/$1.js")
+          .replaceFirst("^.*bower_components/((iron|paper)-[^/]*/.*)\\.html$", "@polymer/$1.js")
+          .replaceFirst("\\.html$", ".js")
+      ); // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
     }
 
-    private String getHtmlImportNpmPackage(String htmlImport) {
-        String module = resolveInFlowFrontendDirectory(htmlImport // @formatter:off
-        .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$", "@vaadin/$1")
-        .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
-        .replaceFirst("\\.html$", ".js")
-        ); // @formatter:on
+    private String htmlImportToNpmPackage(String htmlImport) {
+        String module = resolveInFlowFrontendDirectory( // @formatter:off
+        htmlImport
+          .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$", "@vaadin/$1")
+          .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
+          .replaceFirst("\\.html$", ".js")
+      ); // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
+    }
+
+    Logger log() {
+        return LoggerFactory.getLogger("c.v.f.s.d" + this.getClass().getSimpleName());
     }
 }

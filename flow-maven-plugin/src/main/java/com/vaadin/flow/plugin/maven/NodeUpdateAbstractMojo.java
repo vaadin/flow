@@ -1,0 +1,60 @@
+package com.vaadin.flow.plugin.maven;
+
+import java.io.File;
+import java.net.URL;
+import java.util.List;
+
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.server.frontend.NodeUpdater;
+
+/**
+ * Common stuff for mojos
+ */
+public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
+
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    protected MavenProject project;
+
+    /**
+     * Enable or disable legacy components annotated only with
+     * {@link HtmlImport}.
+     */
+    @Parameter(defaultValue = "true")
+    protected boolean convertHtml;
+
+    /**
+     * The folder where `package.json` file is located. Default is current dir.
+     */
+    @Parameter(defaultValue = "${project.basedir}")
+    protected File npmFolder;
+
+    /**
+     * The relative path to the Flow package. Always relative to
+     * {@link NodeUpdater#npmFolder}.
+     */
+    @Parameter(defaultValue = "/node_modules/" + NodeUpdater.FLOW_PACKAGE)
+    protected String flowPackagePath;
+
+    protected NodeUpdater updater;
+
+    protected abstract NodeUpdater getUpdater();
+
+    public static URL[] getProjectClassPathUrls(MavenProject project) {
+        final List<String> runtimeClasspathElements;
+        try {
+            runtimeClasspathElements = project.getRuntimeClasspathElements();
+        } catch (DependencyResolutionRequiredException e) {
+            throw new IllegalStateException(String.format(
+                    "Failed to retrieve runtime classpath elements from project '%s'",
+                    project), e);
+        }
+        return runtimeClasspathElements.stream().map(File::new)
+                .map(FlowPluginFileUtils::convertToUrl).toArray(URL[]::new);
+    }
+}

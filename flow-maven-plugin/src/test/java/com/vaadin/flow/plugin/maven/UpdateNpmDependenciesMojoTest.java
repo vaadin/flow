@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.frontend.NodeUpdatePackages;
+import com.vaadin.flow.plugin.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -50,7 +50,7 @@ public class UpdateNpmDependenciesMojoTest {
 
     MavenProject project;
 
-    NodeUpdatePackages mojo = new NodeUpdatePackages();
+    NodeUpdatePackagesMojo mojo = new NodeUpdatePackagesMojo();
 
     String packageJson;
     String webpackConfig;
@@ -75,12 +75,17 @@ public class UpdateNpmDependenciesMojoTest {
         // Add folder with test classes
         List<String> classPaths = new ArrayList<>(Arrays.asList("target/test-classes"));
 
+        // Add this test jar which has some frontend resources used in tests
+        File jar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
+        classPaths.add(jar.getPath());
+
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
         URL[] urls = ((URLClassLoader) classLoader).getURLs();
         for (URL url : urls) {
             classPaths.add(url.getFile());
         }
+
         return classPaths;
     }
 
@@ -99,7 +104,7 @@ public class UpdateNpmDependenciesMojoTest {
         assertPackageJsonContent();
 
         Assert.assertTrue(FileUtils.fileExists(webpackConfig));
-        Assert.assertTrue(FileUtils.fileExists(mojo.getFlowPackage().getAbsolutePath()));
+        Assert.assertTrue(FileUtils.fileExists(mojo.updater.getFlowPackage().getAbsolutePath()));
     }
 
     @Test
@@ -127,7 +132,7 @@ public class UpdateNpmDependenciesMojoTest {
 
         assertPackageJsonContent();
 
-        Assert.assertTrue(FileUtils.fileExists(mojo.getFlowPackage().getAbsolutePath()));
+        Assert.assertTrue(FileUtils.fileExists(mojo.updater.getFlowPackage().getAbsolutePath()));
     }
 
     private void assertPackageJsonContent() throws IOException {

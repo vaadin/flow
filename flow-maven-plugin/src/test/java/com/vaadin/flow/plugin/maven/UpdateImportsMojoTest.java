@@ -16,6 +16,9 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -39,18 +42,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.frontend.NodeUpdateImports;
-
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
-import static com.vaadin.flow.server.frontend.NodeUpdater.FLOW_PACKAGE;
-
 public class UpdateImportsMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private String importsFile;
-    private final NodeUpdateImports mojo = new NodeUpdateImports();
+    private final NodeUpdateImportsMojo mojo = new NodeUpdateImportsMojo();
 
     @Before
     public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {
@@ -65,7 +62,7 @@ public class UpdateImportsMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "flow-packages");
-        Assert.assertTrue(mojo.getFlowPackage().mkdirs());
+        Assert.assertTrue(mojo.updater.getFlowPackage().mkdirs());
     }
 
     @Test
@@ -100,8 +97,6 @@ public class UpdateImportsMojoTest {
     public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws IOException {
         Assert.assertFalse(FileUtils.fileExists(importsFile));
 
-        Assert.assertTrue(new File(mojo.getFlowPackage(), "foo.js").createNewFile());
-
         mojo.execute();
 
         assertContainsImports(true,
@@ -122,8 +117,11 @@ public class UpdateImportsMojoTest {
             "@polymer/iron-icon",
             "./foo-dir/vaadin-npm-component.js",
             "./local-p3-template.js",
-            String.format("%sfoo.js", FLOW_PACKAGE),
+            "@vaadin/flow-frontend/ExampleConnector.js",
             "./local-p2-template.js");
+
+        Assert.assertTrue(new File(mojo.getFlowPackage(), "ExampleConnector.js").exists());
+
     }
 
     @Test

@@ -38,7 +38,7 @@ import org.reflections.util.ConfigurationBuilder;
  */
 public abstract class ClassPathIntrospector {
 
-    private final ClassLoader projectClassLoader;
+    public final ClassLoader projectClassLoader;
     private final Reflections reflections;
 
     /**
@@ -51,7 +51,7 @@ public abstract class ClassPathIntrospector {
     protected ClassPathIntrospector(URL... projectClassesLocations) {
         projectClassLoader = new URLClassLoader(projectClassesLocations, null);
         reflections = new Reflections(
-                new ConfigurationBuilder().addClassLoader(projectClassLoader)
+                new ConfigurationBuilder().addClassLoader(projectClassLoader).setExpandSuperTypes(false)
                         .addUrls(projectClassesLocations));
     }
 

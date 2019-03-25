@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,30 +35,22 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.exec.OS;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.codehaus.plexus.util.FileUtils;
+import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DevModeHandler;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.plugin.production.ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH;
 
 /**
- * Goal that updates package.json file with @NpmPackage annotations defined in
+ * Updates package.json file with @NpmPackage annotations defined in
  * the classpath.
  */
-@Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
 public class NodeUpdatePackages extends NodeUpdater {
 
     private static final String VALUE = "value";
@@ -65,45 +58,33 @@ public class NodeUpdatePackages extends NodeUpdater {
     public static final String PACKAGE_JSON = "package.json";
     public static final String WEBPACK_CONFIG = "webpack.config.js";
 
-    /**
-     * Enable or disable legacy components annotated only with
-     * {@link HtmlImport}.
-     */
-    @Parameter(defaultValue = "true")
-    private boolean convertHtml;
+    private final String webpackTemplate;
 
-    /**
-     * Copy the `webapp.config.js` from the specified URL if missing.
-     * Default is the template provided by this plugin.
-     * Leave it blank to disable the feature.
-     */
-    @Parameter(defaultValue = WEBPACK_CONFIG)
-    private String webpackTemplate;
+    public NodeUpdatePackages(URL[] urls, String webpackTemplate, String npmFolder, String flowPackagePath,
+            boolean convertHtml) {
+        this.projectClassPathUrls = urls;
+        this.npmFolder = npmFolder;
+        this.flowPackagePath = flowPackagePath;
+        this.webpackTemplate = webpackTemplate;
+        this.convertHtml = convertHtml;
+        annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
+    }
 
-    /**
-     * Files and directories that should not be copied.
-     */
-    @Parameter(name = "excludes", defaultValue = "**/LICENSE*,**/LICENCE*,**/demo/**,**/docs/**,**/test*/**,**/.*,**/*.md,**/bower.json,**/package.json,**/package-lock.json", required = true)
-    private String excludes;
-
-    private AnnotationValuesExtractor annotationValuesExtractor;
-    private JarContentsManager jarContentsManager;
+    public NodeUpdatePackages() {
+        this(((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs(), WEBPACK_CONFIG, ".",
+                "/node_modules/" + FLOW_PACKAGE, true);
+    }
 
     @Override
     public void execute() {
 
         // Do nothing when bower mode
         if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
-            log.info("Skipped `update-npm-dependencies` goal because `vaadin.bowerMode` is set.");
+            log().info("Skipped `update-npm-dependencies` goal because `vaadin.bowerMode` is set.");
             return;
         }
 
-        log.info("Looking for npm package dependencies in the java class-path ...");
-
-        if (annotationValuesExtractor == null) {
-            URL[] projectClassPathUrls = getProjectClassPathUrls(project);
-            annotationValuesExtractor = new AnnotationValuesExtractor(projectClassPathUrls);
-        }
+        log().info("Looking for npm package dependencies in the java class-path ...");
 
         try {
             Map<Class<?>, Set<String>> classes = annotationValuesExtractor.getAnnotatedClasses(NpmPackage.class, VALUE);
@@ -121,11 +102,7 @@ public class NodeUpdatePackages extends NodeUpdater {
             throw new UncheckedIOException(e);
         }
 
-        log.info("Generating the Flow package...");
-
-        if (jarContentsManager == null) {
-            jarContentsManager = new JarContentsManager();
-        }
+        log().info("Generating the Flow package...");
 
         File flowPackage = getFlowPackage();
         try {
@@ -137,21 +114,6 @@ public class NodeUpdatePackages extends NodeUpdater {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-
-        project.getArtifacts().stream()
-            .filter(artifact -> "jar".equals(artifact.getType()))
-            .map(Artifact::getFile)
-            .filter(File::isFile)
-            .forEach(jar -> jarContentsManager.copyFilesFromJarTrimmingBasePath(
-                jar, NON_WEB_JAR_RESOURCE_PATH, flowPackage, getWildcardPaths(excludes)));
-    }
-
-    private String[] getWildcardPaths(String commaSeparatedWildcardPaths) {
-        if (commaSeparatedWildcardPaths == null || commaSeparatedWildcardPaths.isEmpty()) {
-            return new String[0];
-        }
-        // regex: remove all spaces next to commas
-        return commaSeparatedWildcardPaths.trim().replaceAll("[\\s]*,[\\s]*", ",").split(",");
     }
 
     private void createWebpackConfig() throws IOException {
@@ -159,17 +121,17 @@ public class NodeUpdatePackages extends NodeUpdater {
             return;
         }
 
-        String configFile = npmFolder + "/" + WEBPACK_CONFIG;
+        File configFile = new File(npmFolder, WEBPACK_CONFIG);
 
-        if (FileUtils.fileExists(configFile)) {
-            log.info("No changes to " + configFile);
+        if (configFile.exists()) {
+            log().info("No changes to " + configFile);
         } else {
             URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
             if (resource == null) {
                 resource = new URL(webpackTemplate);
             }
-            FileUtils.copyURLToFile(resource, new File(configFile));
-            log.info("Created " + WEBPACK_CONFIG + " from " + resource);
+            FileUtils.copyURLToFile(resource, configFile);
+            log().info("Created " + WEBPACK_CONFIG + " from " + resource);
         }
     }
 
@@ -190,14 +152,15 @@ public class NodeUpdatePackages extends NodeUpdater {
         return Collections.emptyMap();
     }
 
-    private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes) throws IOException {
+    private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes)
+            throws IOException {
         JsonObject currentDeps = packageJson.getObject("dependencies");
 
         Set<String> dependencies = new HashSet<>();
         classes.values().stream().flatMap(Collection::stream).forEach(s -> {
             // exclude local dependencies (those starting with `.` or `/`
-            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$")
-                && !currentDeps.hasKey(s) && !s.startsWith(FLOW_PACKAGE)) {
+            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)
+                    && !s.startsWith(FLOW_PACKAGE)) {
                 dependencies.add(s);
             }
         });
@@ -207,11 +170,9 @@ public class NodeUpdatePackages extends NodeUpdater {
         }
 
         if (dependencies.isEmpty()) {
-            log.info("No npm packages to update");
+            log().info("No npm packages to update");
         } else {
-            updateDependencies(
-                    dependencies.stream().sorted().collect(Collectors.toList()),
-                    "--save");
+            updateDependencies(dependencies.stream().sorted().collect(Collectors.toList()), "--save");
         }
     }
 
@@ -228,31 +189,31 @@ public class NodeUpdatePackages extends NodeUpdater {
         dependencies.removeAll(Arrays.asList(currentDeps.keys()));
 
         if (dependencies.isEmpty()) {
-            log.info("No npm dev packages to update");
+            log().info("No npm dev packages to update");
         } else {
-            updateDependencies(
-                    dependencies.stream().sorted().collect(Collectors.toList()),
-                    "--save-dev");
+            updateDependencies(dependencies.stream().sorted().collect(Collectors.toList()), "--save-dev");
         }
-
     }
 
     private void updateDependencies(List<String> dependencies, String... npmInstallArgs) throws IOException {
         List<String> command = new ArrayList<>(5 + dependencies.size());
-        if (OS.isFamilyWindows()) {
+
+        ProcessBuilder builder = new ProcessBuilder(command);
+        builder.directory(new File(npmFolder));
+
+        if (!DevModeHandler.IS_UNIX) {
             command.add("npm.cmd");
         } else {
-            command.add("npm");
+            builder.environment().put("PATH", builder.environment().get("PATH") + ":/usr/local/bin");
+            command.add("/usr/local/bin/npm");
         }
+
         command.add("--no-package-lock");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));
         command.addAll(dependencies);
 
-        log.info("Updating package.json and installing npm dependencies ...\n " + String.join(" ", command));
-
-        ProcessBuilder builder = new ProcessBuilder(command);
-        builder.directory(npmFolder);
+        log().info("Updating package.json and installing npm dependencies ...\n " + String.join(" ", command));
 
         Process process = builder.start();
         logStream(process.getInputStream());
@@ -262,36 +223,32 @@ public class NodeUpdatePackages extends NodeUpdater {
             // destroying the process and sleeping helps to get green builds
             process.destroy();
             if (process.isAlive()) {
-                log.warn("npm process still alive, sleeping 500ms");
+                log().warn("npm process still alive, sleeping 500ms");
                 Thread.sleep(500);
             }
             if (process.exitValue() != 0) {
-                log.error(
+                log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
             }
-            log.info("package.json updated and npm dependencies installed. ");
+            log().info("package.json updated and npm dependencies installed. ");
         } catch (Exception e) {
-            log.error(e);
+            log().error("Error destroying webpack process", e);
         }
     }
 
     private JsonObject getPackageJson() throws IOException {
-
         JsonObject packageJson;
+        File packageFile = new File(npmFolder, PACKAGE_JSON);
 
-        String packageFile = npmFolder + "/" + PACKAGE_JSON;
-        if (FileUtils.fileExists(packageFile)) {
-            packageJson = Json.parse(FileUtils.fileRead(packageFile));
-
+        if (packageFile.exists()) {
+            packageJson = Json.parse(FileUtils.readFileToString(packageFile, "UTF-8"));
         } else {
-            log.info("Creating a default " + packageFile);
-            FileUtils.fileWrite(packageFile, "{}");
+            log().info("Creating a default " + packageFile);
+            FileUtils.writeStringToFile(packageFile, "{}", "UTF-8");
             packageJson = Json.createObject();
         }
-
-        ensureMissingObject(packageJson,"dependencies");
-        ensureMissingObject(packageJson,"devDependencies");
-
+        ensureMissingObject(packageJson, "dependencies");
+        ensureMissingObject(packageJson, "devDependencies");
         return packageJson;
     }
 
@@ -306,11 +263,11 @@ public class NodeUpdatePackages extends NodeUpdater {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.isEmpty() && !line.contains("npm WARN")) {
-                    log.info(line);
+                    log().info(line);
                 }
             }
         } catch (IOException e) {
-            log.error(e);
+            log().error("Error when reading from npm stdin/stderr", e);
         }
     }
 }
