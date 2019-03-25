@@ -32,7 +32,7 @@ public class ButtonClickCounterExporter implements WebComponentExporter<ButtonCl
                 definition.addProperty("clicks", 0);
 
         PropertyConfiguration<ButtonClickCounter, JsonValue> jsonProperty =
-                definition.addProperty("clicks-json", Json.createNull());
+                definition.addProperty("clicksJson", Json.createNull());
 
         definition.setInstanceConfigurator((webComponent, component) ->
                 component.addListener(number -> {

@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
@@ -45,7 +46,11 @@ public class WebComponentWrapper extends Component {
 
     /**
      * Wrapper class for the server side WebComponent.
-     *  @param el
+     * @param el
+     *          {@link Element} to which the {@code WebComponentWrapper} is
+     *          bound to. This {@code element} has to be the same element as
+     *          was given to the
+     *          {@link WebComponentConfiguration#createWebComponentBinding(Instantiator, Element)}
      * @param binding
      *          binding that offers methods for delivering property updates
      *          to the {@code component} being wrapped by {@code
@@ -129,7 +134,10 @@ public class WebComponentWrapper extends Component {
                 webComponentBinding.getPropertyType(property);
 
         if (JsonCodec.canEncodeWithoutTypeInfo(propertyType)) {
-            Serializable value = JsonCodec.decodeAs(newValue, propertyType);
+            Serializable value = null;
+            if (newValue != null) {
+                value = JsonCodec.decodeAs(newValue, propertyType);
+            }
             webComponentBinding.updateProperty(property, value);
         } else {
             throw new IllegalArgumentException(
