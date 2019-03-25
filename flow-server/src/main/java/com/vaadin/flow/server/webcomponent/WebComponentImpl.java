@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.Objects;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.EventOptions;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
@@ -93,6 +95,7 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
             propertyConfigurationImp =
                     (PropertyConfigurationImp<C, P>) propertyConfiguration;
         } catch (ClassCastException e) {
+            LoggerFactory.getLogger(WebComponentImpl.class).warn(e.toString());
             throw new InvalidParameterException(String.format("Parameter " +
                     "'propertyConfiguration' must be an implementation of " +
                     "'%s!", PropertyConfigurationImp.class.getCanonicalName()));
