@@ -15,17 +15,18 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Optional;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -65,8 +67,7 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
 public class ServletDeployer implements ServletContextListener {
     private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
-    private static class StubServletConfig
-            implements ServletConfig {
+    private static class StubServletConfig implements ServletConfig {
         private final ServletContext context;
         private final ServletRegistration registration;
 
@@ -144,7 +145,8 @@ public class ServletDeployer implements ServletContextListener {
             ServletConfig servletConfig, Class<?> servletClass) {
         try {
             return DeploymentConfigurationFactory
-                    .createPropertyDeploymentConfiguration(servletClass, servletConfig);
+                    .createPropertyDeploymentConfiguration(servletClass,
+                            servletConfig);
         } catch (ServletException e) {
             throw new IllegalStateException(String.format(
                     "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
@@ -153,9 +155,16 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     private void createAppServlet(ServletContext context) {
-        if (!ApplicationRouteRegistry.getInstance(context).hasNavigationTargets()) {
+        boolean createServlet = ApplicationRouteRegistry.getInstance(context)
+                .hasNavigationTargets();
+
+        createServlet = createServlet || WebComponentConfigurationRegistry
+                .getInstance(context).hasExporters();
+
+        if (!createServlet) {
             getLogger().info(
-                    "{} there are no navigation targets registered to the registry",
+                    "{} there are no navigation targets registered to the "
+                            + "route registry and there are no web component exporters",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
             return;
         }

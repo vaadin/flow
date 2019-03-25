@@ -1,33 +1,5 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.Registration;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinServlet;
-import org.easymock.Capture;
-import org.easymock.CaptureType;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
-
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -42,6 +14,38 @@ import static org.easymock.EasyMock.newCapture;
 import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.Registration;
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
+import org.easymock.Capture;
+import org.easymock.CaptureType;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 public class ServletDeployerTest {
     private final ServletDeployer deployer = new ServletDeployer();
@@ -89,8 +93,17 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void automaticallyRegisterTwoServletsWhenNoServletsPresent() {
-        deployer.contextInitialized(getContextEvent(true));
+    public void hasRoutes_automaticallyRegisterTwoServletsWhenNoServletsPresent() {
+        deployer.contextInitialized(getContextEvent(true, false));
+
+        assertMappingsCount(2);
+        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+    }
+
+    @Test
+    public void hasWebComponents_automaticallyRegisterTwoServletsWhenNoServletsPresent() {
+        deployer.contextInitialized(getContextEvent(false, true));
 
         assertMappingsCount(2);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
@@ -99,7 +112,7 @@ public class ServletDeployerTest {
 
     @Test
     public void doNotRegisterAnythingIfRegistrationIsDisabled() {
-        deployer.contextInitialized(getContextEvent(true,
+        deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"),
                         singletonMap(
@@ -110,8 +123,8 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void mainServletIsNotRegisteredWhenNoRoutesArePresent() {
-        deployer.contextInitialized(getContextEvent(false));
+    public void noRoutes_noWebComponents_mainServletIsNotRegistered() {
+        deployer.contextInitialized(getContextEvent(false, false));
 
         assertMappingsCount(1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
@@ -119,7 +132,7 @@ public class ServletDeployerTest {
 
     @Test
     public void mainServletIsNotRegisteredWhenVaadinServletIsPresent() {
-        deployer.contextInitialized(getContextEvent(true,
+        deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestVaadinServlet.class,
                         singletonList("/test/*"), emptyMap())));
 
@@ -129,7 +142,7 @@ public class ServletDeployerTest {
 
     @Test
     public void frontendServletIsNotRegisteredWhenProductionModeIsActive() {
-        deployer.contextInitialized(getContextEvent(true,
+        deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"),
                         singletonMap(
@@ -142,7 +155,7 @@ public class ServletDeployerTest {
 
     @Test
     public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentMode() {
-        deployer.contextInitialized(getContextEvent(true,
+        deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet1", TestServlet.class,
                         singletonList("/test1/*"), singletonMap(
                                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
@@ -165,7 +178,7 @@ public class ServletDeployerTest {
         params.put(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
 
         deployer.contextInitialized(
-                getContextEvent(true, getServletRegistration("test",
+                getContextEvent(true, true, getServletRegistration("test",
                         TestServlet.class, emptyList(), params)));
 
         assertMappingsCount(2);
@@ -175,7 +188,7 @@ public class ServletDeployerTest {
 
     @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet() {
-        deployer.contextInitialized(getContextEvent(true,
+        deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/*"), Collections.emptyMap())));
 
@@ -185,7 +198,7 @@ public class ServletDeployerTest {
 
     @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet() {
-        deployer.contextInitialized(getContextEvent(true,
+        deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/frontend/*"), Collections.emptyMap())));
 
@@ -223,7 +236,9 @@ public class ServletDeployerTest {
                 pathIndex, servletNameIndex);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private ServletContextEvent getContextEvent(boolean addRoutes,
+            boolean addWebComponents,
             ServletRegistration... servletRegistrations) {
         ServletRegistration.Dynamic dynamicMock = mock(
                 ServletRegistration.Dynamic.class);
@@ -241,7 +256,7 @@ public class ServletDeployerTest {
 
         // seems to be a compiler bug, since fails to compile with the actual
         // types specified (or being inlined) but works with raw type
-        @SuppressWarnings("rawtypes")
+        @SuppressWarnings({ "rawtypes", "serial" })
         Map hack = Stream.of(servletRegistrations).collect(
                 Collectors.toMap(Registration::getName, Function.identity()));
         expect(contextMock.getServletRegistrations()).andReturn(hack)
@@ -256,16 +271,33 @@ public class ServletDeployerTest {
                                 .forRegistry(registry);
                         routeConfiguration.update(() -> {
                             routeConfiguration.getHandledRegistry().clean();
-                            routeConfiguration.setAnnotatedRoute(ComponentWithRoute.class);
+                            routeConfiguration.setAnnotatedRoute(
+                                    ComponentWithRoute.class);
                         });
                         return registry;
                     }).anyTimes();
-        } else {
-            expect(contextMock.getAttribute(anyString())).andReturn(null)
-                    .anyTimes();
-            contextMock.setAttribute(anyObject(), anyObject());
-            EasyMock.expectLastCall();
         }
+        if (addWebComponents) {
+            expect(contextMock.getAttribute(
+                    WebComponentConfigurationRegistry.class.getName()))
+                            .andAnswer(() -> {
+
+                                WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
+                                };
+                                registry.setExporters(
+                                        (Map) Collections.singletonMap("foo",
+                                                WebComponentExporter.class));
+
+                                return registry;
+                            }).anyTimes();
+
+        }
+
+        expect(contextMock.getAttribute(anyString())).andReturn(null)
+                .anyTimes();
+        contextMock.setAttribute(anyObject(), anyObject());
+        contextMock.setAttribute(anyObject(), anyObject());
+        EasyMock.expectLastCall();
 
         expect(contextMock.getInitParameterNames())
                 .andReturn(Collections.emptyEnumeration()).anyTimes();
