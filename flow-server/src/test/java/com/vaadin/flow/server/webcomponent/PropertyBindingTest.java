@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.function.SerializableConsumer;
 
+import elemental.json.JsonValue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.spy;
@@ -40,6 +41,8 @@ public class PropertyBindingTest {
             String.class, false, "");
     PropertyData<String> stringData_null = new PropertyData<>("string",
             String.class, false, null);
+    PropertyData<JsonValue> jsonData_null = new PropertyData<>("json",
+            JsonValue.class, false, null);
 
     @Test
     public void updateValue() {
@@ -145,6 +148,8 @@ public class PropertyBindingTest {
                 new PropertyBinding<>(intData, null);
 
         Assert.assertEquals(Integer.class, binding.getType());
+
+        Assert.assertEquals(JsonValue.class, jsonData_null.getType());
     }
 
     @Test

@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import java.security.InvalidParameterException;
 import java.util.Set;
 
 import org.junit.Before;
@@ -27,7 +26,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonSerializer;
 import com.vaadin.flow.server.MockInstantiator;
@@ -89,11 +87,6 @@ public class WebComponentConfigurationImplTest {
         assertProperty(config, "int", 2);
     }
 
-    @Test(expected = InvalidParameterException.class)
-    public void addProperty_doesNotAllowNamesWithCapitalLetters() {
-        config.addProperty("invalidPropertyName", 1);
-    }
-
     @Test
     public void getWebComponentTag() {
         assertEquals(TAG, config.getWebComponentTag());
@@ -114,8 +107,6 @@ public class WebComponentConfigurationImplTest {
 
     @Test
     public void deliverPropertyUpdate() {
-        Instantiator instantiator = new MockInstantiator();
-
         config.addProperty("int", 0).onChange(MyComponent::update);
 
         WebComponentBinding<MyComponent> binding =

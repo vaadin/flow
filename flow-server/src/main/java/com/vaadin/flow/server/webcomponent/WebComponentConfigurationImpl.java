@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.InstanceConfigurator;
@@ -95,12 +94,8 @@ public class WebComponentConfigurationImpl<C extends Component>
         componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
                     exporter.getClass(), WebComponentExporter.class);
 
-        if (componentClass == null) {
-            throw new IllegalStateException(String.format("Could not find " +
-                    "the Class of %s exported by '%s'!",
-                    Component.class.getSimpleName(),
-                    WebComponentExporter.class.getCanonicalName()));
-        }
+        assert componentClass != null : "Failed to determine component class " +
+                "from WebComponentExporter's type parameter.";
     }
 
     @Override
@@ -108,12 +103,6 @@ public class WebComponentConfigurationImpl<C extends Component>
             String name, Class<P> type, P defaultValue) {
         Objects.requireNonNull(name, "Parameter 'name' cannot be null!");
         Objects.requireNonNull(type, "Parameter 'type' cannot be null!");
-
-        if (!name.toLowerCase().equals(name)) {
-            throw new InvalidParameterException("Property name cannot contain" +
-                    " capital letters. Property name must be lower case and " +
-                    "preferably words should be dash-separated.");
-        }
 
         if (!isSupportedType(type)) {
             throw new UnsupportedPropertyTypeException(String.format("PropertyConfiguration " +
