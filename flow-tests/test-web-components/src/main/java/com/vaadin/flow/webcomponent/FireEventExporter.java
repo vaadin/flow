@@ -20,10 +20,17 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-@Tag("embedded-push")
-public class PushTestExporter implements WebComponentExporter<PushServerSideWebComponent> {
+import elemental.json.Json;
+
+@Tag("fire-event")
+public class FireEventExporter implements WebComponentExporter<FireEventComponent> {
     @Override
-    public void define(WebComponentDefinition<PushServerSideWebComponent> definition) {
-        // UpdateServerSideWebComponent does not have any properties
+    public void define(WebComponentDefinition<FireEventComponent> definition) {
+        definition.setInstanceConfigurator((webComponent, component) -> {
+            component.setSumConsumer(number -> webComponent.fireEvent("sum" +
+                    "-calculated", Json.create(number)));
+            component.setErrorConsumer(err -> webComponent.fireEvent("sum" +
+                    "-error", Json.create(err)));
+        });
     }
 }

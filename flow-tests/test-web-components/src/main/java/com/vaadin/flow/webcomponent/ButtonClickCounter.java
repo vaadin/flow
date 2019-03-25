@@ -22,7 +22,6 @@ import java.util.Set;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.internal.JsonCodec;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
