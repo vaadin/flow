@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 
 import elemental.json.JsonValue;
@@ -79,15 +81,16 @@ public class WebComponentConfigurationImpl<C extends Component>
     public WebComponentConfigurationImpl(WebComponentExporter<C> exporter) {
         Objects.requireNonNull(exporter, "Parameter 'exporter' must not be null!");
 
-        Tag tagAnnotation = exporter.getClass().getAnnotation(Tag.class);
-        if (tagAnnotation == null) {
+        Optional<Tag> tagAnnotation =
+                AnnotationReader.getAnnotationFor(exporter.getClass(), Tag.class);
+        if (!tagAnnotation.isPresent()) {
             throw new InvalidParameterException(String.format("'%s' is " +
                     "missing @%s annotation!",
                     exporter.getClass().getCanonicalName(),
                     Tag.class.getSimpleName()));
         }
 
-        this.tag = tagAnnotation.value();
+        this.tag = tagAnnotation.get().value();
         this.exporterName = exporter.getClass().getCanonicalName();
         exporter.define(this);
 
