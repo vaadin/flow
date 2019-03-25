@@ -31,7 +31,7 @@ public class WebComponentGeneratorTest {
     @Test
     public void generatedReplacementMapContainsExpectedEntries() {
         WebComponentConfigurationImpl<MyComponent> builder =
-                new WebComponentConfigurationImpl<>("tag", new MyComponentExporter());
+                new WebComponentConfigurationImpl<>(new MyComponentExporter());
 
 
         Map<String, String> replacementsMap = WebComponentGenerator
@@ -68,7 +68,7 @@ public class WebComponentGeneratorTest {
         Assert.assertTrue(properties
                 .contains("\"message\":{\"type\":\"String\",\"value\":\"\""));
         Assert.assertTrue(properties.contains(
-                "\"integerValue\":{\"type\":\"Integer\",\"value\":0," +
+                "\"integer-value\":{\"type\":\"Integer\",\"value\":0," +
                         "\"observer\""));
         Assert.assertTrue(properties.contains(
                 "\"response\":{\"type\":\"String\",\"value\":\"hello\""));
@@ -102,7 +102,7 @@ public class WebComponentGeneratorTest {
         public void define(WebComponentDefinition<MyComponent> definition) {
             definition.addProperty("response", "hello")
                     .onChange(MyComponent::setMessage);
-            definition.addProperty("integerValue", 0)
+            definition.addProperty("integer-value", 0)
                     .onChange(MyComponent::setIntegerValue);
             definition.addProperty("message", "")
                     .onChange(MyComponent::setMessage);

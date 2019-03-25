@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -43,6 +44,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+
+import static org.mockito.Mockito.times;
 
 @NotThreadSafe
 public class WebComponentProviderTest {
@@ -154,6 +157,54 @@ public class WebComponentProviderTest {
 
     }
 
+    @Test
+    public void providesDifferentGeneratedHTMLForEachExportedComponent() throws IOException {
+        ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
+
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+
+        Mockito.when(request.getServletContext()).thenReturn(servletContext);
+        Mockito.when(request.getContextPath()).thenReturn("");
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(servletContext);
+        final HashMap<String, Class<? extends WebComponentExporter<?
+                extends Component>>> map = new HashMap<>();
+        map.put("my-component", MyComponentExporter.class);
+        map.put("other-component", OtherComponentExporter.class);
+        registry.setExporters(map);
+        Mockito.when(servletContext
+                .getAttribute(WebComponentConfigurationRegistry.class.getName()))
+                .thenReturn(registry);
+
+        ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
+
+        DefaultDeploymentConfiguration configuration = Mockito
+                .mock(DefaultDeploymentConfiguration.class);
+
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.getRootElementId()).thenReturn("");
+
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.html");
+        Assert.assertTrue("Provider should handle first web-component request",
+                provider.handleRequest(session, request, response));
+
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/web-component/other-component.html");
+        Assert.assertTrue("Provider should handle second web-component request",
+                provider.handleRequest(session, request, response));
+
+        Mockito.verify(response, times(2)).getOutputStream();
+        Mockito.verify(out, times(2)).write(captor.capture());
+
+        byte[] first = captor.getAllValues().get(0);
+        byte[] second = captor.getAllValues().get(1);
+
+        Assert.assertNotEquals("Stream output should not match",
+                first, second);
+    }
+
     @Tag("my-component")
     public static class MyComponent extends Component {
     }
@@ -165,5 +216,18 @@ public class WebComponentProviderTest {
 
         }
     }
+
+    @Tag("another-component")
+    public static class OtherComponent extends Component {
+    }
+
+    @Tag("other-component")
+    public static class OtherComponentExporter implements WebComponentExporter<OtherComponent> {
+        @Override
+        public void define(WebComponentDefinition<OtherComponent> definition) {
+
+        }
+    }
+
 
 }

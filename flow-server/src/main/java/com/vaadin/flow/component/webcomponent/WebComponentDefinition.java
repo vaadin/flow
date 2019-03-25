@@ -44,7 +44,11 @@ public abstract class WebComponentDefinition<C extends Component>
      * identified by {@code name}.
      *
      * @param name
-     *          name of the property
+     *          name of the property. While all formats are allowed, names in
+     *          camelCase will be converted to dash-separated form, when
+     *          property update events are generated, using form
+     *          "property-name-changed", if the property is called
+     *          "propertyName"
      * @param defaultValue
      *          default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
@@ -59,7 +63,11 @@ public abstract class WebComponentDefinition<C extends Component>
      * identified by {@code name}.
      *
      * @param name
-     *          name of the property
+     *          name of the property. While all formats are allowed, names in
+     *          camelCase will be converted to dash-separated form, when
+     *          property update events are generated, using form
+     *          "property-name-changed", if the property is called
+     *          "propertyName"
      * @param defaultValue
      *          default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
@@ -74,7 +82,11 @@ public abstract class WebComponentDefinition<C extends Component>
      * identified by {@code name}.
      *
      * @param name
-     *          name of the property
+     *          name of the property. While all formats are allowed, names in
+     *          camelCase will be converted to dash-separated form, when
+     *          property update events are generated, using form
+     *          "property-name-changed", if the property is called
+     *          "propertyName"
      * @param defaultValue
      *          default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
@@ -89,7 +101,11 @@ public abstract class WebComponentDefinition<C extends Component>
      * identified by {@code name}.
      *
      * @param name
-     *          name of the property
+     *          name of the property. While all formats are allowed, names in
+     *          camelCase will be converted to dash-separated form, when
+     *          property update events are generated, using form
+     *          "property-name-changed", if the property is called
+     *          "propertyName"
      * @param defaultValue
      *          default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
@@ -104,7 +120,11 @@ public abstract class WebComponentDefinition<C extends Component>
      * identified by {@code name}.
      *
      * @param name
-     *          name of the property
+     *          name of the property. While all formats are allowed, names in
+     *          camelCase will be converted to dash-separated form, when
+     *          property update events are generated, using form
+     *          "property-name-changed", if the property is called
+     *          "propertyName"
      * @param defaultValue
      *          default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property

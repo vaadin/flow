@@ -29,7 +29,7 @@ import elemental.json.JsonObject;
 /**
  * Bootstrap handler for WebComponent requests.
  */
-public class WebComponentBootstrap extends BootstrapHandler {
+public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     private static final String PATH_PREFIX = "/web-component/web-component-ui.html";
 
