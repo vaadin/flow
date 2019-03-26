@@ -32,7 +32,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
  * @param <C>   type of the {@code component} being exported
  * @param <P>   type of the {@code property} owned by the component
  */
-public class PropertyConfigurationImp<C extends Component, P extends Serializable> implements PropertyConfiguration<C, P> {
+public class PropertyConfigurationImpl<C extends Component, P extends Serializable> implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
     private PropertyData<P> data;
     private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
@@ -49,8 +49,8 @@ public class PropertyConfigurationImp<C extends Component, P extends Serializabl
      *                          value is used when ever the property is being
      *                          set to a {@code null}.
      */
-    public PropertyConfigurationImp(Class<C> componentType, String propertyName,
-                                    Class<P> propertyType, P defaultValue) {
+    public PropertyConfigurationImpl(Class<C> componentType, String propertyName,
+                                     Class<P> propertyType, P defaultValue) {
 
         data = new PropertyData<>(propertyName, propertyType, false,
                 defaultValue);
@@ -84,8 +84,8 @@ public class PropertyConfigurationImp<C extends Component, P extends Serializabl
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof PropertyConfigurationImp) {
-            PropertyConfigurationImp other = (PropertyConfigurationImp) obj;
+        if (obj instanceof PropertyConfigurationImpl) {
+            PropertyConfigurationImpl other = (PropertyConfigurationImpl) obj;
             return data.equals(other.data)
                     && componentClass.equals(other.componentClass);
         }

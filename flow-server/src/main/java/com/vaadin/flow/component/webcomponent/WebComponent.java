@@ -50,7 +50,7 @@ public interface WebComponent<C extends Component> extends Serializable {
      *              name of the event, not null
      * @param objectData
      *              data the event should carry. This data is placed as the
-     *              {@code detail} property of the event, not null
+     *              {@code detail} property of the event, nullable
      * @see #fireEvent(String, JsonValue, EventOptions) for full set of options
      */
     void fireEvent(String eventName, JsonValue objectData);
@@ -64,7 +64,7 @@ public interface WebComponent<C extends Component> extends Serializable {
      *              name of the event, not null
      * @param objectData
      *              data the event should carry. This data is placed as the
-     *              {@code detail} property of the event, not null
+     *              {@code detail} property of the event, nullable
      * @param options
      *              event options for {@code bubbles}, {@code cancelable},
      *              and {@code composed} flags, not null
