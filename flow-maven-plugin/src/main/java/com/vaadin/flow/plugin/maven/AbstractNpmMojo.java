@@ -48,11 +48,10 @@ public abstract class AbstractNpmMojo extends AbstractMojo {
     protected File npmFolder;
 
     /**
-     * The relative path to the Flow package. Always relative to
-     * {@link AbstractNpmMojo#npmFolder}.
+     * The path to the {@literal node_modules} directory of the project.
      */
-    @Parameter(defaultValue = "/node_modules/" + FLOW_PACKAGE)
-    private String flowPackagePath;
+    @Parameter(defaultValue = "${project.basedir}/node_modules/")
+    protected File nodeModulesPath;
 
     protected final Log log = getLog();
 
@@ -70,7 +69,7 @@ public abstract class AbstractNpmMojo extends AbstractMojo {
     }
 
     protected File getFlowPackage() {
-        return new File(npmFolder, flowPackagePath);
+        return new File(nodeModulesPath, FLOW_PACKAGE);
     }
 
     protected Set<String> getHtmlImportJsModules(Set<String> htmlImports) {

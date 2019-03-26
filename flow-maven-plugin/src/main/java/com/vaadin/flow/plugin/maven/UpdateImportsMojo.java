@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -101,26 +102,24 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
         try {
             updateMainJsFile(getMainJsContent(modules));
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", jsFile), e);
         }
     }
 
     private List<String> getMainJsContent(Set<String> modules) throws InstantiationException, IllegalAccessException  {
         List<String> lines = new ArrayList<>();
-        if (themeDefinition == null) {
-            modules.forEach(module -> lines.add("import '" + module + "';"));
-        } else {
+
+        Object theme = null;
+        if (themeDefinition != null) {
             // It's not possible to cast to AbstractTheme as a type here since it's loaded by different classloader.
             // Thus we use reflection to invoke those methods in the different context.
-            Object theme = annotationValuesExtractor
+            theme = annotationValuesExtractor
                     .loadClassInProjectClassLoader(themeDefinition.getTheme().getCanonicalName()).newInstance();
 
             Map<String, String> htmlAttributes = annotationValuesExtractor.doInvokeMethod(theme,
                     "getHtmlAttributes", themeDefinition.getVariant());
             List<String> headerContents = annotationValuesExtractor.doInvokeMethod(theme,
                     "getHeaderInlineContents");
-            String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
-
             if (!headerContents.isEmpty()) {
                 lines.add("const div = document.createElement('div');");
                 headerContents.forEach(html -> {
@@ -129,20 +128,46 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
                 });
             }
             htmlAttributes.forEach((key, value) -> lines.add("document.body.setAttribute('" + key + "', '" + value + "');"));
-
-            modules.forEach(module -> {
-                // to-do(manolo): disabled for certain files because not all files have corresponding themed one.
-                // e.g. vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
-                // but vaadin-upload/src/vaadin-upload-file.js does not.
-                // ticket: https://github.com/vaadin/flow/issues/5244
-                if (module.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
-                    module = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
-                            module);
-                }
-                lines.add("import '" + module + "';");
-            });
         }
+
+        for (String module : modules) {
+            lines.add(moduleToImport(module, theme));
+        }
+
         return lines;
+    }
+
+    private String moduleToImport(String originalModulePath, Object theme) {
+        String translatedModulePath = originalModulePath;
+        if (theme != null) {
+            String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
+            // to-do(manolo): disabled for certain files because not all files have corresponding themed one.
+            // e.g. vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
+            // but vaadin-upload/src/vaadin-upload-file.js does not.
+            // ticket: https://github.com/vaadin/flow/issues/5244
+            if (translatedModulePath.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
+                translatedModulePath = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
+                    translatedModulePath);
+            }
+        }
+        validateModulePath(originalModulePath, translatedModulePath);
+
+        return "import '" + translatedModulePath + "';";
+    }
+
+    private void validateModulePath(String originalPath, String translatedPath) {
+        if (!new File(nodeModulesPath, translatedPath).isFile()) {
+            String errorMessage = String.format(
+                    "Failed to locate the file '%s' in the node modules directory '%s'. " +
+                        "Double check that the node modules directory exists and has the npm packages installed.",
+                    translatedPath, nodeModulesPath);
+            if (!Objects.equals(originalPath, translatedPath)) {
+                errorMessage += String.format(
+                        " The missing file was translated by Flow from the path '%s'",
+                        originalPath);
+            }
+            throw new IllegalStateException(errorMessage);
+        }
     }
 
     private Set<String> getThemeModules() {
