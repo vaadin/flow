@@ -72,7 +72,7 @@ public class WebComponentIT extends ChromeBrowserTest {
                 .first();
         Assert.assertTrue(
                 "The component which should use theme doesn't "
-                        + "contian elements",
+                        + "contain elements",
                 themedComponent.$("div").exists());
         TestBenchElement contentElement = themedComponent.$("div").first();
         Assert.assertEquals("themed", contentElement.getAttribute("id"));

@@ -722,7 +722,7 @@ public class UIInternals implements Serializable {
      *
      * @param theme
      *            theme implementation to set
-     * @deprecated use {@link #setTheme(ThemeDefinition)} instead
+     * @deprecated use {@link #setTheme(Class)} instead
      */
     @Deprecated
     public void setTheme(AbstractTheme theme) {
@@ -744,12 +744,13 @@ public class UIInternals implements Serializable {
      *            theme class to set, may be {@code null}
      */
     public void setTheme(Class<? extends AbstractTheme> themeClass) {
+        AbstractTheme result = null;
         if (themeClass != null) {
             if (theme == null || !theme.getClass().equals(themeClass)) {
-                theme = Instantiator.get(getUI()).getOrCreate(themeClass);
+                result = Instantiator.get(getUI()).getOrCreate(themeClass);
             }
         }
-        setTheme(theme);
+        setTheme(result);
     }
 
     private void removeFromParent(HasElement component) {
