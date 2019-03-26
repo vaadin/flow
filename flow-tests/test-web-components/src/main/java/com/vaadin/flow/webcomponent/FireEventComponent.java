@@ -24,6 +24,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 public class FireEventComponent extends Div {
     private SerializableConsumer<Double> numberConsumer;
     private SerializableConsumer<String> errorConsumer;
+    private SerializableConsumer<Integer> buttonConsumer;
 
     public FireEventComponent() {
         Input number1 = new Input();
@@ -50,6 +51,19 @@ public class FireEventComponent extends Div {
         });
 
         add(number1, number2, button);
+
+        Div div = new Div();
+        NativeButton button1 = new NativeButton("B1",
+                event -> buttonConsumer.accept(1));
+        button1.setId("b1");
+        NativeButton button2 = new NativeButton("B2",
+                event -> buttonConsumer.accept(2));
+        button2.setId("b2");
+        NativeButton button3 = new NativeButton("B3",
+                event -> buttonConsumer.accept(3));
+        button3.setId("b3");
+        div.add(button1, button2, button3);
+        add(div);
     }
 
     public void setSumConsumer(SerializableConsumer<Double> consumer) {
@@ -58,5 +72,9 @@ public class FireEventComponent extends Div {
 
     public void setErrorConsumer(SerializableConsumer<String> consumer) {
         this.errorConsumer = consumer;
+    }
+
+    public void setButtonConsumer(SerializableConsumer<Integer> consumer) {
+        this.buttonConsumer = consumer;
     }
 }

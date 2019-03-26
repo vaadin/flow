@@ -30,7 +30,17 @@
   <p id="sum">0</p>
   <p id="error"></p>
 
+  <div id="container">
+      <div id="sub-container">
+          <fire-event id="contained"></fire-event>
+      </div>
+  </div>
+  <p id="contained-result"></p>
+  <p id="inner-result"></p>
+  <p id="outer-result"></p>
+
   <script>
+    // basic test
     var calc = document.getElementById("calc");
     var sum = document.getElementById("sum");
     var error = document.getElementById("error");
@@ -41,6 +51,29 @@
 
     calc.addEventListener("sum-error", () => {
       error.innerHTML = event.detail;
+    });
+
+    // event options test
+    var container = document.getElementById("container");
+    var subContainer = document.getElementById("sub-container");
+    var contained = document.getElementById("contained");
+    var innerResult = document.getElementById("inner-result");
+    var outerResult = document.getElementById("outer-result");
+    var containedResult = document.getElementById("contained-result");
+
+    subContainer.addEventListener("button-event", event => {
+        innerResult.innerHTML = event.detail;
+        event.preventDefault();
+    });
+    container.addEventListener("button-event", event => {
+        if (event.defaultPrevented) {
+            outerResult.innerHTML = "prevented";
+        } else {
+            outerResult.innerHTML = event.detail;
+        }
+    });
+    contained.addEventListener("button-event", event => {
+        containedResult.innerHTML = event.detail;
     });
   </script>
 

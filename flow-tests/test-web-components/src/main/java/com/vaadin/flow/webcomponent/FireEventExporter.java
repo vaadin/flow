@@ -18,6 +18,7 @@ package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.EventOptions;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 import elemental.json.Json;
@@ -27,10 +28,30 @@ public class FireEventExporter implements WebComponentExporter<FireEventComponen
     @Override
     public void define(WebComponentDefinition<FireEventComponent> definition) {
         definition.setInstanceConfigurator((webComponent, component) -> {
-            component.setSumConsumer(number -> webComponent.fireEvent("sum" +
-                    "-calculated", Json.create(number)));
+            component.setSumConsumer(number -> webComponent.fireEvent("sum-calculated",
+                    Json.create(number)));
             component.setErrorConsumer(err -> webComponent.fireEvent("sum" +
                     "-error", Json.create(err)));
+
+            component.setButtonConsumer(buttonId -> {
+                switch (buttonId) {
+                    case 1:
+                        webComponent.fireEvent("button-event",
+                                Json.create(buttonId),
+                                new EventOptions(false));
+                        break;
+                    case 2:
+                        webComponent.fireEvent("button-event",
+                                Json.create(buttonId),
+                                new EventOptions(true));
+                        break;
+                    case 3:
+                        webComponent.fireEvent("button-event",
+                                Json.create(buttonId),
+                                new EventOptions(true, true, false));
+                        break;
+                }
+            });
         });
     }
 }

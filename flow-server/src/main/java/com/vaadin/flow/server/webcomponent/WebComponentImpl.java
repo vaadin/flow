@@ -94,7 +94,7 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
         JsonObject object = Json.createObject();
         object.put("bubbles", options.isBubbles());
-        object.put("cancellable", options.isCancelable());
+        object.put("cancelable", options.isCancelable());
         object.put("composed", options.isComposed());
         object.put("detail", objectData);
 

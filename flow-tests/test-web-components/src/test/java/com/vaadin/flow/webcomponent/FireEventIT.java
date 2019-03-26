@@ -28,6 +28,9 @@ public class FireEventIT extends ChromeBrowserTest {
     private static final String N2 = "number2";
     private static final String SUM = "sum";
     private static final String ERR = "error";
+    private static final String OUT_RESULT = "outer-result";
+    private static final String IN_RESULT = "inner-result";
+    private static final String CON_RESULT = "contained-result";
 
     @Override
     protected String getTestPath() {
@@ -40,9 +43,11 @@ public class FireEventIT extends ChromeBrowserTest {
 
         waitForElementVisible(By.id("calc"));
 
-        WebElement button = findElement(By.id("button"));
-        WebElement number1 = findElement(By.id(N1));
-        WebElement number2 = findElement(By.id(N2));
+        WebElement calc = findElement(By.id("calc"));
+
+        WebElement button = calc.findElement(By.id("button"));
+        WebElement number1 = calc.findElement(By.id(N1));
+        WebElement number2 = calc.findElement(By.id(N2));
 
         Assert.assertEquals("Sum should be 0", "0", value(SUM));
         Assert.assertEquals("Error should be empty", "", value(ERR));
@@ -73,6 +78,56 @@ public class FireEventIT extends ChromeBrowserTest {
         button.click();
 
         Assert.assertEquals("Sum should be 200", "200", value(SUM));
+    }
+
+    @Test
+    public void options_bubblesAndCancelableAreRecordedOntoTheEventAndWork() {
+        open();
+
+        waitForElementVisible(By.id("contained"));
+
+        /*
+            Inner-div listener attempts to cancel all button-events
+         */
+        WebElement contained = findElement(By.id("contained"));
+        // non-bubbling
+        WebElement button1 = contained.findElement(By.id("b1"));
+        // bubbling, non-cancelable
+        WebElement button2 = contained.findElement(By.id("b2"));
+        // bubbling, cancellable
+        WebElement button3 = contained.findElement(By.id("b3"));
+
+        button1.click();
+
+        Assert.assertEquals("Non-bubbling event should be visible on the " +
+                "web component", "1", value(CON_RESULT));
+        Assert.assertEquals("Non-bubbling event should not be visible on the " +
+                "inner div", "", value(IN_RESULT));
+        Assert.assertEquals("Non-bubbling event should not be visible on the " +
+                "outer div", "", value(OUT_RESULT));
+
+        button2.click();
+
+        Assert.assertEquals("Bubbling, non-cancellable event should be " +
+                "visible on the web component", "2", value(CON_RESULT));
+        Assert.assertEquals("Bubbling, non-cancelable event should be visible on the " +
+                "inner div", "2", value(IN_RESULT));
+        Assert.assertEquals("Bubbling, non-cancelable event should be visible on the " +
+                "outer div", "2", value(OUT_RESULT));
+
+        button3.click();
+
+        Assert.assertEquals("Bubbling, cancellable event should be " +
+                "visible on the web component", "3", value(CON_RESULT));
+        Assert.assertEquals("Bubbling, cancelable event should be visible on the " +
+                "inner div", "3", value(IN_RESULT));
+        /*
+            Since we cannot actually stop CustomEvents from being actuated by
+             custom event listeners, we can only track the flag
+             "defaultPrevented" to verify that everything is as it should be.
+         */
+        Assert.assertEquals("Bubbling, cancelable event should not be visible on the " +
+                "outer div", "prevented", value(OUT_RESULT));
     }
 
     private String value(String id) {
