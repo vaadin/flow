@@ -21,6 +21,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,7 +61,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
         List<String> offendingAnnotations = validateAnnotatedClasses(classSet);
 
         if (!offendingAnnotations.isEmpty()) {
-            String message = ERROR_MESSAGE_BEGINNING
+            String message = getErrorHint()
                     + String.join("\n", offendingAnnotations);
             throw new InvalidApplicationConfigurationException(message);
         }
@@ -72,6 +73,29 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      * @return a list of target annotations
      */
     protected abstract List<Class<?>> getAnnotations();
+
+    /**
+     * Handles the {@code clazz} which is not a top level route and not a router
+     * layout. Returns an optional message which describes the error having an
+     * annotation for the class.
+     *
+     * @param clazz
+     *            class to validate annotations
+     * @return an optional error message or empty if there is no error
+     */
+    protected Optional<String> handleNonRouterLayout(Class<?> clazz) {
+        return Optional.of(String.format(NON_ROUTER_LAYOUT, clazz.getName(),
+                getClassAnnotations(clazz)));
+    }
+
+    /**
+     * Returns a hint for the discovered validation errors.
+     *
+     * @return the error hint
+     */
+    protected String getErrorHint() {
+        return ERROR_MESSAGE_BEGINNING;
+    }
 
     private List<String> validateAnnotatedClasses(
             Collection<Class<?>> classSet) {
@@ -92,8 +116,8 @@ public abstract class AbstractAnnotationValidator implements Serializable {
                 }
             } else if (!RouterLayout.class.isAssignableFrom(clazz)) {
                 if (!Modifier.isAbstract(clazz.getModifiers())) {
-                    offendingAnnotations.add(String.format(NON_ROUTER_LAYOUT,
-                            clazz.getName(), getClassAnnotations(clazz)));
+                    handleNonRouterLayout(clazz)
+                            .ifPresent(offendingAnnotations::add);
                 }
             } else if (RouterLayout.class.isAssignableFrom(clazz)
                     && clazz.getAnnotation(ParentLayout.class) != null) {

@@ -17,6 +17,7 @@ package com.vaadin.flow.server.startup;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.ServletContainerInitializer;
@@ -24,23 +25,39 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
-import com.vaadin.flow.component.page.BodySize;
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Validation class that is run during servlet container initialization which
  * checks that specific annotations are not configured wrong.
  */
-@HandlesTypes({ Viewport.class, BodySize.class, Inline.class, Push.class })
-public class AnnotationValidator extends AbstractAnnotationValidator
+@HandlesTypes(Theme.class)
+public class ThemeValidator extends AbstractAnnotationValidator
         implements ServletContainerInitializer {
 
     @Override
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         validateClasses(classSet);
+    }
+
+    @Override
+    protected Optional<String> handleNonRouterLayout(Class<?> clazz) {
+        if (WebComponentExporter.class.isAssignableFrom(clazz)) {
+            return Optional.empty();
+        }
+        return Optional.of(String.format(
+                "Class '%s' contains '%s', but it is not a router "
+                        + "layout/top level route/web component.",
+                clazz.getName(), Theme.class.getName()));
+    }
+
+    @Override
+    protected String getErrorHint() {
+        return "Found " + Theme.class.getSimpleName()
+                + " annotations that will not be used in the application. \n"
+                + "Move it to a single route/a top router layout/web component of the application. \n";
     }
 
     @Override
