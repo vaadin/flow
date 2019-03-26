@@ -44,6 +44,7 @@ public abstract class NodeUpdater implements Serializable {
      * accessible to webpack
      */
     public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
+    static final String FLOW_PACKAGE_PARAMETER = "vaadin.frontend.flowPackagePath";
 
     /**
      * Folder with the <code>package.json</code> file

@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,14 +38,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.NodeUpdateImports;
+import com.vaadin.flow.server.frontend.NodeUpdatePackages;
+
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
@@ -103,12 +107,20 @@ public class DevModeHandler implements Serializable {
 
     private DevModeHandler(File directory, File webpack, File webpackConfig) {
 
+        // Run updaters for  node dependencies and imports
+        URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(urls);
+        new NodeUpdatePackages(extractor).execute();
+        new NodeUpdateImports(extractor).execute();
+
+        // If port is defined, means that webpack is already running
         port = Integer.getInteger(PARAM_WEBPACK_RUNNING, 0);
         if (port > 0 && checkWebpackConnection()) {
             getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, port);
             return;
         }
 
+        // We always compute a free port.
         port = getFreePort();
 
         ProcessBuilder process = new ProcessBuilder();

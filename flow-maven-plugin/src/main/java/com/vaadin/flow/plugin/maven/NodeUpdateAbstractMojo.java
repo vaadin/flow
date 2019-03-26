@@ -13,6 +13,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
@@ -44,9 +45,15 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
     protected String flowPackagePath;
 
     protected NodeUpdater updater;
-    
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        // Do nothing when bower mode
+        if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            String goal = this.getClass().equals(NodeUpdateImportsMojo.class) ? "update-imports"  : "update-npm-dependencies";
+            getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
+            return;
+        }
         getUpdater().execute();
     }
 

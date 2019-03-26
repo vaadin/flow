@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -41,11 +39,12 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
@@ -94,18 +93,15 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, WEBPACK_CONFIG, ".", "/node_modules/" + FLOW_PACKAGE, true);
+        annotationValuesExtractor = extractor;
+        webpackTemplate = WEBPACK_CONFIG;
+        npmFolder = ".";
+        flowPackagePath = "/node_modules/" + System.getProperty(FLOW_PACKAGE_PARAMETER, FLOW_PACKAGE);
+        convertHtml = true;
     }
 
     @Override
     public void execute() {
-
-        // Do nothing when bower mode
-        if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
-            log().info("Skipped `update-npm-dependencies` goal because `vaadin.bowerMode` is set.");
-            return;
-        }
-
         log().info("Looking for npm package dependencies in the java class-path ...");
 
         try {

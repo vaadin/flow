@@ -15,20 +15,18 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Optional;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +37,6 @@ import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.NodeUpdateImports;
-import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -72,7 +67,7 @@ import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 public class ServletDeployer implements ServletContextListener {
     private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
-    static class StubServletConfig
+    private static class StubServletConfig
             implements ServletConfig {
         private final ServletContext context;
         private final ServletRegistration registration;
@@ -127,21 +122,15 @@ public class ServletDeployer implements ServletContextListener {
                         "/frontend/*");
             }
         }
-        ServletRegistration vaadinServlet = findVaadinServlet(context);
+        if(DevModeHandler.getDevModeHandler() == null) {
+            ServletRegistration vaadinServlet = findVaadinServlet(context);
 
-        if (vaadinServlet != null) {
-            DeploymentConfiguration deploymentConfiguration = createDeploymentConfiguration(
-                    new StubServletConfig(context, vaadinServlet), vaadinServlet.getClass());
+            if(vaadinServlet != null) {
+                DeploymentConfiguration deploymentConfiguration = createDeploymentConfiguration(
+                        new StubServletConfig(context, vaadinServlet),
+                        vaadinServlet.getClass());
 
-            if (!deploymentConfiguration.isProductionMode() && !deploymentConfiguration.isBowerMode()) {
-                URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
-                AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(urls);
-                new NodeUpdatePackages(extractor).execute();
-                new NodeUpdateImports(extractor).execute();
-
-                if (DevModeHandler.getDevModeHandler() == null) {
-                    DevModeHandler.start(deploymentConfiguration);
-                }
+                DevModeHandler.start(deploymentConfiguration);
             }
         }
     }
