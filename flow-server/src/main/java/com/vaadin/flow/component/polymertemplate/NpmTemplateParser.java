@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinService;
@@ -42,6 +41,9 @@ import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 
 /**
  * Npm template parser implementation.
@@ -130,7 +132,7 @@ public class NpmTemplateParser implements TemplateParser {
 
     private String getSourcesFromStats(VaadinService service, String tag, String url) {
         String stats = service.getDeploymentConfiguration()
-                .getStringProperty(Constants.STATISTICS_JSON, Constants.STATISTICS_JSON_DEFAULT)
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON, STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
 

@@ -115,14 +115,14 @@ public final class Constants implements Serializable {
     public static final String DISABLE_AUTOMATIC_SERVLET_REGISTRATION = "disable.automatic.servlet.registration";
 
     /**
-     * The file path for WebPack profile statistics json file to use to
+     * Configuration name for the WebPack profile statistics json file to use to
      * determine template contents.
      * <p>
      * File needs to be available either for the ClassLoader as a resource, or
      * as a static web resource. By default it returns the value in
      * {@link Constants#STATISTICS_JSON_DEFAULT}
      */
-    public static final String STATISTICS_JSON = "statistics.file.path";
+    public static final String SERVLET_PARAMETER_STATISTICS_JSON = "statistics.file.path";
 
     /**
      * Default path for the WebPack profile statistics json file. It can be
@@ -130,9 +130,15 @@ public final class Constants implements Serializable {
      */
     public static final String STATISTICS_JSON_DEFAULT = "/build/stats.json";
 
-    public static final String PACKAGE_JSON_FILE_NAME = "package.json";
+    /**
+     * Name of the <code>npm</code> main file. 
+     */
+    public static final String PACKAGE_JSON = "package.json";
 
-    public static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
+    /**
+     * Location for the frontend resources in jar files.
+     */
+    public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
 
     private Constants() {
         // prevent instantiation constants class only

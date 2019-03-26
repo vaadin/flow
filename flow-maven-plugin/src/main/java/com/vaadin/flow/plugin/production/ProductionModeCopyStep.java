@@ -132,7 +132,7 @@ public class ProductionModeCopyStep {
         // bower.json but have package.json like https://repo1.maven.org/maven2/org/webjars/bowergithub/webcomponents/shadycss/1.5.0-1/
         List<String> packageJsonFallback = jarContentsManager
                 .findFiles(webJar.getFileOrDirectory(), WEB_JAR_FILES_BASE,
-                        Constants.PACKAGE_JSON_FILE_NAME);
+                        Constants.PACKAGE_JSON);
         if (packageJsonFallback.isEmpty()) {
             LOGGER.warn(
                     "Found no bower.json or package.json files inside {}. No files will be extracted.",
@@ -194,7 +194,7 @@ public class ProductionModeCopyStep {
         }
 
         for (File notWebJar : nonWebJars) {
-            jarContentsManager.copyFilesFromJarTrimmingBasePath(notWebJar, Constants.NON_WEB_JAR_RESOURCE_PATH, outputDirectory, wildcardExclusions);
+            jarContentsManager.copyFilesFromJarTrimmingBasePath(notWebJar, Constants.RESOURCES_FRONTEND_DEFAULT, outputDirectory, wildcardExclusions);
         }
     }
 

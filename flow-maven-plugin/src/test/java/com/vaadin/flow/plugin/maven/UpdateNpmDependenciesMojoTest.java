@@ -41,7 +41,7 @@ import com.vaadin.flow.plugin.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON_FILE_NAME;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
 
 public class UpdateNpmDependenciesMojoTest {
@@ -61,7 +61,7 @@ public class UpdateNpmDependenciesMojoTest {
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
         File tmpRoot = temporaryFolder.getRoot();
-        packageJson = new File(tmpRoot, PACKAGE_JSON_FILE_NAME).getAbsolutePath();
+        packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);

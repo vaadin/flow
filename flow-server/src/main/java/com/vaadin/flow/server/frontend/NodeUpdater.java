@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.NON_WEB_JAR_RESOURCE_PATH;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 import java.io.File;
@@ -35,7 +35,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 
 /**
  * Base abstract class for frontend updaters that needs to be run when in
- * dev-mode or from the floe maven plugin.
+ * dev-mode or from the flow maven plugin.
  */
 public abstract class NodeUpdater implements Serializable {
     /**
@@ -110,7 +110,7 @@ public abstract class NodeUpdater implements Serializable {
 
     private URL getResourceUrl(String resource) {
       URL url = annotationValuesExtractor.getResource(
-          NON_WEB_JAR_RESOURCE_PATH + "/" + resource.replaceFirst(FLOW_PACKAGE, ""));
+          RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_PACKAGE, ""));
       return url != null && url.getPath().contains(".jar!") ? url : null;
     }
 

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON_FILE_NAME;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -247,7 +247,7 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private JsonObject getPackageJson() throws IOException {
         JsonObject packageJson;
-        File packageFile = new File(npmFolder, PACKAGE_JSON_FILE_NAME);
+        File packageFile = new File(npmFolder, PACKAGE_JSON);
 
         if (packageFile.exists()) {
             packageJson = Json.parse(FileUtils.readFileToString(packageFile, "UTF-8"));
