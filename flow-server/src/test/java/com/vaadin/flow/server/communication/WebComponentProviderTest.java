@@ -16,13 +16,16 @@
 
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import static org.mockito.Mockito.times;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,6 +39,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
@@ -44,8 +48,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 
-import static org.mockito.Mockito.times;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class WebComponentProviderTest {
@@ -124,19 +130,8 @@ public class WebComponentProviderTest {
 
     @Test
     public void webComponentGenerator_responseGetsResult() throws IOException {
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
-        Mockito.when(request.getContextPath()).thenReturn("");
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(servletContext);
-        final HashMap<String, Class<? extends WebComponentExporter<?
-                extends Component>>> map = new HashMap<>();
-        map.put("my-component", MyComponentExporter.class);
-        registry.setExporters(map);
-        Mockito.when(servletContext
-                .getAttribute(WebComponentConfigurationRegistry.class.getName()))
-                .thenReturn(registry);
+        WebComponentConfigurationRegistry registry = setupExporters(
+                MyComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
@@ -158,23 +153,12 @@ public class WebComponentProviderTest {
     }
 
     @Test
-    public void providesDifferentGeneratedHTMLForEachExportedComponent() throws IOException {
+    public void providesDifferentGeneratedHTMLForEachExportedComponent()
+            throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
-        Mockito.when(request.getContextPath()).thenReturn("");
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(servletContext);
-        final HashMap<String, Class<? extends WebComponentExporter<?
-                extends Component>>> map = new HashMap<>();
-        map.put("my-component", MyComponentExporter.class);
-        map.put("other-component", OtherComponentExporter.class);
-        registry.setExporters(map);
-        Mockito.when(servletContext
-                .getAttribute(WebComponentConfigurationRegistry.class.getName()))
-                .thenReturn(registry);
+        WebComponentConfigurationRegistry registry = setupExporters(
+                MyComponentExporter.class, OtherComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
@@ -201,8 +185,51 @@ public class WebComponentProviderTest {
         byte[] first = captor.getAllValues().get(0);
         byte[] second = captor.getAllValues().get(1);
 
-        Assert.assertNotEquals("Stream output should not match",
-                first, second);
+        Assert.assertNotEquals("Stream output should not match", first, second);
+    }
+
+    @Test
+    public void setExporters_exportersHasNoTheme_themeIsNull() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                MyComponentExporter.class, OtherComponentExporter.class);
+
+        Assert.assertFalse(registry.getTheme().isPresent());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setExporters_exportersHasVariousThemes_throws() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class,
+                AnotherThemedComponentExporter.class);
+    }
+
+    @Test
+    public void setExporters_exportersHasOneThemes_themeIsSet() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class, MyComponentExporter.class);
+        Assert.assertEquals(MyTheme.class, registry.getTheme().get());
+    }
+
+    private WebComponentConfigurationRegistry setupExporters(
+            Class<? extends WebComponentExporter<? extends Component>>... exporters) {
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+
+        Mockito.when(request.getServletContext()).thenReturn(servletContext);
+        Mockito.when(request.getContextPath()).thenReturn("");
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(servletContext);
+        Mockito.when(servletContext.getAttribute(
+                WebComponentConfigurationRegistry.class.getName()))
+                .thenReturn(registry);
+
+        final HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> map = new HashMap<>();
+        Stream.of(exporters)
+                .forEach(clazz -> map.put(AnnotationReader
+                        .getAnnotationValueFor(clazz, Tag.class, Tag::value)
+                        .get(), clazz));
+        registry.setExporters(map);
+
+        return registry;
     }
 
     @Tag("my-component")
@@ -210,7 +237,8 @@ public class WebComponentProviderTest {
     }
 
     @Tag("my-component")
-    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter
+            implements WebComponentExporter<MyComponent> {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
 
@@ -222,12 +250,58 @@ public class WebComponentProviderTest {
     }
 
     @Tag("other-component")
-    public static class OtherComponentExporter implements WebComponentExporter<OtherComponent> {
+    public static class OtherComponentExporter
+            implements WebComponentExporter<OtherComponent> {
         @Override
         public void define(WebComponentDefinition<OtherComponent> definition) {
 
         }
     }
 
+    @Tag("foo")
+    @Theme(MyTheme.class)
+    public static class ThemedComponentExporter
+            implements WebComponentExporter<Component> {
+        @Override
+        public void define(WebComponentDefinition<Component> definition) {
+        }
+    }
+
+    @Tag("bar")
+    @Theme(AnotherTheme.class)
+    public static class AnotherThemedComponentExporter
+            implements WebComponentExporter<Component> {
+        @Override
+        public void define(WebComponentDefinition<Component> definition) {
+        }
+    }
+
+    public static class MyTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+
+    }
+
+    public static class AnotherTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+
+    }
 
 }

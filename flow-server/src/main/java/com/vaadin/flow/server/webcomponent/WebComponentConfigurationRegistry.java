@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,15 +22,21 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
+import javax.servlet.ServletContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Registry for storing available web component builder implementations.
@@ -49,6 +54,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
     private HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = null;
     private HashMap<String, WebComponentConfigurationImpl<? extends Component>> builderCache = new HashMap<>();
+
+    private AtomicReference<Class<? extends AbstractTheme>> webComponentsTheme = new AtomicReference<>();
 
     /**
      * Protected constructor for internal OSGi extensions.
@@ -138,6 +145,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             } else {
                 exporterClasses = new HashMap<>(exporters);
             }
+            updateTheme();
             // since we updated our exporter selection, we need to clear our
             // builder cache
             builderCache.clear();
@@ -177,8 +185,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Checks if {@link WebComponentExporter WebComponentExporters} have been
      * set.
      *
-     * @return  {@code true} if {@link #setExporters(Map)} has been called
-     *          with {@code non-null} value
+     * @return {@code true} if {@link #setExporters(Map)} has been called with
+     *         {@code non-null} value
      */
     public boolean hasExporters() {
         configurationLock.lock();
@@ -187,6 +195,20 @@ public class WebComponentConfigurationRegistry implements Serializable {
         } finally {
             configurationLock.unlock();
         }
+    }
+
+    /**
+     * Returns a web components theme.
+     * <p>
+     * Only one theme may be used for the web components. The theme may be
+     * declared at any web component. If there are web components which declares
+     * different themes then {@link IllegalStateException} is thrown during the
+     * web components scanning.
+     *
+     * @return
+     */
+    public Optional<Class<? extends AbstractTheme>> getTheme() {
+        return Optional.ofNullable(webComponentsTheme.get());
     }
 
     /**
@@ -239,6 +261,26 @@ public class WebComponentConfigurationRegistry implements Serializable {
         } else {
             throw new IllegalStateException(
                     "Unknown servlet context attribute value: " + attribute);
+        }
+    }
+
+    private void updateTheme() {
+        assert configurationLock.isHeldByCurrentThread();
+        Set<Class<? extends AbstractTheme>> themeClasses = exporterClasses
+                .values().stream()
+                .map(exporter -> AnnotationReader.getAnnotationValueFor(
+                        exporter, Theme.class, Theme::value))
+                .filter(Optional::isPresent).map(Optional::get)
+                .collect(Collectors.toSet());
+        if (themeClasses.size() > 1) {
+            throw new IllegalStateException(
+                    "Several themes are declared for the web component exporters: "
+                            + themeClasses.stream().map(Class::getName)
+                                    .collect(Collectors.joining(", ")));
+        }
+        if (themeClasses.size() == 1) {
+            webComponentsTheme.compareAndSet(null,
+                    themeClasses.iterator().next());
         }
     }
 
