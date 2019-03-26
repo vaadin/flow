@@ -18,6 +18,7 @@ package com.vaadin.flow.webcomponent;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -46,17 +47,13 @@ public class FireEventIT extends ChromeBrowserTest {
         Assert.assertEquals("Sum should be 0", "0", value(SUM));
         Assert.assertEquals("Error should be empty", "", value(ERR));
 
-        number1.sendKeys("4.5");
-        number2.sendKeys("3.5");
-
-        Assert.assertEquals("4.5", number1.getAttribute("value"));
-        Assert.assertEquals("3.5", number2.getAttribute("value"));
+        number1.sendKeys("4.5", Keys.ENTER);
+        number2.sendKeys("3.5", Keys.ENTER);
 
         button.click();
 
         Assert.assertEquals("Sum should be 8", "8", value(SUM));
-        Assert.assertEquals("Error should be empty", "",
-                value(ERR));
+        Assert.assertEquals("Error should be empty", "", value(ERR));
 
         number1.clear();
         number2.clear();
@@ -69,6 +66,13 @@ public class FireEventIT extends ChromeBrowserTest {
         Assert.assertEquals("Sum should not have changed", "8", value(SUM));
         Assert.assertEquals("Error should have been raised", "empty String",
                 value(ERR));
+
+        number1.sendKeys("99", Keys.ENTER);
+        number2.sendKeys("101", Keys.ENTER);
+
+        button.click();
+
+        Assert.assertEquals("Sum should be 200", "200", value(SUM));
     }
 
     private String value(String id) {
