@@ -28,7 +28,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 @Tag("click-counter")
-public class ButtonClickCounter extends Div {
+public class PropertyUpdateComponent extends Div {
     @FunctionalInterface
     public interface NumberListener {
         void handleNumber(int number);
@@ -37,7 +37,7 @@ public class ButtonClickCounter extends Div {
     private int clickCounter = 0;
     private Set<NumberListener> listenerSet = new HashSet<>();
 
-    public ButtonClickCounter() {
+    public PropertyUpdateComponent() {
         NativeButton nativeButton = new NativeButton("Click me!");
         nativeButton.addClickListener(event -> {
             clickCounter++;

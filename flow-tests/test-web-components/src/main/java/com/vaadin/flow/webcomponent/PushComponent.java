@@ -25,7 +25,7 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 
-public class PushServerSideWebComponent extends Div {
+public class PushComponent extends Div {
 
     private AtomicInteger count = new AtomicInteger();
 
