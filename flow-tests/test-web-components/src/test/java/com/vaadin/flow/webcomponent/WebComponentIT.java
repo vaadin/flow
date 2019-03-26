@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class WebComponentIT extends ChromeBrowserTest {
 
@@ -40,8 +41,10 @@ public class WebComponentIT extends ChromeBrowserTest {
 
         // Selection is visibly changed and event manually dispatched
         // as else the change is not seen.
-        getCommandExecutor().executeScript("arguments[0].value='Peter';"
-                + "arguments[0].dispatchEvent(new Event('change'));", select);
+        getCommandExecutor().executeScript(
+                "arguments[0].value='Peter';"
+                        + "arguments[0].dispatchEvent(new Event('change'));",
+                select);
 
         Assert.assertEquals("Selected: Peter, Parker",
                 showMessage.findElement(By.cssSelector("span")).getText());
@@ -49,10 +52,29 @@ public class WebComponentIT extends ChromeBrowserTest {
         WebElement noMessage = findElement(By.id("no-message"));
 
         select = noMessage.findElement(By.cssSelector("select"));
-        getCommandExecutor().executeScript("arguments[0].value='Peter';"
-                + "arguments[0].dispatchEvent(new Event('change'));", select);
+        getCommandExecutor().executeScript(
+                "arguments[0].value='Peter';"
+                        + "arguments[0].dispatchEvent(new Event('change'));",
+                select);
 
         Assert.assertFalse("Message should not be visible",
                 noMessage.findElement(By.cssSelector("span")).isDisplayed());
+    }
+
+    @Test
+    public void indexPageGetsThemedWebComponent_themeIsApplied() {
+        open();
+
+        waitForElementVisible(By.tagName("themed-web-component"));
+
+        TestBenchElement webComponent = $("themed-web-component").first();
+        TestBenchElement themedComponent = webComponent.$("themed-component")
+                .first();
+        Assert.assertTrue(
+                "The component which should use theme doesn't "
+                        + "contian elements",
+                themedComponent.$("div").exists());
+        TestBenchElement contentElement = themedComponent.$("div").first();
+        Assert.assertEquals("themed", contentElement.getAttribute("id"));
     }
 }
