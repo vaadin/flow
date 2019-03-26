@@ -1,7 +1,5 @@
 package com.vaadin.flow.plugin.maven;
 
-import java.io.File;
-
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -24,19 +22,11 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     private String jsFile;
 
     @Override
-    public void execute() {
-        getUpdater().execute();
-    }
-
     protected NodeUpdater getUpdater() {
         if (updater == null) {
             AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getProjectClassPathUrls(project));
             updater = new NodeUpdateImports(extractor, jsFile, npmFolder.getPath(), flowPackagePath, convertHtml);
         }
         return updater;
-    }
-
-    public File getFlowPackage() {
-        return getUpdater().getFlowPackage();
     }
 }

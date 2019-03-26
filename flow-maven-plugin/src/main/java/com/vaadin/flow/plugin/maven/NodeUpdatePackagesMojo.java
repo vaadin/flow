@@ -26,10 +26,6 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
     private String webpackTemplate;
 
     @Override
-    public void execute() {
-        getUpdater().execute();
-    }
-
     protected NodeUpdater getUpdater() {
         if (updater == null) {
             AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getProjectClassPathUrls(project));

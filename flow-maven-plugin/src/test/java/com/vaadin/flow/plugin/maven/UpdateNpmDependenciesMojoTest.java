@@ -16,9 +16,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.Constants.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -43,6 +40,9 @@ import com.vaadin.flow.plugin.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON_FILE_NAME;
+import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
 
 public class UpdateNpmDependenciesMojoTest {
     @Rule
@@ -96,7 +96,7 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     @Test
-    public void mavenGoal_packageJsonMissing() throws IOException {
+    public void mavenGoal_packageJsonMissing() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
 
         mojo.execute();

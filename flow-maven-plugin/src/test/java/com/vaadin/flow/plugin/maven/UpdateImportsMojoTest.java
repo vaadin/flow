@@ -16,9 +16,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -41,6 +38,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
+import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
 
 public class UpdateImportsMojoTest {
     @Rule
@@ -66,7 +66,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_UpdateMainJsFile() throws IOException {
+    public void should_UpdateMainJsFile() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(importsFile));
 
         mojo.execute();
@@ -94,7 +94,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws IOException {
+    public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(importsFile));
 
         mojo.execute();
@@ -120,7 +120,7 @@ public class UpdateImportsMojoTest {
             "@vaadin/flow-frontend/ExampleConnector.js",
             "./local-p2-template.js");
 
-        Assert.assertTrue(new File(mojo.getFlowPackage(), "ExampleConnector.js").exists());
+        Assert.assertTrue(new File(mojo.getUpdater().getFlowPackage(), "ExampleConnector.js").exists());
 
     }
 
@@ -138,7 +138,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_ContainLumoThemeFiles() throws IOException {
+    public void should_ContainLumoThemeFiles() throws Exception {
         mojo.execute();
 
         assertContainsImports(true,
@@ -151,7 +151,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_AddImports() throws IOException {
+    public void should_AddImports() throws Exception {
         mojo.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
@@ -164,7 +164,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_removeImports() throws IOException {
+    public void should_removeImports() throws Exception {
         mojo.execute();
         addImports("./added-import.js");
         assertContainsImports(true, "./added-import.js");
@@ -174,7 +174,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_AddRemove_Imports() throws IOException {
+    public void should_AddRemove_Imports() throws Exception {
         mojo.execute();
 
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
