@@ -63,7 +63,7 @@ public class UpdateNpmDependenciesMojoTest {
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
-        ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "node_modules/@vaadin/flow-frontend");
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", new File(tmpRoot, "node_modules"));
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
     }

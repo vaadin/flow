@@ -62,7 +62,7 @@ public class UpdateImportsMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "jsFile", importsFile);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
-        ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "flow-packages");
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", new File(tmpRoot, "node_modules"));
         Assert.assertTrue(mojo.getFlowPackage().mkdirs());
     }
 
