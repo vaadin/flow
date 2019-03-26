@@ -57,8 +57,9 @@ import static java.net.HttpURLConnection.HTTP_OK;
  * directly from the servlet (using a default servlet if such exists) or through
  * a stand alone static file server.
  *
- * @author Vaadin Ltd
- * @since 2.0
+ * By default it keeps updated npm dependencies and node imports before running
+ * webpack server
+ *
  */
 public class DevModeHandler implements Serializable {
 
@@ -72,6 +73,17 @@ public class DevModeHandler implements Serializable {
      * will re-use that server.
      */
     public static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
+
+    /**
+     * System porperty which disables the node dependencies updater
+     */
+    static final String PARAM_SKIP_UPDATE_NPM = "vaadin.frontend.skip.update-npm-dependencies";
+
+    /**
+     * System porperty which disables the node imports updater
+     */
+    static final String PARAM_SKIP_UPDATE_IMPORTS = "vaadin.frontend.skip.update-imports";
+
     /**
      * True when running in a unix like system. It's used to call the
      * appropriate <code>npm</code> launcher in windows or unix.
@@ -107,11 +119,17 @@ public class DevModeHandler implements Serializable {
 
     private DevModeHandler(File directory, File webpack, File webpackConfig) {
 
-        // Run updaters for  node dependencies and imports
-        URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
-        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(urls);
-        new NodeUpdatePackages(extractor).execute();
-        new NodeUpdateImports(extractor).execute();
+        if (!Boolean.getBoolean(PARAM_SKIP_UPDATE_NPM) || !Boolean.getBoolean(PARAM_SKIP_UPDATE_IMPORTS) ) {
+            // Run updaters for  node dependencies and imports
+            URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
+            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(urls);
+            if (!Boolean.getBoolean(PARAM_SKIP_UPDATE_NPM)) {
+                new NodeUpdatePackages(extractor).execute();
+            }
+            if (!Boolean.getBoolean(PARAM_SKIP_UPDATE_IMPORTS)) {
+                new NodeUpdateImports(extractor).execute();
+            }
+        }
 
         // If port is defined, means that webpack is already running
         port = Integer.getInteger(PARAM_WEBPACK_RUNNING, 0);
@@ -125,8 +143,6 @@ public class DevModeHandler implements Serializable {
 
         ProcessBuilder process = new ProcessBuilder();
         process.directory(directory);
-
-        process.environment().put("PATH", webpack.getParent() + ":" + process.environment().get("PATH"));
 
         // Add /usr/local/bin to the PATH in case of unixOS like
         if (UNIX_OS) {

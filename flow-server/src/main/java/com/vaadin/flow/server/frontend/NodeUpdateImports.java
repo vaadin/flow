@@ -34,12 +34,13 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update
- * <code>main.js<code> and <code>node_module/@vaadin/flow-frontend</code>
+ * <code>main.js</code> and <code>node_module/@vaadin/flow-frontend</code>
  * contents by visiting all classes with {@link JsModule} {@link HtmlImport} and
  * {@link Theme} annotations.
  */

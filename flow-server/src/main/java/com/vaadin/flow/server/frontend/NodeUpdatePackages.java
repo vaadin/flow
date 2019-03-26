@@ -46,6 +46,7 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
+
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
  * the classpath. It also visits classes annotated with {@link NpmPackage}
@@ -67,7 +68,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
-     *            creating the <doce>webpack.config.js</code> file
+     *            creating the <code>webpack.config.js</code> file
      * @param npmFolder
      *            folder with the `package.json` file
      * @param flowPackagePath

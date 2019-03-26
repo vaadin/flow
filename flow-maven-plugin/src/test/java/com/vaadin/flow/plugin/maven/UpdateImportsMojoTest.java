@@ -62,7 +62,7 @@ public class UpdateImportsMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "flow-packages");
-        Assert.assertTrue(mojo.updater.getFlowPackage().mkdirs());
+        Assert.assertTrue(mojo.getUpdater().getFlowPackage().mkdirs());
     }
 
     @Test
@@ -120,6 +120,7 @@ public class UpdateImportsMojoTest {
             "@vaadin/flow-frontend/ExampleConnector.js",
             "./local-p2-template.js");
 
+        Assert.assertTrue(mojo.getUpdater().getFlowPackage().exists());
         Assert.assertTrue(new File(mojo.getUpdater().getFlowPackage(), "ExampleConnector.js").exists());
 
     }

@@ -15,6 +15,36 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+
+import com.sun.net.httpserver.HttpServer;
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.DevModeHandler.PARAM_WEBPACK_RUNNING;
 import static com.vaadin.flow.server.DevModeHandler.PARAM_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBAPP_FOLDER;
@@ -31,35 +61,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
-
-import com.sun.net.httpserver.HttpServer;
-import com.vaadin.flow.function.DeploymentConfiguration;
-
-import net.jcip.annotations.NotThreadSafe;
+import static com.vaadin.flow.server.DevModeHandler.*;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
@@ -78,7 +80,8 @@ public class DevModeHandlerTest {
     public void setup() throws IOException {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         createWebpackScript("Compiled", 100);
-        System.setProperty("MTEST", "true");
+        System.setProperty(PARAM_SKIP_UPDATE_NPM, "true");
+        System.setProperty(PARAM_SKIP_UPDATE_IMPORTS, "true");
     }
 
     private void createWebpackScript(String readyString, int milliSecondsToRun) throws IOException {
@@ -88,10 +91,10 @@ public class DevModeHandlerTest {
         serverFile.setExecutable(true);
         Files.write(Paths.get(serverFile.toURI()), (
             "#!/usr/bin/env node\n" +
-            "const fs = require('fs');\n" + 
-            "const args = String(process.argv);\n" + 
-            "fs.writeFileSync('" + TEST_FILE + "', args);\n" + 
-            "console.log(args + '\\n[wps]: Compiled.');\n" + 
+            "const fs = require('fs');\n" +
+            "const args = String(process.argv);\n" +
+            "fs.writeFileSync('" + TEST_FILE + "', args);\n" +
+            "console.log(args + '\\n[wps]: Compiled.');\n" +
             "setTimeout(() => {}, " + milliSecondsToRun + ");\n").getBytes());
         new File(WEBPACK_CONFIG).createNewFile();
     }
@@ -99,12 +102,31 @@ public class DevModeHandlerTest {
     @After
     public void teardown() throws IOException {
         FileUtils.deleteDirectory(new File("node_modules"));
+        FileUtils.deleteQuietly(new File(PACKAGE_JSON));
         FileUtils.deleteQuietly(new File(WEBPACK_CONFIG));
+        FileUtils.deleteQuietly(new File(WEBAPP_FOLDER + TEST_FILE));
         if (httpServer != null) {
             httpServer.stop(0);
         }
         System.clearProperty(PARAM_WEBPACK_RUNNING);
         System.clearProperty("MTEST");
+    }
+    
+    @Test
+    public void should_Not_Run_Updaters_when_Disabled() throws Exception {
+        assertNotNull(createInstance(configuration));
+        assertFalse(new File(PACKAGE_JSON).canRead());
+        assertTrue(new File(WEBPACK_CONFIG).canRead());
+    }
+
+    @Test
+    public void should_Run_Updaters_when_Enabled() throws Exception {
+        System.clearProperty(PARAM_SKIP_UPDATE_NPM);
+        System.clearProperty(PARAM_SKIP_UPDATE_IMPORTS);
+        assertFalse(new File(PACKAGE_JSON).canRead());
+        assertNotNull(createInstance(configuration));
+        assertTrue(new File(PACKAGE_JSON).canRead());
+        assertTrue(new File(WEBPACK_CONFIG).canRead());
     }
 
     @Test
