@@ -130,43 +130,68 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
             htmlAttributes.forEach((key, value) -> lines.add("document.body.setAttribute('" + key + "', '" + value + "');"));
         }
 
-        for (String module : modules) {
-            lines.add(moduleToImport(module, theme));
-        }
+        lines.addAll(modulesToImports(modules, theme));
 
         return lines;
     }
 
-    private String moduleToImport(String originalModulePath, Object theme) {
-        String translatedModulePath = originalModulePath;
-        if (theme != null) {
-            String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
-            // to-do(manolo): disabled for certain files because not all files have corresponding themed one.
-            // e.g. vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
-            // but vaadin-upload/src/vaadin-upload-file.js does not.
-            // ticket: https://github.com/vaadin/flow/issues/5244
-            if (translatedModulePath.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
-                translatedModulePath = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
-                    translatedModulePath);
+    private List<String> modulesToImports(Set<String> modules, Object theme) {
+        List<String> imports = new ArrayList<>(modules.size());
+        Map<String, String> unresolvedImports = new HashMap<>(modules.size());
+
+        for (String originalModulePath : modules) {
+            String translatedModulePath = originalModulePath;
+            if (theme != null) {
+                String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
+                // to-do(manolo): disabled for certain files because not all files have corresponding themed one.
+                // e.g. vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
+                // but vaadin-upload/src/vaadin-upload-file.js does not.
+                // ticket: https://github.com/vaadin/flow/issues/5244
+                if (translatedModulePath.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
+                    translatedModulePath = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
+                        translatedModulePath);
+                }
+            }
+            if (importedFileExists(translatedModulePath)) {
+                imports.add("import '" + translatedModulePath + "';");
+            } else {
+                unresolvedImports.put(originalModulePath, translatedModulePath);
             }
         }
-        validateModulePath(originalModulePath, translatedModulePath);
 
-        return "import '" + translatedModulePath + "';";
+        if (!unresolvedImports.isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder(String.format(
+                    "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
+                        "nor in project files: ",
+                    nodeModulesPath)).append("\n");
+
+            unresolvedImports
+                    .forEach((originalModulePath, translatedModulePath) -> {
+                        errorMessage.append(
+                                String.format("'%s'", translatedModulePath));
+                        if (!Objects.equals(originalModulePath,
+                                translatedModulePath)) {
+                            errorMessage.append(String.format(
+                                    " The import was translated by Flow from the path '%s'",
+                                    originalModulePath));
+                        }
+                        errorMessage.append("\n");
+                    });
+
+            errorMessage.append("Double check that those files exist in the project structure.");
+
+            throw new IllegalStateException(errorMessage.toString());
+        }
+
+        return imports;
     }
 
-    private void validateModulePath(String originalPath, String translatedPath) {
-        if (!new File(nodeModulesPath, translatedPath).isFile()) {
-            String errorMessage = String.format(
-                    "Failed to locate the file '%s' in the node modules directory '%s'. " +
-                        "Double check that the node modules directory exists and has the npm packages installed.",
-                    translatedPath, nodeModulesPath);
-            if (!Objects.equals(originalPath, translatedPath)) {
-                errorMessage += String.format(
-                        " The missing file was translated by Flow from the path '%s'",
-                        originalPath);
-            }
-            throw new IllegalStateException(errorMessage);
+    private boolean importedFileExists(String jsImport) {
+        if (jsImport.startsWith("./")) {
+            // TODO kb make this a File Maven parameter
+            return new File(new File(jsFile).getParentFile(), jsImport).isFile();
+        } else {
+            return new File(nodeModulesPath, jsImport).isFile();
         }
     }
 
