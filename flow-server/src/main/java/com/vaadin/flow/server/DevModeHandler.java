@@ -60,7 +60,20 @@ public class DevModeHandler implements Serializable {
 
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
+    /**
+     * System property which indicates the tcp port of a webpack-dev-server
+     * already running. This property is automatically defined when
+     * {@link DevModeHandler} starts the webpack server. If you have your own
+     * server already running, define this property and {@link DevModeHandler}
+     * will re-use that server.
+     */
     public static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
+    /**
+     * True when running in a unix like system. It's used to call the
+     * appropriate <code>npm</code> launcher in windows or unix.
+     */
+    public static final boolean UNIX_OS = !System.getProperty("os.name").matches("(?i).*windows.*");
+
     static final String PARAM_WEBPACK_TIMEOUT = "vaadin.devmode.webpack.timeout";
     static final String PARAM_WEBPACK_OPTIONS = "vaadin.devmode.webpack.options";
 
@@ -74,7 +87,6 @@ public class DevModeHandler implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
-    public static final Boolean IS_UNIX = !System.getProperty("os.name").matches("(?i).*windows.*");
 
     // This fixes maven tests in multi-module execution
     static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
@@ -105,7 +117,7 @@ public class DevModeHandler implements Serializable {
         process.environment().put("PATH", webpack.getParent() + ":" + process.environment().get("PATH"));
 
         // Add /usr/local/bin to the PATH in case of unixOS like
-        if (IS_UNIX) {
+        if (UNIX_OS) {
             process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
         }
 

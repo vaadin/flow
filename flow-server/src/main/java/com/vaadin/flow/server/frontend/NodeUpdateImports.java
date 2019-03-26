@@ -34,23 +34,44 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
- * Updates
- * <code>main.js<code> and from <code>node_module/@vaadin/flow-frontend</code>
- *
- * @JsModule @HtmlImport and @Theme annotations.
+ * An updater that it's run when the servlet context is initialised in dev-mode
+ * or when flow-maven-plugin goals are run in order to update
+ * <code>main.js<code> and <code>node_module/@vaadin/flow-frontend</code>
+ * contents by visiting all classes with {@link JsModule} {@link HtmlImport} and
+ * {@link Theme} annotations.
  */
 public class NodeUpdateImports extends NodeUpdater {
-    private static final String VALUE = "value";
+    /**
+     * File to be updated with imports, javascript, and theme annotations.
+     * It is also the entry-point for webpack.
+     */
     public static final String MAIN_JS = "frontend/main.js";
+
+    private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
+    private static final String VALUE = "value";
 
     private final String jsFile;
 
     private ThemeDefinition themeDefinition;
 
+    /**
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param extractor
+     *            a reusable annotation extractor
+     * @param jsFile
+     *            name of the JS file to update with the imports
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param flowPackagePath
+     *            path for the flow package folder where files should be copied,
+     *            it is relative to the npmFolder
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
+     */
     public NodeUpdateImports(AnnotationValuesExtractor extractor, String jsFile, String npmFolder,
             String flowPackagePath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
@@ -61,6 +82,13 @@ public class NodeUpdateImports extends NodeUpdater {
         this.themeDefinition = getThemeDefinition(annotationValuesExtractor);
     }
 
+    /**
+     * Create an instance of the updater given the reusable extractor, the rest
+     * of the configurable parameters will be set to their default values
+     *
+     * @param extractor
+     *            a reusable annotation extractor
+     */
     public NodeUpdateImports(AnnotationValuesExtractor extractor) {
         this(extractor, "./" + MAIN_JS, ".", "/node_modules/" + FLOW_PACKAGE, true);
     }
@@ -175,10 +203,10 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private ThemeDefinition getThemeDefinition(AnnotationValuesExtractor annotationValuesExtractor) {
-        Map<ThemeDefinition, Class<?>> themes = annotationValuesExtractor.getThemeDefinitions();
+        Map<ThemeDefinition, Class<?>> themes = annotationValuesExtractor.getAppThemeOrDefault(LUMO);
 
         if (themes.isEmpty()) {
-            log().warn("No theme found for the app nor " + Constants.LUMO + " class found in the classpath");
+            log().warn("No theme found for the app nor " + LUMO + " class found in the classpath");
             return null;
         }
 

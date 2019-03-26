@@ -34,50 +34,58 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.dependency.HtmlImport;
 
 /**
- * Base interface for methods for updating node_js files.
+ * Base abstract class for frontend updaters that needs to be run when in
+ * dev-mode or from the floe maven plugin.
  */
 public abstract class NodeUpdater implements Serializable {
-
+    /**
+     * NPM package name that will be used for the javascript files present in
+     * jar resources that will to be copied to the npm folder so as they are
+     * accessible to webpack
+     */
     public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
 
     /**
      * Folder with the <code>package.json</code> file
      */
-    String npmFolder;
+    protected String npmFolder;
 
     /**
      * The relative path to the Flow package. Always relative to
-     * {@link FrontendUpdater#npmFolder()}.
+     * {@link NodeUpdater#npmFolder}.
      */
-    String flowPackagePath;
+    protected String flowPackagePath;
 
     /**
      * Enable or disable legacy components annotated only with
      * {@link HtmlImport}.
      */
-    boolean convertHtml;
+    protected boolean convertHtml;
 
     AnnotationValuesExtractor annotationValuesExtractor;
 
     private Set<String> flowModules = new HashSet<>();
 
+    /**
+     * Execute the update process.
+     */
     public abstract void execute();
 
     public File getFlowPackage() {
         return new File(npmFolder, flowPackagePath);
     }
 
-    protected Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
+    Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
-    protected Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
+    Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
-    protected String resolveInFlowFrontendDirectory(String importPath) {
+    String resolveInFlowFrontendDirectory(String importPath) {
         if (importPath.startsWith("@")) {
             return importPath;
         }
@@ -90,7 +98,7 @@ public abstract class NodeUpdater implements Serializable {
         return "./" + pathWithNoProtocols;
     }
 
-    protected void installFlowModules() throws IOException {
+    void installFlowModules() throws IOException {
         for (String resource : flowModules) {
             URL source = getResourceUrl(resource);
             File destination = new File(getFlowPackage(), resource);
@@ -101,7 +109,7 @@ public abstract class NodeUpdater implements Serializable {
     }
 
     private URL getResourceUrl(String resource) {
-      URL url = annotationValuesExtractor.projectClassLoader.getResource(
+      URL url = annotationValuesExtractor.getResource(
           NON_WEB_JAR_RESOURCE_PATH + "/" + resource.replaceFirst(FLOW_PACKAGE, ""));
       return url != null && url.getPath().contains(".jar!") ? url : null;
     }
@@ -127,6 +135,6 @@ public abstract class NodeUpdater implements Serializable {
     }
 
     Logger log() {
-        return LoggerFactory.getLogger("c.v.f.s.d" + this.getClass().getSimpleName());
+        return LoggerFactory.getLogger(this.getClass());
     }
 }

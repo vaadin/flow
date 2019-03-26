@@ -39,8 +39,21 @@ import org.reflections.util.ConfigurationBuilder;
  */
 public abstract class ClassPathIntrospector implements Serializable {
 
-    transient public final ClassLoader projectClassLoader;
+    transient private final ClassLoader classLoader;
+
     transient private final Reflections reflections;
+
+    /**
+     * Returns a resource {@link URL} given a file name by re-using the
+     * {@link ClassPathIntrospector#classLoader}
+     *
+     * @param name
+     *            the name of the resource
+     * @return the URL with the resource or null if not found
+     */
+    protected URL getResource(String name) {
+        return classLoader.getResource(name);
+    }
 
     /**
      * Creates a new instance of class path introspector using the
@@ -50,9 +63,9 @@ public abstract class ClassPathIntrospector implements Serializable {
      *            urls to project class locations (directories, jars etc.)
      */
     protected ClassPathIntrospector(URL... projectClassesLocations) {
-        projectClassLoader = new URLClassLoader(projectClassesLocations, null);
+        classLoader = new URLClassLoader(projectClassesLocations, null);
         reflections = new Reflections(
-                new ConfigurationBuilder().addClassLoader(projectClassLoader).setExpandSuperTypes(false)
+                new ConfigurationBuilder().addClassLoader(classLoader).setExpandSuperTypes(false)
                         .addUrls(projectClassesLocations));
     }
 
@@ -64,7 +77,7 @@ public abstract class ClassPathIntrospector implements Serializable {
      *            the introspector whose reflection tools will be reused
      */
     protected ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
-        projectClassLoader = otherIntrospector.projectClassLoader;
+        classLoader = otherIntrospector.classLoader;
         reflections = otherIntrospector.reflections;
     }
 
@@ -103,7 +116,7 @@ public abstract class ClassPathIntrospector implements Serializable {
     @SuppressWarnings("unchecked")
     public <T> Class<T> loadClassInProjectClassLoader(String className) {
         try {
-            return (Class<T>) projectClassLoader.loadClass(className);
+            return (Class<T>) classLoader.loadClass(className);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(String.format(
                     "Failed to load class '%s' in custom classloader",

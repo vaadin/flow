@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -114,7 +113,7 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
      *
      * @return a map of {@link ThemeDefinition}
      */
-    public Map<ThemeDefinition, Class<?>> getThemeDefinitions() {
+    public Map<ThemeDefinition, Class<?>> getAppThemeOrDefault(String defaultTheme) {
         Map<ThemeDefinition, Class<?>> map = new LinkedHashMap<>();
 
         Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(Theme.class.getName());
@@ -129,7 +128,7 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
 
         if (map.size() == 0) {
             try {
-                Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader(Constants.LUMO);
+                Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader(defaultTheme);
                 map.put(new ThemeDefinition(lumo, ""), null);
             } catch (IllegalStateException ignore) { //NOSONAR
             }

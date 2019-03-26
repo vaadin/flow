@@ -127,25 +127,14 @@ public class ServletDeployer implements ServletContextListener {
                         "/frontend/*");
             }
         }
-        if(DevModeHandler.getDevModeHandler() == null) {
-            ServletRegistration vaadinServlet = findVaadinServlet(context);
-
-            if(vaadinServlet != null) {
-                DeploymentConfiguration deploymentConfiguration = createDeploymentConfiguration(
-                        new StubServletConfig(context, vaadinServlet),
-                        vaadinServlet.getClass());
-
-                DevModeHandler.start(deploymentConfiguration);
-            }
-        }
-
         ServletRegistration vaadinServlet = findVaadinServlet(context);
+
         if (vaadinServlet != null) {
             DeploymentConfiguration deploymentConfiguration = createDeploymentConfiguration(
                     new StubServletConfig(context, vaadinServlet), vaadinServlet.getClass());
 
             if (!deploymentConfiguration.isProductionMode() && !deploymentConfiguration.isBowerMode()) {
-                URL[] urls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
+                URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
                 AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(urls);
                 new NodeUpdatePackages(extractor).execute();
                 new NodeUpdateImports(extractor).execute();

@@ -48,17 +48,35 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Updates package.json file with @NpmPackage annotations defined in
- * the classpath.
+ * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
+ * the classpath. It also visits classes annotated with {@link NpmPackage}
  */
 public class NodeUpdatePackages extends NodeUpdater {
 
-    private static final String VALUE = "value";
-
+    /**
+     * The name of the webpack config file.
+     */
     public static final String WEBPACK_CONFIG = "webpack.config.js";
 
+    private static final String VALUE = "value";
     private final String webpackTemplate;
 
+    /**
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param extractor
+     *            a reusable annotation extractor
+     * @param webpackTemplate
+     *            name of the webpack resource to be used as template when
+     *            creating the <doce>webpack.config.js</code> file
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param flowPackagePath
+     *            path for the flow package folder where files should be copied,
+     *            it is relative to the npmFolder
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
+     */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor, String webpackTemplate, String npmFolder,
             String flowPackagePath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
@@ -68,6 +86,13 @@ public class NodeUpdatePackages extends NodeUpdater {
         this.convertHtml = convertHtml;
     }
 
+    /**
+     * Create an instance of the updater given the reusable extractor, the rest
+     * of the configurable parameters will be set to their default values
+     *
+     * @param extractor
+     *            a reusable annotation extractor
+     */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
         this(extractor, WEBPACK_CONFIG, ".", "/node_modules/" + FLOW_PACKAGE, true);
     }
@@ -185,7 +210,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(new File(npmFolder));
 
-        if (!DevModeHandler.IS_UNIX) {
+        if (!DevModeHandler.UNIX_OS) {
             command.add("npm.cmd");
         } else {
             builder.environment().put("PATH", builder.environment().get("PATH") + ":/usr/local/bin");
