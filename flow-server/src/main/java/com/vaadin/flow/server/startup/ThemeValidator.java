@@ -25,6 +25,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.theme.Theme;
 
@@ -44,7 +45,8 @@ public class ThemeValidator extends AbstractAnnotationValidator
 
     @Override
     protected Optional<String> handleNonRouterLayout(Class<?> clazz) {
-        if (WebComponentExporter.class.isAssignableFrom(clazz)) {
+        if (WebComponentExporter.class
+                .isAssignableFrom(GenericTypeReflector.erase(clazz))) {
             return Optional.empty();
         }
         return Optional.of(String.format(

@@ -21,6 +21,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -73,6 +75,15 @@ public class ThemeValidatorTest {
     public static class NonRoute extends Component {
     }
 
+    @Tag(Tag.DIV)
+    @Theme(MyTheme.class)
+    public static class WCExporter implements WebComponentExporter<Component> {
+
+        @Override
+        public void define(WebComponentDefinition<Component> definition) {
+        }
+    }
+
     @Route("root")
     @Tag(Tag.DIV)
     @Theme(MyTheme.class)
@@ -102,6 +113,14 @@ public class ThemeValidatorTest {
     @Theme(MyTheme.class)
     @Tag(Tag.DIV)
     public static abstract class AbstractMain extends Component {
+    }
+
+    @Test
+    public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
+            throws ServletException {
+        annotationValidator
+                .onStartup(Stream.of(AbstractMain.class, WCExporter.class)
+                        .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
