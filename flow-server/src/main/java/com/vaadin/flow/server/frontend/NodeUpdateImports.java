@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,9 +56,9 @@ public class NodeUpdateImports extends NodeUpdater {
     private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
     private static final String VALUE = "value";
 
-    private final String jsFile;
+    private final File jsFile;
 
-    private ThemeDefinition themeDefinition;
+    private final ThemeDefinition themeDefinition;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -68,17 +69,16 @@ public class NodeUpdateImports extends NodeUpdater {
      *            name of the JS file to update with the imports
      * @param npmFolder
      *            folder with the `package.json` file
-     * @param flowPackagePath
-     *            path for the flow package folder where files should be copied,
-     *            it is relative to the npmFolder
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
      * @param convertHtml
      *            true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(AnnotationValuesExtractor extractor, String jsFile, String npmFolder,
-            String flowPackagePath, boolean convertHtml) {
+    public NodeUpdateImports(AnnotationValuesExtractor extractor, File jsFile, File npmFolder,
+                             File nodeModulesPath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
         this.npmFolder = npmFolder;
-        this.flowPackagePath = flowPackagePath;
+        this.nodeModulesPath = nodeModulesPath;
         this.jsFile = jsFile;
         this.convertHtml = convertHtml;
         this.themeDefinition = getThemeDefinition(annotationValuesExtractor);
@@ -92,14 +92,11 @@ public class NodeUpdateImports extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdateImports(AnnotationValuesExtractor extractor) {
-        annotationValuesExtractor = extractor;
-        jsFile = System.getProperty(MAIN_JS_PARAM, MAIN_JS);
-        npmFolder = ".";
-        flowPackagePath = "/node_modules/" + System.getProperty(FLOW_PACKAGE_PARAMETER, FLOW_PACKAGE);
-        convertHtml = true;
-        themeDefinition = getThemeDefinition(annotationValuesExtractor);
+        this(extractor, new File(System.getProperty(MAIN_JS_PARAM, MAIN_JS)),
+                new File("."), new File("./node_modules/"), true);
     }
 
+    @Override
     public void execute() {
         log().info("Looking for imports in the java class-path ...");
 
@@ -113,26 +110,24 @@ public class NodeUpdateImports extends NodeUpdater {
             updateMainJsFile(getMainJsContent(modules));
             installFlowModules();
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", jsFile), e);
         }
     }
 
     private List<String> getMainJsContent(Set<String> modules) throws InstantiationException, IllegalAccessException {
         List<String> lines = new ArrayList<>();
-        if (themeDefinition == null) {
-            modules.forEach(module -> lines.add("import '" + module + "';"));
-        } else {
+        Object theme = null;
+        if (themeDefinition != null) {
             // It's not possible to cast to AbstractTheme as a type here since
             // it's loaded by different classloader.
             // Thus we use reflection to invoke those methods in the different
             // context.
-            Object theme = annotationValuesExtractor
+            theme = annotationValuesExtractor
                     .loadClassInProjectClassLoader(themeDefinition.getTheme().getCanonicalName()).newInstance();
 
             Map<String, String> htmlAttributes = annotationValuesExtractor.doInvokeMethod(theme, "getHtmlAttributes",
                     themeDefinition.getVariant());
             List<String> headerContents = annotationValuesExtractor.doInvokeMethod(theme, "getHeaderInlineContents");
-            String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
 
             if (!headerContents.isEmpty()) {
                 lines.add("const div = document.createElement('div');");
@@ -143,21 +138,69 @@ public class NodeUpdateImports extends NodeUpdater {
             }
             htmlAttributes
                     .forEach((key, value) -> lines.add("document.body.setAttribute('" + key + "', '" + value + "');"));
+        }
 
-            modules.forEach(module -> {
-                // to-do(manolo): disabled for certain files because not all
-                // files have corresponding themed one.
-                // e.g. vaadin-upload/src/vaadin-upload.js and
-                // vaadin-upload/theme/lumo/vaadin-upload.js exist
+        lines.addAll(modulesToImports(modules, theme));
+        return lines;
+    }
+
+    private List<String> modulesToImports(Set<String> modules, Object theme) {
+        List<String> imports = new ArrayList<>(modules.size());
+        Map<String, String> unresolvedImports = new HashMap<>(modules.size());
+
+        for (String originalModulePath : modules) {
+            String translatedModulePath = originalModulePath;
+            if (theme != null) {
+                String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
+                // to-do(manolo): disabled for certain files because not all files have corresponding themed one.
+                // e.g. vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
                 // but vaadin-upload/src/vaadin-upload-file.js does not.
                 // ticket: https://github.com/vaadin/flow/issues/5244
-                if (module.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
-                    module = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl", module);
+                if (translatedModulePath.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
+                    translatedModulePath = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
+                        translatedModulePath);
                 }
-                lines.add("import '" + module + "';");
-            });
+            }
+            if (importedFileExists(translatedModulePath)) {
+                imports.add("import '" + translatedModulePath + "';");
+            } else {
+                unresolvedImports.put(originalModulePath, translatedModulePath);
+            }
         }
-        return lines;
+
+        if (!unresolvedImports.isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder(String.format(
+                "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
+                    "nor in project files: ",
+                nodeModulesPath)).append("\n");
+
+            unresolvedImports
+                .forEach((originalModulePath, translatedModulePath) -> {
+                    errorMessage.append(
+                        String.format("'%s'", translatedModulePath));
+                    if (!Objects.equals(originalModulePath,
+                        translatedModulePath)) {
+                        errorMessage.append(String.format(
+                            " (the import was translated by Flow from the path '%s')",
+                            originalModulePath));
+                    }
+                    errorMessage.append("\n");
+                });
+
+            errorMessage.append("Double check that those files exist in the project structure.");
+
+            throw new IllegalStateException(errorMessage.toString());
+        }
+
+        return imports;
+    }
+
+    private boolean importedFileExists(String jsImport) {
+        if (jsImport.startsWith("./")) {
+            return new File(jsFile.getParentFile(), jsImport).isFile();
+        } else {
+            return new File(nodeModulesPath, jsImport).isFile();
+        }
     }
 
     private Set<String> getThemeModules() {
@@ -231,13 +274,12 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private void updateMainJsFile(List<String> newContent) throws IOException {
-        File out = new File(jsFile);
-        List<String> oldContent = out.exists() ? FileUtils.readLines(out, "UTF-8") : null;
+        List<String> oldContent = jsFile.exists() ? FileUtils.readLines(jsFile, "UTF-8") : null;
         if (newContent.equals(oldContent)) {
             log().info("No js modules to update");
         } else {
-            FileUtils.forceMkdir(out.getParentFile());
-            FileUtils.writeStringToFile(out, String.join("\n", newContent), "UTF-8");
+            FileUtils.forceMkdir(jsFile.getParentFile());
+            FileUtils.writeStringToFile(jsFile, String.join("\n", newContent), "UTF-8");
             log().info("Updated {}", jsFile);
         }
     }

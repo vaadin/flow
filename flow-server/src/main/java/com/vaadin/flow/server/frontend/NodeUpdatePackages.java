@@ -43,7 +43,6 @@ import com.vaadin.flow.server.DevModeHandler;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 
@@ -71,17 +70,16 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            creating the <code>webpack.config.js</code> file
      * @param npmFolder
      *            folder with the `package.json` file
-     * @param flowPackagePath
-     *            path for the flow package folder where files should be copied,
-     *            it is relative to the npmFolder
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
      * @param convertHtml
      *            true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdatePackages(AnnotationValuesExtractor extractor, String webpackTemplate, String npmFolder,
-            String flowPackagePath, boolean convertHtml) {
+    public NodeUpdatePackages(AnnotationValuesExtractor extractor, String webpackTemplate, File npmFolder,
+            File nodeModulesPath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
         this.npmFolder = npmFolder;
-        this.flowPackagePath = flowPackagePath;
+        this.nodeModulesPath = nodeModulesPath;
         this.webpackTemplate = webpackTemplate;
         this.convertHtml = convertHtml;
     }
@@ -94,11 +92,8 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        annotationValuesExtractor = extractor;
-        webpackTemplate = WEBPACK_CONFIG;
-        npmFolder = ".";
-        flowPackagePath = "/node_modules/" + System.getProperty(FLOW_PACKAGE_PARAMETER, FLOW_PACKAGE);
-        convertHtml = true;
+        this(extractor, WEBPACK_CONFIG, new File("."),
+                new File("./node_modules/"), true);
     }
 
     @Override
@@ -205,7 +200,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         List<String> command = new ArrayList<>(5 + dependencies.size());
 
         ProcessBuilder builder = new ProcessBuilder(command);
-        builder.directory(new File(npmFolder));
+        builder.directory(npmFolder);
 
         if (!DevModeHandler.UNIX_OS) {
             command.add("npm.cmd");
@@ -266,7 +261,7 @@ public class NodeUpdatePackages extends NodeUpdater {
     }
 
     private void logStream(InputStream input) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.isEmpty() && !line.contains("npm WARN")) {
