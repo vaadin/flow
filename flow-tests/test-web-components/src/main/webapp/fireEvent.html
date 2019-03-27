@@ -45,11 +45,11 @@
     var sum = document.getElementById("sum");
     var error = document.getElementById("error");
 
-    calc.addEventListener("sum-calculated", event => {
+    calc.addEventListener("sum-calculated", function(event) {
       sum.innerHTML = event.detail;
     });
 
-    calc.addEventListener("sum-error", () => {
+    calc.addEventListener("sum-error", function(event) {
       error.innerHTML = event.detail;
     });
 
@@ -61,18 +61,18 @@
     var outerResult = document.getElementById("outer-result");
     var containedResult = document.getElementById("contained-result");
 
-    subContainer.addEventListener("button-event", event => {
+    subContainer.addEventListener("button-event", function(event) {
         innerResult.innerHTML = event.detail;
         event.preventDefault();
     });
-    container.addEventListener("button-event", event => {
+    container.addEventListener("button-event", function(event) {
         if (event.defaultPrevented) {
             outerResult.innerHTML = "prevented";
         } else {
             outerResult.innerHTML = event.detail;
         }
     });
-    contained.addEventListener("button-event", event => {
+    contained.addEventListener("button-event", function(event) {
         containedResult.innerHTML = event.detail;
     });
   </script>

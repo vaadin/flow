@@ -24,7 +24,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
-@Tag("button-click-counter")
+@Tag("property-update")
 public class PropertyUpdateExporter implements WebComponentExporter<PropertyUpdateComponent> {
     @Override
     public void define(WebComponentDefinition<PropertyUpdateComponent> definition) {

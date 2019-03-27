@@ -57,7 +57,7 @@ public interface WebComponentBinding<C extends Component> extends Serializable {
      * @param propertyName  name of the property
      * @return property type
      */
-    Class getPropertyType(String propertyName);
+    Class<? extends Serializable> getPropertyType(String propertyName);
 
     /**
      * Does the component binding have a property identified by given name.

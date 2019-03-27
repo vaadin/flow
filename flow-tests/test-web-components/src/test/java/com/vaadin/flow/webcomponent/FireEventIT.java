@@ -23,6 +23,10 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.Bubble_Cancel;
+import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.Bubble_NoCancel;
+import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.NoBubble_NoCancel;
+
 public class FireEventIT extends ChromeBrowserTest {
     private static final String N1 = "number1";
     private static final String N2 = "number2";
@@ -100,7 +104,7 @@ public class FireEventIT extends ChromeBrowserTest {
         button1.click();
 
         Assert.assertEquals("Non-bubbling event should be visible on the " +
-                "web component", "1", value(CON_RESULT));
+                "web component", NoBubble_NoCancel.name(), value(CON_RESULT));
         Assert.assertEquals("Non-bubbling event should not be visible on the " +
                 "inner div", "", value(IN_RESULT));
         Assert.assertEquals("Non-bubbling event should not be visible on the " +
@@ -109,18 +113,20 @@ public class FireEventIT extends ChromeBrowserTest {
         button2.click();
 
         Assert.assertEquals("Bubbling, non-cancellable event should be " +
-                "visible on the web component", "2", value(CON_RESULT));
+                "visible on the web component", Bubble_NoCancel.name(),
+                value(CON_RESULT));
         Assert.assertEquals("Bubbling, non-cancelable event should be visible on the " +
-                "inner div", "2", value(IN_RESULT));
+                "inner div", Bubble_NoCancel.name(), value(IN_RESULT));
         Assert.assertEquals("Bubbling, non-cancelable event should be visible on the " +
-                "outer div", "2", value(OUT_RESULT));
+                "outer div", Bubble_NoCancel.name(), value(OUT_RESULT));
 
         button3.click();
 
         Assert.assertEquals("Bubbling, cancellable event should be " +
-                "visible on the web component", "3", value(CON_RESULT));
+                "visible on the web component", Bubble_Cancel.name(),
+                value(CON_RESULT));
         Assert.assertEquals("Bubbling, cancelable event should be visible on the " +
-                "inner div", "3", value(IN_RESULT));
+                "inner div", Bubble_Cancel.name(), value(IN_RESULT));
         /*
             Since we cannot actually stop CustomEvents from being actuated by
              custom event listeners, we can only track the flag

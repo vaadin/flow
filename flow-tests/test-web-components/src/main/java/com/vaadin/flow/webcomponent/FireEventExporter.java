@@ -33,25 +33,23 @@ public class FireEventExporter implements WebComponentExporter<FireEventComponen
             component.setErrorConsumer(err -> webComponent.fireEvent("sum" +
                     "-error", Json.create(err)));
 
-            component.setButtonConsumer(buttonId -> {
-                switch (buttonId) {
-                    case 1:
-                        webComponent.fireEvent("button-event",
-                                Json.create(buttonId),
-                                new EventOptions(false));
-                        break;
-                    case 2:
-                        webComponent.fireEvent("button-event",
-                                Json.create(buttonId),
-                                new EventOptions(true));
-                        break;
-                    case 3:
-                        webComponent.fireEvent("button-event",
-                                Json.create(buttonId),
-                                new EventOptions(true, true, false));
-                        break;
-                }
+            component.setButtonConsumer(optionsType -> {
+                EventOptions options = createEventOptions(optionsType);
+                webComponent.fireEvent("button-event",
+                        Json.create(optionsType.name()), options);
             });
         });
+    }
+
+    private EventOptions createEventOptions(FireEventComponent.OptionsType id) {
+        switch (id) {
+            case NoBubble_NoCancel:
+                return new EventOptions(false, false, false);
+            case Bubble_NoCancel:
+                return new EventOptions(true, false, false);
+            case Bubble_Cancel:
+                return new EventOptions(true, true, false);
+        }
+        return new EventOptions();
     }
 }

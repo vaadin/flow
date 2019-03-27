@@ -127,13 +127,13 @@ public class WebComponentWrapper extends Component {
     }
 
     private void setNewPropertyValue(String property, JsonValue newValue) {
-        Class propertyType =
+        Class<? extends Serializable> propertyType =
                 webComponentBinding.getPropertyType(property);
 
         if (JsonCodec.canEncodeWithoutTypeInfo(propertyType)) {
             Serializable value = null;
             if (newValue != null) {
-                value = (Serializable) JsonCodec.decodeAs(newValue, propertyType);
+                value = JsonCodec.decodeAs(newValue, propertyType);
             }
             webComponentBinding.updateProperty(property, value);
         } else {

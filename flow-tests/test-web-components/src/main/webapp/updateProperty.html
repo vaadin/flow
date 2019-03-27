@@ -18,7 +18,7 @@
 
 <head>
   <script type="text/javascript" src="./frontend/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
-  <link rel='import' href='web-component/button-click-counter.html'>
+  <link rel='import' href='web-component/property-update.html'>
 </head>
 
 <body>
@@ -26,7 +26,7 @@
     Web components updates property as a response to a button click.
   </p>
 
-  <button-click-counter id="counter" clicks="0"></button-click-counter>
+  <property-update id="counter" clicks="0"></property-update>
   <p id="count">0</p>
   <p id="json">0</p>
 
@@ -35,11 +35,11 @@
     var count = document.getElementById("count");
     var json = document.getElementById("json");
 
-    counter.addEventListener("clicks-changed", () => {
+    counter.addEventListener("clicks-changed", function(event) {
       count.innerHTML = counter.clicks;
     });
 
-    counter.addEventListener("clicks-json-changed", () => {
+    counter.addEventListener("clicks-json-changed", function(event) {
       json.innerHTML = counter["clicksJson"].counter;
     });
   </script>

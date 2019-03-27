@@ -111,11 +111,10 @@ public class WebComponentImplTest {
         WebComponentBinding<Component> binding =
                 mock(WebComponentBinding.class);
         when(binding.hasProperty(anyString())).thenReturn(true);
-        when(binding.getPropertyType(anyString())).thenReturn(Integer.class);
+        when(binding.getPropertyType(anyString())).thenReturn((Class)Integer.class);
 
         WebComponentImpl<Component> webComponent =
-                new WebComponentImpl<>(binding,
-                        new Element("tag"));
+                new WebComponentImpl<>(binding, new Element("tag"));
 
         PropertyConfigurationImpl<Component, String> configuration =
                 new PropertyConfigurationImpl<>(Component.class, "property",
