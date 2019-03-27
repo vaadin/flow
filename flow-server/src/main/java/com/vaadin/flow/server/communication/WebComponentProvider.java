@@ -51,7 +51,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        String pathInfo = servletRequest.getPathInfo();
+        String pathInfo = servletRequest.getPathInfo() == null
+                ? servletRequest.getServletPath()
+                : servletRequest.getServletPath()
+                        + servletRequest.getPathInfo();
 
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
