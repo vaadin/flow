@@ -35,6 +35,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
 
 /**
  * @author Vaadin Ltd

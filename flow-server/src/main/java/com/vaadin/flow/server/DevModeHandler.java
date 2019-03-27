@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,14 +38,22 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.NodeUpdateImports;
+import com.vaadin.flow.server.frontend.NodeUpdatePackages;
+
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
@@ -53,28 +63,30 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  * directly from the servlet (using a default servlet if such exists) or through
  * a stand alone static file server.
  *
- * @author Vaadin Ltd
- * @since 2.0
+ * By default it keeps updated npm dependencies and node imports before running
+ * webpack server
+ *
  */
 public class DevModeHandler implements Serializable {
 
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
-    public static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
-    static final String PARAM_WEBPACK_TIMEOUT = "vaadin.devmode.webpack.timeout";
-    static final String PARAM_WEBPACK_OPTIONS = "vaadin.devmode.webpack.options";
+    /**
+     * True when running in a unix like system. It's used to call the
+     * appropriate <code>npm</code> launcher in windows or unix.
+     */
+    public static final boolean UNIX_OS = !System.getProperty("os.name").matches("(?i).*windows.*");
 
     // It's not possible to know whether webpack is ready unless reading output messages.
     // When webpack finishes, it writes either a `Compiled` or `Failed` as the last line
-    private static final Pattern OUTPUT_PATTERN = Pattern.compile(": (Compiled|Failed)");
+    private static final String DEFAULT_OUTPUT_PATTERN = ": (Compiled|Failed)";
     // If after this time in millisecs, the pattern was not found, we unlock the process
     // and continue. It might happen if webpack changes their output without advise.
-    private static final int DEFAULT_TIMEOUT_FOR_PATTERN = 60000;
+    private static final String DEFAULT_TIMEOUT_FOR_PATTERN = "60000";
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
-    static final Boolean IS_UNIX = !System.getProperty("os.name").matches("(?i).*windows.*");
 
     // This fixes maven tests in multi-module execution
     static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
@@ -83,29 +95,45 @@ public class DevModeHandler implements Serializable {
     static final String WEBPACK_SERVER = BASEDIR + "/node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
+    private final DeploymentConfiguration config;
 
     // For testing purposes
-    DevModeHandler(int port) {
+    DevModeHandler(DeploymentConfiguration configuration, int port) {
+        this.config = configuration;
         this.port = port;
     }
 
-    private DevModeHandler(File directory, File webpack, File webpackConfig) {
+    private DevModeHandler(DeploymentConfiguration configuration, File directory, File webpack, File webpackConfig) {
+        this.config = configuration;
 
-        port = Integer.getInteger(PARAM_WEBPACK_RUNNING, 0);
+        if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)
+                || !config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
+            // Run updaters for  node dependencies and imports
+            URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
+            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(urls);
+            if (!Boolean.getBoolean(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM)) {
+                new NodeUpdatePackages(extractor).execute();
+            }
+            if (!Boolean.getBoolean(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS)) {
+                new NodeUpdateImports(extractor).execute();
+            }
+        }
+
+        // If port is defined, means that webpack is already running
+        port = Integer.parseInt(config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
         if (port > 0 && checkWebpackConnection()) {
             getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, port);
             return;
         }
 
+        // We always compute a free port.
         port = getFreePort();
 
         ProcessBuilder process = new ProcessBuilder();
         process.directory(directory);
 
-        process.environment().put("PATH", webpack.getParent() + ":" + process.environment().get("PATH"));
-
         // Add /usr/local/bin to the PATH in case of unixOS like
-        if (IS_UNIX) {
+        if (UNIX_OS) {
             process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
         }
 
@@ -116,7 +144,8 @@ public class DevModeHandler implements Serializable {
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
-        command.addAll(Arrays.asList(System.getProperty(PARAM_WEBPACK_OPTIONS, "-d --hot false").split(" +")));
+        command.addAll(Arrays.asList(
+                config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS, "-d --hot false").split(" +")));
 
         if (getLogger().isInfoEnabled()) {
             getLogger().info("Starting Webpack in dev mode\n {}", command.stream().collect(Collectors.joining(" ")));
@@ -130,8 +159,9 @@ public class DevModeHandler implements Serializable {
             // Start a timer to avoid waiting for ever if pattern not found in webpack output.
             Thread timer = new Thread(() -> {
                 try {
-                    Thread.sleep(Integer.getInteger(PARAM_WEBPACK_TIMEOUT,
-                            Integer.getInteger(PARAM_WEBPACK_TIMEOUT, DEFAULT_TIMEOUT_FOR_PATTERN)));
+                    int time = Integer.parseInt(config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
+                            DEFAULT_TIMEOUT_FOR_PATTERN));
+                    Thread.sleep(time);
                     synchronized (this) {
                         notify(); //NOSONAR
                     }
@@ -142,7 +172,9 @@ public class DevModeHandler implements Serializable {
             timer.start();
 
             logStream(exec.getErrorStream(), null);
-            logStream(exec.getInputStream(), OUTPUT_PATTERN);
+            Pattern pattern = Pattern.compile(
+                    config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN, DEFAULT_OUTPUT_PATTERN));
+            logStream(exec.getInputStream(), pattern);
 
             synchronized (this) {
                 this.wait();//NOSONAR
@@ -159,8 +191,9 @@ public class DevModeHandler implements Serializable {
             getLogger().error(e.getMessage(), e);
         }
 
-        System.setProperty(PARAM_WEBPACK_RUNNING, String.valueOf(port));
+        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
     }
+
     /**
      * Start the dev mode handler if none has been started yet.
      *
@@ -191,7 +224,6 @@ public class DevModeHandler implements Serializable {
      * @return the instance in case everything is alright, null otherwise
      */
     public static DevModeHandler createInstance(DeploymentConfiguration configuration) {
-
         if (configuration.isBowerMode() || configuration.isProductionMode()) {
             getLogger().trace("Instance not created because not in npm-dev mode");
             return null;
@@ -219,7 +251,7 @@ public class DevModeHandler implements Serializable {
             return null;
         }
 
-        return new DevModeHandler(directory, webpack, webpackConfig);
+        return new DevModeHandler(configuration, directory, webpack, webpackConfig);
     }
 
     /**

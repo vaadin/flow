@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.plugin.common;
+package com.vaadin.flow.server.frontend;
 
 import java.lang.annotation.Annotation;
 import java.net.URL;
@@ -36,8 +36,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * @since 1.0.
  */
 public class AnnotationValuesExtractor extends ClassPathIntrospector {
-
-    public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
 
     /**
      * Prepares the class to extract annotations from the project classes
@@ -113,9 +111,12 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
     /**
      * Get theme definitions for all theme annotated classes.
      *
+     * @param defaultTheme
+     *            the class literal for the theme to use in case there is no
+     *            view annotated
      * @return a map of {@link ThemeDefinition}
      */
-    public Map<ThemeDefinition, Class<?>> getThemeDefinitions() {
+    public Map<ThemeDefinition, Class<?>> getAppThemeOrDefault(String defaultTheme) {
         Map<ThemeDefinition, Class<?>> map = new LinkedHashMap<>();
 
         Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(Theme.class.getName());
@@ -130,7 +131,7 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
 
         if (map.size() == 0) {
             try {
-                Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader(LUMO);
+                Class<? extends AbstractTheme> lumo = loadClassInProjectClassLoader(defaultTheme);
                 map.put(new ThemeDefinition(lumo, ""), null);
             } catch (IllegalStateException ignore) { //NOSONAR
             }

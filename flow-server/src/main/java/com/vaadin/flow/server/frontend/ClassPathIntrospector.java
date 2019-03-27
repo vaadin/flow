@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.common;
+package com.vaadin.flow.server.frontend;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.AnnotatedElement;
@@ -36,10 +37,11 @@ import org.reflections.util.ConfigurationBuilder;
  * @since 1.0
  *
  */
-public abstract class ClassPathIntrospector {
+public abstract class ClassPathIntrospector implements Serializable {
 
-    private final ClassLoader projectClassLoader;
-    private final Reflections reflections;
+    private final transient ClassLoader classLoader;
+
+    private final transient Reflections reflections;
 
     /**
      * Creates a new instance of class path introspector using the
@@ -49,9 +51,9 @@ public abstract class ClassPathIntrospector {
      *            urls to project class locations (directories, jars etc.)
      */
     protected ClassPathIntrospector(URL... projectClassesLocations) {
-        projectClassLoader = new URLClassLoader(projectClassesLocations, null);
+        classLoader = new URLClassLoader(projectClassesLocations, null); //NOSONAR
         reflections = new Reflections(
-                new ConfigurationBuilder().addClassLoader(projectClassLoader)
+                new ConfigurationBuilder().addClassLoader(classLoader).setExpandSuperTypes(false)
                         .addUrls(projectClassesLocations));
     }
 
@@ -63,8 +65,20 @@ public abstract class ClassPathIntrospector {
      *            the introspector whose reflection tools will be reused
      */
     protected ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
-        projectClassLoader = otherIntrospector.projectClassLoader;
+        classLoader = otherIntrospector.classLoader;
         reflections = otherIntrospector.reflections;
+    }
+
+    /**
+     * Returns a resource {@link URL} given a file name by re-using the
+     * {@link ClassPathIntrospector#classLoader}.
+     *
+     * @param name
+     *            the name of the resource
+     * @return the URL with the resource or null if not found
+     */
+    protected URL getResource(String name) {
+        return classLoader.getResource(name);
     }
 
     /**
@@ -102,7 +116,7 @@ public abstract class ClassPathIntrospector {
     @SuppressWarnings("unchecked")
     public <T> Class<T> loadClassInProjectClassLoader(String className) {
         try {
-            return (Class<T>) projectClassLoader.loadClass(className);
+            return (Class<T>) classLoader.loadClass(className);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(String.format(
                     "Failed to load class '%s' in custom classloader",
@@ -159,7 +173,7 @@ public abstract class ClassPathIntrospector {
 
     /**
      * Get the value of the the method {@code methodName} from the
-     * {@code instance} with the given {@code arguments}
+     * {@code instance} with the given {@code arguments}.
      *
      * @param instance
      *            instance with the method to invoke

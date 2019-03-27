@@ -16,11 +16,6 @@
 
 package com.vaadin.flow.function;
 
-import static com.vaadin.flow.server.Constants.JSBUNDLE_DEFAULT_VALUE;
-import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_JSBUNDLE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +26,11 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import static com.vaadin.flow.server.Constants.JSBUNDLE_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_JSBUNDLE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
 /**
  * A collection of properties configured at deploy time as well as a way of

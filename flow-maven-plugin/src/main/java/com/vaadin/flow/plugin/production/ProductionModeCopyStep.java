@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.JarContentsManager;
+import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -49,13 +50,10 @@ import elemental.json.JsonObject;
  * @since 1.0.
  */
 public class ProductionModeCopyStep {
-    public static final String NON_WEB_JAR_RESOURCE_PATH = "META-INF/resources/frontend";
-
     static final String WEB_JAR_FILES_BASE = "META-INF/resources/webjars/";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductionModeCopyStep.class);
     private static final String BOWER_JSON_FILE_NAME = "bower.json";
-    private static final String PACKAGE_JSON_FILE_NAME = "package.json";
     private static final String BOWER_COMPONENTS_DIRECTORY_NAME = "bower_components";
 
     private final JarContentsManager jarContentsManager;
@@ -134,7 +132,7 @@ public class ProductionModeCopyStep {
         // bower.json but have package.json like https://repo1.maven.org/maven2/org/webjars/bowergithub/webcomponents/shadycss/1.5.0-1/
         List<String> packageJsonFallback = jarContentsManager
                 .findFiles(webJar.getFileOrDirectory(), WEB_JAR_FILES_BASE,
-                        PACKAGE_JSON_FILE_NAME);
+                        Constants.PACKAGE_JSON);
         if (packageJsonFallback.isEmpty()) {
             LOGGER.warn(
                     "Found no bower.json or package.json files inside {}. No files will be extracted.",
@@ -196,7 +194,7 @@ public class ProductionModeCopyStep {
         }
 
         for (File notWebJar : nonWebJars) {
-            jarContentsManager.copyFilesFromJarTrimmingBasePath(notWebJar, NON_WEB_JAR_RESOURCE_PATH, outputDirectory, wildcardExclusions);
+            jarContentsManager.copyFilesFromJarTrimmingBasePath(notWebJar, Constants.RESOURCES_FRONTEND_DEFAULT, outputDirectory, wildcardExclusions);
         }
     }
 

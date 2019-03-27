@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import static com.vaadin.flow.plugin.maven.AbstractNpmMojo.FLOW_PACKAGE;
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
 
@@ -48,7 +47,7 @@ public class UpdateImportsMojoTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private String importsFile;
-    private final UpdateImportsMojo mojo = new UpdateImportsMojo();
+    private final NodeUpdateImportsMojo mojo = new NodeUpdateImportsMojo();
 
     @Before
     public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {
@@ -63,11 +62,11 @@ public class UpdateImportsMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "flow-packages");
-        Assert.assertTrue(mojo.getFlowPackage().mkdirs());
+        Assert.assertTrue(mojo.getUpdater().getFlowPackage().mkdirs());
     }
 
     @Test
-    public void should_UpdateMainJsFile() throws IOException {
+    public void should_UpdateMainJsFile() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(importsFile));
 
         mojo.execute();
@@ -95,10 +94,8 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws IOException {
+    public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(importsFile));
-
-        Assert.assertTrue(new File(mojo.getFlowPackage(), "foo.js").createNewFile());
 
         mojo.execute();
 
@@ -120,8 +117,12 @@ public class UpdateImportsMojoTest {
             "@polymer/iron-icon",
             "./foo-dir/vaadin-npm-component.js",
             "./local-p3-template.js",
-            String.format("%sfoo.js", FLOW_PACKAGE),
+            "@vaadin/flow-frontend/ExampleConnector.js",
             "./local-p2-template.js");
+
+        Assert.assertTrue(mojo.getUpdater().getFlowPackage().exists());
+        Assert.assertTrue(new File(mojo.getUpdater().getFlowPackage(), "ExampleConnector.js").exists());
+
     }
 
     @Test
@@ -138,7 +139,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_ContainLumoThemeFiles() throws IOException {
+    public void should_ContainLumoThemeFiles() throws Exception {
         mojo.execute();
 
         assertContainsImports(true,
@@ -151,7 +152,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_AddImports() throws IOException {
+    public void should_AddImports() throws Exception {
         mojo.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
@@ -164,7 +165,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_removeImports() throws IOException {
+    public void should_removeImports() throws Exception {
         mojo.execute();
         addImports("./added-import.js");
         assertContainsImports(true, "./added-import.js");
@@ -174,7 +175,7 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
-    public void should_AddRemove_Imports() throws IOException {
+    public void should_AddRemove_Imports() throws Exception {
         mojo.execute();
 
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",

@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.Theme;
@@ -38,6 +39,7 @@ public class TestComponents {
 
     @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/vaadin-element-mixin.html")
     @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/something-else.html")
+    @JavaScript("frontend://ExampleConnector.js")
     public static class VaadinBowerComponent extends Component {
     }
 

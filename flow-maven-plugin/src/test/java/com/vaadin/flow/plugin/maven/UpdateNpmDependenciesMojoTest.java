@@ -36,10 +36,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.plugin.TestUtils;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.PACKAGE_JSON;
-import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojo.WEBPACK_CONFIG;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
 
 public class UpdateNpmDependenciesMojoTest {
     @Rule
@@ -47,7 +50,7 @@ public class UpdateNpmDependenciesMojoTest {
 
     MavenProject project;
 
-    UpdateNpmDependenciesMojo mojo = new UpdateNpmDependenciesMojo();
+    NodeUpdatePackagesMojo mojo = new NodeUpdatePackagesMojo();
 
     String packageJson;
     String webpackConfig;
@@ -72,12 +75,17 @@ public class UpdateNpmDependenciesMojoTest {
         // Add folder with test classes
         List<String> classPaths = new ArrayList<>(Arrays.asList("target/test-classes"));
 
+        // Add this test jar which has some frontend resources used in tests
+        File jar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
+        classPaths.add(jar.getPath());
+
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
         URL[] urls = ((URLClassLoader) classLoader).getURLs();
         for (URL url : urls) {
             classPaths.add(url.getFile());
         }
+
         return classPaths;
     }
 
@@ -88,7 +96,7 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     @Test
-    public void mavenGoal_packageJsonMissing() throws IOException {
+    public void mavenGoal_packageJsonMissing() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
 
         mojo.execute();
@@ -96,7 +104,6 @@ public class UpdateNpmDependenciesMojoTest {
         assertPackageJsonContent();
 
         Assert.assertTrue(FileUtils.fileExists(webpackConfig));
-        Assert.assertTrue(FileUtils.fileExists(mojo.getFlowPackage().getAbsolutePath()));
     }
 
     @Test
@@ -123,8 +130,6 @@ public class UpdateNpmDependenciesMojoTest {
         Assert.assertTrue(tsWebpack2 == tsWebpack3);
 
         assertPackageJsonContent();
-
-        Assert.assertTrue(FileUtils.fileExists(mojo.getFlowPackage().getAbsolutePath()));
     }
 
     private void assertPackageJsonContent() throws IOException {
