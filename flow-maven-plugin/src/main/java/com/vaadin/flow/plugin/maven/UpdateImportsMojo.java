@@ -54,13 +54,12 @@ import static com.vaadin.flow.plugin.common.AnnotationValuesExtractor.LUMO;
 @Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
 public class UpdateImportsMojo extends AbstractNpmMojo {
     private static final String VALUE = "value";
-    private static final String MAIN_JS = "frontend/main.js";
 
     /**
-     * Name of the JavaScript file to update.
+     * A Flow JavaScript file with all project's imports to update.
      */
-    @Parameter
-    private String jsFile;
+    @Parameter(defaultValue = "${project.basedir}/frontend/main.js")
+    private File jsFile;
 
     /**
      * Enable or disable legacy components annotated only with
@@ -82,10 +81,6 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
         }
 
         log.info("Looking for imports in the java class-path ...");
-
-        if (jsFile == null || jsFile.isEmpty()) {
-            jsFile = project.getBasedir() + "/" + MAIN_JS;
-        }
         if (annotationValuesExtractor == null) {
             annotationValuesExtractor = new AnnotationValuesExtractor(getProjectClassPathUrls(project));
         }
@@ -188,8 +183,7 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
 
     private boolean importedFileExists(String jsImport) {
         if (jsImport.startsWith("./")) {
-            // TODO kb make this a File Maven parameter
-            return new File(new File(jsFile).getParentFile(), jsImport).isFile();
+            return new File(jsFile.getParentFile(), jsImport).isFile();
         } else {
             return new File(nodeModulesPath, jsImport).isFile();
         }
@@ -273,13 +267,12 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
     }
 
     private void updateMainJsFile(List<String> newContent) throws IOException {
-        List<String> oldContent = FileUtils.loadFile(new File(jsFile));
+        List<String> oldContent = FileUtils.loadFile(jsFile);
         if (newContent.equals(oldContent)) {
             log.info("No js modules to update");
         } else {
-            File out = new File(jsFile);
-            FlowPluginFileUtils.forceMkdir(out.getParentFile());
-            FileUtils.fileWrite(out, "UTF-8", String.join("\n", newContent));
+            FlowPluginFileUtils.forceMkdir(jsFile.getParentFile());
+            FileUtils.fileWrite(jsFile, "UTF-8", String.join("\n", newContent));
             log.info("Updated " + jsFile);
         }
     }
