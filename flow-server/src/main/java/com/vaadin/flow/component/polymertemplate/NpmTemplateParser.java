@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.FakeBrowser;
@@ -150,7 +150,7 @@ public class NpmTemplateParser implements TemplateParser {
                 URL statsUrl = service.getStaticResource("/" + stats);
 
                 // Otherwise, ask webpack via http
-                String port = System.getProperty(DevModeHandler.PARAM_WEBPACK_RUNNING);
+                String port = System.getProperty(Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
                 if (statsUrl == null && port != null && !service.getDeploymentConfiguration().isProductionMode()) {
                     statsUrl = new URL("http://localhost:" + port + "/" + stats);
                 }

@@ -140,6 +140,43 @@ public final class Constants implements Serializable {
      */
     public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
 
+    /**
+     * Configuration name for the parameter that indicates the tcp port of a webpack-dev-server
+     * already running. This property is automatically defined when
+     * {@link DevModeHandler} starts the webpack server. If you have your own
+     * server already running, define this property and {@link DevModeHandler}
+     * will re-use that server.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT = "devmode.webpack.running-port";
+
+    /**
+     * Configuration name for the time waiting for webpack output pattern
+     * defined by {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN}.
+     */
+    static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = "devmode.webpack.output.pattern.timeout";
+
+    /**
+     * Configuration name for the pattern used to inspect the webpack output to
+     * assure it is up and running. Default value is defined in
+     * {@link DevModeHandler} as the <code>: (Compiled|Failed)</code> expression.
+     */
+    static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN = "devmode.webpack.output.pattern";
+
+    /**
+     * Configuration name for adding extra options to the webpack-dev-server.
+     */
+    static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
+
+    /**
+     * Configuration name which disables the node imports updater.
+     */
+    static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS = "devmode.skip.update-imports";
+
+    /**
+     * Configuration name  which disables the node dependencies updater.
+     */
+    static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM = "devmode.skip.update-npm-dependencies";
+
     private Constants() {
         // prevent instantiation constants class only
     }
