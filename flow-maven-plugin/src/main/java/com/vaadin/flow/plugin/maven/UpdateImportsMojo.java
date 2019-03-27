@@ -167,7 +167,7 @@ public class UpdateImportsMojo extends AbstractNpmMojo {
                         if (!Objects.equals(originalModulePath,
                                 translatedModulePath)) {
                             errorMessage.append(String.format(
-                                    " The import was translated by Flow from the path '%s'",
+                                    " (the import was translated by Flow from the path '%s')",
                                     originalModulePath));
                         }
                         errorMessage.append("\n");
