@@ -79,6 +79,9 @@ public class DevModeHandlerTest {
     @Before
     public void setup() throws IOException {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.doAnswer(invocation ->
+            System.getProperty("vaadin." + invocation.getArguments()[0], "" + invocation.getArguments()[1]))
+                .when(configuration).getStringProperty(Mockito.anyString(), Mockito.anyString());
         createWebpackScript("Compiled", 100);
         System.setProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "true");
         System.setProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "true");
@@ -108,10 +111,9 @@ public class DevModeHandlerTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
-        System.clearProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
-        System.clearProperty("MTEST");
+        System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
     }
-    
+
     @Test
     public void should_Not_Run_Updaters_when_Disabled() throws Exception {
         assertNotNull(createInstance(configuration));
@@ -148,10 +150,10 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
-        System.setProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
+        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createWebpackScript("Foo", 300);
         assertNotNull(createInstance(configuration));
-        assertTrue(Integer.getInteger(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, 0) > 0);
+        assertTrue(Integer.getInteger("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, 0) > 0);
         Thread.sleep(350); //NOSONAR
     }
 
@@ -314,7 +316,7 @@ public class DevModeHandlerTest {
             exchange.close();
         });
         httpServer.start();
-        System.setProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
+        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
         return port;
     }
 }

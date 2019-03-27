@@ -191,7 +191,7 @@ public class DevModeHandler implements Serializable {
             getLogger().error(e.getMessage(), e);
         }
 
-        System.setProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
+        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
     }
 
     /**

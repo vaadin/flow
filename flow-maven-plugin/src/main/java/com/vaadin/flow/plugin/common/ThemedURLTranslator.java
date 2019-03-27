@@ -50,7 +50,7 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
 
     private final Class<? extends AbstractTheme> themeClass;
 
-    private final Function<String, File> fileFactory;
+    private final transient Function<String, File> fileFactory;
 
     private static final String TRANSLATE_URL_METHOD = "translateUrl";
 

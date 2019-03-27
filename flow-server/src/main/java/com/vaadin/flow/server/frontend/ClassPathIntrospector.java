@@ -173,7 +173,7 @@ public abstract class ClassPathIntrospector implements Serializable {
 
     /**
      * Get the value of the the method {@code methodName} from the
-     * {@code instance} with the given {@code arguments}
+     * {@code instance} with the given {@code arguments}.
      *
      * @param instance
      *            instance with the method to invoke
