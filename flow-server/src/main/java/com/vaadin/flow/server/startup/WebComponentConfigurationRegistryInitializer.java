@@ -19,7 +19,6 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -131,7 +130,7 @@ public class WebComponentConfigurationRegistryInitializer
             extends Component>> exporterClass) {
         Tag tag = exporterClass.getAnnotation(Tag.class);
         if (tag == null) {
-            throw new InvalidParameterException(String.format("%s %s did not " +
+            throw new IllegalArgumentException(String.format("%s %s did not " +
                     "provide a tag! Use %s annotation to provide a tag for " +
                     "the exported web component.",
                     WebComponentExporter.class.getSimpleName(),

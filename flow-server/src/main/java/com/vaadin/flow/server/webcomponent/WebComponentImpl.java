@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.Objects;
 
 import org.slf4j.LoggerFactory;
@@ -117,7 +116,7 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
                     propertyConfiguration.getClass().getCanonicalName(),
                     PropertyConfiguration.class.getSimpleName()),
                     e);
-            throw new InvalidParameterException(String.format("Parameter " +
+            throw new IllegalArgumentException(String.format("Parameter " +
                     "'propertyConfiguration' must be an implementation of " +
                     "'%s!", PropertyConfigurationImpl.class.getCanonicalName()));
         }
@@ -126,14 +125,14 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
         // does the binding actually have the property
         if (!binding.hasProperty(propertyName)) {
-            throw new InvalidParameterException(String.format("%s does not " +
+            throw new IllegalArgumentException(String.format("%s does not " +
                     "have a property identified by '%s'!",
                     WebComponent.class.getSimpleName(), propertyName));
         }
 
         // is the property's value type correct
         if (value != null && !binding.getPropertyType(propertyName).isAssignableFrom(value.getClass())) {
-            throw new InvalidParameterException(String.format("Property '%s' " +
+            throw new IllegalArgumentException(String.format("Property '%s' " +
                             "of type '%s' cannot be assigned value of type '%s'!",
                     propertyName,
                     binding.getPropertyType(propertyName).getCanonicalName(),

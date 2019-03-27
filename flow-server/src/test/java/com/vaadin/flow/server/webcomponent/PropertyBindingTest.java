@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import java.security.InvalidParameterException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,7 +67,7 @@ public class PropertyBindingTest {
         verify(spy, times(1)).accept(any());
     }
 
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void updateValue_wrongDataType() {
         PropertyBinding<Integer> binding =
                 new PropertyBinding<>(intData, null);

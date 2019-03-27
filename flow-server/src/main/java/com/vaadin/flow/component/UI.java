@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.component;
 
-import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1029,11 +1028,11 @@ public class UI extends Component
     public ShortcutRegistration addShortcutListener(
             Command command, Key key, KeyModifier... keyModifiers) {
         if (command == null) {
-            throw new InvalidParameterException(String.format(Shortcuts.NULL,
+            throw new IllegalArgumentException(String.format(Shortcuts.NULL,
                     "command"));
         }
         if (key == null) {
-            throw new InvalidParameterException(String.format(Shortcuts.NULL,
+            throw new IllegalArgumentException(String.format(Shortcuts.NULL,
                     "key"));
         }
         return new ShortcutRegistration(this, () -> this,
@@ -1065,11 +1064,11 @@ public class UI extends Component
             ShortcutEventListener listener, Key key,
             KeyModifier... keyModifiers) {
         if (listener == null) {
-            throw new InvalidParameterException(String.format(Shortcuts.NULL,
+            throw new IllegalArgumentException(String.format(Shortcuts.NULL,
                     "listener"));
         }
         if (key == null) {
-            throw new InvalidParameterException(String.format(Shortcuts.NULL,
+            throw new IllegalArgumentException(String.format(Shortcuts.NULL,
                     "key"));
         }
         return new ShortcutRegistration(this, () -> this,
