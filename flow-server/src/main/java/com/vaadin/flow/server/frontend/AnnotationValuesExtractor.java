@@ -111,6 +111,9 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
     /**
      * Get theme definitions for all theme annotated classes.
      *
+     * @param defaultTheme
+     *            the class literal for the theme to use in case there is no
+     *            view annotated
      * @return a map of {@link ThemeDefinition}
      */
     public Map<ThemeDefinition, Class<?>> getAppThemeOrDefault(String defaultTheme) {

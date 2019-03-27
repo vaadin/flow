@@ -88,7 +88,7 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     /**
      * Create an instance of the updater given the reusable extractor, the rest
-     * of the configurable parameters will be set to their default values
+     * of the configurable parameters will be set to their default values.
      *
      * @param extractor
      *            a reusable annotation extractor
@@ -130,14 +130,14 @@ public class NodeUpdatePackages extends NodeUpdater {
         File configFile = new File(npmFolder, WEBPACK_CONFIG);
 
         if (configFile.exists()) {
-            log().info("No changes to " + configFile);
+            log().info("No changes to {}", configFile);
         } else {
             URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
             if (resource == null) {
                 resource = new URL(webpackTemplate);
             }
             FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created " + WEBPACK_CONFIG + " from " + resource);
+            log().info("Created {} from {}", WEBPACK_CONFIG, resource);
         }
     }
 
@@ -219,7 +219,8 @@ public class NodeUpdatePackages extends NodeUpdater {
         command.addAll(Arrays.asList(npmInstallArgs));
         command.addAll(dependencies);
 
-        log().info("Updating package.json and installing npm dependencies ...\n " + String.join(" ", command));
+        String cmd = String.join(" ", command);
+        log().info("Updating package.json and installing npm dependencies ...\n {}", cmd);
 
         Process process = builder.start();
         logStream(process.getInputStream());
@@ -249,7 +250,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         if (packageFile.exists()) {
             packageJson = Json.parse(FileUtils.readFileToString(packageFile, "UTF-8"));
         } else {
-            log().info("Creating a default " + packageFile);
+            log().info("Creating a default {}", packageFile);
             FileUtils.writeStringToFile(packageFile, "{}", "UTF-8");
             packageJson = Json.createObject();
         }

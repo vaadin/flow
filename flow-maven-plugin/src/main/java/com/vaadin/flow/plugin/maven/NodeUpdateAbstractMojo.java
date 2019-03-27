@@ -17,7 +17,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
- * Common stuff for mojos
+ * Common stuff for node update mojos.
  */
 public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
 
@@ -59,7 +59,7 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
 
     protected abstract NodeUpdater getUpdater();
 
-    public static URL[] getProjectClassPathUrls(MavenProject project) {
+    static URL[] getProjectClassPathUrls(MavenProject project) {
         final List<String> runtimeClasspathElements;
         try {
             runtimeClasspathElements = project.getRuntimeClasspathElements();

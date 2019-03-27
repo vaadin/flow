@@ -39,21 +39,9 @@ import org.reflections.util.ConfigurationBuilder;
  */
 public abstract class ClassPathIntrospector implements Serializable {
 
-    transient private final ClassLoader classLoader;
+    private final transient ClassLoader classLoader;
 
-    transient private final Reflections reflections;
-
-    /**
-     * Returns a resource {@link URL} given a file name by re-using the
-     * {@link ClassPathIntrospector#classLoader}
-     *
-     * @param name
-     *            the name of the resource
-     * @return the URL with the resource or null if not found
-     */
-    protected URL getResource(String name) {
-        return classLoader.getResource(name);
-    }
+    private final transient Reflections reflections;
 
     /**
      * Creates a new instance of class path introspector using the
@@ -63,7 +51,7 @@ public abstract class ClassPathIntrospector implements Serializable {
      *            urls to project class locations (directories, jars etc.)
      */
     protected ClassPathIntrospector(URL... projectClassesLocations) {
-        classLoader = new URLClassLoader(projectClassesLocations, null);
+        classLoader = new URLClassLoader(projectClassesLocations, null); //NOSONAR
         reflections = new Reflections(
                 new ConfigurationBuilder().addClassLoader(classLoader).setExpandSuperTypes(false)
                         .addUrls(projectClassesLocations));
@@ -79,6 +67,18 @@ public abstract class ClassPathIntrospector implements Serializable {
     protected ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
         classLoader = otherIntrospector.classLoader;
         reflections = otherIntrospector.reflections;
+    }
+
+    /**
+     * Returns a resource {@link URL} given a file name by re-using the
+     * {@link ClassPathIntrospector#classLoader}.
+     *
+     * @param name
+     *            the name of the resource
+     * @return the URL with the resource or null if not found
+     */
+    protected URL getResource(String name) {
+        return classLoader.getResource(name);
     }
 
     /**
