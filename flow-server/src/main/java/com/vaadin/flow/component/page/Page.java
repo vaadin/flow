@@ -325,13 +325,14 @@ public class Page implements Serializable {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
+     * @return a callback for canceling the execution if not yet sent to browser
      * @deprecated Use {@link #executeJs(String,Serializable...)} instead since
      *             it also allows getting return value back.
      */
     @Deprecated
-    public void executeJavaScript(String expression,
+    public ExecutionCanceler executeJavaScript(String expression,
             Serializable... parameters) {
-        executeJs(expression, parameters);
+        return executeJs(expression, parameters);
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
