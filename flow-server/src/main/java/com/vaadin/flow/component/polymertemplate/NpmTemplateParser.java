@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
@@ -42,6 +41,7 @@ import com.vaadin.flow.shared.ui.Dependency;
 
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 
@@ -144,14 +144,18 @@ public class NpmTemplateParser implements TemplateParser {
 
             // Try stats from web context
             try {
-
-                // Try to get the static resource, this is for production or in devmode when
-                // webpack outputs to the webapp folder
-                URL statsUrl = service.getStaticResource("/" + stats);
-
-                // Otherwise, ask webpack via http
-                String port = System.getProperty(Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
-                if (statsUrl == null && port != null && !service.getDeploymentConfiguration().isProductionMode()) {
+                URL statsUrl;
+                if (service.getDeploymentConfiguration().isProductionMode()) {
+                    // in production stats is taken from the web resources
+                    statsUrl = service.getStaticResource("/" + stats);
+                } else {
+                    // in devmode is taken from webpack via http
+                    String port = service.getDeploymentConfiguration()
+                            .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
+                    if (port == null || port.isEmpty()) {
+                        throw new IllegalStateException("Unable to get webpack port via "
+                                + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT + " property");
+                    }
                     statsUrl = new URL("http://localhost:" + port + "/" + stats);
                 }
 
