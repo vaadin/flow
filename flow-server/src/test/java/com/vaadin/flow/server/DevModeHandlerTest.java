@@ -42,7 +42,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
@@ -67,7 +67,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("restriction")
 public class DevModeHandlerTest {
 
-    private DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
+    private MockDeploymentConfiguration configuration;
 
     private static final String TEST_FILE = "webpack-out.test";
     private HttpServer httpServer;
@@ -78,13 +78,11 @@ public class DevModeHandlerTest {
 
     @Before
     public void setup() throws IOException {
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.doAnswer(invocation ->
-            System.getProperty("vaadin." + invocation.getArguments()[0], "" + invocation.getArguments()[1]))
-                .when(configuration).getStringProperty(Mockito.anyString(), Mockito.anyString());
+        configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(false);
+        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "true");
+        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "true");
         createWebpackScript("Compiled", 100);
-        System.setProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "true");
-        System.setProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "true");
     }
 
     private void createWebpackScript(String readyString, int milliSecondsToRun) throws IOException {
@@ -111,7 +109,6 @@ public class DevModeHandlerTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
     }
 
     @Test
@@ -123,8 +120,8 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_Run_Updaters_when_Enabled() throws Exception {
-        System.clearProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM);
-        System.clearProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS);
+        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "false");
+        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "false");
         assertFalse(new File(PACKAGE_JSON).canRead());
         assertNotNull(createInstance(configuration));
         assertTrue(new File(PACKAGE_JSON).canRead());
@@ -150,7 +147,7 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
+        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createWebpackScript("Foo", 300);
         assertNotNull(createInstance(configuration));
         assertTrue(Integer.getInteger("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, 0) > 0);
@@ -159,13 +156,13 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_CreateInstance_When_ProductionMode() throws Exception {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        configuration.setProductionMode(true);
         assertNull(createInstance(configuration));
     }
 
     @Test
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        configuration.setProductionMode(true);
         assertNull(createInstance(configuration));
         Thread.sleep(150); //NOSONAR
     }
@@ -316,7 +313,7 @@ public class DevModeHandlerTest {
             exchange.close();
         });
         httpServer.start();
-        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
+        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
         return port;
     }
 }
