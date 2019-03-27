@@ -23,13 +23,13 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
-public class PropertyConfigurationImpTest {
+public class PropertyConfigurationImplTest {
 
-    PropertyConfigurationImp<MyComponent, Integer> intPropertyConf;
+    PropertyConfigurationImpl<MyComponent, Integer> intPropertyConf;
 
     @Before
     public void init() {
-        intPropertyConf = new PropertyConfigurationImp<>(MyComponent.class,
+        intPropertyConf = new PropertyConfigurationImpl<>(MyComponent.class,
                 "int", Integer.class, 1);
     }
 

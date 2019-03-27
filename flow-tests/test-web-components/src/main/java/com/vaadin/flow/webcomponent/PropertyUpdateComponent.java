@@ -22,14 +22,13 @@ import java.util.Set;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.internal.JsonCodec;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 @Tag("click-counter")
-public class ButtonClickCounter extends Div {
+public class PropertyUpdateComponent extends Div {
     @FunctionalInterface
     public interface NumberListener {
         void handleNumber(int number);
@@ -38,7 +37,7 @@ public class ButtonClickCounter extends Div {
     private int clickCounter = 0;
     private Set<NumberListener> listenerSet = new HashSet<>();
 
-    public ButtonClickCounter() {
+    public PropertyUpdateComponent() {
         NativeButton nativeButton = new NativeButton("Click me!");
         nativeButton.addClickListener(event -> {
             clickCounter++;

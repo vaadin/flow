@@ -65,7 +65,7 @@ public class WebComponentConfigurationImpl<C extends Component>
     private final String tag;
     private final Class<C> componentClass;
     private InstanceConfigurator<C> instanceConfigurator;
-    private Map<String, PropertyConfigurationImp<C, ? extends Serializable>> propertyConfigurationMap =
+    private Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap =
             new HashMap<>();
 
     /**
@@ -115,8 +115,8 @@ public class WebComponentConfigurationImpl<C extends Component>
                             .collect(Collectors.joining(", "))));
         }
 
-        PropertyConfigurationImp<C, P> configurationImp =
-                new PropertyConfigurationImp<>(getComponentClass(), name,
+        PropertyConfigurationImpl<C, P> configurationImp =
+                new PropertyConfigurationImpl<>(getComponentClass(), name,
                         type, defaultValue);
 
         propertyConfigurationMap.put(name, configurationImp);
@@ -145,7 +145,7 @@ public class WebComponentConfigurationImpl<C extends Component>
     @Override
     public Set<PropertyData<?>> getPropertyDataSet() {
         return propertyConfigurationMap.values().stream()
-                .map(PropertyConfigurationImp::getPropertyData)
+                .map(PropertyConfigurationImpl::getPropertyData)
                 .collect(Collectors.toSet());
     }
 

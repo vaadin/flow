@@ -29,10 +29,11 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.dom.Element;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * {@inheritDoc}.
  * @param <C>   {@code component} being exported
  */
 class WebComponentImpl<C extends Component> implements WebComponent<C> {
@@ -42,6 +43,10 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
             "._updatePropertyFromServer($0, null);";
     private static final String UPDATE_PROPERTY_FORMAT = "this" +
             "._updatePropertyFromServer($0, %s);";
+    private static final String CUSTOM_EVENT = "this.dispatchEvent(new " +
+            "CustomEvent($0, %s));";
+
+    private static final EventOptions BASIC_OPTIONS = new EventOptions();
 
     private Element componentHost;
     private WebComponentBinding binding;
@@ -70,17 +75,29 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
     @Override
     public void fireEvent(String eventName) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+        fireEvent(eventName, Json.createNull(), BASIC_OPTIONS);
     }
 
     @Override
     public void fireEvent(String eventName, JsonValue objectData) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+        fireEvent(eventName, objectData, BASIC_OPTIONS);
     }
 
     @Override
     public void fireEvent(String eventName, JsonValue objectData, EventOptions options) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+        Objects.requireNonNull(eventName, "Parameter 'eventName' must not be " +
+                "null!");
+        Objects.requireNonNull(options, "Parameter 'options' must not be null");
+
+        JsonObject object = Json.createObject();
+        object.put("bubbles", options.isBubbles());
+        object.put("cancelable", options.isCancelable());
+        object.put("composed", options.isComposed());
+        object.put("detail", objectData == null ?
+                Json.createNull() : objectData);
+
+        componentHost.executeJavaScript(String.format(CUSTOM_EVENT,
+                object.toJson()), eventName);
     }
 
     @Override
@@ -90,10 +107,10 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
         // if this fails, then the user attempted to use their own
         // implementation of PropertyConfiguration, which is nonsensical.
-        PropertyConfigurationImp<C, P> propertyConfigurationImp;
+        PropertyConfigurationImpl<C, P> propertyConfigurationImpl;
         try {
-            propertyConfigurationImp =
-                    (PropertyConfigurationImp<C, P>) propertyConfiguration;
+            propertyConfigurationImpl =
+                    (PropertyConfigurationImpl<C, P>) propertyConfiguration;
         } catch (ClassCastException e) {
             LoggerFactory.getLogger(WebComponentImpl.class).warn(String.format(
                     "Could not cast %s into %s.",
@@ -102,10 +119,19 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
                     e);
             throw new InvalidParameterException(String.format("Parameter " +
                     "'propertyConfiguration' must be an implementation of " +
-                    "'%s!", PropertyConfigurationImp.class.getCanonicalName()));
+                    "'%s!", PropertyConfigurationImpl.class.getCanonicalName()));
         }
 
-        String propertyName = propertyConfigurationImp.getPropertyData().getName();
+        String propertyName = propertyConfigurationImpl.getPropertyData().getName();
+
+        // does the binding actually have the property
+        if (!binding.hasProperty(propertyName)) {
+            throw new InvalidParameterException(String.format("%s does not " +
+                    "have a property identified by '%s'!",
+                    WebComponent.class.getSimpleName(), propertyName));
+        }
+
+        // is the property's value type correct
         if (value != null && !binding.getPropertyType(propertyName).isAssignableFrom(value.getClass())) {
             throw new InvalidParameterException(String.format("Property '%s' " +
                             "of type '%s' cannot be assigned value of type '%s'!",
@@ -116,12 +142,6 @@ class WebComponentImpl<C extends Component> implements WebComponent<C> {
 
         setProperty(propertyName, value);
     }
-
-    @Override
-    public <P extends Serializable> P getProperty(PropertyConfiguration<C, P> propertyConfiguration) {
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
 
     private void setProperty(String propertyName, Object value) {
 

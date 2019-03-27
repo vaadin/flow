@@ -24,14 +24,14 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
-@Tag("button-click-counter")
-public class ButtonClickCounterExporter implements WebComponentExporter<ButtonClickCounter> {
+@Tag("property-update")
+public class PropertyUpdateExporter implements WebComponentExporter<PropertyUpdateComponent> {
     @Override
-    public void define(WebComponentDefinition<ButtonClickCounter> definition) {
-        PropertyConfiguration<ButtonClickCounter, Integer> property =
+    public void define(WebComponentDefinition<PropertyUpdateComponent> definition) {
+        PropertyConfiguration<PropertyUpdateComponent, Integer> property =
                 definition.addProperty("clicks", 0);
 
-        PropertyConfiguration<ButtonClickCounter, JsonValue> jsonProperty =
+        PropertyConfiguration<PropertyUpdateComponent, JsonValue> jsonProperty =
                 definition.addProperty("clicksJson", Json.createNull());
 
         definition.setInstanceConfigurator((webComponent, component) ->

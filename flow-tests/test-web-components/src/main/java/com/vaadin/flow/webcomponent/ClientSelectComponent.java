@@ -24,7 +24,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 
-public class ClientSelect extends Div {
+public class ClientSelectComponent extends Div {
     private Span message = new Span();
     private Select select;
 
@@ -33,7 +33,7 @@ public class ClientSelect extends Div {
 
     }
 
-    public ClientSelect() {
+    public ClientSelectComponent() {
         select = new Select();
         Backend.getAllClients().forEach(
                 client -> select.addItem(client, client.getFirsName()));

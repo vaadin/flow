@@ -21,9 +21,9 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 @Tag("embedded-push")
-public class PushTestExporter implements WebComponentExporter<UpdateServerSideWebComponent> {
+public class PushExporter implements WebComponentExporter<PushComponent> {
     @Override
-    public void define(WebComponentDefinition<UpdateServerSideWebComponent> definition) {
+    public void define(WebComponentDefinition<PushComponent> definition) {
         // UpdateServerSideWebComponent does not have any properties
     }
 }
