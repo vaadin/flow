@@ -75,12 +75,12 @@ public class DevModeHandler implements Serializable {
     public static final String PARAM_WEBPACK_RUNNING = "vaadin.devmode.webpack.running";
 
     /**
-     * System porperty which disables the node dependencies updater
+     * System property which disables the node dependencies updater.
      */
     static final String PARAM_SKIP_UPDATE_NPM = "vaadin.frontend.skip.update-npm-dependencies";
 
     /**
-     * System porperty which disables the node imports updater
+     * System property which disables the node imports updater.
      */
     static final String PARAM_SKIP_UPDATE_IMPORTS = "vaadin.frontend.skip.update-imports";
 

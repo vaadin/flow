@@ -86,7 +86,7 @@ public class NodeUpdateImports extends NodeUpdater {
 
     /**
      * Create an instance of the updater given the reusable extractor, the rest
-     * of the configurable parameters will be set to their default values
+     * of the configurable parameters will be set to their default values.
      *
      * @param extractor
      *            a reusable annotation extractor
@@ -213,22 +213,20 @@ public class NodeUpdateImports extends NodeUpdater {
         Map<ThemeDefinition, Class<?>> themes = annotationValuesExtractor.getAppThemeOrDefault(LUMO);
 
         if (themes.isEmpty()) {
-            log().warn("No theme found for the app nor " + LUMO + " class found in the classpath");
+            log().warn("No theme found for the app nor {} class found in the classpath.", LUMO);
             return null;
         }
 
-        if (themes.size() > 1) {
-            log().warn(
-                    "Found multiple themes for the application, vaadin-flow would only consider the first one\n"
-                            + themes.entrySet().stream()
-                                    .map(e -> "   theme:" + e.getKey().getTheme().getName() + " "
-                                            + e.getKey().getVariant() + " in class: " + e.getValue().getName())
-                                    .collect(Collectors.joining("\n")));
+        if (themes.size() > 1 && log().isWarnEnabled()) {
+            log().warn("Found multiple themes for the application, vaadin-flow would only consider the first one\n{}",
+                    themes.entrySet().stream().map(e -> "   theme:" + e.getKey().getTheme().getName() + " "
+                            + e.getKey().getVariant() + " in class: " + e.getValue().getName())
+                            .collect(Collectors.joining("\n")));
         }
 
         ThemeDefinition themeDef = themes.keySet().iterator().next();
-        log().info("Using theme " + themeDef.getTheme().getName()
-                + (themeDef.getVariant().isEmpty() ? "" : (" variant: " + themeDef.getVariant())));
+        log().info("Using theme {} {}", themeDef.getTheme().getName(),
+                (themeDef.getVariant().isEmpty() ? "" : (" variant: " + themeDef.getVariant())));
         return themeDef;
     }
 
