@@ -29,7 +29,7 @@ import com.vaadin.flow.server.frontend.NodeUpdater;
  * defined in the classpath, and that creates <code>webpack.config.js</code> if
  * does not exist yet.
  */
-@Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
+@Mojo(name = "update-npm-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
 
     /**

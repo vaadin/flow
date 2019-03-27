@@ -28,7 +28,7 @@ import com.vaadin.flow.server.frontend.NodeUpdater;
  * Goal that updates main.js file with @JsModule, @HtmlImport and @Theme
  * annotations defined in the classpath.
  */
-@Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.COMPILE)
+@Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     /**
      * Name of the JavaScript file to update.

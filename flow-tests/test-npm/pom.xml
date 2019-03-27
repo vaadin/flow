@@ -200,7 +200,7 @@
                             <!-- Create production bundle -->
                             <execution>
                                 <id>webpack</id>
-                                <phase>compile</phase>
+                                <phase>prepare-package</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
                                     <executable>node</executable>
