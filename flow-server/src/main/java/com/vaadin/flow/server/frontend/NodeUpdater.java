@@ -41,13 +41,13 @@ public abstract class NodeUpdater implements Serializable {
     /**
      * NPM package name that will be used for the javascript files present in
      * jar resources that will to be copied to the npm folder so as they are
-     * accessible to webpack
+     * accessible to webpack.
      */
     public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
     static final String FLOW_PACKAGE_PARAMETER = "vaadin.frontend.flowPackagePath";
 
     /**
-     * Folder with the <code>package.json</code> file
+     * Folder with the <code>package.json</code> file.
      */
     protected String npmFolder;
 
@@ -106,7 +106,9 @@ public abstract class NodeUpdater implements Serializable {
             FileUtils.forceMkdir(destination.getParentFile());
             FileUtils.copyURLToFile(source, destination);
         }
-        log().info("Installed " + flowModules.size() + " " + FLOW_PACKAGE + " modules.");
+        if (log().isInfoEnabled()) {
+            log().info("Installed {} {} modules", flowModules.size(), FLOW_PACKAGE);
+        }
     }
 
     private URL getResourceUrl(String resource) {
