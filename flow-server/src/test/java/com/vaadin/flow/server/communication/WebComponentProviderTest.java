@@ -122,6 +122,7 @@ public class WebComponentProviderTest {
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
+        Mockito.when(request.getServletPath()).thenReturn("");
         Assert.assertTrue("Provider should handle web-component request",
                 provider.handleRequest(session, request, response));
         Mockito.verify(response).sendError(HttpServletResponse.SC_NOT_FOUND,
@@ -144,6 +145,7 @@ public class WebComponentProviderTest {
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
+        Mockito.when(request.getServletPath()).thenReturn("");
         Assert.assertTrue("Provider should handle web-component request",
                 provider.handleRequest(session, request, response));
 
@@ -171,6 +173,7 @@ public class WebComponentProviderTest {
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
+        Mockito.when(request.getServletPath()).thenReturn("");
         Assert.assertTrue("Provider should handle first web-component request",
                 provider.handleRequest(session, request, response));
 
