@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,7 @@ public class UpdateImportsMojoTest {
 
     private File importsFile;
     private final UpdateImportsMojo mojo = new UpdateImportsMojo();
+    private File nodeModulesPath;
 
     @Before
     public void setup() throws Exception {
@@ -56,7 +58,7 @@ public class UpdateImportsMojoTest {
 
         File tmpRoot = temporaryFolder.getRoot();
         importsFile = new File(tmpRoot, "flow-imports.js");
-        File nodeModulesPath = new File(tmpRoot, "node_modules");
+        nodeModulesPath = new File(tmpRoot, "node_modules");
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "jsFile", importsFile);
@@ -69,61 +71,66 @@ public class UpdateImportsMojoTest {
     }
 
     @Test
+    public void should_ThrowException_WhenImportsDoNotExist() {
+        deleteExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+
+        boolean exceptionNotThrown = true;
+        try {
+            mojo.execute();
+        } catch (IllegalStateException expected) {
+            exceptionNotThrown = false;
+            String exceptionMessage = expected.getMessage();
+            Assert.assertTrue(exceptionMessage.contains(importsFile.getAbsolutePath()));
+
+            String innerMessage = expected.getCause().getMessage();
+            Assert.assertTrue(innerMessage.contains(nodeModulesPath.getAbsolutePath()));
+            for (String expectedImport : getExpectedImports()) {
+                Assert.assertTrue(innerMessage.contains(expectedImport));
+            }
+        }
+
+        if (exceptionNotThrown) {
+            Assert.fail("Expected an exception to be thrown when no imported files exist");
+        }
+    }
+
+    @Test
     public void should_UpdateMainJsFile() throws IOException {
         Assert.assertFalse(importsFile.exists());
 
         mojo.execute();
 
-        assertContainsImports(true,
+        List<String> expectedLines = new ArrayList<>(Arrays.asList(
                 "const div = document.createElement('div');",
                 "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
                 "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-                "document.body.setAttribute('theme', 'dark');",
-                "@vaadin/vaadin-lumo-styles/icons.js",
-                "@vaadin/vaadin-lumo-styles/spacing.js",
-                "@vaadin/vaadin-lumo-styles/typography.js",
-                "@vaadin/vaadin-lumo-styles/color.js",
-                "@polymer/iron-icon/iron-icon.js",
-                "./foo-dir/vaadin-npm-component.js",
-                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
-                "@vaadin/vaadin-element-mixin/src/something-else.js",
-                "./local-p3-template.js",
-                "@polymer/iron-icon",
-                "./foo-dir/vaadin-npm-component.js",
-                "./local-p3-template.js",
-                "./foo.js",
-                "./local-p2-template.js");
+                "document.body.setAttribute('theme', 'dark');"));
+        expectedLines.addAll(getExpectedImports());
+
+        assertContainsImports(true, expectedLines.toArray(new String[0]));
     }
 
     @Test
     public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws IOException {
         Assert.assertFalse(importsFile.exists());
 
-        Assert.assertTrue(new File(mojo.getFlowPackage(), "foo.js").createNewFile());
+        String importToReplace = "foo.js";
+        Assert.assertTrue(new File(mojo.getFlowPackage(), importToReplace)
+                .createNewFile());
+
+        List<String> expectedLines = new ArrayList<>(Arrays.asList(
+                "const div = document.createElement('div');",
+                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
+                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
+                "document.body.setAttribute('theme', 'dark');"));
+        expectedLines.addAll(getExpectedImports());
+        expectedLines.replaceAll(jsImport -> jsImport.endsWith(importToReplace)
+                ? String.format("%s%s", FLOW_PACKAGE, importToReplace)
+                : jsImport);
 
         mojo.execute();
 
-        assertContainsImports(true,
-            "const div = document.createElement('div');",
-            "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-            "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-            "document.body.setAttribute('theme', 'dark');",
-            "@vaadin/vaadin-lumo-styles/icons.js",
-            "@vaadin/vaadin-lumo-styles/spacing.js",
-            "@vaadin/vaadin-lumo-styles/typography.js",
-            "@vaadin/vaadin-lumo-styles/color.js",
-            "@polymer/iron-icon/iron-icon.js",
-            "./foo-dir/vaadin-npm-component.js",
-            "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-            "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
-            "@vaadin/vaadin-element-mixin/src/something-else.js",
-            "./local-p3-template.js",
-            "@polymer/iron-icon",
-            "./foo-dir/vaadin-npm-component.js",
-            "./local-p3-template.js",
-            String.format("%sfoo.js", FLOW_PACKAGE),
-            "./local-p2-template.js");
+        assertContainsImports(true, expectedLines.toArray(new String[0]));
     }
 
     @Test
@@ -261,10 +268,20 @@ public class UpdateImportsMojoTest {
 
     private void createExpectedImports(File directoryWithImportsJs, File nodeModulesPath) throws IOException {
         for (String expectedImport : getExpectedImports()) {
-            File root = expectedImport.startsWith("./") ? directoryWithImportsJs : nodeModulesPath;
-            File newFile = new File(root, expectedImport);
+            File newFile = resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport);
             newFile.getParentFile().mkdirs();
             Assert.assertTrue(newFile.createNewFile());
         }
+    }
+
+    private void deleteExpectedImports(File directoryWithImportsJs, File nodeModulesPath) {
+        for (String expectedImport : getExpectedImports()) {
+            Assert.assertTrue(resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport).delete());
+        }
+    }
+
+    private File resolveImportFile(File directoryWithImportsJs, File nodeModulesPath, String jsImport) {
+        File root = jsImport.startsWith("./") ? directoryWithImportsJs : nodeModulesPath;
+        return new File(root, jsImport);
     }
 }
