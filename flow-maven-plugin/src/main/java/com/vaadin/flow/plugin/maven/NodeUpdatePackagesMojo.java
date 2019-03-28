@@ -46,22 +46,25 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getProjectClassPathUrls(project));
-            updater = new NodeUpdatePackages(extractor, webpackTemplate, npmFolder, nodeModulesPath, getOutputDirectory(),
-                    convertHtml);
+            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                    getProjectClassPathUrls(project));
+            updater = new NodeUpdatePackages(extractor,
+                    getWebpackOutputDirectory(), webpackTemplate, npmFolder,
+                    nodeModulesPath, convertHtml);
         }
         return updater;
     }
 
-    private File getOutputDirectory() {
+    private File getWebpackOutputDirectory() {
         Build buildInformation = project.getBuild();
         switch (project.getPackaging()) {
-        case "war": {
-            return new File(buildInformation.getOutputDirectory(),
-                    "classes/META-INF/resources");
-        }
         case "jar": {
-            return new File("target", buildInformation.getDirectory());
+            return new File(buildInformation.getOutputDirectory(),
+                    "META-INF/resources");
+        }
+        case "war": {
+            return new File(buildInformation.getDirectory(),
+                    buildInformation.getFinalName());
         }
         default:
             throw new IllegalStateException(String.format(
