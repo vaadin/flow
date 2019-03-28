@@ -67,4 +67,10 @@ public class TestComponents {
     public static class FlatImport extends Component {
     }
 
+    @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js")
+    @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-something-else.js")
+    public static class TranslatedImports extends Component {
+
+    }
+
 }
