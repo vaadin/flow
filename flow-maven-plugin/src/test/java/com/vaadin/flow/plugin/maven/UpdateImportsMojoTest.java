@@ -82,9 +82,14 @@ public class UpdateImportsMojoTest {
             Assert.assertTrue(exceptionMessage.contains(importsFile.getAbsolutePath()));
 
             String innerMessage = expected.getCause().getMessage();
-            Assert.assertTrue(innerMessage.contains(nodeModulesPath.getAbsolutePath()));
+            Assert.assertTrue(
+                    innerMessage + " is missing "
+                            + nodeModulesPath.getAbsolutePath(),
+                    innerMessage.contains(nodeModulesPath.getAbsolutePath()));
             for (String expectedImport : getExpectedImports()) {
-                Assert.assertTrue(innerMessage.contains(expectedImport));
+                Assert.assertTrue(
+                        innerMessage + " is missing " + expectedImport,
+                        innerMessage.contains(expectedImport));
             }
         }
 
