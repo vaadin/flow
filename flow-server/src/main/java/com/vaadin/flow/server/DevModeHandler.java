@@ -108,13 +108,14 @@ public class DevModeHandler implements Serializable {
 
         if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)
                 || !config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
+
             // Run updaters for  node dependencies and imports
             URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
             AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(urls);
-            if (!Boolean.getBoolean(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM)) {
+            if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
                 new NodeUpdatePackages(extractor).execute();
             }
-            if (!Boolean.getBoolean(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS)) {
+            if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
                 new NodeUpdateImports(extractor).execute();
             }
         }
@@ -230,23 +231,27 @@ public class DevModeHandler implements Serializable {
         }
 
         File directory = new File(WEBAPP_FOLDER).getAbsoluteFile();
-        if (!directory.exists()) {
-            getLogger().warn("Instance not created because cannot change to '{}'", directory);
-            return null;
-        }
-
         File webpack = new File(WEBPACK_SERVER);
-        if (!webpack.canExecute()) {
-            getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
-            return null;
-        } else if(!webpack.exists()) {
-            getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
-                    webpack);
-            return null;
+        File webpackConfig = new File(WEBPACK_CONFIG);
+
+        if (configuration.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
+            if (!directory.exists()) {
+                getLogger().warn("Instance not created because cannot change to '{}'", directory);
+                return null;
+            }
+
+            if (!webpack.canExecute()) {
+                getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
+                return null;
+            } else if(!webpack.exists()) {
+                getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
+                        webpack);
+                return null;
+            }
         }
 
-        File webpackConfig = new File(WEBPACK_CONFIG);
-        if (!webpackConfig.canRead()) {
+        if (configuration.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)
+                && !webpackConfig.canRead()) {
             getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
             return null;
         }
