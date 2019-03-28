@@ -13,16 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent;
+package com.vaadin.flow.server.webcomponent;
 
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebServlet;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-import com.vaadin.flow.server.VaadinServlet;
+/**
+ * Specifies the configuration annotations for web component exporters.
+ * <p>
+ * For internal use only.
+ *
+ * @author Vaadin Ltd
+ *
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@interface ConfigurationAnnotations {
 
-@WebServlet(urlPatterns = { "/vaadin-push/*" }, initParams = {
-        // @WebInitParam(name = "pushMode", value = "automatic"),
-        @WebInitParam(name = "pushURL", value = "/vaadin-push") })
-public class PushWebComponentServlet extends VaadinServlet {
-
+    /**
+     * Returns configuration annotations for web exporter classes.
+     *
+     * @return
+     */
+    Class<? extends Annotation>[] value();
 }

@@ -2,7 +2,6 @@ package com.vaadin.flow.server.startup;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.ERROR_MESSAGE_BEGINNING;
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT;
-import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_ROUTER_LAYOUT;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,7 +20,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
@@ -61,11 +59,6 @@ public class AnnotationValidatorTest {
     @Tag(Tag.DIV)
     @Viewport("width=device-width")
     public static class ViewPortViewportWithParent extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    @Push
-    public static class NonRoutePush extends Component {
     }
 
     @Tag(Tag.DIV)
@@ -115,25 +108,13 @@ public class AnnotationValidatorTest {
     }
 
     @Test
-    public void onStartUp_non_linked_push_throws() throws ServletException {
-        expectedEx.expect(InvalidApplicationConfigurationException.class);
-        expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING
-                + String.format(NON_ROUTER_LAYOUT, NonRoutePush.class.getName(),
-                        Push.class.getSimpleName()));
-
-        annotationValidator.onStartup(
-                Stream.of(NonRoutePush.class).collect(Collectors.toSet()),
-                servletContext);
-    }
-
-    @Test
     public void onStartUp_all_failing_annotations_are_marked_for_class()
             throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
                 NON_PARENT, FailingMultiAnnotation.class.getName(),
-                Inline.class.getSimpleName() + ", "
-                        + BodySize.class.getSimpleName()));
+                BodySize.class.getSimpleName() + ", "
+                        + Inline.class.getSimpleName()));
 
         annotationValidator.onStartup(Stream.of(FailingMultiAnnotation.class)
                 .collect(Collectors.toSet()), servletContext);

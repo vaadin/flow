@@ -18,12 +18,17 @@ package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.shared.communication.PushMode;
 
 @Tag("embedded-push")
-public class PushTestExporter implements WebComponentExporter<UpdateServerSideWebComponent> {
+@Push(value = PushMode.AUTOMATIC)
+public class PushTestExporter
+        implements WebComponentExporter<UpdateServerSideWebComponent> {
     @Override
-    public void define(WebComponentDefinition<UpdateServerSideWebComponent> definition) {
+    public void define(
+            WebComponentDefinition<UpdateServerSideWebComponent> definition) {
         // UpdateServerSideWebComponent does not have any properties
     }
 }
