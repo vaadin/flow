@@ -124,8 +124,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         return Stream.concat(
                 Stream.of(AnnotationValidator.class
                         .getAnnotation(HandlesTypes.class).value()),
-                Stream.of(ThemeValidator.class.getAnnotation(HandlesTypes.class)
-                        .value()));
+                Stream.of(WebComponentExporterAwareValidator.class
+                        .getAnnotation(HandlesTypes.class).value()));
     }
 
     /* Route validator methods for bootstrap implementations */

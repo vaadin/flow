@@ -16,13 +16,13 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -30,12 +30,12 @@ import javax.servlet.ServletContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -43,6 +43,7 @@ import com.vaadin.flow.theme.Theme;
  *
  * @since
  */
+@ConfigurationAnnotations({ Theme.class, Push.class })
 public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
@@ -55,7 +56,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
     private HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = null;
     private HashMap<String, WebComponentConfigurationImpl<? extends Component>> builderCache = new HashMap<>();
 
-    private AtomicReference<Class<? extends AbstractTheme>> webComponentsTheme = new AtomicReference<>();
+    private Map<Class<? extends Annotation>, Annotation> configuratoinAnnotations;
 
     /**
      * Protected constructor for internal OSGi extensions.
@@ -145,7 +146,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             } else {
                 exporterClasses = new HashMap<>(exporters);
             }
-            updateTheme();
+            updateConfiguration();
             // since we updated our exporter selection, we need to clear our
             // builder cache
             builderCache.clear();
@@ -198,17 +199,24 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
-     * Returns a web components theme.
+     * Returns a web components configuration annotation.
      * <p>
-     * Only one theme may be used for the web components. The theme may be
-     * declared at any web component. If there are web components which declares
-     * different themes then {@link IllegalStateException} is thrown during the
-     * web components scanning.
+     * {@link WebComponentExporter} classes may have
      *
      * @return
      */
-    public Optional<Class<? extends AbstractTheme>> getTheme() {
-        return Optional.ofNullable(webComponentsTheme.get());
+    public <T extends Annotation> Optional<T> getConfigurationAnnotation(
+            Class<T> type) {
+        configurationLock.lock();
+        try {
+            if (configuratoinAnnotations == null) {
+                return Optional.empty();
+            }
+            return Optional
+                    .ofNullable(type.cast(configuratoinAnnotations.get(type)));
+        } finally {
+            configurationLock.unlock();
+        }
     }
 
     /**
@@ -264,24 +272,45 @@ public class WebComponentConfigurationRegistry implements Serializable {
         }
     }
 
-    private void updateTheme() {
+    private void updateConfiguration() {
         assert configurationLock.isHeldByCurrentThread();
-        Set<Class<? extends AbstractTheme>> themeClasses = exporterClasses
-                .values().stream()
-                .map(exporter -> AnnotationReader.getAnnotationValueFor(
-                        exporter, Theme.class, Theme::value))
-                .filter(Optional::isPresent).map(Optional::get)
-                .collect(Collectors.toSet());
-        if (themeClasses.size() > 1) {
-            throw new IllegalStateException(
-                    "Several themes are declared for the web component exporters: "
-                            + themeClasses.stream().map(Class::getName)
-                                    .collect(Collectors.joining(", ")));
+
+        if (configuratoinAnnotations != null) {
+            return;
         }
-        if (themeClasses.size() == 1) {
-            webComponentsTheme.compareAndSet(null,
-                    themeClasses.iterator().next());
+
+        Optional<Class<? extends Annotation>[]> annotationTypes = AnnotationReader
+                .getAnnotationValueFor(WebComponentConfigurationRegistry.class,
+                        ConfigurationAnnotations.class,
+                        ConfigurationAnnotations::value);
+
+        Map<Class<? extends Annotation>, Annotation> map = new HashMap<>();
+
+        exporterClasses.values().stream()
+                .forEach(exporter -> addConfigurationAnnottion(exporter,
+                        annotationTypes.get(), map));
+        configuratoinAnnotations = map;
+    }
+
+    private void addConfigurationAnnottion(
+            Class<? extends WebComponentExporter<? extends Component>> exporter,
+            Class<? extends Annotation>[] types,
+            Map<Class<? extends Annotation>, Annotation> map) {
+        for (Class<? extends Annotation> type : types) {
+            Annotation annotation = map.get(type);
+            Annotation exporterAnnotation = exporter.getAnnotation(type);
+            if (exporterAnnotation == null) {
+                continue;
+            }
+            if (annotation != null && !annotation.equals(exporterAnnotation)) {
+                throw new IllegalStateException(String.format(
+                        "Different annotations of type '%s' are declared for the web component exporters: %s, %s",
+                        type.getName(), annotation.toString(),
+                        exporterAnnotation.toString()));
+            }
+            map.put(type, exporter.getAnnotation(type));
         }
+
     }
 
     private static WebComponentConfigurationRegistry createRegistry(

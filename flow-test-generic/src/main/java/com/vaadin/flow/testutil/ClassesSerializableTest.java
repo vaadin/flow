@@ -149,6 +149,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.push\\.osgi\\.PushOsgiStaticResource",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
+                "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
 
                 //Various test classes
                 ".*\\.test(s)?\\..*",

@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.ParentLayout;
@@ -97,6 +96,21 @@ public abstract class AbstractAnnotationValidator implements Serializable {
         return ERROR_MESSAGE_BEGINNING;
     }
 
+    /**
+     * Returns the validation annotations declared for the {@code clazz}.
+     *
+     * @param clazz
+     *            the type to get validation annotations
+     * @return comma separated list of validation annotation declared for the
+     *         {@code clazz}
+     */
+    protected String getClassAnnotations(Class<?> clazz) {
+        return getAnnotations().stream()
+                .filter(ann -> clazz
+                        .isAnnotationPresent((Class<? extends Annotation>) ann))
+                .map(Class::getSimpleName).collect(Collectors.joining(", "));
+    }
+
     private List<String> validateAnnotatedClasses(
             Collection<Class<?>> classSet) {
         List<String> offendingAnnotations = new ArrayList<>();
@@ -129,11 +143,4 @@ public abstract class AbstractAnnotationValidator implements Serializable {
         return offendingAnnotations;
     }
 
-    private String getClassAnnotations(Class<?> clazz) {
-        List<String> faultyAnnotations = Stream.of(clazz.getAnnotations())
-                .map(Annotation::annotationType)
-                .filter(getAnnotations()::contains).map(Class::getSimpleName)
-                .collect(Collectors.toList());
-        return String.join(", ", faultyAnnotations);
-    }
 }

@@ -27,15 +27,17 @@ import javax.servlet.annotation.HandlesTypes;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.theme.Theme;
 
 /**
- * Validation class that is run during servlet container initialization which
- * checks that specific annotations are not configured wrong.
+ * Checks that specific annotations are not configured wrong.
+ * <p>
+ * The validation is run during servlet container initialization.
  */
-@HandlesTypes(Theme.class)
-public class ThemeValidator extends AbstractAnnotationValidator
-        implements ServletContainerInitializer {
+@HandlesTypes({ Theme.class, Push.class })
+public class WebComponentExporterAwareValidator extends
+        AbstractAnnotationValidator implements ServletContainerInitializer {
 
     @Override
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
@@ -52,13 +54,13 @@ public class ThemeValidator extends AbstractAnnotationValidator
         return Optional.of(String.format(
                 "Class '%s' contains '%s', but it is not a router "
                         + "layout/top level route/web component.",
-                clazz.getName(), Theme.class.getName()));
+                clazz.getName(), getClassAnnotations(clazz)));
     }
 
     @Override
     protected String getErrorHint() {
-        return "Found " + Theme.class.getSimpleName()
-                + " annotations that will not be used in the application. \n"
+        return "Found configuration annotations"
+                + " that will not be used in the application. \n"
                 + "Move it to a single route/a top router layout/web component of the application. \n";
     }
 
