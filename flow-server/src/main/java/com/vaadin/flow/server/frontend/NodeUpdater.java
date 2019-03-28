@@ -136,6 +136,7 @@ public abstract class NodeUpdater implements Serializable {
     }
 
     Logger log() {
-        return LoggerFactory.getLogger(this.getClass());
+        // Using short prefix so as npm output is more readable
+        return LoggerFactory.getLogger("dev-updater");
     }
 }
