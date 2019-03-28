@@ -250,13 +250,11 @@ public class DevModeHandler implements Serializable {
             }
         }
 
-        if (configuration.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
-            if (!webpackConfig.canRead()) {
-                getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
-                return null;
-            }
+        if (configuration.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)
+                && !webpackConfig.canRead()) {
+            getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
+            return null;
         }
-
 
         return new DevModeHandler(configuration, directory, webpack, webpackConfig);
     }
