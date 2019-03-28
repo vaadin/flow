@@ -2,6 +2,7 @@ package com.vaadin.flow.component.polymertemplate;
 
 import java.util.Collections;
 
+import org.jsoup.UncheckedIOException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,7 +108,7 @@ public class NpmTemplateParserTest {
                         .tag().toString());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = UncheckedIOException.class)
     public void should_throwException_when_LocalFileNotFound() {
         Mockito.when(configuration
                 .getStringProperty(Mockito.anyString(), Mockito.anyString()))

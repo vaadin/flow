@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import org.jsoup.UncheckedIOException;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +99,11 @@ public class NpmTemplateParser implements TemplateParser {
             String url = dependency.getUrl();
             String source = getSourcesFromTemplate(tag, url);
             if (source == null) {
-                source = getSourcesFromStats(service, tag, url);
+                try {
+                    source = getSourcesFromStats(service, tag, url);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
 
             if (source != null) {
@@ -130,7 +135,7 @@ public class NpmTemplateParser implements TemplateParser {
         return null;
     }
 
-    private String getSourcesFromStats(VaadinService service, String tag, String url) {
+    private String getSourcesFromStats(VaadinService service, String tag, String url) throws IOException  {
         String stats = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON, STATISTICS_JSON_DEFAULT)
                 // Remove absolute
@@ -141,31 +146,25 @@ public class NpmTemplateParser implements TemplateParser {
         if (content != null) {
             getLogger().debug("Found sources for the tag '{}' in the stats file '{}'", tag, stats);
         } else {
-
-            // Try stats from web context
-            try {
-                URL statsUrl;
-                if (service.getDeploymentConfiguration().isProductionMode()) {
-                    // in production stats is taken from the web resources
-                    statsUrl = service.getStaticResource("/" + stats);
-                } else {
-                    // in devmode is taken from webpack via http
-                    String port = service.getDeploymentConfiguration()
-                            .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
-                    if (port == null || port.isEmpty()) {
-                        throw new IllegalStateException("Unable to get webpack port via "
-                                + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT + " property");
-                    }
-                    statsUrl = new URL("http://localhost:" + port + "/" + stats);
+            URL statsUrl;
+            if (service.getDeploymentConfiguration().isProductionMode()) {
+                // in production stats file is taken from the web resources
+                statsUrl = service.getStaticResource("/" + stats);
+            } else {
+                // in devmode stats file is taken from webpack via http
+                String port = service.getDeploymentConfiguration()
+                        .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
+                if (port == null || port.isEmpty()) {
+                    throw new IllegalStateException("Unable to get webpack port via "
+                            + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT + " property");
                 }
+                statsUrl = new URL("http://localhost:" + port + "/" + stats);
+            }
 
-                if (statsUrl != null) {
-                    statsUrl.openConnection();
-                    content = statsUrl.openStream();
-                    getLogger().debug("Found sources for the tag '{}' in the stats url '{}'", tag, statsUrl);
-                }
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
+            if (statsUrl != null) {
+                statsUrl.openConnection();
+                content = statsUrl.openStream();
+                getLogger().debug("Found sources for the tag '{}' in the stats url '{}'", tag, statsUrl);
             }
         }
         if (content != null) {
