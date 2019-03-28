@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,6 +30,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
+
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
@@ -44,18 +44,16 @@ public abstract class NodeUpdater implements Serializable {
      * accessible to webpack.
      */
     public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
-    static final String FLOW_PACKAGE_PARAMETER = "vaadin.frontend.flowPackagePath";
 
     /**
      * Folder with the <code>package.json</code> file.
      */
-    protected String npmFolder;
+    protected File npmFolder;
 
     /**
-     * The relative path to the Flow package. Always relative to
-     * {@link NodeUpdater#npmFolder}.
+     * The path to the {@literal node_modules} directory of the project.
      */
-    protected String flowPackagePath;
+    protected File nodeModulesPath;
 
     /**
      * Enable or disable legacy components annotated only with
@@ -65,7 +63,7 @@ public abstract class NodeUpdater implements Serializable {
 
     AnnotationValuesExtractor annotationValuesExtractor;
 
-    private Set<String> flowModules = new HashSet<>();
+    private final Set<String> flowModules = new HashSet<>();
 
     /**
      * Execute the update process.
@@ -73,7 +71,7 @@ public abstract class NodeUpdater implements Serializable {
     public abstract void execute();
 
     public File getFlowPackage() {
-        return new File(npmFolder, flowPackagePath);
+        return new File(nodeModulesPath, FLOW_PACKAGE);
     }
 
     Set<String> getHtmlImportJsModules(Set<String> htmlImports) {

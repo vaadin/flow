@@ -23,12 +23,12 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
@@ -46,96 +46,83 @@ public class UpdateImportsMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private String importsFile;
+    private File importsFile;
+    private File nodeModulesPath;
     private final NodeUpdateImportsMojo mojo = new NodeUpdateImportsMojo();
 
     @Before
-    public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {
+    public void setup() throws Exception {
         MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
         File tmpRoot = temporaryFolder.getRoot();
-        importsFile = new File(tmpRoot, "flow-imports.js").getAbsolutePath();
+        importsFile = new File(tmpRoot, "flow-imports.js");
+        nodeModulesPath = new File(tmpRoot, "node_modules");
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "jsFile", importsFile);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
-        ReflectionUtils.setVariableValueInObject(mojo, "flowPackagePath", "flow-packages");
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         Assert.assertTrue(mojo.getUpdater().getFlowPackage().mkdirs());
+
+        createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+    }
+
+    @Test
+    public void should_ThrowException_WhenImportsDoNotExist() {
+        deleteExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+
+        boolean exceptionNotThrown = true;
+        try {
+            mojo.execute();
+        } catch (IllegalStateException expected) {
+            exceptionNotThrown = false;
+            String exceptionMessage = expected.getMessage();
+            Assert.assertTrue(exceptionMessage.contains(importsFile.getAbsolutePath()));
+
+            String innerMessage = expected.getCause().getMessage();
+            Assert.assertTrue(innerMessage.contains(nodeModulesPath.getAbsolutePath()));
+            for (String expectedImport : getExpectedImports()) {
+                Assert.assertTrue(innerMessage.contains(expectedImport));
+            }
+        }
+
+        if (exceptionNotThrown) {
+            Assert.fail("Expected an exception to be thrown when no imported files exist");
+        }
     }
 
     @Test
     public void should_UpdateMainJsFile() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(importsFile));
+        Assert.assertFalse(importsFile.exists());
 
-        mojo.execute();
-
-        assertContainsImports(true,
-                "const div = document.createElement('div');",
-                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-                "document.body.setAttribute('theme', 'dark');",
-                "@vaadin/vaadin-lumo-styles/icons.js",
-                "@vaadin/vaadin-lumo-styles/spacing.js",
-                "@vaadin/vaadin-lumo-styles/typography.js",
-                "@vaadin/vaadin-lumo-styles/color.js",
-                "@polymer/iron-icon/iron-icon.js",
-                "./foo-dir/vaadin-npm-component.js",
-                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
-                "@vaadin/vaadin-element-mixin/src/something-else.js",
-                "./local-p3-template.js",
-                "@polymer/iron-icon",
-                "./foo-dir/vaadin-npm-component.js",
-                "./local-p3-template.js",
-                "./foo.js",
-                "./local-p2-template.js");
-    }
-
-    @Test
-    public void should_UseFlowModuleFiles_WhenUpdatingMainJsFile() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(importsFile));
-
-        mojo.execute();
-
-        assertContainsImports(true,
+        List<String> expectedLines = new ArrayList<>(Arrays.asList(
             "const div = document.createElement('div');",
             "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
             "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-            "document.body.setAttribute('theme', 'dark');",
-            "@vaadin/vaadin-lumo-styles/icons.js",
-            "@vaadin/vaadin-lumo-styles/spacing.js",
-            "@vaadin/vaadin-lumo-styles/typography.js",
-            "@vaadin/vaadin-lumo-styles/color.js",
-            "@polymer/iron-icon/iron-icon.js",
-            "./foo-dir/vaadin-npm-component.js",
-            "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-            "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
-            "@vaadin/vaadin-element-mixin/src/something-else.js",
-            "./local-p3-template.js",
-            "@polymer/iron-icon",
-            "./foo-dir/vaadin-npm-component.js",
-            "./local-p3-template.js",
-            "@vaadin/flow-frontend/ExampleConnector.js",
-            "./local-p2-template.js");
+            "document.body.setAttribute('theme', 'dark');"));
+        expectedLines.addAll(getExpectedImports());
+
+        mojo.execute();
+
+        assertContainsImports(true, expectedLines.toArray(new String[0]));
 
         Assert.assertTrue(mojo.getUpdater().getFlowPackage().exists());
         Assert.assertTrue(new File(mojo.getUpdater().getFlowPackage(), "ExampleConnector.js").exists());
-
     }
 
     @Test
     public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
         mojo.execute();
-        long timestamp1 = FileUtils.getFile(importsFile).lastModified();
+        long timestamp1 = importsFile.lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
         mojo.execute();
-        long timestamp2 = FileUtils.getFile(importsFile).lastModified();
+        long timestamp2 = importsFile.lastModified();
 
-        Assert.assertTrue(timestamp1 == timestamp2);
+        Assert.assertEquals(timestamp1, timestamp2);
     }
 
     @Test
@@ -211,7 +198,7 @@ public class UpdateImportsMojoTest {
     private void removeImports(String... imports) throws IOException {
         List<String> importsList = Arrays.asList(imports);
 
-        List<String> current = FileUtils.loadFile(new File(importsFile));
+        List<String> current = FileUtils.loadFile(importsFile);
 
         Set<String> removed = current.stream()
                 .filter(line -> importsList.stream()
@@ -235,8 +222,46 @@ public class UpdateImportsMojoTest {
 
     private void replaceJsFile(String content, OpenOption... options)
             throws IOException {
-        Files.write(Paths.get(new File(importsFile).toURI()),
+        Files.write(Paths.get(importsFile.toURI()),
                 content.getBytes(StandardCharsets.UTF_8), options);
     }
 
+    private List<String> getExpectedImports() {
+        return Arrays.asList(
+            "@polymer/iron-icon/iron-icon.js",
+            "@vaadin/vaadin-lumo-styles/spacing.js",
+            "@vaadin/vaadin-lumo-styles/icons.js",
+            "@vaadin/vaadin-lumo-styles/style.js",
+            "@vaadin/vaadin-lumo-styles/typography.js",
+            "@vaadin/vaadin-lumo-styles/color.js",
+            "@vaadin/vaadin-lumo-styles/sizing.js",
+            "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
+            "@vaadin/vaadin-element-mixin/src/something-else.js",
+            "@vaadin/flow-frontend/ExampleConnector.js",
+            "./local-p3-template.js",
+            "./foo.js",
+            "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+            "./local-p2-template.js",
+            "./foo-dir/vaadin-npm-component.js"
+        );
+    }
+
+    private void createExpectedImports(File directoryWithImportsJs, File nodeModulesPath) throws IOException {
+        for (String expectedImport : getExpectedImports()) {
+            File newFile = resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport);
+            newFile.getParentFile().mkdirs();
+            Assert.assertTrue(newFile.createNewFile());
+        }
+    }
+
+    private void deleteExpectedImports(File directoryWithImportsJs, File nodeModulesPath) {
+        for (String expectedImport : getExpectedImports()) {
+            Assert.assertTrue(resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport).delete());
+        }
+    }
+
+    private File resolveImportFile(File directoryWithImportsJs, File nodeModulesPath, String jsImport) {
+        File root = jsImport.startsWith("./") ? directoryWithImportsJs : nodeModulesPath;
+        return new File(root, jsImport);
+    }
 }

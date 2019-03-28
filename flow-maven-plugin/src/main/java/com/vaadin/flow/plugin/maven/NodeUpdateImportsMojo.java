@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import java.io.File;
+
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -31,16 +33,16 @@ import com.vaadin.flow.server.frontend.NodeUpdater;
 @Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     /**
-     * Name of the JavaScript file to update.
+     * A Flow JavaScript file with all project's imports to update.
      */
     @Parameter(defaultValue = "${project.basedir}/" + NodeUpdateImports.MAIN_JS)
-    private String jsFile;
+    private File jsFile;
 
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
             AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getProjectClassPathUrls(project));
-            updater = new NodeUpdateImports(extractor, jsFile, npmFolder.getPath(), flowPackagePath, convertHtml);
+            updater = new NodeUpdateImports(extractor, jsFile, npmFolder, nodeModulesPath, convertHtml);
         }
         return updater;
     }
