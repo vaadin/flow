@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -84,7 +83,7 @@ public class WebComponentConfigurationImpl<C extends Component>
         Optional<Tag> tagAnnotation =
                 AnnotationReader.getAnnotationFor(exporter.getClass(), Tag.class);
         if (!tagAnnotation.isPresent()) {
-            throw new InvalidParameterException(String.format("'%s' is " +
+            throw new IllegalArgumentException(String.format("'%s' is " +
                     "missing @%s annotation!",
                     exporter.getClass().getCanonicalName(),
                     Tag.class.getSimpleName()));

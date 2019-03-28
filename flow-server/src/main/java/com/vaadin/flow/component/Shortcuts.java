@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.component;
 
-import java.security.InvalidParameterException;
-
 import com.vaadin.flow.server.Command;
 
 
@@ -60,14 +58,14 @@ public final class Shortcuts {
             Component lifecycleOwner, Command command, Key key,
             KeyModifier... keyModifiers) {
         if (lifecycleOwner == null) {
-            throw new InvalidParameterException(String.format(NULL,
+            throw new IllegalArgumentException(String.format(NULL,
                     "lifecycleOwner"));
         }
         if (command == null) {
-            throw new InvalidParameterException(String.format(NULL, "command"));
+            throw new IllegalArgumentException(String.format(NULL, "command"));
         }
         if (key == null) {
-            throw new InvalidParameterException(String.format(NULL, "key"));
+            throw new IllegalArgumentException(String.format(NULL, "key"));
         }
         return new ShortcutRegistration(lifecycleOwner, UI::getCurrent,
                 event -> command.execute(), key).withModifiers(keyModifiers);
@@ -105,15 +103,15 @@ public final class Shortcuts {
             KeyModifier... keyModifiers) {
 
         if (lifecycleOwner == null) {
-            throw new InvalidParameterException(String.format(NULL,
+            throw new IllegalArgumentException(String.format(NULL,
                     "lifecycleOwner"));
         }
         if (listener == null) {
-            throw new InvalidParameterException(String.format(NULL,
+            throw new IllegalArgumentException(String.format(NULL,
                     "listener"));
         }
         if (key == null) {
-            throw new InvalidParameterException(String.format(NULL, "key"));
+            throw new IllegalArgumentException(String.format(NULL, "key"));
         }
         return new ShortcutRegistration(lifecycleOwner, UI::getCurrent,
                 listener, key).withModifiers(keyModifiers);

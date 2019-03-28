@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -75,7 +74,7 @@ public class WebComponentBindingImpl<C extends Component>
         PropertyBinding<?> propertyBinding = properties.get(propertyName);
 
         if (propertyBinding == null) {
-            throw new InvalidParameterException(
+            throw new IllegalArgumentException(
                     String.format("No %s found for propertyName '%s'!",
                             PropertyData.class.getSimpleName(), propertyName));
         }

@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import java.security.InvalidParameterException;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,7 +73,7 @@ public class WebComponentImplTest {
 
     @Test
     public void setProperty_throwsIfConfigurationIsNotAValidImplementation() {
-        exception.expect(InvalidParameterException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("must be an implementation of");
 
         webComponent.setProperty(new CustomConfiguration(), "value");
@@ -83,7 +81,7 @@ public class WebComponentImplTest {
 
     @Test
     public void setProperty_throwsOnUnknownProperty() {
-        exception.expect(InvalidParameterException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("WebComponent does not have a property identified");
 
         WebComponentBinding<Component> binding =
@@ -103,7 +101,7 @@ public class WebComponentImplTest {
 
     @Test
     public void setProperty_throwsWhenGivenWrongPropertyTypeAsParameter() {
-        exception.expect(InvalidParameterException.class);
+        exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Property 'property' of type " +
                 "'java.lang.Integer' cannot be assigned value of type " +
                 "'java.lang.String'!");
