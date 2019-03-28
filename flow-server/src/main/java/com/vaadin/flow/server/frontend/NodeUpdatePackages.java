@@ -60,31 +60,34 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private static final String VALUE = "value";
     private final String webpackTemplate;
-    private final File outputDirectory;
+    private final File webpackOutputDirectory;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
      * @param extractor
      *            a reusable annotation extractor
+     * @param webpackOutputDirectory
+     *            the directory to set for
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file
      * @param npmFolder
      *            folder with the `package.json` file
-     * @param outputDirectory
-     *          TODO kb
      * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the project
+     *            the path to the {@literal node_modules} directory of the
+     *            project
      * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
+     *            whether to convert html imports or not during the package
+     *            updatesΩ
      */
-    public NodeUpdatePackages(AnnotationValuesExtractor extractor, String webpackTemplate, File npmFolder, File outputDirectory,
+    public NodeUpdatePackages(AnnotationValuesExtractor extractor,
+            File webpackOutputDirectory, String webpackTemplate, File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
-        this.outputDirectory = outputDirectory;
+        this.webpackOutputDirectory = webpackOutputDirectory;
         this.webpackTemplate = webpackTemplate;
         this.convertHtml = convertHtml;
     }
@@ -97,7 +100,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, WEBPACK_CONFIG, new File("."), null, // TODO kb
+        this(extractor, null, WEBPACK_CONFIG, new File("."),
                 new File("./node_modules/"), true);
     }
 
@@ -139,7 +142,7 @@ public class NodeUpdatePackages extends NodeUpdater {
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(resource.openStream()))) {
                 List<String> webpackConfigLines = br.lines()
-                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", outputDirectory.getPath()))
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
                 log().info("Created {} from {}", WEBPACK_CONFIG, resource);
