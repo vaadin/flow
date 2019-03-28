@@ -359,9 +359,9 @@ public class UidlWriter implements Serializable {
                   "try{"
                 +   "Promise.resolve((function(){"
                 +     expression
-                +   "})()).then($"+successIndex+",$"+errorIndex+")"
+                +   "})()).then($"+successIndex+",function(error){$"+errorIndex+"(''+error)})"
                 + "}catch(error){"
-                +   "$"+errorIndex+"(error)"
+                +   "$"+errorIndex+"(''+error)"
                 + "}";
             //@formatter:on
         }
