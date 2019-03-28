@@ -20,11 +20,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -34,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.TestUtils;
@@ -49,33 +51,37 @@ public class UpdateNpmDependenciesMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    MavenProject project;
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-    NodeUpdatePackagesMojo mojo = new NodeUpdatePackagesMojo();
+    private String packageJson;
+    private String webpackConfig;
 
-    String packageJson;
-    String webpackConfig;
+    private final NodeUpdatePackagesMojo mojo = new NodeUpdatePackagesMojo();
 
     @Before
-    public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {
-        Build buildMock = mock(Build.class);
-        when(buildMock.getOutputDirectory()).thenReturn("target");
-        when(buildMock.getDirectory()).thenThrow(new AssertionError("Unexpected method call"));
-
-        project = mock(MavenProject.class);
-        when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
-        when(project.getPackaging()).thenReturn("war");
-        when(project.getBuild()).thenReturn(buildMock);
-
+    public void setup() throws Exception {
         File tmpRoot = temporaryFolder.getRoot();
         packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
 
-        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", new File(tmpRoot, "node_modules"));
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
+        setProject("war", "war_output");
+    }
+
+    private void setProject(String packaging, String outputDirectory) throws Exception {
+        Build buildMock = mock(Build.class);
+        when(buildMock.getOutputDirectory()).thenReturn(outputDirectory);
+        when(buildMock.getDirectory()).thenReturn(outputDirectory);
+
+        MavenProject project = mock(MavenProject.class);
+        when(project.getPackaging()).thenReturn(packaging);
+        when(project.getBuild()).thenReturn(buildMock);
+        when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
+        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
     }
 
     static List<String> getClassPath() {
@@ -103,12 +109,48 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     @Test
-    public void assertWebpackContent() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(packageJson));
+    public void assertWebpackContent_jar() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
+        final String expectedOutput = "jar_output";
+        setProject("jar", expectedOutput);
 
         mojo.execute();
 
-        System.out.println("!!!");
+        Files.lines(Paths.get(webpackConfig))
+            .peek(line -> Assert.assertFalse(line.contains("{{")))
+            .filter(line -> line.contains(expectedOutput))
+            .findAny()
+            .orElseThrow(() -> new AssertionError(String.format(
+                "Did not find expected output directory '%s' in the resulting webpack config",
+                expectedOutput)));
+    }
+
+    @Test
+    public void assertWebpackContent_war() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
+        String expectedOutput = "war_output";
+        setProject("war", expectedOutput);
+
+        mojo.execute();
+
+        Files.lines(Paths.get(webpackConfig))
+            .peek(line -> Assert.assertFalse(line.contains("{{")))
+            .filter(line -> line.contains(expectedOutput))
+            .findAny()
+                .orElseThrow(() -> new AssertionError(String.format(
+                        "Did not find expected output directory '%s' in the resulting webpack config",
+                        expectedOutput)));
+    }
+
+    @Test
+    public void assertWebpackContent_NotWarNotJar() throws Exception {
+        String unexpectedPackaging = "notWarAndNotJar";
+
+        setProject(unexpectedPackaging, "whatever");
+
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(unexpectedPackaging);
+        mojo.execute();
     }
 
     @Test
