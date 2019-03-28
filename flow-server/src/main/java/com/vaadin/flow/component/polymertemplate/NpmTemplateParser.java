@@ -64,8 +64,8 @@ public class NpmTemplateParser implements TemplateParser {
 
     private static final TemplateParser INSTANCE = new NpmTemplateParser();
 
-    private HashMap<String, String> cache = new HashMap<>();
-    private ReentrantLock lock = new ReentrantLock();
+    private final HashMap<String, String> cache = new HashMap<>();
+    private final ReentrantLock lock = new ReentrantLock();
     private JsonObject jsonStats;
 
     private NpmTemplateParser() {
