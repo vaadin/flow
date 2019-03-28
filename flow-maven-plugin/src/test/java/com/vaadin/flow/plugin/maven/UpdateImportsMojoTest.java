@@ -254,6 +254,8 @@ public class UpdateImportsMojoTest {
             "@vaadin/vaadin-lumo-styles/sizing.js",
             "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
             "@vaadin/vaadin-element-mixin/src/something-else.js",
+            "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+            "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
             "@vaadin/flow-frontend/ExampleConnector.js",
             "./local-p3-template.js",
             "./foo.js",

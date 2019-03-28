@@ -150,17 +150,17 @@ public class NodeUpdateImports extends NodeUpdater {
             String translatedModulePath = originalModulePath;
             if (theme != null) {
                 String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
-                // to-do(manolo): disabled for certain files because not all files have corresponding themed one.
-                // e.g. vaadin-upload/src/vaadin-upload.js and vaadin-upload/theme/lumo/vaadin-upload.js exist
-                // but vaadin-upload/src/vaadin-upload-file.js does not.
-                // ticket: https://github.com/vaadin/flow/issues/5244
-                if (translatedModulePath.matches(".*(vaadin-[^/]+)/" + baseUrl + "\\1\\.(js|html)")) {
+                if (translatedModulePath.matches(".*(vaadin-[^/]+)/" + baseUrl + ".*vaadin-[^/]+\\.(js|html)")) {
                     translatedModulePath = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
                         translatedModulePath);
                 }
             }
             if (importedFileExists(translatedModulePath)) {
                 imports.add("import '" + translatedModulePath + "';");
+
+            } else if (importedFileExists(originalModulePath)) {
+                imports.add("import '" + originalModulePath + "';");
+
             } else {
                 unresolvedImports.put(originalModulePath, translatedModulePath);
             }
