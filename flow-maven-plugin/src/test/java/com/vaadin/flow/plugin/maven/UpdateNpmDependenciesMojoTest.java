@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
@@ -34,7 +35,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
 
@@ -42,6 +42,8 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class UpdateNpmDependenciesMojoTest {
     @Rule
@@ -56,8 +58,14 @@ public class UpdateNpmDependenciesMojoTest {
 
     @Before
     public void setup() throws DependencyResolutionRequiredException, IllegalAccessException {
-        project = Mockito.mock(MavenProject.class);
-        Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
+        Build buildMock = mock(Build.class);
+        when(buildMock.getOutputDirectory()).thenReturn("target");
+        when(buildMock.getDirectory()).thenThrow(new AssertionError("Unexpected method call"));
+
+        project = mock(MavenProject.class);
+        when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
+        when(project.getPackaging()).thenReturn("war");
+        when(project.getBuild()).thenReturn(buildMock);
 
         File tmpRoot = temporaryFolder.getRoot();
         packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
@@ -72,11 +80,11 @@ public class UpdateNpmDependenciesMojoTest {
 
     static List<String> getClassPath() {
         // Add folder with test classes
-        List<String> classPaths = new ArrayList<>(Arrays.asList("target/test-classes"));
-
-        // Add this test jar which has some frontend resources used in tests
-        File jar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
-        classPaths.add(jar.getPath());
+        List<String> classPaths = new ArrayList<>(Arrays.asList(
+            "target/test-classes",
+            // Add this test jar which has some frontend resources used in tests
+            TestUtils.getTestJar("jar-with-frontend-resources.jar").getPath()
+        ));
 
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -92,6 +100,15 @@ public class UpdateNpmDependenciesMojoTest {
     public void teardown() {
         FileUtils.fileDelete(packageJson);
         FileUtils.fileDelete(webpackConfig);
+    }
+
+    @Test
+    public void assertWebpackContent() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(packageJson));
+
+        mojo.execute();
+
+        System.out.println("!!!");
     }
 
     @Test
@@ -125,8 +142,8 @@ public class UpdateNpmDependenciesMojoTest {
 
         Assert.assertTrue(tsPackage1 < tsPackage2);
         Assert.assertTrue(tsWebpack1 < tsWebpack2);
-        Assert.assertTrue(tsPackage2 == tsPackage3);
-        Assert.assertTrue(tsWebpack2 == tsWebpack3);
+        Assert.assertEquals(tsPackage2, tsPackage3);
+        Assert.assertEquals(tsWebpack2, tsWebpack3);
 
         assertPackageJsonContent();
     }

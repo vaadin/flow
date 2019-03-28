@@ -71,7 +71,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <webAppSourceDirectory>${project.build.directory}/generated-frontend</webAppSourceDirectory>
                     <systemProperties>
                         <systemProperty>
                             <name>vaadin.devmode.webpack.options</name>
@@ -92,13 +91,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${maven.war.plugin.version}</version>
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <directory>${project.build.directory}/generated-frontend</directory>
-                        </resource>
-                    </webResources>
-                </configuration>
             </plugin>
 
             <!--
@@ -178,20 +170,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                </plugins>
-            </build>
-        </profile>
 
-        <!-- Compile frontend for production -->
-        <profile>
-            <id>run-webpack</id>
-            <activation>
-                <file>
-                    <missing>${project.build.directory}/generated-frontend/build/index.js</missing>
-                </file>
-            </activation>
-            <build>
-                <plugins>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>

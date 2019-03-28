@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,6 +60,7 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private static final String VALUE = "value";
     private final String webpackTemplate;
+    private final File outputDirectory;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -70,16 +72,19 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            creating the <code>webpack.config.js</code> file
      * @param npmFolder
      *            folder with the `package.json` file
+     * @param outputDirectory
+     *          TODO kb
      * @param nodeModulesPath
      *            the path to the {@literal node_modules} directory of the project
      * @param convertHtml
      *            true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdatePackages(AnnotationValuesExtractor extractor, String webpackTemplate, File npmFolder,
+    public NodeUpdatePackages(AnnotationValuesExtractor extractor, String webpackTemplate, File npmFolder, File outputDirectory,
             File nodeModulesPath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
+        this.outputDirectory = outputDirectory;
         this.webpackTemplate = webpackTemplate;
         this.convertHtml = convertHtml;
     }
@@ -92,7 +97,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, WEBPACK_CONFIG, new File("."),
+        this(extractor, WEBPACK_CONFIG, new File("."), null, // TODO kb
                 new File("./node_modules/"), true);
     }
 
@@ -125,12 +130,20 @@ public class NodeUpdatePackages extends NodeUpdater {
         if (configFile.exists()) {
             log().info("{} already exists.", configFile);
         } else {
-            URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
+            URL resource = this.getClass().getClassLoader()
+                    .getResource(webpackTemplate);
             if (resource == null) {
                 resource = new URL(webpackTemplate);
             }
-            FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created {} from {}", WEBPACK_CONFIG, resource);
+
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(resource.openStream()))) {
+                List<String> webpackConfigLines = br.lines()
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", outputDirectory.getPath()))
+                        .collect(Collectors.toList());
+                Files.write(configFile.toPath(), webpackConfigLines);
+                log().info("Created {} from {}", WEBPACK_CONFIG, resource);
+            }
         }
     }
 
