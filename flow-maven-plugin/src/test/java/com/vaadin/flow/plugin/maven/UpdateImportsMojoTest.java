@@ -81,10 +81,27 @@ public class UpdateImportsMojoTest {
             String exceptionMessage = expected.getMessage();
             Assert.assertTrue(exceptionMessage.contains(importsFile.getAbsolutePath()));
 
+            String content = null;
+            try {
+                content = FileUtils.fileRead(importsFile);
+            } catch (IOException e) {
+            }
+
             String innerMessage = expected.getCause().getMessage();
-            Assert.assertTrue(innerMessage.contains(nodeModulesPath.getAbsolutePath()));
-            for (String expectedImport : getExpectedImports()) {
-                Assert.assertTrue(innerMessage.contains(expectedImport));
+            Assert.assertTrue(
+                    innerMessage + " is missing "
+                            + nodeModulesPath.getAbsolutePath()
+                            + "\n While imports file is " + content + "\n",
+                    innerMessage.contains(nodeModulesPath.getAbsolutePath()));
+
+            List<String> expectedImports = new ArrayList<>(getExpectedImports());
+            expectedImports.remove("@vaadin/flow-frontend/ExampleConnector.js");
+
+            for (String expectedImport : expectedImports) {
+                Assert.assertTrue(
+                        innerMessage + " is missing " + expectedImport
+                                + "\n While imports file is " + content + "\n",
+                        innerMessage.contains(expectedImport));
             }
         }
 
