@@ -393,7 +393,8 @@ public class DevModeHandler implements Serializable {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger("c.v.f.s." + DevModeHandler.class.getSimpleName());
+        // Using short prefix so as webpack output is more readable
+        return LoggerFactory.getLogger("dev-server");
     }
 
     /**
