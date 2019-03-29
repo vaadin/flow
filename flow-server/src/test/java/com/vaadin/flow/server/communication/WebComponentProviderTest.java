@@ -38,6 +38,7 @@ import org.mockito.MockitoAnnotations;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -48,6 +49,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -193,7 +195,15 @@ public class WebComponentProviderTest {
         WebComponentConfigurationRegistry registry = setupExporters(
                 MyComponentExporter.class, OtherComponentExporter.class);
 
-        Assert.assertFalse(registry.getTheme().isPresent());
+        Assert.assertFalse(registry
+                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
+    }
+
+    @Test
+    public void notInitializedRegistry_themeIsEmpty() {
+        WebComponentConfigurationRegistry registry = setUpRegistry();
+        Assert.assertFalse(registry
+                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -203,15 +213,62 @@ public class WebComponentProviderTest {
                 AnotherThemedComponentExporter.class);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setExporters_exportersHasVariousPushes_throws() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class,
+                AnotherPushComponentExporter.class);
+    }
+
     @Test
     public void setExporters_exportersHasOneThemes_themeIsSet() {
         WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class, MyComponentExporter.class);
-        Assert.assertEquals(MyTheme.class, registry.getTheme().get());
+        Assert.assertEquals(MyTheme.class, registry
+                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
+    }
+
+    @Test
+    public void setExporters_exportersHasOnePush_pushIsSet() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class, MyComponentExporter.class);
+        Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
+                .isPresent());
+    }
+
+    @Test
+    public void setExporters_exportersHasSameThemeDeclarations_themeIsSet() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class,
+                SameThemedComponentExporter.class);
+        Assert.assertEquals(MyTheme.class, registry
+                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
+    }
+
+    @Test
+    public void setExporters_exportersHasSamePushDeclarations_pushIsSet() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class,
+                SameThemedComponentExporter.class);
+        Assert.assertEquals(PushMode.AUTOMATIC, registry
+                .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
 
     private WebComponentConfigurationRegistry setupExporters(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
+        WebComponentConfigurationRegistry registry = setUpRegistry();
+
+        final HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> map = new HashMap<>();
+        Stream.of(exporters)
+                .forEach(clazz -> map.put(AnnotationReader
+                        .getAnnotationValueFor(clazz, Tag.class, Tag::value)
+                        .get(), clazz));
+        registry.setExporters(map);
+
+        return registry;
+    }
+
+    private WebComponentConfigurationRegistry setUpRegistry() {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
 
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
@@ -221,14 +278,6 @@ public class WebComponentProviderTest {
         Mockito.when(servletContext.getAttribute(
                 WebComponentConfigurationRegistry.class.getName()))
                 .thenReturn(registry);
-
-        final HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> map = new HashMap<>();
-        Stream.of(exporters)
-                .forEach(clazz -> map.put(AnnotationReader
-                        .getAnnotationValueFor(clazz, Tag.class, Tag::value)
-                        .get(), clazz));
-        registry.setExporters(map);
-
         return registry;
     }
 
@@ -260,6 +309,7 @@ public class WebComponentProviderTest {
 
     @Tag("foo")
     @Theme(MyTheme.class)
+    @Push
     public static class ThemedComponentExporter
             implements WebComponentExporter<Component> {
         @Override
@@ -267,7 +317,26 @@ public class WebComponentProviderTest {
         }
     }
 
-    @Tag("bar")
+    @Tag("foo")
+    @Theme(MyTheme.class)
+    @Push(value = PushMode.AUTOMATIC)
+    public static class SameThemedComponentExporter
+            implements WebComponentExporter<Component> {
+        @Override
+        public void define(WebComponentDefinition<Component> definition) {
+        }
+    }
+
+    @Tag("foo-bar")
+    @Push(value = PushMode.DISABLED)
+    public static class AnotherPushComponentExporter
+            implements WebComponentExporter<Component> {
+        @Override
+        public void define(WebComponentDefinition<Component> definition) {
+        }
+    }
+
+    @Tag("foo-bar")
     @Theme(AnotherTheme.class)
     public static class AnotherThemedComponentExporter
             implements WebComponentExporter<Component> {

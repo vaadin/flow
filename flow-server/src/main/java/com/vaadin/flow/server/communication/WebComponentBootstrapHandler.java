@@ -15,13 +15,20 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.lang.annotation.Annotation;
+import java.util.Optional;
+
+import javax.servlet.ServletContext;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.JsonObject;
@@ -32,6 +39,24 @@ import elemental.json.JsonObject;
 public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     private static final String PATH_PREFIX = "/web-component/web-component-ui.html";
+
+    private static class WebComponentBootstrapContext extends BootstrapContext {
+
+        private WebComponentBootstrapContext(VaadinRequest request,
+                VaadinResponse response, UI ui) {
+            super(request, response, ui.getInternals().getSession(), ui);
+        }
+
+        @Override
+        public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
+                Class<T> annotationType) {
+            ServletContext servletContext = ((VaadinServletService) getRequest()
+                    .getService()).getServlet().getServletContext();
+            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                    .getInstance(servletContext);
+            return registry.getEmbeddedApplicationAnnotation(annotationType);
+        }
+    }
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -67,5 +92,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
         return context;
+    }
+
+    @Override
+    protected BootstrapContext createBootstrapContext(VaadinRequest request,
+            VaadinResponse response, UI ui) {
+        return new WebComponentBootstrapContext(request, response, ui);
     }
 }

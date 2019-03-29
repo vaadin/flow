@@ -13,20 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.server.webcomponent;
 
-package com.vaadin.flow.webcomponent;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
-import com.vaadin.flow.shared.communication.PushMode;
+/**
+ * Specifies the configuration annotations for embedded application.
+ * <p>
+ * For internal use only.
+ *
+ * @author Vaadin Ltd
+ *
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@interface EmbeddedApplicationAnnotations {
 
-@Tag("embedded-push")
-@Push(value = PushMode.AUTOMATIC)
-public class PushExporter implements WebComponentExporter<PushComponent> {
-    @Override
-    public void define(WebComponentDefinition<PushComponent> definition) {
-        // UpdateServerSideWebComponent does not have any properties
-    }
+    /**
+     * Returns configuration annotations for web exporter classes.
+     *
+     * @return
+     */
+    Class<? extends Annotation>[] value();
 }

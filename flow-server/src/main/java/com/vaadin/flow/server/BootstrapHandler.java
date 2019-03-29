@@ -1095,8 +1095,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         ui.getInternals().setSession(session);
         ui.setLocale(session.getLocale());
 
-        BootstrapContext context = new BootstrapContext(request, response,
-                session, ui);
+        BootstrapContext context = createBootstrapContext(request, response,
+                ui);
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -1123,6 +1123,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         return context;
+    }
+
+    /**
+     * Creates a new instance of {@link BootstrapContext} for given
+     * {@code request}, {@code response} and {@code ui}.
+     *
+     * @param request
+     *            the request object
+     * @param response
+     *            the response object
+     * @param ui
+     *            the UI object
+     *
+     * @return a new bootstrap context instance
+     */
+    protected BootstrapContext createBootstrapContext(VaadinRequest request,
+            VaadinResponse response, UI ui) {
+        return new BootstrapContext(request, response,
+                ui.getInternals().getSession(), ui);
     }
 
     protected void setupPushConnectionFactory(

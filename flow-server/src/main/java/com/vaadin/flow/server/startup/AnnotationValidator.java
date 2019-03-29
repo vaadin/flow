@@ -26,14 +26,13 @@ import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 
 /**
  * Validation class that is run during servlet container initialization which
  * checks that specific annotations are not configured wrong.
  */
-@HandlesTypes({ Viewport.class, BodySize.class, Inline.class, Push.class })
+@HandlesTypes({ Viewport.class, BodySize.class, Inline.class })
 public class AnnotationValidator extends AbstractAnnotationValidator
         implements ServletContainerInitializer {
 

@@ -21,7 +21,6 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.flow.server.VaadinServlet;
 
 @WebServlet(urlPatterns = { "/vaadin-push/*" }, initParams = {
-        @WebInitParam(name = "pushMode", value = "automatic"),
         @WebInitParam(name = "pushURL", value = "/vaadin-push") })
 public class PushWebComponentServlet extends VaadinServlet {
 

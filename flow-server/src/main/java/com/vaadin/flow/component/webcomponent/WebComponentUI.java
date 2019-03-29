@@ -31,7 +31,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
 
@@ -124,9 +124,10 @@ public class WebComponentUI extends UI {
     private void assignTheme() {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext());
-        Optional<Class<? extends AbstractTheme>> theme = registry.getTheme();
+        Optional<Theme> theme = registry
+                .getEmbeddedApplicationAnnotation(Theme.class);
         if (theme.isPresent()) {
-            getInternals().setTheme(theme.get());
+            getInternals().setTheme(theme.get().value());
         } else {
             ThemeUtil.getLumoThemeDefinition().map(ThemeDefinition::getTheme)
                     .ifPresent(getInternals()::setTheme);
