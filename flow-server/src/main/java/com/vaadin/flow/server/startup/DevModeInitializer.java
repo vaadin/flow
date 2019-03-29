@@ -42,7 +42,7 @@ import com.vaadin.flow.theme.Theme;
 public class DevModeInitializer implements ServletContainerInitializer, Serializable {
 
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext context) throws ServletException {
+    public void onStartup(Set<Class<?>> classes, ServletContext context) throws ServletException {
         Collection<? extends ServletRegistration> registrations = context.getServletRegistrations().values();
 
         if (registrations.isEmpty()) {
@@ -52,6 +52,6 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
         DeploymentConfiguration configuration = StubServletConfig.createDeploymentConfiguration(context,
                 registrations.iterator().next(), VaadinServlet.class);
 
-        DevModeHandler.start(configuration);
+        DevModeHandler.start(configuration, classes);
     }
 }

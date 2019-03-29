@@ -222,7 +222,7 @@ public class PackageForProductionMojo extends AbstractMojo {
 
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
                 bundle, minify, hash, transpileEs6SourceDirectory,
-                new AnnotationValuesExtractor(NodeUpdateAbstractMojo.getProjectClassPathUrls(project)),
+                new AnnotationValuesExtractor(NodeUpdateAbstractMojo.getClassFinder(project)),
                 bundleConfiguration, getFragmentsData(fragments));
 
         FrontendToolsManager frontendToolsManager = new FrontendToolsManager(

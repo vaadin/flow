@@ -31,7 +31,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo.ReflectionsClassFinder;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 
 public class ThemedURLTranslatorTest {
 
@@ -54,13 +56,12 @@ public class ThemedURLTranslatorTest {
     @Test
     public void applyTheme_oneThemeIsDiscovered_urlsAreRewritten()
             throws IOException {
-        ClassPathIntrospector introspector = new ClassPathIntrospector(
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/themes-one-theme.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar")) {
+        ClassFinder finder = new ReflectionsClassFinder(
+                TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource("annotation-extractor-test/themes-one-theme.jar"),
+                TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+
+        ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {
         };
 
         Function<String, File> factory = url -> new File(
@@ -94,11 +95,11 @@ public class ThemedURLTranslatorTest {
     @Test
     public void applyTheme_noThemeIsDiscovered_urlsAreRewritten()
             throws IOException {
-        ClassPathIntrospector introspector = new ClassPathIntrospector(
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar")) {
+        ClassFinder finder = new ReflectionsClassFinder(
+                TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+
+        ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {
         };
 
         Function<String, File> factory = url -> new File(
@@ -128,13 +129,12 @@ public class ThemedURLTranslatorTest {
      */
     @Test
     public void applyTheme_twoThemeIsDiscovered_throws() throws IOException {
-        ClassPathIntrospector introspector = new ClassPathIntrospector(
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/themes-two-themes.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar")) {
+        ClassFinder finder = new ReflectionsClassFinder(
+                TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource("annotation-extractor-test/themes-two-themes.jar"),
+                TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+
+        ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {
         };
 
         Function<String, File> factory = url -> new File(
@@ -153,11 +153,12 @@ public class ThemedURLTranslatorTest {
 
     @Test
     public void applyTheme_when_annotation_on_a_routerLayout() throws Exception {
-        ClassPathIntrospector introspector = new ClassPathIntrospector(
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/RouterLayoutTheme.jar")) {
+
+        ClassFinder finder = new ReflectionsClassFinder(
+                TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource("annotation-extractor-test/RouterLayoutTheme.jar"));
+
+        ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {
         };
         Function<String, File> factory = url -> new File(
                 temporaryFolder.getRoot(), url);

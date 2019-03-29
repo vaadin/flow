@@ -16,11 +16,6 @@
 
 package com.vaadin.flow.plugin.common;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map;
@@ -35,7 +30,14 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo.ReflectionsClassFinder;
 import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Vaadin Ltd
@@ -45,13 +47,12 @@ public class AnnotationValuesExtractorTest {
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
 
-    private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
-            TestUtils.getTestResource(
-                    "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-            TestUtils.getTestResource(
-                    "annotation-extractor-test/vaadin-grid-flow.jar"),
-            TestUtils.getTestResource(
-                    "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+    ClassFinder finder = new ReflectionsClassFinder(
+            TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+            TestUtils.getTestResource("annotation-extractor-test/vaadin-grid-flow.jar"),
+            TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+
+    private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(finder);
 
     @Test
     public void extractAnnotationValues_incorrectMethod() {

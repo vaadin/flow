@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.frontend;
 
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,16 +35,15 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * @since 1.0.
  */
 public class AnnotationValuesExtractor extends ClassPathIntrospector {
-
     /**
-     * Prepares the class to extract annotations from the project classes
+     * Prepares the class to extract annotations with the class finder
      * specified.
      *
-     * @param projectClassesLocations
-     *            urls to project class locations (directories, jars etc.)
+     * @param finder
+     *            the specific ClassFinder to use
      */
-    public AnnotationValuesExtractor(URL... projectClassesLocations) {
-        super(projectClassesLocations);
+    public AnnotationValuesExtractor(ClassFinder finder) {
+        super(finder);
     }
 
     /**

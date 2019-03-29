@@ -25,15 +25,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 
@@ -103,15 +105,38 @@ public class DevModeHandler implements Serializable {
         this.port = port;
     }
 
-    private DevModeHandler(DeploymentConfiguration configuration, File directory, File webpack, File webpackConfig) {
+    private static class ServletContextClassFinder implements ClassFinder {
+        private final Set<Class<?>> classes;
+
+        public ServletContextClassFinder(Set<Class<?>> classes) {
+            this.classes = classes;
+        }
+
+        @Override
+        public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
+            return classes.stream().filter(cl -> cl.isAnnotationPresent(annotation)).collect(Collectors.toSet());
+        }
+
+        @Override
+        public URL getResource(String name) {
+            return this.getClass().getClassLoader().getResource(name);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
+            return (Class<T>)this.getClass().getClassLoader().loadClass(name);
+        }
+    }
+
+    private DevModeHandler(DeploymentConfiguration configuration, Set<Class<?>> classes, File directory, File webpack,
+            File webpackConfig) {
         this.config = configuration;
 
         if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)
                 || !config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
 
-            // Run updaters for  node dependencies and imports
-            URL[] urls = ((URLClassLoader) getClass().getClassLoader()).getURLs();
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(urls);
+            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(new ServletContextClassFinder(classes));
             if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
                 new NodeUpdatePackages(extractor).execute();
             }
@@ -201,9 +226,9 @@ public class DevModeHandler implements Serializable {
      * @param configuration
      *         deployment configuration
      */
-    public static void start(DeploymentConfiguration configuration) {
+    public static void start(DeploymentConfiguration configuration, Set<Class<?>> classes) {
         atomicHandler.compareAndSet(null,
-                DevModeHandler.createInstance(configuration));
+                DevModeHandler.createInstance(configuration, classes));
     }
 
     /**
@@ -224,7 +249,7 @@ public class DevModeHandler implements Serializable {
      *            deployment configuration
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler createInstance(DeploymentConfiguration configuration) {
+    public static DevModeHandler createInstance(DeploymentConfiguration configuration, Set<Class<?>> classes) {
         if (configuration.isBowerMode() || configuration.isProductionMode()) {
             getLogger().trace("Instance not created because not in npm-dev mode");
             return null;
@@ -256,7 +281,7 @@ public class DevModeHandler implements Serializable {
             return null;
         }
 
-        return new DevModeHandler(configuration, directory, webpack, webpackConfig);
+        return new DevModeHandler(configuration, classes, directory, webpack, webpackConfig);
     }
 
     /**
