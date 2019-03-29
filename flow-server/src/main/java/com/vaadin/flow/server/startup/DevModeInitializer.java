@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -48,7 +49,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UP
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
  */
-@HandlesTypes({ NpmPackage.class, JsModule.class, Theme.class, HtmlImport.class })
+@HandlesTypes({ NpmPackage.class, JsModule.class, Theme.class, HtmlImport.class, JavaScript.class })
 public class DevModeInitializer implements ServletContainerInitializer, Serializable {
 
     /**
@@ -65,7 +66,8 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
 
         @Override
         public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
-            return classes.stream().filter(cl -> cl.isAnnotationPresent(annotation)).collect(Collectors.toSet());
+            return classes.stream().filter(cl -> cl.getAnnotationsByType(annotation).length > 0)
+                    .collect(Collectors.toSet());
         }
 
         @Override
