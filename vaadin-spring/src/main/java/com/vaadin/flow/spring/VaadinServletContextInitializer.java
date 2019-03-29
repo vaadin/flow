@@ -15,14 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +23,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -41,9 +39,9 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -51,12 +49,12 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
+import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
 
@@ -174,17 +172,19 @@ public class VaadinServletContextInitializer
 
     }
 
-    private class AnnotationValidatorServletContextListener extends
-            AbstractAnnotationValidator implements ServletContextListener {
+    private class AnnotationValidatorServletContextListener
+            implements ServletContextListener {
 
         @Override
         @SuppressWarnings("unchecked")
         public void contextInitialized(ServletContextEvent event) {
-            Stream<Class<? extends Annotation>> annotations = getAnnotations()
-                    .stream()
-                    .map(annotation -> (Class<? extends Annotation>) annotation);
-            validateClasses(findByAnnotation(getVerifiableAnnotationPackages(),
-                    annotations).collect(Collectors.toList()));
+            AnnotationValidator annotationValidator = new AnnotationValidator();
+            validateAnnotations(annotationValidator, event.getServletContext(),
+                    annotationValidator.getAnnotations());
+
+            WebComponentExporterAwareValidator extraValidator = new WebComponentExporterAwareValidator();
+            validateAnnotations(extraValidator, event.getServletContext(),
+                    extraValidator.getAnnotations());
         }
 
         @Override
@@ -192,15 +192,28 @@ public class VaadinServletContextInitializer
             // no need to do anything
         }
 
-        @Override
-        protected List<Class<?>> getAnnotations() {
-            return Arrays.asList(AnnotationValidator.class
-                    .getAnnotation(HandlesTypes.class).value());
-        }
+        @SuppressWarnings("unchecked")
+        private void validateAnnotations(
+                ServletContainerInitializer initializer, ServletContext context,
+                List<Class<?>> annotations) {
 
+            Stream<Class<?>> annotatedClasses = findByAnnotation(
+                    getVerifiableAnnotationPackages(),
+                    annotations.toArray(new Class[annotations.size()]));
+            Set<Class<?>> set = annotatedClasses.collect(Collectors.toSet());
+            try {
+                initializer.onStartup(set, context);
+            } catch (ServletException exception) {
+                throw new RuntimeException(
+                        "Unexpected servlet exception from "
+                                + initializer.getClass() + " validator",
+                        exception);
+            }
+        }
     }
 
-    private class WebComponentServletContextListener implements ServletContextListener {
+    private class WebComponentServletContextListener
+            implements ServletContextListener {
 
         @SuppressWarnings("unchecked")
         @Override
@@ -210,20 +223,20 @@ public class VaadinServletContextInitializer
 
             if (registry.getConfigurations() == null
                     || registry.getConfigurations().isEmpty()) {
-                WebComponentConfigurationRegistryInitializer initializer =
-                        new WebComponentConfigurationRegistryInitializer();
+                WebComponentConfigurationRegistryInitializer initializer = new WebComponentConfigurationRegistryInitializer();
 
                 Set<Class<?>> webComponentExporters = findBySuperType(
-                        getWebComponentPackages(),
-                        WebComponentExporter.class).collect(Collectors.toSet());
+                        getWebComponentPackages(), WebComponentExporter.class)
+                                .collect(Collectors.toSet());
 
                 try {
-                    initializer.onStartup(webComponentExporters, event.getServletContext());
+                    initializer.onStartup(webComponentExporters,
+                            event.getServletContext());
                 } catch (ServletException e) {
-                    throw new RuntimeException(String.format("Failed to " +
-                            "initialize %s",
-                            WebComponentConfigurationRegistry.class
-                                    .getSimpleName()),
+                    throw new RuntimeException(
+                            String.format("Failed to initialize %s",
+                                    WebComponentConfigurationRegistry.class
+                                            .getSimpleName()),
                             e);
                 }
             }
@@ -275,7 +288,8 @@ public class VaadinServletContextInitializer
         servletContext
                 .addListener(new AnnotationValidatorServletContextListener());
 
-        // Skip custom web component builders search if registry already initialized
+        // Skip custom web component builders search if registry already
+        // initialized
         if (!WebComponentConfigurationRegistry.getInstance(servletContext)
                 .hasExporters()) {
             servletContext
