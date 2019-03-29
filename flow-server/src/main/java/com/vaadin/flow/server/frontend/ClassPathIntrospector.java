@@ -44,7 +44,7 @@ public abstract class ClassPathIntrospector implements Serializable {
          */
         Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> clazz);
         /**
-         * Get a resource from the classpath
+         * Get a resource from the classpath.
          *
          * @param name class literal
          * @return the resource
@@ -52,7 +52,7 @@ public abstract class ClassPathIntrospector implements Serializable {
         URL getResource(String name);
 
         /**
-         * Load a class in the classloader
+         * Load a class in the classloader.
          *
          * @param name
          *            the class literal
@@ -74,6 +74,12 @@ public abstract class ClassPathIntrospector implements Serializable {
         this.finder = finder;
     }
 
+    /**
+     * Create a new instance but reusing the instrospector.
+     * 
+     * @param otherIntrospector
+     *            the other instance.
+     */
     public ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
         this.finder = otherIntrospector.finder;
     }
@@ -116,10 +122,9 @@ public abstract class ClassPathIntrospector implements Serializable {
      * @return the class with the given {@code className} loaded by the project
      *         class loader
      */
-    @SuppressWarnings("unchecked")
     public <T> Class<T> loadClassInProjectClassLoader(String className) {
         try {
-            return (Class<T>) finder.loadClass(className);
+            return finder.loadClass(className);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(String.format(
                     "Failed to load class '%s' in custom classloader",
