@@ -1,0 +1,85 @@
+{
+  "name": "Vaadin.RichTextEditorElement",
+  "tag": "vaadin-rich-text-editor",
+  "baseUrl": "vaadin-rich-text-editor/src/vaadin-rich-text-editor.html",
+  "version": "1.0.0-alpha3",
+  "properties": [
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Value is a list of the operations which describe change to the document.\nEach of those operations describe the change at the current index.\nThey can be an `insert`, `delete` or `retain`. The format is as follows:\n\n```js\n [\n   { insert: 'Hello World' },\n   { insert: '!', attributes: { bold: true }}\n ]\n```\n\nSee also https://github.com/quilljs/delta for detailed documentation.\n             ",
+      "notify": true
+    },
+    {
+      "name": "htmlValue",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "HTML representation of the rich text editor content.\n             ",
+      "readOnly": true,
+      "notify": true
+    },
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true, the user can not modify, nor copy the editor content.\n             "
+    },
+    {
+      "name": "readonly",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true, the user can not modify the editor content, but can copy it.\n             "
+    },
+    {
+      "name": "i18n",
+      "type": [
+        "ARRAY"
+      ],
+      "objectType": [],
+      "description": "An object used to localize this component. The properties are used\ne.g. as the tooltips for the editor toolbar buttons."
+    }
+  ],
+  "methods": [],
+  "events": [
+    {
+      "name": "change",
+      "description": "change",
+      "properties": []
+    },
+    {
+      "name": "value-changed",
+      "description": "Fired when the `value` property changes.",
+      "properties": []
+    },
+    {
+      "name": "html-value-changed",
+      "description": "Fired when the `htmlValue` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ElementMixin",
+    "Vaadin.ThemableMixin"
+  ],
+  "variants": {
+    "lumo": [
+      "no-border",
+      "compact"
+    ],
+    "material": [
+      "no-border"
+    ]
+  },
+  "description": "`<vaadin-rich-text-editor>` is a Web Component for rich text editing.\nIt provides a set of toolbar controls to apply formatting on the content,\nwhich is stored and can be accessed as HTML5 or JSON string.\n\n```\n<vaadin-rich-text-editor></vaadin-rich-text-editor>\n```\n\nVaadin Rich Text Editor focuses on the structure, not the styling of content.\nTherefore, the semantic HTML5 tags such as <h1>, <strong> and <ul> are used,\nand CSS usage is limited to most common cases, like horizontal text alignment.\n\n### Styling\n\nThe following state attributes are available for styling:\n\nAttribute    | Description | Part name\n-------------|-------------|------------\n`disabled`   | Set to a disabled text editor | :host\n`readonly`   | Set to a readonly text editor | :host\n\nThe following shadow DOM parts are available for styling:\n\nPart name              | Description\n-----------------------|----------------\n`toolbar`              | The toolbar wrapper\n`content`              | The content wrapper\n`group`                | The group for toolbar controls\n`undo-button`          | The \"undo\" button\n`redo-button`          | The \"redo\" button\n`bold-button`          | The \"bold\" button\n`italic-button`        | The \"italic\" button\n`underline-button`     | The \"underline\" button\n`strike-button`        | The \"strike-through\" button\n`h1-button`            | The \"header 1\" button\n`h2-button`            | The \"header 2\" button\n`h3-button`            | The \"header 3\" button\n`subscript-button`    | The \"subscript\" button\n`superscript-button`  | The \"superscript\" button\n`list-ordered-button`  | The \"ordered list\" button\n`list-bullet-button`   | The \"bullet list\" button\n`align-left-button`    | The \"left align\" button\n`align-center-button`  | The \"center align\" button\n`align-right-button`   | The \"right align\" button\n`image-button`         | The \"image\" button\n`blockquote-button`    | The \"blockquote\" button\n`code-block-button`    | The \"code block\" button\n`clean-button`         | The \"clean formatting\" button\n\nSee [ThemableMixin – how to apply styles for shadow parts](https://github.com/vaadin/vaadin-themable-mixin/wiki)"
+}
