@@ -43,7 +43,7 @@ import com.vaadin.flow.theme.Theme;
  *
  * @since
  */
-@ConfigurationAnnotations({ Theme.class, Push.class })
+@EmbeddedApplicationAnnotations({ Theme.class, Push.class })
 public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
@@ -56,7 +56,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
     private HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = null;
     private HashMap<String, WebComponentConfigurationImpl<? extends Component>> builderCache = new HashMap<>();
 
-    private Map<Class<? extends Annotation>, Annotation> configuratoinAnnotations;
+    private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
 
     /**
      * Protected constructor for internal OSGi extensions.
@@ -199,21 +199,28 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
-     * Returns a web components configuration annotation.
+     * Returns configuration annotation for embedded application.
      * <p>
-     * {@link WebComponentExporter} classes may have
+     * {@link WebComponentExporter} classes may declare configuration
+     * annotations. If there are several different annotations declared for
+     * various exporter classes then an exception will be thrown during the
+     * servlet initialization (exporter classes discovering).
      *
-     * @return
+     * @param type
+     *            the configuration annotation type
+     *
+     * @return an optional configuration annotation, or an empty optional if
+     *         there is no configuration annotation with the given {@code type}
      */
-    public <T extends Annotation> Optional<T> getConfigurationAnnotation(
+    public <T extends Annotation> Optional<T> getEmbeddedApplicationAnnotation(
             Class<T> type) {
         configurationLock.lock();
         try {
-            if (configuratoinAnnotations == null) {
+            if (embeddedAppAnnotations == null) {
                 return Optional.empty();
             }
             return Optional
-                    .ofNullable(type.cast(configuratoinAnnotations.get(type)));
+                    .ofNullable(type.cast(embeddedAppAnnotations.get(type)));
         } finally {
             configurationLock.unlock();
         }
@@ -275,24 +282,20 @@ public class WebComponentConfigurationRegistry implements Serializable {
     private void updateConfiguration() {
         assert configurationLock.isHeldByCurrentThread();
 
-        if (configuratoinAnnotations != null) {
-            return;
-        }
-
         Optional<Class<? extends Annotation>[]> annotationTypes = AnnotationReader
                 .getAnnotationValueFor(WebComponentConfigurationRegistry.class,
-                        ConfigurationAnnotations.class,
-                        ConfigurationAnnotations::value);
+                        EmbeddedApplicationAnnotations.class,
+                        EmbeddedApplicationAnnotations::value);
 
-        Map<Class<? extends Annotation>, Annotation> map = new HashMap<>();
+        HashMap<Class<? extends Annotation>, Annotation> map = new HashMap<>();
 
         exporterClasses.values().stream()
-                .forEach(exporter -> addConfigurationAnnottion(exporter,
+                .forEach(exporter -> addEmbeddedApplicationAnnotation(exporter,
                         annotationTypes.get(), map));
-        configuratoinAnnotations = map;
+        embeddedAppAnnotations = map;
     }
 
-    private void addConfigurationAnnottion(
+    private void addEmbeddedApplicationAnnotation(
             Class<? extends WebComponentExporter<? extends Component>> exporter,
             Class<? extends Annotation>[] types,
             Map<Class<? extends Annotation>, Annotation> map) {
@@ -304,7 +307,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             }
             if (annotation != null && !annotation.equals(exporterAnnotation)) {
                 throw new IllegalStateException(String.format(
-                        "Different annotations of type '%s' are declared for the web component exporters: %s, %s",
+                        "Different annotations of type '%s' are declared by the web component exporters: %s, %s",
                         type.getName(), annotation.toString(),
                         exporterAnnotation.toString()));
             }

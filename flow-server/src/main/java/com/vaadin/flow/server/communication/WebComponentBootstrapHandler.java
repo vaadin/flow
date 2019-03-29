@@ -54,7 +54,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     .getService()).getServlet().getServletContext();
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(servletContext);
-            return registry.getConfigurationAnnotation(annotationType);
+            return registry.getEmbeddedApplicationAnnotation(annotationType);
         }
     }
 

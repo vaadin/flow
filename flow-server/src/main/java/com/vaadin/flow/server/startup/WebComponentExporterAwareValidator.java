@@ -65,7 +65,7 @@ public class WebComponentExporterAwareValidator extends
     }
 
     @Override
-    protected List<Class<?>> getAnnotations() {
+    public List<Class<?>> getAnnotations() {
         return Arrays.asList(
                 this.getClass().getAnnotation(HandlesTypes.class).value());
     }

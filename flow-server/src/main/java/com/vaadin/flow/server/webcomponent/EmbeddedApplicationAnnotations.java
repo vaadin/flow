@@ -20,7 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Specifies the configuration annotations for web component exporters.
+ * Specifies the configuration annotations for embedded application.
  * <p>
  * For internal use only.
  *
@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@interface ConfigurationAnnotations {
+@interface EmbeddedApplicationAnnotations {
 
     /**
      * Returns configuration annotations for web exporter classes.

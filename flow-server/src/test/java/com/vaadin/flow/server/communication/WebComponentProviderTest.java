@@ -195,15 +195,15 @@ public class WebComponentProviderTest {
         WebComponentConfigurationRegistry registry = setupExporters(
                 MyComponentExporter.class, OtherComponentExporter.class);
 
-        Assert.assertFalse(
-                registry.getConfigurationAnnotation(Theme.class).isPresent());
+        Assert.assertFalse(registry
+                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
     }
 
     @Test
-    public void notInitializedREgistry_themeIsEmpty() {
+    public void notInitializedRegistry_themeIsEmpty() {
         WebComponentConfigurationRegistry registry = setUpRegistry();
-        Assert.assertFalse(
-                registry.getConfigurationAnnotation(Theme.class).isPresent());
+        Assert.assertFalse(registry
+                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -224,16 +224,16 @@ public class WebComponentProviderTest {
     public void setExporters_exportersHasOneThemes_themeIsSet() {
         WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class, MyComponentExporter.class);
-        Assert.assertEquals(MyTheme.class,
-                registry.getConfigurationAnnotation(Theme.class).get().value());
+        Assert.assertEquals(MyTheme.class, registry
+                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
     }
 
     @Test
     public void setExporters_exportersHasOnePush_pushIsSet() {
         WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class, MyComponentExporter.class);
-        Assert.assertTrue(
-                registry.getConfigurationAnnotation(Push.class).isPresent());
+        Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
+                .isPresent());
     }
 
     @Test
@@ -241,8 +241,8 @@ public class WebComponentProviderTest {
         WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
-        Assert.assertEquals(MyTheme.class,
-                registry.getConfigurationAnnotation(Theme.class).get().value());
+        Assert.assertEquals(MyTheme.class, registry
+                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
     }
 
     @Test
@@ -250,8 +250,8 @@ public class WebComponentProviderTest {
         WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
-        Assert.assertEquals(PushMode.AUTOMATIC,
-                registry.getConfigurationAnnotation(Push.class).get().value());
+        Assert.assertEquals(PushMode.AUTOMATIC, registry
+                .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
 
     private WebComponentConfigurationRegistry setupExporters(

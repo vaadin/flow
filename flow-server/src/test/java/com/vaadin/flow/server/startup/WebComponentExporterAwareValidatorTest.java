@@ -177,12 +177,12 @@ public class WebComponentExporterAwareValidatorTest {
 
     @Test
     public void onStartUp_non_linked_theme_throws() throws ServletException {
-        assertNnon_linked_theme_throws(NonRoute.class, Theme.class);
+        assertNon_linked_theme_throws(NonRoute.class, Theme.class);
     }
 
     @Test
     public void onStartUp_non_linked_push_throws() throws ServletException {
-        assertNnon_linked_theme_throws(NonRoutePush.class, Push.class);
+        assertNon_linked_theme_throws(NonRoutePush.class, Push.class);
     }
 
     @Test
@@ -198,8 +198,7 @@ public class WebComponentExporterAwareValidatorTest {
                 servletContext);
     }
 
-    private void assertNnon_linked_theme_throws(
-            Class<? extends Component> clazz,
+    private void assertNon_linked_theme_throws(Class<? extends Component> clazz,
             Class<? extends Annotation> annotationType)
             throws ServletException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);

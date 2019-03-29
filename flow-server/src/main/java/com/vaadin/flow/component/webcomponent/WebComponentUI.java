@@ -125,7 +125,7 @@ public class WebComponentUI extends UI {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext());
         Optional<Theme> theme = registry
-                .getConfigurationAnnotation(Theme.class);
+                .getEmbeddedApplicationAnnotation(Theme.class);
         if (theme.isPresent()) {
             getInternals().setTheme(theme.get().value());
         } else {
