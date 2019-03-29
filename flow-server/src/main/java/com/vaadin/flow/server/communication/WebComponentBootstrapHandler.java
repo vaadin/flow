@@ -89,6 +89,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         // remove path prefix but keep the trailing slash
         String serviceUrl = requestURL.substring(0,
                 requestURL.length() - PATH_PREFIX.length() + 1);
+        // replace http:// or https:// with // to work with https:// proxies which proxies to the same http:// url
+        serviceUrl = serviceUrl.replaceFirst("^.*://", "//");
+
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
         return context;
