@@ -23,16 +23,15 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterAdapter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 public class WebComponentGeneratorTest {
 
     @Test
     public void generatedReplacementMapContainsExpectedEntries() {
-        WebComponentConfigurationImpl<MyComponent> builder =
-                new WebComponentConfigurationImpl<>(new MyComponentExporter());
-
+        WebComponentConfigurationImpl<MyComponent> builder = new WebComponentConfigurationImpl<>(
+                new MyComponentExporter());
 
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("document.body", "my-component",
@@ -67,9 +66,9 @@ public class WebComponentGeneratorTest {
         String properties = replacementsMap.get("Properties");
         Assert.assertTrue(properties
                 .contains("\"message\":{\"type\":\"String\",\"value\":\"\""));
-        Assert.assertTrue(properties.contains(
-                "\"integer-value\":{\"type\":\"Integer\",\"value\":0," +
-                        "\"observer\""));
+        Assert.assertTrue(properties
+                .contains("\"integer-value\":{\"type\":\"Integer\",\"value\":0,"
+                        + "\"observer\""));
         Assert.assertTrue(properties.contains(
                 "\"response\":{\"type\":\"String\",\"value\":\"hello\""));
 
@@ -81,7 +80,6 @@ public class WebComponentGeneratorTest {
         private String response;
         private int integerValue;
         private String message;
-
 
         public void setResponse(String response) {
             this.response = response;
@@ -97,7 +95,8 @@ public class WebComponentGeneratorTest {
     }
 
     @Tag("tag")
-    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter
+            extends WebComponentExporterAdapter<MyComponent> {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             definition.addProperty("response", "hello")
