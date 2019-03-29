@@ -17,38 +17,39 @@
 package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterAdapter;
 import com.vaadin.flow.component.webcomponent.EventOptions;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 
 import elemental.json.Json;
 
 @Tag("fire-event")
-public class FireEventExporter implements WebComponentExporter<FireEventComponent> {
-    @Override
-    public void define(WebComponentDefinition<FireEventComponent> definition) {
-        definition.setInstanceConfigurator((webComponent, component) -> {
-            component.setSumConsumer(number -> webComponent.fireEvent("sum-calculated",
-                    Json.create(number)));
-            component.setErrorConsumer(err -> webComponent.fireEvent("sum" +
-                    "-error", Json.create(err)));
+public class FireEventExporter
+        extends WebComponentExporterAdapter<FireEventComponent> {
 
-            component.setButtonConsumer(optionsType -> {
-                EventOptions options = createEventOptions(optionsType);
-                webComponent.fireEvent("button-event",
-                        Json.create(optionsType.name()), options);
-            });
+    @Override
+    public void configure(WebComponent<FireEventComponent> webComponent,
+            FireEventComponent component) {
+        component.setSumConsumer(number -> webComponent
+                .fireEvent("sum-calculated", Json.create(number)));
+        component.setErrorConsumer(err -> webComponent
+                .fireEvent("sum" + "-error", Json.create(err)));
+
+        component.setButtonConsumer(optionsType -> {
+            EventOptions options = createEventOptions(optionsType);
+            webComponent.fireEvent("button-event",
+                    Json.create(optionsType.name()), options);
         });
     }
 
     private EventOptions createEventOptions(FireEventComponent.OptionsType id) {
         switch (id) {
-            case NoBubble_NoCancel:
-                return new EventOptions(false, false, false);
-            case Bubble_NoCancel:
-                return new EventOptions(true, false, false);
-            case Bubble_Cancel:
-                return new EventOptions(true, true, false);
+        case NoBubble_NoCancel:
+            return new EventOptions(false, false, false);
+        case Bubble_NoCancel:
+            return new EventOptions(true, false, false);
+        case Bubble_Cancel:
+            return new EventOptions(true, true, false);
         }
         return new EventOptions();
     }

@@ -19,27 +19,35 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
 @Tag("property-update")
-public class PropertyUpdateExporter implements WebComponentExporter<PropertyUpdateComponent> {
+public class PropertyUpdateExporter
+        implements WebComponentExporter<PropertyUpdateComponent> {
+
+    private PropertyConfiguration<PropertyUpdateComponent, Integer> property;
+
+    private PropertyConfiguration<PropertyUpdateComponent, JsonValue> jsonProperty;
+
     @Override
-    public void define(WebComponentDefinition<PropertyUpdateComponent> definition) {
-        PropertyConfiguration<PropertyUpdateComponent, Integer> property =
-                definition.addProperty("clicks", 0);
+    public void define(
+            WebComponentDefinition<PropertyUpdateComponent> definition) {
+        property = definition.addProperty("clicks", 0);
 
-        PropertyConfiguration<PropertyUpdateComponent, JsonValue> jsonProperty =
-                definition.addProperty("clicksJson", Json.createNull());
+        jsonProperty = definition.addProperty("clicksJson", Json.createNull());
 
-        definition.setInstanceConfigurator((webComponent, component) ->
-                component.addListener(number -> {
-                    webComponent.setProperty(property, number);
-                    webComponent.setProperty(jsonProperty,
-                            component.getNumberJson());
-        }));
+    }
 
+    @Override
+    public void configure(WebComponent<PropertyUpdateComponent> webComponent,
+            PropertyUpdateComponent component) {
+        component.addListener(number -> {
+            webComponent.setProperty(property, number);
+            webComponent.setProperty(jsonProperty, component.getNumberJson());
+        });
     }
 }
