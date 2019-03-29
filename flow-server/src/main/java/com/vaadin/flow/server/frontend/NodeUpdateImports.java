@@ -224,6 +224,7 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private Collection<? extends String> getJavaScriptFiles() {
+        System.err.println(annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE));
         return annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
                 .flatMap(Collection::stream).map(this::resolveInFlowFrontendDirectory).map(this::toValidBrowserImport)
                 .sorted(Comparator.reverseOrder()).collect(Collectors.toCollection(LinkedHashSet::new));

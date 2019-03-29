@@ -24,12 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
@@ -101,7 +103,7 @@ public class DevModeHandlerTest {
     }
 
     @After
-    public void teardown() throws IOException {
+    public void teardown() throws Exception {
         FileUtils.deleteDirectory(new File("node_modules"));
         FileUtils.deleteQuietly(new File(PACKAGE_JSON));
         FileUtils.deleteQuietly(new File(WEBPACK_CONFIG));
@@ -109,6 +111,11 @@ public class DevModeHandlerTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
+
+        // Reset unique instance in DevModeHandler
+        Field atomicHandler = DevModeHandler.class.getDeclaredField("atomicHandler");
+        atomicHandler.setAccessible(true);
+        atomicHandler.set(null, new AtomicReference<>());
     }
 
     @Test
@@ -165,7 +172,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {Thread.sleep(150);
+    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {
         new File(WEBPACK_SERVER).delete();
         assertNull(DevModeHandler.start(configuration));
     }

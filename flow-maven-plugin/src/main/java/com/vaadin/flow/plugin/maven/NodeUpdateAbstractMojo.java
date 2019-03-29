@@ -44,16 +44,25 @@ import com.vaadin.flow.server.frontend.NodeUpdater;
  */
 public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
 
+    /**
+     * A class finder using org.reflections.
+     */
     public static class ReflectionsClassFinder implements ClassFinder {
         private final transient ClassLoader classLoader;
 
         private final transient Reflections reflections;
 
-        public ReflectionsClassFinder(URL... projectClassesLocations) {
-            classLoader = new URLClassLoader(projectClassesLocations, null); //NOSONAR
+        /**
+         * Constructor.
+         * 
+         * @param urls
+         *            the list of urls for finding classes.
+         */
+        public ReflectionsClassFinder(URL... urls) {
+            classLoader = new URLClassLoader(urls, null); //NOSONAR
             reflections = new Reflections(
                     new ConfigurationBuilder().addClassLoader(classLoader).setExpandSuperTypes(false)
-                            .addUrls(projectClassesLocations));
+                            .addUrls(urls));
         }
 
         @Override

@@ -86,6 +86,7 @@ public abstract class NodeUpdater implements Serializable {
 
     String resolveInFlowFrontendDirectory(String importPath) {
         if (importPath.startsWith("@")) {
+            System.err.println(">> " + importPath);
             return importPath;
         }
         String pathWithNoProtocols = importPath.replace(FRONTEND_PROTOCOL_PREFIX, "");
@@ -94,6 +95,7 @@ public abstract class NodeUpdater implements Serializable {
           flowModules.add(pathWithNoProtocols);
           return FLOW_PACKAGE + pathWithNoProtocols;
         }
+        System.err.println(">>>>>> ./" + pathWithNoProtocols);
         return "./" + pathWithNoProtocols;
     }
 
