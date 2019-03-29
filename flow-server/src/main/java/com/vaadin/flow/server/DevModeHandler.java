@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,13 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
-import com.vaadin.flow.server.frontend.NodeUpdateImports;
-import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
@@ -92,8 +84,9 @@ public class DevModeHandler implements Serializable {
 
     // This fixes maven tests in multi-module execution
     static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
-    static final String WEBAPP_FOLDER = BASEDIR + "/";
-    static final String WEBPACK_CONFIG = BASEDIR + "/webpack.config.js";
+
+    public static final String WEBAPP_FOLDER = BASEDIR + "/";
+    public static final String WEBPACK_CONFIG = BASEDIR + "/webpack.config.js";
     static final String WEBPACK_SERVER = BASEDIR + "/node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
@@ -105,45 +98,9 @@ public class DevModeHandler implements Serializable {
         this.port = port;
     }
 
-    private static class ServletContextClassFinder implements ClassFinder {
-        private final Set<Class<?>> classes;
-
-        public ServletContextClassFinder(Set<Class<?>> classes) {
-            this.classes = classes;
-        }
-
-        @Override
-        public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
-            return classes.stream().filter(cl -> cl.isAnnotationPresent(annotation)).collect(Collectors.toSet());
-        }
-
-        @Override
-        public URL getResource(String name) {
-            return this.getClass().getClassLoader().getResource(name);
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
-            return (Class<T>)this.getClass().getClassLoader().loadClass(name);
-        }
-    }
-
-    private DevModeHandler(DeploymentConfiguration configuration, Set<Class<?>> classes, File directory, File webpack,
+    private DevModeHandler(DeploymentConfiguration configuration, File directory, File webpack,
             File webpackConfig) {
         this.config = configuration;
-
-        if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)
-                || !config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
-
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(new ServletContextClassFinder(classes));
-            if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
-                new NodeUpdatePackages(extractor).execute();
-            }
-            if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
-                new NodeUpdateImports(extractor).execute();
-            }
-        }
 
         // If port is defined, means that webpack is already running
         port = Integer.parseInt(config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
@@ -225,10 +182,13 @@ public class DevModeHandler implements Serializable {
      *
      * @param configuration
      *         deployment configuration
+     *
+     * @return the instance in case everything is alright, null otherwise
      */
-    public static void start(DeploymentConfiguration configuration, Set<Class<?>> classes) {
+    public static DevModeHandler start(DeploymentConfiguration configuration) {
         atomicHandler.compareAndSet(null,
-                DevModeHandler.createInstance(configuration, classes));
+                DevModeHandler.createInstance(configuration));
+        return getDevModeHandler();
     }
 
     /**
@@ -240,48 +200,35 @@ public class DevModeHandler implements Serializable {
         return atomicHandler.get();
     }
 
-    /**
-     * Constructs a dev mode server in the case that production mode or bower
-     * mode are not set, and `webpack-dev-server` has been installed and
-     * configured.
-     *
-     * @param configuration
-     *            deployment configuration
-     * @return the instance in case everything is alright, null otherwise
-     */
-    public static DevModeHandler createInstance(DeploymentConfiguration configuration, Set<Class<?>> classes) {
+    private static DevModeHandler createInstance(DeploymentConfiguration configuration) {
         if (configuration.isBowerMode() || configuration.isProductionMode()) {
             getLogger().trace("Instance not created because not in npm-dev mode");
             return null;
         }
 
         File directory = new File(WEBAPP_FOLDER).getAbsoluteFile();
-        File webpack = new File(WEBPACK_SERVER);
-        File webpackConfig = new File(WEBPACK_CONFIG);
-
-        if (configuration.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
-            if (!directory.exists()) {
-                getLogger().warn("Instance not created because cannot change to '{}'", directory);
-                return null;
-            }
-
-            if (!webpack.canExecute()) {
-                getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
-                return null;
-            } else if(!webpack.exists()) {
-                getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
-                        webpack);
-                return null;
-            }
+        if (!directory.exists()) {
+            getLogger().warn("Instance not created because cannot change to '{}'", directory);
+            return null;
         }
 
-        if (configuration.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)
-                && !webpackConfig.canRead()) {
+        File webpack = new File(WEBPACK_SERVER);
+        if (!webpack.canExecute()) {
+            getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
+            return null;
+        } else if(!webpack.exists()) {
+            getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
+                    webpack);
+            return null;
+        }
+
+        File webpackConfig = new File(WEBPACK_CONFIG);
+        if (!webpackConfig.canRead()) {
             getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
             return null;
         }
 
-        return new DevModeHandler(configuration, classes, directory, webpack, webpackConfig);
+        return new DevModeHandler(configuration, directory, webpack, webpackConfig);
     }
 
     /**

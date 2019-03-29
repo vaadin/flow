@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
 
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
@@ -53,7 +52,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.DevModeHandler.WEBAPP_FOLDER;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
-import static com.vaadin.flow.server.DevModeHandler.createInstance;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
@@ -77,8 +75,6 @@ public class DevModeHandlerTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
-    private Set<Class<?>> classes = Collections.emptySet();
 
     @Before
     public void setup() throws IOException {
@@ -116,25 +112,8 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_Disabled() throws Exception {
-        assertNotNull(createInstance(configuration, classes));
-        assertFalse(new File(PACKAGE_JSON).canRead());
-        assertTrue(new File(WEBPACK_CONFIG).canRead());
-    }
-
-    @Test
-    public void should_Run_Updaters_when_Enabled() throws Exception {
-        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "false");
-        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "false");
-        assertFalse(new File(PACKAGE_JSON).canRead());
-        assertNotNull(createInstance(configuration, classes));
-        assertTrue(new File(PACKAGE_JSON).canRead());
-        assertTrue(new File(WEBPACK_CONFIG).canRead());
-    }
-
-    @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
-        assertNotNull(createInstance(configuration, classes));
+        assertNotNull(DevModeHandler.start(configuration));
         assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
         Thread.sleep(150); //NOSONAR
     }
@@ -146,14 +125,14 @@ public class DevModeHandlerTest {
         exception.expectMessage("Webpack exited prematurely");
 
         createWebpackScript("Foo", 0);
-        createInstance(configuration, classes);
+        DevModeHandler.start(configuration);
     }
 
     @Test
     public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
         configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createWebpackScript("Foo", 300);
-        assertNotNull(createInstance(configuration, classes));
+        assertNotNull(DevModeHandler.start(configuration));
         assertTrue(Integer.getInteger("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, 0) > 0);
         Thread.sleep(350); //NOSONAR
     }
@@ -161,19 +140,19 @@ public class DevModeHandlerTest {
     @Test
     public void shouldNot_CreateInstance_When_ProductionMode() throws Exception {
         configuration.setProductionMode(true);
-        assertNull(createInstance(configuration, classes));
+        assertNull(DevModeHandler.start(configuration));
     }
 
     @Test
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
         configuration.setProductionMode(true);
-        assertNull(createInstance(configuration, classes));
+        assertNull(DevModeHandler.start(configuration));
         Thread.sleep(150); //NOSONAR
     }
 
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
-        createInstance(configuration, classes);
+        DevModeHandler.start(configuration);
         assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
         Thread.sleep(150); //NOSONAR
     }
@@ -181,14 +160,14 @@ public class DevModeHandlerTest {
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         prepareHttpServer(HTTP_OK, "bar");
-        createInstance(configuration, classes);
+        DevModeHandler.start(configuration);
         assertFalse(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
     }
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {Thread.sleep(150);
         new File(WEBPACK_SERVER).delete();
-        assertNull(createInstance(configuration, classes));
+        assertNull(DevModeHandler.start(configuration));
     }
 
     @Test
@@ -196,14 +175,14 @@ public class DevModeHandlerTest {
         // The set executable doesn't work in Windows and will always return false
         boolean systemImplementsExecutable = new File(WEBPACK_SERVER).setExecutable(false);
         if(systemImplementsExecutable) {
-            assertNull(createInstance(configuration, classes));
+            assertNull(DevModeHandler.start(configuration));
         }
     }
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackNotConfigured()  {
         new File(WEBPACK_CONFIG).delete();
-        assertNull(createInstance(configuration, classes));
+        assertNull(DevModeHandler.start(configuration));
     }
 
     @Test
@@ -274,7 +253,7 @@ public class DevModeHandlerTest {
     }
 
     private VaadinServlet prepareServlet() throws ServletException {
-        DevModeHandler.start(configuration, classes);
+        DevModeHandler.start(configuration);
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
