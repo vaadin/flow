@@ -253,24 +253,15 @@ public class WebComponentConfigurationRegistryTest {
     @Tag("my-component")
     public static class MyComponentExporter
             extends WebComponentExporterAdapter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-        }
     }
 
     @Tag("my-component-2")
     public static class MyComponentExporter2
             extends WebComponentExporterAdapter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-        }
     }
 
     @Tag("user-box")
     public static class UserBoxExporter
             extends WebComponentExporterAdapter<UserBox> {
-        @Override
-        public void define(WebComponentDefinition<UserBox> definition) {
-        }
     }
 }

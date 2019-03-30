@@ -201,10 +201,6 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Tag("invalid")
     private static class InvalidNameExporter
             extends WebComponentExporterAdapter<InvalidName> {
-        @Override
-        public void define(WebComponentDefinition<InvalidName> definition) {
-            // PASS
-        }
     }
 
     @Tag("tag-1")
@@ -230,10 +226,6 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Tag("my-component")
     private static class DuplicateTagExporter
             extends WebComponentExporterAdapter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-
-        }
     }
 
     @Tag("tag-2")
@@ -248,10 +240,5 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
     private static class NoTagExporter
             extends WebComponentExporterAdapter<MyComponent> {
-
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-
-        }
     }
 }
