@@ -27,9 +27,7 @@ import elemental.json.JsonValue;
  * {@link Component} being exported as a web component.
  * <p>
  * Call the {@code addProperty (String, ?)} variants to add properties to the
- * web component. If the component instance needs to be configured further after
- * its creation, or property updates need to be pushed to the client, call
- * {@link #setInstanceConfigurator(InstanceConfigurator)}.
+ * web component.
  *
  * @param <C>
  *            type of the {@code component} being exported.

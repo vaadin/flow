@@ -67,6 +67,12 @@ public interface WebComponentExporter<C extends Component>
      * Called by the web component export process. Use the given
      * {@link WebComponentDefinition} to define web component's properties, and
      * how the properties interact with the {@link Component} being exported.
+     * <p>
+     * If the component instance needs to be configured further after its
+     * creation, or property updates need to be pushed to the client, implement
+     * {@link #configure(WebComponent, Component)}.
+     *
+     * @see #configure(WebComponent, Component)
      *
      * @param definition
      *            instance used to define the component.
