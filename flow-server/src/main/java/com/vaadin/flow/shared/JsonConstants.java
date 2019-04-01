@@ -269,11 +269,6 @@ public class JsonConstants implements Serializable {
     public static final String META_SESSION_EXPIRED = "sessionExpired";
 
     /**
-     * Key used for storing child template nodes.
-     */
-    public static final String CHILD_TEMPLATE_KEY = "children";
-
-    /**
      * Key holding the debounce phase for an event data map from the client.
      */
     // "for" is a reserved keyword, which means that this cannot be a valid JS
