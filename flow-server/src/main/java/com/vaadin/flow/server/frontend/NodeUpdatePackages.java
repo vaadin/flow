@@ -68,7 +68,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      * @param extractor
      *            a reusable annotation extractor
      * @param webpackOutputDirectory
-     *            the directory to set for
+     *            the directory to set for webpack to output its build results
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file
@@ -100,7 +100,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, new File("/src/main/webapp"), WEBPACK_CONFIG, new File("."),
+        this(extractor, new File("./src/main/webapp"), WEBPACK_CONFIG, new File("."),
                 new File("./node_modules/"), true);
     }
 
@@ -142,7 +142,7 @@ public class NodeUpdatePackages extends NodeUpdater {
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(resource.openStream()))) {
                 List<String> webpackConfigLines = br.lines()
-                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getAbsolutePath()))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
                 log().info("Created {} from {}", WEBPACK_CONFIG, resource);
