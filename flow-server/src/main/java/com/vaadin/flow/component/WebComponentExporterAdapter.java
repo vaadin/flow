@@ -13,27 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.component;
 
-package com.vaadin.flow.webcomponent;
-
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-@Tag("client-select")
-public class ClientSelectExporter
-        implements WebComponentExporter<ClientSelectComponent> {
+/**
+ * An abstract adapter class for {@link WebComponentExporter} implementations.
+ * <p>
+ * The methods in this class are empty. This class exists as convenience for
+ * creating exporter objects.
+ *
+ * @author Vaadin Ltd
+ *
+ * @param <C>
+ *            type of the component to export
+ */
+public abstract class WebComponentExporterAdapter<C extends Component>
+        implements WebComponentExporter<C> {
+
     @Override
-    public void define(
-            WebComponentDefinition<ClientSelectComponent> definition) {
-        definition.addProperty("show", false)
-                .onChange(ClientSelectComponent::setMessageVisible);
+    public void define(WebComponentDefinition<C> definition) {
     }
 
     @Override
-    public void configure(WebComponent<ClientSelectComponent> webComponent,
-            ClientSelectComponent component) {
-        // no op
+    public void configure(WebComponent<C> webComponent, C component) {
     }
+
 }

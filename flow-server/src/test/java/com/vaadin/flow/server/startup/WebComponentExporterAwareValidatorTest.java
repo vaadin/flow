@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -90,6 +91,11 @@ public class WebComponentExporterAwareValidatorTest {
 
         @Override
         public void define(WebComponentDefinition<Component> definition) {
+        }
+
+        @Override
+        public void configure(WebComponent<Component> webComponent,
+                Component component) {
         }
     }
 

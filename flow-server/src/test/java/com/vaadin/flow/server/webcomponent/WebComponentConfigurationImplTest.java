@@ -16,6 +16,12 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import java.util.Set;
 
 import org.junit.Before;
@@ -23,7 +29,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterAdapter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.dom.Element;
@@ -31,11 +38,6 @@ import com.vaadin.flow.internal.JsonSerializer;
 import com.vaadin.flow.server.MockInstantiator;
 
 import elemental.json.JsonValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 public class WebComponentConfigurationImplTest {
 
@@ -58,7 +60,7 @@ public class WebComponentConfigurationImplTest {
         config.addProperty("boolean", true);
         config.addProperty("double", 1.0);
 
-        assertProperty(config,"int", 1);
+        assertProperty(config, "int", 1);
         assertProperty(config, "string", "string");
         assertProperty(config, "boolean", true);
         assertProperty(config, "double", 1.0);
@@ -109,8 +111,8 @@ public class WebComponentConfigurationImplTest {
     public void deliverPropertyUpdate() {
         config.addProperty("int", 0).onChange(MyComponent::update);
 
-        WebComponentBinding<MyComponent> binding =
-                config.createWebComponentBinding(new MockInstantiator(),
+        WebComponentBinding<MyComponent> binding = config
+                .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class));
 
         assertNotNull(binding);
@@ -141,10 +143,18 @@ public class WebComponentConfigurationImplTest {
 
     @Test
     public void bindProxy_withInstanceConfigurator() {
-        config.setInstanceConfigurator((webComponent, component) -> component.flop());
+        myComponentExporter = new MyComponentExporter() {
+            @Override
+            public void configure(WebComponent<MyComponent> webComponent,
+                    MyComponent component) {
+                component.flop();
+            }
+        };
 
-        WebComponentBinding<MyComponent> binding =
-                config.createWebComponentBinding(new MockInstantiator(),
+        config = new WebComponentConfigurationImpl<>(myComponentExporter);
+
+        WebComponentBinding<MyComponent> binding = config
+                .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class));
 
         assertNotNull("Binding should not be null", binding);
@@ -156,9 +166,9 @@ public class WebComponentConfigurationImplTest {
 
     @Test
     public void bindProxy_withoutInstanceConfigurator() {
-        WebComponentBinding<MyComponent> binding =
-                config.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class));
+        WebComponentBinding<MyComponent> binding = config
+                .createWebComponentBinding(new MockInstantiator(),
+                        mock(Element.class));
 
         assertNotNull("Binding should not be null", binding);
         assertNotNull("Binding's component should not be null",
@@ -169,8 +179,8 @@ public class WebComponentConfigurationImplTest {
 
     @Test(expected = IllegalStateException.class)
     public void bindProxy_throwsIfExporterSharesTagWithComponent() {
-        WebComponentConfigurationImpl<SharedTagComponent> sharedConfig =
-                new WebComponentConfigurationImpl<>(new SharedTagExporter());
+        WebComponentConfigurationImpl<SharedTagComponent> sharedConfig = new WebComponentConfigurationImpl<>(
+                new SharedTagExporter());
 
         sharedConfig.createWebComponentBinding(new MockInstantiator(),
                 mock(Element.class));
@@ -215,7 +225,9 @@ public class WebComponentConfigurationImplTest {
 
     public static class Bean {
         protected int integer = 0;
-        public Bean() {}
+
+        public Bean() {
+        }
 
         public int getInteger() {
             return integer;
@@ -233,14 +245,15 @@ public class WebComponentConfigurationImplTest {
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof Bean) {
-                return integer == ((Bean)obj).integer;
+                return integer == ((Bean) obj).integer;
             }
             return false;
         }
     }
 
     @Tag(TAG)
-    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter
+            extends WebComponentExporterAdapter<MyComponent> {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             // this is where WebComponentBuilder would be normally accessed
@@ -254,21 +267,21 @@ public class WebComponentConfigurationImplTest {
     }
 
     @Tag("shared-tag")
-    public static class SharedTagExporter implements WebComponentExporter<SharedTagComponent> {
+    public static class SharedTagExporter
+            extends WebComponentExporterAdapter<SharedTagComponent> {
 
         @Override
-        public void define(WebComponentDefinition<SharedTagComponent> definition) {
+        public void define(
+                WebComponentDefinition<SharedTagComponent> definition) {
 
         }
     }
 
-
-
     private static void assertProperty(WebComponentConfigurationImpl<?> builder,
-                                       String property, Object value) {
+            String property, Object value) {
         PropertyData<?> data = builder.getPropertyDataSet().stream()
-                .filter(d -> d.getName().equals(property))
-                .findFirst().orElse(null);
+                .filter(d -> d.getName().equals(property)).findFirst()
+                .orElse(null);
 
         assertNotNull("Property " + property + " should not be null", data);
         assertEquals(value, data.getDefaultValue());

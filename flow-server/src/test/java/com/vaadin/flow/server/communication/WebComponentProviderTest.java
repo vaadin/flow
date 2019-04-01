@@ -38,8 +38,8 @@ import org.mockito.MockitoAnnotations;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterAdapter;
 import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -287,11 +287,7 @@ public class WebComponentProviderTest {
 
     @Tag("my-component")
     public static class MyComponentExporter
-            implements WebComponentExporter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-
-        }
+            extends WebComponentExporterAdapter<MyComponent> {
     }
 
     @Tag("another-component")
@@ -300,49 +296,33 @@ public class WebComponentProviderTest {
 
     @Tag("other-component")
     public static class OtherComponentExporter
-            implements WebComponentExporter<OtherComponent> {
-        @Override
-        public void define(WebComponentDefinition<OtherComponent> definition) {
-
-        }
+            extends WebComponentExporterAdapter<OtherComponent> {
     }
 
     @Tag("foo")
     @Theme(MyTheme.class)
     @Push
     public static class ThemedComponentExporter
-            implements WebComponentExporter<Component> {
-        @Override
-        public void define(WebComponentDefinition<Component> definition) {
-        }
+            extends WebComponentExporterAdapter<Component> {
     }
 
     @Tag("foo")
     @Theme(MyTheme.class)
     @Push(value = PushMode.AUTOMATIC)
     public static class SameThemedComponentExporter
-            implements WebComponentExporter<Component> {
-        @Override
-        public void define(WebComponentDefinition<Component> definition) {
-        }
+            extends WebComponentExporterAdapter<Component> {
     }
 
     @Tag("foo-bar")
     @Push(value = PushMode.DISABLED)
     public static class AnotherPushComponentExporter
-            implements WebComponentExporter<Component> {
-        @Override
-        public void define(WebComponentDefinition<Component> definition) {
-        }
+            extends WebComponentExporterAdapter<Component> {
     }
 
     @Tag("foo-bar")
     @Theme(AnotherTheme.class)
     public static class AnotherThemedComponentExporter
-            implements WebComponentExporter<Component> {
-        @Override
-        public void define(WebComponentDefinition<Component> definition) {
-        }
+            extends WebComponentExporterAdapter<Component> {
     }
 
     public static class MyTheme implements AbstractTheme {
