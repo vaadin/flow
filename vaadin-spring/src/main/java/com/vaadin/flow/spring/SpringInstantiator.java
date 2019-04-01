@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.context.ApplicationContext;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -42,11 +43,13 @@ public class SpringInstantiator extends DefaultInstantiator {
     /**
      * Creates a new spring instantiator instance.
      *
-     * @param service the service to use
-     * @param context the application context
+     * @param service
+     *            the service to use
+     * @param context
+     *            the application context
      */
     public SpringInstantiator(VaadinService service,
-                              ApplicationContext context) {
+            ApplicationContext context) {
         super(service);
         this.context = context;
 
@@ -62,6 +65,12 @@ public class SpringInstantiator extends DefaultInstantiator {
     }
 
     @Override
+    public <T extends Component> T createComponent(Class<T> componentClass) {
+        return context.getAutowireCapableBeanFactory()
+                .createBean(componentClass);
+    }
+
+    @Override
     public I18NProvider getI18NProvider() {
         int beansCount = context.getBeanNamesForType(I18NProvider.class).length;
         if (beansCount == 1) {
@@ -70,7 +79,7 @@ public class SpringInstantiator extends DefaultInstantiator {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
                         .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
-                                        + "falling back to the default behavior",
+                                + "falling back to the default behavior",
                                 I18NProvider.class.getSimpleName(), beansCount);
             }
             return super.getI18NProvider();
@@ -78,20 +87,17 @@ public class SpringInstantiator extends DefaultInstantiator {
     }
 
     /**
-     * Hands over an existing bean or tries to instantiate one with the following rules:
+     * Hands over an existing bean or tries to instantiate one with the
+     * following rules:
      * <ul>
-     * <li>
-     * If exactly one bean is present in the context, it returns this bean.
+     * <li>If exactly one bean is present in the context, it returns this bean.
      * </li>
-     * <li>
-     * If no bean is present, it tries to instantiate one.
-     * </li>
-     * <li>
-     * If more than one bean is present, it tries to instantiate one but in case of a
-     * Bean instantiation exception this exception is catched and rethrown with a hint.
-     * Reason for this is, that users may expect it to "use" a bean but have multiple in the context.
-     * So the hint helps them find the problem.
-     * </li>
+     * <li>If no bean is present, it tries to instantiate one.</li>
+     * <li>If more than one bean is present, it tries to instantiate one but in
+     * case of a Bean instantiation exception this exception is catched and
+     * rethrown with a hint. Reason for this is, that users may expect it to
+     * "use" a bean but have multiple in the context. So the hint helps them
+     * find the problem.</li>
      * </ul>
      */
     @Override
