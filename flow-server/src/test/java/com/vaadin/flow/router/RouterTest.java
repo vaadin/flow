@@ -44,6 +44,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -1152,6 +1153,27 @@ public class RouterTest extends RoutingTestBase {
     @Route
     @Tag(Tag.DIV)
     public static class View extends Component {
+    }
+
+    @Route(value = "1", layout = NoRemoveLayout.class)
+    @Tag(Tag.DIV)
+    public static class NoRemoveContent1 extends Component {
+
+    }
+
+    @Route(value = "2", layout = NoRemoveLayout.class)
+    @Tag(Tag.DIV)
+    public static class NoRemoveContent2 extends Component {
+
+    }
+
+    @Tag(Tag.DIV)
+    public static class NoRemoveLayout extends Component
+            implements RouterLayout {
+        @Override
+        public void removeRouterLayoutContent(HasElement oldContent) {
+            // Do nothing
+        }
     }
 
     @Override
@@ -3019,6 +3041,26 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(ui.getElement(), specialChild.getParent());
+    }
+
+    @Test
+    public void noRemoveLayout_oldContentRetained() {
+        setNavigationTargets(NoRemoveContent1.class, NoRemoveContent2.class);
+
+        ui.navigate(NoRemoveContent1.class);
+        NoRemoveLayout layout = (NoRemoveLayout) ui.getChildren().findFirst()
+                .get();
+
+        Assert.assertEquals(Arrays.asList(NoRemoveContent1.class),
+                layout.getChildren().map(Component::getClass)
+                        .collect(Collectors.toList()));
+
+        ui.navigate(NoRemoveContent2.class);
+
+        Assert.assertEquals(
+                Arrays.asList(NoRemoveContent1.class, NoRemoveContent2.class),
+                layout.getChildren().map(Component::getClass)
+                        .collect(Collectors.toList()));
     }
 
     private void setNavigationTargets(
