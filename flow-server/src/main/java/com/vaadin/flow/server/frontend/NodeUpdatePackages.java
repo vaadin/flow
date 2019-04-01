@@ -100,7 +100,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, null, WEBPACK_CONFIG, new File("."),
+        this(extractor, new File("./target/build"), WEBPACK_CONFIG, new File("."),
                 new File("./node_modules/"), true);
     }
 
