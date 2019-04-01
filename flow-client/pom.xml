@@ -39,7 +39,7 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-osgi</artifactId>
             <version>${project.version}</version>

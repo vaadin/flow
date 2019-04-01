@@ -139,8 +139,8 @@ public class NodeUpdatePackages extends NodeUpdater {
                 resource = new URL(webpackTemplate);
             }
 
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(resource.openStream()))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
                     .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getAbsolutePath()))
                         .collect(Collectors.toList());
