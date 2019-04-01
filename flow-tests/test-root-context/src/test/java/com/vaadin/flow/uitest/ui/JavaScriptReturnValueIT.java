@@ -31,12 +31,13 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         open();
 
         /*
-         * There are 3 * 3 * 2 * 3 = 54 different combinations in the UI, let's
+         * There are 3 * 4 * 2 * 3 = 72 different combinations in the UI, let's
          * test all of them just because we can
          */
         for (String method : Arrays.asList("execPage", "execElement",
                 "callElement")) {
-            for (String value : Arrays.asList("string", "number", "null")) {
+            for (String value : Arrays.asList("string", "number", "null",
+                    "error")) {
                 for (String outcome : Arrays.asList("success", "failure")) {
                     for (String type : Arrays.asList("synchronous",
                             "resolvedpromise", "timeout")) {
@@ -82,10 +83,14 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         String prefix = "";
         if ("failure".equals(outcome)) {
             prefix = "Error: ";
+
             if ("null".equals(value)) {
                 // Special case since the null is handled differently for errors
                 // and for results
                 return prefix + "null";
+            } else if ("error".equals(value)) {
+                // Message from inside the Error object should be included
+                return prefix + "Error: message";
             }
         }
 
@@ -96,6 +101,9 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
             return prefix + "42";
         case "null":
             return prefix;
+        case "error":
+            // JreJsonObject.asString()
+            return prefix + "[object Object]";
         default:
             throw new IllegalArgumentException(
                     "Unsupported value type: " + value);
