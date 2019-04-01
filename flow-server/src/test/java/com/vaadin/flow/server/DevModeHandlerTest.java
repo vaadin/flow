@@ -24,12 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
@@ -52,7 +54,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.DevModeHandler.WEBAPP_FOLDER;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
-import static com.vaadin.flow.server.DevModeHandler.createInstance;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
@@ -72,6 +73,7 @@ public class DevModeHandlerTest {
     private static final String TEST_FILE = "webpack-out.test";
     private HttpServer httpServer;
     private int responseStatus;
+
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -101,7 +103,7 @@ public class DevModeHandlerTest {
     }
 
     @After
-    public void teardown() throws IOException {
+    public void teardown() throws Exception {
         FileUtils.deleteDirectory(new File("node_modules"));
         FileUtils.deleteQuietly(new File(PACKAGE_JSON));
         FileUtils.deleteQuietly(new File(WEBPACK_CONFIG));
@@ -109,28 +111,16 @@ public class DevModeHandlerTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
-    }
 
-    @Test
-    public void should_Not_Run_Updaters_when_Disabled() throws Exception {
-        assertNotNull(createInstance(configuration));
-        assertFalse(new File(PACKAGE_JSON).canRead());
-        assertTrue(new File(WEBPACK_CONFIG).canRead());
-    }
-
-    @Test
-    public void should_Run_Updaters_when_Enabled() throws Exception {
-        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "false");
-        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "false");
-        assertFalse(new File(PACKAGE_JSON).canRead());
-        assertNotNull(createInstance(configuration));
-        assertTrue(new File(PACKAGE_JSON).canRead());
-        assertTrue(new File(WEBPACK_CONFIG).canRead());
+        // Reset unique instance in DevModeHandler
+        Field atomicHandler = DevModeHandler.class.getDeclaredField("atomicHandler");
+        atomicHandler.setAccessible(true);
+        atomicHandler.set(null, new AtomicReference<>());
     }
 
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
-        assertNotNull(createInstance(configuration));
+        assertNotNull(DevModeHandler.start(configuration));
         assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
         Thread.sleep(150); //NOSONAR
     }
@@ -142,14 +132,14 @@ public class DevModeHandlerTest {
         exception.expectMessage("Webpack exited prematurely");
 
         createWebpackScript("Foo", 0);
-        createInstance(configuration);
+        DevModeHandler.start(configuration);
     }
 
     @Test
     public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
         configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createWebpackScript("Foo", 300);
-        assertNotNull(createInstance(configuration));
+        assertNotNull(DevModeHandler.start(configuration));
         assertTrue(Integer.getInteger("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, 0) > 0);
         Thread.sleep(350); //NOSONAR
     }
@@ -157,19 +147,19 @@ public class DevModeHandlerTest {
     @Test
     public void shouldNot_CreateInstance_When_ProductionMode() throws Exception {
         configuration.setProductionMode(true);
-        assertNull(createInstance(configuration));
+        assertNull(DevModeHandler.start(configuration));
     }
 
     @Test
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
         configuration.setProductionMode(true);
-        assertNull(createInstance(configuration));
+        assertNull(DevModeHandler.start(configuration));
         Thread.sleep(150); //NOSONAR
     }
 
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
-        createInstance(configuration);
+        DevModeHandler.start(configuration);
         assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
         Thread.sleep(150); //NOSONAR
     }
@@ -177,14 +167,14 @@ public class DevModeHandlerTest {
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         prepareHttpServer(HTTP_OK, "bar");
-        createInstance(configuration);
+        DevModeHandler.start(configuration);
         assertFalse(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {Thread.sleep(150);
+    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {
         new File(WEBPACK_SERVER).delete();
-        assertNull(createInstance(configuration));
+        assertNull(DevModeHandler.start(configuration));
     }
 
     @Test
@@ -192,14 +182,14 @@ public class DevModeHandlerTest {
         // The set executable doesn't work in Windows and will always return false
         boolean systemImplementsExecutable = new File(WEBPACK_SERVER).setExecutable(false);
         if(systemImplementsExecutable) {
-            assertNull(createInstance(configuration));
+            assertNull(DevModeHandler.start(configuration));
         }
     }
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackNotConfigured()  {
         new File(WEBPACK_CONFIG).delete();
-        assertNull(createInstance(configuration));
+        assertNull(DevModeHandler.start(configuration));
     }
 
     @Test

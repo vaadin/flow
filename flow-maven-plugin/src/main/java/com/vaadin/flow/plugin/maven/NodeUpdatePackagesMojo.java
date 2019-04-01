@@ -43,7 +43,7 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getProjectClassPathUrls(project));
+            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getClassFinder(project));
             updater = new NodeUpdatePackages(extractor, webpackTemplate, npmFolder, nodeModulesPath,
                     convertHtml);
         }

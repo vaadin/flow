@@ -98,8 +98,6 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     @Override
     public void execute() {
-        log().info("Looking for npm package dependencies in the java class-path ...");
-
         try {
             Map<Class<?>, Set<String>> classes = annotationValuesExtractor.getAnnotatedClasses(NpmPackage.class, VALUE);
             classes.putAll(classesWithHtmlImport(classes));
@@ -125,7 +123,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         File configFile = new File(npmFolder, WEBPACK_CONFIG);
 
         if (configFile.exists()) {
-            log().info("No changes to {}", configFile);
+            log().info("{} already exists.", configFile);
         } else {
             URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
             if (resource == null) {

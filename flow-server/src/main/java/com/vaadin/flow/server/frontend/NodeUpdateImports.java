@@ -98,8 +98,6 @@ public class NodeUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        log().info("Looking for imports in the java class-path ...");
-
         // Using LinkedHashSet to maintain theme imports sorted at top
         Set<String> modules = new LinkedHashSet<>();
         modules.addAll(getThemeModules());

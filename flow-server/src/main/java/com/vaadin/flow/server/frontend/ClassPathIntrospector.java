@@ -17,18 +17,11 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Repeatable;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import org.reflections.Reflections;
-import org.reflections.util.ConfigurationBuilder;
 
 /**
  * Abstract class which allows to find classes in the project classpath.
@@ -39,46 +32,67 @@ import org.reflections.util.ConfigurationBuilder;
  */
 public abstract class ClassPathIntrospector implements Serializable {
 
-    private final transient ClassLoader classLoader;
+    /**
+     * Interface for annotated class searches.
+     */
+    public interface ClassFinder extends Serializable {
+        /**
+         * Get annotated classes in the classloader.
+         *
+         * @param clazz the annotation
+         * @return a set with all classes that are annotated
+         */
+        Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> clazz);
+        /**
+         * Get a resource from the classpath.
+         *
+         * @param name class literal
+         * @return the resource
+         */
+        URL getResource(String name);
 
-    private final transient Reflections reflections;
+        /**
+         * Load a class in the classloader.
+         *
+         * @param name
+         *            the class literal
+         * @return the class
+         * @throws ClassNotFoundException
+         *             when the class is not in the classpath
+         */
+        <T> Class<T> loadClass(String name) throws ClassNotFoundException ;
+    }
+
+    private final ClassFinder finder;
 
     /**
-     * Creates a new instance of class path introspector using the
-     * {@code projectClassesLocations}.
+     * Creates a new instance of class.
      *
-     * @param projectClassesLocations
-     *            urls to project class locations (directories, jars etc.)
+     * @param finder the ClassFinder instance to use for class searches.
      */
-    protected ClassPathIntrospector(URL... projectClassesLocations) {
-        classLoader = new URLClassLoader(projectClassesLocations, null); //NOSONAR
-        reflections = new Reflections(
-                new ConfigurationBuilder().addClassLoader(classLoader).setExpandSuperTypes(false)
-                        .addUrls(projectClassesLocations));
+    protected ClassPathIntrospector(ClassFinder finder) {
+        this.finder = finder;
     }
 
     /**
-     * Creates a new instance of class path introspector using the
-     * {@code otherIntrpespector}'s reflection tools.
-     *
+     * Create a new instance but reusing the instrospector.
+     * 
      * @param otherIntrospector
-     *            the introspector whose reflection tools will be reused
+     *            the other instance.
      */
-    protected ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
-        classLoader = otherIntrospector.classLoader;
-        reflections = otherIntrospector.reflections;
+    public ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
+        this.finder = otherIntrospector.finder;
     }
 
     /**
-     * Returns a resource {@link URL} given a file name by re-using the
-     * {@link ClassPathIntrospector#classLoader}.
-     *
+     * Returns a resource {@link URL} given a file name.
+     * 
      * @param name
      *            the name of the resource
      * @return the URL with the resource or null if not found
      */
     protected URL getResource(String name) {
-        return classLoader.getResource(name);
+        return finder.getResource(name);
     }
 
     /**
@@ -91,12 +105,7 @@ public abstract class ClassPathIntrospector implements Serializable {
      */
     protected Stream<Class<?>> getAnnotatedClasses(
             Class<? extends Annotation> annotationInProjectContext) {
-        Set<Class<?>> annotatedBySingleAnnotation = reflections
-                .getTypesAnnotatedWith(annotationInProjectContext, true);
-        Set<Class<?>> annotatedByRepeatedAnnotation = getAnnotatedByRepeatedAnnotation(
-                annotationInProjectContext);
-        return Stream.concat(annotatedBySingleAnnotation.stream(),
-                annotatedByRepeatedAnnotation.stream());
+        return finder.getAnnotatedClasses(annotationInProjectContext).stream();
     }
 
     /**
@@ -113,10 +122,9 @@ public abstract class ClassPathIntrospector implements Serializable {
      * @return the class with the given {@code className} loaded by the project
      *         class loader
      */
-    @SuppressWarnings("unchecked")
     public <T> Class<T> loadClassInProjectClassLoader(String className) {
         try {
-            return (Class<T>) classLoader.loadClass(className);
+            return finder.loadClass(className);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(String.format(
                     "Failed to load class '%s' in custom classloader",
@@ -195,16 +203,5 @@ public abstract class ClassPathIntrospector implements Serializable {
             throw new IllegalArgumentException(e);
         }
         return null;
-    }
-
-    private Set<Class<?>> getAnnotatedByRepeatedAnnotation(
-            AnnotatedElement annotationClass) {
-        Repeatable repeatableAnnotation = annotationClass
-                .getAnnotation(Repeatable.class);
-        if (repeatableAnnotation != null) {
-            return reflections
-                    .getTypesAnnotatedWith(repeatableAnnotation.value(), true);
-        }
-        return Collections.emptySet();
     }
 }

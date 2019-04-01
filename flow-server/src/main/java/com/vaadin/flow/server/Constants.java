@@ -131,7 +131,7 @@ public final class Constants implements Serializable {
     public static final String STATISTICS_JSON_DEFAULT = "/build/stats.json";
 
     /**
-     * Name of the <code>npm</code> main file. 
+     * Name of the <code>npm</code> main file.
      */
     public static final String PACKAGE_JSON = "package.json";
 
@@ -153,29 +153,29 @@ public final class Constants implements Serializable {
      * Configuration name for the time waiting for webpack output pattern
      * defined by {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN}.
      */
-    static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = "devmode.webpack.output.pattern.timeout";
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = "devmode.webpack.output.pattern.timeout";
 
     /**
      * Configuration name for the pattern used to inspect the webpack output to
      * assure it is up and running. Default value is defined in
      * {@link DevModeHandler} as the <code>: (Compiled|Failed)</code> expression.
      */
-    static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN = "devmode.webpack.output.pattern";
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN = "devmode.webpack.output.pattern";
 
     /**
      * Configuration name for adding extra options to the webpack-dev-server.
      */
-    static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
 
     /**
      * Configuration name which disables the node imports updater.
      */
-    static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS = "devmode.skip.update-imports";
+    public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS = "devmode.skip.update-imports";
 
     /**
      * Configuration name  which disables the node dependencies updater.
      */
-    static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM = "devmode.skip.update-npm-dependencies";
+    public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM = "devmode.skip.update-npm-dependencies";
 
     private Constants() {
         // prevent instantiation constants class only
