@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -30,7 +31,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
@@ -60,11 +61,12 @@ public class WebComponentUI extends UI {
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration = WebComponentConfigurationRegistry
+        Optional<WebComponentExporter<? extends Component>> webComponentExporter =
+                WebComponentExporterRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext())
-                .getConfiguration(tag);
+                .getExporter(tag);
 
-        if (!webComponentConfiguration.isPresent()) {
+        if (!webComponentExporter.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received connect request for non existing WebComponent '{}'",
                     tag);
@@ -79,7 +81,7 @@ public class WebComponentUI extends UI {
          * configureWebComponentInstance sets up the component-to-host linkage.
          */
         Element el = new Element(tag);
-        WebComponentBinding binding = webComponentConfiguration.get()
+        WebComponentBinding binding = webComponentExporter.get()
                 .createWebComponentBinding(Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
@@ -122,7 +124,7 @@ public class WebComponentUI extends UI {
     }
 
     private void assignTheme() {
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+        WebComponentExporterRegistry registry = WebComponentExporterRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext());
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);

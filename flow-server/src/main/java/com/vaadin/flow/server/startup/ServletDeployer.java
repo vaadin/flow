@@ -36,7 +36,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -158,7 +158,7 @@ public class ServletDeployer implements ServletContextListener {
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
-        createServlet = createServlet || WebComponentConfigurationRegistry
+        createServlet = createServlet || WebComponentExporterRegistry
                 .getInstance(context).hasExporters();
 
         if (!createServlet) {

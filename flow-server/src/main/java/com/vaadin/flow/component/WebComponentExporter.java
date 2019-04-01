@@ -17,9 +17,26 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.webcomponent.WebComponentBinding;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
+import com.vaadin.flow.component.webcomponent.PropertyData;
+import com.vaadin.flow.server.webcomponent.UnsupportedPropertyTypeException;
+
+import elemental.json.JsonValue;
 
 /**
  * Provides a way to exporter a class which extends {@link Component} as an
@@ -61,23 +78,146 @@ import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
  * @param <C>
  *            type of the component to export
  */
-public interface WebComponentExporter<C extends Component>
-        extends Serializable {
+public abstract class WebComponentExporter<C extends Component>
+        implements WebComponentConfiguration<C>, Serializable {
+
+    private static final List<Class> SUPPORTED_TYPES = Arrays.asList(
+            Boolean.class, String.class, Integer.class, Double.class,
+            JsonValue.class);
+
+    private final String tag;
+    private final Class<C> componentClass;
+    private Map<String, PropertyConfigurationExtension<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
+
+    protected WebComponentExporter(String tag) {
+        Objects.requireNonNull(tag,
+                "Parameter 'tag' must not be null!");
+        this.tag = tag;
+
+        componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
+                this.getClass(), WebComponentExporter.class);
+
+        assert componentClass != null : "Failed to determine component class "
+                + "from WebComponentExporter's type parameter.";
+    }
+
+    private <P extends Serializable> PropertyConfiguration<C, P> addProperty(
+            String name, Class<P> type, P defaultValue) {
+        Objects.requireNonNull(name, "Parameter 'name' cannot be null!");
+        Objects.requireNonNull(type, "Parameter 'type' cannot be null!");
+
+        if (!isSupportedType(type)) {
+            throw new UnsupportedPropertyTypeException(String.format(
+                    "PropertyConfiguration "
+                            + "cannot handle type %s. Use any of %s instead.",
+                    type.getCanonicalName(),
+                    SUPPORTED_TYPES.stream().map(Class::getSimpleName)
+                            .collect(Collectors.joining(", "))));
+        }
+
+        PropertyConfigurationExtension<C, P> propertyConfiguration =
+                new PropertyConfigurationExtension<>(
+                getComponentClass(), name, type, defaultValue);
+
+        propertyConfigurationMap.put(name, propertyConfiguration);
+
+        return propertyConfiguration;
+    }
+
     /**
-     * Called by the web component export process. Use the given
-     * {@link WebComponentDefinition} to define web component's properties, and
-     * how the properties interact with the {@link Component} being exported.
-     * <p>
-     * If the component instance needs to be configured further after its
-     * creation, or property updates need to be pushed to the client, implement
-     * {@link #configure(WebComponent, Component)}.
+     * Add an {@code Integer} property to the exported web component identified
+     * by {@code name}.
      *
-     * @see #configure(WebComponent, Component)
-     *
-     * @param definition
-     *            instance used to define the component.
+     * @param name
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
+     * @param defaultValue
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    void define(WebComponentDefinition<C> definition);
+    public PropertyConfiguration<C, Integer> addProperty(String name,
+                                                         int defaultValue) {
+        return addProperty(name, Integer.class, defaultValue);
+    }
+
+    /**
+     * Add an {@code Double} property to the exported web component identified
+     * by {@code name}.
+     *
+     * @param name
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
+     * @param defaultValue
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
+    public PropertyConfiguration<C, Double> addProperty(String name,
+                                                        double defaultValue) {
+        return addProperty(name, Double.class, defaultValue);
+    }
+
+    /**
+     * Add an {@code String} property to the exported web component identified
+     * by {@code name}.
+     *
+     * @param name
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
+     * @param defaultValue
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
+    public PropertyConfiguration<C, String> addProperty(String name,
+                                                        String defaultValue) {
+        return addProperty(name, String.class, defaultValue);
+    }
+
+    /**
+     * Add an {@code Boolean} property to the exported web component identified
+     * by {@code name}.
+     *
+     * @param name
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
+     * @param defaultValue
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
+    public PropertyConfiguration<C, Boolean> addProperty(String name,
+                                                         boolean defaultValue) {
+        return addProperty(name, Boolean.class, defaultValue);
+    }
+
+    /**
+     * Add an {@code JsonValue} property to the exported web component
+     * identified by {@code name}.
+     *
+     * @param name
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
+     * @param defaultValue
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
+     */
+    public PropertyConfiguration<C, JsonValue> addProperty(String name,
+                                                           JsonValue defaultValue) {
+        return addProperty(name, JsonValue.class, defaultValue);
+    }
 
     /**
      * If custom initialization for the created {@link Component} instance is
@@ -92,5 +232,131 @@ public interface WebComponentExporter<C extends Component>
      * @param component
      *            exported component instance
      */
-    void configure(WebComponent<C> webComponent, C component);
+    abstract public void configureInstance(WebComponent<C> webComponent, C component);
+
+    @Override
+    public boolean hasProperty(String propertyName) {
+        return propertyConfigurationMap.containsKey(propertyName);
+    }
+
+    @Override
+    public Class<? extends Serializable> getPropertyType(String propertyName) {
+        if (propertyConfigurationMap.containsKey(propertyName)) {
+            return propertyConfigurationMap.get(propertyName).getPropertyData()
+                    .getType();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Class<C> getComponentClass() {
+        return componentClass;
+    }
+
+    @Override
+    public Set<PropertyData<? extends Serializable>> getPropertyDataSet() {
+        return propertyConfigurationMap.values().stream()
+                .map(PropertyConfigurationExtension::getPropertyData)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator, Element el) {
+        assert (instantiator != null);
+
+        final C componentReference = instantiator
+                .getOrCreate(this.getComponentClass());
+
+        if (componentReference == null) {
+            throw new RuntimeException("Failed to instantiate a new "
+                    + this.getComponentClass().getCanonicalName());
+        }
+
+        /*
+         * The tag check cannot be done before the creation of the Component
+         * being exported, as the WebComponentConfigurationImpl itself is
+         * constructed only when the first request for a web component instance
+         * comes in. This is due to the unavailability of Instantiator before
+         * VaadinService has been initialized (which happens after collecting
+         * all the exporters.
+         */
+        String componentTag = componentReference.getElement().getTag();
+        if (this.tag.equals(componentTag)) {
+            throw new IllegalStateException(String.format(
+                    "WebComponentExporter '%s' cannot share a tag with the "
+                            + "%s instance being exported! Change the tag "
+                            + "from '%s' to something else.",
+                    this.getClass().getCanonicalName(),
+                    componentReference.getClass().getCanonicalName(),
+                    this.tag));
+        }
+
+        WebComponentBindingExtension<C> binding =
+                new WebComponentBindingExtension<>(componentReference);
+
+        propertyConfigurationMap
+                .values().forEach(binding::bindProperty);
+
+        configureInstance(new WebComponentExtension<>(binding, el),
+                binding.getComponent());
+
+        binding.updatePropertiesToComponent();
+
+        return binding;
+    }
+
+    private static boolean isSupportedType(Class clazz) {
+        return SUPPORTED_TYPES.contains(clazz);
+    }
+
+    /*
+        API extension of abstract classes from ./webcomponent
+        these classes expose protected methods that are essential for the
+        internal implementation of this class, so they are extended by inner
+        classes in order to expose those methods here
+     */
+
+    static class WebComponentBindingExtension<C extends Component> extends WebComponentBinding<C> {
+        private WebComponentBindingExtension(C component) {
+            super(component);
+        }
+
+        @Override
+        protected void updatePropertiesToComponent() {
+            super.updatePropertiesToComponent();
+        }
+
+        @Override
+        protected void bindProperty(PropertyConfiguration<C, ?
+                        extends Serializable> propertyConfig) {
+            super.bindProperty(propertyConfig);
+        }
+    }
+
+    static class WebComponentExtension<C extends Component> extends WebComponent<C> {
+        private WebComponentExtension(WebComponentBinding<C> binding,
+                                Element componentHost) {
+            super(binding, componentHost);
+        }
+    }
+
+    static class PropertyConfigurationExtension<C extends Component,
+            P extends Serializable> extends PropertyConfiguration<C, P> {
+
+        private PropertyConfigurationExtension(Class<C> componentType,
+                                         String propertyName, Class<P> propertyType, P defaultValue) {
+            super(componentType, propertyName, propertyType, defaultValue);
+        }
+
+        @Override
+        protected SerializableBiConsumer<C, Serializable> getOnChangeHandler() {
+            return super.getOnChangeHandler();
+        }
+
+        @Override
+        protected PropertyData<P> getPropertyData() {
+            return super.getPropertyData();
+        }
+    }
 }

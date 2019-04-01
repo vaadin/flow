@@ -22,7 +22,6 @@ import java.util.Set;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.webcomponent.PropertyData;
 
 /**
  * The configuration is used to construct the web component, and further-more

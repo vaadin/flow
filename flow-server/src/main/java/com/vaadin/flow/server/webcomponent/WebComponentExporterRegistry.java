@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -25,8 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-
-import javax.servlet.ServletContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -44,24 +43,25 @@ import com.vaadin.flow.theme.Theme;
  * @since
  */
 @EmbeddedApplicationAnnotations({ Theme.class, Push.class })
-public class WebComponentConfigurationRegistry implements Serializable {
+public class WebComponentExporterRegistry implements Serializable {
 
     /**
      * Lock used to ensure there's only one update going on at once.
      * <p>
      * The lock is configured to always guarantee a fair ordering.
      */
-    private final ReentrantLock configurationLock = new ReentrantLock(true);
+    private final ReentrantLock storageLock = new ReentrantLock(true);
 
     private HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = null;
-    private HashMap<String, WebComponentConfigurationImpl<? extends Component>> builderCache = new HashMap<>();
+    private HashMap<String, WebComponentExporter<? extends Component>> exporterCache =
+            new HashMap<>();
 
     private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
 
     /**
      * Protected constructor for internal OSGi extensions.
      */
-    protected WebComponentConfigurationRegistry() {
+    protected WebComponentExporterRegistry() {
     }
 
     /**
@@ -72,38 +72,24 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *            custom element tag
      * @return Optional containing a web component matching given tag
      */
-    public Optional<WebComponentConfiguration<? extends Component>> getConfiguration(
+    public Optional<WebComponentExporter<? extends Component>> getExporter(
             String tag) {
-        return Optional.ofNullable(getConfigurationInternal(tag));
-    }
-
-    /**
-     * Retrieves {@link WebComponentConfigurationImpl} matching the {@code} tag.
-     * If the builder is not readily available, attempts to construct it from
-     * the web component exporter cache.
-     *
-     * @param tag
-     *            tag name of the web component
-     * @return {@link WebComponentConfigurationImpl} by the tag
-     */
-    protected WebComponentConfigurationImpl<? extends Component> getConfigurationInternal(
-            String tag) {
-        WebComponentConfigurationImpl<? extends Component> configuration = null;
-        configurationLock.lock();
+        WebComponentExporter<? extends Component> exporter = null;
+        storageLock.lock();
         try {
             if (exporterClasses != null) {
                 populateCacheByTag(tag);
-                configuration = builderCache.get(tag);
+                exporter = exporterCache.get(tag);
             }
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
-        return configuration;
+        return Optional.ofNullable(exporter);
     }
 
     /**
      * Get an unmodifiable set containing all registered web component
-     * configurations for a specific {@link Component} type.
+     * exporters for a specific {@link Component} type.
      *
      * @param componentClass
      *            type of the exported {@link Component}
@@ -113,21 +99,21 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     public <T extends Component> Set<WebComponentConfiguration<T>> getConfigurationsByComponentType(
             Class<T> componentClass) {
-        configurationLock.lock();
+        storageLock.lock();
         try {
             if (exporterClasses == null) {
                 return Collections.emptySet();
             }
-            if (!areAllConfigurationsAvailable()) {
-                populateCacheWithMissingConfigurations();
+            if (!areAllExportersAvailable()) {
+                populateCacheWithMissingExporters();
             }
-            return Collections.unmodifiableSet(builderCache.values().stream()
+            return Collections.unmodifiableSet(exporterCache.values().stream()
                     .filter(b -> componentClass.equals(b.getComponentClass()))
                     .map(b -> (WebComponentConfiguration<T>) b)
                     .collect(Collectors.toSet()));
 
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
     }
 
@@ -139,7 +125,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     protected void updateRegistry(
             Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporters) {
-        configurationLock.lock();
+        storageLock.lock();
         try {
             if (exporters.isEmpty()) {
                 exporterClasses = new HashMap<>(0);
@@ -149,9 +135,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
             updateConfiguration();
             // since we updated our exporter selection, we need to clear our
             // builder cache
-            builderCache.clear();
+            exporterCache.clear();
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
     }
 
@@ -168,7 +154,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     public boolean setExporters(
             Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporters) {
-        configurationLock.lock();
+        storageLock.lock();
         try {
             if (exporterClasses != null) {
                 return false;
@@ -178,7 +164,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             return true;
 
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
     }
 
@@ -190,11 +176,11 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *         {@code non-null} value
      */
     public boolean hasExporters() {
-        configurationLock.lock();
+        storageLock.lock();
         try {
             return exporterClasses != null;
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
     }
 
@@ -214,7 +200,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     public <T extends Annotation> Optional<T> getEmbeddedApplicationAnnotation(
             Class<T> type) {
-        configurationLock.lock();
+        storageLock.lock();
         try {
             if (embeddedAppAnnotations == null) {
                 return Optional.empty();
@@ -222,7 +208,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             return Optional
                     .ofNullable(type.cast(embeddedAppAnnotations.get(type)));
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
     }
 
@@ -234,16 +220,16 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *         set
      */
     public Set<WebComponentConfiguration<? extends Component>> getConfigurations() {
-        configurationLock.lock();
+        storageLock.lock();
         try {
-            if (!areAllConfigurationsAvailable()) {
-                populateCacheWithMissingConfigurations();
+            if (!areAllExportersAvailable()) {
+                populateCacheWithMissingExporters();
             }
 
             return Collections
-                    .unmodifiableSet(new HashSet<>(builderCache.values()));
+                    .unmodifiableSet(new HashSet<>(exporterCache.values()));
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
     }
 
@@ -254,25 +240,25 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *            servlet context to get registry for
      * @return WebComponentRegistry instance
      */
-    public static WebComponentConfigurationRegistry getInstance(
+    public static WebComponentExporterRegistry getInstance(
             ServletContext servletContext) {
         assert servletContext != null;
 
         Object attribute;
         synchronized (servletContext) {
             attribute = servletContext.getAttribute(
-                    WebComponentConfigurationRegistry.class.getName());
+                    WebComponentExporterRegistry.class.getName());
 
             if (attribute == null) {
                 attribute = createRegistry(servletContext);
                 servletContext.setAttribute(
-                        WebComponentConfigurationRegistry.class.getName(),
+                        WebComponentExporterRegistry.class.getName(),
                         attribute);
             }
         }
 
-        if (attribute instanceof WebComponentConfigurationRegistry) {
-            return (WebComponentConfigurationRegistry) attribute;
+        if (attribute instanceof WebComponentExporterRegistry) {
+            return (WebComponentExporterRegistry) attribute;
         } else {
             throw new IllegalStateException(
                     "Unknown servlet context attribute value: " + attribute);
@@ -280,10 +266,10 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     private void updateConfiguration() {
-        assert configurationLock.isHeldByCurrentThread();
+        assert storageLock.isHeldByCurrentThread();
 
         Optional<Class<? extends Annotation>[]> annotationTypes = AnnotationReader
-                .getAnnotationValueFor(WebComponentConfigurationRegistry.class,
+                .getAnnotationValueFor(WebComponentExporterRegistry.class,
                         EmbeddedApplicationAnnotations.class,
                         EmbeddedApplicationAnnotations::value);
 
@@ -316,19 +302,19 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
     }
 
-    private static WebComponentConfigurationRegistry createRegistry(
+    private static WebComponentExporterRegistry createRegistry(
             ServletContext context) {
         if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
-            return new WebComponentConfigurationRegistry();
+            return new WebComponentExporterRegistry();
         }
         Object attribute = OSGiAccess.getInstance().getOsgiServletContext()
                 .getAttribute(
-                        WebComponentConfigurationRegistry.class.getName());
-        if (attribute instanceof OSGiWebComponentConfigurationRegistry) {
-            return (WebComponentConfigurationRegistry) attribute;
+                        WebComponentExporterRegistry.class.getName());
+        if (attribute instanceof OSGiWebComponentExporterRegistry) {
+            return (WebComponentExporterRegistry) attribute;
         }
 
-        return new OSGiWebComponentConfigurationRegistry();
+        return new OSGiWebComponentExporterRegistry();
     }
 
     /**
@@ -339,10 +325,10 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *            name of the web component
      */
     protected void populateCacheByTag(String tag) {
-        configurationLock.lock();
+        storageLock.lock();
 
         try {
-            if (builderCache.containsKey(tag)) {
+            if (exporterCache.containsKey(tag)) {
                 return;
             }
 
@@ -350,13 +336,13 @@ public class WebComponentConfigurationRegistry implements Serializable {
                     .get(tag);
 
             if (exporterClass != null) {
-                builderCache.put(tag, constructConfigurations(exporterClass));
+                exporterCache.put(tag, constructExporter(exporterClass));
                 // remove the class reference from the data bank - it has
                 // already been constructed and is no longer needed
                 exporterClasses.remove(tag);
             }
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
     }
 
@@ -364,35 +350,33 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Constructs and adds all the missing configurations into the {@code
      * builderCache} based on the exporters.
      */
-    protected void populateCacheWithMissingConfigurations() {
+    protected void populateCacheWithMissingExporters() {
         if (exporterClasses == null) {
             return;
         }
-        exporterClasses.forEach((key, value) -> builderCache.put(key,
-                constructConfigurations(value)));
+        exporterClasses.forEach((key, value) -> exporterCache.put(key,
+                constructExporter(value)));
         // empty the exporter data bank - every builder has been constructed
         exporterClasses.clear();
     }
 
-    protected boolean areAllConfigurationsAvailable() {
-        configurationLock.lock();
+    protected boolean areAllExportersAvailable() {
+        storageLock.lock();
 
         try {
             return exporterClasses != null && exporterClasses.size() == 0;
         } finally {
-            configurationLock.unlock();
+            storageLock.unlock();
         }
     }
 
-    protected WebComponentConfigurationImpl<? extends Component> constructConfigurations(
+    protected WebComponentExporter<? extends Component> constructExporter(
             Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
 
         Instantiator instantiator = VaadinService.getCurrent()
                 .getInstantiator();
 
-        WebComponentExporter<? extends Component> exporter = instantiator
+        return instantiator
                 .getOrCreate(exporterClass);
-
-        return new WebComponentConfigurationImpl<>(exporter);
     }
 }

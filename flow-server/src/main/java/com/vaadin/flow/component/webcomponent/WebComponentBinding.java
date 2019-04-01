@@ -17,10 +17,16 @@
 package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Objects;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableConsumer;
 
 /**
  * An internal representation of a web component instance bound to a
@@ -31,7 +37,27 @@ import com.vaadin.flow.dom.Element;
  * @see WebComponentConfiguration#createWebComponentBinding(Instantiator, Element)
  *      to create {@code WebComponentBindings}
  */
-public interface WebComponentBinding<C extends Component> extends Serializable {
+public abstract class WebComponentBinding<C extends Component> implements Serializable {
+    private C component;
+    private HashMap<String, PropertyBinding<? extends Serializable>> properties = new HashMap<>();
+
+    private WebComponentBinding() {}
+
+    /**
+     * Constructs a {@link WebComponentBinding} which consists of a
+     * {@link Component} instance exposed as an embeddable web component and
+     * set of {@link PropertyBinding PropertyBindindings} that the component
+     * exposes as a web component.
+     *
+     * @param component     component which exposes {@code properties} as web
+     *                      component. Not {@code null}
+     */
+    protected WebComponentBinding(C component) {
+        Objects.requireNonNull(component, "Parameter 'component' must not be " +
+                "null!");
+
+        this.component = component;
+    }
 
     /**
      * Updates a property bound to the {@code component}. If the property has
@@ -42,14 +68,29 @@ public interface WebComponentBinding<C extends Component> extends Serializable {
      * @param propertyName  name of the property
      * @param value         new value to set for the property
      */
-    void updateProperty(String propertyName, Serializable value);
+    public void updateProperty(String propertyName, Serializable value) {
+        Objects.requireNonNull(propertyName, "Parameter 'propertyName' must " +
+                "not be null!");
+
+        PropertyBinding<?> propertyBinding = properties.get(propertyName);
+
+        if (propertyBinding == null) {
+            throw new IllegalArgumentException(
+                    String.format("No %s found for propertyName '%s'!",
+                            PropertyData.class.getSimpleName(), propertyName));
+        }
+
+        propertyBinding.updateValue(value);
+    }
 
     /**
      * Retrieves the bound {@link Component} instance.
      *
      * @return {@code component} instance
      */
-    C getComponent();
+    public C getComponent() {
+        return component;
+    }
 
     /**
      * Retrieve the type of a property's value.
@@ -57,7 +98,12 @@ public interface WebComponentBinding<C extends Component> extends Serializable {
      * @param propertyName  name of the property
      * @return property type
      */
-    Class<? extends Serializable> getPropertyType(String propertyName);
+    public Class<? extends Serializable> getPropertyType(String propertyName) {
+        if (hasProperty(propertyName)) {
+            return properties.get(propertyName).getType();
+        }
+        return null;
+    }
 
     /**
      * Does the component binding have a property identified by given name.
@@ -65,5 +111,128 @@ public interface WebComponentBinding<C extends Component> extends Serializable {
      * @param propertyName  name of the property
      * @return has property
      */
-    boolean hasProperty(String propertyName);
+    public boolean hasProperty(String propertyName) {
+        return properties.containsKey(propertyName);
+    }
+
+    /**
+     * Called by
+     * {@link WebComponentConfiguration#createWebComponentBinding(Instantiator, com.vaadin.flow.dom.Element)}
+     * once the instance has been successfully constructed. Reports the current
+     * (default) values to the bound component.
+     */
+    protected void updatePropertiesToComponent() {
+        properties.forEach((key, value) -> value.notifyValueChange());
+    }
+
+    /**
+     * TODO
+     * @param propertyConfig
+     */
+    protected void bindProperty(PropertyConfiguration<C,
+                ? extends Serializable> propertyConfig) {
+
+        SerializableBiConsumer<C, Serializable> consumer = propertyConfig
+                .getOnChangeHandler();
+        PropertyBinding<? extends Serializable> binding =
+                new PropertyBinding<>(propertyConfig.getPropertyData(),
+                        consumer == null ? null
+                                : value -> consumer.accept(
+                                        component, value));
+        properties.put(propertyConfig.getPropertyData().getName(), binding);
+    }
+
+    static class PropertyBinding<P extends Serializable> implements Serializable {
+        private PropertyData<P> data;
+        private SerializableConsumer<P> listener;
+        private P value;
+
+        PropertyBinding(PropertyData<P> data,
+                        SerializableConsumer<P> listener) {
+            Objects.requireNonNull(data, "Parameter 'data' must not be null!");
+            this.data = data;
+            this.listener = listener;
+            this.value = data.getDefaultValue();
+        }
+
+        public void updateValue(Serializable newValue) {
+            if (isReadOnly()) {
+                LoggerFactory.getLogger(getClass())
+                        .warn(String.format("An attempt was made to write to " +
+                                        "a read-only property '%s' owned by exported " +
+                                        "component %s", getName(),
+                                getType().getCanonicalName()));
+                return;
+            }
+
+            if (newValue != null && newValue.getClass() != getType()) {
+                throw new IllegalArgumentException(String.format("Parameter " +
+                                "'newValue' is of the wrong type: onChangeHandler" +
+                                " of the property expected to receive %s but " +
+                                "found %s instead.",
+                        getType().getCanonicalName(),
+                        newValue.getClass().getCanonicalName()));
+            }
+
+            P newTypedValue = (P)newValue;
+
+            // null values are always set to default value (which might still be
+            // null for some types)
+            if (newTypedValue == null) {
+                newTypedValue = data.getDefaultValue();
+            }
+
+            boolean updated = false;
+            if (this.value != null && !this.value.equals(newTypedValue)) {
+                updated = true;
+            }
+            else if (newValue != null && !newValue.equals(this.value)) {
+                updated = true;
+            }
+
+            if (updated) {
+                this.value = newTypedValue;
+                notifyValueChange();
+            }
+        }
+
+        public Class<P> getType() {
+            return data.getType();
+        }
+
+        public String getName() {
+            return data.getName();
+        }
+
+        public P getValue() {
+            return value;
+        }
+
+        public boolean isReadOnly() {
+            return data.isReadOnly();
+        }
+
+        void notifyValueChange() {
+            if (listener != null) {
+                listener.accept(this.value);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(data, value);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof PropertyBinding) {
+                PropertyBinding other = (PropertyBinding) obj;
+                boolean valuesAreNull = value == null && other.value == null;
+                boolean valuesAreEqual = valuesAreNull ||
+                        (value != null && value.equals(other.value));
+                return data.equals(other.data) && valuesAreEqual;
+            }
+            return false;
+        }
+    }
 }

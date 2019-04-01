@@ -32,7 +32,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
 
 /**
  *
@@ -49,7 +49,7 @@ public class WebComponentConfigurationRegistryInitializer
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
-        WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
+        WebComponentExporterRegistry instance = WebComponentExporterRegistry
                 .getInstance(servletContext);
 
         if (set == null || set.isEmpty()) {

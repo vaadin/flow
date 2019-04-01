@@ -26,13 +26,14 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
@@ -69,17 +70,17 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
-                WebComponentConfigurationRegistry.getInstance(
+        Optional<WebComponentExporter<? extends Component>> optionalWebComponentExporter =
+                WebComponentExporterRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext())
-                .getConfiguration(tag.get());
+                .getExporter(tag.get());
 
-        if (optionalWebComponentConfiguration.isPresent()) {
+        if (optionalWebComponentExporter.isPresent()) {
             if (cache == null) {
                 cache = new HashMap<>();
             }
             WebComponentConfiguration<? extends Component> webComponentConfiguration =
-                    optionalWebComponentConfiguration.get();
+                    optionalWebComponentExporter.get();
             String generated;
             if (cache.containsKey(tag.get())) {
                 generated = cache.get(tag.get());
