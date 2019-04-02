@@ -43,7 +43,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
  * @since
  */
 @HandlesTypes({ WebComponentExporter.class })
-public class WebComponentConfigurationRegistryInitializer
+public class WebComponentExporterRegistryInitializer
         implements ServletContainerInitializer {
 
     @Override
@@ -69,7 +69,7 @@ public class WebComponentConfigurationRegistryInitializer
         Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporterMap = exporterClasses
                 .stream()
                 .collect(Collectors.toMap(
-                        WebComponentConfigurationRegistryInitializer::getTag,
+                        WebComponentExporterRegistryInitializer::getTag,
                         aClass -> aClass));
 
         validateComponentName(exporterMap);
@@ -106,7 +106,7 @@ public class WebComponentConfigurationRegistryInitializer
     protected void validateDistinct(
             Set<Class<? extends WebComponentExporter<? extends Component>>> exporterSet) {
         long count = exporterSet.stream()
-                .map(WebComponentConfigurationRegistryInitializer::getTag)
+                .map(WebComponentExporterRegistryInitializer::getTag)
                 .distinct().count();
         if (exporterSet.size() != count) {
             Map<String, Class<?>> items = new HashMap<>();
