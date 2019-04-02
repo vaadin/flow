@@ -90,7 +90,7 @@ public class WebComponentGenerator {
         return template;
     }
 
-    private static Map<String, String> getReplacementsMap(String tag,
+    static Map<String, String> getReplacementsMap(String tag,
             Set<PropertyData<?>> propertyDataSet, String frontendURI) {
         Map<String, String> replacements = new HashMap<>();
 
