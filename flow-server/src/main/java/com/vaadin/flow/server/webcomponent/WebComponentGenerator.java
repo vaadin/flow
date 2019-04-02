@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,8 +90,11 @@ public class WebComponentGenerator {
         return template;
     }
 
-    static Map<String, String> getReplacementsMap(String uiElement, String tag,
-                                                  Set<PropertyData<?>> propertyDataSet, String contextPath) {
+    static Map<String, String> getReplacementsMap(
+            String uiElement, String tag,
+            Set<PropertyData<? extends Serializable>> propertyDataSet,
+            String contextPath) {
+
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);

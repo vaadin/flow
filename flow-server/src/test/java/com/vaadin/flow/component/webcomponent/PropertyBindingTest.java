@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,11 +14,12 @@
  * the License.
  */
 
-package com.vaadin.flow.server.webcomponent;
+package com.vaadin.flow.component.webcomponent;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.webcomponent.WebComponentBinding.PropertyBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 
 import elemental.json.JsonValue;

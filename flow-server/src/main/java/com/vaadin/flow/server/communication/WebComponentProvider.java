@@ -80,7 +80,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 cache = new HashMap<>();
             }
             WebComponentConfiguration<? extends Component> webComponentConfiguration =
-                    optionalWebComponentExporter.get();
+                    optionalWebComponentExporter.get().getConfiguration();
             String generated;
             if (cache.containsKey(tag.get())) {
                 generated = cache.get(tag.get());

@@ -16,35 +16,29 @@
 
 package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
-@Tag("property-update")
 public class PropertyUpdateExporter
-        implements WebComponentExporter<PropertyUpdateComponent> {
+        extends WebComponentExporter<PropertyUpdateComponent> {
 
     private PropertyConfiguration<PropertyUpdateComponent, Integer> property;
-
     private PropertyConfiguration<PropertyUpdateComponent, JsonValue> jsonProperty;
 
-    @Override
-    public void define(
-            WebComponentDefinition<PropertyUpdateComponent> definition) {
-        property = definition.addProperty("clicks", 0);
+    public PropertyUpdateExporter() {
+        super("property-update");
 
-        jsonProperty = definition.addProperty("clicksJson", Json.createNull());
-
+        property = addProperty("clicks", 0);
+        jsonProperty = addProperty("clicksJson", Json.createNull());
     }
 
     @Override
-    public void configure(WebComponent<PropertyUpdateComponent> webComponent,
-            PropertyUpdateComponent component) {
+    public void configureInstance(WebComponent<PropertyUpdateComponent> webComponent,
+                                  PropertyUpdateComponent component) {
         component.addListener(number -> {
             webComponent.setProperty(property, number);
             webComponent.setProperty(jsonProperty, component.getNumberJson());

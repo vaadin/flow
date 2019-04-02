@@ -16,15 +16,13 @@
 
 package com.vaadin.flow.server.startup;
 
-import static org.mockito.Mockito.when;
-
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,23 +35,23 @@ import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporterAdapter;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class WebComponentConfigurationRegistryInitializerTest {
+public class WebComponentExporterRegistryInitializerTest {
     private static final String DUPLICATE_PROPERTY_NAME = "one";
 
-    private WebComponentConfigurationRegistryInitializer initializer;
+    private WebComponentExporterRegistryInitializer initializer;
     @Mock
-    private WebComponentConfigurationRegistry registry;
+    private WebComponentExporterRegistry registry;
     @Mock
     private ServletContext servletContext;
     @Mock
@@ -62,9 +60,9 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        initializer = new WebComponentConfigurationRegistryInitializer();
+        initializer = new WebComponentExporterRegistryInitializer();
         when(servletContext.getAttribute(
-                WebComponentConfigurationRegistry.class.getName()))
+                WebComponentExporterRegistry.class.getName()))
                         .thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
@@ -180,65 +178,112 @@ public class WebComponentConfigurationRegistryInitializerTest {
     private static class InvalidName extends Component {
     }
 
-    @Tag("my-component")
     private static class MyComponentExporter
-            extends WebComponentExporterAdapter<MyComponent> {
+            extends WebComponentExporter<MyComponent> {
+
+        public MyComponentExporter() {
+            this("my-component");
+        }
+
+        protected MyComponentExporter(String tag) {
+            super(tag);
+            addProperty(DUPLICATE_PROPERTY_NAME, "component");
+        }
+
         @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            definition.addProperty(DUPLICATE_PROPERTY_NAME, "component");
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
         }
     }
 
-    @Tag("user-box")
     private static class UserBoxExporter
-            extends WebComponentExporterAdapter<UserBox> {
+            extends WebComponentExporter<UserBox> {
+
+        public UserBoxExporter() {
+            super("user-box");
+            addProperty("user", "box");
+        }
+
         @Override
-        public void define(WebComponentDefinition<UserBox> definition) {
-            definition.addProperty("user", "box");
+        public void configureInstance(WebComponent<UserBox> webComponent, UserBox component) {
+
         }
     }
 
-    @Tag("invalid")
     private static class InvalidNameExporter
-            extends WebComponentExporterAdapter<InvalidName> {
+            extends WebComponentExporter<InvalidName> {
+
+        public InvalidNameExporter() {
+            super("invalid");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<InvalidName> webComponent, InvalidName component) {
+
+        }
     }
 
-    @Tag("tag-1")
     private static class ExtendingExporter extends MyComponentExporter {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            super.define(definition);
 
-            // overwrites a property - BAD!
-            definition.addProperty(DUPLICATE_PROPERTY_NAME, "something");
+        public ExtendingExporter() {
+            super("tag-1");
+            addProperty(DUPLICATE_PROPERTY_NAME, "something");
         }
     }
 
-    @Tag("my-component-sibling")
     private static class SiblingExporter
-            extends WebComponentExporterAdapter<MyComponent> {
+            extends WebComponentExporter<MyComponent> {
+
+        public SiblingExporter() {
+            super("my-component-sibling");
+            addProperty("name", "something");
+        }
+
         @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            definition.addProperty("name", "something");
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
         }
     }
 
-    @Tag("my-component")
     private static class DuplicateTagExporter
-            extends WebComponentExporterAdapter<MyComponent> {
+            extends WebComponentExporter<MyComponent> {
+
+        public DuplicateTagExporter() {
+            super("my-component");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
+        }
     }
 
     @Tag("tag-2")
     private static class DuplicatePropertyExporter
-            extends WebComponentExporterAdapter<MyComponent> {
+            extends WebComponentExporter<MyComponent> {
+
+        public DuplicatePropertyExporter() {
+            super("tag-2");
+            addProperty(DUPLICATE_PROPERTY_NAME, "two");
+            addProperty(DUPLICATE_PROPERTY_NAME, "four");
+        }
+
         @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            definition.addProperty(DUPLICATE_PROPERTY_NAME, "two");
-            definition.addProperty(DUPLICATE_PROPERTY_NAME, "four");
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
         }
     }
 
     private static class NoTagExporter
-            extends WebComponentExporterAdapter<MyComponent> {
+            extends WebComponentExporter<MyComponent> {
+
+        public NoTagExporter() {
+            super(null);
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
+        }
     }
 }

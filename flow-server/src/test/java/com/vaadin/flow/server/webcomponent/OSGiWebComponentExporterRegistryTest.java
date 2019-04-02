@@ -42,25 +42,25 @@ import com.vaadin.flow.server.startup.EnableOSGiRunner;
 
 @NotThreadSafe
 @RunWith(EnableOSGiRunner.class)
-public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
+public class OSGiWebComponentExporterRegistryTest extends WebComponentExporterRegistryTest {
 
     @After
     public void cleanUpOSGi() {
         if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
-            OSGiWebComponentConfigurationRegistry.getInstance(
+            OSGiWebComponentExporterRegistry.getInstance(
                     OSGiAccess.getInstance().getOsgiServletContext());
         }
     }
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(OSGiWebComponentConfigurationRegistry.class.getName(),
+        Assert.assertEquals(OSGiWebComponentExporterRegistry.class.getName(),
                 registry.getClass().getName());
     }
 
     @Test
     public void assertOsgiRegistryIsServedAsASingleton() {
-        Assert.assertEquals(registry, WebComponentConfigurationRegistry
+        Assert.assertEquals(registry, WebComponentExporterRegistry
                 .getInstance(Mockito.mock(ServletContext.class)));
     }
 
@@ -88,19 +88,19 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
                 registry.setExporters(asMap(UserBoxExporter.class)));
 
         Assert.assertEquals("Registry should contain only one builder",
-                1, registry.getConfigurations().size());
+                1, registry.getExporters().size());
 
         Assert.assertEquals("Builder should be linked to UserBox.class",
-                UserBox.class, registry.getConfigurationInternal("user-box")
-                        .getComponentClass());
+                UserBox.class, registry.getExporter("user-box").get()
+                        .getConfiguration().getComponentClass());
     }
 
     @Override
     public void hasExporters() {
         // being a singleton caused this test to fail when inherited
 
-        OSGiWebComponentConfigurationRegistry registry =
-                new OSGiWebComponentConfigurationRegistry();
+        OSGiWebComponentExporterRegistry registry =
+                new OSGiWebComponentExporterRegistry();
 
         Assert.assertFalse("Should have no exporters", registry.hasExporters());
 

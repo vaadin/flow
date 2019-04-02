@@ -74,11 +74,19 @@ public interface WebComponentConfiguration<C extends Component>
      *
      * @param instantiator  {@link Instantiator} using to construct component
                             instance
-     * @param el            element which acts as the root element for the
+     * @param element       element which acts as the root element for the
      *                      {@code component instance}
      * @return  web component binding which can be used by the web component
      *          host to communicate with the component it is hosting
      */
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
-    Element el);
+    Element element);
+
+    /**
+     * Retrieves the tag name configured by the
+     * {@link com.vaadin.flow.component.WebComponentExporter}.
+     *
+     * @return tag name, not {@code null}
+     */
+    String getTag();
 }

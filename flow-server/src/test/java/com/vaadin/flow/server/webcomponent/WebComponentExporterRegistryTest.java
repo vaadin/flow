@@ -16,8 +16,7 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import static org.mockito.Mockito.mock;
-
+import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,8 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,18 +45,17 @@ import org.mockito.MockitoAnnotations;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.WebComponentExporterAdapter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.mockito.Mockito.mock;
 
 @NotThreadSafe
-public class WebComponentConfigurationRegistryTest {
+public class WebComponentExporterRegistryTest {
 
     private static final String MY_COMPONENT_TAG = "my-component";
     private static final String USER_BOX_TAG = "user-box";
@@ -69,11 +66,11 @@ public class WebComponentConfigurationRegistryTest {
     @Mock
     protected VaadinSession session;
 
-    protected WebComponentConfigurationRegistry registry;
+    protected WebComponentExporterRegistry registry;
 
     @Before
     public void init() {
-        registry = WebComponentConfigurationRegistry
+        registry = WebComponentExporterRegistry
                 .getInstance(mock(ServletContext.class));
 
         MockitoAnnotations.initMocks(this);
@@ -89,7 +86,7 @@ public class WebComponentConfigurationRegistryTest {
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(WebComponentConfigurationRegistry.class,
+        Assert.assertEquals(WebComponentExporterRegistry.class,
                 registry.getClass());
     }
 
@@ -100,19 +97,19 @@ public class WebComponentConfigurationRegistryTest {
                         UserBoxExporter.class)));
 
         Assert.assertEquals("Expected two targets to be registered", 2,
-                registry.getConfigurations().size());
+                registry.getExporters().size());
 
         Assert.assertEquals(
                 "Tag 'my-component' should have returned "
                         + "'WebComponentBuilder' matching MyComponent",
                 MyComponent.class,
-                registry.getConfigurationInternal(MY_COMPONENT_TAG)
+                registry.getExporter(MY_COMPONENT_TAG).get().getConfiguration()
                         .getComponentClass());
         Assert.assertEquals(
                 "Tag 'user-box' should have returned 'WebComponentBuilder' "
                         + "matching UserBox",
-                UserBox.class, registry.getConfigurationInternal(USER_BOX_TAG)
-                        .getComponentClass());
+                UserBox.class, registry.getExporter(USER_BOX_TAG).get()
+                        .getConfiguration().getComponentClass());
     }
 
     @Test
@@ -120,14 +117,14 @@ public class WebComponentConfigurationRegistryTest {
         registry.setExporters(asMap(MyComponentExporter.class));
 
         WebComponentConfiguration<? extends Component> conf1 = registry
-                .getConfigurationInternal("my-component");
+                .getExporter("my-component").get().getConfiguration();
 
         Assert.assertNotNull(conf1);
 
         Assert.assertFalse(registry.setExporters(asMap(UserBoxExporter.class)));
 
         WebComponentConfiguration<? extends Component> conf2 = registry
-                .getConfigurationInternal("my-component");
+                .getExporter("my-component").get().getConfiguration();
 
         Assert.assertEquals(conf1, conf2);
     }
@@ -167,19 +164,19 @@ public class WebComponentConfigurationRegistryTest {
         Assert.assertEquals(
                 "Builders from the first Set should have been added",
                 MyComponent.class,
-                registry.getConfigurationInternal("my" + "-component")
-                        .getComponentClass());
+                registry.getExporter("my" + "-component").get()
+                        .getConfiguration().getComponentClass());
 
-        Assert.assertNull(
+        Assert.assertFalse(
                 "Components from the second Set should not have been added",
-                registry.getConfigurationInternal("user-box"));
+                registry.getExporter("user-box").isPresent());
     }
 
     @Test
     public void getConfigurations_uninitializedReturnsEmptySet() {
-        WebComponentConfigurationRegistry uninitializedRegistry = new WebComponentConfigurationRegistry();
+        WebComponentExporterRegistry uninitializedRegistry = new WebComponentExporterRegistry();
 
-        Set<?> set = uninitializedRegistry.getConfigurations();
+        Set<?> set = uninitializedRegistry.getExporters();
 
         Assert.assertEquals("Configuration set should be empty", 0, set.size());
     }
@@ -250,18 +247,41 @@ public class WebComponentConfigurationRegistryTest {
      * constructors
      */
 
-    @Tag("my-component")
     public static class MyComponentExporter
-            extends WebComponentExporterAdapter<MyComponent> {
+            extends WebComponentExporter<MyComponent> {
+        public MyComponentExporter() {
+            super("my-component");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
+        }
     }
 
-    @Tag("my-component-2")
     public static class MyComponentExporter2
-            extends WebComponentExporterAdapter<MyComponent> {
+            extends WebComponentExporter<MyComponent> {
+
+        public MyComponentExporter2() {
+            super("my-component-2");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
+        }
     }
 
-    @Tag("user-box")
     public static class UserBoxExporter
-            extends WebComponentExporterAdapter<UserBox> {
+            extends WebComponentExporter<UserBox> {
+
+        public UserBoxExporter() {
+            super("user-box");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<UserBox> webComponent, UserBox component) {
+
+        }
     }
 }

@@ -1,16 +1,11 @@
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.MIDDLE_ROUTER_LAYOUT;
-import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT;
-import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT_ALIAS;
-
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -25,7 +20,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -33,6 +27,10 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
+
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.MIDDLE_ROUTER_LAYOUT;
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT;
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT_ALIAS;
 
 public class WebComponentExporterAwareValidatorTest {
 
@@ -87,15 +85,15 @@ public class WebComponentExporterAwareValidatorTest {
     @Tag(Tag.DIV)
     @Theme(MyTheme.class)
     @Push
-    public static class WCExporter implements WebComponentExporter<Component> {
+    public static class WCExporter extends WebComponentExporter<Component> {
 
-        @Override
-        public void define(WebComponentDefinition<Component> definition) {
+        public WCExporter() {
+            super(Tag.DIV);
         }
 
         @Override
-        public void configure(WebComponent<Component> webComponent,
-                Component component) {
+        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+
         }
     }
 

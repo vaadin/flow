@@ -93,7 +93,8 @@ public abstract class WebComponentExporter<C extends Component>
     private WebComponentConfigurationImpl configuration;
 
     /**
-     * <b>Do not override this constructor!</b>
+     * <b>Do not implement this constructor unless this the extending class
+     * is meant to be extended further!</b>
      * <p>
      * This constructor is meant to be called using {@code super(String)}
      * from a no-args constructor declared by the extending class.
@@ -293,11 +294,11 @@ public abstract class WebComponentExporter<C extends Component>
         }
 
         @Override
-        public WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator, Element el) {
+        public WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator, Element element) {
             assert (instantiator != null);
 
-            final C componentReference = instantiator
-                    .getOrCreate(this.getComponentClass());
+            final C componentReference =
+                    instantiator.createComponent(this.getComponentClass()) ;
 
             if (componentReference == null) {
                 throw new RuntimeException("Failed to instantiate a new "
@@ -329,12 +330,17 @@ public abstract class WebComponentExporter<C extends Component>
             propertyConfigurationMap
                     .values().forEach(binding::bindProperty);
 
-            configureInstance(new WebComponent<>(binding, el),
+            configureInstance(new WebComponent<>(binding, element),
                     binding.getComponent());
 
             binding.updatePropertiesToComponent();
 
             return binding;
+        }
+
+        @Override
+        public String getTag() {
+            return tag;
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,9 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.webcomponent;
-
-import java.util.HashSet;
+package com.vaadin.flow.component.webcomponent;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,20 +25,21 @@ import com.vaadin.flow.component.Tag;
 
 import elemental.json.JsonValue;
 
-public class WebComponentBindingImplTest {
+public class WebComponentBindingTest {
 
     private MyComponent component;
-    private WebComponentBindingImpl<MyComponent> binding;
+    private WebComponentBindingImpl binding;
 
     @Before
     public void setUp() {
-        HashSet<PropertyBinding<?>> bindings = new HashSet<>();
-        bindings.add(new PropertyBinding<>(new PropertyData<>("int",
-                Integer.class, false, 0), null));
-        bindings.add(new PropertyBinding<>(new PropertyData<>("json",
-                JsonValue.class, false, null), null));
         component = new MyComponent();
-        binding = new WebComponentBindingImpl<>(component, bindings);
+        binding = new WebComponentBindingImpl(component);
+        binding.bindProperty(
+                new PropertyConfigurationImpl<>(
+                        MyComponent.class, "int", Integer.class, 0));
+        binding.bindProperty(
+                new PropertyConfigurationImpl<>(
+                        MyComponent.class, "json", JsonValue.class, null));
     }
 
     @Test

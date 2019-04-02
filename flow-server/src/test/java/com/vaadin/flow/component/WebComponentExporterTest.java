@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,51 +14,47 @@
  * the License.
  */
 
-package com.vaadin.flow.server.webcomponent;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+package com.vaadin.flow.component;
 
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporterAdapter;
+import com.vaadin.flow.component.webcomponent.PropertyData;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentBinding;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonSerializer;
 import com.vaadin.flow.server.MockInstantiator;
 
 import elemental.json.JsonValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
-public class WebComponentConfigurationImplTest {
+public class WebComponentExporterTest {
 
     private static final String TAG = "my-component";
 
-    private MyComponentExporter myComponentExporter;
-    private WebComponentConfigurationImpl<MyComponent> config;
+    private MyComponentExporter exporter;
+    private WebComponentConfiguration<MyComponent> config;
 
     @Before
     public void setUp() {
-        myComponentExporter = new MyComponentExporter();
-
-        config = new WebComponentConfigurationImpl<>(myComponentExporter);
+        exporter = new MyComponentExporter();
+        config = exporter.getConfiguration();
     }
 
     @Test
     public void addProperty_differentTypes() {
-        config.addProperty("int", 1);
-        config.addProperty("string", "string");
-        config.addProperty("boolean", true);
-        config.addProperty("double", 1.0);
+        exporter.addProperty("int", 1);
+        exporter.addProperty("string", "string");
+        exporter.addProperty("boolean", true);
+        exporter.addProperty("double", 1.0);
 
         assertProperty(config, "int", 1);
         assertProperty(config, "string", "string");
@@ -70,18 +66,18 @@ public class WebComponentConfigurationImplTest {
         bean.setInteger(5);
 
         JsonValue value = JsonSerializer.toJson(bean);
-        config.addProperty("json", value);
+        exporter.addProperty("json", value);
 
         assertProperty(config, "json", value);
     }
 
     @Test
     public void addProperty_propertyWithTheSameNameGetsOverwritten() {
-        config.addProperty("int", 1);
+        exporter.addProperty("int", 1);
 
         assertTrue(config.hasProperty("int"));
 
-        config.addProperty("int", 2);
+        exporter.addProperty("int", 2);
 
         assertEquals("Builder should have one property", 1,
                 config.getPropertyDataSet().size());
@@ -90,16 +86,16 @@ public class WebComponentConfigurationImplTest {
     }
 
     @Test
-    public void getWebComponentTag() {
-        assertEquals(TAG, config.getWebComponentTag());
+    public void configuration_getTag() {
+        assertEquals(TAG, config.getTag());
     }
 
     @Test
-    public void getPropertyType_differentTypes() {
-        config.addProperty("int", 1);
-        config.addProperty("string", "string");
-        config.addProperty("boolean", true);
-        config.addProperty("double", 1.0);
+    public void configuration_getPropertyType_differentTypes() {
+        exporter.addProperty("int", 1);
+        exporter.addProperty("string", "string");
+        exporter.addProperty("boolean", true);
+        exporter.addProperty("double", 1.0);
 
         assertEquals(Integer.class, config.getPropertyType("int"));
         assertEquals(String.class, config.getPropertyType("string"));
@@ -108,8 +104,8 @@ public class WebComponentConfigurationImplTest {
     }
 
     @Test
-    public void deliverPropertyUpdate() {
-        config.addProperty("int", 0).onChange(MyComponent::update);
+    public void configuration_deliverPropertyUpdate() {
+        exporter.addProperty("int", 0).onChange(MyComponent::update);
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
@@ -124,11 +120,11 @@ public class WebComponentConfigurationImplTest {
     }
 
     @Test
-    public void getPropertyDataSet() {
-        config.addProperty("int", 1);
-        config.addProperty("string", "string");
-        config.addProperty("boolean", true);
-        config.addProperty("double", 1.0);
+    public void configuration_getPropertyDataSet() {
+        exporter.addProperty("int", 1);
+        exporter.addProperty("string", "string");
+        exporter.addProperty("boolean", true);
+        exporter.addProperty("double", 1.0);
 
         Set<PropertyData<?>> set = config.getPropertyDataSet();
 
@@ -136,22 +132,22 @@ public class WebComponentConfigurationImplTest {
     }
 
     @Test
-    public void getComponentClass() {
+    public void configuration_getComponentClass() {
         assertEquals("Component class should be MyComponent.class",
                 MyComponent.class, config.getComponentClass());
     }
 
     @Test
-    public void bindProxy_withInstanceConfigurator() {
-        myComponentExporter = new MyComponentExporter() {
+    public void configuration_bindProxy_withInstanceConfigurator() {
+        exporter = new MyComponentExporter() {
             @Override
-            public void configure(WebComponent<MyComponent> webComponent,
-                    MyComponent component) {
+            public void configureInstance(WebComponent<MyComponent> webComponent,
+                                          MyComponent component) {
                 component.flop();
             }
         };
 
-        config = new WebComponentConfigurationImpl<>(myComponentExporter);
+        config = exporter.getConfiguration();
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
@@ -165,7 +161,7 @@ public class WebComponentConfigurationImplTest {
     }
 
     @Test
-    public void bindProxy_withoutInstanceConfigurator() {
+    public void configuration_bindProxy_withoutInstanceConfigurator() {
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class));
@@ -178,20 +174,21 @@ public class WebComponentConfigurationImplTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void bindProxy_throwsIfExporterSharesTagWithComponent() {
-        WebComponentConfigurationImpl<SharedTagComponent> sharedConfig = new WebComponentConfigurationImpl<>(
-                new SharedTagExporter());
+    public void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
+        SharedTagExporter sharedTagExporter = new SharedTagExporter();
+        WebComponentConfiguration<SharedTagComponent> sharedConfig =
+                sharedTagExporter.getConfiguration();
 
         sharedConfig.createWebComponentBinding(new MockInstantiator(),
                 mock(Element.class));
     }
 
     @Test
-    public void hasProperty() {
-        config.addProperty("int", 1);
-        config.addProperty("string", "string");
-        config.addProperty("boolean", true);
-        config.addProperty("double", 1.0);
+    public void configuration_hasProperty() {
+        exporter.addProperty("int", 1);
+        exporter.addProperty("string", "string");
+        exporter.addProperty("boolean", true);
+        exporter.addProperty("double", 1.0);
 
         assertTrue(config.hasProperty("int"));
         assertTrue(config.hasProperty("string"));
@@ -251,35 +248,39 @@ public class WebComponentConfigurationImplTest {
         }
     }
 
-    @Tag(TAG)
-    public static class MyComponentExporter
-            extends WebComponentExporterAdapter<MyComponent> {
+    private static class MyComponentExporter
+            extends WebComponentExporter<MyComponent> {
+
+        public MyComponentExporter() {
+            super(TAG);
+        }
+
         @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            // this is where WebComponentBuilder would be normally accessed
-            // by the user but this tests uses its interfaces directly.
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
         }
     }
 
     @Tag("shared-tag")
     public static class SharedTagComponent extends Component {
-
     }
 
-    @Tag("shared-tag")
-    public static class SharedTagExporter
-            extends WebComponentExporterAdapter<SharedTagComponent> {
+    private static class SharedTagExporter
+            extends WebComponentExporter<SharedTagComponent> {
+
+        public SharedTagExporter() {
+            super("shared-tag");
+        }
 
         @Override
-        public void define(
-                WebComponentDefinition<SharedTagComponent> definition) {
+        public void configureInstance(WebComponent<SharedTagComponent> webComponent, SharedTagComponent component) {
 
         }
     }
 
-    private static void assertProperty(WebComponentConfigurationImpl<?> builder,
-            String property, Object value) {
-        PropertyData<?> data = builder.getPropertyDataSet().stream()
+    private static void assertProperty(WebComponentConfiguration<?> config,
+                                       String property, Object value) {
+        PropertyData<?> data = config.getPropertyDataSet().stream()
                 .filter(d -> d.getName().equals(property)).findFirst()
                 .orElse(null);
 

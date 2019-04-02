@@ -38,7 +38,7 @@ import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.theme.Theme;
 
 /**
- * Registry for storing available web component builder implementations.
+ * Registry for storing available web component exporter implementations.
  *
  * @since
  */
@@ -108,7 +108,8 @@ public class WebComponentExporterRegistry implements Serializable {
                 populateCacheWithMissingExporters();
             }
             return Collections.unmodifiableSet(exporterCache.values().stream()
-                    .filter(b -> componentClass.equals(b.getComponentClass()))
+                    .filter(b -> componentClass.equals(b.getConfiguration()
+                            .getComponentClass()))
                     .map(b -> (WebComponentConfiguration<T>) b)
                     .collect(Collectors.toSet()));
 
@@ -214,12 +215,12 @@ public class WebComponentExporterRegistry implements Serializable {
 
     /**
      * Get an unmodifiable set containing all registered web component
-     * configurations.
+     * exporters.
      *
      * @return unmodifiable set of web component builders in registry or empty
      *         set
      */
-    public Set<WebComponentConfiguration<? extends Component>> getConfigurations() {
+    public Set<WebComponentExporter<? extends Component>> getExporters() {
         storageLock.lock();
         try {
             if (!areAllExportersAvailable()) {

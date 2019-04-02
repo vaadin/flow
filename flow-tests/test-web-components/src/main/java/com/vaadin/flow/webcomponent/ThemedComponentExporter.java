@@ -16,11 +16,19 @@
 package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporterAdapter;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
 
-@Tag("themed-web-component")
 @Theme(MyTheme.class)
 public class ThemedComponentExporter
-        extends WebComponentExporterAdapter<ThemedComponent> {
+        extends WebComponentExporter<ThemedComponent> {
+    public ThemedComponentExporter() {
+        super("themed-web-component");
+    }
+
+    @Override
+    public void configureInstance(WebComponent<ThemedComponent> webComponent, ThemedComponent component) {
+
+    }
 }

@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.component.webcomponent;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -37,10 +34,11 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationImpl;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import elemental.json.Json;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class WebComponentWrapperTest {
 
@@ -51,17 +49,16 @@ public class WebComponentWrapperTest {
     private Element element;
     private MyComponent component;
     private WebComponentBinding<MyComponent> binding;
-    private WebComponentConfiguration<MyComponent> configuration;
+    private WebComponentExporter<MyComponent> exporter;
     private WebComponentWrapper wrapper;
 
     @Before
     public void init() {
         element = new Element("tag");
-        configuration = new WebComponentConfigurationImpl<>(
-                new MyComponentExporter());
+        exporter = new MyComponentExporter();
 
         // make component available and bind properties to it
-        binding = configuration
+        binding = exporter.getConfiguration()
                 .createWebComponentBinding(new MockInstantiator(), element);
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
@@ -228,9 +225,7 @@ public class WebComponentWrapperTest {
         if (element == null) {
             element = new Element("tag");
         }
-        WebComponentConfiguration<C> configuration = new WebComponentConfigurationImpl<>(
-                exporter);
-        return new WebComponentWrapper(element, configuration
+        return new WebComponentWrapper(element, exporter.getConfiguration()
                 .createWebComponentBinding(new MockInstantiator(), element)) {
             @Override
             public Optional<UI> getUI() {
@@ -303,51 +298,59 @@ public class WebComponentWrapperTest {
     public static class Parent extends Component {
     }
 
-    @Tag("my-component")
     public static class MyComponentExporter
-            implements WebComponentExporter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            definition.addProperty(MSG_PROPERTY, "")
+            extends WebComponentExporter<MyComponent> {
+
+        public MyComponentExporter() {
+            this("my-component");
+        }
+
+        // extension point
+        protected MyComponentExporter(String tag) {
+            super(tag);
+            addProperty(MSG_PROPERTY, "")
                     .onChange(MyComponent::setMessage);
-            definition.addProperty(INT_PROPERTY, 0)
+            addProperty(INT_PROPERTY, 0)
                     .onChange(MyComponent::setIntegerValue);
         }
 
         @Override
-        public void configure(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                                      MyComponent component) {
         }
     }
 
-    @Tag("extended-component")
     public static class MyExtensionExporter
-            implements WebComponentExporter<MyExtension> {
-        @Override
-        public void define(WebComponentDefinition<MyExtension> definition) {
-            definition.addProperty(MSG_PROPERTY, "")
+            extends WebComponentExporter<MyExtension> {
+
+        public MyExtensionExporter() {
+            super("extended-component");
+            addProperty(MSG_PROPERTY, "")
                     .onChange(MyExtension::setMessage);
-            definition.addProperty(INT_PROPERTY, 0)
+            addProperty(INT_PROPERTY, 0)
                     .onChange(MyExtension::setIntegerValue);
         }
 
         @Override
-        public void configure(WebComponent<MyExtension> webComponent,
-                MyExtension component) {
+        public void configureInstance(WebComponent<MyExtension> webComponent,
+                                      MyExtension component) {
         }
     }
 
-    @Tag("my-component-extended")
     public static class ExtendedExporter extends MyComponentExporter {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            super.define(definition);
+        public ExtendedExporter() {
+            super("my-component-extended");
 
-            definition.addProperty(MSG_PROPERTY, "Default")
+            addProperty(MSG_PROPERTY, "Default")
                     .onChange(MyComponent::setMessage);
 
-            definition.addProperty(BOOLEAN_PROPERTY, false)
+            addProperty(BOOLEAN_PROPERTY, false)
                     .onChange(MyComponent::setBooleanValue);
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+            super.configureInstance(webComponent, component);
         }
     }
 }
