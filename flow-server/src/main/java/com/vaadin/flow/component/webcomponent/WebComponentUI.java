@@ -30,6 +30,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -46,6 +47,17 @@ public class WebComponentUI extends UI {
     public void doInit(VaadinRequest request, int uiId) {
         super.doInit(request, uiId);
         assignTheme();
+
+        VaadinSession session = getSession();
+        String uiElementId;
+        if (session.getConfiguration().getRootElementId().isEmpty()) {
+            uiElementId = "";
+        } else {
+            uiElementId = session.getConfiguration().getRootElementId();
+        }
+        getPage().executeJavaScript(
+                "document.body.dispatchEvent(new CustomEvent('root-element', { detail: '"
+                        + uiElementId + "' }))");
     }
 
     /**

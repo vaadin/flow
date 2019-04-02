@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
@@ -69,8 +70,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
-                WebComponentConfigurationRegistry.getInstance(
+        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration = WebComponentConfigurationRegistry
+                .getInstance(
                         ((VaadinServletRequest) request).getServletContext())
                 .getConfiguration(tag.get());
 
@@ -78,23 +79,15 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             if (cache == null) {
                 cache = new HashMap<>();
             }
-            WebComponentConfiguration<? extends Component> webComponentConfiguration =
-                    optionalWebComponentConfiguration.get();
+            WebComponentConfiguration<? extends Component> webComponentConfiguration = optionalWebComponentConfiguration
+                    .get();
             String generated;
             if (cache.containsKey(tag.get())) {
                 generated = cache.get(tag.get());
             } else {
-                String uiElement;
-                if (session.getConfiguration().getRootElementId().isEmpty()) {
-                    uiElement = "document.body";
-                } else {
-                    uiElement = "document.getElementById('"
-                            + session.getConfiguration().getRootElementId()
-                            + "')";
-                }
-
-                generated = WebComponentGenerator.generateModule(uiElement,
-                        tag.get(), webComponentConfiguration, request);
+                generated = WebComponentGenerator.generateModule(tag.get(),
+                        webComponentConfiguration,
+                        getFrontendPath(servletRequest));
                 cache.put(tag.get(), generated);
             }
 
@@ -106,6 +99,23 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         return true;
+    }
+
+    private static String getFrontendPath(VaadinRequest request) {
+        if (request == null) {
+            return null;
+        }
+        String contextPath = request.getContextPath();
+        if (contextPath.isEmpty()) {
+            return "/frontend/";
+        }
+        if (!contextPath.startsWith("/")) {
+            contextPath = "/" + contextPath;
+        }
+        if (contextPath.endsWith("/")) {
+            contextPath = contextPath.substring(0, contextPath.length() - 1);
+        }
+        return contextPath + "/frontend/";
     }
 
     private static Optional<String> parseTag(String pathInfo) {
