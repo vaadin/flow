@@ -128,7 +128,7 @@ public interface Instantiator extends Serializable {
      * <p>
      * How the object is created and whether it is being cached or not is up to
      * the implementation.
-     * 
+     *
      * @param type
      *            the instance type to create, not <code>null</code>
      * @param <T>
@@ -154,7 +154,7 @@ public interface Instantiator extends Serializable {
      * @return the created instance, not <code>null</code>
      */
     default <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event){
+            NavigationEvent event) {
         return getOrCreate(routeTargetType);
     }
 
@@ -168,9 +168,7 @@ public interface Instantiator extends Serializable {
      *
      * @return the created instance, not <code>null</code>
      */
-    default <T extends Component> T createComponent(Class<T> componentClass){
-        return getOrCreate(componentClass);
-    }
+    <T extends Component> T createComponent(Class<T> componentClass);
 
     /**
      * Gets the instantiator to use for the given UI.
@@ -194,7 +192,7 @@ public interface Instantiator extends Serializable {
      *
      * @return I18NProvier instance
      */
-    default I18NProvider getI18NProvider(){
+    default I18NProvider getI18NProvider() {
         return getOrCreate(I18NProvider.class);
     }
 }
