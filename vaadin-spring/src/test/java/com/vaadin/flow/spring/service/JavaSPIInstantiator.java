@@ -17,6 +17,7 @@ package com.vaadin.flow.spring.service;
 
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -39,6 +40,11 @@ public class JavaSPIInstantiator implements Instantiator {
 
     @Override
     public <T> T getOrCreate(Class<T> type) {
+        return null;
+    }
+
+    @Override
+    public <T extends Component> T createComponent(Class<T> componentClass) {
         return null;
     }
 }

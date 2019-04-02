@@ -72,6 +72,12 @@ public class SpringVaadinServletServiceTest {
         public <T> T getOrCreate(Class<T> type) {
             return null;
         }
+
+        @Override
+        public <T extends com.vaadin.flow.component.Component> T createComponent(
+                Class<T> componentClass) {
+            return null;
+        }
     }
 
     @Component
