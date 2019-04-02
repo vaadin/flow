@@ -121,7 +121,7 @@ public class NodeUpdateImports extends NodeUpdater {
             // Thus we use reflection to invoke those methods in the different
             // context.
             theme = annotationValuesExtractor
-                    .loadClassInProjectClassLoader(themeDefinition.getTheme().getCanonicalName()).newInstance();
+                    .loadClassInProjectClassLoader(themeDefinition.getTheme().getName()).newInstance();
 
             Map<String, String> htmlAttributes = annotationValuesExtractor.doInvokeMethod(theme, "getHtmlAttributes",
                     themeDefinition.getVariant());
@@ -150,7 +150,7 @@ public class NodeUpdateImports extends NodeUpdater {
             String translatedModulePath = originalModulePath;
             if (theme != null) {
                 String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
-                if (translatedModulePath.matches(".*(vaadin-[^/]+)/" + baseUrl + ".*vaadin-[^/]+\\.(js|html)")) {
+                if (translatedModulePath.matches(baseUrl)) {
                     translatedModulePath = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
                         translatedModulePath);
                 }
