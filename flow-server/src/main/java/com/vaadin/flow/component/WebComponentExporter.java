@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,16 +80,26 @@ import elemental.json.JsonValue;
  *            type of the component to export
  */
 public abstract class WebComponentExporter<C extends Component>
-        implements WebComponentConfiguration<C>, Serializable {
+        implements Serializable {
 
-    private static final List<Class> SUPPORTED_TYPES = Arrays.asList(
-            Boolean.class, String.class, Integer.class, Double.class,
-            JsonValue.class);
+    private static final List<Class> SUPPORTED_TYPES =
+            Collections.unmodifiableList(Arrays.asList(
+                    Boolean.class, String.class, Integer.class, Double.class,
+                    JsonValue.class));
 
     private final String tag;
     private final Class<C> componentClass;
     private Map<String, PropertyConfigurationExtension<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
+    private WebComponentConfigurationImpl configuration;
 
+    /**
+     * <b>Do not override this constructor!</b>
+     * <p>
+     * This constructor is meant to be called using {@code super(String)}
+     * from a no-args constructor declared by the extending class.
+     *
+     * @param tag   tag name of the web component created by the exporter
+     */
     protected WebComponentExporter(String tag) {
         Objects.requireNonNull(tag,
                 "Parameter 'tag' must not be null!");
@@ -117,7 +128,7 @@ public abstract class WebComponentExporter<C extends Component>
 
         PropertyConfigurationExtension<C, P> propertyConfiguration =
                 new PropertyConfigurationExtension<>(
-                getComponentClass(), name, type, defaultValue);
+                componentClass, name, type, defaultValue);
 
         propertyConfigurationMap.put(name, propertyConfiguration);
 
@@ -138,8 +149,8 @@ public abstract class WebComponentExporter<C extends Component>
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, Integer> addProperty(String name,
-                                                         int defaultValue) {
+    public final PropertyConfiguration<C, Integer> addProperty(
+            String name, int defaultValue) {
         return addProperty(name, Integer.class, defaultValue);
     }
 
@@ -157,8 +168,8 @@ public abstract class WebComponentExporter<C extends Component>
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, Double> addProperty(String name,
-                                                        double defaultValue) {
+    public final PropertyConfiguration<C, Double> addProperty(
+            String name, double defaultValue) {
         return addProperty(name, Double.class, defaultValue);
     }
 
@@ -176,8 +187,8 @@ public abstract class WebComponentExporter<C extends Component>
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, String> addProperty(String name,
-                                                        String defaultValue) {
+    public final PropertyConfiguration<C, String> addProperty(
+            String name, String defaultValue) {
         return addProperty(name, String.class, defaultValue);
     }
 
@@ -195,8 +206,8 @@ public abstract class WebComponentExporter<C extends Component>
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, Boolean> addProperty(String name,
-                                                         boolean defaultValue) {
+    public final PropertyConfiguration<C, Boolean> addProperty(
+            String name, boolean defaultValue) {
         return addProperty(name, Boolean.class, defaultValue);
     }
 
@@ -214,8 +225,8 @@ public abstract class WebComponentExporter<C extends Component>
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, JsonValue> addProperty(String name,
-                                                           JsonValue defaultValue) {
+    public final PropertyConfiguration<C, JsonValue> addProperty(
+            String name, JsonValue defaultValue) {
         return addProperty(name, JsonValue.class, defaultValue);
     }
 
@@ -232,82 +243,99 @@ public abstract class WebComponentExporter<C extends Component>
      * @param component
      *            exported component instance
      */
-    abstract public void configureInstance(WebComponent<C> webComponent, C component);
+    public abstract void configureInstance(
+            WebComponent<C> webComponent, C component);
 
-    @Override
-    public boolean hasProperty(String propertyName) {
-        return propertyConfigurationMap.containsKey(propertyName);
-    }
-
-    @Override
-    public Class<? extends Serializable> getPropertyType(String propertyName) {
-        if (propertyConfigurationMap.containsKey(propertyName)) {
-            return propertyConfigurationMap.get(propertyName).getPropertyData()
-                    .getType();
-        } else {
-            return null;
+    /**
+     * Retrieves the {@link WebComponentConfiguration} created by the exporter
+     * implementation by calling {@code addProperty} in the constructor.
+     *
+     * @return web component configuration
+     */
+    public final WebComponentConfiguration<C> getConfiguration() {
+        if (configuration == null) {
+            configuration = new WebComponentConfigurationImpl();
         }
-    }
-
-    @Override
-    public Class<C> getComponentClass() {
-        return componentClass;
-    }
-
-    @Override
-    public Set<PropertyData<? extends Serializable>> getPropertyDataSet() {
-        return propertyConfigurationMap.values().stream()
-                .map(PropertyConfigurationExtension::getPropertyData)
-                .collect(Collectors.toSet());
-    }
-
-    @Override
-    public WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator, Element el) {
-        assert (instantiator != null);
-
-        final C componentReference = instantiator
-                .getOrCreate(this.getComponentClass());
-
-        if (componentReference == null) {
-            throw new RuntimeException("Failed to instantiate a new "
-                    + this.getComponentClass().getCanonicalName());
-        }
-
-        /*
-         * The tag check cannot be done before the creation of the Component
-         * being exported, as the WebComponentConfigurationImpl itself is
-         * constructed only when the first request for a web component instance
-         * comes in. This is due to the unavailability of Instantiator before
-         * VaadinService has been initialized (which happens after collecting
-         * all the exporters.
-         */
-        String componentTag = componentReference.getElement().getTag();
-        if (this.tag.equals(componentTag)) {
-            throw new IllegalStateException(String.format(
-                    "WebComponentExporter '%s' cannot share a tag with the "
-                            + "%s instance being exported! Change the tag "
-                            + "from '%s' to something else.",
-                    this.getClass().getCanonicalName(),
-                    componentReference.getClass().getCanonicalName(),
-                    this.tag));
-        }
-
-        WebComponentBindingExtension<C> binding =
-                new WebComponentBindingExtension<>(componentReference);
-
-        propertyConfigurationMap
-                .values().forEach(binding::bindProperty);
-
-        configureInstance(new WebComponentExtension<>(binding, el),
-                binding.getComponent());
-
-        binding.updatePropertiesToComponent();
-
-        return binding;
+        return configuration;
     }
 
     private static boolean isSupportedType(Class clazz) {
         return SUPPORTED_TYPES.contains(clazz);
+    }
+
+    private class WebComponentConfigurationImpl implements WebComponentConfiguration<C> {
+
+        @Override
+        public boolean hasProperty(String propertyName) {
+            return propertyConfigurationMap.containsKey(propertyName);
+        }
+
+        @Override
+        public Class<? extends Serializable> getPropertyType(String propertyName) {
+            if (propertyConfigurationMap.containsKey(propertyName)) {
+                return propertyConfigurationMap.get(propertyName).getPropertyData()
+                        .getType();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public Class<C> getComponentClass() {
+            return componentClass;
+        }
+
+        @Override
+        public Set<PropertyData<? extends Serializable>> getPropertyDataSet() {
+            return propertyConfigurationMap.values().stream()
+                    .map(PropertyConfigurationExtension::getPropertyData)
+                    .collect(Collectors.toSet());
+        }
+
+        @Override
+        public WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator, Element el) {
+            assert (instantiator != null);
+
+            final C componentReference = instantiator
+                    .getOrCreate(this.getComponentClass());
+
+            if (componentReference == null) {
+                throw new RuntimeException("Failed to instantiate a new "
+                        + this.getComponentClass().getCanonicalName());
+            }
+
+            /*
+             * The tag check cannot be done before the creation of the Component
+             * being exported, as the WebComponentConfigurationImpl itself is
+             * constructed only when the first request for a web component instance
+             * comes in. This is due to the unavailability of Instantiator before
+             * VaadinService has been initialized (which happens after collecting
+             * all the exporters.
+             */
+            String componentTag = componentReference.getElement().getTag();
+            if (tag.equals(componentTag)) {
+                throw new IllegalStateException(String.format(
+                        "WebComponentExporter '%s' cannot share a tag with the "
+                                + "%s instance being exported! Change the tag "
+                                + "from '%s' to something else.",
+                        this.getClass().getCanonicalName(),
+                        componentReference.getClass().getCanonicalName(),
+                        tag));
+            }
+
+            WebComponentBindingExtension<C> binding =
+                    new WebComponentBindingExtension<>(componentReference);
+
+            propertyConfigurationMap
+                    .values().forEach(binding::bindProperty);
+
+            configureInstance(new WebComponent<>(binding, el),
+                    binding.getComponent());
+
+            binding.updatePropertiesToComponent();
+
+            return binding;
+        }
     }
 
     /*
@@ -317,8 +345,8 @@ public abstract class WebComponentExporter<C extends Component>
         classes in order to expose those methods here
      */
 
-    static class WebComponentBindingExtension<C extends Component> extends WebComponentBinding<C> {
-        private WebComponentBindingExtension(C component) {
+    private static class WebComponentBindingExtension<C extends Component> extends WebComponentBinding<C> {
+        WebComponentBindingExtension(C component) {
             super(component);
         }
 
@@ -329,22 +357,15 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         protected void bindProperty(PropertyConfiguration<C, ?
-                        extends Serializable> propertyConfig) {
-            super.bindProperty(propertyConfig);
+                        extends Serializable> propertyConfiguration) {
+            super.bindProperty(propertyConfiguration);
         }
     }
 
-    static class WebComponentExtension<C extends Component> extends WebComponent<C> {
-        private WebComponentExtension(WebComponentBinding<C> binding,
-                                Element componentHost) {
-            super(binding, componentHost);
-        }
-    }
-
-    static class PropertyConfigurationExtension<C extends Component,
+    private static class PropertyConfigurationExtension<C extends Component,
             P extends Serializable> extends PropertyConfiguration<C, P> {
 
-        private PropertyConfigurationExtension(Class<C> componentType,
+        PropertyConfigurationExtension(Class<C> componentType,
                                          String propertyName, Class<P> propertyType, P defaultValue) {
             super(componentType, propertyName, propertyType, defaultValue);
         }

@@ -36,8 +36,6 @@ public abstract class PropertyConfiguration<C extends Component,
     private PropertyData<P> data;
     private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
 
-    private PropertyConfiguration() {}
-
     /**
      * Constructs a new {@code PropertyConfigurationImpl} tied to the
      * exported {@link Component} type given by {@code componentType}.

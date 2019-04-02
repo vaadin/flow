@@ -29,7 +29,7 @@ import elemental.json.JsonValue;
 /**
  * @param <C>   {@code component} being exported
  */
-public abstract class WebComponent<C extends Component> {
+public final class WebComponent<C extends Component> {
     private static final String UPDATE_PROPERTY = "this" +
             "._updatePropertyFromServer($0, $1);";
     private static final String UPDATE_PROPERTY_NULL = "this" +
@@ -58,7 +58,7 @@ public abstract class WebComponent<C extends Component> {
      * @see com.vaadin.flow.component.webcomponent.WebComponentWrapper for
      * the web component host
      */
-    protected WebComponent(WebComponentBinding binding,
+    public WebComponent(WebComponentBinding binding,
                            Element componentHost) {
         Objects.requireNonNull(binding, "Parameter 'binding' must not be " +
                 "null!");
@@ -129,8 +129,8 @@ public abstract class WebComponent<C extends Component> {
     /**
      * Sets property value on the client-side to the given {@code value}. The
      * required {@link PropertyConfiguration} is received from
-     * {@link WebComponentDefinition} when a new property is added for the web
-     * component.
+     * {@link com.vaadin.flow.component.WebComponentExporter} when a new
+     * property is added for the web component.
      *
      * @param propertyConfiguration
      *            identifies the property for which the value is being set, not

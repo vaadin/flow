@@ -41,8 +41,6 @@ public abstract class WebComponentBinding<C extends Component> implements Serial
     private C component;
     private HashMap<String, PropertyBinding<? extends Serializable>> properties = new HashMap<>();
 
-    private WebComponentBinding() {}
-
     /**
      * Constructs a {@link WebComponentBinding} which consists of a
      * {@link Component} instance exposed as an embeddable web component and
@@ -116,30 +114,34 @@ public abstract class WebComponentBinding<C extends Component> implements Serial
     }
 
     /**
-     * Called by
-     * {@link WebComponentConfiguration#createWebComponentBinding(Instantiator, com.vaadin.flow.dom.Element)}
-     * once the instance has been successfully constructed. Reports the current
-     * (default) values to the bound component.
+     * Calls the bound change handlers defined via
+     * {@link PropertyConfiguration#onChange(SerializableBiConsumer)} for
+     * each bound property with the current value of the property.
      */
     protected void updatePropertiesToComponent() {
         properties.forEach((key, value) -> value.notifyValueChange());
     }
 
     /**
-     * TODO
-     * @param propertyConfig
+     * Adds a property to this web component binding based on the
+     * {@code propertyConfiguration}. If a property with an existing name is
+     * bound, the previous binding is removed.
+     *
+     * @param propertyConfiguration     property configuration
      */
     protected void bindProperty(PropertyConfiguration<C,
-                ? extends Serializable> propertyConfig) {
+                ? extends Serializable> propertyConfiguration) {
+        assert propertyConfiguration != null : "propertyConfiguration cannot " +
+                "be null!";
 
-        SerializableBiConsumer<C, Serializable> consumer = propertyConfig
+        SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
                 .getOnChangeHandler();
         PropertyBinding<? extends Serializable> binding =
-                new PropertyBinding<>(propertyConfig.getPropertyData(),
+                new PropertyBinding<>(propertyConfiguration.getPropertyData(),
                         consumer == null ? null
                                 : value -> consumer.accept(
                                         component, value));
-        properties.put(propertyConfig.getPropertyData().getName(), binding);
+        properties.put(propertyConfiguration.getPropertyData().getName(), binding);
     }
 
     static class PropertyBinding<P extends Serializable> implements Serializable {

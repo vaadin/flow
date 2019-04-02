@@ -82,7 +82,8 @@ public class WebComponentUI extends UI {
          */
         Element el = new Element(tag);
         WebComponentBinding binding = webComponentExporter.get()
-                .createWebComponentBinding(Instantiator.get(this), el);
+                .getConfiguration().createWebComponentBinding(
+                        Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
         getElement().getStateProvider().appendVirtualChild(
