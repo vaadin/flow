@@ -45,6 +45,12 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/" + NodeUpdateImports.MAIN_JS)
     private File jsFile;
 
+    /**
+     * Whether to generate a bundle from the project frontend sources or not.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean generateBundle;
+
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
@@ -59,7 +65,10 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     @Override
     public void execute() {
         super.execute();
-        runWebpack();
+
+        if (generateBundle) {
+            runWebpack();
+        }
     }
 
     private void runWebpack() {
@@ -72,9 +81,11 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
 
         Process webpackLaunch = null;
         try {
-            webpackLaunch = new ProcessBuilder("node", webpackExecutable.getAbsolutePath())
-                .directory(project.getBasedir())
-                .start();
+            webpackLaunch = new ProcessBuilder("node",
+                    webpackExecutable.getAbsolutePath())
+                            .directory(project.getBasedir())
+                            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                            .start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
                 readDetailsAndThrowException(webpackLaunch);
@@ -90,15 +101,12 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     }
 
     private void readDetailsAndThrowException(Process webpackLaunch) {
-        String stdout = readFullyAndClose(
-                "Failed to read webpack process stdin",
-                webpackLaunch::getInputStream);
         String stderr = readFullyAndClose(
                 "Failed to read webpack process stderr",
                 webpackLaunch::getErrorStream);
         throw new IllegalStateException(String.format(
-                "Webpack process exited with non-zero exit code.%nStdout: '%s'%nStderr: '%s'",
-                stdout, stderr));
+                "Webpack process exited with non-zero exit code.%nStderr: '%s'",
+                stderr));
     }
 
     private String readFullyAndClose(String readErrorMessage,
