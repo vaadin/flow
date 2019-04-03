@@ -64,11 +64,11 @@
       
       _connect(rootId){
           var flowRoot;
-          if ( !rootId || rootId ==''){
-              flowRoot = document.body;
+          if ( rootId ){
+              flowRoot = document.getElementById(rootId);
           }
           else {
-              flowRoot = document.getElementById(rootId);
+              flowRoot = document.body;              
           }
           if (!this.$.id) {
             this._registerElement(flowRoot);
