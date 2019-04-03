@@ -32,9 +32,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.theme.Theme;
 
@@ -54,7 +52,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
     private HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = null;
-    private HashMap<String, WebComponentConfigurationImpl<? extends Component>> builderCache = new HashMap<>();
+    private HashMap<String, WebComponentConfiguration<? extends Component>> builderCache = new HashMap<>();
 
     private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
 
@@ -86,9 +84,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *            tag name of the web component
      * @return {@link WebComponentConfigurationImpl} by the tag
      */
-    protected WebComponentConfigurationImpl<? extends Component> getConfigurationInternal(
+    protected WebComponentConfiguration<? extends Component> getConfigurationInternal(
             String tag) {
-        WebComponentConfigurationImpl<? extends Component> configuration = null;
+        WebComponentConfiguration<? extends Component> configuration = null;
         configurationLock.lock();
         try {
             if (exporterClasses != null) {
@@ -384,15 +382,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
         }
     }
 
-    protected WebComponentConfigurationImpl<? extends Component> constructConfigurations(
+    protected WebComponentConfiguration<? extends Component> constructConfigurations(
             Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
-
-        Instantiator instantiator = VaadinService.getCurrent()
-                .getInstantiator();
-
-        WebComponentExporter<? extends Component> exporter = instantiator
-                .getOrCreate(exporterClass);
-
-        return new WebComponentConfigurationImpl<>(exporter);
+        return new WebComponentConfigurationFactory().apply(exporterClass);
     }
 }
