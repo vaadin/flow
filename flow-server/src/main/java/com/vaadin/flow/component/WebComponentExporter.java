@@ -26,15 +26,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
+import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
+import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentBinding;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
-import com.vaadin.flow.component.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.UnsupportedPropertyTypeException;
 
 import elemental.json.JsonValue;
@@ -89,7 +89,7 @@ public abstract class WebComponentExporter<C extends Component>
 
     private final String tag;
     private final Class<C> componentClass;
-    private Map<String, PropertyConfigurationExtension<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
+    private Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
     private WebComponentConfigurationImpl configuration;
 
     /**
@@ -127,13 +127,13 @@ public abstract class WebComponentExporter<C extends Component>
                             .collect(Collectors.joining(", "))));
         }
 
-        PropertyConfigurationExtension<C, P> propertyConfiguration =
-                new PropertyConfigurationExtension<>(
+        PropertyConfigurationImpl<C, P> propertyConfigurationImpl =
+                new PropertyConfigurationImpl<>(
                 componentClass, name, type, defaultValue);
 
-        propertyConfigurationMap.put(name, propertyConfiguration);
+        propertyConfigurationMap.put(name, propertyConfigurationImpl);
 
-        return propertyConfiguration;
+        return propertyConfigurationImpl;
     }
 
     /**
@@ -253,7 +253,7 @@ public abstract class WebComponentExporter<C extends Component>
      *
      * @return web component configuration
      */
-    public final WebComponentConfiguration<C> getConfiguration() {
+    private WebComponentConfiguration<C> getConfiguration() {
         if (configuration == null) {
             configuration = new WebComponentConfigurationImpl();
         }
@@ -289,7 +289,7 @@ public abstract class WebComponentExporter<C extends Component>
         @Override
         public Set<PropertyData<? extends Serializable>> getPropertyDataSet() {
             return propertyConfigurationMap.values().stream()
-                    .map(PropertyConfigurationExtension::getPropertyData)
+                    .map(PropertyConfigurationImpl::getPropertyData)
                     .collect(Collectors.toSet());
         }
 
@@ -324,8 +324,8 @@ public abstract class WebComponentExporter<C extends Component>
                         tag));
             }
 
-            WebComponentBindingExtension<C> binding =
-                    new WebComponentBindingExtension<>(componentReference);
+            WebComponentBinding<C> binding =
+                    new WebComponentBinding<>(componentReference);
 
             propertyConfigurationMap
                     .values().forEach(binding::bindProperty);
@@ -344,46 +344,8 @@ public abstract class WebComponentExporter<C extends Component>
         }
     }
 
-    /*
-        API extension of abstract classes from ./webcomponent
-        these classes expose protected methods that are essential for the
-        internal implementation of this class, so they are extended by inner
-        classes in order to expose those methods here
-     */
-
-    private static class WebComponentBindingExtension<C extends Component> extends WebComponentBinding<C> {
-        WebComponentBindingExtension(C component) {
-            super(component);
-        }
-
-        @Override
-        protected void updatePropertiesToComponent() {
-            super.updatePropertiesToComponent();
-        }
-
-        @Override
-        protected void bindProperty(PropertyConfiguration<C, ?
-                        extends Serializable> propertyConfiguration) {
-            super.bindProperty(propertyConfiguration);
-        }
-    }
-
-    private static class PropertyConfigurationExtension<C extends Component,
-            P extends Serializable> extends PropertyConfiguration<C, P> {
-
-        PropertyConfigurationExtension(Class<C> componentType,
-                                         String propertyName, Class<P> propertyType, P defaultValue) {
-            super(componentType, propertyName, propertyType, defaultValue);
-        }
-
-        @Override
-        protected SerializableBiConsumer<C, Serializable> getOnChangeHandler() {
-            return super.getOnChangeHandler();
-        }
-
-        @Override
-        protected PropertyData<P> getPropertyData() {
-            return super.getPropertyData();
-        }
+    public static <T extends Component> WebComponentConfiguration<T> getWebComponentConfiguration(
+            WebComponentExporter<T> exporter) {
+        return exporter.getConfiguration();
     }
 }

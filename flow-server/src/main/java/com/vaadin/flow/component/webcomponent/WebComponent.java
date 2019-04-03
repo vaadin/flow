@@ -21,6 +21,8 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -128,11 +130,11 @@ public final class WebComponent<C extends Component> {
 
     /**
      * Sets property value on the client-side to the given {@code value}. The
-     * required {@link PropertyConfiguration} is received from
+     * required {@link PropertyConfigurationImpl} is received from
      * {@link com.vaadin.flow.component.WebComponentExporter} when a new
      * property is added for the web component.
      *
-     * @param propertyConfiguration
+     * @param propertyConfigurationImpl
      *            identifies the property for which the value is being set, not
      *            null
      * @param value
@@ -141,12 +143,12 @@ public final class WebComponent<C extends Component> {
      *            type of the property value being set. If the type does not
      *            match the original property type, throws an exception
      */
-    public <P extends Serializable> void setProperty(PropertyConfiguration<C, P> propertyConfiguration, P value) {
-        Objects.requireNonNull(propertyConfiguration, "Parameter " +
+    public <P extends Serializable> void setProperty(PropertyConfigurationImpl<C, P> propertyConfigurationImpl, P value) {
+        Objects.requireNonNull(propertyConfigurationImpl, "Parameter " +
                 "'propertyConfiguration' must not be null!");
 
 
-        String propertyName = propertyConfiguration.getPropertyData().getName();
+        String propertyName = propertyConfigurationImpl.getPropertyData().getName();
 
         // does the binding actually have the property
         if (!binding.hasProperty(propertyName)) {

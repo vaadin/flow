@@ -26,6 +26,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.JsonValue;

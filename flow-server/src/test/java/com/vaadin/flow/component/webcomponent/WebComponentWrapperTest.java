@@ -34,6 +34,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import elemental.json.Json;
@@ -58,7 +59,7 @@ public class WebComponentWrapperTest {
         exporter = new MyComponentExporter();
 
         // make component available and bind properties to it
-        binding = exporter.getConfiguration()
+        binding = WebComponentExporter.getWebComponentConfiguration(exporter)
                 .createWebComponentBinding(new MockInstantiator(), element);
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
@@ -225,7 +226,8 @@ public class WebComponentWrapperTest {
         if (element == null) {
             element = new Element("tag");
         }
-        return new WebComponentWrapper(element, exporter.getConfiguration()
+        return new WebComponentWrapper(element,
+                WebComponentExporter.getWebComponentConfiguration(exporter)
                 .createWebComponentBinding(new MockInstantiator(), element)) {
             @Override
             public Optional<UI> getUI() {

@@ -23,6 +23,8 @@ import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -81,7 +83,7 @@ public class WebComponentTest {
                 new WebComponent<>(binding,
                 new Element("tag"));
 
-        PropertyConfiguration<Component, String> configuration =
+        PropertyConfigurationImpl<Component, String> configuration =
                 new PropertyConfigurationImpl<>(
                         Component.class, "property", String.class, "value");
 
@@ -103,7 +105,7 @@ public class WebComponentTest {
         WebComponent<Component> webComponent =
                 new WebComponent<>(binding, new Element("tag"));
 
-        PropertyConfiguration<Component, String> configuration =
+        PropertyConfigurationImpl<Component, String> configuration =
                 new PropertyConfigurationImpl<>(
                         Component.class, "property", String.class, "value");
 

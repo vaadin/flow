@@ -41,17 +41,17 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class WebComponentExporterRegistryInitializerTest {
+public class WebComponentConfigurationRegistryInitializerTest {
     private static final String DUPLICATE_PROPERTY_NAME = "one";
 
     private WebComponentExporterRegistryInitializer initializer;
     @Mock
-    private WebComponentExporterRegistry registry;
+    private WebComponentConfigurationRegistry registry;
     @Mock
     private ServletContext servletContext;
     @Mock
@@ -62,7 +62,7 @@ public class WebComponentExporterRegistryInitializerTest {
         MockitoAnnotations.initMocks(this);
         initializer = new WebComponentExporterRegistryInitializer();
         when(servletContext.getAttribute(
-                WebComponentExporterRegistry.class.getName()))
+                WebComponentConfigurationRegistry.class.getName()))
                         .thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
@@ -96,7 +96,7 @@ public class WebComponentExporterRegistryInitializerTest {
         }
         // Expect a call to setWebComponents even if we have an empty or null
         // set
-        Mockito.verify(registry).setExporters(Collections.emptyMap());
+        Mockito.verify(registry).setExporters(Collections.emptySet());
     }
 
     @Test
@@ -120,7 +120,7 @@ public class WebComponentExporterRegistryInitializerTest {
             Assert.fail(
                     "WebComponentRegistryInitializer.onStartup should not throw with empty set");
         }
-        Mockito.verify(registry).setExporters(Collections.emptyMap());
+        Mockito.verify(registry).setExporters(Collections.emptySet());
     }
 
     @Test

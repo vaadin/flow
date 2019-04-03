@@ -42,25 +42,25 @@ import com.vaadin.flow.server.startup.EnableOSGiRunner;
 
 @NotThreadSafe
 @RunWith(EnableOSGiRunner.class)
-public class OSGiWebComponentExporterRegistryTest extends WebComponentExporterRegistryTest {
+public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
 
     @After
     public void cleanUpOSGi() {
         if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
-            OSGiWebComponentExporterRegistry.getInstance(
+            OSGiWebComponentConfigurationRegistry.getInstance(
                     OSGiAccess.getInstance().getOsgiServletContext());
         }
     }
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(OSGiWebComponentExporterRegistry.class.getName(),
+        Assert.assertEquals(OSGiWebComponentConfigurationRegistry.class.getName(),
                 registry.getClass().getName());
     }
 
     @Test
     public void assertOsgiRegistryIsServedAsASingleton() {
-        Assert.assertEquals(registry, WebComponentExporterRegistry
+        Assert.assertEquals(registry, WebComponentConfigurationRegistry
                 .getInstance(Mockito.mock(ServletContext.class)));
     }
 
@@ -80,34 +80,34 @@ public class OSGiWebComponentExporterRegistryTest extends WebComponentExporterRe
     public void setBuildersTwice_allSetsAcceptedLastSetValid() {
         Assert.assertTrue("Registry should have accepted the " +
                         "WebComponentExporters",
-                registry.setExporters(asMap(MyComponentExporter.class)));
+                registry.setExporters(asSet(MyComponentExporter.class)));
 
         Assert.assertTrue(
                 "OSGi registry should have accept the second set of " +
                         "WebComponentExporters.",
-                registry.setExporters(asMap(UserBoxExporter.class)));
+                registry.setExporters(asSet(UserBoxExporter.class)));
 
         Assert.assertEquals("Registry should contain only one builder",
-                1, registry.getExporters().size());
+                1, registry.getConfigurations().size());
 
         Assert.assertEquals("Builder should be linked to UserBox.class",
-                UserBox.class, registry.getExporter("user-box").get()
-                        .getConfiguration().getComponentClass());
+                UserBox.class, registry.getConfiguration("user-box").get()
+                        .getComponentClass());
     }
 
     @Override
     public void hasExporters() {
         // being a singleton caused this test to fail when inherited
 
-        OSGiWebComponentExporterRegistry registry =
-                new OSGiWebComponentExporterRegistry();
+        OSGiWebComponentConfigurationRegistry registry =
+                new OSGiWebComponentConfigurationRegistry();
 
-        Assert.assertFalse("Should have no exporters", registry.hasExporters());
+        Assert.assertFalse("Should have no exporters", registry.hasConfigurations());
 
-        registry.setExporters(Collections.emptyMap());
+        registry.setExporters(Collections.emptySet());
 
         Assert.assertTrue("Should have exporters, albeit empty",
-                registry.hasExporters());
+                registry.hasConfigurations());
     }
 
     @Override
@@ -124,7 +124,7 @@ public class OSGiWebComponentExporterRegistryTest extends WebComponentExporterRe
                         // same time
                         Thread.sleep(new Random().nextInt(200));
                         return new AtomicBoolean(
-                                registry.setExporters(asMap(
+                                registry.setExporters(asSet(
                                         MyComponentExporter.class)));
                     };
                     return callable;

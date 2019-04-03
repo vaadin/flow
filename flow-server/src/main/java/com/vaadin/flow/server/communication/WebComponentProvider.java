@@ -26,14 +26,13 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
@@ -70,32 +69,24 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<WebComponentExporter<? extends Component>> optionalWebComponentExporter =
-                WebComponentExporterRegistry.getInstance(
+        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentExporter =
+                WebComponentConfigurationRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext())
-                .getExporter(tag.get());
+                .getConfiguration(tag.get());
 
         if (optionalWebComponentExporter.isPresent()) {
             if (cache == null) {
                 cache = new HashMap<>();
             }
             WebComponentConfiguration<? extends Component> webComponentConfiguration =
-                    optionalWebComponentExporter.get().getConfiguration();
+                    optionalWebComponentExporter.get();
             String generated;
             if (cache.containsKey(tag.get())) {
                 generated = cache.get(tag.get());
             } else {
-                String uiElement;
-                if (session.getConfiguration().getRootElementId().isEmpty()) {
-                    uiElement = "document.body";
-                } else {
-                    uiElement = "document.getElementById('"
-                            + session.getConfiguration().getRootElementId()
-                            + "')";
-                }
-
-                generated = WebComponentGenerator.generateModule(uiElement,
-                        tag.get(), webComponentConfiguration, request);
+                generated = WebComponentGenerator.generateModule(tag.get(),
+                        webComponentConfiguration,
+                        getFrontendPath(servletRequest));
                 cache.put(tag.get(), generated);
             }
 
@@ -107,6 +98,23 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         return true;
+    }
+
+    private static String getFrontendPath(VaadinRequest request) {
+        if (request == null) {
+            return null;
+        }
+        String contextPath = request.getContextPath();
+        if (contextPath.isEmpty()) {
+            return "/frontend/";
+        }
+        if (!contextPath.startsWith("/")) {
+            contextPath = "/" + contextPath;
+        }
+        if (contextPath.endsWith("/")) {
+            contextPath = contextPath.substring(0, contextPath.length() - 1);
+        }
+        return contextPath + "/frontend/";
     }
 
     private static Optional<String> parseTag(String pathInfo) {

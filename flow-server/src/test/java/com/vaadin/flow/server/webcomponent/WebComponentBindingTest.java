@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.component.webcomponent;
+package com.vaadin.flow.server.webcomponent;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,18 +22,19 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 
 import elemental.json.JsonValue;
 
 public class WebComponentBindingTest {
 
     private MyComponent component;
-    private WebComponentBindingImpl binding;
+    private WebComponentBinding binding;
 
     @Before
     public void setUp() {
         component = new MyComponent();
-        binding = new WebComponentBindingImpl(component);
+        binding = new WebComponentBinding(component);
         binding.bindProperty(
                 new PropertyConfigurationImpl<>(
                         MyComponent.class, "int", Integer.class, 0));

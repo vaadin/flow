@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -31,7 +30,9 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
@@ -47,6 +48,17 @@ public class WebComponentUI extends UI {
     public void doInit(VaadinRequest request, int uiId) {
         super.doInit(request, uiId);
         assignTheme();
+
+        VaadinSession session = getSession();
+        String uiElementId;
+        if (session.getConfiguration().getRootElementId().isEmpty()) {
+            uiElementId = "";
+        } else {
+            uiElementId = session.getConfiguration().getRootElementId();
+        }
+        getPage().executeJavaScript(
+                "document.body.dispatchEvent(new CustomEvent('root-element', { detail: '"
+                        + uiElementId + "' }))");
     }
 
     /**
@@ -61,10 +73,10 @@ public class WebComponentUI extends UI {
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentExporter<? extends Component>> webComponentExporter =
-                WebComponentExporterRegistry
+        Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
+                WebComponentConfigurationRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext())
-                .getExporter(tag);
+                .getConfiguration(tag);
 
         if (!webComponentExporter.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
@@ -82,7 +94,7 @@ public class WebComponentUI extends UI {
          */
         Element el = new Element(tag);
         WebComponentBinding binding = webComponentExporter.get()
-                .getConfiguration().createWebComponentBinding(
+                .createWebComponentBinding(
                         Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
@@ -125,7 +137,7 @@ public class WebComponentUI extends UI {
     }
 
     private void assignTheme() {
-        WebComponentExporterRegistry registry = WebComponentExporterRegistry
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext());
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);

@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,7 +30,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -278,13 +279,13 @@ public class ServletDeployerTest {
         }
         if (addWebComponents) {
             expect(contextMock.getAttribute(
-                    WebComponentExporterRegistry.class.getName()))
+                    WebComponentConfigurationRegistry.class.getName()))
                             .andAnswer(() -> {
 
-                                WebComponentExporterRegistry registry = new WebComponentExporterRegistry() {
+                                WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
                                 };
                                 registry.setExporters(
-                                        (Map) Collections.singletonMap("foo",
+                                        (Set) Collections.singleton(
                                                 WebComponentExporter.class));
 
                                 return registry;

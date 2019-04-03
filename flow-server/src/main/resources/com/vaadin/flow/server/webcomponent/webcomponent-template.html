@@ -1,4 +1,4 @@
-<link rel="import" href="_servlet_context_/frontend/bower_components/polymer/polymer-element.html">
+<link rel="import" href="_frontend_resources_bower_components/polymer/polymer-element.html">
 <link rel="import" href="web-component-ui.html">
 
 <dom-module id="_TagDash_">
@@ -50,23 +50,39 @@
 
       connectedCallback() {
         super.connectedCallback();
-
-        let flowRoot = _RootElement_;
-        if (!this.$.id) {
-          this._registerElement();
-        } else if (flowRoot && flowRoot.$server) {
-          this.$server.reconnect();
+        
+        if (_TagCamel_.rootId){
+            this._connect(_TagCamel_.rootId);
         }
-
-        console.log('connected', this);
+        else {
+            var self = this;
+            document.body.addEventListener('root-element', function(event) {
+                self._connect(event.detail);
+            });
+        }
+      }
+      
+      _connect(rootId){
+          var flowRoot;
+          if ( rootId ){
+              flowRoot = document.getElementById(rootId);
+          }
+          else {
+              flowRoot = document.body;              
+          }
+          if (!this.$.id) {
+            this._registerElement(flowRoot);
+          } else if (flowRoot && flowRoot.$server) {
+              this.$server.reconnect();
+          }
+          console.log('connected', this);
       }
 
-      _registerElement() {
+      _registerElement(flowRoot) {
         this.$.id = "_TagCamel_-" + _TagCamel_.id++;
 
         // Needed to make Flow do lookup correctly
         const poller = () => {
-          let flowRoot = _RootElement_;
           if (flowRoot && flowRoot.$server) {
             flowRoot.$ = flowRoot.$ || {};
             flowRoot.$[this.$.id] = this;
@@ -95,6 +111,10 @@
     }
 
     _TagCamel_.id = 0;
+    
+    document.body.addEventListener('root-element', function(event) {
+        _TagCamel_.rootId = event.detail;
+    });
 
     customElements.define(_TagCamel_.is, _TagCamel_);
   </script>

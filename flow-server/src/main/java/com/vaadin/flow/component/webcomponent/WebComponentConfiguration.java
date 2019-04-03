@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,8 +20,10 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.webcomponent.PropertyData;
 
 /**
  * The configuration is used to construct the web component, and further-more

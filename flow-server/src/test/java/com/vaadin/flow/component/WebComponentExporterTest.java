@@ -21,9 +21,9 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.webcomponent.PropertyData;
+import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentBinding;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonSerializer;
@@ -46,7 +46,7 @@ public class WebComponentExporterTest {
     @Before
     public void setUp() {
         exporter = new MyComponentExporter();
-        config = exporter.getConfiguration();
+        config = WebComponentExporter.getWebComponentConfiguration(exporter);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class WebComponentExporterTest {
             }
         };
 
-        config = exporter.getConfiguration();
+        config = WebComponentExporter.getWebComponentConfiguration(exporter);
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
@@ -177,7 +177,7 @@ public class WebComponentExporterTest {
     public void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
         SharedTagExporter sharedTagExporter = new SharedTagExporter();
         WebComponentConfiguration<SharedTagComponent> sharedConfig =
-                sharedTagExporter.getConfiguration();
+                WebComponentExporter.getWebComponentConfiguration(sharedTagExporter);
 
         sharedConfig.createWebComponentBinding(new MockInstantiator(),
                 mock(Element.class));

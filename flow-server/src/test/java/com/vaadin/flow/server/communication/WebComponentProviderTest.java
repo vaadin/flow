@@ -21,7 +21,10 @@ import static org.mockito.Mockito.times;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
@@ -49,7 +52,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentExporterRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
@@ -133,7 +136,7 @@ public class WebComponentProviderTest {
 
     @Test
     public void webComponentGenerator_responseGetsResult() throws IOException {
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 MyComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
@@ -160,7 +163,7 @@ public class WebComponentProviderTest {
             throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 MyComponentExporter.class, OtherComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
@@ -193,7 +196,7 @@ public class WebComponentProviderTest {
 
     @Test
     public void setExporters_exportersHasNoTheme_themeIsNull() {
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 MyComponentExporter.class, OtherComponentExporter.class);
 
         Assert.assertFalse(registry
@@ -202,28 +205,28 @@ public class WebComponentProviderTest {
 
     @Test
     public void notInitializedRegistry_themeIsEmpty() {
-        WebComponentExporterRegistry registry = setUpRegistry();
+        WebComponentConfigurationRegistry registry = setUpRegistry();
         Assert.assertFalse(registry
                 .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
     }
 
     @Test(expected = IllegalStateException.class)
     public void setExporters_exportersHasVariousThemes_throws() {
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class,
                 AnotherThemedComponentExporter.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void setExporters_exportersHasVariousPushes_throws() {
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class,
                 AnotherPushComponentExporter.class);
     }
 
     @Test
     public void setExporters_exportersHasOneThemes_themeIsSet() {
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class, MyComponentExporter.class);
         Assert.assertEquals(MyTheme.class, registry
                 .getEmbeddedApplicationAnnotation(Theme.class).get().value());
@@ -231,7 +234,7 @@ public class WebComponentProviderTest {
 
     @Test
     public void setExporters_exportersHasOnePush_pushIsSet() {
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class, MyComponentExporter.class);
         Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
                 .isPresent());
@@ -239,7 +242,7 @@ public class WebComponentProviderTest {
 
     @Test
     public void setExporters_exportersHasSameThemeDeclarations_themeIsSet() {
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
         Assert.assertEquals(MyTheme.class, registry
@@ -248,37 +251,35 @@ public class WebComponentProviderTest {
 
     @Test
     public void setExporters_exportersHasSamePushDeclarations_pushIsSet() {
-        WebComponentExporterRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupExporters(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
         Assert.assertEquals(PushMode.AUTOMATIC, registry
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
 
-    private WebComponentExporterRegistry setupExporters(
+    private WebComponentConfigurationRegistry setupExporters(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
-        WebComponentExporterRegistry registry = setUpRegistry();
+        WebComponentConfigurationRegistry registry = setUpRegistry();
 
-        final Map<String, Class<? extends WebComponentExporter<?
-                        extends Component>>> map = new HashMap<>();
-        Stream.of(exporters)
-                .forEach(clazz -> map.put(AnnotationReader
-                        .getAnnotationValueFor(clazz, Tag.class, Tag::value)
-                        .get(), clazz));
-        registry.setExporters(map);
+        final Set<Class<? extends WebComponentExporter<?
+                                extends Component>>> set =
+                Stream.of(exporters).collect(Collectors.toSet());
+
+        registry.setExporters(set);
 
         return registry;
     }
 
-    private WebComponentExporterRegistry setUpRegistry() {
+    private WebComponentConfigurationRegistry setUpRegistry() {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
 
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         Mockito.when(request.getContextPath()).thenReturn("");
-        WebComponentExporterRegistry registry = WebComponentExporterRegistry
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(servletContext);
         Mockito.when(servletContext.getAttribute(
-                WebComponentExporterRegistry.class.getName()))
+                WebComponentConfigurationRegistry.class.getName()))
                 .thenReturn(registry);
         return registry;
     }

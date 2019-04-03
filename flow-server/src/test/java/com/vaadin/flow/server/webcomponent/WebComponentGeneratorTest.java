@@ -32,8 +32,9 @@ public class WebComponentGeneratorTest {
         MyComponentExporter exporter = new MyComponentExporter();
 
         Map<String, String> replacementsMap = WebComponentGenerator
-                .getReplacementsMap("document.body", "my-component",
-                        exporter.getConfiguration().getPropertyDataSet(), "/foo");
+                .getReplacementsMap("my-component",
+                        WebComponentExporter.getWebComponentConfiguration(
+                                exporter).getPropertyDataSet(), "/foo");
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -43,18 +44,13 @@ public class WebComponentGeneratorTest {
                 replacementsMap.containsKey("PropertyMethods"));
         Assert.assertTrue("Missing 'Properties'",
                 replacementsMap.containsKey("Properties"));
-        Assert.assertTrue("No 'RootElement' specified",
-                replacementsMap.containsKey("RootElement"));
-        Assert.assertTrue("Missing servlet context path",
-                replacementsMap.containsKey("servlet_context"));
+        Assert.assertTrue("Missing frontend resources path",
+                replacementsMap.containsKey("frontend_resources"));
 
         Assert.assertEquals("my-component", replacementsMap.get("TagDash"));
         Assert.assertEquals("MyComponent", replacementsMap.get("TagCamel"));
 
-        Assert.assertEquals("document.body",
-                replacementsMap.get("RootElement"));
-
-        Assert.assertEquals("/foo", replacementsMap.get("servlet_context"));
+        Assert.assertEquals("/foo", replacementsMap.get("frontend_resources"));
 
         String propertyMethods = replacementsMap.get("PropertyMethods");
         Assert.assertTrue(propertyMethods.contains("_sync_message"));

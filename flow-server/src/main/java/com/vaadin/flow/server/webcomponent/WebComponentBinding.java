@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.component.webcomponent;
+package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -23,6 +23,7 @@ import java.util.Objects;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -37,7 +38,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  * @see WebComponentConfiguration#createWebComponentBinding(Instantiator, Element)
  *      to create {@code WebComponentBindings}
  */
-public abstract class WebComponentBinding<C extends Component> implements Serializable {
+public final class WebComponentBinding<C extends Component> implements Serializable {
     private C component;
     private HashMap<String, PropertyBinding<? extends Serializable>> properties = new HashMap<>();
 
@@ -50,7 +51,7 @@ public abstract class WebComponentBinding<C extends Component> implements Serial
      * @param component     component which exposes {@code properties} as web
      *                      component. Not {@code null}
      */
-    protected WebComponentBinding(C component) {
+    public WebComponentBinding(C component) {
         Objects.requireNonNull(component, "Parameter 'component' must not be " +
                 "null!");
 
@@ -115,10 +116,10 @@ public abstract class WebComponentBinding<C extends Component> implements Serial
 
     /**
      * Calls the bound change handlers defined via
-     * {@link PropertyConfiguration#onChange(SerializableBiConsumer)} for
+     * {@link PropertyConfigurationImpl#onChange(SerializableBiConsumer)} for
      * each bound property with the current value of the property.
      */
-    protected void updatePropertiesToComponent() {
+    public void updatePropertiesToComponent() {
         properties.forEach((key, value) -> value.notifyValueChange());
     }
 
@@ -127,29 +128,29 @@ public abstract class WebComponentBinding<C extends Component> implements Serial
      * {@code propertyConfiguration}. If a property with an existing name is
      * bound, the previous binding is removed.
      *
-     * @param propertyConfiguration     property configuration
+     * @param propertyConfigurationImpl     property configuration
      */
-    protected void bindProperty(PropertyConfiguration<C,
-                ? extends Serializable> propertyConfiguration) {
-        assert propertyConfiguration != null : "propertyConfiguration cannot " +
+    public void bindProperty(PropertyConfigurationImpl<C,
+                    ? extends Serializable> propertyConfigurationImpl) {
+        assert propertyConfigurationImpl != null : "propertyConfiguration cannot " +
                 "be null!";
 
-        SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
+        SerializableBiConsumer<C, Serializable> consumer = propertyConfigurationImpl
                 .getOnChangeHandler();
         PropertyBinding<? extends Serializable> binding =
-                new PropertyBinding<>(propertyConfiguration.getPropertyData(),
+                new PropertyBinding<>(propertyConfigurationImpl.getPropertyData(),
                         consumer == null ? null
                                 : value -> consumer.accept(
                                         component, value));
-        properties.put(propertyConfiguration.getPropertyData().getName(), binding);
+        properties.put(propertyConfigurationImpl.getPropertyData().getName(), binding);
     }
 
-    static class PropertyBinding<P extends Serializable> implements Serializable {
+    private static class PropertyBinding<P extends Serializable> implements Serializable {
         private PropertyData<P> data;
         private SerializableConsumer<P> listener;
         private P value;
 
-        PropertyBinding(PropertyData<P> data,
+        public PropertyBinding(PropertyData<P> data,
                         SerializableConsumer<P> listener) {
             Objects.requireNonNull(data, "Parameter 'data' must not be null!");
             this.data = data;
@@ -214,7 +215,7 @@ public abstract class WebComponentBinding<C extends Component> implements Serial
             return data.isReadOnly();
         }
 
-        void notifyValueChange() {
+        public void notifyValueChange() {
             if (listener != null) {
                 listener.accept(this.value);
             }

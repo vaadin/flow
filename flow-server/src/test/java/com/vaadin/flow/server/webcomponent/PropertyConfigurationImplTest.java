@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.component.webcomponent;
+package com.vaadin.flow.server.webcomponent;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,8 +22,10 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
+import com.vaadin.flow.server.webcomponent.PropertyData;
 
-public class PropertyConfigurationTest {
+public class PropertyConfigurationImplTest {
 
     PropertyConfigurationImpl<MyComponent, Integer> intPropertyConf;
 
