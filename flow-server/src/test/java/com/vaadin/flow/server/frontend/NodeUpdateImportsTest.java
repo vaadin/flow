@@ -19,8 +19,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,23 +31,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.JsModule;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
-public class NodeUpdateImportsTest {
+public class NodeUpdateImportsTest extends NodeUpdateTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
     private File nodeModulesPath;
-    private NodeUpdateImports mojo;
+    private NodeUpdateImports node;
 
     @Before
     public void setup() throws Exception {
@@ -58,35 +53,10 @@ public class NodeUpdateImportsTest {
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
 
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        URL[] systemUrls = ((URLClassLoader) classLoader).getURLs();
+        node = new NodeUpdateImports(getAnnotationValuesExtractor(),
+                importsFile, tmpRoot, nodeModulesPath, true);
 
-//        List<URL> urls = new ArrayList<>();
-//        urls.addAll(Arrays.asList(
-//                ((URLClassLoader) getClass().getClassLoader()).getURLs()));
-//        urls.addAll(Arrays.asList(
-//                ((URLClassLoader) com.vaadin.flow.server.startup.AnnotationValidatorTest.MyTheme.class
-//                        .getClassLoader()).getURLs()));
-
-//        urls.addAll(Arrays.asList(((URLClassLoader) Thread.currentThread()
-//                .getContextClassLoader()).getURLs()));
-        //urls.addAll()
-
-//        URLClassLoader loader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
-//        Class clazz = loader.loadClass("com.vaadin.flow.server.startup.AnnotationValidatorTest$MyTheme");
-//
-//        System.out.println("clazz 1: " + clazz);
-
-        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
-                ((URLClassLoader) Thread.currentThread()
-                        .getContextClassLoader()).getURLs());
-
-//        Class clazz = extractor.loadClassInProjectClassLoader("com.vaadin.flow.server.startup.AnnotationValidatorTest$MyTheme");
-//        System.out.println("clazz 2: " + clazz);
-
-        mojo = new NodeUpdateImports(extractor, importsFile, tmpRoot, nodeModulesPath, true);
-
-        Assert.assertTrue(mojo.getFlowPackage().mkdirs());
+        Assert.assertTrue(node.getFlowPackage().mkdirs());
 
         createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
     }
@@ -97,21 +67,42 @@ public class NodeUpdateImportsTest {
 
         boolean exceptionNotThrown = true;
         try {
-            mojo.execute();
+            node.execute();
         } catch (IllegalStateException expected) {
             exceptionNotThrown = false;
             String exceptionMessage = expected.getMessage();
-            Assert.assertTrue(exceptionMessage.contains(importsFile.getAbsolutePath()));
+            Assert.assertTrue(
+                    exceptionMessage.contains(importsFile.getAbsolutePath()));
+
+            String content = null;
+            try {
+                content = FileUtils.readFileToString(importsFile,
+                        Charset.defaultCharset());
+            } catch (IOException e) {
+            }
 
             String innerMessage = expected.getCause().getMessage();
-            Assert.assertTrue(innerMessage.contains(nodeModulesPath.getAbsolutePath()));
-            for (String expectedImport : getExpectedImports()) {
-                Assert.assertTrue(innerMessage.contains(expectedImport));
+            Assert.assertTrue(
+                    innerMessage + " is missing "
+                            + nodeModulesPath.getAbsolutePath()
+                            + "\n While imports file is " + content + "\n",
+                    innerMessage.contains(nodeModulesPath.getAbsolutePath()));
+
+            List<String> expectedImports = new ArrayList<>(
+                    getExpectedImports());
+            expectedImports.remove("@vaadin/flow-frontend/ExampleConnector.js");
+
+            for (String expectedImport : expectedImports) {
+                Assert.assertTrue(
+                        innerMessage + " is missing " + expectedImport
+                                + "\n While imports file is " + content + "\n",
+                        innerMessage.contains(expectedImport));
             }
         }
 
         if (exceptionNotThrown) {
-            Assert.fail("Expected an exception to be thrown when no imported files exist");
+            Assert.fail(
+                    "Expected an exception to be thrown when no imported files exist");
         }
     }
 
@@ -126,22 +117,23 @@ public class NodeUpdateImportsTest {
                 "document.body.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
-        mojo.execute();
+        node.execute();
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(mojo.getFlowPackage().exists());
-        Assert.assertTrue(new File(mojo.getFlowPackage(), "ExampleConnector.js").exists());
+        Assert.assertTrue(node.getFlowPackage().exists());
+        Assert.assertTrue(new File(node.getFlowPackage(), "ExampleConnector.js")
+                .exists());
     }
 
     @Test
     public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
-        mojo.execute();
+        node.execute();
         long timestamp1 = importsFile.lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
-        mojo.execute();
+        node.execute();
         long timestamp2 = importsFile.lastModified();
 
         Assert.assertEquals(timestamp1, timestamp2);
@@ -149,10 +141,9 @@ public class NodeUpdateImportsTest {
 
     @Test
     public void should_ContainLumoThemeFiles() throws Exception {
-        mojo.execute();
+        node.execute();
 
-        assertContainsImports(true,
-                "@vaadin/vaadin-lumo-styles/color.js",
+        assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
@@ -162,30 +153,30 @@ public class NodeUpdateImportsTest {
 
     @Test
     public void should_AddImports() throws Exception {
-        mojo.execute();
+        node.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
 
-        mojo.execute();
+        node.execute();
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
     }
 
     @Test
     public void should_removeImports() throws Exception {
-        mojo.execute();
+        node.execute();
         addImports("./added-import.js");
         assertContainsImports(true, "./added-import.js");
 
-        mojo.execute();
+        node.execute();
         assertContainsImports(false, "./added-import.js");
     }
 
     @Test
     public void should_AddRemove_Imports() throws Exception {
-        mojo.execute();
+        node.execute();
 
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
@@ -195,7 +186,7 @@ public class NodeUpdateImportsTest {
                 "./local-p2-template.js");
         assertContainsImports(true, "./added-import.js");
 
-        mojo.execute();
+        node.execute();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
@@ -225,8 +216,7 @@ public class NodeUpdateImportsTest {
                 Charset.defaultCharset());
 
         Set<String> removed = current.stream()
-                .filter(line -> importsList.stream()
-                        .anyMatch(line::contains))
+                .filter(line -> importsList.stream().anyMatch(line::contains))
                 .collect(Collectors.toSet());
 
         current.removeAll(removed);
@@ -237,8 +227,7 @@ public class NodeUpdateImportsTest {
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.stream(imports)
-                .map(s -> "import '" + s + "';")
+        String content = Arrays.stream(imports).map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 
         replaceJsFile(content + "\n", StandardOpenOption.APPEND);
@@ -251,8 +240,7 @@ public class NodeUpdateImportsTest {
     }
 
     private List<String> getExpectedImports() {
-        return Arrays.asList(
-                "@polymer/iron-icon/iron-icon.js",
+        return Arrays.asList("@polymer/iron-icon/iron-icon.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
                 "@vaadin/vaadin-lumo-styles/icons.js",
                 "@vaadin/vaadin-lumo-styles/style.js",
@@ -264,35 +252,34 @@ public class NodeUpdateImportsTest {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "@vaadin/flow-frontend/ExampleConnector.js",
-                "./local-p3-template.js",
-                "./foo.js",
+                "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-p2-template.js",
-                "./foo-dir/vaadin-npm-component.js"
-        );
+                "./local-p2-template.js", "./foo-dir/vaadin-npm-component.js");
     }
 
-    private void createExpectedImports(File directoryWithImportsJs, File nodeModulesPath) throws IOException {
+    private void createExpectedImports(File directoryWithImportsJs,
+            File nodeModulesPath) throws IOException {
         for (String expectedImport : getExpectedImports()) {
-            File newFile = resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport);
+            File newFile = resolveImportFile(directoryWithImportsJs,
+                    nodeModulesPath, expectedImport);
             newFile.getParentFile().mkdirs();
             Assert.assertTrue(newFile.createNewFile());
         }
     }
 
-    private void deleteExpectedImports(File directoryWithImportsJs, File nodeModulesPath) {
+    private void deleteExpectedImports(File directoryWithImportsJs,
+            File nodeModulesPath) {
         for (String expectedImport : getExpectedImports()) {
-            Assert.assertTrue(resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport).delete());
+            Assert.assertTrue(resolveImportFile(directoryWithImportsJs,
+                    nodeModulesPath, expectedImport).delete());
         }
     }
 
-    private File resolveImportFile(File directoryWithImportsJs, File nodeModulesPath, String jsImport) {
-        File root = jsImport.startsWith("./") ? directoryWithImportsJs : nodeModulesPath;
+    private File resolveImportFile(File directoryWithImportsJs,
+            File nodeModulesPath, String jsImport) {
+        File root = jsImport.startsWith("./") ? directoryWithImportsJs
+                : nodeModulesPath;
         return new File(root, jsImport);
-    }
-
-    static void sleep(int ms) throws InterruptedException {
-        Thread.sleep(ms); //NOSONAR
     }
 
 }
