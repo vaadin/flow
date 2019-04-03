@@ -114,6 +114,7 @@
                                 <include>frontend/main.js</include>
                                 <include>package*.json</include>
                                 <include>webpack.config.js</include>
+                                <include>node_modules/**</include>
                             </includes>
                         </fileset>
                     </filesets>
