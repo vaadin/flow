@@ -15,7 +15,14 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -41,9 +48,66 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getClassFinder(project));
-            updater = new NodeUpdateImports(extractor, jsFile, npmFolder, nodeModulesPath, convertHtml);
+            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                    getClassFinder(project));
+            updater = new NodeUpdateImports(extractor, jsFile, npmFolder,
+                    nodeModulesPath, convertHtml);
         }
         return updater;
+    }
+
+    @Override
+    public void execute() {
+        super.execute();
+        runWebpack();
+    }
+
+    private void runWebpack() {
+        File webpackExecutable = new File(nodeModulesPath, ".bin/webpack");
+        if (!webpackExecutable.isFile()) {
+            throw new IllegalStateException(String.format(
+                    "Unable to locate webpack executable by path '%s'. Double check that the plugin us executed correctly",
+                    webpackExecutable.getAbsolutePath()));
+        }
+
+        Process webpackLaunch = null;
+        try {
+            webpackLaunch = new ProcessBuilder("node", webpackExecutable.getAbsolutePath())
+                .directory(project.getBasedir())
+                .start();
+            int errorCode = webpackLaunch.waitFor();
+            if (errorCode != 0) {
+                readDetailsAndThrowException(webpackLaunch);
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new IllegalStateException(
+                    "Failed to run webpack due to an error", e);
+        } finally {
+            if (webpackLaunch != null) {
+                webpackLaunch.destroyForcibly();
+            }
+        }
+    }
+
+    private void readDetailsAndThrowException(Process webpackLaunch) {
+        String stdout = readFullyAndClose(
+                "Failed to read webpack process stdin",
+                webpackLaunch::getInputStream);
+        String stderr = readFullyAndClose(
+                "Failed to read webpack process stderr",
+                webpackLaunch::getErrorStream);
+        throw new IllegalStateException(String.format(
+                "Webpack process exited with non-zero exit code.%nStdout: '%s'%nStderr: '%s'",
+                stdout, stderr));
+    }
+
+    private String readFullyAndClose(String readErrorMessage,
+            Supplier<InputStream> inputStreamSupplier) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(inputStreamSupplier.get()))) {
+            return br.lines().collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            throw new UncheckedIOException(readErrorMessage, e);
+        }
     }
 }
