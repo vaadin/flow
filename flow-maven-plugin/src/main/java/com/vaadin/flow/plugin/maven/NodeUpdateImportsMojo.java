@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -111,8 +112,8 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
 
     private String readFullyAndClose(String readErrorMessage,
             Supplier<InputStream> inputStreamSupplier) {
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(inputStreamSupplier.get()))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                inputStreamSupplier.get(), StandardCharsets.UTF_8))) {
             return br.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {
             throw new UncheckedIOException(readErrorMessage, e);
