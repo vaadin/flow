@@ -96,8 +96,8 @@ public class FrontendDataProvider {
                 annotationValuesExtractor, fragments.values().stream()
                         .flatMap(Set::stream).collect(Collectors.toSet()));
 
-        shellFileImports
-                .addAll(generateWebComponentModules(es6SourceDirectory));
+        shellFileImports.addAll(generateWebComponentModules(es6SourceDirectory,
+                annotationValuesExtractor));
     }
 
     /**
@@ -334,7 +334,12 @@ public class FrontendDataProvider {
                 importWithReplacedBackslashes);
     }
 
-    private Collection<File> generateWebComponentModules(File outputDir) {
-        return null;
+    private Collection<File> generateWebComponentModules(File outputDir,
+            AnnotationValuesExtractor annotationValuesExtractor) {
+        WebComponentModulesGenerator generator = new WebComponentModulesGenerator(
+                annotationValuesExtractor);
+        return generator.getExporters().map(
+                exporter -> generator.generateModuleFile(exporter, outputDir))
+                .collect(Collectors.toList());
     }
 }

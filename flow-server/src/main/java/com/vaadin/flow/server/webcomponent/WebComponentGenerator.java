@@ -20,13 +20,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -56,6 +60,26 @@ public class WebComponentGenerator {
             throw new IllegalArgumentException(
                     "Couldn't load the template class", e);
         }
+    }
+
+    /**
+     * Generate web component html/JS for given exporter class.
+     *
+     * @param exporterType
+     *            web component exporter class, not {@code null}
+     * @param frontendURI
+     *            the frontend resources URI, not {@code null}
+     * @return generated web component html/JS to be served to the client
+     */
+    public static String generateModule(
+            Class<? extends WebComponentExporter<? extends Component>> exporterType,
+            String frontendURI) {
+        Objects.requireNonNull(exporterType);
+        Objects.requireNonNull(frontendURI);
+
+        WebComponentConfiguration<? extends Component> config = new WebComponentConfigurationFactory()
+                .apply(exporterType);
+        return generateModule(getTag(exporterType), config, frontendURI);
     }
 
     /**
@@ -167,5 +191,13 @@ public class WebComponentGenerator {
             methods.append("}\n");
         });
         return methods.toString();
+    }
+
+    private static String getTag(
+            Class<? extends WebComponentExporter<? extends Component>> exporterType) {
+        Optional<Tag> tag = AnnotationReader.getAnnotationFor(exporterType,
+                Tag.class);
+        assert tag.isPresent();
+        return tag.get().value();
     }
 }
