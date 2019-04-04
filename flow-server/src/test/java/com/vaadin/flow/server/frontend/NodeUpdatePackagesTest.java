@@ -50,10 +50,11 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         File tmpRoot = temporaryFolder.getRoot();
         packageJson = new File(tmpRoot, PACKAGE_JSON);
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG);
+        
+        File modules = new File(tmpRoot, "node_modules");
 
-        node = new NodeUpdatePackages(getAnnotationValuesExtractor(),
-                WEBPACK_CONFIG, tmpRoot, new File(tmpRoot, "node_modules"),
-                true);
+        node = new NodeUpdatePackages(getAnnotationValuesExtractor(), 
+                tmpRoot, WEBPACK_CONFIG, tmpRoot, modules, true);
     }
 
     @After
