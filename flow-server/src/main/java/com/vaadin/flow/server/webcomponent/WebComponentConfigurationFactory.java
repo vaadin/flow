@@ -16,7 +16,9 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -29,17 +31,74 @@ import com.vaadin.flow.internal.ReflectTools;
  * @author Vaadin Ltd
  *
  */
-public class WebComponentConfigurationFactory implements
-        Function<Class<? extends WebComponentExporter<? extends Component>>, WebComponentConfiguration<? extends Component>>,
-        Serializable {
+public final class WebComponentConfigurationFactory implements Serializable {
+    private static final ReentrantLock lock = new ReentrantLock();
+    private static boolean creatingConfiguration = false;
 
-    @Override
-    public WebComponentConfiguration<? extends Component> apply(
+    private static WebComponentConfiguration<? extends Component> currentConfiguration;
+
+    /**
+     *
+     * @param clazz
+     * @return
+     */
+    public static WebComponentConfiguration<? extends Component> create(
             Class<? extends WebComponentExporter<? extends Component>> clazz) {
-        WebComponentExporter<? extends Component> exporter = ReflectTools
-                .createInstance(clazz);
+        Objects.requireNonNull(clazz, "Parameter 'clazz' cannot be null!");
 
-        return WebComponentExporter.getWebComponentConfiguration(exporter);
+        lock.lock();
+        try {
+            currentConfiguration = null;
+            creatingConfiguration = true;
+
+            // the constructor will call #setConfiguration in order to patch
+            // in the WebComponentConfiguration. Exporter instance is not
+            // needed (but it is kept alive by the WebComponentConfiguration)
+            WebComponentExporter<? extends Component> exporter = ReflectTools
+                    .createInstance(clazz);
+
+            if (currentConfiguration == null) {
+                throw new IllegalStateException("configuration not set, lol");
+            }
+
+            final WebComponentConfiguration<? extends Component> configuration =
+                    currentConfiguration;
+            creatingConfiguration = false;
+            return configuration;
+        } finally {
+            lock.unlock();
+        }
     }
 
+    /**
+     * @return
+     */
+    public static Optional<WebComponentConfiguration<? extends Component>> getPreviousConfiguration() {
+        lock.lock();
+        try {
+            return Optional.ofNullable(currentConfiguration);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+    /**
+     * @param configuration
+     */
+    public static void setConfiguration(
+            WebComponentConfiguration<? extends Component> configuration) {
+        lock.lock();
+        try {
+            if (!creatingConfiguration) {
+                throw new IllegalStateException("setConfiguration can only be" +
+                        " called during the execution of #create");
+            }
+            Objects.requireNonNull(configuration, "Parameter 'configuration' " +
+                    "cannot be null!");
+            currentConfiguration = configuration;
+        } finally {
+            lock.unlock();
+        }
+    }
 }

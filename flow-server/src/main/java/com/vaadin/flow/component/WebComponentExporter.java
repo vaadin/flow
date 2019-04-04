@@ -36,6 +36,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.webcomponent.UnsupportedPropertyTypeException;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationFactory;
 
 import elemental.json.JsonValue;
 
@@ -111,6 +112,9 @@ public abstract class WebComponentExporter<C extends Component>
 
         assert componentClass != null : "Failed to determine component class "
                 + "from WebComponentExporter's type parameter.";
+
+        WebComponentConfigurationFactory.setConfiguration(
+                new WebComponentConfigurationImpl());
     }
 
     private <P extends Serializable> PropertyConfiguration<C, P> addProperty(
@@ -247,19 +251,6 @@ public abstract class WebComponentExporter<C extends Component>
     public abstract void configureInstance(
             WebComponent<C> webComponent, C component);
 
-    /**
-     * Retrieves the {@link WebComponentConfiguration} created by the exporter
-     * implementation by calling {@code addProperty} in the constructor.
-     *
-     * @return web component configuration
-     */
-    private WebComponentConfiguration<C> getConfiguration() {
-        if (configuration == null) {
-            configuration = new WebComponentConfigurationImpl();
-        }
-        return configuration;
-    }
-
     private static boolean isSupportedType(Class clazz) {
         return SUPPORTED_TYPES.contains(clazz);
     }
@@ -342,10 +333,5 @@ public abstract class WebComponentExporter<C extends Component>
         public String getTag() {
             return tag;
         }
-    }
-
-    public static <T extends Component> WebComponentConfiguration<T> getWebComponentConfiguration(
-            WebComponentExporter<T> exporter) {
-        return exporter.getConfiguration();
     }
 }
