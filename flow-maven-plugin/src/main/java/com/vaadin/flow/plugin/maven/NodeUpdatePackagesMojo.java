@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import java.io.File;
+
+import org.apache.maven.model.Build;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -43,10 +46,31 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getClassFinder(project));
-            updater = new NodeUpdatePackages(extractor, webpackTemplate, npmFolder, nodeModulesPath,
-                    convertHtml);
+            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                    getClassFinder(project));
+            File webpackOutputRelativeToProjectDir = project.getBasedir()
+                    .toPath().relativize(getWebpackOutputDirectory().toPath())
+                    .toFile();
+
+            updater = new NodeUpdatePackages(extractor,
+                    webpackOutputRelativeToProjectDir, webpackTemplate,
+                    npmFolder, nodeModulesPath, convertHtml);
         }
         return updater;
+    }
+
+    private File getWebpackOutputDirectory() {
+        Build buildInformation = project.getBuild();
+        switch (project.getPackaging()) {
+        case "jar":
+            return new File(buildInformation.getOutputDirectory(),
+                    "META-INF/resources");
+        case "war":
+            return new File(buildInformation.getDirectory(),
+                    buildInformation.getFinalName());
+        default:
+            throw new IllegalStateException(String.format(
+                    "Unsupported packaging '%s'", project.getPackaging()));
+        }
     }
 }

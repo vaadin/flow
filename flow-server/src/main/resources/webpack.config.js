@@ -12,7 +12,7 @@ const baseDir = require('path').resolve(__dirname);
 // the folder of app resources (main.js and flow templates)
 const frontendFolder = `${baseDir}/frontend`;
 // the folder that java takes as webapp context
-const webappFolder = `${baseDir}/target/generated-frontend`;
+const webappFolder = `${baseDir}/{{OUTPUT_DIRECTORY}}`;
 
 // public path for resources, must match flow that requests /build/index.js /build/stats.json
 const build = 'build';

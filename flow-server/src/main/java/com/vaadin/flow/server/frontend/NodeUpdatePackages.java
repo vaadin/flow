@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,27 +60,34 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private static final String VALUE = "value";
     private final String webpackTemplate;
+    private final File webpackOutputDirectory;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
      * @param extractor
      *            a reusable annotation extractor
+     * @param webpackOutputDirectory
+     *            the directory to set for webpack to output its build results
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file
      * @param npmFolder
      *            folder with the `package.json` file
      * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the project
+     *            the path to the {@literal node_modules} directory of the
+     *            project
      * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
+     *            whether to convert html imports or not during the package
+     *            updates
      */
-    public NodeUpdatePackages(AnnotationValuesExtractor extractor, String webpackTemplate, File npmFolder,
+    public NodeUpdatePackages(AnnotationValuesExtractor extractor,
+            File webpackOutputDirectory, String webpackTemplate, File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
+        this.webpackOutputDirectory = webpackOutputDirectory;
         this.webpackTemplate = webpackTemplate;
         this.convertHtml = convertHtml;
     }
@@ -92,7 +100,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, WEBPACK_CONFIG, new File("."),
+        this(extractor, new File("./src/main/webapp"), WEBPACK_CONFIG, new File("."),
                 new File("./node_modules/"), true);
     }
 
@@ -125,12 +133,20 @@ public class NodeUpdatePackages extends NodeUpdater {
         if (configFile.exists()) {
             log().info("{} already exists.", configFile);
         } else {
-            URL resource = this.getClass().getClassLoader().getResource(webpackTemplate);
+            URL resource = this.getClass().getClassLoader()
+                    .getResource(webpackTemplate);
             if (resource == null) {
                 resource = new URL(webpackTemplate);
             }
-            FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created {} from {}", WEBPACK_CONFIG, resource);
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    resource.openStream(), StandardCharsets.UTF_8))) {
+                List<String> webpackConfigLines = br.lines()
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
+                        .collect(Collectors.toList());
+                Files.write(configFile.toPath(), webpackConfigLines);
+                log().info("Created {} from {}", WEBPACK_CONFIG, resource);
+            }
         }
     }
 
