@@ -33,8 +33,6 @@ import com.vaadin.flow.internal.ReflectTools;
  */
 public final class WebComponentConfigurationFactory implements Serializable {
     private static final ReentrantLock lock = new ReentrantLock();
-    private static boolean creatingConfiguration = false;
-
     private static WebComponentConfiguration<? extends Component> currentConfiguration;
 
     /**
@@ -49,7 +47,6 @@ public final class WebComponentConfigurationFactory implements Serializable {
         lock.lock();
         try {
             currentConfiguration = null;
-            creatingConfiguration = true;
 
             // the constructor will call #setConfiguration in order to patch
             // in the WebComponentConfiguration. Exporter instance is not
@@ -58,12 +55,16 @@ public final class WebComponentConfigurationFactory implements Serializable {
                     .createInstance(clazz);
 
             if (currentConfiguration == null) {
-                throw new IllegalStateException("configuration not set, lol");
+                throw new IllegalStateException(String.format("Constructor of" +
+                        " %s did not supply %s by calling setConfiguration. " +
+                                "The constructor must provide an " +
+                                "implementation.",
+                        clazz.getCanonicalName(),
+                        WebComponentConfiguration.class.getSimpleName()));
             }
 
             final WebComponentConfiguration<? extends Component> configuration =
                     currentConfiguration;
-            creatingConfiguration = false;
             return configuration;
         } finally {
             lock.unlock();
@@ -90,10 +91,6 @@ public final class WebComponentConfigurationFactory implements Serializable {
             WebComponentConfiguration<? extends Component> configuration) {
         lock.lock();
         try {
-            if (!creatingConfiguration) {
-                throw new IllegalStateException("setConfiguration can only be" +
-                        " called during the execution of #create");
-            }
             Objects.requireNonNull(configuration, "Parameter 'configuration' " +
                     "cannot be null!");
             currentConfiguration = configuration;
