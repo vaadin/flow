@@ -150,7 +150,7 @@ public class NodeUpdateImports extends NodeUpdater {
             String translatedModulePath = originalModulePath;
             if (theme != null) {
                 String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
-                if (translatedModulePath.matches(".*(vaadin-[^/]+)/" + baseUrl + ".*vaadin-[^/]+\\.(js|html)")) {
+                if (translatedModulePath.contains(baseUrl)) {
                     translatedModulePath = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
                         translatedModulePath);
                 }
