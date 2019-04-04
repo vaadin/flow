@@ -62,14 +62,12 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
     private File getWebpackOutputDirectory() {
         Build buildInformation = project.getBuild();
         switch (project.getPackaging()) {
-        case "jar": {
+        case "jar":
             return new File(buildInformation.getOutputDirectory(),
                     "META-INF/resources");
-        }
-        case "war": {
+        case "war":
             return new File(buildInformation.getDirectory(),
                     buildInformation.getFinalName());
-        }
         default:
             throw new IllegalStateException(String.format(
                     "Unsupported packaging '%s'", project.getPackaging()));
