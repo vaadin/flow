@@ -141,7 +141,8 @@ public class DevModeHandler implements Serializable {
         processBuilder.command(command);
         try {
             Process webpackProcess = processBuilder
-                    .redirectError(ProcessBuilder.Redirect.PIPE).start();
+                    .redirectError(ProcessBuilder.Redirect.PIPE)
+                    .redirectErrorStream(true).start();
             Runtime.getRuntime()
                     .addShutdownHook(new Thread(webpackProcess::destroy));
 

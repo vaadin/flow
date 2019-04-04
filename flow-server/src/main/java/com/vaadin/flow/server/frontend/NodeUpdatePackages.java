@@ -19,11 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
-<<<<<<< HEAD
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-=======
->>>>>>> Refactor the update packages job
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
