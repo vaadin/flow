@@ -16,6 +16,13 @@
 
 package com.vaadin.flow.plugin.common;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -31,9 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,16 +51,15 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 /**
  * @author Vaadin Ltd
@@ -75,6 +81,9 @@ public class FrontendDataProviderTest {
     private final ThemedURLTranslator translator = Mockito
             .mock(ThemedURLTranslator.class);
 
+    private final WebComponentModulesGenerator generator = Mockito
+            .mock(WebComponentModulesGenerator.class);
+
     public class TestFrontendDataProvider extends FrontendDataProvider {
 
         public TestFrontendDataProvider(boolean shouldBundle,
@@ -93,6 +102,25 @@ public class FrontendDataProviderTest {
             return translator;
         }
 
+        @Override
+        protected WebComponentModulesGenerator getWebComponentGenerator(
+                ClassPathIntrospector introspector) {
+            return generator;
+        }
+
+    }
+
+    public static class TestExporter
+            implements WebComponentExporter<Component> {
+
+        @Override
+        public void define(WebComponentDefinition<Component> definition) {
+        }
+
+        @Override
+        public void configure(WebComponent<Component> webComponent,
+                Component component) {
+        }
     }
 
     @Before
@@ -105,6 +133,9 @@ public class FrontendDataProviderTest {
 
         Mockito.doAnswer(invocation -> invocation.getArgumentAt(0, Set.class))
                 .when(translator).applyTheme(Matchers.any());
+
+        Mockito.when(generator.getExporters())
+                .thenAnswer(invocation -> Stream.of());
     }
 
     private File createFile(File directory, String fileName)
@@ -231,6 +262,42 @@ public class FrontendDataProviderTest {
 
         verify(annotationValuesExtractorMock, Mockito.times(2))
                 .extractAnnotationValues(anyMap());
+    }
+
+    @Test
+    public void createShellFile_fileContainsGeneratedWebModuleAndRegularHtmlImport()
+            throws IOException {
+        Mockito.when(generator.getExporters())
+                .thenReturn(Stream.of(TestExporter.class));
+
+        File webModule = new File(sourceDirectory, "web-module-gen.html");
+        Mockito.when(generator.generateModuleFile(TestExporter.class,
+                sourceDirectory)).thenReturn(webModule);
+
+        AnnotationValuesExtractor annotationValuesExtractorMock = mock(
+                AnnotationValuesExtractor.class);
+
+        when(annotationValuesExtractorMock.extractAnnotationValues(anyMap()))
+                .thenReturn(
+                        new HashMap<>(Collections.singletonMap(HtmlImport.class,
+                                new HashSet<>(Arrays.asList("src/foo.html")))));
+
+        File src = new File(sourceDirectory, "src");
+        src.mkdir();
+        createFile(src, "foo.html");
+
+        FrontendDataProvider provider = new TestFrontendDataProvider(true, true,
+                sourceDirectory, annotationValuesExtractorMock, null,
+                Collections.emptyMap());
+
+        String file = provider.createShellFile(targetDirectory);
+        String bundle = FileUtils.readFileToString(new File(file),
+                StandardCharsets.UTF_8);
+
+        Assert.assertThat(bundle,
+                CoreMatchers.containsString("es6Source/src/foo.html"));
+        Assert.assertThat(bundle,
+                CoreMatchers.containsString("es6Source/web-module-gen.html"));
     }
 
     @Test

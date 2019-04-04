@@ -188,6 +188,19 @@ public class FrontendDataProvider {
                 introspector);
     }
 
+    /**
+     * Gets web component module content generator.
+     *
+     * @param introspector
+     *            the introspector whose classpath will be used for returned
+     *            translator
+     * @return the web component module content generator
+     */
+    protected WebComponentModulesGenerator getWebComponentGenerator(
+            ClassPathIntrospector introspector) {
+        return new WebComponentModulesGenerator(introspector);
+    }
+
     private Map<String, Set<File>> resolveFragmentFiles(File es6SourceDirectory,
             File fragmentConfigurationFile,
             Map<String, Set<String>> userFragments) {
@@ -336,7 +349,7 @@ public class FrontendDataProvider {
 
     private Collection<File> generateWebComponentModules(File outputDir,
             AnnotationValuesExtractor annotationValuesExtractor) {
-        WebComponentModulesGenerator generator = new WebComponentModulesGenerator(
+        WebComponentModulesGenerator generator = getWebComponentGenerator(
                 annotationValuesExtractor);
         return generator.getExporters().map(
                 exporter -> generator.generateModuleFile(exporter, outputDir))

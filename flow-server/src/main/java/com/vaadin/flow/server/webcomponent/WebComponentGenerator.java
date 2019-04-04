@@ -79,7 +79,7 @@ public class WebComponentGenerator {
 
         WebComponentConfiguration<? extends Component> config = new WebComponentConfigurationFactory()
                 .apply(exporterType);
-        return generateModule(getTag(exporterType), config, frontendURI);
+        return generateModule(getTag(exporterType), config, frontendURI, false);
     }
 
     /**
@@ -95,7 +95,7 @@ public class WebComponentGenerator {
      */
     public static String generateModule(String tag,
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI) {
+            String frontendURI, boolean generateUiImport) {
         Objects.requireNonNull(tag);
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
@@ -104,7 +104,7 @@ public class WebComponentGenerator {
                 .getPropertyDataSet();
 
         Map<String, String> replacements = getReplacementsMap(tag,
-                propertyDataSet, frontendURI);
+                propertyDataSet, frontendURI, generateUiImport);
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -115,7 +115,8 @@ public class WebComponentGenerator {
     }
 
     static Map<String, String> getReplacementsMap(String tag,
-            Set<PropertyData<?>> propertyDataSet, String frontendURI) {
+            Set<PropertyData<?>> propertyDataSet, String frontendURI,
+            boolean generateUiImport) {
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);
@@ -128,6 +129,11 @@ public class WebComponentGenerator {
         replacements.put("Properties", getPropertyDefinitions(propertyDataSet));
 
         replacements.put("frontend_resources", frontendURI);
+
+        replacements.put("ui_import",
+                generateUiImport
+                        ? "<link rel='import' href='web-component-ui.html'>"
+                        : "");
 
         return replacements;
     }
