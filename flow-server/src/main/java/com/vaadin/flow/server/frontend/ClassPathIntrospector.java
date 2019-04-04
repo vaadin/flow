@@ -73,7 +73,7 @@ public abstract class ClassPathIntrospector implements Serializable {
     public static class DefaultClassFinder implements ClassFinder {
         private final Set<Class<?>> annotatedClasses;
 
-        private final ClassLoader classLoader;
+        private final transient ClassLoader classLoader;
 
         /**
          * It uses current classloader for getting resources or loading classes.
@@ -85,6 +85,15 @@ public abstract class ClassPathIntrospector implements Serializable {
             this.classLoader = getClass().getClassLoader();
         }
 
+        /**
+         * ClassFinder using a specified <code>ClassLoader</code> to load
+         * classes and a list of classes where to look for annotations.
+         * 
+         * @param classLoader
+         *            classloader for getting resources or loading classes.
+         * @param annotatedClasses
+         *            classes where to look for annotations.
+         */
         public DefaultClassFinder(ClassLoader classLoader,
                 Class<?>... annotatedClasses) {
             this.classLoader = classLoader;

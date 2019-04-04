@@ -34,7 +34,7 @@ import org.junit.rules.TemporaryFolder;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
 
-public class NodeUpdatePackagesTest extends NodeUpdateTest {
+public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();

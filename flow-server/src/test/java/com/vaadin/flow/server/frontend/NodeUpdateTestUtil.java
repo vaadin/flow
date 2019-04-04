@@ -26,7 +26,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 
-public class NodeUpdateTest {
+public class NodeUpdateTestUtil {
 
     static AnnotationValuesExtractor getAnnotationValuesExtractor()
             throws MalformedURLException {
@@ -56,8 +56,8 @@ public class NodeUpdateTest {
         return classPaths.toArray(new URL[0]);
     }
 
-    public static URL getTestResource(String resourceName) {
-        URL resourceUrl = NodeUpdateTest.class.getClassLoader()
+    static URL getTestResource(String resourceName) {
+        URL resourceUrl = NodeUpdateTestUtil.class.getClassLoader()
                 .getResource(resourceName);
         assertNotNull(String.format(
                 "Expect the test resource to be present in test resource folder with name = '%s'",
@@ -65,7 +65,7 @@ public class NodeUpdateTest {
         return resourceUrl;
     }
 
-    static void sleep(int ms) throws InterruptedException {
+    void sleep(int ms) throws InterruptedException {
         Thread.sleep(ms); // NOSONAR
     }
 
