@@ -20,7 +20,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -43,6 +45,7 @@ public abstract class ClassPathIntrospector implements Serializable {
          * @return a set with all classes that are annotated
          */
         Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> clazz);
+
         /**
          * Get a resource from the classpath.
          *
@@ -61,6 +64,64 @@ public abstract class ClassPathIntrospector implements Serializable {
          *             when the class is not in the classpath
          */
         <T> Class<T> loadClass(String name) throws ClassNotFoundException ;
+    }
+
+    /**
+     * {@link ClassFinder} implementation that search for annotated classes in a
+     * list of classes.
+     */
+    public static class DefaultClassFinder implements ClassFinder {
+        private final Set<Class<?>> annotatedClasses;
+
+        private final transient ClassLoader classLoader;
+
+        /**
+         * It uses current classloader for getting resources or loading classes.
+         * 
+         * @param annotatedClasses The annotated classes.
+         */
+        public DefaultClassFinder(Set<Class<?>> annotatedClasses) {
+            this.annotatedClasses = annotatedClasses;
+            this.classLoader = getClass().getClassLoader();
+        }
+
+        /**
+         * ClassFinder using a specified <code>ClassLoader</code> to load
+         * classes and a list of classes where to look for annotations.
+         * 
+         * @param classLoader
+         *            classloader for getting resources or loading classes.
+         * @param annotatedClasses
+         *            classes where to look for annotations.
+         */
+        public DefaultClassFinder(ClassLoader classLoader,
+                Class<?>... annotatedClasses) {
+            this.classLoader = classLoader;
+            this.annotatedClasses = new HashSet<>();
+            for (Class<?> clazz : annotatedClasses) {
+                this.annotatedClasses.add(clazz);
+            }
+        }
+
+        @Override
+        public Set<Class<?>> getAnnotatedClasses(
+                Class<? extends Annotation> annotation) {
+            return annotatedClasses.stream().filter(
+                    cl -> cl.getAnnotationsByType(annotation).length > 0)
+                    .collect(Collectors.toSet());
+        }
+
+        @Override
+        public URL getResource(String name) {
+            return classLoader.getResource(name);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> Class<T> loadClass(String name)
+                throws ClassNotFoundException {
+            return (Class<T>) classLoader.loadClass(name);
+        }
     }
 
     private final ClassFinder finder;

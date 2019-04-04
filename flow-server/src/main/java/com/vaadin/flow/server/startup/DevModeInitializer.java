@@ -22,11 +22,8 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -37,7 +34,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
@@ -58,36 +55,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UP
     Component.class })
 public class DevModeInitializer implements ServletContainerInitializer, Serializable {
 
-    /**
-     * {@link ClassFinder} implementation that search for annotated classes in a
-     * list of classes. It uses current classloader for getting resources or
-     * loading classes.
-     */
-    private static class ServletContextClassFinder implements ClassFinder {
-        private final Set<Class<?>> classes;
-
-        public ServletContextClassFinder(Set<Class<?>> classes) {
-            this.classes = classes;
-        }
-
-        @Override
-        public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
-            return classes.stream().filter(cl -> cl.getAnnotationsByType(annotation).length > 0)
-                    .collect(Collectors.toSet());
-        }
-
-        @Override
-        public URL getResource(String name) {
-            return this.getClass().getClassLoader().getResource(name);
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
-            return (Class<T>)this.getClass().getClassLoader().loadClass(name);
-        }
-    }
-
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context) throws ServletException {
         Collection<? extends ServletRegistration> registrations = context.getServletRegistrations().values();
@@ -103,7 +70,7 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
             return;
         }
 
-        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(new ServletContextClassFinder(classes));
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(new DefaultClassFinder(classes));
 
         if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
             new NodeUpdatePackages(extractor).execute();
