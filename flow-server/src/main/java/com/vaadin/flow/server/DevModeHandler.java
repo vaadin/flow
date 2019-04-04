@@ -61,7 +61,8 @@ import static java.net.HttpURLConnection.HTTP_OK;
  */
 public class DevModeHandler implements Serializable {
 
-    private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
+    // Non final because tests need to reset this during teardown.
+    private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
     /**
      * True when running in a unix like system. It's used to call the

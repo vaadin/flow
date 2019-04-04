@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -41,6 +43,7 @@ import com.vaadin.flow.server.DevModeHandler;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 
