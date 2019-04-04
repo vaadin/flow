@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -321,10 +322,19 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the default locale for this session.
-     *
-     * By default this is the preferred locale of the user using the session. In
-     * most cases it is read from the browser defaults.
+     * Gets the locale for this session.
+     * <p>
+     * The default locale is determined in different ways depending on whether a
+     * {@link I18NProvider} is available.
+     * <p>
+     * If a i18n provider is available, then the user agent preferences (i.e.
+     * the <code>Accept-Language</code> header) from the request that created
+     * the session is matched against {@link I18NProvider#getProvidedLocales()}.
+     * If no match is found, then the first item from
+     * {@link I18NProvider#getProvidedLocales()} is used.
+     * <p>
+     * If no i18n provider is available, then the {@link Locale#getDefault()
+     * default JVM locale} is used as the default locale.
      *
      * @return the locale of this session.
      */
@@ -335,14 +345,16 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**
      * Sets the default locale for this session.
-     *
-     * By default this is the preferred locale of the user using the
-     * application. In most cases it is read from the browser defaults.
+     * <p>
+     * Setting the locale of a session will also override any custom locale
+     * configured for all UIs in this session.
      *
      * @param locale
-     *         the Locale object.
+     *            the locale to set, not <code>null</code>
      */
     public void setLocale(Locale locale) {
+        assert locale != null : "Null locale is not supported!";
+
         checkHasLock();
         this.locale = locale;
 
