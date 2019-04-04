@@ -79,7 +79,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            project
      * @param convertHtml
      *            whether to convert html imports or not during the package
-     *            updatesΩ
+     *            updates
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor,
             File webpackOutputDirectory, String webpackTemplate, File npmFolder,
