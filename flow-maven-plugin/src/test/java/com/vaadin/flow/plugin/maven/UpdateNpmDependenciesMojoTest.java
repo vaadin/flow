@@ -79,6 +79,7 @@ public class UpdateNpmDependenciesMojoTest {
         when(buildMock.getFinalName()).thenReturn("finalName");
 
         MavenProject project = mock(MavenProject.class);
+        when(project.getBasedir()).thenReturn(new File("."));
         when(project.getPackaging()).thenReturn(packaging);
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
