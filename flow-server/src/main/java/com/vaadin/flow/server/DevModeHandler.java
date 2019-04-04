@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +34,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +61,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  */
 public class DevModeHandler implements Serializable {
 
-    private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
+    private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
     /**
      * True when running in a unix like system. It's used to call the
@@ -83,7 +81,7 @@ public class DevModeHandler implements Serializable {
     private static final String WEBPACK_HOST = "http://localhost";
 
     // This fixes maven tests in multi-module execution
-    static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
+    private static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
 
     public static final String WEBAPP_FOLDER = BASEDIR + "/";
     public static final String WEBPACK_CONFIG = BASEDIR + "/webpack.config.js";
@@ -98,12 +96,13 @@ public class DevModeHandler implements Serializable {
         this.port = port;
     }
 
-    private DevModeHandler(DeploymentConfiguration configuration, File directory, File webpack,
-            File webpackConfig) {
+    private DevModeHandler(DeploymentConfiguration configuration,
+            File directory, File webpack, File webpackConfig) {
         this.config = configuration;
 
         // If port is defined, means that webpack is already running
-        port = Integer.parseInt(config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
+        port = Integer.parseInt(config.getStringProperty(
+                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
         if (port > 0 && checkWebpackConnection()) {
             getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, port);
             return;
@@ -112,12 +111,14 @@ public class DevModeHandler implements Serializable {
         // We always compute a free port.
         port = getFreePort();
 
-        ProcessBuilder process = new ProcessBuilder();
-        process.directory(directory);
+        ProcessBuilder processBuilder = new ProcessBuilder()
+                .directory(directory);
 
         // Add /usr/local/bin to the PATH in case of unixOS like
         if (UNIX_OS) {
-            process.environment().put("PATH", process.environment().get("PATH") + ":/usr/local/bin");
+            processBuilder.environment().put("PATH",
+                    processBuilder.environment().get("PATH")
+                            + ":/usr/local/bin");
         }
 
         List<String> command = new ArrayList<>();
@@ -127,54 +128,44 @@ public class DevModeHandler implements Serializable {
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
-        command.addAll(Arrays.asList(
-                config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS, "-d --hot false").split(" +")));
+        command.addAll(Arrays.asList(config
+                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
+                        "-d --hot false")
+                .split(" +")));
 
         if (getLogger().isInfoEnabled()) {
-            getLogger().info("Starting Webpack in dev mode\n {}", command.stream().collect(Collectors.joining(" ")));
+            getLogger().info("Starting Webpack in dev mode\n {}",
+                    String.join(" ", command));
         }
 
-        process.command(command);
+        processBuilder.command(command);
         try {
-            Process exec = process.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(exec::destroy));
+            Process webpackProcess = processBuilder
+                    .redirectError(ProcessBuilder.Redirect.PIPE).start();
+            Runtime.getRuntime()
+                    .addShutdownHook(new Thread(webpackProcess::destroy));
 
-            // Start a timer to avoid waiting for ever if pattern not found in webpack output.
-            Thread timer = new Thread(() -> {
-                try {
-                    int time = Integer.parseInt(config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
-                            DEFAULT_TIMEOUT_FOR_PATTERN));
-                    Thread.sleep(time);
-                    synchronized (this) {
-                        notify(); //NOSONAR
-                    }
-                } catch (InterruptedException ignore) { //NOSONAR
-                    getLogger().trace("Webpack timer interrupted");
-                }
-            });
-            timer.start();
-
-            logStream(exec.getErrorStream(), null);
-            Pattern pattern = Pattern.compile(
-                    config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN, DEFAULT_OUTPUT_PATTERN));
-            logStream(exec.getInputStream(), pattern);
+            Pattern pattern = Pattern.compile(config.getStringProperty(
+                    SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN,
+                    DEFAULT_OUTPUT_PATTERN));
+            logStream(webpackProcess.getInputStream(), pattern);
 
             synchronized (this) {
-                this.wait();//NOSONAR
+                this.wait(Integer.parseInt(config.getStringProperty(
+                        SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
+                        DEFAULT_TIMEOUT_FOR_PATTERN)));// NOSONAR
             }
 
-            if (!exec.isAlive()) {
+            if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
-
-            if (timer.isAlive()) {
-                timer.interrupt();
-            }
         } catch (IOException | InterruptedException e) {
-            getLogger().error(e.getMessage(), e);
+            getLogger().error("Failed to start the webpack process", e);
         }
 
-        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
+        System.setProperty(
+                "vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
+                String.valueOf(port));
     }
 
     /**
