@@ -142,7 +142,7 @@ public class NodeUpdatePackages extends NodeUpdater {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
-                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getAbsolutePath()))
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
                 log().info("Created {} from {}", WEBPACK_CONFIG, resource);

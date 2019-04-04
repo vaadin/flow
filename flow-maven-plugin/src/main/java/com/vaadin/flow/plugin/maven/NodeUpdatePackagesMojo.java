@@ -46,10 +46,15 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(getClassFinder(project));
+            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                    getClassFinder(project));
+            File webpackOutputRelativeToProjectDir = project.getBasedir()
+                    .toPath().relativize(getWebpackOutputDirectory().toPath())
+                    .toFile();
+
             updater = new NodeUpdatePackages(extractor,
-                    getWebpackOutputDirectory(), webpackTemplate, npmFolder,
-                    nodeModulesPath, convertHtml);
+                    webpackOutputRelativeToProjectDir, webpackTemplate,
+                    npmFolder, nodeModulesPath, convertHtml);
         }
         return updater;
     }
