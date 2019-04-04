@@ -182,38 +182,5 @@
                 </plugins>
             </build>
         </profile>
-
-        <!-- Compile frontend for production -->
-        <profile>
-            <id>run-webpack</id>
-            <activation>
-                <file>
-                    <missing>${project.build.directory}/generated-frontend/build/index.js</missing>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${maven.exec.plugin.version}</version>
-                        <executions>
-                            <!-- Create production bundle -->
-                            <execution>
-                                <id>webpack</id>
-                                <phase>prepare-package</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>node</executable>
-                                    <arguments>
-                                        <argument>node_modules/.bin/webpack</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 </project>

@@ -64,6 +64,7 @@ public class UpdateImportsMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
+        ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         Assert.assertTrue(mojo.getUpdater().getFlowPackage().mkdirs());
 
         createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
