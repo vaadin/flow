@@ -95,7 +95,7 @@ public class WebComponentGenerator {
      */
     public static String generateModule(String tag,
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI, boolean generateUiImport) {
+            String frontendURI) {
         Objects.requireNonNull(tag);
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
@@ -104,7 +104,7 @@ public class WebComponentGenerator {
                 .getPropertyDataSet();
 
         Map<String, String> replacements = getReplacementsMap(tag,
-                propertyDataSet, frontendURI, generateUiImport);
+                propertyDataSet, frontendURI, true);
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -136,6 +136,27 @@ public class WebComponentGenerator {
                         : "");
 
         return replacements;
+    }
+
+    private static String generateModule(String tag,
+            WebComponentConfiguration<? extends Component> webComponentConfiguration,
+            String frontendURI, boolean generateUiImport) {
+        Objects.requireNonNull(tag);
+        Objects.requireNonNull(webComponentConfiguration);
+        Objects.requireNonNull(frontendURI);
+
+        Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
+                .getPropertyDataSet();
+
+        Map<String, String> replacements = getReplacementsMap(tag,
+                propertyDataSet, frontendURI, generateUiImport);
+
+        String template = getTemplate();
+        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+            template = template.replace("_" + replacement.getKey() + "_",
+                    replacement.getValue());
+        }
+        return template;
     }
 
     private static String getPropertyDefinitions(
