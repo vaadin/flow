@@ -17,8 +17,6 @@ package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -29,73 +27,43 @@ import com.vaadin.flow.internal.ReflectTools;
  * Produces a web component configuration for the exporter class.
  *
  * @author Vaadin Ltd
- *
  */
 public final class WebComponentConfigurationFactory implements Serializable {
-    private static final ReentrantLock lock = new ReentrantLock();
-    private static WebComponentConfiguration<? extends Component> currentConfiguration;
 
     /**
+     * Creates a {@link WebComponentConfiguration} from the provided
+     * {@link WebComponentExporter} class.
      *
      * @param clazz
-     * @return
+     *          exporter class, not {@code null}
+     * @return  a web component configuration matching the instance of
+     *          received {@code clazz}
+     * @throws NullPointerException
+     *          when {@code clazz} is {@code null}
      */
-    public static WebComponentConfiguration<? extends Component> create(
-            Class<? extends WebComponentExporter<? extends Component>> clazz) {
+    public WebComponentConfiguration<? extends Component> create(Class<?
+            extends WebComponentExporter<? extends Component>> clazz) {
         Objects.requireNonNull(clazz, "Parameter 'clazz' cannot be null!");
 
-        lock.lock();
-        try {
-            currentConfiguration = null;
+        WebComponentExporter<? extends Component> exporter = ReflectTools
+                .createInstance(clazz);
 
-            // the constructor will call #setConfiguration in order to patch
-            // in the WebComponentConfiguration. Exporter instance is not
-            // needed (but it is kept alive by the WebComponentConfiguration)
-            WebComponentExporter<? extends Component> exporter = ReflectTools
-                    .createInstance(clazz);
-
-            if (currentConfiguration == null) {
-                throw new IllegalStateException(String.format("Constructor of" +
-                        " %s did not supply %s by calling setConfiguration. " +
-                                "The constructor must provide an " +
-                                "implementation.",
-                        clazz.getCanonicalName(),
-                        WebComponentConfiguration.class.getSimpleName()));
-            }
-
-            final WebComponentConfiguration<? extends Component> configuration =
-                    currentConfiguration;
-            return configuration;
-        } finally {
-            lock.unlock();
-        }
+        return create(exporter);
     }
 
     /**
-     * @return
+     * Creates a {@link WebComponentConfiguration} from the provided
+     * {@link WebComponentExporter} instances.
+     *
+     * @param exporter
+     *          exporter instance, not {@code null}
+     * @return  a web component configuration matching the instance of
+     *          received {@code clazz}
+     * @throws NullPointerException
+     *          when {@code exporter} is {@code null}
      */
-    public static Optional<WebComponentConfiguration<? extends Component>> getPreviousConfiguration() {
-        lock.lock();
-        try {
-            return Optional.ofNullable(currentConfiguration);
-        } finally {
-            lock.unlock();
-        }
-    }
-
-
-    /**
-     * @param configuration
-     */
-    public static void setConfiguration(
-            WebComponentConfiguration<? extends Component> configuration) {
-        lock.lock();
-        try {
-            Objects.requireNonNull(configuration, "Parameter 'configuration' " +
-                    "cannot be null!");
-            currentConfiguration = configuration;
-        } finally {
-            lock.unlock();
-        }
+    public WebComponentConfiguration<? extends Component> create(WebComponentExporter<?
+            extends Component> exporter) {
+        return new WebComponentExporter.WebComponentConfigurationImpl<>(exporter);
     }
 }

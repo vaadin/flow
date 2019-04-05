@@ -91,7 +91,6 @@ public abstract class WebComponentExporter<C extends Component>
     private final String tag;
     private final Class<C> componentClass;
     private Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
-    private WebComponentConfigurationImpl configuration;
 
     /**
      * <b>Do not implement this constructor unless this the extending class
@@ -112,9 +111,6 @@ public abstract class WebComponentExporter<C extends Component>
 
         assert componentClass != null : "Failed to determine component class "
                 + "from WebComponentExporter's type parameter.";
-
-        WebComponentConfigurationFactory.setConfiguration(
-                new WebComponentConfigurationImpl());
     }
 
     private <P extends Serializable> PropertyConfiguration<C, P> addProperty(
@@ -255,17 +251,22 @@ public abstract class WebComponentExporter<C extends Component>
         return SUPPORTED_TYPES.contains(clazz);
     }
 
-    private class WebComponentConfigurationImpl implements WebComponentConfiguration<C> {
+    public static class WebComponentConfigurationImpl<C extends Component> implements WebComponentConfiguration<C> {
+        private WebComponentExporter<C> exporter;
+
+        public WebComponentConfigurationImpl(WebComponentExporter<C> exporter) {
+            this.exporter = exporter;
+        }
 
         @Override
         public boolean hasProperty(String propertyName) {
-            return propertyConfigurationMap.containsKey(propertyName);
+            return this.exporter.propertyConfigurationMap.containsKey(propertyName);
         }
 
         @Override
         public Class<? extends Serializable> getPropertyType(String propertyName) {
-            if (propertyConfigurationMap.containsKey(propertyName)) {
-                return propertyConfigurationMap.get(propertyName).getPropertyData()
+            if (this.exporter.propertyConfigurationMap.containsKey(propertyName)) {
+                return this.exporter.propertyConfigurationMap.get(propertyName).getPropertyData()
                         .getType();
             } else {
                 return null;
@@ -274,12 +275,12 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         public Class<C> getComponentClass() {
-            return componentClass;
+            return this.exporter.componentClass;
         }
 
         @Override
         public Set<PropertyData<? extends Serializable>> getPropertyDataSet() {
-            return propertyConfigurationMap.values().stream()
+            return this.exporter.propertyConfigurationMap.values().stream()
                     .map(PropertyConfigurationImpl::getPropertyData)
                     .collect(Collectors.toSet());
         }
@@ -305,23 +306,23 @@ public abstract class WebComponentExporter<C extends Component>
              * all the exporters.
              */
             String componentTag = componentReference.getElement().getTag();
-            if (tag.equals(componentTag)) {
+            if (this.exporter.tag.equals(componentTag)) {
                 throw new IllegalStateException(String.format(
                         "WebComponentExporter '%s' cannot share a tag with the "
                                 + "%s instance being exported! Change the tag "
                                 + "from '%s' to something else.",
                         this.getClass().getCanonicalName(),
                         componentReference.getClass().getCanonicalName(),
-                        tag));
+                        this.exporter.tag));
             }
 
             WebComponentBinding<C> binding =
                     new WebComponentBinding<>(componentReference);
 
-            propertyConfigurationMap
+            this.exporter.propertyConfigurationMap
                     .values().forEach(binding::bindProperty);
 
-            configureInstance(new WebComponent<>(binding, element),
+            this.exporter.configureInstance(new WebComponent<>(binding, element),
                     binding.getComponent());
 
             binding.updatePropertiesToComponent();
@@ -331,7 +332,7 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         public String getTag() {
-            return tag;
+            return this.exporter.tag;
         }
     }
 }
