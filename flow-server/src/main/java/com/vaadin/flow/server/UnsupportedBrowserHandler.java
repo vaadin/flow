@@ -144,6 +144,8 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
     private void writeIE11InDevelopmentModePage(VaadinResponse response) throws IOException {
         Writer page = response.getWriter();
 
+
+
         // @formatter:off
         page.write(
                 "<html>"
@@ -151,10 +153,17 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                         + "<body style=\"width:34em;\"><h1>Internet Explorer 11 requires Vaadin Flow to be run in production mode.</h1>"
                         + "<p>To test your app with IE11, you need make a production build and run the app in production mode.</p>"
                         + "<p>The production build is made with e.g. a Maven profile that adds the <code>flow-server-production-mode</code> "
-                        + "dependency and executes the following goals for the <code>com.vaadin:vaadin-maven-plugin</code>"
-                        + "<ul><li><code>copy-production-files</code></li>"
-                        + "<li><code>package-for-production</code></li></ul></p>"
-                        + "<p>The production mode can be enabled by setting the <code>vaadin.productionMode=true</code> "
+                        + "dependency and executes the following goals for the <code>com.vaadin:vaadin-maven-plugin</code>");
+
+        if (response.getService().getDeploymentConfiguration().isBowerMode()) {
+            page.write("<ul><li><code>copy-production-files</code></li>"
+                    + "<li><code>package-for-production</code></li></ul></p>");
+        } else {
+            page.write("<ul><li><code>update-npm-dependencies</code></li>"
+                    + "<li><code>update-imports</code></li></ul></p>");
+        }
+
+        page.write("<p>The production mode can be enabled by setting the <code>vaadin.productionMode=true</code> "
                         + "property for the deployment configuration using an application or a system property.<p>"
                         + "<p>You can find more information about the production mode from "
                         + "<a href=\"https://vaadin.com/docs/flow/production/tutorial-production-mode-basic.html\">documentation</a>.</p>"
