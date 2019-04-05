@@ -30,8 +30,10 @@ import elemental.json.JsonValue;
 
 /**
  * @param <C>   {@code component} being exported
+ *
+ * @author Vaadin Ltd.
  */
-public final class WebComponent<C extends Component> {
+public final class WebComponent<C extends Component> implements Serializable {
     private static final String UPDATE_PROPERTY = "this" +
             "._updatePropertyFromServer($0, $1);";
     private static final String UPDATE_PROPERTY_NULL = "this" +
@@ -143,10 +145,10 @@ public final class WebComponent<C extends Component> {
      *            type of the property value being set. If the type does not
      *            match the original property type, throws an exception
      */
+    @SuppressWarnings("unchecked")
     public <P extends Serializable> void setProperty(PropertyConfigurationImpl<C, P> propertyConfigurationImpl, P value) {
         Objects.requireNonNull(propertyConfigurationImpl, "Parameter " +
                 "'propertyConfiguration' must not be null!");
-
 
         String propertyName = propertyConfigurationImpl.getPropertyData().getName();
 

@@ -18,22 +18,19 @@ package com.vaadin.flow.component;
 
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonSerializer;
 import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.webcomponent.PropertyData;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import elemental.json.JsonValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class WebComponentExporterTest {
@@ -44,6 +41,7 @@ public class WebComponentExporterTest {
     private WebComponentConfiguration<MyComponent> config;
 
     @Before
+    @SuppressWarnings("unchecked")
     public void setUp() {
         exporter = new MyComponentExporter();
         config = (WebComponentConfiguration<MyComponent>)
@@ -76,11 +74,11 @@ public class WebComponentExporterTest {
     public void addProperty_propertyWithTheSameNameGetsOverwritten() {
         exporter.addProperty("int", 1);
 
-        assertTrue(config.hasProperty("int"));
+        Assert.assertTrue(config.hasProperty("int"));
 
         exporter.addProperty("int", 2);
 
-        assertEquals("Builder should have one property", 1,
+        Assert.assertEquals("Builder should have one property", 1,
                 config.getPropertyDataSet().size());
 
         assertProperty(config, "int", 2);
@@ -88,7 +86,7 @@ public class WebComponentExporterTest {
 
     @Test
     public void configuration_getTag() {
-        assertEquals(TAG, config.getTag());
+        Assert.assertEquals(TAG, config.getTag());
     }
 
     @Test
@@ -98,10 +96,10 @@ public class WebComponentExporterTest {
         exporter.addProperty("boolean", true);
         exporter.addProperty("double", 1.0);
 
-        assertEquals(Integer.class, config.getPropertyType("int"));
-        assertEquals(String.class, config.getPropertyType("string"));
-        assertEquals(Boolean.class, config.getPropertyType("boolean"));
-        assertEquals(Double.class, config.getPropertyType("double"));
+        Assert.assertEquals(Integer.class, config.getPropertyType("int"));
+        Assert.assertEquals(String.class, config.getPropertyType("string"));
+        Assert.assertEquals(Boolean.class, config.getPropertyType("boolean"));
+        Assert.assertEquals(Double.class, config.getPropertyType("double"));
     }
 
     @Test
@@ -112,11 +110,11 @@ public class WebComponentExporterTest {
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class));
 
-        assertNotNull(binding);
+        Assert.assertNotNull(binding);
 
         binding.updateProperty("int", 1);
 
-        assertEquals("Component should have been updated", 1,
+        Assert.assertEquals("Component should have been updated", 1,
                 binding.getComponent().getValue());
     }
 
@@ -129,16 +127,17 @@ public class WebComponentExporterTest {
 
         Set<PropertyData<?>> set = config.getPropertyDataSet();
 
-        assertEquals(4, set.size());
+        Assert.assertEquals(4, set.size());
     }
 
     @Test
     public void configuration_getComponentClass() {
-        assertEquals("Component class should be MyComponent.class",
+        Assert.assertEquals("Component class should be MyComponent.class",
                 MyComponent.class, config.getComponentClass());
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void configuration_bindProxy_withInstanceConfigurator() {
         exporter = new MyComponentExporter() {
             @Override
@@ -155,10 +154,10 @@ public class WebComponentExporterTest {
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class));
 
-        assertNotNull("Binding should not be null", binding);
-        assertNotNull("Binding's component should not be null",
+        Assert.assertNotNull("Binding should not be null", binding);
+        Assert.assertNotNull("Binding's component should not be null",
                 binding.getComponent());
-        assertTrue("InstanceConfigurator should have set 'flip' to true",
+        Assert.assertTrue("InstanceConfigurator should have set 'flip' to true",
                 binding.getComponent().getFlip());
     }
 
@@ -168,14 +167,15 @@ public class WebComponentExporterTest {
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class));
 
-        assertNotNull("Binding should not be null", binding);
-        assertNotNull("Binding's component should not be null",
+        Assert.assertNotNull("Binding should not be null", binding);
+        Assert.assertNotNull("Binding's component should not be null",
                 binding.getComponent());
-        assertFalse("'flip' should have been false",
+        Assert.assertFalse("'flip' should have been false",
                 binding.getComponent().getFlip());
     }
 
     @Test(expected = IllegalStateException.class)
+    @SuppressWarnings("unchecked")
     public void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
         SharedTagExporter sharedTagExporter = new SharedTagExporter();
         WebComponentConfiguration<SharedTagComponent> sharedConfig =
@@ -193,12 +193,74 @@ public class WebComponentExporterTest {
         exporter.addProperty("boolean", true);
         exporter.addProperty("double", 1.0);
 
-        assertTrue(config.hasProperty("int"));
-        assertTrue(config.hasProperty("string"));
-        assertTrue(config.hasProperty("boolean"));
-        assertTrue(config.hasProperty("double"));
+        Assert.assertTrue(config.hasProperty("int"));
+        Assert.assertTrue(config.hasProperty("string"));
+        Assert.assertTrue(config.hasProperty("boolean"));
+        Assert.assertTrue(config.hasProperty("double"));
 
-        assertFalse(config.hasProperty("does-not-exist"));
+        Assert.assertFalse(config.hasProperty("does-not-exist"));
+    }
+
+    @Test
+    public void exporter_hashCode() {
+        MyComponentExporter myComponentExporter1 = new MyComponentExporter();
+        MyComponentExporter myComponentExporter2 = new MyComponentExporter();
+
+        SimilarExporter1 similarExporter1 = new SimilarExporter1();
+        SimilarExporter2 similarExporter2 = new SimilarExporter2();
+        SimilarExporter3 similarExporter3 = new SimilarExporter3();
+
+        Assert.assertEquals("Exporters of the same class should " +
+                        "have same hashCode",
+                myComponentExporter1.hashCode(),
+                myComponentExporter2.hashCode());
+
+        Assert.assertNotEquals("Exporters with different tags should have " +
+                        "not have same hashCodes",
+                myComponentExporter1.hashCode(),
+                similarExporter1.hashCode());
+
+        Assert.assertNotEquals("Exporters with same tag, but different " +
+                        "properties should not have same hashCodes",
+                similarExporter1.hashCode(),
+                similarExporter2.hashCode());
+
+        Assert.assertEquals("Exporters with same tag and same properties " +
+                        "but different defaults should have the same hashCode",
+                similarExporter2.hashCode(),
+                similarExporter3.hashCode());
+    }
+
+    @Test
+    public void exporter_equals() {
+        MyComponentExporter myComponentExporter1 = new MyComponentExporter();
+        MyComponentExporter myComponentExporter2 = new MyComponentExporter();
+
+        SimilarExporter1 similarExporter1 = new SimilarExporter1();
+        SimilarExporter2 similarExporter2 = new SimilarExporter2();
+        SimilarExporter3 similarExporter3 = new SimilarExporter3();
+
+        Assert.assertEquals("Exporters of the same class should " +
+                        "be equal",
+                myComponentExporter1,
+                myComponentExporter2);
+
+        Assert.assertNotEquals("Exporters with different tags should have " +
+                        "not be equal",
+                myComponentExporter1,
+                similarExporter1);
+
+        Assert.assertNotEquals("Exporters with same tag, but different " +
+                        "properties should not be equal",
+                similarExporter1,
+                similarExporter2);
+
+        // even though the classes are different, they define the same
+        // embeddable web component
+        Assert.assertEquals("Exporters with same tag and same properties " +
+                        "but different defaults should be equal",
+                similarExporter2,
+                similarExporter3);
     }
 
     @Tag("test")
@@ -251,11 +313,47 @@ public class WebComponentExporterTest {
         }
     }
 
-    private static class MyComponentExporter
+    public static class MyComponentExporter
             extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
             super(TAG);
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
+        }
+    }
+
+    public static class SimilarExporter1 extends WebComponentExporter<MyComponent> {
+        public SimilarExporter1() {
+            super("tag");
+            addProperty("string", "dog");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
+        }
+    }
+
+    public static class SimilarExporter2 extends WebComponentExporter<MyComponent> {
+        public SimilarExporter2() {
+            super("tag");
+            addProperty("int", 0);
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
+        }
+    }
+
+    public static class SimilarExporter3 extends WebComponentExporter<MyComponent> {
+        public SimilarExporter3() {
+            super("tag");
+            addProperty("int", 1);
         }
 
         @Override
@@ -287,7 +385,7 @@ public class WebComponentExporterTest {
                 .filter(d -> d.getName().equals(property)).findFirst()
                 .orElse(null);
 
-        assertNotNull("Property " + property + " should not be null", data);
-        assertEquals(value, data.getDefaultValue());
+        Assert.assertNotNull("Property " + property + " should not be null", data);
+        Assert.assertEquals(value, data.getDefaultValue());
     }
 }

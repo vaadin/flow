@@ -71,7 +71,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     }
 
     @Override
-    public void setExporters_gettingBuildersDoesNotAllowAddingMore() {
+    public void setConfigurations_getConfigurationsCallDoesNotChangeSetProtection() {
         // OSGi accepts setting the web components multiple times.
         // NO-OP
     }
@@ -80,12 +80,12 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     public void setBuildersTwice_allSetsAcceptedLastSetValid() {
         Assert.assertTrue("Registry should have accepted the " +
                         "WebComponentExporters",
-                registry.setExporters(asSet(MyComponentExporter.class)));
+                registry.setConfigurations(createConfigurations(MyComponentExporter.class)));
 
         Assert.assertTrue(
                 "OSGi registry should have accept the second set of " +
                         "WebComponentExporters.",
-                registry.setExporters(asSet(UserBoxExporter.class)));
+                registry.setConfigurations(createConfigurations(UserBoxExporter.class)));
 
         Assert.assertEquals("Registry should contain only one builder",
                 1, registry.getConfigurations().size());
@@ -96,7 +96,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     }
 
     @Override
-    public void hasExporters() {
+    public void hasConfigurations() {
         // being a singleton caused this test to fail when inherited
 
         OSGiWebComponentConfigurationRegistry registry =
@@ -104,7 +104,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
 
         Assert.assertFalse("Should have no exporters", registry.hasConfigurations());
 
-        registry.setExporters(Collections.emptySet());
+        registry.setConfigurations(Collections.emptySet());
 
         Assert.assertTrue("Should have exporters, albeit empty",
                 registry.hasConfigurations());
@@ -124,7 +124,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
                         // same time
                         Thread.sleep(new Random().nextInt(200));
                         return new AtomicBoolean(
-                                registry.setExporters(asSet(
+                                registry.setConfigurations(createConfigurations(
                                         MyComponentExporter.class)));
                     };
                     return callable;
@@ -143,7 +143,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
             results.add(resultFuture.get());
         }
         Assert.assertEquals("All threads should have updated for OSGi", 0,
-                results.stream().filter(result -> result.get() == false)
+                results.stream().filter(result -> !result.get())
                         .count());
     }
 }

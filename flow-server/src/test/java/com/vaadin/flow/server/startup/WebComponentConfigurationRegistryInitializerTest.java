@@ -18,11 +18,14 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,7 +37,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -56,6 +58,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
     private ServletContext servletContext;
     @Mock
     private VaadinService vaadinService;
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
     public void init() {
@@ -75,9 +79,6 @@ public class WebComponentConfigurationRegistryInitializerTest {
         CurrentInstance.clearAll();
     }
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     @Test
     public void onStartUp() throws ServletException {
         initializer.onStartup(
@@ -96,7 +97,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
         // Expect a call to setWebComponents even if we have an empty or null
         // set
-        Mockito.verify(registry).setExporters(Collections.emptySet());
+        Mockito.verify(registry).setConfigurations(Collections.emptySet());
     }
 
     @Test
@@ -120,13 +121,16 @@ public class WebComponentConfigurationRegistryInitializerTest {
             Assert.fail(
                     "WebComponentRegistryInitializer.onStartup should not throw with empty set");
         }
-        Mockito.verify(registry).setExporters(Collections.emptySet());
+        Mockito.verify(registry).setConfigurations(Collections.emptySet());
     }
 
     @Test
     public void duplicateNamesFoundOnStartUp_exceptionIsThrown()
             throws ServletException {
-        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expect(ServletException.class);
+        expectedEx.expectCause(CauseMatcher
+                .ex(IllegalArgumentException.class)
+                .msgStartsWith("Found two WebComponentExporter classes"));
         initializer.onStartup(
                 Stream.of(MyComponentExporter.class, DuplicateTagExporter.class)
                         .collect(Collectors.toSet()),
@@ -134,21 +138,15 @@ public class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void missingTagAnnotation_exceptionIsThrown()
-            throws ServletException {
-        expectedEx.expect(IllegalArgumentException.class);
-        initializer.onStartup(Collections.singleton(NoTagExporter.class),
-                servletContext);
-    }
-
-    @Test
     public void invalidCustomElementName_initializerThrowsException()
             throws ServletException {
-        expectedEx.expect(InvalidCustomElementNameException.class);
-        expectedEx.expectMessage(String.format(
+        expectedEx.expect(ServletException.class);
+        expectedEx.expectCause(CauseMatcher
+                .ex(InvalidCustomElementNameException.class)
+        .msgEquals(String.format(
                 "Tag name '%s' given by '%s' is not a valid custom element "
                         + "name.",
-                "invalid", InvalidNameExporter.class.getCanonicalName()));
+                "invalid", InvalidNameExporter.class.getCanonicalName())));
 
         initializer.onStartup(Collections.singleton(InvalidNameExporter.class),
                 servletContext);
@@ -178,7 +176,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
     private static class InvalidName extends Component {
     }
 
-    private static class MyComponentExporter
+    public static class MyComponentExporter
             extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
@@ -196,7 +194,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
     }
 
-    private static class UserBoxExporter
+    public static class UserBoxExporter
             extends WebComponentExporter<UserBox> {
 
         public UserBoxExporter() {
@@ -210,7 +208,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
     }
 
-    private static class InvalidNameExporter
+    public static class InvalidNameExporter
             extends WebComponentExporter<InvalidName> {
 
         public InvalidNameExporter() {
@@ -223,7 +221,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
     }
 
-    private static class ExtendingExporter extends MyComponentExporter {
+    public static class ExtendingExporter extends MyComponentExporter {
 
         public ExtendingExporter() {
             super("tag-1");
@@ -231,7 +229,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
     }
 
-    private static class SiblingExporter
+    public static class SiblingExporter
             extends WebComponentExporter<MyComponent> {
 
         public SiblingExporter() {
@@ -245,7 +243,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
     }
 
-    private static class DuplicateTagExporter
+    public static class DuplicateTagExporter
             extends WebComponentExporter<MyComponent> {
 
         public DuplicateTagExporter() {
@@ -258,8 +256,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
     }
 
-    @Tag("tag-2")
-    private static class DuplicatePropertyExporter
+    public static class DuplicatePropertyExporter
             extends WebComponentExporter<MyComponent> {
 
         public DuplicatePropertyExporter() {
@@ -274,16 +271,54 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
     }
 
-    private static class NoTagExporter
-            extends WebComponentExporter<MyComponent> {
-
-        public NoTagExporter() {
-            super(null);
+    public static class CauseMatcher extends BaseMatcher<Throwable> {
+        private final Class<? extends Throwable> throwableType;
+        private boolean startsWith = false;
+        private String matchable = null;
+        private CauseMatcher(Class<? extends Throwable> throwableType) {
+            this.throwableType = throwableType;
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+        public boolean matches(Object o) {
+            Throwable throwable = (Throwable) o;
 
+            if (!throwableType.equals(throwable.getClass())) {
+                return false;
+            }
+
+            if (matchable != null) {
+                if (startsWith) {
+                    return throwable.getMessage().startsWith(matchable);
+                } else {
+                    return throwable.getMessage().equals(matchable);
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText(String.format("<%s: %s%s>",
+                    throwableType.getCanonicalName(),
+                    matchable,
+                    (startsWith ? "..." : "")));
+        }
+
+        public static CauseMatcher ex(Class<? extends Throwable> throwableType) {
+            return new CauseMatcher(throwableType);
+        }
+
+        public CauseMatcher msgStartsWith(String str) {
+            startsWith = true;
+            matchable = str;
+            return this;
+        }
+
+        public CauseMatcher msgEquals(String str) {
+            startsWith = false;
+            matchable = str;
+            return this;
         }
     }
 }

@@ -18,22 +18,20 @@ package com.vaadin.flow.server.webcomponent;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 
 /**
  * Data collector component for collecting web components in an OSGi
  * environment.
+ *
+ * @author Vaadin Ltd.
  */
 public class OSGiWebComponentConfigurationRegistry extends WebComponentConfigurationRegistry {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public boolean setExporters(Set<Class<?
-                extends WebComponentExporter<? extends Component>>> exporters) {
+    public boolean setConfigurations(Set<WebComponentConfiguration<? extends Component>> configurations) {
 
-        updateRegistry(exporters);
+        updateRegistry(configurations);
         return true;
     }
 }

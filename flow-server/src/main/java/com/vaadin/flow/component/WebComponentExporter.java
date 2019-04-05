@@ -27,15 +27,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
-import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
-import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
+import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.UnsupportedPropertyTypeException;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import elemental.json.JsonValue;
 
@@ -78,6 +78,7 @@ import elemental.json.JsonValue;
  *
  * @param <C>
  *            type of the component to export
+ * @author Vaadin Ltd.
  */
 public abstract class WebComponentExporter<C extends Component>
         implements Serializable {
@@ -100,6 +101,7 @@ public abstract class WebComponentExporter<C extends Component>
      *
      * @param tag   tag name of the web component created by the exporter
      */
+    @SuppressWarnings("unchecked")
     protected WebComponentExporter(String tag) {
         Objects.requireNonNull(tag,
                 "Parameter 'tag' must not be null!");
@@ -250,6 +252,46 @@ public abstract class WebComponentExporter<C extends Component>
         return SUPPORTED_TYPES.contains(clazz);
     }
 
+    @Override
+    public int hashCode() {
+        Object[] objs = new Object[propertyConfigurationMap.size() + 1];
+
+        objs[0] = tag;
+        int place = 1;
+        for (PropertyConfiguration configuration :
+                propertyConfigurationMap.values()) {
+            objs[place] = configuration;
+            place++;
+        }
+
+        return Objects.hash(objs);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof WebComponentExporter) {
+            WebComponentExporter<?> other = (WebComponentExporter<?>) obj;
+
+            boolean isSame = tag.equals(other.tag);
+            isSame = isSame && (propertyConfigurationMap.size()
+                    == other.propertyConfigurationMap.size());
+
+            if (!isSame) {
+                return false;
+            }
+
+            PropertyConfiguration<?, ?> otherConf;
+            for (String key : propertyConfigurationMap.keySet()) {
+                otherConf = other.propertyConfigurationMap.get(key);
+                if (!propertyConfigurationMap.get(key).equals(otherConf)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     private static class WebComponentConfigurationImpl<C extends Component> implements WebComponentConfiguration<C> {
         private WebComponentExporter<C> exporter;
 
@@ -333,6 +375,28 @@ public abstract class WebComponentExporter<C extends Component>
         public String getTag() {
             return this.exporter.tag;
         }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Class<? extends WebComponentExporter<C>> getExporterClass() {
+            return (Class<? extends WebComponentExporter<C>>) exporter.getClass();
+        }
+
+        @Override
+        public int hashCode() {
+            return exporter.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof WebComponentConfigurationImpl) {
+                WebComponentConfigurationImpl imp =
+                        (WebComponentConfigurationImpl) obj;
+
+                return exporter.equals(imp.exporter);
+            }
+            return false;
+        }
     }
 
     /**
@@ -357,10 +421,18 @@ public abstract class WebComponentExporter<C extends Component>
         public WebComponentConfiguration<? extends Component> create(Class<?
                 extends WebComponentExporter<? extends Component>> clazz) {
             Objects.requireNonNull(clazz, "Parameter 'clazz' cannot be null!");
-
-            WebComponentExporter<? extends Component> exporter = ReflectTools
-                    .createInstance(clazz);
-
+            WebComponentExporter<? extends Component> exporter;
+            try {
+                 exporter = ReflectTools
+                        .createInstance(clazz);
+            }
+            catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(String.format("Unable to " +
+                                "construct %s! Does '%s' define a tag via " +
+                                "super(String) constructor?",
+                        WebComponentConfiguration.class.getSimpleName(),
+                        clazz.getCanonicalName()));
+            }
             return create(exporter);
         }
 

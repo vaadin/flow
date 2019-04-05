@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.Constants;
@@ -281,12 +282,12 @@ public class ServletDeployerTest {
             expect(contextMock.getAttribute(
                     WebComponentConfigurationRegistry.class.getName()))
                             .andAnswer(() -> {
-
-                                WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
-                                };
-                                registry.setExporters(
-                                        (Set) Collections.singleton(
-                                                WebComponentExporter.class));
+                                WebComponentConfigurationRegistry registry =
+                                        new WebComponentConfigurationRegistry() {};
+                                registry.setConfigurations(Collections.singleton(
+                                        new WebComponentExporter
+                                                .WebComponentConfigurationFactory()
+                                                .create(FakeExporter.class)));
 
                                 return registry;
                             }).anyTimes();
@@ -324,5 +325,16 @@ public class ServletDeployerTest {
                 .anyTimes();
         replay(registrationMock);
         return registrationMock;
+    }
+
+    public final static class FakeExporter extends WebComponentExporter<Component> {
+        public FakeExporter() {
+            super("tag");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+
+        }
     }
 }

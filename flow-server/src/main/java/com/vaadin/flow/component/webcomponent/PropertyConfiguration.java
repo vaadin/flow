@@ -22,7 +22,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 
-public interface PropertyConfiguration<C extends Component, P extends Serializable> {
+/**
+ * @param <C>
+ * @param <P>
+ */
+public interface PropertyConfiguration<C extends Component,
+        P extends Serializable> extends Serializable {
 
     /**
      * Sets a Property change handler. {@code onChange} can only be called

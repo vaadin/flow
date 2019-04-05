@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,15 +33,13 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.internal.CustomElementNameValidator;
-import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.theme.Theme;
 
 /**
  * Registry for storing available web component configuration implementations.
  *
- * @since
+ * @author Vaadin Ltd.
  */
 @EmbeddedApplicationAnnotations({ Theme.class, Push.class })
 public class WebComponentConfigurationRegistry implements Serializable {
@@ -52,7 +51,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
-    private boolean exportersSet = false;
+    private boolean configurationsSet = false;
     private HashMap<String, WebComponentConfiguration<? extends Component>> configurationMap =
             new HashMap<>();
 
@@ -93,6 +92,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *            component
      * @return set of {@link WebComponentConfiguration} or an empty set.
      */
+    @SuppressWarnings("unchecked")
     public <T extends Component> Set<WebComponentConfiguration<T>> getConfigurationsByComponentType(
             Class<T> componentClass) {
         lock();
@@ -113,36 +113,42 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *            set of web component configurations to register
      */
     protected void updateRegistry(
-            Set<Class<? extends WebComponentExporter<? extends Component>>> configurations) {
+            Set<WebComponentConfiguration<? extends Component>> configurations) {
         lock();
         try {
             updateConfiguration(configurations);
-            createAllConfigurations(configurations);
+
+            configurationMap =
+                    new HashMap<>(configurations.stream().collect(
+                            Collectors.toMap(
+                                    WebComponentConfiguration::getTag,
+                                    config -> config)));
         } finally {
             unlock();
         }
     }
 
     /**
-     * Registers all available web component exporters to the registry.
+     * Registers all available web component configurations to the registry.
      * <p>
      * This can be done only once and any following set should only return
      * false.
      *
-     * @param exporters
-     *            set of web component exporter classes to register
+     * @param configurations
+     *            set of web component configurations to register. These
+     *            configurations must have both unique and valid tag names.
      * @return true if set successfully or false if not set
      */
-    public boolean setExporters(
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporters) {
+    public boolean setConfigurations(
+            Set<WebComponentConfiguration<? extends Component>> configurations) {
         lock();
         try {
-            if (exportersSet) {
+            if (configurationsSet) {
                 return false;
             }
-            exportersSet = true;
+            configurationsSet = true;
 
-            updateRegistry(exporters);
+            updateRegistry(configurations);
             return true;
         } finally {
             unlock();
@@ -150,11 +156,10 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
-     * Checks if {@link WebComponentExporter WebComponentExporters} have been
-     * set and configurations created.
+     * Checks whether the registry contains any web component configurations.
      *
-     * @return {@code true} if {@link #setExporters(Set)} has been called with
-     *         {@code non-null} value
+     * @return  {@code true} if {@link #setConfigurations(Set)} has been
+     *          called a non-empty set.
      */
     public boolean hasConfigurations() {
         lock();
@@ -242,8 +247,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
         }
     }
 
-    private void updateConfiguration(Set<Class<?
-            extends WebComponentExporter<? extends Component>>> exporterClasses) {
+    private void updateConfiguration(Set<WebComponentConfiguration<? extends Component>> webComponentConfigurations) {
         assertLockHeld();
 
         Optional<Class<? extends Annotation>[]> annotationTypes = AnnotationReader
@@ -253,29 +257,31 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
         HashMap<Class<? extends Annotation>, Annotation> map = new HashMap<>();
 
-        exporterClasses
-                .forEach(exporter -> addEmbeddedApplicationAnnotation(exporter,
-                        annotationTypes.get(), map));
+        webComponentConfigurations.forEach(config ->
+                addEmbeddedApplicationAnnotation(config, annotationTypes.get(),
+                        map));
+
         embeddedAppAnnotations = map;
     }
 
     private void addEmbeddedApplicationAnnotation(
-            Class<? extends WebComponentExporter<? extends Component>> exporter,
+            WebComponentConfiguration<? extends Component> configuration,
             Class<? extends Annotation>[] types,
             Map<Class<? extends Annotation>, Annotation> map) {
         for (Class<? extends Annotation> type : types) {
             Annotation annotation = map.get(type);
-            Annotation exporterAnnotation = exporter.getAnnotation(type);
-            if (exporterAnnotation == null) {
+            Annotation configAnnotation =
+                    configuration.getExporterClass().getAnnotation(type);
+            if (configAnnotation == null) {
                 continue;
             }
-            if (annotation != null && !annotation.equals(exporterAnnotation)) {
+            if (annotation != null && !annotation.equals(configAnnotation)) {
                 throw new IllegalStateException(String.format(
                         "Different annotations of type '%s' are declared by the web component exporters: %s, %s",
                         type.getName(), annotation.toString(),
-                        exporterAnnotation.toString()));
+                        configAnnotation.toString()));
             }
-            map.put(type, exporter.getAnnotation(type));
+            map.put(type, configAnnotation);
         }
 
     }
@@ -295,32 +301,6 @@ public class WebComponentConfigurationRegistry implements Serializable {
         return new OSGiWebComponentConfigurationRegistry();
     }
 
-    /**
-     * Constructs all web component configurations from the collected exporter
-     * classes. Performs tag validation. Tags must be valid html tags and
-     * unique.
-     * <p>
-     * Requires that {@link #lock()} has been called by the current thread.
-     */
-    protected void createAllConfigurations(Set<Class<?
-            extends WebComponentExporter<? extends Component>>> exporterClasses) {
-        assertLockHeld();
-
-        Set<WebComponentConfiguration<? extends Component>> configurations =
-                exporterClasses.stream().map(this::constructConfiguration).collect(Collectors.toSet());
-
-        validateDistinctTagNames(configurations);
-        validateTagNames(configurations);
-
-        configurations.forEach(config -> configurationMap.put(config.getTag(),
-                config));
-    }
-
-    protected WebComponentConfiguration<? extends Component> constructConfiguration(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
-        return new WebComponentExporter.WebComponentConfigurationFactory().create(exporterClass);
-    }
-
     protected void lock() {
         configurationLock.lock();
     }
@@ -331,57 +311,5 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
     protected void assertLockHeld() {
         assert configurationLock.isHeldByCurrentThread();
-    }
-
-    /**
-     * Validate that all web component names are valid custom element names.
-     *
-     * @param configurationSet
-     *            set of web components to validate
-     */
-    protected void validateTagNames(
-            Set<WebComponentConfiguration<? extends Component>> configurationSet) {
-        for (WebComponentConfiguration<? extends Component> configuration :
-                configurationSet) {
-            if (!CustomElementNameValidator
-                    .isCustomElementName(configuration.getTag())) {
-                throw new InvalidCustomElementNameException(String.format(
-                        "Tag name '%s' given by '%s' is not a valid custom "
-                                + "element name.",
-                        configuration.getTag(),
-                        configuration.getClass().getCanonicalName()));
-            }
-        }
-    }
-
-    /**
-     * Validate that we have exactly one web component exporter per tag name.
-     *
-     * @param configurationSet
-     *            set of web components to validate
-     */
-    protected void validateDistinctTagNames(
-            Set<WebComponentConfiguration<? extends Component>> configurationSet) {
-        long count = configurationSet.stream()
-                .map(WebComponentConfiguration::getTag)
-                .distinct().count();
-        if (configurationSet.size() != count) {
-            Map<String, WebComponentConfiguration<? extends Component>> items =
-                    new HashMap<>();
-            for (WebComponentConfiguration<? extends Component> configuration :
-                    configurationSet) {
-                String tag = configuration.getTag();
-                if (items.containsKey(tag)) {
-                    String message = String.format(
-                            "Found two %s classes '%s' and '%s' for the tag "
-                                    + "name '%s'. Tag must be unique.",
-                            WebComponentExporter.class.getSimpleName(),
-                            items.get(tag).getClass().getCanonicalName(),
-                            configuration.getClass().getCanonicalName(), tag);
-                    throw new IllegalArgumentException(message);
-                }
-                items.put(tag, configuration);
-            }
-        }
     }
 }

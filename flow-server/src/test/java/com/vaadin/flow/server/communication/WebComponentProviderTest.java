@@ -20,9 +20,6 @@ import static org.mockito.Mockito.times;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,7 +41,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
@@ -136,7 +132,7 @@ public class WebComponentProviderTest {
 
     @Test
     public void webComponentGenerator_responseGetsResult() throws IOException {
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 MyComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
@@ -163,7 +159,7 @@ public class WebComponentProviderTest {
             throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 MyComponentExporter.class, OtherComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
@@ -196,7 +192,7 @@ public class WebComponentProviderTest {
 
     @Test
     public void setExporters_exportersHasNoTheme_themeIsNull() {
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 MyComponentExporter.class, OtherComponentExporter.class);
 
         Assert.assertFalse(registry
@@ -212,21 +208,21 @@ public class WebComponentProviderTest {
 
     @Test(expected = IllegalStateException.class)
     public void setExporters_exportersHasVariousThemes_throws() {
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
                 AnotherThemedComponentExporter.class);
     }
 
     @Test(expected = IllegalStateException.class)
     public void setExporters_exportersHasVariousPushes_throws() {
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
                 AnotherPushComponentExporter.class);
     }
 
     @Test
     public void setExporters_exportersHasOneThemes_themeIsSet() {
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class, MyComponentExporter.class);
         Assert.assertEquals(MyTheme.class, registry
                 .getEmbeddedApplicationAnnotation(Theme.class).get().value());
@@ -234,7 +230,7 @@ public class WebComponentProviderTest {
 
     @Test
     public void setExporters_exportersHasOnePush_pushIsSet() {
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class, MyComponentExporter.class);
         Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
                 .isPresent());
@@ -242,7 +238,7 @@ public class WebComponentProviderTest {
 
     @Test
     public void setExporters_exportersHasSameThemeDeclarations_themeIsSet() {
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
         Assert.assertEquals(MyTheme.class, registry
@@ -251,14 +247,14 @@ public class WebComponentProviderTest {
 
     @Test
     public void setExporters_exportersHasSamePushDeclarations_pushIsSet() {
-        WebComponentConfigurationRegistry registry = setupExporters(
+        WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
         Assert.assertEquals(PushMode.AUTOMATIC, registry
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
 
-    private WebComponentConfigurationRegistry setupExporters(
+    private WebComponentConfigurationRegistry setupConfigurations(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
         WebComponentConfigurationRegistry registry = setUpRegistry();
 
@@ -266,7 +262,11 @@ public class WebComponentProviderTest {
                                 extends Component>>> set =
                 Stream.of(exporters).collect(Collectors.toSet());
 
-        registry.setExporters(set);
+        WebComponentExporter.WebComponentConfigurationFactory factory =
+                new WebComponentExporter.WebComponentConfigurationFactory();
+
+        registry.setConfigurations(set.stream().map(factory::create)
+                .collect(Collectors.toSet()));
 
         return registry;
     }
@@ -288,7 +288,7 @@ public class WebComponentProviderTest {
     public static class MyComponent extends Component {
     }
 
-    private static class MyComponentExporter
+    public static class MyComponentExporter
             extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
@@ -305,7 +305,7 @@ public class WebComponentProviderTest {
     public static class OtherComponent extends Component {
     }
 
-    private static class OtherComponentExporter
+    public static class OtherComponentExporter
             extends WebComponentExporter<OtherComponent> {
 
         public OtherComponentExporter() {
@@ -320,7 +320,7 @@ public class WebComponentProviderTest {
 
     @Push
     @Theme(MyTheme.class)
-    private static class ThemedComponentExporter
+    public static class ThemedComponentExporter
             extends WebComponentExporter<Component> {
         public ThemedComponentExporter() {
             super ("foo");
@@ -334,7 +334,7 @@ public class WebComponentProviderTest {
 
     @Theme(MyTheme.class)
     @Push(value = PushMode.AUTOMATIC)
-    private static class SameThemedComponentExporter
+    public static class SameThemedComponentExporter
             extends WebComponentExporter<Component> {
         public SameThemedComponentExporter() {
             super ("foo");
@@ -347,7 +347,7 @@ public class WebComponentProviderTest {
     }
 
     @Push(value = PushMode.DISABLED)
-    private static class AnotherPushComponentExporter
+    public static class AnotherPushComponentExporter
             extends WebComponentExporter<Component> {
         public AnotherPushComponentExporter() {
             super ("foo-bar");
@@ -360,7 +360,7 @@ public class WebComponentProviderTest {
     }
 
     @Theme(AnotherTheme.class)
-    private static class AnotherThemedComponentExporter
+    public static class AnotherThemedComponentExporter
             extends WebComponentExporter<Component> {
         public AnotherThemedComponentExporter() {
             super ("foo-bar");

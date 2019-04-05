@@ -17,9 +17,13 @@
 package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -30,6 +34,7 @@ import com.vaadin.flow.server.webcomponent.PropertyData;
  * the {@link WebComponentBinding}.
  *
  * @param <C> type of the component being exported
+ * @author Vaadin Ltd.
  */
 public interface WebComponentConfiguration<C extends Component>
         extends Serializable {
@@ -38,7 +43,7 @@ public interface WebComponentConfiguration<C extends Component>
      * Check if the configuration has a property identified by the {@code
      * propertyName}.
      *
-     * @param propertyName  name of the property, not null
+     * @param propertyName name of the property, not null
      * @return has property
      */
     boolean hasProperty(String propertyName);
@@ -47,7 +52,7 @@ public interface WebComponentConfiguration<C extends Component>
      * Retrieve the type of a property's value. If the property is not known,
      * returns {@code null}
      *
-     * @param propertyName  name of the property, not null
+     * @param propertyName name of the property, not null
      * @return property type or null
      */
     Class<? extends Serializable> getPropertyType(String propertyName);
@@ -74,15 +79,15 @@ public interface WebComponentConfiguration<C extends Component>
      * fashion defined by the associated
      * {@link com.vaadin.flow.component.WebComponentExporter}.
      *
-     * @param instantiator  {@link Instantiator} using to construct component
-                            instance
-     * @param element       element which acts as the root element for the
-     *                      {@code component instance}
-     * @return  web component binding which can be used by the web component
-     *          host to communicate with the component it is hosting
+     * @param instantiator {@link Instantiator} using to construct component
+     *                     instance
+     * @param element      element which acts as the root element for the
+     *                     {@code component instance}
+     * @return web component binding which can be used by the web component
+     * host to communicate with the component it is hosting
      */
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
-    Element element);
+                                                     Element element);
 
     /**
      * Retrieves the tag name configured by the
@@ -91,4 +96,12 @@ public interface WebComponentConfiguration<C extends Component>
      * @return tag name, not {@code null}
      */
     String getTag();
+
+    /**
+     * Retrieves the type of the {@link WebComponentExporter} from which this
+     * configuration has been generated.
+     *
+     * @return  web component exporter class
+     */
+    Class<? extends WebComponentExporter<C>> getExporterClass();
 }
