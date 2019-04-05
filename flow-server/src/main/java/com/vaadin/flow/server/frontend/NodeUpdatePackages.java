@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
@@ -167,8 +166,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         return Collections.emptyMap();
     }
 
-    private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes)
-            throws IOException {
+    private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes) {
         JsonObject currentDeps = packageJson.getObject("dependencies");
 
         Set<String> dependencies = new HashSet<>();
@@ -191,7 +189,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         }
     }
 
-    private void updatePackageJsonDevDependencies(JsonObject packageJson) throws IOException {
+    private void updatePackageJsonDevDependencies(JsonObject packageJson) {
         JsonObject currentDeps = packageJson.getObject("devDependencies");
 
         Set<String> dependencies = new HashSet<>();
@@ -210,46 +208,50 @@ public class NodeUpdatePackages extends NodeUpdater {
         }
     }
 
-    private void updateDependencies(List<String> dependencies, String... npmInstallArgs) throws IOException {
-        List<String> command = new ArrayList<>(5 + dependencies.size());
-
-        ProcessBuilder builder = new ProcessBuilder(command);
+    private void updateDependencies(List<String> dependencies,
+            String... npmInstallArgs) {
+        ProcessBuilder builder = new ProcessBuilder(
+                getNpmCommand(dependencies, npmInstallArgs));
         builder.directory(npmFolder);
-
-        if (!DevModeHandler.UNIX_OS) {
-            command.add("npm.cmd");
-        } else {
-            builder.environment().put("PATH", builder.environment().get("PATH") + ":/usr/local/bin");
-            command.add("npm");
+        if (DevModeHandler.UNIX_OS) {
+            builder.environment().put("PATH",
+                    builder.environment().get("PATH") + ":/usr/local/bin");
+        }
+        if (log().isInfoEnabled()) {
+            log().info(
+                "Updating package.json and installing npm dependencies ...\n {}",
+                String.join(" ", builder.command()));
         }
 
+        Process process = null;
+        try {
+            process = builder.inheritIO().start();
+            int errorCode = process.waitFor();
+            if (errorCode != 0) {
+                log().error(
+                        ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
+            } else {
+                log().info(
+                        "package.json updated and npm dependencies installed. ");
+            }
+        } catch (InterruptedException | IOException e) {
+            log().error("Error running npm", e);
+        } finally {
+            if (process != null) {
+                process.destroyForcibly();
+            }
+        }
+    }
+
+    private List<String> getNpmCommand(List<String> dependencies,
+            String... npmInstallArgs) {
+        List<String> command = new ArrayList<>(5 + dependencies.size());
+        command.add(DevModeHandler.UNIX_OS ? "npm" : "npm.cmd");
         command.add("--no-package-lock");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));
         command.addAll(dependencies);
-
-        String cmd = String.join(" ", command);
-        log().info("Updating package.json and installing npm dependencies ...\n {}", cmd);
-
-        Process process = builder.start();
-        logStream(process.getInputStream());
-        logStream(process.getErrorStream());
-        try {
-            // At this point some linux & node.js (CI) seems not to have finished.
-            // destroying the process and sleeping helps to get green builds
-            process.destroy();
-            if (process.isAlive()) {
-                log().warn("npm process still alive, sleeping 500ms");
-                Thread.sleep(500);
-            }
-            if (process.exitValue() != 0) {
-                log().error(
-                        ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
-            }
-            log().info("package.json updated and npm dependencies installed. ");
-        } catch (Exception e) {
-            log().error("Error destroying webpack process", e);
-        }
+        return command;
     }
 
     private JsonObject getPackageJson() throws IOException {
@@ -271,19 +273,6 @@ public class NodeUpdatePackages extends NodeUpdater {
     private void ensureMissingObject(JsonObject packageJson, String name) {
         if (!packageJson.hasKey(name)) {
             packageJson.put(name, Json.createObject());
-        }
-    }
-
-    private void logStream(InputStream input) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.isEmpty() && !line.contains("npm WARN")) {
-                    log().info(line);
-                }
-            }
-        } catch (IOException e) {
-            log().error("Error when reading from npm stdin/stderr", e);
         }
     }
 }
