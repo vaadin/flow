@@ -112,9 +112,21 @@
 
     _TagCamel_.id = 0;
     
-    document.body.addEventListener('root-element', function(event) {
-        _TagCamel_.rootId = event.detail;
-    });
+    
+    function addRootElementEventListener(){
+        document.body.addEventListener('root-element', function(event) {
+            _TagCamel_.rootId = event.detail;
+        }); 
+    }
+    if ( document.body ){
+        addRootElementEventListener();
+    }
+    else {
+        window.addEventListener('load', function () {
+            addRootElementEventListener();
+        });
+    }
+    
 
     customElements.define(_TagCamel_.is, _TagCamel_);
   </script>
