@@ -20,13 +20,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -59,6 +63,26 @@ public class WebComponentGenerator {
     }
 
     /**
+     * Generate web component html/JS for given exporter class.
+     *
+     * @param exporterType
+     *            web component exporter class, not {@code null}
+     * @param frontendURI
+     *            the frontend resources URI, not {@code null}
+     * @return generated web component html/JS to be served to the client
+     */
+    public static String generateModule(
+            Class<? extends WebComponentExporter<? extends Component>> exporterType,
+            String frontendURI) {
+        Objects.requireNonNull(exporterType);
+        Objects.requireNonNull(frontendURI);
+
+        WebComponentConfiguration<? extends Component> config = new WebComponentConfigurationFactory()
+                .apply(exporterType);
+        return generateModule(getTag(exporterType), config, frontendURI, false);
+    }
+
+    /**
      * Generate web component html/JS for given tag and class.
      *
      * @param tag
@@ -80,7 +104,7 @@ public class WebComponentGenerator {
                 .getPropertyDataSet();
 
         Map<String, String> replacements = getReplacementsMap(tag,
-                propertyDataSet, frontendURI);
+                propertyDataSet, frontendURI, true);
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -91,7 +115,8 @@ public class WebComponentGenerator {
     }
 
     static Map<String, String> getReplacementsMap(String tag,
-            Set<PropertyData<?>> propertyDataSet, String frontendURI) {
+            Set<PropertyData<?>> propertyDataSet, String frontendURI,
+            boolean generateUiImport) {
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);
@@ -105,7 +130,33 @@ public class WebComponentGenerator {
 
         replacements.put("frontend_resources", frontendURI);
 
+        replacements.put("ui_import",
+                generateUiImport
+                        ? "<link rel='import' href='web-component-ui.html'>"
+                        : "");
+
         return replacements;
+    }
+
+    private static String generateModule(String tag,
+            WebComponentConfiguration<? extends Component> webComponentConfiguration,
+            String frontendURI, boolean generateUiImport) {
+        Objects.requireNonNull(tag);
+        Objects.requireNonNull(webComponentConfiguration);
+        Objects.requireNonNull(frontendURI);
+
+        Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
+                .getPropertyDataSet();
+
+        Map<String, String> replacements = getReplacementsMap(tag,
+                propertyDataSet, frontendURI, generateUiImport);
+
+        String template = getTemplate();
+        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+            template = template.replace("_" + replacement.getKey() + "_",
+                    replacement.getValue());
+        }
+        return template;
     }
 
     private static String getPropertyDefinitions(
@@ -167,5 +218,13 @@ public class WebComponentGenerator {
             methods.append("}\n");
         });
         return methods.toString();
+    }
+
+    private static String getTag(
+            Class<? extends WebComponentExporter<? extends Component>> exporterType) {
+        Optional<Tag> tag = AnnotationReader.getAnnotationFor(exporterType,
+                Tag.class);
+        assert tag.isPresent();
+        return tag.get().value();
     }
 }

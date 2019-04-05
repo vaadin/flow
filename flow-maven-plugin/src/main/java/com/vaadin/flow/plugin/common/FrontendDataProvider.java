@@ -31,10 +31,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -49,7 +49,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0.
  */
 public class FrontendDataProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FrontendDataProvider.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(FrontendDataProvider.class);
 
     private final boolean shouldBundle;
     private final boolean shouldMinify;
@@ -94,6 +95,9 @@ public class FrontendDataProvider {
         shellFileImports = resolveShellFileImports(es6SourceDirectory,
                 annotationValuesExtractor, fragments.values().stream()
                         .flatMap(Set::stream).collect(Collectors.toSet()));
+
+        shellFileImports.addAll(generateWebComponentModules(es6SourceDirectory,
+                annotationValuesExtractor));
     }
 
     /**
@@ -118,12 +122,12 @@ public class FrontendDataProvider {
         return shouldMinify;
     }
 
-
     /**
-     * Gets the information whether should the plugin rename the output files by adding
-     * a hash fragment.
+     * Gets the information whether should the plugin rename the output files by
+     * adding a hash fragment.
      *
-     * @return {@code true} if renaming of fragments to include a hash part should be performed
+     * @return {@code true} if renaming of fragments to include a hash part
+     *         should be performed
      */
     public boolean shouldHash() {
         return shouldHash;
@@ -182,6 +186,19 @@ public class FrontendDataProvider {
         return new ThemedURLTranslator(
                 url -> new File(es6SourceDirectory, removeFrontendPrefix(url)),
                 introspector);
+    }
+
+    /**
+     * Gets web component module content generator.
+     *
+     * @param introspector
+     *            the introspector whose classpath will be used for returned
+     *            generator
+     * @return the web component module content generator
+     */
+    protected WebComponentModulesGenerator getWebComponentGenerator(
+            ClassPathIntrospector introspector) {
+        return new WebComponentModulesGenerator(introspector);
     }
 
     private Map<String, Set<File>> resolveFragmentFiles(File es6SourceDirectory,
@@ -328,5 +345,14 @@ public class FrontendDataProvider {
         }
         return String.format("<link rel='import' href='%s'>",
                 importWithReplacedBackslashes);
+    }
+
+    private Collection<File> generateWebComponentModules(File outputDir,
+            AnnotationValuesExtractor annotationValuesExtractor) {
+        WebComponentModulesGenerator generator = getWebComponentGenerator(
+                annotationValuesExtractor);
+        return generator.getExporters().map(
+                exporter -> generator.generateModuleFile(exporter, outputDir))
+                .collect(Collectors.toList());
     }
 }
