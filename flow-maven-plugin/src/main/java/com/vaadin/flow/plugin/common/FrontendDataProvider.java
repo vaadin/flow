@@ -193,7 +193,7 @@ public class FrontendDataProvider {
      *
      * @param introspector
      *            the introspector whose classpath will be used for returned
-     *            translator
+     *            generator
      * @return the web component module content generator
      */
     protected WebComponentModulesGenerator getWebComponentGenerator(

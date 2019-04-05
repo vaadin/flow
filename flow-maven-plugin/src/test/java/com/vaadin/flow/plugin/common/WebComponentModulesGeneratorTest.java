@@ -109,17 +109,17 @@ public class WebComponentModulesGeneratorTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertThat(
-                "Generated module doesn't contian 'age' property definition",
+                "Generated module doesn't contain 'age' property definition",
                 content,
                 CoreMatchers.containsString("\"age\":{\"type\":\"Integer\""));
 
         Assert.assertThat(
-                "Generated module doesn't contian polymer-element import",
+                "Generated module doesn't contain polymer-element import",
                 content, CoreMatchers.containsString(
                         "bower_components/polymer/polymer-element.html"));
 
         Assert.assertThat(
-                "Generated module doesn't contian element registration",
+                "Generated module doesn't contain element registration",
                 content,
                 CoreMatchers.allOf(
                         CoreMatchers
@@ -128,7 +128,7 @@ public class WebComponentModulesGeneratorTest {
                                 "customElements.define(WcFoo.is, WcFoo);"),
                         CoreMatchers.containsString("class WcFoo extends")));
 
-        Assert.assertThat("Generated module contians UI import", content,
+        Assert.assertThat("Generated module contains UI import", content,
                 CoreMatchers.not(
                         CoreMatchers.containsString("web-component-ui.html")));
     }
