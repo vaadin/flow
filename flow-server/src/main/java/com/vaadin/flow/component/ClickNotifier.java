@@ -16,7 +16,6 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 
 import com.vaadin.flow.shared.Registration;
 
@@ -89,7 +88,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
         }
 
         if (key == null) {
-            throw new InvalidParameterException(
+            throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
 

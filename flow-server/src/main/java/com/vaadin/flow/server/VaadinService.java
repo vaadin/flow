@@ -69,7 +69,7 @@ import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrap;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.BundleFilterFactory;
 import com.vaadin.flow.server.startup.FakeBrowser;
@@ -349,7 +349,7 @@ public abstract class VaadinService implements Serializable {
             handlers.add(new PwaHandler(pwaRegistry));
         }
         handlers.add(new WebComponentProvider());
-        handlers.add(new WebComponentBootstrap());
+        handlers.add(new WebComponentBootstrapHandler());
         return handlers;
     }
 

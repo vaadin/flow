@@ -13,17 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.WebComponentExporterAdapter;
+import com.vaadin.flow.theme.Theme;
 
-@Tag("embedded-push")
-public class PushTestExporter implements WebComponentExporter<UpdateServerSideWebComponent> {
-    @Override
-    public void define(WebComponentDefinition<UpdateServerSideWebComponent> definition) {
-        // UpdateServerSideWebComponent does not have any properties
-    }
+@Tag("themed-web-component")
+@Theme(MyTheme.class)
+public class ThemedComponentExporter
+        extends WebComponentExporterAdapter<ThemedComponent> {
 }

@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
@@ -33,8 +32,8 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
  * Request handler that supplies the script/html of the WebComponent matching
@@ -45,8 +44,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     private static final String PATH_PREFIX = "/web-component/";
     private static final String SUFFIX = ".html";
 
-    // exporter class to script/html
-    private Map<Class<?>, String> cache;
+    // tag name -> generated html
+    private Map<String, String> cache;
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -70,8 +69,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
-                WebComponentConfigurationRegistry.getInstance(
+        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration = WebComponentConfigurationRegistry
+                .getInstance(
                         ((VaadinServletRequest) request).getServletContext())
                 .getConfiguration(tag.get());
 
@@ -79,24 +78,25 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             if (cache == null) {
                 cache = new HashMap<>();
             }
-            WebComponentConfiguration<? extends Component> webComponentConfiguration =
-                    optionalWebComponentConfiguration.get();
+            WebComponentConfiguration<? extends Component> webComponentConfiguration = optionalWebComponentConfiguration
+                    .get();
             String generated;
-            if (cache.containsKey(webComponentConfiguration.getClass())) {
-                generated = cache.get(webComponentConfiguration.getClass());
+            if (cache.containsKey(tag.get())) {
+                generated = cache.get(tag.get());
             } else {
                 String uiElement;
                 if (session.getConfiguration().getRootElementId().isEmpty()) {
                     uiElement = "document.body";
                 } else {
                     uiElement = "document.getElementById('"
-                            + session.getConfiguration().getRootElementId()
-                            + "')";
+                        + session.getConfiguration().getRootElementId()
+                        + "')";
                 }
 
-                generated = WebComponentGenerator.generateModule(uiElement,
-                        tag.get(), webComponentConfiguration, request);
-                cache.put(webComponentConfiguration.getClass(), generated);
+                generated = WebComponentGenerator.generateModule(uiElement, tag.get(),
+                        webComponentConfiguration,
+                        getFrontendPath(servletRequest), request);
+                cache.put(tag.get(), generated);
             }
 
             IOUtils.write(generated, response.getOutputStream(),
@@ -107,6 +107,23 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         return true;
+    }
+
+    private static String getFrontendPath(VaadinRequest request) {
+        if (request == null) {
+            return null;
+        }
+        String contextPath = request.getContextPath();
+        if (contextPath.isEmpty()) {
+            return "/frontend/";
+        }
+        if (!contextPath.startsWith("/")) {
+            contextPath = "/" + contextPath;
+        }
+        if (contextPath.endsWith("/")) {
+            contextPath = contextPath.substring(0, contextPath.length() - 1);
+        }
+        return contextPath + "/frontend/";
     }
 
     private static Optional<String> parseTag(String pathInfo) {

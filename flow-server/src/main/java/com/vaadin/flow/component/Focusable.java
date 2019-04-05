@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.security.InvalidParameterException;
-
 /**
  * Represents a component that can gain and lose focus.
  *
@@ -155,7 +153,7 @@ public interface Focusable<T extends Component>
         }
 
         if (key == null) {
-            throw new InvalidParameterException(
+            throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
 

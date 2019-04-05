@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.Objects;
 
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,7 @@ public class PropertyBinding<P extends Serializable> implements Serializable {
         }
 
         if (newValue != null && newValue.getClass() != getType()) {
-            throw new InvalidParameterException(String.format("Parameter " +
+            throw new IllegalArgumentException(String.format("Parameter " +
                             "'newValue' is of the wrong type: onChangeHandler" +
                             " of the property expected to receive %s but " +
                             "found %s instead.",

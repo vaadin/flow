@@ -57,9 +57,9 @@ public class ThemedURLTranslatorTest {
     public void applyTheme_oneThemeIsDiscovered_urlsAreRewritten()
             throws IOException {
         ClassFinder finder = new ReflectionsClassFinder(
-                TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+            TestUtils.getTestResource(TestUtils.SERVER_JAR),
                 TestUtils.getTestResource("annotation-extractor-test/themes-one-theme.jar"),
-                TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+            TestUtils.getTestResource(TestUtils.DATA_JAR));
 
         ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {
         };
@@ -90,14 +90,12 @@ public class ThemedURLTranslatorTest {
     /**
      * No themes in classpath.
      *
-     * @throws IOException
      */
     @Test
-    public void applyTheme_noThemeIsDiscovered_urlsAreRewritten()
-            throws IOException {
+    public void applyTheme_noThemeIsDiscovered_urlsAreRewritten() {
         ClassFinder finder = new ReflectionsClassFinder(
-                TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-                TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+            TestUtils.getTestResource(TestUtils.SERVER_JAR),
+            TestUtils.getTestResource(TestUtils.DATA_JAR));
 
         ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {
         };
@@ -128,11 +126,11 @@ public class ThemedURLTranslatorTest {
      *
      */
     @Test
-    public void applyTheme_twoThemeIsDiscovered_throws() throws IOException {
+    public void applyTheme_twoThemeIsDiscovered_throws() {
         ClassFinder finder = new ReflectionsClassFinder(
-                TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+            TestUtils.getTestResource(TestUtils.SERVER_JAR),
                 TestUtils.getTestResource("annotation-extractor-test/themes-two-themes.jar"),
-                TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+            TestUtils.getTestResource(TestUtils.DATA_JAR));
 
         ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {
         };
@@ -155,7 +153,7 @@ public class ThemedURLTranslatorTest {
     public void applyTheme_when_annotation_on_a_routerLayout() throws Exception {
 
         ClassFinder finder = new ReflectionsClassFinder(
-                TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+            TestUtils.getTestResource(TestUtils.SERVER_JAR),
                 TestUtils.getTestResource("annotation-extractor-test/RouterLayoutTheme.jar"));
 
         ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {

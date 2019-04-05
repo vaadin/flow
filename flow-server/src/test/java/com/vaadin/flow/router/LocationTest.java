@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,8 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.QueryParameters;
+import static org.junit.Assert.assertEquals;
 
 public class LocationTest {
     @Test
@@ -257,4 +254,8 @@ public class LocationTest {
         new Location("..");
     }
 
+    @Test
+    public void pathShouldNotBeEmpty() {
+        assertEquals("/", new Location("").getPathWithQueryParameters());
+    }
 }

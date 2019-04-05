@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -29,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -181,7 +181,7 @@ public class Location implements Serializable {
 
         String params = queryParameters.getQueryString();
         if (params.isEmpty()) {
-            return basePath;
+            return !basePath.isEmpty() ? basePath : "/";
         }
         return basePath + QUERY_SEPARATOR + params;
     }

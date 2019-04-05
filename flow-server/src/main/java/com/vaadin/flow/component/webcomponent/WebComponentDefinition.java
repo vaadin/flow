@@ -27,75 +27,90 @@ import elemental.json.JsonValue;
  * {@link Component} being exported as a web component.
  * <p>
  * Call the {@code addProperty (String, ?)} variants to add properties to the
- * web component. If the component instance needs to be configured further
- * after its creation, or property updates need to be pushed to the client,
- * call {@link #setInstanceConfigurator(InstanceConfigurator)}.
+ * web component.
  *
- * @param <C>   type of the {@code component} being exported.
+ * @param <C>
+ *            type of the {@code component} being exported.
  */
 public abstract class WebComponentDefinition<C extends Component>
         implements Serializable {
 
-    protected abstract  <P extends Serializable> PropertyConfiguration<C, P> addProperty(
+    protected abstract <P extends Serializable> PropertyConfiguration<C, P> addProperty(
             String name, Class<P> type, P defaultValue);
 
     /**
-     * Add an {@code Integer} property to the exported web component
-     * identified by {@code name}.
+     * Add an {@code Integer} property to the exported web component identified
+     * by {@code name}.
      *
      * @param name
-     *          name of the property
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *          default value of property.
+     *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, Integer> addProperty(
-            String name, int defaultValue) {
+    public PropertyConfiguration<C, Integer> addProperty(String name,
+            int defaultValue) {
         return addProperty(name, Integer.class, defaultValue);
     }
 
     /**
-     * Add an {@code Double} property to the exported web component
-     * identified by {@code name}.
+     * Add an {@code Double} property to the exported web component identified
+     * by {@code name}.
      *
      * @param name
-     *          name of the property
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *          default value of property.
+     *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, Double> addProperty(
-            String name, double defaultValue) {
+    public PropertyConfiguration<C, Double> addProperty(String name,
+            double defaultValue) {
         return addProperty(name, Double.class, defaultValue);
     }
 
     /**
-     * Add an {@code String} property to the exported web component
-     * identified by {@code name}.
+     * Add an {@code String} property to the exported web component identified
+     * by {@code name}.
      *
      * @param name
-     *          name of the property
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *          default value of property.
+     *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, String> addProperty(
-            String name, String defaultValue) {
+    public PropertyConfiguration<C, String> addProperty(String name,
+            String defaultValue) {
         return addProperty(name, String.class, defaultValue);
     }
 
     /**
-     * Add an {@code Boolean} property to the exported web component
-     * identified by {@code name}.
+     * Add an {@code Boolean} property to the exported web component identified
+     * by {@code name}.
      *
      * @param name
-     *          name of the property
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *          default value of property.
+     *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, Boolean> addProperty(
-            String name, boolean defaultValue) {
+    public PropertyConfiguration<C, Boolean> addProperty(String name,
+            boolean defaultValue) {
         return addProperty(name, Boolean.class, defaultValue);
     }
 
@@ -104,22 +119,17 @@ public abstract class WebComponentDefinition<C extends Component>
      * identified by {@code name}.
      *
      * @param name
-     *          name of the property
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *          default value of property.
+     *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public PropertyConfiguration<C, JsonValue> addProperty(
-            String name, JsonValue defaultValue) {
+    public PropertyConfiguration<C, JsonValue> addProperty(String name,
+            JsonValue defaultValue) {
         return addProperty(name, JsonValue.class, defaultValue);
     }
-
-    /**
-     * Set {@link InstanceConfigurator} which is invoked when the web
-     * component is being constructed. Allows configuring the produced
-     * instances of {@link WebComponent} and exported {@code component}.
-     *
-     * @param configurator configurator instance
-     */
-    public abstract void  setInstanceConfigurator(InstanceConfigurator<C> configurator);
 }

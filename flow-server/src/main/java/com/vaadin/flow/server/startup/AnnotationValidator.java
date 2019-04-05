@@ -15,27 +15,23 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Validation class that is run during servlet container initialization which
  * checks that specific annotations are not configured wrong.
  */
-@HandlesTypes({ Viewport.class, BodySize.class, Inline.class, Theme.class,
-        Push.class })
+@HandlesTypes({ Viewport.class, BodySize.class, Inline.class })
 public class AnnotationValidator extends AbstractAnnotationValidator
         implements ServletContainerInitializer {
 
@@ -46,7 +42,7 @@ public class AnnotationValidator extends AbstractAnnotationValidator
     }
 
     @Override
-    protected List<Class<?>> getAnnotations() {
+    public List<Class<?>> getAnnotations() {
         return Arrays.asList(
                 this.getClass().getAnnotation(HandlesTypes.class).value());
     }

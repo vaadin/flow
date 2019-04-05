@@ -1,5 +1,5 @@
-<link rel="import" href="_servlet_context_/frontend/bower_components/polymer/polymer-element.html">
-<link rel="import" href="web-component-ui.html">
+<link rel="import" href="_frontend_resources_bower_components/polymer/polymer-element.html">
+_ui_import_
 
 <dom-module id="_TagDash_">
   <template>
@@ -18,37 +18,71 @@
       }
 
       static get properties() {
-        return _Properties_
-
+        return Object.assign({},
+          _Properties_,
+          {
+            _propertyUpdatedFromServer: {
+              type: Object,
+              notify: false,
+              value: {},
+            }
+          });
       }
 
       _PropertyMethods_
 
       _sync(property, newValue) {
         if (this.$server) {
-          this.$server.sync(property, newValue);
+          if (!this._propertyUpdatedFromServer[property]) {
+            this.$server.sync(property, newValue);
+          } else {
+            this._propertyUpdatedFromServer[property] = false;
+          }
+        }
+      }
+
+      _updatePropertyFromServer(property, newValue) {
+        if (this.__proto__.hasOwnProperty(property)) {
+          this._propertyUpdatedFromServer[property] = true;
+          this[property] = newValue;
         }
       }
 
       connectedCallback() {
         super.connectedCallback();
 
-        let flowRoot = _RootElement_;
-        if (!this.$.id) {
-          this._registerElement();
-        } else if (flowRoot && flowRoot.$server) {
-          this.$server.reconnect();
+        if (_TagCamel_.rootId){
+            this._connect(_TagCamel_.rootId);
         }
-
-        console.log('connected', this);
+        else {
+            var self = this;
+            document.body.addEventListener('root-element', function(event) {
+                self._connect(event.detail);
+            });
+        }
       }
 
-      _registerElement() {
+      _connect(rootId){
+          var flowRoot;
+          if ( rootId ){
+              flowRoot = document.getElementById(rootId);
+          }
+          else {
+              flowRoot = document.body;
+          }
+          if (!this.$.id) {
+            this._registerElement(flowRoot);
+          } else if (flowRoot && flowRoot.$server) {
+              this.$server.reconnect();
+          }
+          console.log('connected', this);
+      }
+
+      _registerElement(flowRoot) {
         this.$.id = "_TagCamel_-" + _TagCamel_.id++;
 
         // Needed to make Flow do lookup correctly
         const poller = () => {
-          let flowRoot = _RootElement_;
           if (flowRoot && flowRoot.$server) {
             flowRoot.$ = flowRoot.$ || {};
             flowRoot.$[this.$.id] = this;
@@ -69,12 +103,30 @@
 
       serverConnected() {
         Object.keys(_TagCamel_.properties).forEach(prop => {
-          this._sync(prop, this[prop]);
+          if (prop !== "_propertyUpdatedFromServer") {
+            this._sync(prop, this[prop]);
+          }
         });
       }
     }
 
     _TagCamel_.id = 0;
+
+
+    function addRootElementEventListener(){
+        document.body.addEventListener('root-element', function(event) {
+            _TagCamel_.rootId = event.detail;
+        });
+    }
+    if ( document.body ){
+        addRootElementEventListener();
+    }
+    else {
+        window.addEventListener('load', function () {
+            addRootElementEventListener();
+        });
+    }
+
 
     customElements.define(_TagCamel_.is, _TagCamel_);
   </script>
