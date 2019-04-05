@@ -46,7 +46,8 @@ public class WebComponentExporterTest {
     @Before
     public void setUp() {
         exporter = new MyComponentExporter();
-        config = WebComponentExporter.getWebComponentConfiguration(exporter);
+        config = (WebComponentConfiguration<MyComponent>)
+                new WebComponentExporter.WebComponentConfigurationFactory().create(exporter);
     }
 
     @Test
@@ -147,7 +148,8 @@ public class WebComponentExporterTest {
             }
         };
 
-        config = WebComponentExporter.getWebComponentConfiguration(exporter);
+        config = (WebComponentConfiguration<MyComponent>)
+                new WebComponentExporter.WebComponentConfigurationFactory().create(exporter);
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
@@ -177,7 +179,8 @@ public class WebComponentExporterTest {
     public void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
         SharedTagExporter sharedTagExporter = new SharedTagExporter();
         WebComponentConfiguration<SharedTagComponent> sharedConfig =
-                WebComponentExporter.getWebComponentConfiguration(sharedTagExporter);
+                (WebComponentConfiguration<SharedTagComponent>)
+                        new WebComponentExporter.WebComponentConfigurationFactory().create(sharedTagExporter);
 
         sharedConfig.createWebComponentBinding(new MockInstantiator(),
                 mock(Element.class));

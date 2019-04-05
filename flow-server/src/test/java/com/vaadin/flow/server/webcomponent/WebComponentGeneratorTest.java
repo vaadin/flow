@@ -33,8 +33,9 @@ public class WebComponentGeneratorTest {
 
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("my-component",
-                        WebComponentExporter.getWebComponentConfiguration(
-                                exporter).getPropertyDataSet(), "/foo");
+                        new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
+                                .getPropertyDataSet(),
+                        "/foo");
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -65,7 +66,6 @@ public class WebComponentGeneratorTest {
                         + "\"observer\""));
         Assert.assertTrue(properties.contains(
                 "\"response\":{\"type\":\"String\",\"value\":\"hello\""));
-
     }
 
     public static class MyComponent extends Component {

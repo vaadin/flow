@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
 public class WebComponentConfigurationRegistryInitializerTest {
     private static final String DUPLICATE_PROPERTY_NAME = "one";
 
-    private WebComponentExporterRegistryInitializer initializer;
+    private WebComponentConfigurationRegistryInitializer initializer;
     @Mock
     private WebComponentConfigurationRegistry registry;
     @Mock
@@ -60,7 +60,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        initializer = new WebComponentExporterRegistryInitializer();
+        initializer = new WebComponentConfigurationRegistryInitializer();
         when(servletContext.getAttribute(
                 WebComponentConfigurationRegistry.class.getName()))
                         .thenReturn(registry);

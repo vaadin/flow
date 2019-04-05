@@ -3,4 +3,4 @@ com.vaadin.flow.server.startup.RouteRegistryInitializer
 com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer
 com.vaadin.flow.server.startup.AnnotationValidator
 com.vaadin.flow.server.startup.WebComponentExporterAwareValidator
-com.vaadin.flow.server.startup.WebComponentExporterRegistryInitializer
+com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer

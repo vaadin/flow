@@ -39,7 +39,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * @since
  */
 @HandlesTypes({ WebComponentExporter.class })
-public class WebComponentExporterRegistryInitializer
+public class WebComponentConfigurationRegistryInitializer
         implements ServletContainerInitializer {
 
     @Override
@@ -61,22 +61,12 @@ public class WebComponentExporterRegistryInitializer
                     .map(aClass -> (Class<? extends WebComponentExporter<? extends Component>>) aClass)
                     .collect(Collectors.toSet());
 
-//        validateDistinct(exporterClasses);
-//
-//        Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporterMap = exporterClasses
-//                .stream()
-//                .collect(Collectors.toMap(
-//                        WebComponentExporterRegistryInitializer::getTag,
-//                        aClass -> aClass));
-//
-//        validateComponentName(exporterMap);
-
             instance.setExporters(exporterClasses);
         }
         catch (Exception e) {
             throw new ServletException(String.format(
                     "%s failed to collect %s implementations!",
-                    WebComponentExporterRegistryInitializer.class.getSimpleName(),
+                    WebComponentConfigurationRegistryInitializer.class.getSimpleName(),
                     WebComponentExporter.class.getSimpleName()),
                     e);
         }

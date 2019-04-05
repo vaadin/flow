@@ -39,8 +39,9 @@ public class WebComponentTest {
 
     @Before
     public void init() {
-        webComponent = new WebComponent<>(
-                mock(WebComponentBinding.class),
+        WebComponentBinding<Component> componentBinding =
+                new WebComponentBinding<>(mock(Component.class));
+        webComponent = new WebComponent<>(componentBinding,
                 new Element("tag"));
     }
 
@@ -76,8 +77,7 @@ public class WebComponentTest {
         exception.expectMessage("WebComponent does not have a property identified");
 
         WebComponentBinding<Component> binding =
-                mock(WebComponentBinding.class);
-        when(binding.hasProperty(anyString())).thenReturn(false);
+                new WebComponentBinding<>(mock(Component.class));
 
         WebComponent<Component> webComponent =
                 new WebComponent<>(binding,
@@ -97,18 +97,21 @@ public class WebComponentTest {
                 "'java.lang.Integer' cannot be assigned value of type " +
                 "'java.lang.String'!");
 
+        PropertyConfigurationImpl<Component, Integer> intConfiguration =
+        new PropertyConfigurationImpl<>(
+                Component.class, "property", Integer.class, 0);
+
         WebComponentBinding<Component> binding =
-                mock(WebComponentBinding.class);
-        when(binding.hasProperty(anyString())).thenReturn(true);
-        when(binding.getPropertyType(anyString())).thenReturn((Class)Integer.class);
+                new WebComponentBinding<>(mock(Component.class));
+        binding.bindProperty(intConfiguration);
 
         WebComponent<Component> webComponent =
                 new WebComponent<>(binding, new Element("tag"));
 
-        PropertyConfigurationImpl<Component, String> configuration =
+        PropertyConfigurationImpl<Component, String> stringConfiguration =
                 new PropertyConfigurationImpl<>(
                         Component.class, "property", String.class, "value");
 
-        webComponent.setProperty(configuration, "newValue");
+        webComponent.setProperty(stringConfiguration, "newValue");
     }
 }

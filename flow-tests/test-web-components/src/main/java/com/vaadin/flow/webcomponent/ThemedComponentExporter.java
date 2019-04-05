@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;

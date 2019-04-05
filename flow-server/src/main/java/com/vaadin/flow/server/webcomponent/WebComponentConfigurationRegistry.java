@@ -176,8 +176,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * @param type
      *            the configuration annotation type
      *
-     * @return an optional configuration annotation, or an empty optional if
-     *         there is no configuration annotation with the given {@code type}
+     * @return  an optional configuration annotation, or an empty optional if
+     *          there is no configuration annotation with the given {@code type}
      */
     public <T extends Annotation> Optional<T> getEmbeddedApplicationAnnotation(
             Class<T> type) {
@@ -316,10 +316,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
                 config));
     }
 
-
     protected WebComponentConfiguration<? extends Component> constructConfiguration(
             Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
-        return new WebComponentConfigurationFactory().apply(exporterClass);
+        return new WebComponentExporter.WebComponentConfigurationFactory().create(exporterClass);
     }
 
     protected void lock() {

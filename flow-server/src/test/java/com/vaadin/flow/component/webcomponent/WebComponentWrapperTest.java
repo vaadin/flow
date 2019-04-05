@@ -59,7 +59,7 @@ public class WebComponentWrapperTest {
         exporter = new MyComponentExporter();
 
         // make component available and bind properties to it
-        binding = WebComponentExporter.getWebComponentConfiguration(exporter)
+        binding = (WebComponentBinding<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
                 .createWebComponentBinding(new MockInstantiator(), element);
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
@@ -227,7 +227,7 @@ public class WebComponentWrapperTest {
             element = new Element("tag");
         }
         return new WebComponentWrapper(element,
-                WebComponentExporter.getWebComponentConfiguration(exporter)
+                new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
                 .createWebComponentBinding(new MockInstantiator(), element)) {
             @Override
             public Optional<UI> getUI() {
