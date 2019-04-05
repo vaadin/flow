@@ -1,5 +1,5 @@
 <link rel="import" href="_frontend_resources_bower_components/polymer/polymer-element.html">
-<link rel="import" href="web-component-ui.html">
+_ui_import_
 
 <dom-module id="_TagDash_">
   <template>
@@ -112,9 +112,21 @@
 
     _TagCamel_.id = 0;
     
-    document.body.addEventListener('root-element', function(event) {
-        _TagCamel_.rootId = event.detail;
-    });
+    
+    function addRootElementEventListener(){
+        document.body.addEventListener('root-element', function(event) {
+            _TagCamel_.rootId = event.detail;
+        }); 
+    }
+    if ( document.body ){
+        addRootElementEventListener();
+    }
+    else {
+        window.addEventListener('load', function () {
+            addRootElementEventListener();
+        });
+    }
+    
 
     customElements.define(_TagCamel_.is, _TagCamel_);
   </script>
