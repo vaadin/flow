@@ -36,7 +36,6 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.webcomponent.UnsupportedPropertyTypeException;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationFactory;
 
 import elemental.json.JsonValue;
 
@@ -251,10 +250,10 @@ public abstract class WebComponentExporter<C extends Component>
         return SUPPORTED_TYPES.contains(clazz);
     }
 
-    public static class WebComponentConfigurationImpl<C extends Component> implements WebComponentConfiguration<C> {
+    private static class WebComponentConfigurationImpl<C extends Component> implements WebComponentConfiguration<C> {
         private WebComponentExporter<C> exporter;
 
-        public WebComponentConfigurationImpl(WebComponentExporter<C> exporter) {
+        private WebComponentConfigurationImpl(WebComponentExporter<C> exporter) {
             this.exporter = exporter;
         }
 
@@ -333,6 +332,55 @@ public abstract class WebComponentExporter<C extends Component>
         @Override
         public String getTag() {
             return this.exporter.tag;
+        }
+    }
+
+    /**
+     * Produces {@link WebComponentConfiguration} instances from either
+     * {@link WebComponentExporter} classes or instances.
+     *
+     * @author Vaadin Ltd
+     */
+    public static final class WebComponentConfigurationFactory implements Serializable {
+
+        /**
+         * Creates a {@link WebComponentConfiguration} from the provided
+         * {@link WebComponentExporter} class.
+         *
+         * @param clazz
+         *          exporter class, not {@code null}
+         * @return  a web component configuration matching the instance of
+         *          received {@code clazz}
+         * @throws NullPointerException
+         *          when {@code clazz} is {@code null}
+         */
+        public WebComponentConfiguration<? extends Component> create(Class<?
+                extends WebComponentExporter<? extends Component>> clazz) {
+            Objects.requireNonNull(clazz, "Parameter 'clazz' cannot be null!");
+
+            WebComponentExporter<? extends Component> exporter = ReflectTools
+                    .createInstance(clazz);
+
+            return create(exporter);
+        }
+
+        /**
+         * Creates a {@link WebComponentConfiguration} for the provided
+         * {@link WebComponentExporter} instances.
+         *
+         * @param exporter
+         *          exporter instance, not {@code null}
+         * @return  a web component configuration matching the instance of
+         *          received {@code exporter}
+         * @throws NullPointerException
+         *          when {@code exporter} is {@code null}
+         */
+        public WebComponentConfiguration<? extends Component> create(WebComponentExporter<?
+                extends Component> exporter) {
+            Objects.requireNonNull(exporter, "Parameter 'exporter' cannot be " +
+                    "null!");
+
+            return new WebComponentConfigurationImpl<>(exporter);
         }
     }
 }
