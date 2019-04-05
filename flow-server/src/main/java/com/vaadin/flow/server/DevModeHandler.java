@@ -153,9 +153,9 @@ public class DevModeHandler implements Serializable {
             logStream(webpackProcess.getInputStream(), pattern);
 
             synchronized (this) {
-                this.wait(Integer.parseInt(config.getStringProperty(
+                this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
-                        DEFAULT_TIMEOUT_FOR_PATTERN)));// NOSONAR
+                        DEFAULT_TIMEOUT_FOR_PATTERN)));
             }
 
             if (!webpackProcess.isAlive()) {

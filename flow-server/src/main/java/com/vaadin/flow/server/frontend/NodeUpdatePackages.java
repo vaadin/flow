@@ -43,7 +43,6 @@ import com.vaadin.flow.server.DevModeHandler;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 
@@ -218,9 +217,11 @@ public class NodeUpdatePackages extends NodeUpdater {
             builder.environment().put("PATH",
                     builder.environment().get("PATH") + ":/usr/local/bin");
         }
-        log().info(
+        if (log().isInfoEnabled()) {
+            log().info(
                 "Updating package.json and installing npm dependencies ...\n {}",
                 String.join(" ", builder.command()));
+        }
 
         Process process = null;
         try {
