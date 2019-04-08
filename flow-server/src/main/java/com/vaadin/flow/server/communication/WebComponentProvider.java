@@ -81,15 +81,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             }
             WebComponentConfiguration<? extends Component> webComponentConfiguration = optionalWebComponentConfiguration
                     .get();
-            String generated;
-            if (cache.containsKey(tag.get())) {
-                generated = cache.get(tag.get());
-            } else {
-                generated = WebComponentGenerator.generateModule(tag.get(),
-                        webComponentConfiguration,
-                        getFrontendPath(servletRequest));
-                cache.put(tag.get(), generated);
-            }
+            String generated = cache.computeIfAbsent(tag.get(),
+                    moduleTag -> generateModule(moduleTag,
+                            webComponentConfiguration, servletRequest));
 
             IOUtils.write(generated, response.getOutputStream(),
                     StandardCharsets.UTF_8);
@@ -99,6 +93,18 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         return true;
+    }
+
+    private String generateModule(String tag,
+            WebComponentConfiguration<? extends Component> configuration,
+            VaadinServletRequest request) {
+        if (request.getService().getDeploymentConfiguration()
+                .useCompiledFrontendResources()) {
+            return WebComponentGenerator.getWebComponentUiImport();
+        } else {
+            return WebComponentGenerator.generateModule(tag, configuration,
+                    getFrontendPath(request));
+        }
     }
 
     private static String getFrontendPath(VaadinRequest request) {
