@@ -18,7 +18,6 @@ package com.vaadin.flow.server.webcomponent;
 import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,7 +40,7 @@ import com.vaadin.flow.theme.Theme;
  *
  * @author Vaadin Ltd.
  */
-@EmbeddedApplicationAnnotations({ Theme.class, Push.class })
+@EmbeddedApplicationAnnotations({Theme.class, Push.class})
 public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
@@ -68,9 +67,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * registered.
      *
      * @param tag
-     *            custom element tag
+     *         custom element tag
      * @return Optional containing a web component configuration matching given
-     * tag
+     *         tag
      */
     public Optional<WebComponentConfiguration<? extends Component>> getConfiguration(
             String tag) {
@@ -87,9 +86,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * configurations for a specific {@link Component} type.
      *
      * @param componentClass
-     *            type of the exported {@link Component}
+     *         type of the exported {@link Component}
      * @param <T>
-     *            component
+     *         component
      * @return set of {@link WebComponentConfiguration} or an empty set.
      */
     @SuppressWarnings("unchecked")
@@ -110,7 +109,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Internal method for updating registry.
      *
      * @param configurations
-     *            set of web component configurations to register
+     *         set of web component configurations to register
      */
     protected void updateRegistry(
             Set<WebComponentConfiguration<? extends Component>> configurations) {
@@ -135,9 +134,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * false.
      *
      * @param configurations
-     *            set of web component configurations to register. These
-     *            configurations must have both unique and valid tag names.
-     * @return true if set successfully or false if not set
+     *         set of web component configurations to register. These
+     *         configurations must have both unique and valid tag names.
+     * @return {@code true} if set successfully or {@code false} if not set
      */
     public boolean setConfigurations(
             Set<WebComponentConfiguration<? extends Component>> configurations) {
@@ -158,8 +157,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
     /**
      * Checks whether the registry contains any web component configurations.
      *
-     * @return  {@code true} if {@link #setConfigurations(Set)} has been
-     *          called a non-empty set.
+     * @return {@code true} if {@link #setConfigurations(Set)} has been called a
+     *         non-empty set.
      */
     public boolean hasConfigurations() {
         lock();
@@ -179,10 +178,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * servlet initialization (exporter classes discovering).
      *
      * @param type
-     *            the configuration annotation type
-     *
-     * @return  an optional configuration annotation, or an empty optional if
-     *          there is no configuration annotation with the given {@code type}
+     *         the configuration annotation type
+     * @return an optional configuration annotation, or an empty optional if
+     *         there is no configuration annotation with the given {@code type}
      */
     public <T extends Annotation> Optional<T> getEmbeddedApplicationAnnotation(
             Class<T> type) {
@@ -202,8 +200,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Get an unmodifiable set containing all registered web component
      * configurations.
      *
-     * @return  unmodifiable set of web component configurations in registry or
-     *          an empty set
+     * @return unmodifiable set of web component configurations in registry or
+     *         an empty set
      */
     public Set<WebComponentConfiguration<? extends Component>> getConfigurations() {
         lock();
@@ -219,7 +217,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Get WebComponentRegistry instance for given servlet context.
      *
      * @param servletContext
-     *            servlet context to get registry for
+     *         servlet context to get registry for
      * @return WebComponentRegistry instance
      */
     public static WebComponentConfigurationRegistry getInstance(
@@ -301,15 +299,15 @@ public class WebComponentConfigurationRegistry implements Serializable {
         return new OSGiWebComponentConfigurationRegistry();
     }
 
-    protected void lock() {
+    private void lock() {
         configurationLock.lock();
     }
 
-    protected void unlock() {
+    private void unlock() {
         configurationLock.unlock();
     }
 
-    protected void assertLockHeld() {
+    private void assertLockHeld() {
         assert configurationLock.isHeldByCurrentThread();
     }
 }

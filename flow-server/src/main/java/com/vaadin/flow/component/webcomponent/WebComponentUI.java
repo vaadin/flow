@@ -39,6 +39,8 @@ import com.vaadin.flow.theme.ThemeUtil;
 
 /**
  * Custom UI for use with WebComponents served from the server.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentUI extends UI {
 
@@ -62,21 +64,21 @@ public class WebComponentUI extends UI {
     }
 
     /**
-     * Connect a client side web component element with a server side
-     * {@link Component} that's added as a virtual child to the UI as the actual
+     * Connect a client side web component element with a server side {@link
+     * Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
      * @param tag
-     *            web component tag
+     *         web component tag
      * @param webComponentElementId
-     *            client side id of the element
+     *         client side id of the element
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
         Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
                 WebComponentConfigurationRegistry
-                .getInstance(VaadinServlet.getCurrent().getServletContext())
-                .getConfiguration(tag);
+                        .getInstance(VaadinServlet.getCurrent().getServletContext())
+                        .getConfiguration(tag);
 
         if (!webComponentExporter.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
@@ -111,7 +113,7 @@ public class WebComponentUI extends UI {
 
     @Override
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
+                                                 String path) {
         return Optional.empty();
     }
 

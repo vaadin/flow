@@ -29,8 +29,12 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * @param <C>   {@code component} being exported
+ * Acts as a proxy to the web component root onto which the exporter {@link
+ * Component} is added. Allows updating web component properties and firing
+ * custom events on the client-side.
  *
+ * @param <C>
+ *         {@code component} exported as web component
  * @author Vaadin Ltd.
  */
 public final class WebComponent<C extends Component> implements Serializable {
@@ -48,22 +52,25 @@ public final class WebComponent<C extends Component> implements Serializable {
     private Element componentHost;
     private WebComponentBinding binding;
 
-    private WebComponent() {}
+    private WebComponent() {
+    }
 
     /**
-     * Constructs an internal implementation for {@link WebComponent}. {@code
-     * WebComponentImpl} uses {@link WebComponentBinding} to verify properties
-     * and value types given as parameters to its methods. {@link Element} is
-     * the host element which contains the exported {@code component}
-     * instance (provided by the {@code binding}).
+     * Constructs a {@link WebComponent}. {@link WebComponentBinding} provides
+     * the instance of the {@link Component} exported as a web component. {@code
+     * Binding} also defines the properties the web component has. {@link
+     * Element} is the host element which contains the exported {@code
+     * component} instance (provided by the {@code binding}).
      *
-     * @param binding   binds web component configuration to {@code component X}
-     * @param componentHost     host {@code component X} on the embedding page
+     * @param binding
+     *         binds web component configuration to {@code component X}
+     * @param componentHost
+     *         host {@code component X} on the embedding page
      * @see com.vaadin.flow.component.webcomponent.WebComponentWrapper for
-     * the web component host
+     *         the web component host
      */
     public WebComponent(WebComponentBinding binding,
-                           Element componentHost) {
+                        Element componentHost) {
         Objects.requireNonNull(binding, "Parameter 'binding' must not be " +
                 "null!");
         Objects.requireNonNull(componentHost, "Parameter " +
@@ -77,8 +84,9 @@ public final class WebComponent<C extends Component> implements Serializable {
      * component. This event does not bubble in the DOM hierarchy.
      *
      * @param eventName
-     *            name of the event, not null
-     * @see #fireEvent(String, JsonValue, EventOptions) for full set of options
+     *         name of the event, not null
+     * @see #fireEvent(String, JsonValue, EventOptions) for full set of
+     *         options
      */
     public void fireEvent(String eventName) {
         fireEvent(eventName, Json.createNull(), BASIC_OPTIONS);
@@ -90,11 +98,12 @@ public final class WebComponent<C extends Component> implements Serializable {
      * hierarchy.
      *
      * @param eventName
-     *            name of the event, not null
+     *         name of the event, not null
      * @param objectData
-     *            data the event should carry. This data is placed as the
-     *            {@code detail} property of the event, nullable
-     * @see #fireEvent(String, JsonValue, EventOptions) for full set of options
+     *         data the event should carry. This data is placed as the {@code
+     *         detail} property of the event, nullable
+     * @see #fireEvent(String, JsonValue, EventOptions) for full set of
+     *         options
      */
     public void fireEvent(String eventName, JsonValue objectData) {
         fireEvent(eventName, objectData, BASIC_OPTIONS);
@@ -106,13 +115,15 @@ public final class WebComponent<C extends Component> implements Serializable {
      * behavior with {@link EventOptions}.
      *
      * @param eventName
-     *            name of the event, not null
+     *         name of the event, not null
      * @param objectData
-     *            data the event should carry. This data is placed as the
-     *            {@code detail} property of the event, nullable
+     *         data the event should carry. This data is placed as the {@code
+     *         detail} property of the event, nullable
      * @param options
-     *            event options for {@code bubbles}, {@code cancelable}, and
-     *            {@code composed} flags, not null
+     *         event options for {@code bubbles}, {@code cancelable}, and {@code
+     *         composed} flags, not null
+     * @throws NullPointerException
+     *         if either {@code eventName} or {@code options} is {@code null}
      */
     public void fireEvent(String eventName, JsonValue objectData, EventOptions options) {
         Objects.requireNonNull(eventName, "Parameter 'eventName' must not be " +
@@ -132,23 +143,41 @@ public final class WebComponent<C extends Component> implements Serializable {
 
     /**
      * Sets property value on the client-side to the given {@code value}. The
-     * required {@link PropertyConfigurationImpl} is received from
-     * {@link com.vaadin.flow.component.WebComponentExporter} when a new
-     * property is added for the web component.
+     * required {@link PropertyConfigurationImpl} is received from {@link
+     * com.vaadin.flow.component.WebComponentExporter} when a new property is
+     * added for the web component.
      *
-     * @param propertyConfigurationImpl
-     *            identifies the property for which the value is being set, not
-     *            null
+     * @param propertyConfiguration
+     *         identifies the property for which the value is being set, not
+     *         {@code null}
      * @param value
-     *            new value for the property, can be null
+     *         new value for the property, can be {@code null}
      * @param <P>
-     *            type of the property value being set. If the type does not
-     *            match the original property type, throws an exception
+     *         type of the property value being set. If the type does not match
+     *         the original property type, throws an exception
+     * @throws NullPointerException
+     *         if {@code propertyConfiguration} is {@code null}
+     * @throws IllegalArgumentException
+     *         if {@code PropertyConfiguration} is not a correct implementation
+     * @throws IllegalArgumentException
+     *         if the web component does not have a property identified by
+     *         {@code propertyConfiguration}
+     * @throws IllegalArgumentException
+     *         the provided {@code value} is not of the type expected by the
+     *         property
      */
     @SuppressWarnings("unchecked")
-    public <P extends Serializable> void setProperty(PropertyConfigurationImpl<C, P> propertyConfigurationImpl, P value) {
-        Objects.requireNonNull(propertyConfigurationImpl, "Parameter " +
+    public <P extends Serializable> void setProperty(PropertyConfiguration<C, P> propertyConfiguration, P value) {
+        Objects.requireNonNull(propertyConfiguration, "Parameter " +
                 "'propertyConfiguration' must not be null!");
+
+        if (!(propertyConfiguration instanceof PropertyConfigurationImpl)) {
+            throw new IllegalArgumentException(String.format("Parameter " +
+                            "'propertyConfiguration' is not an implementation of %s",
+                    PropertyConfigurationImpl.class));
+        }
+        PropertyConfigurationImpl<C, P> propertyConfigurationImpl =
+                (PropertyConfigurationImpl<C, P>) propertyConfiguration;
 
         String propertyName = propertyConfigurationImpl.getPropertyData().getName();
 
@@ -177,21 +206,21 @@ public final class WebComponent<C extends Component> implements Serializable {
             componentHost.executeJavaScript(UPDATE_PROPERTY_NULL, propertyName);
         }
 
-        if (value instanceof Integer)  {
+        if (value instanceof Integer) {
             componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
-                    (Integer)value);
+                    (Integer) value);
         } else if (value instanceof Double) {
             componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
-                    (Double)value);
+                    (Double) value);
         } else if (value instanceof String) {
             componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
-                    (String)value);
+                    (String) value);
         } else if (value instanceof JsonValue) {
-            // this is a hack to get around executeJavaScript limitation.
+            // this gets around executeJavaScript limitation.
             // Since properties can take JsonValues, this was needed to allow
             // that expected behavior.
             componentHost.executeJavaScript(String.format(UPDATE_PROPERTY_FORMAT,
-                    ((JsonValue)value).toJson()),
+                    ((JsonValue) value).toJson()),
                     propertyName);
         }
     }

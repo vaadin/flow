@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,11 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -36,14 +35,14 @@ import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
- *
- * Servlet initializer for collecting all classes that extend
- * {@link WebComponentExporter} on startup.
+ * Servlet initializer for collecting all classes that extend {@link
+ * WebComponentExporter} on startup, creates unique
+ * {@link WebComponentConfiguration} instances, and adds them to
+ * {@link WebComponentConfigurationRegistry}.
  *
  * @author Vaadin Ltd.
- * @since
  */
-@HandlesTypes({ WebComponentExporter.class })
+@HandlesTypes({WebComponentExporter.class})
 public class WebComponentConfigurationRegistryInitializer
         implements ServletContainerInitializer {
 
@@ -74,8 +73,7 @@ public class WebComponentConfigurationRegistryInitializer
             validateDistinctTagNames(configurations);
 
             instance.setConfigurations(configurations);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new ServletException(String.format(
                     "%s failed to collect %s implementations!",
                     WebComponentConfigurationRegistryInitializer.class.getSimpleName(),
@@ -100,7 +98,7 @@ public class WebComponentConfigurationRegistryInitializer
      * Validate that all web component names are valid custom element names.
      *
      * @param configurationSet
-     *            set of web components to validate
+     *         set of web components to validate
      */
     private static void validateTagNames(
             Set<WebComponentConfiguration<? extends Component>> configurationSet) {
@@ -118,10 +116,11 @@ public class WebComponentConfigurationRegistryInitializer
     }
 
     /**
-     * Validate that we have exactly one web component exporter per tag name.
+     * Validate that we have exactly one {@link WebComponentConfiguration} per
+     * tag name.
      *
      * @param configurationSet
-     *            set of web components to validate
+     *         set of web components to validate
      */
     private static void validateDistinctTagNames(
             Set<WebComponentConfiguration<? extends Component>> configurationSet) {

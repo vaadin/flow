@@ -24,12 +24,11 @@ import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 /**
- * Offers a fluent API for configuring the properties of embedded web
- * components produced by
- * {@link com.vaadin.flow.component.WebComponentExporter}.
- *
- * @param <C>   type of the {@code component} exported as a web component
- * @param <P>   type of the property exposed on the web component
+ * @param <C>
+ *         type of the exported {@code component}
+ * @param <P>
+ *         type of the property
+ * @author Vaadin Ltd.
  */
 public final class PropertyConfigurationImpl<C extends Component,
         P extends Serializable> implements PropertyConfiguration<C, P> {
@@ -38,16 +37,19 @@ public final class PropertyConfigurationImpl<C extends Component,
     private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
 
     /**
-     * Constructs a new {@code PropertyConfigurationImpl} tied to the
-     * exported {@link Component} type given by {@code componentType}.
+     * Constructs a new {@code PropertyConfigurationImpl} tied to the exported
+     * {@link Component} type given by {@code componentType}.
      *
-     * @param componentType     type of the exported {@code component}
-     * @param propertyName      name of the property
-     * @param propertyType      type of the property
-     * @param defaultValue      default value of the property. If the
-     *                          property type has a primitive version, this
-     *                          value is used when ever the property is being
-     *                          set to a {@code null}.
+     * @param componentType
+     *         type of the exported {@code component}
+     * @param propertyName
+     *         name of the property
+     * @param propertyType
+     *         type of the property
+     * @param defaultValue
+     *         default value of the property. If the property type has a
+     *         primitive version, this value is used when ever the property is
+     *         being set to a {@code null}.
      */
     public PropertyConfigurationImpl(Class<C> componentType, String propertyName,
                                      Class<P> propertyType, P defaultValue) {
@@ -59,6 +61,7 @@ public final class PropertyConfigurationImpl<C extends Component,
 
 
     @Override
+    @SuppressWarnings("unchecked")
     public PropertyConfigurationImpl<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
         Objects.requireNonNull(onChangeHandler, "Parameter 'onChangeHandler' " +
                 "cannot be null!");
@@ -94,7 +97,7 @@ public final class PropertyConfigurationImpl<C extends Component,
     }
 
     /**
-     * Retrieves the {@code onChangeHandler} tied to this property, if on
+     * Retrieves the {@code onChangeHandler} tied to this property, if one
      * exists.
      *
      * @return handler or {@code null}

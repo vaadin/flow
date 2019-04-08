@@ -36,8 +36,10 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
- * Request handler that supplies the script/html of the WebComponent matching
+ * Request handler that supplies the script/html of the web component matching
  * the given tag.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentProvider extends SynchronizedRequestHandler {
 
@@ -48,8 +50,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     private Map<String, String> cache;
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(
+            VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
         VaadinServletRequest servletRequest = (VaadinServletRequest) request;
         String pathInfo = servletRequest.getPathInfo();
 
@@ -72,7 +74,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentExporter =
                 WebComponentConfigurationRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext())
-                .getConfiguration(tag.get());
+                        .getConfiguration(tag.get());
 
         if (optionalWebComponentExporter.isPresent()) {
             if (cache == null) {

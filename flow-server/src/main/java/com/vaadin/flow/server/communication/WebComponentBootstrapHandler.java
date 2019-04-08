@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.ServletContext;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
-
-import javax.servlet.ServletContext;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
@@ -35,6 +34,8 @@ import elemental.json.JsonObject;
 
 /**
  * Bootstrap handler for WebComponent requests.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentBootstrapHandler extends BootstrapHandler {
 
@@ -43,7 +44,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
         private WebComponentBootstrapContext(VaadinRequest request,
-                VaadinResponse response, UI ui) {
+                                             VaadinResponse response, UI ui) {
             super(request, response, ui.getInternals().getSession(), ui);
         }
 
@@ -71,8 +72,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
-            VaadinRequest request, VaadinResponse response,
-            VaadinSession session) {
+                                               VaadinRequest request, VaadinResponse response,
+                                               VaadinSession session) {
         BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
@@ -99,7 +100,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
-            VaadinResponse response, UI ui) {
+                                                      VaadinResponse response, UI ui) {
         return new WebComponentBootstrapContext(request, response, ui);
     }
 }

@@ -39,6 +39,8 @@ import elemental.json.JsonValue;
  * <p>
  * Current implementation will create a Polymer 2 component that can be served
  * to the client.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentGenerator {
 
@@ -63,16 +65,16 @@ public class WebComponentGenerator {
      * Generate web component html/JS for given tag and class.
      *
      * @param tag
-     *            web component tag, not {@code null}
+     *         web component tag, not {@code null}
      * @param webComponentConfiguration
-     *            web component class implementation, not {@code null}
+     *         web component class implementation, not {@code null}
      * @param frontendURI
-     *            the frontend resources URI, not {@code null}
+     *         the frontend resources URI, not {@code null}
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(String tag,
-            WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI) {
+                                        WebComponentConfiguration<? extends Component> webComponentConfiguration,
+                                        String frontendURI) {
         Objects.requireNonNull(tag);
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
@@ -141,8 +143,8 @@ public class WebComponentGenerator {
                 prop.put(propertyValue, (JsonValue) property.getDefaultValue());
             } else {
                 throw new UnsupportedPropertyTypeException(String.format("%s "
-                        + "is not a currently supported type for a Property. "
-                        + "Please use %s instead.",
+                                + "is not a currently supported type for a Property. "
+                                + "Please use %s instead.",
                         property.getType().getSimpleName(),
                         JsonValue.class.getSimpleName()));
             }

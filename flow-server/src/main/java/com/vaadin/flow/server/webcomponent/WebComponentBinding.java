@@ -30,26 +30,31 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
- * An internal representation of a web component instance bound to a
- * {@link Component} instance. Facilitates property updates from the client
- * to the {@code component}.
+ * Represents a single instance of a exported web component instance embedded
+ * onto a host page. Contains a unique {@link Component} instance and property
+ * value hosts tied to the specific web component instance. Facilitates property
+ * updates from the client to the {@code component}.
  *
- * @param <C>   type of the component being exported
- * @see WebComponentConfiguration#createWebComponentBinding(Instantiator, Element)
- *      to create {@code WebComponentBindings}
+ * @param <C>
+ *         type of the exported component
+ * @author Vaadin Ltd.
+ * @see WebComponentConfiguration#createWebComponentBinding(Instantiator,
+ *         Element) to create {@code WebComponentBindings}
  */
 public final class WebComponentBinding<C extends Component> implements Serializable {
     private C component;
     private HashMap<String, PropertyBinding<? extends Serializable>> properties = new HashMap<>();
 
     /**
-     * Constructs a {@link WebComponentBinding} which consists of a
-     * {@link Component} instance exposed as an embeddable web component and
-     * set of {@link PropertyBinding PropertyBindindings} that the component
-     * exposes as a web component.
+     * Constructs a new {@code WebComponentBinding}. The bound {@link Component}
+     * is given via {@code component} parameter. The web component properties
+     * are bound by calling {@link #bindProperty(PropertyConfigurationImpl)};
      *
-     * @param component     component which exposes {@code properties} as web
-     *                      component. Not {@code null}
+     * @param component
+     *         component which exposes {@code properties} as web component. Not
+     *         {@code null}
+     * @throws NullPointerException
+     *         if {@code component} is {@code null}
      */
     public WebComponentBinding(C component) {
         Objects.requireNonNull(component, "Parameter 'component' must not be " +
@@ -59,13 +64,19 @@ public final class WebComponentBinding<C extends Component> implements Serializa
     }
 
     /**
-     * Updates a property bound to the {@code component}. If the property has
-     * an attached listener, the {@code value} is also delivered to the
-     * listener. If the {@code value} is {@code null}, the property is set to
-     * its default value (which could be {@code null}).
+     * Updates a property bound to the {@code component}. If the property has an
+     * attached listener, the {@code value} is also delivered to the listener.
+     * If the {@code value} is {@code null}, the property is set to its default
+     * value (which could be {@code null}).
      *
-     * @param propertyName  name of the property
-     * @param value         new value to set for the property
+     * @param propertyName
+     *         name of the property, not {@code null}
+     * @param value
+     *         new value to set for the property
+     * @throws NullPointerException
+     *         if {@code propertyName} is {@code null}
+     * @throws IllegalArgumentException
+     *         if no bound property can be found for {@code propertyName}
      */
     public void updateProperty(String propertyName, Serializable value) {
         Objects.requireNonNull(propertyName, "Parameter 'propertyName' must " +
@@ -94,7 +105,8 @@ public final class WebComponentBinding<C extends Component> implements Serializa
     /**
      * Retrieve the type of a property's value.
      *
-     * @param propertyName  name of the property
+     * @param propertyName
+     *         name of the property
      * @return property type
      */
     public Class<? extends Serializable> getPropertyType(String propertyName) {
@@ -107,7 +119,8 @@ public final class WebComponentBinding<C extends Component> implements Serializa
     /**
      * Does the component binding have a property identified by given name.
      *
-     * @param propertyName  name of the property
+     * @param propertyName
+     *         name of the property
      * @return has property
      */
     public boolean hasProperty(String propertyName) {
@@ -115,34 +128,37 @@ public final class WebComponentBinding<C extends Component> implements Serializa
     }
 
     /**
-     * Calls the bound change handlers defined via
-     * {@link PropertyConfigurationImpl#onChange(SerializableBiConsumer)} for
-     * each bound property with the current value of the property.
+     * Calls the bound change handlers defined via {@link
+     * com.vaadin.flow.component.webcomponent.PropertyConfiguration#onChange(SerializableBiConsumer)}
+     * for each bound property with the current value of the property.
      */
     public void updatePropertiesToComponent() {
         properties.forEach((key, value) -> value.notifyValueChange());
     }
 
     /**
-     * Adds a property to this web component binding based on the
-     * {@code propertyConfiguration}. If a property with an existing name is
-     * bound, the previous binding is removed.
+     * Adds a property to {@code this} web component binding based on the {@code
+     * propertyConfiguration}. If a property with an existing name is bound, the
+     * previous binding is removed.
      *
-     * @param propertyConfigurationImpl     property configuration
+     * @param propertyConfiguration
+     *         property configuration, not {@code null}
+     * @throws NullPointerException
+     *         if {@code propertyConfiguration} is {@code null}
      */
     public void bindProperty(PropertyConfigurationImpl<C,
-                    ? extends Serializable> propertyConfigurationImpl) {
-        assert propertyConfigurationImpl != null : "propertyConfiguration cannot " +
-                "be null!";
+            ? extends Serializable> propertyConfiguration) {
+        Objects.requireNonNull(propertyConfiguration, "Parameter " +
+                "'propertyConfiguration' cannot be null!");
 
-        SerializableBiConsumer<C, Serializable> consumer = propertyConfigurationImpl
+        SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
                 .getOnChangeHandler();
         PropertyBinding<? extends Serializable> binding =
-                new PropertyBinding<>(propertyConfigurationImpl.getPropertyData(),
+                new PropertyBinding<>(propertyConfiguration.getPropertyData(),
                         consumer == null ? null
                                 : value -> consumer.accept(
-                                        component, value));
-        properties.put(propertyConfigurationImpl.getPropertyData().getName(), binding);
+                                component, value));
+        properties.put(propertyConfiguration.getPropertyData().getName(), binding);
     }
 
     private static class PropertyBinding<P extends Serializable> implements Serializable {
@@ -151,13 +167,14 @@ public final class WebComponentBinding<C extends Component> implements Serializa
         private P value;
 
         public PropertyBinding(PropertyData<P> data,
-                        SerializableConsumer<P> listener) {
+                               SerializableConsumer<P> listener) {
             Objects.requireNonNull(data, "Parameter 'data' must not be null!");
             this.data = data;
             this.listener = listener;
             this.value = data.getDefaultValue();
         }
 
+        @SuppressWarnings("unchecked")
         public void updateValue(Serializable newValue) {
             if (isReadOnly()) {
                 LoggerFactory.getLogger(getClass())
@@ -177,7 +194,7 @@ public final class WebComponentBinding<C extends Component> implements Serializa
                         newValue.getClass().getCanonicalName()));
             }
 
-            P newTypedValue = (P)newValue;
+            P newTypedValue = (P) newValue;
 
             // null values are always set to default value (which might still be
             // null for some types)
@@ -188,8 +205,7 @@ public final class WebComponentBinding<C extends Component> implements Serializa
             boolean updated = false;
             if (this.value != null && !this.value.equals(newTypedValue)) {
                 updated = true;
-            }
-            else if (newValue != null && !newValue.equals(this.value)) {
+            } else if (newValue != null && !newValue.equals(this.value)) {
                 updated = true;
             }
 

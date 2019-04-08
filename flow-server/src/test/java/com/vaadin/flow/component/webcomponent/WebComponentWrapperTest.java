@@ -104,11 +104,10 @@ public class WebComponentWrapperTest {
 
     @Test
     public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
-        WebComponentWrapper wrapper = constructWrapper(
-                new MyExtensionExporter(), null, null);
+        WebComponentBinding<MyExtension> binding =
+                constructWrapperAndGetBinding(new MyExtensionExporter(), null, null);
 
-        MyExtension component = (MyExtension) wrapper.getWebComponentBinding()
-                .getComponent();
+        MyExtension component = binding.getComponent();
 
         wrapper.sync(MSG_PROPERTY, Json.create("one"));
         wrapper.sync(INT_PROPERTY, Json.create(2));
@@ -133,11 +132,11 @@ public class WebComponentWrapperTest {
 
     @Test
     public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
-        WebComponentWrapper wrapper = constructWrapper(new ExtendedExporter(),
+        WebComponentBinding<MyComponent> binding =
+                constructWrapperAndGetBinding(new ExtendedExporter(),
                 null, null);
 
-        MyComponent component = (MyComponent) wrapper.getWebComponentBinding()
-                .getComponent();
+        MyComponent component = binding.getComponent();
 
         wrapper.sync(MSG_PROPERTY, Json.create("one"));
         wrapper.sync(INT_PROPERTY, Json.create(2));
@@ -168,8 +167,7 @@ public class WebComponentWrapperTest {
     public void disconnectReconnect_componentIsNotCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
-        WebComponentWrapper wrapper = constructWrapper(
-                new MyComponentExporter(), element, ui);
+        constructWrapperAndGetBinding(new MyComponentExporter(), element, ui);
         UIInternals internals = ui.getInternals();
 
         wrapper.disconnected();
@@ -191,8 +189,7 @@ public class WebComponentWrapperTest {
     public void disconnectOnClient_componentIsCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
-        WebComponentWrapper wrapper = constructWrapper(
-                new MyComponentExporter(), element, ui);
+        constructWrapperAndGetBinding(new MyComponentExporter(), element, ui);
         UIInternals internals = ui.getInternals();
 
         wrapper.disconnected();
@@ -211,29 +208,31 @@ public class WebComponentWrapperTest {
 
     /**
      * @param exporter
-     *            exporter of the correct type, defines C
+     *         exporter of the correct type, defines C
      * @param element
-     *            nullable root element
+     *         nullable root element
      * @param ui
-     *            nullable WebComponentUI
+     *         nullable WebComponentUI
      * @param <C>
-     *            type of the exported component
+     *         type of the exported component
      * @return web component wrapper
      */
-    private static <C extends Component> WebComponentWrapper constructWrapper(
+    private <C extends Component> WebComponentBinding<C> constructWrapperAndGetBinding(
             WebComponentExporter<C> exporter, Element element,
             WebComponentUI ui) {
         if (element == null) {
             element = new Element("tag");
         }
-        return new WebComponentWrapper(element,
+        WebComponentBinding<C> binding = (WebComponentBinding<C>)
                 new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
-                .createWebComponentBinding(new MockInstantiator(), element)) {
+                        .createWebComponentBinding(new MockInstantiator(), element);
+        wrapper = new WebComponentWrapper(element, binding) {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
             }
         };
+        return binding;
     }
 
     private static WebComponentUI constructWebComponentUI(

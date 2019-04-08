@@ -23,23 +23,28 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 
 /**
+ * Offers a fluent API for configuring the properties of embedded web components
+ * produced by {@link com.vaadin.flow.component.WebComponentExporter}.
+ *
  * @param <C>
+ *         type of the {@code component} exported as a web component
  * @param <P>
+ *         type of the property exposed on the web component
+ * @author Vaadin Ltd.
  */
 public interface PropertyConfiguration<C extends Component,
         P extends Serializable> extends Serializable {
 
     /**
-     * Sets a Property change handler. {@code onChange} can only be called
-     * once - multiple calls will throw an exception.
+     * Sets a Property change handler. {@code onChange} can only be called once
+     * - multiple calls will throw an exception.
      * <p>
-     * The {@code onChangeHandler} is called
-     * when the property's value changes on the client-side. If the property
-     * value is {@code null} for a property type which should not receive
-     * null-values, such as {@code double}, the method will be called with
-     * the property's default value. The default value is set by
-     * {@link WebComponentDefinition} when {@code addProperty(propertyName,
-     * defaultValue} is called.
+     * The {@code onChangeHandler} is called when the property's value changes
+     * on the client-side. If the property value is {@code null} for a property
+     * type which should not receive null-values, such as {@code double}, the
+     * method will be called with the property's default value. The default
+     * value is set by {@link com.vaadin.flow.component.WebComponentExporter}
+     * when {@code addProperty(propertyName, defaultValue} is called.
      * <p>
      * In the following example we export {@code MyComponent} as a web
      * component. The {@code MyComponent} class has a method {@code setName}
@@ -50,17 +55,16 @@ public interface PropertyConfiguration<C extends Component,
      * &#064;Tag("my-component")
      * public class Exporter implements WebComponentExporter&lt;MyComponent&gt;() {
      *     // ... define the web component
-     *     &#064;Override
-     *     public void define(WebComponentDefinition&lt;MyComponent&gt;
-     *     definition) {
-     *         definition.addProperty("name", "John Doe")
-     *                 .onChange(MyComponent::setName);
+     *     public Exporter() {
+     *         super("my-component");
+     *         addProperty("name", "John Doe").onChange(MyComponent::setName);
      *     }
      * }
      * </pre>
      *
-     * @param onChangeHandler   {@code component}'s method which is called with
-     *                          the property value
+     * @param onChangeHandler
+     *         {@code component}'s method which is called with the property
+     *         value
      * @return this {@code PropertyConfiguration}
      */
     PropertyConfigurationImpl<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler);
