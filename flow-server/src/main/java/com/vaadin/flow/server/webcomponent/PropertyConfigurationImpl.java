@@ -62,7 +62,7 @@ public final class PropertyConfigurationImpl<C extends Component,
 
     @Override
     @SuppressWarnings("unchecked")
-    public PropertyConfigurationImpl<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
+    public PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
         Objects.requireNonNull(onChangeHandler, "Parameter 'onChangeHandler' " +
                 "cannot be null!");
         if (this.onChangeHandler != null) {
@@ -76,7 +76,7 @@ public final class PropertyConfigurationImpl<C extends Component,
 
 
     @Override
-    public PropertyConfigurationImpl<C, P> readOnly() {
+    public PropertyConfiguration<C, P> readOnly() {
         data = new PropertyData<>(data, true);
         return this;
     }

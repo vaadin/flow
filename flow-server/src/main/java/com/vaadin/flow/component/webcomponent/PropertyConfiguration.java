@@ -20,7 +20,6 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 
 /**
  * Offers a fluent API for configuring the properties of embedded web components
@@ -67,12 +66,12 @@ public interface PropertyConfiguration<C extends Component,
      *         value
      * @return this {@code PropertyConfiguration}
      */
-    PropertyConfigurationImpl<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler);
+    PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler);
 
     /**
      * Mark the property as read-only. It cannot be written to by the client.
      *
      * @return this {@code PropertyConfiguration}
      */
-    PropertyConfigurationImpl<C, P> readOnly();
+    PropertyConfiguration<C, P> readOnly();
 }

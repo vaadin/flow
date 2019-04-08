@@ -17,7 +17,7 @@
 package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
+import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
 import elemental.json.Json;
@@ -26,8 +26,8 @@ import elemental.json.JsonValue;
 public class PropertyUpdateExporter
         extends WebComponentExporter<PropertyUpdateComponent> {
 
-    private PropertyConfigurationImpl<PropertyUpdateComponent, Integer> property;
-    private PropertyConfigurationImpl<PropertyUpdateComponent, JsonValue> jsonProperty;
+    private PropertyConfiguration<PropertyUpdateComponent, Integer> property;
+    private PropertyConfiguration<PropertyUpdateComponent, JsonValue> jsonProperty;
 
     public PropertyUpdateExporter() {
         super("property-update");
