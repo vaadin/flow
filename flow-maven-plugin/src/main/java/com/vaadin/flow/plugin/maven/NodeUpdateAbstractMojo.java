@@ -54,7 +54,7 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
 
         /**
          * Constructor.
-         * 
+         *
          * @param urls
          *            the list of urls for finding classes.
          */
@@ -91,6 +91,11 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         @Override
         public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
             return (Class<T>)classLoader.loadClass(name);
+        }
+
+        @Override
+        public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
+            return reflections.getSubTypesOf(type);
         }
     }
 

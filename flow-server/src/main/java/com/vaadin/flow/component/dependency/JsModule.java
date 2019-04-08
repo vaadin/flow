@@ -41,7 +41,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * dependencies to the browser.
  *
  * @author Vaadin Ltd
- * @since
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

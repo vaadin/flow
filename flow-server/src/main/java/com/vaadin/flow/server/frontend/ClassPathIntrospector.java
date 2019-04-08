@@ -63,7 +63,16 @@ public abstract class ClassPathIntrospector implements Serializable {
          * @throws ClassNotFoundException
          *             when the class is not in the classpath
          */
-        <T> Class<T> loadClass(String name) throws ClassNotFoundException ;
+        <T> Class<T> loadClass(String name) throws ClassNotFoundException;
+
+        /**
+         * Gets all subtypes in hierarchy of a given type.
+         *
+         * @param type the type to search for the subtypes for
+         * @param <T> the class of the type
+         * @return set of the subtypes of the given class
+         */
+        <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type);
     }
 
     /**
@@ -77,7 +86,7 @@ public abstract class ClassPathIntrospector implements Serializable {
 
         /**
          * It uses current classloader for getting resources or loading classes.
-         * 
+         *
          * @param annotatedClasses The annotated classes.
          */
         public DefaultClassFinder(Set<Class<?>> annotatedClasses) {
@@ -88,7 +97,7 @@ public abstract class ClassPathIntrospector implements Serializable {
         /**
          * ClassFinder using a specified <code>ClassLoader</code> to load
          * classes and a list of classes where to look for annotations.
-         * 
+         *
          * @param classLoader
          *            classloader for getting resources or loading classes.
          * @param annotatedClasses
@@ -122,6 +131,12 @@ public abstract class ClassPathIntrospector implements Serializable {
                 throws ClassNotFoundException {
             return (Class<T>) classLoader.loadClass(name);
         }
+
+        @Override
+        public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
+            // TODO implement it
+            throw new IllegalStateException("Unimplemented");
+        }
     }
 
     private final ClassFinder finder;
@@ -137,7 +152,7 @@ public abstract class ClassPathIntrospector implements Serializable {
 
     /**
      * Create a new instance but reusing the instrospector.
-     * 
+     *
      * @param otherIntrospector
      *            the other instance.
      */
@@ -147,7 +162,7 @@ public abstract class ClassPathIntrospector implements Serializable {
 
     /**
      * Returns a resource {@link URL} given a file name.
-     * 
+     *
      * @param name
      *            the name of the resource
      * @return the URL with the resource or null if not found
@@ -167,6 +182,19 @@ public abstract class ClassPathIntrospector implements Serializable {
     protected Stream<Class<?>> getAnnotatedClasses(
             Class<? extends Annotation> annotationInProjectContext) {
         return finder.getAnnotatedClasses(annotationInProjectContext).stream();
+    }
+
+    /**
+     * Gets the subtypes of the given {@code type}.
+     *
+     * @param type
+     *            super type for subtype search
+     * @return all subtypes of the given {@code type}
+     */
+    protected Stream<Class<?>> getSubtypes(Class<?> type) {
+        return finder
+            .getSubTypesOf(loadClassInProjectClassLoader(type.getName()))
+            .stream();
     }
 
     /**

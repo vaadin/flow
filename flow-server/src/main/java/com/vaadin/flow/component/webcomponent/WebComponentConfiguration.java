@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 
 /**
@@ -37,7 +37,7 @@ public interface WebComponentConfiguration<C extends Component>
      * Check if the configuration has a property identified by the {@code
      * propertyName}.
      *
-     * @param propertyName  name of the property
+     * @param propertyName  name of the property, not null
      * @return has property
      */
     boolean hasProperty(String propertyName);
@@ -46,7 +46,7 @@ public interface WebComponentConfiguration<C extends Component>
      * Retrieve the type of a property's value. If the property is not known,
      * returns {@code null}
      *
-     * @param propertyName  name of the property
+     * @param propertyName  name of the property, not null
      * @return property type or null
      */
     Class<? extends Serializable> getPropertyType(String propertyName);
@@ -67,13 +67,19 @@ public interface WebComponentConfiguration<C extends Component>
     Set<PropertyData<? extends Serializable>> getPropertyDataSet();
 
     /**
-     * Creates a {@link WebComponentBinding} which is a distinct web
-     * component based on this configuration. Each {@code binding} has an
-     * instance of the component type being exported. Each binding is mapped
-     * to single element in the embedding context.
+     * Creates the component instance of type {@link C} using {@code
+     * instantiator} and then constructs a {@link WebComponentBinding} which
+     * allows for pushing property updates to the component {@code C} in a
+     * fashion defined by the associated
+     * {@link com.vaadin.flow.component.WebComponentExporter}.
      *
-     * @param instantiator  Vaadin {@link Instantiator}
-     * @return web component binding
+     * @param instantiator  {@link Instantiator} using to construct component
+                            instance
+     * @param el            element which acts as the root element for the
+     *                      {@code component instance}
+     * @return  web component binding which can be used by the web component
+     *          host to communicate with the component it is hosting
      */
-    WebComponentBinding<C> createBinding(Instantiator instantiator);
+    WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
+    Element el);
 }

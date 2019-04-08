@@ -17,7 +17,6 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +39,6 @@ import com.vaadin.flow.shared.Registration;
  * keyboard shortcut.
  *
  * @author Vaadin Ltd.
- * @since
  */
 public class ShortcutRegistration implements Registration, Serializable {
     private boolean allowDefaultBehavior = false;
@@ -100,7 +98,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                          SerializableSupplier<Component> listenOnSupplier,
                          ShortcutEventListener eventListener, Key key) {
         if (Key.isModifier(key)) {
-            throw new InvalidParameterException(String.format("Parameter " +
+            throw new IllegalArgumentException(String.format("Parameter " +
                     "'key' cannot belong to %s",
                     KeyModifier.class.getSimpleName()));
         }
@@ -210,7 +208,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         // not affected by this change
 
         if (component == null) {
-            throw new InvalidParameterException(
+            throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "component"));
         }
 

@@ -41,12 +41,12 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -496,9 +496,11 @@ public class UIInternals implements Serializable {
                     .getAnnotation(ListenerPriority.class);
 
             final int priority1 = listenerPriority1 != null
-                    ? listenerPriority1.value() : 0;
+                    ? listenerPriority1.value()
+                    : 0;
             final int priority2 = listenerPriority2 != null
-                    ? listenerPriority2.value() : 0;
+                    ? listenerPriority2.value()
+                    : 0;
 
             // we want to have a descending order
             return Integer.compare(priority2, priority1);
@@ -711,13 +713,9 @@ public class UIInternals implements Serializable {
                 .getThemeFor(target.getClass(), path);
 
         if (themeDefinition.isPresent()) {
-            Class<? extends AbstractTheme> themeClass = themeDefinition.get()
-                    .getTheme();
-            if (theme == null || !theme.getClass().equals(themeClass)) {
-                theme = ReflectTools.createInstance(themeClass);
-            }
+            setTheme(themeDefinition.get().getTheme());
         } else {
-            theme = null;
+            setTheme((Class<? extends AbstractTheme>) null);
             if (!AnnotationReader
                     .getAnnotationFor(target.getClass(), NoTheme.class)
                     .isPresent()) {
@@ -739,9 +737,35 @@ public class UIInternals implements Serializable {
      *
      * @param theme
      *            theme implementation to set
+     * @deprecated use {@link #setTheme(Class)} instead
      */
+    @Deprecated
     public void setTheme(AbstractTheme theme) {
         this.theme = theme;
+    }
+
+    /**
+     * Sets the theme using its {@code themeClass}.
+     * <p>
+     * Note! The set theme will be overridden for each call to
+     * {@link #showRouteTarget(Location, String, Component, List)} if the new
+     * theme is not the same as the set theme.
+     * <p>
+     * This method is intended for managed internal use only.
+     *
+     * @see #setTheme(AbstractTheme)
+     *
+     * @param themeClass
+     *            theme class to set, may be {@code null}
+     */
+    public void setTheme(Class<? extends AbstractTheme> themeClass) {
+        AbstractTheme result = null;
+        if (themeClass != null) {
+            if (theme == null || !theme.getClass().equals(themeClass)) {
+                result = Instantiator.get(getUI()).getOrCreate(themeClass);
+            }
+        }
+        setTheme(result);
     }
 
     private void removeFromParent(HasElement component) {

@@ -21,12 +21,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -34,7 +36,9 @@ import org.mockito.MockitoAnnotations;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.WebComponentExporterAdapter;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
@@ -43,6 +47,11 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
+
+import static org.mockito.Mockito.times;
 
 @NotThreadSafe
 public class WebComponentProviderTest {
@@ -121,19 +130,8 @@ public class WebComponentProviderTest {
 
     @Test
     public void webComponentGenerator_responseGetsResult() throws IOException {
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
-        Mockito.when(request.getContextPath()).thenReturn("");
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(servletContext);
-        final HashMap<String, Class<? extends WebComponentExporter<?
-                extends Component>>> map = new HashMap<>();
-        map.put("my-component", MyComponentExporter.class);
-        registry.setExporters(map);
-        Mockito.when(servletContext
-                .getAttribute(WebComponentConfigurationRegistry.class.getName()))
-                .thenReturn(registry);
+        WebComponentConfigurationRegistry registry = setupExporters(
+                MyComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
@@ -154,16 +152,203 @@ public class WebComponentProviderTest {
 
     }
 
+    @Test
+    public void providesDifferentGeneratedHTMLForEachExportedComponent()
+            throws IOException {
+        ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
+
+        WebComponentConfigurationRegistry registry = setupExporters(
+                MyComponentExporter.class, OtherComponentExporter.class);
+
+        ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
+
+        DefaultDeploymentConfiguration configuration = Mockito
+                .mock(DefaultDeploymentConfiguration.class);
+
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.getRootElementId()).thenReturn("");
+
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.html");
+        Assert.assertTrue("Provider should handle first web-component request",
+                provider.handleRequest(session, request, response));
+
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/web-component/other-component.html");
+        Assert.assertTrue("Provider should handle second web-component request",
+                provider.handleRequest(session, request, response));
+
+        Mockito.verify(response, times(2)).getOutputStream();
+        Mockito.verify(out, times(2)).write(captor.capture());
+
+        byte[] first = captor.getAllValues().get(0);
+        byte[] second = captor.getAllValues().get(1);
+
+        Assert.assertNotEquals("Stream output should not match", first, second);
+    }
+
+    @Test
+    public void setExporters_exportersHasNoTheme_themeIsNull() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                MyComponentExporter.class, OtherComponentExporter.class);
+
+        Assert.assertFalse(registry
+                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
+    }
+
+    @Test
+    public void notInitializedRegistry_themeIsEmpty() {
+        WebComponentConfigurationRegistry registry = setUpRegistry();
+        Assert.assertFalse(registry
+                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setExporters_exportersHasVariousThemes_throws() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class,
+                AnotherThemedComponentExporter.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setExporters_exportersHasVariousPushes_throws() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class,
+                AnotherPushComponentExporter.class);
+    }
+
+    @Test
+    public void setExporters_exportersHasOneThemes_themeIsSet() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class, MyComponentExporter.class);
+        Assert.assertEquals(MyTheme.class, registry
+                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
+    }
+
+    @Test
+    public void setExporters_exportersHasOnePush_pushIsSet() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class, MyComponentExporter.class);
+        Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
+                .isPresent());
+    }
+
+    @Test
+    public void setExporters_exportersHasSameThemeDeclarations_themeIsSet() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class,
+                SameThemedComponentExporter.class);
+        Assert.assertEquals(MyTheme.class, registry
+                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
+    }
+
+    @Test
+    public void setExporters_exportersHasSamePushDeclarations_pushIsSet() {
+        WebComponentConfigurationRegistry registry = setupExporters(
+                ThemedComponentExporter.class,
+                SameThemedComponentExporter.class);
+        Assert.assertEquals(PushMode.AUTOMATIC, registry
+                .getEmbeddedApplicationAnnotation(Push.class).get().value());
+    }
+
+    private WebComponentConfigurationRegistry setupExporters(
+            Class<? extends WebComponentExporter<? extends Component>>... exporters) {
+        WebComponentConfigurationRegistry registry = setUpRegistry();
+
+        final HashMap<String, Class<? extends WebComponentExporter<? extends Component>>> map = new HashMap<>();
+        Stream.of(exporters)
+                .forEach(clazz -> map.put(AnnotationReader
+                        .getAnnotationValueFor(clazz, Tag.class, Tag::value)
+                        .get(), clazz));
+        registry.setExporters(map);
+
+        return registry;
+    }
+
+    private WebComponentConfigurationRegistry setUpRegistry() {
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+
+        Mockito.when(request.getServletContext()).thenReturn(servletContext);
+        Mockito.when(request.getContextPath()).thenReturn("");
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(servletContext);
+        Mockito.when(servletContext.getAttribute(
+                WebComponentConfigurationRegistry.class.getName()))
+                .thenReturn(registry);
+        return registry;
+    }
+
     @Tag("my-component")
     public static class MyComponent extends Component {
     }
 
     @Tag("my-component")
-    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
+    public static class MyComponentExporter
+            extends WebComponentExporterAdapter<MyComponent> {
+    }
 
+    @Tag("another-component")
+    public static class OtherComponent extends Component {
+    }
+
+    @Tag("other-component")
+    public static class OtherComponentExporter
+            extends WebComponentExporterAdapter<OtherComponent> {
+    }
+
+    @Tag("foo")
+    @Theme(MyTheme.class)
+    @Push
+    public static class ThemedComponentExporter
+            extends WebComponentExporterAdapter<Component> {
+    }
+
+    @Tag("foo")
+    @Theme(MyTheme.class)
+    @Push(value = PushMode.AUTOMATIC)
+    public static class SameThemedComponentExporter
+            extends WebComponentExporterAdapter<Component> {
+    }
+
+    @Tag("foo-bar")
+    @Push(value = PushMode.DISABLED)
+    public static class AnotherPushComponentExporter
+            extends WebComponentExporterAdapter<Component> {
+    }
+
+    @Tag("foo-bar")
+    @Theme(AnotherTheme.class)
+    public static class AnotherThemedComponentExporter
+            extends WebComponentExporterAdapter<Component> {
+    }
+
+    public static class MyTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return null;
         }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+
+    }
+
+    public static class AnotherTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+
     }
 
 }

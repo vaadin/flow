@@ -48,11 +48,13 @@ public class AnnotationValuesExtractorTest {
     public final ExpectedException expectedException = ExpectedException.none();
 
     ClassFinder finder = new ReflectionsClassFinder(
-            TestUtils.getTestResource("annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-            TestUtils.getTestResource("annotation-extractor-test/vaadin-grid-flow.jar"),
-            TestUtils.getTestResource("annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar"));
+            TestUtils.getTestResource(TestUtils.SERVER_JAR),
+            TestUtils.getTestResource(
+                    "annotation-extractor-test/vaadin-grid-flow.jar"),
+            TestUtils.getTestResource(TestUtils.DATA_JAR));
 
-    private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(finder);
+    private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+            finder);
 
     @Test
     public void extractAnnotationValues_incorrectMethod() {

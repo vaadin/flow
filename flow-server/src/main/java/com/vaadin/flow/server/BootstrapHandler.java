@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -78,6 +76,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -1112,8 +1111,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         ui.getInternals().setSession(session);
         ui.setLocale(session.getLocale());
 
-        BootstrapContext context = new BootstrapContext(request, response,
-                session, ui);
+        BootstrapContext context = createBootstrapContext(request, response,
+                ui);
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -1140,6 +1139,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         return context;
+    }
+
+    /**
+     * Creates a new instance of {@link BootstrapContext} for given
+     * {@code request}, {@code response} and {@code ui}.
+     *
+     * @param request
+     *            the request object
+     * @param response
+     *            the response object
+     * @param ui
+     *            the UI object
+     *
+     * @return a new bootstrap context instance
+     */
+    protected BootstrapContext createBootstrapContext(VaadinRequest request,
+            VaadinResponse response, UI ui) {
+        return new BootstrapContext(request, response,
+                ui.getInternals().getSession(), ui);
     }
 
     protected void setupPushConnectionFactory(

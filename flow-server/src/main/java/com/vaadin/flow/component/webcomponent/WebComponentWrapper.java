@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -44,21 +45,21 @@ public class WebComponentWrapper extends Component {
 
     /**
      * Wrapper class for the server side WebComponent.
-     *
-     * @param tag
-     *         web component tag
-     * @param webComponentBinding
-     *         binding contains {@link Component} wrapped by this {@code
-     *         component} and associated web component property instances.
+     * @param rootElement
+     *          {@link Element} to which the {@code WebComponentWrapper} is
+     *          bound to.
+     * @param binding
+     *          binding that offers methods for delivering property updates
+     *          to the {@code component} being wrapped by {@code
+     *          WebComponentWrapper}
      */
-    public WebComponentWrapper(String tag, WebComponentBinding<?
-            extends Component> webComponentBinding) {
-        super(new Element(tag));
+    public WebComponentWrapper(Element rootElement, WebComponentBinding binding) {
+        super(rootElement);
+        Objects.requireNonNull(binding,"Parameter 'binding' must not be null!");
 
+        this.webComponentBinding = binding;
         this.child = webComponentBinding.getComponent();
         getElement().appendChild(child.getElement());
-
-        this.webComponentBinding = webComponentBinding;
     }
 
     /**
@@ -74,7 +75,7 @@ public class WebComponentWrapper extends Component {
     public void sync(String property, JsonValue newValue) {
         try {
             if (webComponentBinding.hasProperty(property)) {
-                setNewFieldValue(property, newValue);
+                setNewPropertyValue(property, newValue);
             } else {
                 LoggerFactory.getLogger(child.getClass())
                         .error("No match found for {}", property);
@@ -125,17 +126,28 @@ public class WebComponentWrapper extends Component {
         }
     }
 
-    private void setNewFieldValue(String property, JsonValue newValue) {
+    private void setNewPropertyValue(String property, JsonValue newValue) {
         Class<? extends Serializable> propertyType =
                 webComponentBinding.getPropertyType(property);
 
         if (JsonCodec.canEncodeWithoutTypeInfo(propertyType)) {
-            Serializable value = JsonCodec.decodeAs(newValue, propertyType);
+            Serializable value = null;
+            if (newValue != null) {
+                value = JsonCodec.decodeAs(newValue, propertyType);
+            }
             webComponentBinding.updateProperty(property, value);
         } else {
             throw new IllegalArgumentException(
                     String.format("Received value was not convertible to '%s'",
                             propertyType.getName()));
         }
+    }
+
+    /**
+     * For testing purposes only.
+     * @return  web component binding
+     */
+    protected WebComponentBinding<? extends Serializable> getWebComponentBinding() {
+        return webComponentBinding;
     }
 }

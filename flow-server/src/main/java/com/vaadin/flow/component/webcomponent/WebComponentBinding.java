@@ -20,15 +20,16 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 
 /**
  * An internal representation of a web component instance bound to a
  * {@link Component} instance. Facilitates property updates from the client
  * to the {@code component}.
  *
- * @param <C> exported component type
- * @see WebComponentConfiguration#createBinding(Instantiator) for creating
- *      {@code WebComponentBindings}
+ * @param <C>   type of the component being exported
+ * @see WebComponentConfiguration#createWebComponentBinding(Instantiator, Element)
+ *      to create {@code WebComponentBindings}
  */
 public interface WebComponentBinding<C extends Component> extends Serializable {
 
@@ -36,7 +37,7 @@ public interface WebComponentBinding<C extends Component> extends Serializable {
      * Updates a property bound to the {@code component}. If the property has
      * an attached listener, the {@code value} is also delivered to the
      * listener. If the {@code value} is {@code null}, the property is set to
-     * its default value (which could be {@code null}.
+     * its default value (which could be {@code null}).
      *
      * @param propertyName  name of the property
      * @param value         new value to set for the property
@@ -62,7 +63,7 @@ public interface WebComponentBinding<C extends Component> extends Serializable {
      * Does the component binding have a property identified by given name.
      *
      * @param propertyName  name of the property
-     * @return  has property
+     * @return has property
      */
     boolean hasProperty(String propertyName);
 }

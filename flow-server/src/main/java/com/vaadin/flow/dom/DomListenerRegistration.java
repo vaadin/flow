@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Set;
+
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
-
-import java.util.EnumSet;
-import java.util.Set;
 
 /**
  * A registration for configuring or removing a DOM event listener added to an
@@ -231,7 +230,6 @@ public interface DomListenerRegistration extends Registration {
      *            <code>null</code>
      * @return this registration, for chaining
      *
-     * @since
      */
     default DomListenerRegistration onUnregister(
             SerializableRunnable unregisterHandler) {

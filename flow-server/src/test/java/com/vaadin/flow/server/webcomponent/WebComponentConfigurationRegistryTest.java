@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -44,8 +45,8 @@ import org.mockito.MockitoAnnotations;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterAdapter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
@@ -85,7 +86,8 @@ public class WebComponentConfigurationRegistryTest {
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(WebComponentConfigurationRegistry.class, registry.getClass());
+        Assert.assertEquals(WebComponentConfigurationRegistry.class,
+                registry.getClass());
     }
 
     @Test
@@ -98,31 +100,31 @@ public class WebComponentConfigurationRegistryTest {
                 registry.getConfigurations().size());
 
         Assert.assertEquals(
-                "Tag 'my-component' should have returned " +
-                        "'WebComponentBuilder' matching MyComponent",
+                "Tag 'my-component' should have returned "
+                        + "'WebComponentBuilder' matching MyComponent",
                 MyComponent.class,
-                registry.getConfigurationInternal(MY_COMPONENT_TAG).getComponentClass());
+                registry.getConfigurationInternal(MY_COMPONENT_TAG)
+                        .getComponentClass());
         Assert.assertEquals(
-                "Tag 'user-box' should have returned 'WebComponentBuilder' " +
-                        "matching UserBox",
-                UserBox.class,
-                registry.getConfigurationInternal(USER_BOX_TAG).getComponentClass());
+                "Tag 'user-box' should have returned 'WebComponentBuilder' "
+                        + "matching UserBox",
+                UserBox.class, registry.getConfigurationInternal(USER_BOX_TAG)
+                        .getComponentClass());
     }
-
 
     @Test
     public void setExporters_gettingBuildersDoesNotAllowAddingMore() {
         registry.setExporters(asMap(MyComponentExporter.class));
 
-        WebComponentConfiguration<? extends Component> conf1 =
-                registry.getConfigurationInternal("my-component");
+        WebComponentConfiguration<? extends Component> conf1 = registry
+                .getConfigurationInternal("my-component");
 
         Assert.assertNotNull(conf1);
 
         Assert.assertFalse(registry.setExporters(asMap(UserBoxExporter.class)));
 
-        WebComponentConfiguration<? extends Component> conf2 =
-                registry.getConfigurationInternal("my-component");
+        WebComponentConfiguration<? extends Component> conf2 = registry
+                .getConfigurationInternal("my-component");
 
         Assert.assertEquals(conf1, conf2);
     }
@@ -132,25 +134,25 @@ public class WebComponentConfigurationRegistryTest {
         registry.setExporters(asMap(MyComponentExporter.class,
                 MyComponentExporter2.class, UserBoxExporter.class));
 
-        Set<WebComponentConfiguration<MyComponent>> set =
-                registry.getConfigurationsByComponentType(MyComponent.class);
+        Set<WebComponentConfiguration<MyComponent>> set = registry
+                .getConfigurationsByComponentType(MyComponent.class);
 
         Assert.assertEquals("Builder set should contain two builders", 2,
                 set.size());
 
-        Assert.assertTrue("Both builders should have exporter " +
-                        "MyComponent.class", set.stream()
-                .map(WebComponentConfiguration::getComponentClass)
-                .allMatch(clazz -> clazz.equals(MyComponent.class)));
+        Assert.assertTrue(
+                "Both builders should have exporter " + "MyComponent.class",
+                set.stream().map(WebComponentConfiguration::getComponentClass)
+                        .allMatch(clazz -> clazz.equals(MyComponent.class)));
     }
 
     @Test
     public void setConfigurationsTwice_onlyFirstSetIsAccepted() {
-        Map<String, Class<? extends WebComponentExporter<? extends Component>>>
-                exporters1st = asMap(MyComponentExporter.class);
+        Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporters1st = asMap(
+                MyComponentExporter.class);
 
-        Map<String, Class<? extends WebComponentExporter<? extends Component>>>
-                exporters2nd = asMap(UserBoxExporter.class);
+        Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporters2nd = asMap(
+                UserBoxExporter.class);
 
         Assert.assertTrue("Registry should have accepted the WebComponents",
                 registry.setExporters(exporters1st));
@@ -161,12 +163,32 @@ public class WebComponentConfigurationRegistryTest {
 
         Assert.assertEquals(
                 "Builders from the first Set should have been added",
-                MyComponent.class, registry.getConfigurationInternal("my" +
-                        "-component").getComponentClass());
+                MyComponent.class,
+                registry.getConfigurationInternal("my" + "-component")
+                        .getComponentClass());
 
         Assert.assertNull(
                 "Components from the second Set should not have been added",
                 registry.getConfigurationInternal("user-box"));
+    }
+
+    @Test
+    public void getConfigurations_uninitializedReturnsEmptySet() {
+        WebComponentConfigurationRegistry uninitializedRegistry = new WebComponentConfigurationRegistry();
+
+        Set<?> set = uninitializedRegistry.getConfigurations();
+
+        Assert.assertEquals("Configuration set should be empty", 0, set.size());
+    }
+
+    @Test
+    public void hasExporters() {
+        Assert.assertFalse("Should have no exporters", registry.hasExporters());
+
+        registry.setExporters(Collections.emptyMap());
+
+        Assert.assertTrue("Should have exporters, albeit empty",
+                registry.hasExporters());
     }
 
     @Test
@@ -179,7 +201,8 @@ public class WebComponentConfigurationRegistryTest {
         List<Callable<AtomicBoolean>> callables = IntStream.range(0, THREADS)
                 .mapToObj(i -> {
                     Callable<AtomicBoolean> callable = () -> {
-                        // Add random sleep for better possibility to run at same time
+                        // Add random sleep for better possibility to run at
+                        // same time
                         Thread.sleep(new Random().nextInt(200));
                         return new AtomicBoolean(registry.setExporters(
                                 asMap(MyComponentExporter.class)));
@@ -202,17 +225,15 @@ public class WebComponentConfigurationRegistryTest {
 
         Assert.assertEquals("Expected all except one thread to return false",
                 THREADS - 1,
-                results.stream().filter(result -> !result.get())
-                        .count());
+                results.stream().filter(result -> !result.get()).count());
 
     }
 
-    protected  Map<String, Class<? extends WebComponentExporter<?
-            extends Component>>> asMap(Class<?>... things) {
+    protected Map<String, Class<? extends WebComponentExporter<? extends Component>>> asMap(
+            Class<?>... things) {
         return Stream.of(things).collect(Collectors.toMap(
                 thing -> thing.getAnnotation(Tag.class).value(),
-                thing -> (Class<? extends WebComponentExporter<?
-                        extends Component>>) thing));
+                thing -> (Class<? extends WebComponentExporter<? extends Component>>) thing));
     }
 
     protected class MyComponent extends Component {
@@ -222,25 +243,22 @@ public class WebComponentConfigurationRegistryTest {
     }
 
     /*
-        These exporters have to be public, or Instantiator won't find their
-        constructors
+     * These exporters have to be public, or Instantiator won't find their
+     * constructors
      */
 
     @Tag("my-component")
-    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {}
+    public static class MyComponentExporter
+            extends WebComponentExporterAdapter<MyComponent> {
     }
 
     @Tag("my-component-2")
-    public static class MyComponentExporter2 implements WebComponentExporter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {}
+    public static class MyComponentExporter2
+            extends WebComponentExporterAdapter<MyComponent> {
     }
 
     @Tag("user-box")
-    public static class UserBoxExporter implements WebComponentExporter<UserBox> {
-        @Override
-        public void define(WebComponentDefinition<UserBox> definition) {}
+    public static class UserBoxExporter
+            extends WebComponentExporterAdapter<UserBox> {
     }
 }

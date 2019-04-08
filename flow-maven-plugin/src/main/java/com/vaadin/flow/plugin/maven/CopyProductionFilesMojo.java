@@ -79,7 +79,7 @@ public class CopyProductionFilesMojo extends AbstractMojo {
                         artifact.getArtifactId(), artifact.getVersion()))
                 .collect(Collectors.toList());
 
-        if(frontendWorkingDirectory == null) {
+        if (frontendWorkingDirectory == null) {
             // No directory given, try to find from common locations
             final List<String> potentialFrontEndDirectories = Arrays.asList(
                     "src/main/webapp/frontend",
@@ -87,9 +87,9 @@ public class CopyProductionFilesMojo extends AbstractMojo {
                     "src/main/resources/public/frontend",
                     "src/main/resources/static/frontend",
                     "src/main/resources/resources/frontend");
-            for(String dir : potentialFrontEndDirectories) {
+            for (String dir : potentialFrontEndDirectories) {
                 File directory = new File(project.getBasedir(), dir);
-                if(directory.exists()) {
+                if (directory.exists()) {
                     frontendWorkingDirectory = directory;
                     break;
                 }

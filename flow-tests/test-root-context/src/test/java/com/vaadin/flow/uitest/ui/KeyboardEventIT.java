@@ -7,11 +7,6 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-/**
- *
- * @author Vaadin Ltd.
- * @since
- */
 public class KeyboardEventIT extends ChromeBrowserTest {
     @Test
     public void verify_that_keys_are_received_correctly() {

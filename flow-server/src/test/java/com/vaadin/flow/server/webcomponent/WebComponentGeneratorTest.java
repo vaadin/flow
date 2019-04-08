@@ -23,20 +23,29 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterAdapter;
 import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 public class WebComponentGeneratorTest {
 
     @Test
-    public void generatedReplacementMapContainsExpectedEntries() {
-        WebComponentConfigurationImpl<MyComponent> builder =
-                new WebComponentConfigurationImpl<>("tag", new MyComponentExporter());
+    public void generatedReplacementMapContainsExpectedEntriesIncludingUi() {
+        assertGeneratedReplacementMapContainsExpectedEntries(true);
+    }
 
+    @Test
+    public void generatedReplacementMapContainsExpectedEntriesExcludingUi() {
+        assertGeneratedReplacementMapContainsExpectedEntries(false);
+    }
+
+    public void assertGeneratedReplacementMapContainsExpectedEntries(
+            boolean generateUi) {
+        WebComponentConfigurationImpl<MyComponent> builder = new WebComponentConfigurationImpl<>(
+                new MyComponentExporter());
 
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("document.body", "my-component",
-                        builder.getPropertyDataSet(), "/foo");
+                        builder.getPropertyDataSet(), "/foo", generateUi, "/foo");
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -47,15 +56,28 @@ public class WebComponentGeneratorTest {
         Assert.assertTrue("Missing 'Properties'",
                 replacementsMap.containsKey("Properties"));
         Assert.assertTrue("No 'RootElement' specified",
-                replacementsMap.containsKey("RootElement"));
+            replacementsMap.containsKey("RootElement"));
         Assert.assertTrue("Missing servlet context path",
-                replacementsMap.containsKey("servlet_context"));
+            replacementsMap.containsKey("servlet_context"));
+        Assert.assertTrue("Missing frontend resources path",
+                replacementsMap.containsKey("frontend_resources"));
+        Assert.assertTrue("Missing ui import",
+                replacementsMap.containsKey("ui_import"));
 
         Assert.assertEquals("my-component", replacementsMap.get("TagDash"));
         Assert.assertEquals("MyComponent", replacementsMap.get("TagCamel"));
 
-        Assert.assertEquals("document.body",
-                replacementsMap.get("RootElement"));
+        Assert.assertEquals("document.body", replacementsMap.get("RootElement"));
+
+        Assert.assertEquals("/foo", replacementsMap.get("frontend_resources"));
+
+        if (generateUi) {
+            Assert.assertEquals(
+                    "<link rel='import' href='web-component-ui.html'>",
+                    replacementsMap.get("ui_import"));
+        } else {
+            Assert.assertEquals("", replacementsMap.get("ui_import"));
+        }
 
         Assert.assertEquals("/foo", replacementsMap.get("servlet_context"));
 
@@ -67,12 +89,11 @@ public class WebComponentGeneratorTest {
         String properties = replacementsMap.get("Properties");
         Assert.assertTrue(properties
                 .contains("\"message\":{\"type\":\"String\",\"value\":\"\""));
-        Assert.assertTrue(properties.contains(
-                "\"integerValue\":{\"type\":\"Integer\",\"value\":0," +
-                        "\"observer\""));
+        Assert.assertTrue(properties
+                .contains("\"integer-value\":{\"type\":\"Integer\",\"value\":0,"
+                        + "\"observer\""));
         Assert.assertTrue(properties.contains(
                 "\"response\":{\"type\":\"String\",\"value\":\"hello\""));
-
     }
 
     public static class MyComponent extends Component {
@@ -81,7 +102,6 @@ public class WebComponentGeneratorTest {
         private String response;
         private int integerValue;
         private String message;
-
 
         public void setResponse(String response) {
             this.response = response;
@@ -97,12 +117,13 @@ public class WebComponentGeneratorTest {
     }
 
     @Tag("tag")
-    public static class MyComponentExporter implements WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter
+            extends WebComponentExporterAdapter<MyComponent> {
         @Override
         public void define(WebComponentDefinition<MyComponent> definition) {
             definition.addProperty("response", "hello")
                     .onChange(MyComponent::setMessage);
-            definition.addProperty("integerValue", 0)
+            definition.addProperty("integer-value", 0)
                     .onChange(MyComponent::setIntegerValue);
             definition.addProperty("message", "")
                     .onChange(MyComponent::setMessage);
