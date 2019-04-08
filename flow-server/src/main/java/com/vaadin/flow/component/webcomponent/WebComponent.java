@@ -34,7 +34,7 @@ import elemental.json.JsonValue;
  * custom events on the client-side.
  *
  * @param <C>
- *         {@code component} exported as web component
+ *         type of the {@code component} exported as web component
  * @author Vaadin Ltd.
  */
 public final class WebComponent<C extends Component> implements Serializable {
