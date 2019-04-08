@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -39,6 +38,7 @@ import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
+import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
@@ -126,6 +126,14 @@ public class PackageForProductionMojo extends AbstractMojo {
      */
     @Parameter(property = "bundleConfiguration", defaultValue = "${project.basedir}/bundle-configuration.json")
     private File bundleConfiguration;
+
+    /**
+     * Set the web components module files output folder name. The default is
+     * <code>vaadin-web-components</code>. The folder is used to generate the
+     * web component module files.
+     */
+    @Parameter(property = "webComponentOutputDirectoryName", defaultValue = "vaadin-web-components")
+    private String webComponentOutputDirectoryName;
 
     /**
      * Defines the path to node executable to use. If specified,
@@ -218,7 +226,8 @@ public class PackageForProductionMojo extends AbstractMojo {
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
                 bundle, minify, hash, transpileEs6SourceDirectory,
                 new AnnotationValuesExtractor(getProjectClassPathUrls()),
-                bundleConfiguration, getFragmentsData(fragments));
+                bundleConfiguration, webComponentOutputDirectoryName,
+                getFragmentsData(fragments));
 
         FrontendToolsManager frontendToolsManager = new FrontendToolsManager(
                 transpileWorkingDirectory, es5OutputDirectoryName,
