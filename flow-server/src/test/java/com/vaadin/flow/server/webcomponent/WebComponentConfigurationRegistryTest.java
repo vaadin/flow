@@ -58,28 +58,12 @@ public class WebComponentConfigurationRegistryTest {
     private static final String MY_COMPONENT_TAG = "my-component";
     private static final String USER_BOX_TAG = "user-box";
 
-    @Mock
-    protected VaadinService service;
-
-    @Mock
-    protected VaadinSession session;
-
     protected WebComponentConfigurationRegistry registry;
 
     @Before
     public void init() {
         registry = WebComponentConfigurationRegistry
                 .getInstance(mock(ServletContext.class));
-
-        MockitoAnnotations.initMocks(this);
-        VaadinService.setCurrent(service);
-        Mockito.when(service.getInstantiator())
-                .thenReturn(new MockInstantiator());
-    }
-
-    @After
-    public void cleanUp() {
-        CurrentInstance.clearAll();
     }
 
     @Test
@@ -197,8 +181,7 @@ public class WebComponentConfigurationRegistryTest {
         registry.setConfigurations(Collections.emptySet());
 
         Assert.assertFalse("Should not have configurations, when empty set is" +
-                        " " +
-                        "given",
+                        " given",
                 registry.hasConfigurations());
     }
 
@@ -239,7 +222,7 @@ public class WebComponentConfigurationRegistryTest {
                 results.stream().filter(result -> !result.get()).count());
 
     }
-    
+
     protected Set<WebComponentConfiguration<? extends Component>> createConfigurations(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
         WebComponentExporter.WebComponentConfigurationFactory factory =
@@ -268,7 +251,7 @@ public class WebComponentConfigurationRegistryTest {
 
     protected static class MyComponentExporter2
             extends WebComponentExporter<MyComponent> {
-        
+
         public MyComponentExporter2() {
             super("my-component-2");
         }
