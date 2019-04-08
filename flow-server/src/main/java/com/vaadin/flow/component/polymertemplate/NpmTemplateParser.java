@@ -41,7 +41,6 @@ import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -58,7 +57,6 @@ import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
  *
  * @author Vaadin Ltd
  * @see BundleParser
- * @since
  */
 public class NpmTemplateParser implements TemplateParser {
 

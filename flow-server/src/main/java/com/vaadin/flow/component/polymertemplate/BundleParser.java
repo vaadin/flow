@@ -15,20 +15,12 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import static elemental.json.JsonType.ARRAY;
-import static elemental.json.JsonType.OBJECT;
-import static elemental.json.JsonType.STRING;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import com.google.common.base.Predicates;
 import com.google.javascript.jscomp.NodeUtil;
@@ -39,11 +31,17 @@ import com.google.javascript.rhino.ErrorReporter;
 import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.SimpleErrorReporter;
 import com.google.javascript.rhino.StaticSourceFile;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
+import static elemental.json.JsonType.ARRAY;
+import static elemental.json.JsonType.OBJECT;
+import static elemental.json.JsonType.STRING;
 
 /**
  * Parse statistics data provided by webpack.
@@ -51,7 +49,6 @@ import elemental.json.JsonType;
  * @see NpmTemplateParser
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public final class BundleParser {

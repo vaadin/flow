@@ -39,7 +39,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * {@link WebComponentExporter} on startup.
  *
  * @author Vaadin Ltd.
- * @since
  */
 @HandlesTypes({ WebComponentExporter.class })
 public class WebComponentConfigurationRegistryInitializer

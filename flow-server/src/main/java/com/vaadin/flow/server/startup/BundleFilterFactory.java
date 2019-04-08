@@ -44,7 +44,6 @@ import elemental.json.JsonObject;
  * Factory for bundle filters.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class BundleFilterFactory implements Serializable {
     static final String MAIN_BUNDLE_NAME_PREFIX = "vaadin-flow-bundle";

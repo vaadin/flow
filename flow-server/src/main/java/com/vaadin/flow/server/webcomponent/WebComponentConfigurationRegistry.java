@@ -37,8 +37,6 @@ import com.vaadin.flow.theme.Theme;
 
 /**
  * Registry for storing available web component builder implementations.
- *
- * @since
  */
 @EmbeddedApplicationAnnotations({ Theme.class, Push.class })
 public class WebComponentConfigurationRegistry implements Serializable {
