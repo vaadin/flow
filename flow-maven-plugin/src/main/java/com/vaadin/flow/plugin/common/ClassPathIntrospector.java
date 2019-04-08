@@ -85,6 +85,19 @@ public abstract class ClassPathIntrospector {
     }
 
     /**
+     * Gets the subtypes of the given {@code type}.
+     *
+     * @param type
+     *            super type for subtype search
+     * @return all subtypes of the given {@code type}
+     */
+    protected Stream<Class<?>> getSubtypes(Class<?> type) {
+        return reflections
+                .getSubTypesOf(loadClassInProjectClassLoader(type.getName()))
+                .stream();
+    }
+
+    /**
      * Returns the annotation class by its FQN.
      * <p>
      * Note that the resulting class is loaded by project classloader ( not the

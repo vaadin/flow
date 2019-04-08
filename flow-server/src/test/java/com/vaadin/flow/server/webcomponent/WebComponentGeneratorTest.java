@@ -28,14 +28,24 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 public class WebComponentGeneratorTest {
 
     @Test
-    public void generatedReplacementMapContainsExpectedEntries() {
+    public void generatedReplacementMapContainsExpectedEntriesIncludingUi() {
+        assertGeneratedReplacementMapContainsExpectedEntries(true);
+    }
+
+    @Test
+    public void generatedReplacementMapContainsExpectedEntriesExcludingUi() {
+        assertGeneratedReplacementMapContainsExpectedEntries(false);
+    }
+
+    public void assertGeneratedReplacementMapContainsExpectedEntries(
+            boolean generateUi) {
         MyComponentExporter exporter = new MyComponentExporter();
 
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("my-component",
                         new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
                                 .getPropertyDataSet(),
-                        "/foo");
+                        "/foo", generateUi);
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -47,11 +57,21 @@ public class WebComponentGeneratorTest {
                 replacementsMap.containsKey("Properties"));
         Assert.assertTrue("Missing frontend resources path",
                 replacementsMap.containsKey("frontend_resources"));
+        Assert.assertTrue("Missing ui import",
+                replacementsMap.containsKey("ui_import"));
 
         Assert.assertEquals("my-component", replacementsMap.get("TagDash"));
         Assert.assertEquals("MyComponent", replacementsMap.get("TagCamel"));
 
         Assert.assertEquals("/foo", replacementsMap.get("frontend_resources"));
+
+        if (generateUi) {
+            Assert.assertEquals(
+                    "<link rel='import' href='web-component-ui.html'>",
+                    replacementsMap.get("ui_import"));
+        } else {
+            Assert.assertEquals("", replacementsMap.get("ui_import"));
+        }
 
         String propertyMethods = replacementsMap.get("PropertyMethods");
         Assert.assertTrue(propertyMethods.contains("_sync_message"));

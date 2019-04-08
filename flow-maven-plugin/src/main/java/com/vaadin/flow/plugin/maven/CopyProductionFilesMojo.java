@@ -71,24 +71,24 @@ public class CopyProductionFilesMojo extends AbstractMojo {
                 .map(artifact -> new ArtifactData(artifact.getFile(),
                         artifact.getArtifactId(), artifact.getVersion()))
                 .collect(Collectors.toList());
-        
-        if(frontendWorkingDirectory == null) {
+
+        if (frontendWorkingDirectory == null) {
             // No directory given, try to find from common locations
             final List<String> potentialFrontEndDirectories = Arrays.asList(
                     "src/main/webapp/frontend",
-                    "src/main/resources/META-INF/resources/frontend", 
+                    "src/main/resources/META-INF/resources/frontend",
                     "src/main/resources/public/frontend",
                     "src/main/resources/static/frontend",
                     "src/main/resources/resources/frontend");
-            for(String dir : potentialFrontEndDirectories) {
+            for (String dir : potentialFrontEndDirectories) {
                 File directory = new File(project.getBasedir(), dir);
-                if(directory.exists()) {
+                if (directory.exists()) {
                     frontendWorkingDirectory = directory;
                     break;
                 }
             }
         }
-        
+
         new ProductionModeCopyStep(new JarContentsManager(), projectArtifacts)
                 .copyWebApplicationFiles(copyOutputDirectory,
                         frontendWorkingDirectory, excludes);

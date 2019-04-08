@@ -54,12 +54,10 @@ public class ThemedURLTranslatorTest {
     public void applyTheme_oneThemeIsDiscovered_urlsAreRewritten()
             throws IOException {
         ClassPathIntrospector introspector = new ClassPathIntrospector(
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(TestUtils.SERVER_JAR),
                 TestUtils.getTestResource(
                         "annotation-extractor-test/themes-one-theme.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar")) {
+                TestUtils.getTestResource(TestUtils.DATA_JAR)) {
         };
 
         Function<String, File> factory = url -> new File(
@@ -94,10 +92,8 @@ public class ThemedURLTranslatorTest {
     public void applyTheme_noThemeIsDiscovered_urlsAreRewritten()
             throws IOException {
         ClassPathIntrospector introspector = new ClassPathIntrospector(
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar")) {
+                TestUtils.getTestResource(TestUtils.SERVER_JAR),
+                TestUtils.getTestResource(TestUtils.DATA_JAR)) {
         };
 
         Function<String, File> factory = url -> new File(
@@ -128,12 +124,10 @@ public class ThemedURLTranslatorTest {
     @Test
     public void applyTheme_twoThemeIsDiscovered_throws() throws IOException {
         ClassPathIntrospector introspector = new ClassPathIntrospector(
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(TestUtils.SERVER_JAR),
                 TestUtils.getTestResource(
                         "annotation-extractor-test/themes-two-themes.jar"),
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-data-1.0-SNAPSHOT.jar")) {
+                TestUtils.getTestResource(TestUtils.DATA_JAR)) {
         };
 
         Function<String, File> factory = url -> new File(
@@ -151,10 +145,10 @@ public class ThemedURLTranslatorTest {
     }
 
     @Test
-    public void applyTheme_when_annotation_on_a_routerLayout() throws Exception {
+    public void applyTheme_when_annotation_on_a_routerLayout()
+            throws Exception {
         ClassPathIntrospector introspector = new ClassPathIntrospector(
-                TestUtils.getTestResource(
-                        "annotation-extractor-test/flow-server-1.0-SNAPSHOT.jar"),
+                TestUtils.getTestResource(TestUtils.SERVER_JAR),
                 TestUtils.getTestResource(
                         "annotation-extractor-test/RouterLayoutTheme.jar")) {
         };

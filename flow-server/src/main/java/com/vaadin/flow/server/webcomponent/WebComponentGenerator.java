@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -62,6 +63,27 @@ public class WebComponentGenerator {
     }
 
     /**
+     * Generate web component html/JS for given exporter class.
+     *
+     * @param exporterType
+     *         web component exporter class, not {@code null}
+     * @param frontendURI
+     *         the frontend resources URI, not {@code null}
+     * @return generated web component html/JS to be served to the client
+     */
+    public static String generateModule(
+            Class<? extends WebComponentExporter<? extends Component>> exporterType,
+            String frontendURI) {
+        Objects.requireNonNull(exporterType);
+        Objects.requireNonNull(frontendURI);
+
+        WebComponentConfiguration<? extends Component> config =
+                new WebComponentExporter.WebComponentConfigurationFactory()
+                        .create(exporterType);
+        return generateModule(config, frontendURI, false);
+    }
+
+    /**
      * Generate web component html/JS for given tag and class.
      *
      * @param tag
@@ -72,9 +94,10 @@ public class WebComponentGenerator {
      *         the frontend resources URI, not {@code null}
      * @return generated web component html/JS to be served to the client
      */
-    public static String generateModule(String tag,
-                                        WebComponentConfiguration<? extends Component> webComponentConfiguration,
-                                        String frontendURI) {
+    public static String generateModule(
+            String tag,
+            WebComponentConfiguration<? extends Component> webComponentConfiguration,
+            String frontendURI) {
         Objects.requireNonNull(tag);
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
@@ -83,7 +106,7 @@ public class WebComponentGenerator {
                 .getPropertyDataSet();
 
         Map<String, String> replacements = getReplacementsMap(tag,
-                propertyDataSet, frontendURI);
+                propertyDataSet, frontendURI, true);
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -94,8 +117,9 @@ public class WebComponentGenerator {
     }
 
     static Map<String, String> getReplacementsMap(
-            String tag, Set<PropertyData<? extends Serializable>> propertyDataSet, String frontendURI) {
-
+            String tag,
+            Set<PropertyData<? extends Serializable>> propertyDataSet,
+            String frontendURI, boolean generateUiImport) {
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);
@@ -109,7 +133,33 @@ public class WebComponentGenerator {
 
         replacements.put("frontend_resources", frontendURI);
 
+        replacements.put("ui_import",
+                generateUiImport
+                        ? "<link rel='import' href='web-component-ui.html'>"
+                        : "");
+
         return replacements;
+    }
+
+    private static String generateModule(
+            WebComponentConfiguration<? extends Component> webComponentConfiguration,
+            String frontendURI, boolean generateUiImport) {
+        Objects.requireNonNull(webComponentConfiguration);
+        Objects.requireNonNull(frontendURI);
+
+        Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
+                .getPropertyDataSet();
+
+        Map<String, String> replacements =
+                getReplacementsMap(webComponentConfiguration.getTag(),
+                        propertyDataSet, frontendURI, generateUiImport);
+
+        String template = getTemplate();
+        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+            template = template.replace("_" + replacement.getKey() + "_",
+                    replacement.getValue());
+        }
+        return template;
     }
 
     private static String getPropertyDefinitions(
@@ -142,9 +192,9 @@ public class WebComponentGenerator {
             } else if (JsonValue.class.isAssignableFrom(property.getType())) {
                 prop.put(propertyValue, (JsonValue) property.getDefaultValue());
             } else {
-                throw new UnsupportedPropertyTypeException(String.format("%s "
-                                + "is not a currently supported type for a Property. "
-                                + "Please use %s instead.",
+                throw new UnsupportedPropertyTypeException(String.format(
+                        "%s is not a currently supported type for a Property." +
+                                " Please use %s instead.",
                         property.getType().getSimpleName(),
                         JsonValue.class.getSimpleName()));
             }
