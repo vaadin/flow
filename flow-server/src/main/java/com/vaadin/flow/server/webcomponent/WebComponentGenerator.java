@@ -64,6 +64,47 @@ public class WebComponentGenerator {
     }
 
     /**
+     * Generate web component html/JS for given exporter class.
+     *
+     * @param exporterType
+     *            web component exporter class, not {@code null}
+     * @param frontendURI
+     *            the frontend resources URI, not {@code null}
+     * @return generated web component html/JS to be served to the client
+     */
+    public static String generateModule(
+        Class<? extends WebComponentExporter<? extends Component>> exporterType,
+        String frontendURI) {
+        Objects.requireNonNull(exporterType);
+        Objects.requireNonNull(frontendURI);
+
+        WebComponentConfiguration<? extends Component> config = new WebComponentConfigurationFactory()
+            .apply(exporterType);
+        return generateModule(getTag(exporterType), config, frontendURI, false);
+    }
+
+    private static String generateModule(String tag,
+                                         WebComponentConfiguration<? extends Component> webComponentConfiguration,
+                                         String frontendURI, boolean generateUiImport) {
+        Objects.requireNonNull(tag);
+        Objects.requireNonNull(webComponentConfiguration);
+        Objects.requireNonNull(frontendURI);
+
+        Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
+            .getPropertyDataSet();
+
+        Map<String, String> replacements = getReplacementsMap("", tag,
+            propertyDataSet, frontendURI, generateUiImport, "");
+
+        String template = getTemplate();
+        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+            template = template.replace("_" + replacement.getKey() + "_",
+                replacement.getValue());
+        }
+        return template;
+    }
+
+    /**
      * Generate web component html/JS for given tag and class.
      *
      * @param uiElement
