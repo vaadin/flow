@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
+
 /**
  * The default implementation of {@link DeploymentConfiguration} based on a base
  * class for resolving system properties and a set of init parameters.
@@ -34,16 +36,24 @@ import com.vaadin.flow.shared.communication.PushMode;
  */
 public class DefaultDeploymentConfiguration
         extends PropertyDeploymentConfiguration {
-    private static final String SEPARATOR = "\n===========================================================";
+    private static final String SEPARATOR = "\n====================================================================";
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
             + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
             + "to disable debug features." + SEPARATOR;
-    
+
     public static final String WARNING_BOWER_MODE = SEPARATOR
             + "\nVaadin is running in BOWER mode.\n"
             + "This mode will be unsuported in future Vaadin versions."
-            + SEPARATOR;    
+            + SEPARATOR;
+
+     public static final String WARNING_BOWER_LEGACY = SEPARATOR
+            + "\n** WARNING **  Vaadin is running in BOWER MODE.\n"
+            + "\nBy default Vaadin should run in npm mode but this project is not"
+            + "\nproperly configured.\n"
+            + "\nTo disable this message, migrate your project to 'npm' or set the"
+            + "\nproperty" + " 'vaadin." + SERVLET_PARAMETER_BOWER_MODE + "' to 'true'"
+            + SEPARATOR;
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
@@ -93,6 +103,7 @@ public class DefaultDeploymentConfiguration
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
+
     private static AtomicBoolean loggWarning = new AtomicBoolean(true);
 
     /**
@@ -241,15 +252,20 @@ public class DefaultDeploymentConfiguration
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
         }
     }
-    
+
     /**
      * Log a warning if Vaadin is running in bower mode.
      */
     private void checkBowerMode(boolean loggWarning) {
-        bowerMode = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_BOWER_MODE, false);
+        bowerMode = getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, false);
         if (bowerMode && loggWarning) {
             getLogger().warn(WARNING_BOWER_MODE);
+        }
+        if (!bowerMode && isBowerLegacyMode()) {
+            if (loggWarning) {
+                getLogger().warn(WARNING_BOWER_LEGACY);
+            }
+            bowerMode = true;
         }
     }
 

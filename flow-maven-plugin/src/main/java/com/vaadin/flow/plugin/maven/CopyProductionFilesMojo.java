@@ -30,7 +30,6 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
-import com.vaadin.flow.server.Constants;
 
 /**
  * Goal that copies all production mode files into the
@@ -68,7 +67,7 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     @Override
     public void execute() {
         // Do nothing when not in bower mode
-        if (!Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+        if (!NodeUpdateAbstractMojo.isBowerMode(getLog())) {
             getLog().info("Skipped `copy-production-files` goal because `vaadin.bowerMode` is not set.");
             return;
         }

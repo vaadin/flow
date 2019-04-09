@@ -43,7 +43,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 
 /**
@@ -99,8 +101,8 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, new File("./src/main/webapp"), WEBPACK_CONFIG, new File("."),
-                new File("./node_modules/"), true);
+        this(extractor, new File(getBaseDir(), "src/main/webapp"), WEBPACK_CONFIG, new File(getBaseDir()),
+                new File(getBaseDir(), "node_modules"), true);
     }
 
     @Override
