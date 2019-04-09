@@ -75,7 +75,7 @@ public class WebComponentUI extends UI {
              * fact there are no such HTML files: they should have been
              * generated during transpilation via maven plugin. To be able to
              * activate transpiled code the embedded application imports the
-             * "dependencies" which represents the transpiled files.
+             * "dependencies" which represent the transpiled files.
              */
             registry.getConfigurations().stream().forEach(config -> getPage()
                     .addHtmlImport(getWebComponentPath(config)));
