@@ -39,6 +39,8 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 
+import elemental.json.JsonValue;
+
 /**
  * Represents the web page open in the browser, containing the UI it is
  * connected to.
@@ -312,6 +314,7 @@ public class Page implements Serializable {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
+     * <li>{@link JsonValue}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
@@ -347,6 +350,7 @@ public class Page implements Serializable {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
+     * <li>{@link JsonValue}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)

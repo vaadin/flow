@@ -1545,9 +1545,8 @@ public class Element extends Node<Element> {
      * Calls the given function on the element with the given arguments.
      * <p>
      * The function will be called after all pending DOM updates have completed,
-     * at the same time that
-     * {@link Page#executeJs(String, Serializable...)} calls are
-     * invoked.
+     * at the same time that {@link Page#executeJs(String, Serializable...)}
+     * calls are invoked.
      * <p>
      * If the element is not attached, the function call will be deferred until
      * the element is attached.
@@ -1575,9 +1574,8 @@ public class Element extends Node<Element> {
      * Calls the given function on the element with the given arguments.
      * <p>
      * The function will be called after all pending DOM updates have completed,
-     * at the same time that
-     * {@link Page#executeJs(String, Serializable...)} calls are
-     * invoked.
+     * at the same time that {@link Page#executeJs(String, Serializable...)}
+     * calls are invoked.
      * <p>
      * If the element is not attached, the function call will be deferred until
      * the element is attached.
@@ -1623,6 +1621,7 @@ public class Element extends Node<Element> {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
+     * <li>{@link JsonValue}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
@@ -1659,6 +1658,7 @@ public class Element extends Node<Element> {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
+     * <li>{@link JsonValue}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
