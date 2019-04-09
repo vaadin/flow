@@ -203,6 +203,11 @@ public class NodeUpdatePackages extends NodeUpdater {
             String... npmInstallArgs) {
         ProcessBuilder builder = new ProcessBuilder(
                 getNpmCommand(dependencies, npmInstallArgs));
+        // some Vaadin npm packages do postinstall step as `node something.js`
+        builder.environment().put("PATH",
+                builder.environment().get("PATH")
+                        + String.format(":%s", nodeExecutorConfig.getNodePath()
+                                .getParentFile().getAbsolutePath()));
         builder.directory(npmFolder);
         if (log().isInfoEnabled()) {
             log().info(
