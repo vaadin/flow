@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,11 +35,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Helps to locate the tools in the system by their names.
  */
-public class FrontendToolsLocator {
+public class FrontendToolsLocator implements Serializable {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(FrontendToolsLocator.class);
 
-    private static class CommandResult {
+    private static class CommandResult implements Serializable {
         private final String command;
         private final int exitCode;
         private final List<String> stdout;
@@ -64,7 +65,7 @@ public class FrontendToolsLocator {
     /**
      * An object storing the node and npm paths.
      */
-    public static class NodeAndNpmPaths {
+    public static class NodeAndNpmPaths implements Serializable {
         private final File nodePath;
         private final File npmPath;
 
