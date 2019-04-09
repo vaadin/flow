@@ -82,7 +82,8 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
 
         Process webpackLaunch = null;
         try {
-            webpackLaunch = new ProcessBuilder("node",
+            webpackLaunch = new ProcessBuilder(
+                    nodeExecutorConfig.getNodePath().getAbsolutePath(),
                     webpackExecutable.getAbsolutePath())
                             .directory(project.getBasedir())
                             .redirectOutput(ProcessBuilder.Redirect.INHERIT)

@@ -19,22 +19,38 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
+import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeExecutorConfig;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeExecutorConfigLocal;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeInstaller;
+import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
+import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.plugin.common.FrontendToolsLocator;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.server.frontend.NodeUpdater;
@@ -99,6 +115,45 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * A configuration that contains the node and npm paths.
+     */
+    protected static NodeExecutorConfig nodeExecutorConfig;
+
+    /**
+     * If <code>false</code> then maven proxies will be used in the
+     * ProxyConfiguration.
+     */
+    @Parameter(property = "ignoreMavenProxies", defaultValue = "true", required = true)
+    private boolean ignoreMavenProxies;
+
+    /**
+     * The maven settings decrypter.
+     */
+    @Component(role = SettingsDecrypter.class)
+    private SettingsDecrypter decrypter;
+
+    /**
+     * Set the maven session which will be used for maven proxies if they are
+     * not ignored.
+     */
+    @Parameter(property = "session", defaultValue = "${session}", readonly = true)
+    private MavenSession session;
+
+    /**
+     * Defines the node version to download and use, if {@code nodePath} is not
+     * set. The default is <code>v8.15.1</code>.
+     */
+    @Parameter(name = "nodeVersion", defaultValue = "v8.15.1", required = true)
+    private String nodeVersion;
+
+    /**
+     * The directory where we process the files from. The default is
+     * <code>${project.build.directory}</code>.
+     */
+    @Parameter(name = "nodeDownloadDirectory", defaultValue = "${project.build.directory}/", required = true)
+    private File nodeDownloadDirectory;
+
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     protected MavenProject project;
 
@@ -122,6 +177,78 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
     protected File nodeModulesPath;
 
     protected NodeUpdater updater;
+
+    public NodeUpdateAbstractMojo() {
+        if (nodeExecutorConfig == null) {
+            try {
+                nodeExecutorConfig = new FrontendToolsLocator()
+                        .tryLocateNodeAndNpm()
+                        .<NodeExecutorConfig> map(
+                                paths -> new NodeExecutorConfigLocal(
+                                        paths.getNodePath(), paths.getNpmPath(),
+                                        nodeDownloadDirectory,
+                                        nodeDownloadDirectory))
+                        .orElseGet(() -> installLocalNode(nodeDownloadDirectory,
+                                nodeVersion));
+            } catch (Exception e) {
+                getLog().warn(
+                        "Failed to determine 'node' and 'npm' tools to use in the plugin. "
+                                + "Please install them using the https://nodejs.org/en/download/ guide.",
+                        e);
+                throw e;
+            }
+        }
+    }
+
+    private NodeExecutorConfig installLocalNode(File workingDirectory, String nodeVersion) {
+        FrontendPluginFactory factory = new FrontendPluginFactory(
+            workingDirectory, workingDirectory);
+        try {
+            factory.getNodeInstaller(getProxyConfig()).setNodeVersion(nodeVersion)
+                .setNpmVersion("provided")
+                .setNodeDownloadRoot(
+                    NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+                .install();
+        } catch (InstallationException e) {
+            throw new IllegalStateException("Failed to download node", e);
+        }
+
+        try {
+            Method getExecutorConfig = factory.getClass()
+                .getDeclaredMethod("getExecutorConfig");
+            getExecutorConfig.setAccessible(true);
+            return (NodeExecutorConfig) getExecutorConfig.invoke(factory);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("Failed to get the node configuration", e);
+        }
+    }
+
+    private ProxyConfig getProxyConfig() {
+        if (ignoreMavenProxies) {
+            return new ProxyConfig(Collections.emptyList());
+        }
+        return new ProxyConfig(getMavenProxies().stream()
+            .filter(Proxy::isActive)
+            .map(proxy -> decrypter
+                .decrypt(new DefaultSettingsDecryptionRequest(proxy)))
+            .map(SettingsDecryptionResult::getProxy).map(this::createProxy)
+            .collect(Collectors.toList()));
+    }
+
+    private List<Proxy> getMavenProxies() {
+        if (session == null || session.getSettings() == null
+            || session.getSettings().getProxies() == null
+            || session.getSettings().getProxies().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return session.getSettings().getProxies();
+    }
+
+    private ProxyConfig.Proxy createProxy(Proxy proxy) {
+        return new ProxyConfig.Proxy(proxy.getId(), proxy.getProtocol(),
+            proxy.getHost(), proxy.getPort(), proxy.getUsername(),
+            proxy.getPassword(), proxy.getNonProxyHosts());
+    }
 
     @Override
     public void execute() {

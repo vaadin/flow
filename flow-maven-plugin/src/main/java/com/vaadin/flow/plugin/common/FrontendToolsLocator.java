@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -57,6 +58,96 @@ public class FrontendToolsLocator {
 
         private boolean isSuccessful() {
             return exitCode == 0;
+        }
+    }
+
+    /**
+     * An object storing the node and npm paths.
+     */
+    public static class NodeAndNpmPaths {
+        private final File nodePath;
+        private final File npmPath;
+
+        /**
+         * Creates an object to hold the node and npm paths.
+         *
+         * @param nodePath
+         *            the path to the node binary, should be a file and not
+         *            {@code null}
+         * @param npmPath
+         *            the path to the npm binary, should be a file and not
+         *            {@code null}
+         */
+        public NodeAndNpmPaths(File nodePath, File npmPath) {
+            if (!Objects.requireNonNull(nodePath, "nodePath cannot be null")
+                    .isFile()) {
+                throw new IllegalArgumentException(
+                        "nodePath provided is not a file");
+            }
+
+            if (!Objects.requireNonNull(npmPath, "npmPath cannot be null")
+                    .isFile()) {
+                throw new IllegalArgumentException(
+                        "npmPath provided is not a file");
+            }
+
+            this.nodePath = nodePath;
+            this.npmPath = npmPath;
+        }
+
+        /**
+         * Gets the node absolute path.
+         *
+         * @return a path to node tool
+         */
+        public File getNodePath() {
+            return nodePath;
+        }
+
+        /**
+         * Gets the npm absolute path.
+         *
+         * @return a path to npm tool
+         */
+        public File getNpmPath() {
+            return npmPath;
+        }
+    }
+
+    /**
+     * Makes an attempt to locate node and npm tools by their names. If there
+     * are multiple tools to pick from, the first one will be selected.
+     *
+     * @return an object, containing absolute paths to both tools if both tools
+     *         were successfully located or {@link Optional#empty()} otherwise
+     */
+    public Optional<NodeAndNpmPaths> tryLocateNodeAndNpm() {
+        Optional<File> nodeLocation = tryLocateTool("node");
+        Optional<File> npmLocation = tryLocateTool("npm");
+
+        boolean toolsArePresent = true;
+        String missingToolTemplate = "Failed to locate '%s' tool in the system. "
+                + "Will download and use a local copy. If you have a local version installed, "
+                + "ensure that it's added to the system's PATH environment variable";
+
+        if (!nodeLocation.isPresent()) {
+            LOGGER.debug(String.format(missingToolTemplate, "node"));
+            toolsArePresent = false;
+        }
+
+        if (!npmLocation.isPresent()) {
+            LOGGER.debug(String.format(missingToolTemplate, "npm"));
+            toolsArePresent = false;
+        }
+
+        if (toolsArePresent) {
+            LOGGER.debug(
+                    "Using 'node' tool from the path '{}' and 'npm' tool from path '{}'",
+                    nodeLocation.get(), npmLocation.get());
+            return Optional.of(
+                    new NodeAndNpmPaths(nodeLocation.get(), npmLocation.get()));
+        } else {
+            return Optional.empty();
         }
     }
 
