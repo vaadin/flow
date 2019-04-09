@@ -98,7 +98,7 @@ public final class Shortcuts {
      *              {@link ShortcutRegistration} for configuring and removing the
      *              shortcut
      */
-    public ShortcutRegistration addShortcutListener(
+    public static ShortcutRegistration addShortcutListener(
             Component lifecycleOwner, ShortcutEventListener listener, Key key,
             KeyModifier... keyModifiers) {
 
