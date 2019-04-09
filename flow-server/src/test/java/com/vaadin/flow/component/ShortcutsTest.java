@@ -21,9 +21,8 @@ import java.lang.reflect.Modifier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class ShortcutsTest {
 
@@ -33,12 +32,12 @@ public class ShortcutsTest {
 
         for (Method method : methods) {
             if (!Modifier.isStatic(method.getModifiers())) {
-                fail(String.format("Method %s(%s) should be static",
+                Assert.fail(String.format("Method %s(%s) should be static",
                         method.getName(),
                         Stream.of(method.getParameterTypes())
                                 .map(Class::getSimpleName)
                                 .collect(Collectors.joining(", "))
-                        ));
+                ));
             }
         }
     }
