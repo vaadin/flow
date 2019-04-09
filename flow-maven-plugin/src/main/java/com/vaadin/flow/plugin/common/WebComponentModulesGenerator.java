@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
@@ -83,20 +83,18 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
             Class<? extends WebComponentExporter<? extends Component>> clazz,
             File outputFolder) {
 
-        Object configuration =
-                createWebComponentConfiguration(clazz);
-
-        String fileName = getTag(configuration);
+        String tag = getTag(clazz);
+        String fileName = tag;
         int index = 1;
         Path generatedFile;
         do {
             generatedFile = outputFolder.toPath().resolve(fileName + ".html");
             index++;
-            fileName = getTag(configuration) + index;
+            fileName = tag + index;
         } while (generatedFile.toFile().exists());
         try {
             Files.write(generatedFile,
-                    Collections.singletonList(generateModule(configuration)),
+                    Collections.singletonList(generateModule(clazz)),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
@@ -106,77 +104,47 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
         return generatedFile.toFile();
     }
 
-    private Object createWebComponentConfiguration(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
-        Class<?> factoryClass =
-                loadClassInProjectClassLoader(WebComponentExporter.WebComponentConfigurationFactory.class.getName());
-        Object factory;
-        try {
-            factory = factoryClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(String.format("Failed to create %s " +
-                            "instance",
-                    WebComponentExporter.WebComponentConfigurationFactory.class.getName()),
-                    e);
-        }
-
-        Method createMethod = Stream.of(factoryClass.getDeclaredMethods())
-                .filter(method -> method.getParameterCount() == 1)
-                .filter(method -> Class.class.isAssignableFrom(method.getParameterTypes()[0]))
-                .findFirst().orElseThrow(() ->
-                        new RuntimeException(String.format("Could not find " +
-                                        "method '%s::%s(Class< ? extends %s>)!",
-                                WebComponentExporter.WebComponentConfigurationFactory.class.getName(),
-                                CREATE_METHOD,
-                                WebComponentExporter.class.getSimpleName())));
-        try {
-            return createMethod.invoke(factory, exporterClass);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(String.format("Failed to create %s " +
-                            "instance",
-                    WebComponentConfiguration.class.getName()), e);
-        }
-    }
-
     private String generateModule(
-            Object configuration) {
+            Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
         Class<?> generatorClass = loadClassInProjectClassLoader(
                 WebComponentGenerator.class.getName());
         Method generateMethod = Stream.of(generatorClass.getDeclaredMethods())
                 .filter(method -> method.getParameters().length == 2
-                        && method.getName().equals(GENERATE_MODULE_METHOD))
+                        && method.getName().equals(GENERATE_MODULE_METHOD)
+                        && Class.class.isAssignableFrom(method.getParameterTypes()[0]))
                 .findFirst().orElseThrow(
                         () -> new IllegalStateException(ABSENT_METHOD_ERROR));
 
         try {
-            return (String) generateMethod.invoke(null, configuration, "");
+            return (String) generateMethod.invoke(null, exporterClass, "");
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException exception) {
             throw new RuntimeException(String.format(
                     "Unable to invoke '%s::%s' for the exporter type '%s'",
                     WebComponentGenerator.class.getName(),
-                    GENERATE_MODULE_METHOD, configuration.getClass().getName()),
+                    GENERATE_MODULE_METHOD, exporterClass.getName()),
                     exception);
         }
     }
 
-    private String getTag(Object configuration) {
-        boolean accessible = false;
-        Method tagMethod = null;
+    private String getTag(Class<? extends WebComponentExporter<?
+            extends Component>> exporterClass) {
+        Class<?> util =
+                loadClassInProjectClassLoader(WebComponentExporterTagExtractor.class.getName());
+
+        Method tagMethod = Stream.of(util.getDeclaredMethods())
+                .filter(method -> method.getReturnType() == String.class && method.getParameterCount() == 1)
+                .findFirst().orElseThrow(() -> new RuntimeException(
+                        String.format("Failed to find tag extraction method " +
+                                        "from '%s'",
+                                WebComponentExporterTagExtractor.class.getName())));
+
         try {
-            tagMethod = configuration.getClass().getMethod(GET_TAG_METHOD);
-            accessible = tagMethod.isAccessible();
-            tagMethod.setAccessible(true);
-            return (String) tagMethod.invoke(configuration);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(String.format("Unable to invoke " +
-                            "'%s::%s' for the configuration type '%s'",
-                    WebComponentConfiguration.class.getName(),
-                    GET_TAG_METHOD, configuration.getClass().getName()), e);
-        } finally {
-            if (tagMethod != null) {
-                tagMethod.setAccessible(accessible);
-            }
+            return (String) tagMethod.invoke(util.newInstance(), exporterClass);
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new RuntimeException(String.format("Unable to extract tag " +
+                            "from '%s' using '%s'", exporterClass.getName(),
+                    WebComponentExporterTagExtractor.class.getName()), e);
         }
     }
 }

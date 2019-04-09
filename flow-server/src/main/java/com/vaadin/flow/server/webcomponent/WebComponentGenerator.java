@@ -63,28 +63,30 @@ public class WebComponentGenerator {
     }
 
     /**
-     * Generate web component html/JS for given configuration instance.
+     * Generate web component html/JS for given exporter class.
      *
-     * @param webComponentConfiguration
-     *         web component configuration, not {@code null}
+     * @param exporterClass
+     *         web component exporter class, not {@code null}
      * @param frontendURI
      *         the frontend resources URI, not {@code null}
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
-            WebComponentConfiguration<? extends Component> webComponentConfiguration,
+            Class<? extends WebComponentExporter<? extends Component>> exporterClass,
             String frontendURI) {
-        Objects.requireNonNull(webComponentConfiguration);
+        Objects.requireNonNull(exporterClass);
         Objects.requireNonNull(frontendURI);
 
-        return generateModule(webComponentConfiguration, frontendURI, false);
+        WebComponentConfiguration<? extends Component> config =
+                new WebComponentExporter.WebComponentConfigurationFactory()
+                        .create(exporterClass);
+
+        return generateModule(config, frontendURI, false);
     }
 
     /**
      * Generate web component html/JS for given tag and class.
      *
-     * @param tag
-     *         web component tag, not {@code null}
      * @param webComponentConfiguration
      *         web component class implementation, not {@code null}
      * @param frontendURI
@@ -92,18 +94,17 @@ public class WebComponentGenerator {
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
-            String tag,
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
             String frontendURI) {
-        Objects.requireNonNull(tag);
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
         Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
                 .getPropertyDataSet();
 
-        Map<String, String> replacements = getReplacementsMap(tag,
-                propertyDataSet, frontendURI, true);
+        Map<String, String> replacements =
+                getReplacementsMap(webComponentConfiguration.getTag(),
+                        propertyDataSet, frontendURI, true);
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {

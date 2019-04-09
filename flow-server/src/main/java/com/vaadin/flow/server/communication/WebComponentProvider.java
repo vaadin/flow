@@ -86,7 +86,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             if (cache.containsKey(tag.get())) {
                 generated = cache.get(tag.get());
             } else {
-                generated = WebComponentGenerator.generateModule(tag.get(),
+                generated = WebComponentGenerator.generateModule(
                         webComponentConfiguration,
                         getFrontendPath(servletRequest));
                 cache.put(tag.get(), generated);
