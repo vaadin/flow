@@ -30,8 +30,11 @@ import com.vaadin.flow.shared.communication.PushMode;
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
+
     private final Properties initParameters;
     private final Class<?> systemPropertyBaseClass;
+    protected static final String IS_BOWER_DEV = "isBowerDevMode";
+    protected static final String IS_BOWER_PROD = "isBowerProdMode";
 
     /**
      * Create a new property deployment configuration instance.
@@ -138,11 +141,16 @@ public class PropertyDeploymentConfiguration
         return getBooleanProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                 false);
     }
-    
+
     @Override
     public boolean isBowerMode() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
-                false);
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, false)
+                || isBowerLegacyMode();
+    }
+
+    protected boolean isBowerLegacyMode() {
+        return isProductionMode() && getBooleanProperty(IS_BOWER_PROD, false)
+                || !isProductionMode() && getBooleanProperty(IS_BOWER_DEV, false);
     }
 
     @Override

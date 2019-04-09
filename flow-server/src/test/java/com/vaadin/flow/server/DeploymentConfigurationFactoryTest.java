@@ -2,19 +2,28 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static java.util.Collections.emptyMap;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
@@ -24,7 +33,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+
 public class DeploymentConfigurationFactoryTest {
+
+    private File tmpDir;
 
     private static class NoSettings extends VaadinServlet {
     }
@@ -36,17 +48,23 @@ public class DeploymentConfigurationFactoryTest {
 
     @VaadinServletConfiguration(productionMode = true, heartbeatInterval = 222)
     private static class VaadinSettings extends VaadinServlet {
+    }
 
+    @Before
+    public void setup() throws IOException {
+        tmpDir = Files.createTempDir();
+        tmpDir.deleteOnExit();
+        System.setProperty("user.dir", tmpDir.getAbsolutePath());
     }
 
     @Test
     public void servletWithEnclosingUI_hasItsNameInConfig()
-            throws ServletException {
+            throws Exception {
         Class<TestUI.ServletWithEnclosingUi> servlet = TestUI.ServletWithEnclosingUi.class;
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(emptyMap(), emptyMap(), null));
 
         Class<?> customUiClass = servlet.getEnclosingClass();
         assertTrue(String.format(
@@ -60,12 +78,12 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void servletWithNoEnclosingUI_hasDefaultUiInConfig()
-            throws ServletException {
+            throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(emptyMap(), emptyMap(), null));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
         assertFalse(String.format(
@@ -77,12 +95,12 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void vaadinServletConfigurationRead() throws ServletException {
+    public void vaadinServletConfigurationRead() throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(emptyMap(), emptyMap(), null));
 
         assertTrue(String.format(
                 "Unexpected value for production mode, check '%s' class annotation",
@@ -94,21 +112,21 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void servletConfigParametersOverrideVaadinParameters()
-            throws ServletException {
+            throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
 
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
         Map<String, String> servletConfigParams = new HashMap<>();
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet, createServletConfigMock(
-                        servletConfigParams, emptyMap()));
+                        servletConfigParams, emptyMap(), null));
 
         assertEquals(
                 "Unexpected value for production mode, should be the same as in servlet config parameters",
@@ -121,21 +139,21 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void servletContextParametersOverrideVaadinParameters()
-            throws ServletException {
+            throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
 
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
         Map<String, String> servletContextParams = new HashMap<>();
-        servletContextParams.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet, createServletConfigMock(
-                        emptyMap(), servletContextParams));
+                        emptyMap(), servletContextParams, null));
 
         assertEquals(
                 "Unexpected value for production mode, should be the same as in servlet context parameters",
@@ -148,14 +166,14 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void servletConfigParametersOverrideServletContextParameters()
-            throws ServletException {
+            throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
         boolean servletConfigProductionModeValue = true;
         int servletConfigHeartbeatIntervalValue = 333;
 
         Map<String, String> servletConfigParams = new HashMap<>();
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletConfigProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletConfigHeartbeatIntervalValue));
@@ -164,14 +182,14 @@ public class DeploymentConfigurationFactoryTest {
         int servletContextHeartbeatIntervalValue = 444;
 
         Map<String, String> servletContextParams = new HashMap<>();
-        servletContextParams.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletContextProductionModeValue));
         servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletContextHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet, createServletConfigMock(
-                        servletConfigParams, servletContextParams));
+                        servletConfigParams, servletContextParams, null));
 
         assertEquals(
                 "Unexpected value for production mode, should be the same as in servlet context parameters",
@@ -182,9 +200,62 @@ public class DeploymentConfigurationFactoryTest {
                 config.getHeartbeatInterval());
     }
 
+
+    @Test
+    public void should_not_SetBowerMode_when_NoBowerFrontendFolder() throws Exception {
+        DeploymentConfiguration config = createConfig(emptyMap(), null);
+        assertFalse(config.isBowerMode());
+    }
+
+    @Test
+    public void should_SetBowerMode_when_BowerFrontendFolder() throws Exception {
+        FileUtils.forceMkdir(new File(tmpDir, "src/main/webapp/frontend"));
+        DeploymentConfiguration config = createConfig(emptyMap(), null);
+        assertTrue(config.isBowerMode());
+    }
+
+    @Test
+    public void should_not_SetBowerMode_when_BowerFrontendFolderAndNpmFrontendFolder() throws Exception {
+        FileUtils.forceMkdir(new File(tmpDir, "src/main/webapp/frontend"));
+        FileUtils.forceMkdir(new File(tmpDir, "frontend"));
+        DeploymentConfiguration config = createConfig(emptyMap(), null);
+        assertFalse(config.isBowerMode());
+    }
+
+    @Test
+    public void should_not_SetBowerMode_when_BowerFrontendFolderAndPackageAndWebpack() throws Exception {
+        FileUtils.forceMkdir(new File(tmpDir, "src/main/webapp/frontend"));
+        new File(tmpDir, PACKAGE_JSON).createNewFile();
+        new File(FrontendUtils.WEBPACK_CONFIG).createNewFile();
+        DeploymentConfiguration config = createConfig(emptyMap(), null);
+        assertFalse(config.isBowerMode());
+    }
+
+    @Test
+    public void should_not_SetBowerMode_when_ProdModeAndNoBundleEs6() throws Exception {
+        Map<String, String> pars = new HashMap<>();
+        pars.put(SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
+        DeploymentConfiguration config = createConfig(pars, null);
+        assertFalse(config.isBowerMode());
+    }
+
+    @Test
+    public void should_SetBowerMode_when_ProdModeAndBundleEs6() throws Exception {
+        Map<String, String> pars = new HashMap<>();
+        pars.put(SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
+        DeploymentConfiguration config = createConfig(pars, new File(".").toURI().toURL());
+        assertTrue(config.isBowerMode());
+    }
+
+    private DeploymentConfiguration createConfig(Map<String, String> map, URL url) throws Exception {
+        return DeploymentConfigurationFactory
+                .createDeploymentConfiguration(VaadinServlet.class, createServletConfigMock(
+                        map, emptyMap(), url));
+    }
+
     private ServletConfig createServletConfigMock(
             Map<String, String> servletConfigParameters,
-            Map<String, String> servletContextParameters) {
+            Map<String, String> servletContextParameters, URL url) throws Exception {
         ServletContext contextMock = mock(ServletContext.class);
         expect(contextMock.getInitParameterNames())
                 .andAnswer(() -> Collections
@@ -195,6 +266,12 @@ public class DeploymentConfigurationFactoryTest {
                 .andAnswer(() -> servletContextParameters
                         .get(initParameterNameCapture.getValue()))
                 .anyTimes();
+
+        Capture<String> resourceCapture = EasyMock.newCapture();
+        expect(contextMock.getResource(capture(resourceCapture)))
+                .andReturn(url).anyTimes();
+
+
         replay(contextMock);
 
         return new ServletConfig() {
