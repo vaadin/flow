@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
@@ -63,12 +62,7 @@ public class DefaultInstantiator implements Instantiator {
 
     @Override
     public <T> T getOrCreate(Class<T> type) {
-        return create(type);
-    }
-
-    @Override
-    public <T extends Component> T createComponent(Class<T> componentClass) {
-        return create(componentClass);
+        return ReflectTools.createInstance(type);
     }
 
     /**
@@ -131,9 +125,5 @@ public class DefaultInstantiator implements Instantiator {
         }
         return deploymentConfiguration
                 .getStringProperty(Constants.I18N_PROVIDER, null);
-    }
-
-    private <T> T create(Class<T> type) {
-        return ReflectTools.createInstance(type);
     }
 }
