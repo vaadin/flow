@@ -14,6 +14,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.productionMode>true</vaadin.productionMode>
+        <transpilation.output>${project.build.directory}/build</transpilation.output>
     </properties>
 
     <dependencies>
@@ -60,6 +61,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <webAppConfig>
+                        <resourceBases>
+                            <resourceBase>${transpilation.output}</resourceBase>
+                            <resourceBase>src/main/webapp</resourceBase>
+                        </resourceBases>
+                    </webAppConfig>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.vaadin</groupId>
@@ -71,6 +80,9 @@
                             <goal>copy-production-files</goal>
                             <goal>package-for-production</goal>
                         </goals>
+                        <configuration>
+                            <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

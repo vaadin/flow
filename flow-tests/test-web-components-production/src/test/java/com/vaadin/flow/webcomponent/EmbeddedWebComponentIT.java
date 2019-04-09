@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.webcomponent;
 
+import java.util.List;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class EmbeddedWebComponentIT extends ChromeBrowserTest {
 
@@ -27,8 +31,12 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void servletPageGetsWebComponent_attributeIsReflectedToServer() {
+    public void webComponentIsEmbeddedViaIndexPage() {
         open();
 
+        TestBenchElement wrapper = $("embedded-component").first();
+        List<TestBenchElement> embedded = wrapper.$("div")
+                .attribute("id", "my-component").all();
+        Assert.assertEquals(1, embedded.size());
     }
 }
