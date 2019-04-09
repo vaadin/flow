@@ -245,7 +245,7 @@ public class FrontendToolsLocator {
 
     private CommandResult omitErrorResult(CommandResult commandResult) {
         if (!commandResult.isSuccessful()) {
-            LOGGER.error(
+            LOGGER.debug(
                     "Command '{}' exited with non-zero exit code: {}. stdout:\n'{}'\nstderr:\n'{}'",
                     commandResult.command, commandResult.exitCode,
                     commandResult.exitCode,
@@ -253,13 +253,13 @@ public class FrontendToolsLocator {
             return null;
         }
         if (commandResult.stdout.isEmpty()) {
-            LOGGER.error("Command '{}' has no output, stderr:\n'{}'",
+            LOGGER.debug("Command '{}' has no output, stderr:\n'{}'",
                     commandResult.command,
                     String.join("\n", commandResult.stderr));
             return null;
         }
         if (!commandResult.stderr.isEmpty()) {
-            LOGGER.error("Command '{}' has non-empty stderr:\n'{}'",
+            LOGGER.debug("Command '{}' has non-empty stderr:\n'{}'",
                     commandResult.command,
                     String.join("\n", commandResult.stderr));
             return null;
