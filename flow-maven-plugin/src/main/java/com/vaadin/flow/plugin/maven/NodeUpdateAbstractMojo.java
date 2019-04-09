@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.AnnotatedElement;
@@ -23,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -226,14 +228,41 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
             throw new IllegalStateException("Failed to download node", e);
         }
 
+        NodeExecutorConfig config;
         try {
             Method getExecutorConfig = factory.getClass()
-                .getDeclaredMethod("getExecutorConfig");
+                    .getDeclaredMethod("getExecutorConfig");
             getExecutorConfig.setAccessible(true);
-            return (NodeExecutorConfig) getExecutorConfig.invoke(factory);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalStateException("Failed to get the node configuration", e);
+            config = (NodeExecutorConfig) getExecutorConfig.invoke(factory);
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+            throw new IllegalStateException(
+                    "Failed to get the node configuration", e);
         }
+
+        getLog().debug("Updating installed node");
+
+        ProcessBuilder builder = new ProcessBuilder()
+                .directory(config.getNodePath().getParentFile()).inheritIO()
+                .command(Arrays.asList(config.getNodePath().getAbsolutePath(),
+                        config.getNpmPath().getAbsolutePath(), "i",
+                        "npm@latest"));
+
+        Process npmUpdate = null;
+        try {
+            npmUpdate = builder.start();
+            if (npmUpdate.waitFor() != 0) {
+                throw new IllegalStateException("Failed to update npm");
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new IllegalStateException("Failed to update npm", e);
+        } finally {
+            if (npmUpdate != null) {
+                npmUpdate.destroyForcibly();
+            }
+        }
+
+        return config;
     }
 
     private ProxyConfig getProxyConfig() {
