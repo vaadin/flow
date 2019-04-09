@@ -1080,6 +1080,38 @@ public class StateNodeTest {
         assertDetachAttachEvents(createNodes(), "c", "b");
     }
 
+    /**
+     * #5316: removeFromTree recursively removes StateTree reference and resets
+     * node id to -1.
+     */
+    @Test
+    public void removeFromTree_nodeAttached_nodeDetachedAndChildrenReset() {
+        // given a is parent of b is parent c in tree
+        StateNode a = createParentNode("a");
+        StateNode b = createParentNode("b");
+        addChild(a, b);
+        StateNode c = createEmptyNode("c");
+        addChild(b, c);
+
+        TestStateTree tree = new TestStateTree();
+        addChild(tree.getRootNode(), a);
+
+        // when b is removed from the tree
+        b.removeFromTree();
+
+        // then b's parent is null
+        Assert.assertNull(b.getParent());
+
+        // then b and descendants are reset
+        final Consumer<StateNode> assertNodeReset = n -> {
+            Assert.assertEquals(-1, n.getId());
+            Assert.assertFalse(n.isAttached());
+            Assert.assertNotEquals(tree, n.getOwner());
+        };
+        assertNodeReset.accept(b);
+        assertNodeReset.accept(c);
+    }
+
     private void assertAttachDetachEvents(Map<String, StateNode> nodes,
             String newParent, String child, boolean expectSingleEvent) {
         TestStateTree tree = new TestStateTree();

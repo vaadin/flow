@@ -494,6 +494,15 @@ public class ComponentTest {
     }
 
     @Test
+    public void getUI_detachedFromUI_isEmpty() {
+        TestComponent child = new TestComponent();
+        UI ui = new UI();
+        ui.add(child);
+        child.detachFromUI();
+        assertEmpty(child.getUI());
+    }
+
+    @Test
     public void getUI_attachedThroughParent() {
         TestComponentContainer parent = new TestComponentContainer();
         TestComponent child = new TestComponent();
@@ -1566,5 +1575,31 @@ public class ComponentTest {
         Assert.assertNotNull("Disabled attribute should exist for subSubChild",
                 subSubChild.getElement().getAttribute("disabled"));
 
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void add_componentIsAttachedToAnotherUI_throwsIllegalStateException() {
+        // given
+        TestComponent child = new TestComponent();
+        UI ui1 = new UI();
+        ui1.add(child);
+        UI ui2 = new UI();
+
+        // then
+        ui2.add(child);
+    }
+
+    @Test
+    public void add_componentIsAttachedToAnotherUIAndThenDetached_addedSuccessfully() {
+        // given
+        TestComponent child = new TestComponent();
+        UI ui1 = new UI();
+        ui1.add(child);
+
+        child.detachFromUI();
+        UI ui2 = new UI();
+
+        // then
+        ui2.add(child);
     }
 }
