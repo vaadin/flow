@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.reflections.Reflections;
@@ -37,6 +38,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
@@ -126,12 +128,29 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
     @Override
     public void execute() {
         // Do nothing when bower mode
-        if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+        if (isBowerMode(getLog())) {
             String goal = this.getClass().equals(NodeUpdateImportsMojo.class) ? "update-imports"  : "update-npm-dependencies";
             getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
             return;
         }
         getUpdater().execute();
+    }
+
+    /**
+     * Check whether the goal should be run in bower mode, by checking the
+     * corresponding system property, otherwise the folder structure.
+     *
+     * @param log
+     *            logger instance
+     * @return true when in bower mode.
+     */
+    static boolean isBowerMode(Log log) {
+        boolean bowerMode = Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE);
+        if (!bowerMode && FrontendUtils.isBowerLegacyMode()) {
+            log.warn("enabling `vaadin.bowerMode` because the project has not been migrated to `npm` yet.");
+            bowerMode = true;
+        }
+        return bowerMode;
     }
 
     protected abstract NodeUpdater getUpdater();

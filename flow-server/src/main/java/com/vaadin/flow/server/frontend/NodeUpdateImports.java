@@ -38,6 +38,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update
@@ -92,8 +93,8 @@ public class NodeUpdateImports extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdateImports(AnnotationValuesExtractor extractor) {
-        this(extractor, new File(System.getProperty(MAIN_JS_PARAM, MAIN_JS)),
-                new File("."), new File("./node_modules/"), true);
+        this(extractor, new File(getBaseDir(), System.getProperty(MAIN_JS_PARAM, MAIN_JS)),
+                new File(getBaseDir()), new File(getBaseDir(), "node_modules"), true);
     }
 
     @Override
