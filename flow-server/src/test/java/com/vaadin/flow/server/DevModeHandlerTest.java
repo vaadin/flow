@@ -71,7 +71,6 @@ public class DevModeHandlerTest {
     private HttpServer httpServer;
     private int responseStatus;
 
-
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -114,6 +113,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
+    @Ignore("Ignored due to the need for real node installed in the system")
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
         assertNotNull(DevModeHandler.start(configuration));
         assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
@@ -131,6 +131,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
+    @Ignore("Ignored due to the need for real node installed in the system")
     public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
         configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createWebpackScript("Foo", 300);
@@ -153,6 +154,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
+    @Ignore("Ignored due to the need for real node installed in the system")
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
         DevModeHandler.start(configuration);
         assertTrue(new File(WEBAPP_FOLDER + TEST_FILE).canRead());
@@ -236,6 +238,7 @@ public class DevModeHandlerTest {
     }
 
     @Test(expected = ConnectException.class)
+    @Ignore("Ignored due to the need for real node installed in the system")
     public void servlet_should_ThrowAnException_When_WebpackNotListening() throws Exception {
         VaadinServlet servlet = prepareServlet();
         HttpServletRequest request = prepareRequest("/foo.js");
