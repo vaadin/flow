@@ -24,7 +24,7 @@ import com.vaadin.flow.server.Command;
  * <p>
  * Unlike the shortcut methods offered by {@link Focusable} and {@link
  * ClickNotifier}, these methods allow for configuring the {@code
- * lifecycleOwner} directly, allowing the shortcut to be added onto any
+ * lifecycleOwner} directly, making it possible to added the shortcut onto any
  * component. The {@code lifecycleOwner} denotes the component to which the
  * shortcut is bound to. If the lifecycle owner is not attached, visible, or
  * enabled, the shortcut won't work, and vice-versa.
