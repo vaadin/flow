@@ -114,15 +114,6 @@ public class WebComponentGenerator {
         return template;
     }
 
-    /**
-     * Gets the web component UI import element string.
-     *
-     * @return the serialized content of web commponent UI import element
-     */
-    public static String getWebComponentUiImport() {
-        return "<link rel='import' href='web-component-ui.html'>";
-    }
-
     static Map<String, String> getReplacementsMap(String tag,
             Set<PropertyData<?>> propertyDataSet, String frontendURI,
             boolean generateUiImport) {
@@ -140,7 +131,9 @@ public class WebComponentGenerator {
         replacements.put("frontend_resources", frontendURI);
 
         replacements.put("ui_import",
-                generateUiImport ? getWebComponentUiImport() : "");
+                generateUiImport
+                        ? "<link rel='import' href='web-component-ui.html'>"
+                        : "");
 
         return replacements;
     }
