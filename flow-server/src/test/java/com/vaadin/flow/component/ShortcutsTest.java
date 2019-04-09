@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 public class ShortcutsTest {
 
     @Test
-    public void doesNotHaveNonStaticMethods() {
+    public void hasOnlyStaticMethods() {
         Method[] methods = Shortcuts.class.getDeclaredMethods();
 
         for (Method method : methods) {
