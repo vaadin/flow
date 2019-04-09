@@ -31,6 +31,7 @@ import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateNode;
@@ -590,9 +591,22 @@ public class UI extends Component
     }
 
     /**
-     * * Gets the locale for this UI.
+     * Gets the locale for this UI. The default locale is based on the session's
+     * locale, which is in turn determined in different ways depending on
+     * whether a {@link I18NProvider} is available.
+     * <p>
+     * If a i18n provider is available, the locale is determined by selecting
+     * the locale from {@link I18NProvider#getProvidedLocales()} that best
+     * matches the user agent preferences (i.e. the <code>Accept-Language</code>
+     * header). If an exact match is found, then that locale is used. Otherwise,
+     * the matching logic looks for the first provided locale that uses the same
+     * language regardless of the country. If no other match is found, then the
+     * first item from {@link I18NProvider#getProvidedLocales()} is used.
+     * <p>
+     * If no i18n provider is available, then the {@link Locale#getDefault()
+     * default JVM locale} is used as the default locale.
      *
-     * @return the locale in use
+     * @return the locale in use, not <code>null</code>
      */
     @Override
     public Locale getLocale() {
@@ -601,6 +615,10 @@ public class UI extends Component
 
     /**
      * Sets the locale for this UI.
+     * <p>
+     * Note that {@link VaadinSession#setLocale(Locale)} will set the locale for
+     * all UI instances in that session, and might thus override any custom
+     * locale previous set for a specific UI.
      *
      * @param locale
      *            the locale to use, not null
@@ -682,7 +700,7 @@ public class UI extends Component
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
-     * 
+     *
      * @param navigationTarget
      *            navigation target to navigate to
      */
@@ -702,7 +720,7 @@ public class UI extends Component
      * Note! A {@code null} parameter will be handled the same as
      * navigate(navigationTarget) and will throw an exception if HasUrlParameter
      * is not @OptionalParameter or @WildcardParameter.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to navigate to
      * @param parameter
@@ -893,7 +911,7 @@ public class UI extends Component
     }
 
     /**
-     * Get all registered listener of given navigation handler type.
+     * Get all the registered listeners of the given navigation handler type.
      *
      * @param navigationHandler
      *            navigation handler type to get listeners for
