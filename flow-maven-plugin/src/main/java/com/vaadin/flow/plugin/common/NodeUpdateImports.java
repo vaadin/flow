@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +51,6 @@ public class NodeUpdateImports extends NodeUpdater {
      * It is also the entry-point for webpack.
      */
     public static final String MAIN_JS = "frontend/main.js";
-    private static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
 
     private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
     private static final String VALUE = "value";
@@ -82,18 +81,6 @@ public class NodeUpdateImports extends NodeUpdater {
         this.jsFile = jsFile;
         this.convertHtml = convertHtml;
         this.themeDefinition = getThemeDefinition(annotationValuesExtractor);
-    }
-
-    /**
-     * Create an instance of the updater given the reusable extractor, the rest
-     * of the configurable parameters will be set to their default values.
-     *
-     * @param extractor
-     *            a reusable annotation extractor
-     */
-    public NodeUpdateImports(AnnotationValuesExtractor extractor) {
-        this(extractor, new File(System.getProperty(MAIN_JS_PARAM, MAIN_JS)),
-                new File("."), new File("./node_modules/"), true);
     }
 
     @Override

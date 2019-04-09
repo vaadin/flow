@@ -46,7 +46,6 @@ import org.mockito.Mockito;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBAPP_FOLDER;
@@ -80,7 +79,6 @@ public class DevModeHandlerTest {
     public void setup() throws IOException {
         configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(false);
-        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "true");
         createWebpackScript("Compiled", 100);
     }
 

@@ -49,11 +49,11 @@ import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.plugin.common.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
+import com.vaadin.flow.plugin.common.NodeUpdater;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
-import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
  * Common stuff for node update mojos.

@@ -32,14 +32,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
-
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -65,12 +60,6 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
 
         if (config.isProductionMode() || config.isBowerMode()) {
             return;
-        }
-
-        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(new DefaultClassFinder(classes));
-
-        if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
-            new NodeUpdateImports(extractor).execute();
         }
 
         DevModeHandler.start(config);

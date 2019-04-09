@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +79,7 @@ public abstract class NodeUpdater implements Serializable {
                 .collect(Collectors.toSet());
     }
 
-    protected Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
+    Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
@@ -135,7 +135,7 @@ public abstract class NodeUpdater implements Serializable {
         return Objects.equals(module, htmlImport) ? null : module;
     }
 
-    protected Logger log() {
+    Logger log() {
         // Using short prefix so as npm output is more readable
         return LoggerFactory.getLogger("dev-updater");
     }

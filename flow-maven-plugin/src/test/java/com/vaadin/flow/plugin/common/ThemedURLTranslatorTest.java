@@ -31,9 +31,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.plugin.common.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo.ReflectionsClassFinder;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 
 public class ThemedURLTranslatorTest {
 

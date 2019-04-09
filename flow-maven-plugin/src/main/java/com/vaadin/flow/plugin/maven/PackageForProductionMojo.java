@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
@@ -36,13 +37,12 @@ import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 import com.vaadin.flow.plugin.common.RunnerManager;
 import com.vaadin.flow.plugin.production.TranspilationStep;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
 
 /**
  * Goal that prepares all web files from

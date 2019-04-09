@@ -167,11 +167,6 @@ public final class Constants implements Serializable {
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
 
-    /**
-     * Configuration name which disables the node imports updater.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS = "devmode.skip.update-imports";
-
     private Constants() {
         // prevent instantiation constants class only
     }

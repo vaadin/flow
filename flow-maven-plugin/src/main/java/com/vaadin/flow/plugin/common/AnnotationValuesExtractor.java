@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.plugin.common;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;

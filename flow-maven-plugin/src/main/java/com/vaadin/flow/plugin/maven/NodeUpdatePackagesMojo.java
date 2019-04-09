@@ -23,9 +23,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.NodeUpdatePackages;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.NodeUpdater;
+import com.vaadin.flow.plugin.common.NodeUpdater;
 
 /**
  * Goal that updates <code>package.json</code> file with @NpmPackage annotations
