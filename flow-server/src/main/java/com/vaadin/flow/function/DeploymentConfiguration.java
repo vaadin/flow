@@ -271,6 +271,7 @@ public interface DeploymentConfiguration extends Serializable {
     default String getRootElementId() {
         return getStringProperty(ApplicationConstants.UI_ELEMENT_ID, "");
     }
+
     /**
      * Determines if webJars mechanism is enabled. It is disabled if the user
      * have explicitly set the {@link Constants#DISABLE_WEBJARS} property to
@@ -323,5 +324,10 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default boolean isBrotli() {
         return getBooleanProperty(Constants.SERVLET_PARAMETER_BROTLI, false);
+    }
+
+    default String getCompiledWebComponentsPath() {
+        return getStringProperty(Constants.COMPILED_WEB_COMPONENTS_PATH,
+                "vaadin-web-components");
     }
 }

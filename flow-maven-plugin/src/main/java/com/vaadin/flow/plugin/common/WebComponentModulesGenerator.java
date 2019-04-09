@@ -28,6 +28,9 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -44,6 +47,9 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
     private static final String ABSENT_METHOD_ERROR = String.format(
             "There is no method '%s' in the class '%s', consider updating flow-server dependency",
             GENERATE_MODULE_METHOD, WebComponentExporter.class.getName());
+
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(WebComponentModulesGenerator.class);
 
     /**
      * Prepares the class to find web component exporters from the project
@@ -84,14 +90,13 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
             File outputFolder) {
         String tag = getTag(clazz);
 
-        String fileName = tag;
-        int index = 1;
-        Path generatedFile;
-        do {
-            generatedFile = outputFolder.toPath().resolve(fileName + ".html");
-            index++;
-            fileName = tag + index;
-        } while (generatedFile.toFile().exists());
+        Path generatedFile = outputFolder.toPath().resolve(tag + ".html");
+        if (generatedFile.toFile().exists()) {
+            LOGGER.debug("File '{}' already exists in the '{}' directory."
+                    + "It might be a prevously genetated web component module file "
+                    + "or it's an imported dependency. The file will be overwritten.",
+                    generatedFile.getFileName(), outputFolder.getPath());
+        }
         try {
             Files.write(generatedFile,
                     Collections.singletonList(generateModule(clazz)),
@@ -115,7 +120,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
                         () -> new IllegalStateException(ABSENT_METHOD_ERROR));
 
         try {
-            return (String) generateMethod.invoke(null, clazz, "");
+            return (String) generateMethod.invoke(null, clazz, "../");
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException exception) {
             throw new RuntimeException(String.format(

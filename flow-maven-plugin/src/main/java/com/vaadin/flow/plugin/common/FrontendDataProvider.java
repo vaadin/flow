@@ -76,6 +76,9 @@ public class FrontendDataProvider {
      * @param fragmentConfigurationFile
      *            path to external configuration file with fragments, may be
      *            {@code null}
+     * @param webComponentOutputDirectoryName
+     *            folder name inside {@code es6SourceDirectory} where web
+     *            component module files will be generated, not {@code null}
      * @param userDefinedFragments
      *            another list of fragments, if user preferred to specify them
      *            without external configuration file, not {@code null}
@@ -84,6 +87,7 @@ public class FrontendDataProvider {
             boolean shouldHash, File es6SourceDirectory,
             AnnotationValuesExtractor annotationValuesExtractor,
             File fragmentConfigurationFile,
+            String webComponentOutputDirectoryName,
             Map<String, Set<String>> userDefinedFragments) {
         this.shouldBundle = shouldBundle;
         this.shouldMinify = shouldMinify;
@@ -96,7 +100,8 @@ public class FrontendDataProvider {
                 annotationValuesExtractor, fragments.values().stream()
                         .flatMap(Set::stream).collect(Collectors.toSet()));
 
-        shellFileImports.addAll(generateWebComponentModules(es6SourceDirectory,
+        shellFileImports.addAll(generateWebComponentModules(
+                new File(es6SourceDirectory, webComponentOutputDirectoryName),
                 annotationValuesExtractor));
     }
 
@@ -349,6 +354,14 @@ public class FrontendDataProvider {
 
     private Collection<File> generateWebComponentModules(File outputDir,
             AnnotationValuesExtractor annotationValuesExtractor) {
+        if (outputDir.isFile()) {
+            throw new IllegalStateException(String.format(
+                    "The path '%s' already exists and it is not a diretory",
+                    outputDir));
+        }
+        if (!outputDir.exists()) {
+            outputDir.mkdir();
+        }
         WebComponentModulesGenerator generator = getWebComponentGenerator(
                 annotationValuesExtractor);
         return generator.getExporters().map(

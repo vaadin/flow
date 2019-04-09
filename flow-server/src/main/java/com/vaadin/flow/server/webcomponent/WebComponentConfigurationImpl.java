@@ -122,6 +122,7 @@ public class WebComponentConfigurationImpl<C extends Component> extends
         return configurationImp;
     }
 
+    @Override
     public String getWebComponentTag() {
         return tag;
     }
