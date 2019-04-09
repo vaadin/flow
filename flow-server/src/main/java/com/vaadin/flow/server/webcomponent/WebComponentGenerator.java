@@ -63,24 +63,21 @@ public class WebComponentGenerator {
     }
 
     /**
-     * Generate web component html/JS for given exporter class.
+     * Generate web component html/JS for given configuration instance.
      *
-     * @param exporterType
-     *         web component exporter class, not {@code null}
+     * @param webComponentConfiguration
+     *         web component configuration, not {@code null}
      * @param frontendURI
      *         the frontend resources URI, not {@code null}
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
-            Class<? extends WebComponentExporter<? extends Component>> exporterType,
+            WebComponentConfiguration<? extends Component> webComponentConfiguration,
             String frontendURI) {
-        Objects.requireNonNull(exporterType);
+        Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
-        WebComponentConfiguration<? extends Component> config =
-                new WebComponentExporter.WebComponentConfigurationFactory()
-                        .create(exporterType);
-        return generateModule(config, frontendURI, false);
+        return generateModule(webComponentConfiguration, frontendURI, false);
     }
 
     /**
