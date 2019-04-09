@@ -73,10 +73,12 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
         AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(new DefaultClassFinder(classes));
 
         if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
+            System.err.println("VAAA");
             new NodeUpdatePackages(extractor).execute();
         }
 
         if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
+            System.err.println("VAAA2");
             new NodeUpdateImports(extractor).execute();
         }
 

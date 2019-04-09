@@ -39,14 +39,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
-
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
  * <p>
@@ -81,12 +82,7 @@ public class DevModeHandler implements Serializable {
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
 
-    // This fixes maven tests in multi-module execution
-    private static final String BASEDIR = System.getProperty("project.basedir", System.getProperty("user.dir", "."));
-
-    public static final String WEBAPP_FOLDER = BASEDIR + "/";
-    public static final String WEBPACK_CONFIG = BASEDIR + "/webpack.config.js";
-    static final String WEBPACK_SERVER = BASEDIR + "/node_modules/webpack-dev-server/bin/webpack-dev-server.js";
+    static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
     private final DeploymentConfiguration config;
@@ -199,13 +195,13 @@ public class DevModeHandler implements Serializable {
             return null;
         }
 
-        File directory = new File(WEBAPP_FOLDER).getAbsoluteFile();
+        File directory = new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER).getAbsoluteFile();
         if (!directory.exists()) {
             getLogger().warn("Instance not created because cannot change to '{}'", directory);
             return null;
         }
 
-        File webpack = new File(WEBPACK_SERVER);
+        File webpack = new File(getBaseDir(), WEBPACK_SERVER);
         if (!webpack.canExecute()) {
             getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
             return null;
@@ -215,7 +211,7 @@ public class DevModeHandler implements Serializable {
             return null;
         }
 
-        File webpackConfig = new File(WEBPACK_CONFIG);
+        File webpackConfig = new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG);
         if (!webpackConfig.canRead()) {
             getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
             return null;
