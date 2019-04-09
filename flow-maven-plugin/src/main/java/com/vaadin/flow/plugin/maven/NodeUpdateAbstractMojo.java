@@ -178,23 +178,36 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
 
     protected NodeUpdater updater;
 
-    public NodeUpdateAbstractMojo() {
+    @Override
+    public void execute() {
+        // Do nothing when bower mode
+        if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
+            String goal = this.getClass().equals(NodeUpdateImportsMojo.class) ? "update-imports"  : "update-npm-dependencies";
+            getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
+            return;
+        }
+
+        updateNodeExecutoConfig();
+        getUpdater().execute();
+    }
+
+    private void updateNodeExecutoConfig() {
         if (nodeExecutorConfig == null) {
             try {
                 nodeExecutorConfig = new FrontendToolsLocator()
-                        .tryLocateNodeAndNpm()
-                        .<NodeExecutorConfig> map(
-                                paths -> new NodeExecutorConfigLocal(
-                                        paths.getNodePath(), paths.getNpmPath(),
-                                        nodeDownloadDirectory,
-                                        nodeDownloadDirectory))
-                        .orElseGet(() -> installLocalNode(nodeDownloadDirectory,
-                                nodeVersion));
+                    .tryLocateNodeAndNpm()
+                    .<NodeExecutorConfig> map(
+                        paths -> new NodeExecutorConfigLocal(
+                            paths.getNodePath(), paths.getNpmPath(),
+                            nodeDownloadDirectory,
+                            nodeDownloadDirectory))
+                    .orElseGet(() -> installLocalNode(nodeDownloadDirectory,
+                        nodeVersion));
             } catch (Exception e) {
                 getLog().warn(
-                        "Failed to determine 'node' and 'npm' tools to use in the plugin. "
-                                + "Please install them using the https://nodejs.org/en/download/ guide.",
-                        e);
+                    "Failed to determine 'node' and 'npm' tools to use in the plugin. "
+                        + "Please install them using the https://nodejs.org/en/download/ guide.",
+                    e);
                 throw e;
             }
         }
@@ -248,17 +261,6 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         return new ProxyConfig.Proxy(proxy.getId(), proxy.getProtocol(),
             proxy.getHost(), proxy.getPort(), proxy.getUsername(),
             proxy.getPassword(), proxy.getNonProxyHosts());
-    }
-
-    @Override
-    public void execute() {
-        // Do nothing when bower mode
-        if (Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE)) {
-            String goal = this.getClass().equals(NodeUpdateImportsMojo.class) ? "update-imports"  : "update-npm-dependencies";
-            getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
-            return;
-        }
-        getUpdater().execute();
     }
 
     protected abstract NodeUpdater getUpdater();
