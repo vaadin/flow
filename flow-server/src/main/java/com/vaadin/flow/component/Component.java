@@ -378,6 +378,16 @@ public abstract class Component
     }
 
     /**
+     * Detaches a component from its current UI. Calling this method is a
+     * precondition for adding a component that was already attached to an
+     * existing UI to another UI.
+     */
+    public void detachFromUI() {
+        getElement().removeFromParent();
+        getElement().getNode().removeFromTree();
+    }
+
+    /**
      * Sets the id of the root element of this component. The id is used with
      * various APIs to identify the element, and it should be unique on the
      * page.
