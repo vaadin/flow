@@ -53,7 +53,7 @@ import elemental.json.Json;
 import elemental.json.JsonValue;
 
 /**
- * A class representing an element in the DOM.
+ * Represents an element in the DOM.
  * <p>
  * Contains methods for updating and querying various parts of the element, such
  * as attributes.
@@ -745,7 +745,6 @@ public class Element extends Node<Element> {
      * @return a handle that can be used for configuring or removing the
      *         listener
      *
-     * @since
      */
     public DomListenerRegistration addPropertyChangeListener(
             String propertyName, String domEventName,
@@ -1594,6 +1593,7 @@ public class Element extends Node<Element> {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
+     * <li>{@link JsonValue}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
@@ -1718,8 +1718,9 @@ public class Element extends Node<Element> {
                     .getFeatureIfInitialized(VirtualChildrenList.class)
                     .ifPresent(list -> {
                         final Consumer<Component> stateChangeInformer = virtual -> {
-                            virtual.onEnabledStateChanged(enabled
-                                    ? virtual.getElement().isEnabled() : false);
+                            virtual.onEnabledStateChanged(
+                                    enabled ? virtual.getElement().isEnabled()
+                                            : false);
 
                             informChildrenOfStateChange(enabled, virtual);
                         };
