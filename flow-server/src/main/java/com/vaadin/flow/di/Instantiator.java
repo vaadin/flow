@@ -168,12 +168,7 @@ public interface Instantiator extends Serializable {
      *
      * @return the created instance, not <code>null</code>
      */
-    default <T extends Component> T createComponent(Class<T> componentClass) {
-        throw new UnsupportedOperationException(
-                "The method has to be implemented by the "
-                        + "implementation. It has a default implementation only "
-                        + "because of binary compatibility reasons.");
-    }
+    <T extends Component> T createComponent(Class<T> componentClass);
 
     /**
      * Gets the instantiator to use for the given UI.
