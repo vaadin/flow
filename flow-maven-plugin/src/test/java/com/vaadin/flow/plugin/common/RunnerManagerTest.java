@@ -68,8 +68,7 @@ public class RunnerManagerTest {
                         .npmRegistryUrl(incorrectRegistry).build();
 
         exception.expect(TaskRunnerException.class);
-        exception.expectMessage(
-                String.format("--registry=%s", incorrectRegistry));
+        exception.expectMessage("yarn");
         runnerManager.getYarnRunner().execute(null, Collections.emptyMap());
     }
 
