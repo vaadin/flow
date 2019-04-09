@@ -78,7 +78,7 @@ public class FrontendDataProvider {
      *            {@code null}
      * @param webComponentOutputDirectoryName
      *            folder name inside {@code es6SourceDirectory} where web
-     *            component module files will be genetated
+     *            component module files will be generated, not {@code null}
      * @param userDefinedFragments
      *            another list of fragments, if user preferred to specify them
      *            without external configuration file, not {@code null}
