@@ -245,8 +245,8 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         ProcessBuilder builder = new ProcessBuilder()
                 .directory(config.getNodePath().getParentFile()).inheritIO()
                 .command(Arrays.asList(config.getNodePath().getAbsolutePath(),
-                        config.getNpmPath().getAbsolutePath(), "i",
-                        "npm@latest"));
+                        config.getNpmPath().getAbsolutePath(), "install",
+                        "--no-package-lock", "npm@latest"));
 
         Process npmUpdate = null;
         try {
