@@ -61,7 +61,7 @@ public abstract class NodeUpdater implements Serializable {
      */
     protected boolean convertHtml;
 
-    AnnotationValuesExtractor annotationValuesExtractor;
+    protected AnnotationValuesExtractor annotationValuesExtractor;
 
     private final Set<String> flowModules = new HashSet<>();
 
@@ -79,7 +79,7 @@ public abstract class NodeUpdater implements Serializable {
                 .collect(Collectors.toSet());
     }
 
-    Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
+    protected Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
@@ -135,7 +135,7 @@ public abstract class NodeUpdater implements Serializable {
         return Objects.equals(module, htmlImport) ? null : module;
     }
 
-    Logger log() {
+    protected Logger log() {
         // Using short prefix so as npm output is more readable
         return LoggerFactory.getLogger("dev-updater");
     }

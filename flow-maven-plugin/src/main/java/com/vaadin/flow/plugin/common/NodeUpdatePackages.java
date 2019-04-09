@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.plugin.common;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,17 +34,18 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.github.eirslett.maven.plugins.frontend.lib.NodeExecutorConfig;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.NodeUpdater;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
@@ -60,12 +61,15 @@ public class NodeUpdatePackages extends NodeUpdater {
     private static final String VALUE = "value";
     private final String webpackTemplate;
     private final File webpackOutputDirectory;
+    private final NodeExecutorConfig nodeExecutorConfig;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
      * @param extractor
      *            a reusable annotation extractor
+     * @param nodeExecutorConfig
+     *            a configuration holding paths to node and npm
      * @param webpackOutputDirectory
      *            the directory to set for webpack to output its build results
      * @param webpackTemplate
@@ -78,29 +82,18 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            project
      * @param convertHtml
      *            whether to convert html imports or not during the package
-     *            updates
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor,
-            File webpackOutputDirectory, String webpackTemplate, File npmFolder,
-            File nodeModulesPath, boolean convertHtml) {
+            NodeExecutorConfig nodeExecutorConfig, File webpackOutputDirectory,
+            String webpackTemplate, File npmFolder, File nodeModulesPath,
+            boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
+        this.nodeExecutorConfig = nodeExecutorConfig;
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
         this.webpackOutputDirectory = webpackOutputDirectory;
         this.webpackTemplate = webpackTemplate;
         this.convertHtml = convertHtml;
-    }
-
-    /**
-     * Create an instance of the updater given the reusable extractor, the rest
-     * of the configurable parameters will be set to their default values.
-     *
-     * @param extractor
-     *            a reusable annotation extractor
-     */
-    public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, new File("./src/main/webapp"), WEBPACK_CONFIG, new File("."),
-                new File("./node_modules/"), true);
     }
 
     @Override
@@ -213,10 +206,6 @@ public class NodeUpdatePackages extends NodeUpdater {
         ProcessBuilder builder = new ProcessBuilder(
                 getNpmCommand(dependencies, npmInstallArgs));
         builder.directory(npmFolder);
-        if (DevModeHandler.UNIX_OS) {
-            builder.environment().put("PATH",
-                    builder.environment().get("PATH") + ":/usr/local/bin");
-        }
         if (log().isInfoEnabled()) {
             log().info(
                 "Updating package.json and installing npm dependencies ...\n {}",
@@ -246,7 +235,8 @@ public class NodeUpdatePackages extends NodeUpdater {
     private List<String> getNpmCommand(List<String> dependencies,
             String... npmInstallArgs) {
         List<String> command = new ArrayList<>(5 + dependencies.size());
-        command.add(DevModeHandler.UNIX_OS ? "npm" : "npm.cmd");
+        command.add(nodeExecutorConfig.getNodePath().getAbsolutePath());
+        command.add(nodeExecutorConfig.getNpmPath().getAbsolutePath());
         command.add("--no-package-lock");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));

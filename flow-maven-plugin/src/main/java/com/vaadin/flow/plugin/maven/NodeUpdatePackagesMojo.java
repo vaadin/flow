@@ -23,8 +23,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.flow.plugin.common.NodeUpdatePackages;
 import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
@@ -52,7 +52,7 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
                     .toPath().relativize(getWebpackOutputDirectory().toPath())
                     .toFile();
 
-            updater = new NodeUpdatePackages(extractor,
+            updater = new NodeUpdatePackages(extractor, nodeExecutorConfig,
                     webpackOutputRelativeToProjectDir, webpackTemplate,
                     npmFolder, nodeModulesPath, convertHtml);
         }

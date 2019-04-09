@@ -42,8 +42,8 @@ import com.vaadin.flow.plugin.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.plugin.common.NodeUpdatePackages.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

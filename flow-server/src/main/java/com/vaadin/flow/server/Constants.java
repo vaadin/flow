@@ -172,11 +172,6 @@ public final class Constants implements Serializable {
      */
     public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS = "devmode.skip.update-imports";
 
-    /**
-     * Configuration name  which disables the node dependencies updater.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM = "devmode.skip.update-npm-dependencies";
-
     private Constants() {
         // prevent instantiation constants class only
     }

@@ -20,7 +20,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
@@ -36,13 +35,11 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
-import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -71,10 +68,6 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
         }
 
         AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(new DefaultClassFinder(classes));
-
-        if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
-            new NodeUpdatePackages(extractor).execute();
-        }
 
         if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
             new NodeUpdateImports(extractor).execute();

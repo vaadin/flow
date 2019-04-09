@@ -68,7 +68,7 @@ public class DevModeHandler implements Serializable {
      * True when running in a unix like system. It's used to call the
      * appropriate <code>npm</code> launcher in windows or unix.
      */
-    public static final boolean UNIX_OS = !System.getProperty("os.name").matches("(?i).*windows.*");
+    private static final boolean UNIX_OS = !System.getProperty("os.name").matches("(?i).*windows.*");
 
     // It's not possible to know whether webpack is ready unless reading output messages.
     // When webpack finishes, it writes either a `Compiled` or `Failed` as the last line
