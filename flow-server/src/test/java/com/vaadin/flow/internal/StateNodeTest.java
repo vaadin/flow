@@ -37,8 +37,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
@@ -50,6 +52,8 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonValue;
 
 public class StateNodeTest {
 
@@ -1386,8 +1390,7 @@ public class StateNodeTest {
                     .equals(change.getFeature()) ? change
                             : (MapPutChange) changes.get(1);
             propertyChange = change.equals(visibilityChange)
-                    ? (MapPutChange) changes.get(1)
-                    : change;
+                    ? (MapPutChange) changes.get(1) : change;
         } else {
             propertyChange = change;
         }
@@ -1401,5 +1404,183 @@ public class StateNodeTest {
         stateNode.collectChanges(changes::add);
 
         Assert.assertEquals(0, changes.size());
+    }
+
+    @Test
+    public void initialInitListener_initiallyCalled() {
+        StateTree tree = new TestStateTree();
+        AtomicBoolean initializerRun = new AtomicBoolean(false);
+
+        tree.getRootNode().addClientSideInitializer(ignore -> {
+            Assert.assertFalse(initializerRun.getAndSet(true));
+            return null;
+        });
+
+        Assert.assertFalse(initializerRun.get());
+
+        emulateResponse(tree);
+
+        Assert.assertTrue("Initializer should be called for initial response",
+                initializerRun.get());
+
+        initializerRun.set(false);
+
+        emulateResponse(tree);
+
+        Assert.assertFalse(
+                "Initializer should not be called for subsequent response",
+                initializerRun.get());
+    }
+
+    @Test
+    public void separatelyAddedInitListener_initiallyCalled() {
+        StateTree tree = new TestStateTree();
+        AtomicBoolean initializerRun = new AtomicBoolean(false);
+
+        emulateResponse(tree);
+
+        tree.getRootNode().addClientSideInitializer(page -> {
+            Assert.assertSame(tree.getUI().getPage(), page);
+            Assert.assertFalse(initializerRun.getAndSet(true));
+            return null;
+        });
+
+        emulateResponse(tree);
+
+        Assert.assertTrue("Initializer should be called for initial response",
+                initializerRun.get());
+    }
+
+    @Test
+    public void initListener_detachedNode_notCalled() {
+        TestStateTree tree = new TestStateTree();
+        StateNode node = new StateNode();
+        addChild(tree.getRootNode(), node);
+
+        node.addClientSideInitializer(ignore -> {
+            Assert.fail("Listener should never be called");
+            return null;
+        });
+
+        removeFromParent(node);
+
+        emulateResponse(tree);
+    }
+
+    @Test
+    public void temporaryDetach_initListenerNotCalled() {
+        TestStateTree tree = new TestStateTree();
+        StateNode node = new StateNode();
+        addChild(tree.getRootNode(), node);
+
+        AtomicBoolean initializerRun = new AtomicBoolean(false);
+        node.addClientSideInitializer(ignore -> {
+            Assert.assertFalse(initializerRun.getAndSet(true));
+            return null;
+        });
+
+        // Clear the initial initialization that always happens
+        emulateResponse(tree);
+        initializerRun.set(false);
+
+        removeFromParent(node);
+        addChild(tree.getRootNode(), node);
+        emulateResponse(tree);
+
+        Assert.assertFalse(
+                "Initializer should not be run after temporary detach",
+                initializerRun.get());
+    }
+
+    @Test
+    public void longerDetach_initListenerNotCalled() {
+        TestStateTree tree = new TestStateTree();
+        StateNode node = new StateNode();
+        addChild(tree.getRootNode(), node);
+
+        AtomicBoolean initializerRun = new AtomicBoolean(false);
+        node.addClientSideInitializer(ignore -> {
+            Assert.assertFalse(initializerRun.getAndSet(true));
+            return null;
+        });
+
+        // Clear the initial initialization that always happens
+        emulateResponse(tree);
+        initializerRun.set(false);
+
+        removeFromParent(node);
+        emulateResponse(tree);
+
+        addChild(tree.getRootNode(), node);
+        emulateResponse(tree);
+
+        Assert.assertTrue(
+                "Initializer should be run if reattached in a separate request",
+                initializerRun.get());
+    }
+
+    @Test
+    public void detachInBeforeClientResponse_initCommandCanceled() {
+        TestStateTree tree = new TestStateTree();
+        StateNode node = new StateNode();
+        addChild(tree.getRootNode(), node);
+
+        AtomicBoolean initializerRun = new AtomicBoolean(false);
+        AtomicBoolean canceled = new AtomicBoolean(false);
+
+        node.addClientSideInitializer(ignore -> {
+            Assert.assertFalse(initializerRun.getAndSet(true));
+            return new PendingJavaScriptResult() {
+                @Override
+                public boolean cancelExecution() {
+                    Assert.assertFalse(
+                            "Execution should not be canceled before",
+                            canceled.getAndSet(true));
+                    return true;
+                }
+
+                @Override
+                public boolean isSentToBrowser() {
+                    return false;
+                }
+
+                @Override
+                public void then(SerializableConsumer<JsonValue> resultHandler,
+                        SerializableConsumer<String> errorHandler) {
+                    Assert.fail("Should not be called");
+                }
+            };
+        });
+
+        tree.beforeClientResponse(node, ignore -> {
+            Assert.assertTrue(initializerRun.get());
+            Assert.assertFalse(canceled.get());
+            removeFromParent(node);
+        });
+        emulateResponse(tree);
+
+        Assert.assertTrue("Command should be canceled after late detach",
+                canceled.get());
+    }
+
+    @Test
+    public void removedInitListener_notRun() {
+        StateTree tree = new TestStateTree();
+
+        Registration registration = tree.getRootNode()
+                .addClientSideInitializer(node -> {
+                    Assert.fail("Should never run");
+                    return null;
+                });
+
+        registration.remove();
+
+        emulateResponse(tree);
+    }
+
+    private static void emulateResponse(StateTree tree) {
+        tree.runExecutionsBeforeClientResponse();
+        tree.collectChanges(ignore -> {
+        });
     }
 }
