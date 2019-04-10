@@ -201,68 +201,6 @@ public class WebComponentExporterTest {
         Assert.assertFalse(config.hasProperty("does-not-exist"));
     }
 
-    @Test
-    public void exporter_hashCode() {
-        MyComponentExporter myComponentExporter1 = new MyComponentExporter();
-        MyComponentExporter myComponentExporter2 = new MyComponentExporter();
-
-        SimilarExporter1 similarExporter1 = new SimilarExporter1();
-        SimilarExporter2 similarExporter2 = new SimilarExporter2();
-        SimilarExporter3 similarExporter3 = new SimilarExporter3();
-
-        Assert.assertEquals("Exporters of the same class should " +
-                        "have same hashCode",
-                myComponentExporter1.hashCode(),
-                myComponentExporter2.hashCode());
-
-        Assert.assertNotEquals("Exporters with different tags should have " +
-                        "not have same hashCodes",
-                myComponentExporter1.hashCode(),
-                similarExporter1.hashCode());
-
-        Assert.assertNotEquals("Exporters with same tag, but different " +
-                        "properties should not have same hashCodes",
-                similarExporter1.hashCode(),
-                similarExporter2.hashCode());
-
-        Assert.assertEquals("Exporters with same tag and same properties " +
-                        "but different defaults should have the same hashCode",
-                similarExporter2.hashCode(),
-                similarExporter3.hashCode());
-    }
-
-    @Test
-    public void exporter_equals() {
-        MyComponentExporter myComponentExporter1 = new MyComponentExporter();
-        MyComponentExporter myComponentExporter2 = new MyComponentExporter();
-
-        SimilarExporter1 similarExporter1 = new SimilarExporter1();
-        SimilarExporter2 similarExporter2 = new SimilarExporter2();
-        SimilarExporter3 similarExporter3 = new SimilarExporter3();
-
-        Assert.assertEquals("Exporters of the same class should " +
-                        "be equal",
-                myComponentExporter1,
-                myComponentExporter2);
-
-        Assert.assertNotEquals("Exporters with different tags should have " +
-                        "not be equal",
-                myComponentExporter1,
-                similarExporter1);
-
-        Assert.assertNotEquals("Exporters with same tag, but different " +
-                        "properties should not be equal",
-                similarExporter1,
-                similarExporter2);
-
-        // even though the classes are different, they define the same
-        // embeddable web component
-        Assert.assertEquals("Exporters with same tag and same properties " +
-                        "but different defaults should be equal",
-                similarExporter2,
-                similarExporter3);
-    }
-
     @Tag("test")
     public static class MyComponent extends Component {
         private boolean flip = false;
@@ -318,42 +256,6 @@ public class WebComponentExporterTest {
 
         public MyComponentExporter() {
             super(TAG);
-        }
-
-        @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
-
-        }
-    }
-
-    public static class SimilarExporter1 extends WebComponentExporter<MyComponent> {
-        public SimilarExporter1() {
-            super("tag");
-            addProperty("string", "dog");
-        }
-
-        @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
-
-        }
-    }
-
-    public static class SimilarExporter2 extends WebComponentExporter<MyComponent> {
-        public SimilarExporter2() {
-            super("tag");
-            addProperty("int", 0);
-        }
-
-        @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
-
-        }
-    }
-
-    public static class SimilarExporter3 extends WebComponentExporter<MyComponent> {
-        public SimilarExporter3() {
-            super("tag");
-            addProperty("int", 1);
         }
 
         @Override

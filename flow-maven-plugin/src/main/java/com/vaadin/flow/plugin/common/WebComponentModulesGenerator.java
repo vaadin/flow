@@ -71,10 +71,12 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
     /**
      * Generate a file with web component html/JS content for given exporter
-     * class in the given {@code outputFolder}
+     * class in the given {@code outputFolder}.
      *
      * @param clazz
      *         web component exporter class
+     * @param outputFolder
+     *         folder into which the generate file is written
      * @return the generated module content
      */
     public File generateModuleFile(

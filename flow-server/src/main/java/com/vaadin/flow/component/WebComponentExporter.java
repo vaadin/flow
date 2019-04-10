@@ -88,7 +88,8 @@ public abstract class WebComponentExporter<C extends Component>
 
     private final String tag;
     private final Class<C> componentClass;
-    private Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
+    private HashMap<String,
+            PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
 
     /**
      * Creates a new {@code WebComponentExporter} instance and configures the
@@ -254,62 +255,26 @@ public abstract class WebComponentExporter<C extends Component>
         return SUPPORTED_TYPES.contains(clazz);
     }
 
-    @Override
-    public int hashCode() {
-        Object[] objs = new Object[propertyConfigurationMap.size() + 1];
-
-        objs[0] = tag;
-        int place = 1;
-        for (PropertyConfiguration configuration :
-                propertyConfigurationMap.values()) {
-            objs[place] = configuration;
-            place++;
-        }
-
-        return Objects.hash(objs);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof WebComponentExporter) {
-            WebComponentExporter<?> other = (WebComponentExporter<?>) obj;
-
-            boolean isSame = tag.equals(other.tag);
-            isSame = isSame && (propertyConfigurationMap.size()
-                    == other.propertyConfigurationMap.size());
-
-            if (!isSame) {
-                return false;
-            }
-
-            PropertyConfiguration<?, ?> otherConf;
-            for (String key : propertyConfigurationMap.keySet()) {
-                otherConf = other.propertyConfigurationMap.get(key);
-                if (!propertyConfigurationMap.get(key).equals(otherConf)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private static class WebComponentConfigurationImpl<C extends Component> implements WebComponentConfiguration<C> {
+    private final static class WebComponentConfigurationImpl<C extends Component> implements WebComponentConfiguration<C> {
         private WebComponentExporter<C> exporter;
+        private final Map<String, PropertyConfigurationImpl<C,
+                ? extends Serializable>> immutablePropertyMap;
 
         private WebComponentConfigurationImpl(WebComponentExporter<C> exporter) {
             this.exporter = exporter;
+            immutablePropertyMap =
+                    Collections.unmodifiableMap(exporter.propertyConfigurationMap);
         }
 
         @Override
         public boolean hasProperty(String propertyName) {
-            return this.exporter.propertyConfigurationMap.containsKey(propertyName);
+            return immutablePropertyMap.containsKey(propertyName);
         }
 
         @Override
         public Class<? extends Serializable> getPropertyType(String propertyName) {
-            if (this.exporter.propertyConfigurationMap.containsKey(propertyName)) {
-                return this.exporter.propertyConfigurationMap.get(propertyName).getPropertyData()
+            if (hasProperty(propertyName)) {
+                return immutablePropertyMap.get(propertyName).getPropertyData()
                         .getType();
             } else {
                 return null;
@@ -323,7 +288,7 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         public Set<PropertyData<? extends Serializable>> getPropertyDataSet() {
-            return this.exporter.propertyConfigurationMap.values().stream()
+            return immutablePropertyMap.values().stream()
                     .map(PropertyConfigurationImpl::getPropertyData)
                     .collect(Collectors.toSet());
         }
@@ -360,7 +325,7 @@ public abstract class WebComponentExporter<C extends Component>
             WebComponentBinding<C> binding =
                     new WebComponentBinding<>(componentReference);
 
-            this.exporter.propertyConfigurationMap
+            immutablePropertyMap
                     .values().forEach(binding::bindProperty);
 
             this.exporter.configureInstance(new WebComponent<>(binding, element),
@@ -384,17 +349,44 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         public int hashCode() {
-            return exporter.hashCode();
+            Object[] objs = new Object[immutablePropertyMap.size() + 1];
+
+            objs[0] = getTag();
+            int place = 1;
+            for (PropertyConfiguration configuration :
+                    immutablePropertyMap.values()) {
+                objs[place] = configuration;
+                place++;
+            }
+
+            return Objects.hash(objs);
         }
 
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof WebComponentConfigurationImpl) {
-                WebComponentConfigurationImpl imp =
-                        (WebComponentConfigurationImpl) obj;
 
-                return exporter.equals(imp.exporter);
+                WebComponentConfigurationImpl<?> other =
+                        (WebComponentConfigurationImpl<?>) obj;
+
+                boolean isSame = getTag().equals(other.getTag());
+                isSame = isSame && (immutablePropertyMap.size()
+                        == other.immutablePropertyMap.size());
+
+                if (!isSame) {
+                    return false;
+                }
+
+                PropertyConfiguration<?, ?> otherConf;
+                for (String key : immutablePropertyMap.keySet()) {
+                    otherConf = other.immutablePropertyMap.get(key);
+                    if (!immutablePropertyMap.get(key).equals(otherConf)) {
+                        return false;
+                    }
+                }
+                return true;
             }
+
             return false;
         }
     }
