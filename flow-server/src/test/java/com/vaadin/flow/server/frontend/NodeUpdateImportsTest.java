@@ -56,7 +56,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         node = new NodeUpdateImports(getAnnotationValuesExtractor(),
                 importsFile, tmpRoot, nodeModulesPath, true);
 
-        Assert.assertTrue(node.getFlowPackage().mkdirs());
+        Assert.assertTrue(getFlowPackage().mkdirs());
 
         createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
     }
@@ -121,8 +121,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(node.getFlowPackage().exists());
-        Assert.assertTrue(new File(node.getFlowPackage(), "ExampleConnector.js")
+        Assert.assertTrue(getFlowPackage().exists());
+        Assert.assertTrue(new File(getFlowPackage(), "ExampleConnector.js")
                 .exists());
     }
 
@@ -280,6 +280,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         File root = jsImport.startsWith("./") ? directoryWithImportsJs
                 : nodeModulesPath;
         return new File(root, jsImport);
+    }
+
+    private File getFlowPackage() {
+        return NodeUpdater.getFlowPackage(nodeModulesPath);
     }
 
 }

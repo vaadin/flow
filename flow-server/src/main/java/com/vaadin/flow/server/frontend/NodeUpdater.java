@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.Command;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +38,26 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
  */
-public abstract class NodeUpdater implements Serializable {
+public abstract class NodeUpdater implements Command {
     /**
      * NPM package name that will be used for the javascript files present in
      * jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
     public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
+
+    /**
+     * Gets the flow package inside node_modules.
+     * 
+     * @param nodeModulesPath
+     *            path to node_modules.
+     * @return the flow package folder.
+     */
+    public static File getFlowPackage(File nodeModulesPath) {
+        return new File(nodeModulesPath, FLOW_PACKAGE);
+    }
+
+    static final String VALUE = "value";
 
     /**
      * Folder with the <code>package.json</code> file.
@@ -66,11 +80,26 @@ public abstract class NodeUpdater implements Serializable {
     private final Set<String> flowModules = new HashSet<>();
 
     /**
-     * Execute the update process.
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param extractor
+     *            a reusable annotation extractor
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
      */
-    public abstract void execute();
+    protected NodeUpdater(AnnotationValuesExtractor extractor, File npmFolder,
+            File nodeModulesPath, boolean convertHtml) {
+        this.annotationValuesExtractor = extractor;
+        this.npmFolder = npmFolder;
+        this.nodeModulesPath = nodeModulesPath;
+        this.convertHtml = convertHtml;
+    }
 
-    public File getFlowPackage() {
+    private File getFlowPackage() {
         return new File(nodeModulesPath, FLOW_PACKAGE);
     }
 
@@ -135,7 +164,7 @@ public abstract class NodeUpdater implements Serializable {
         return Objects.equals(module, htmlImport) ? null : module;
     }
 
-    Logger log() {
+    static Logger log() {
         // Using short prefix so as npm output is more readable
         return LoggerFactory.getLogger("dev-updater");
     }

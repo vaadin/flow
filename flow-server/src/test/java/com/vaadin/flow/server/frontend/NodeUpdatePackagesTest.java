@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.WebpackUpdater.WEBPACK_CONFIG;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
@@ -40,6 +40,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     NodeUpdatePackages node;
+    WebpackUpdater webpackUpdater;
 
     File packageJson;
     File webpackConfig;
@@ -53,8 +54,14 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         
         File modules = new File(tmpRoot, "node_modules");
 
-        node = new NodeUpdatePackages(getAnnotationValuesExtractor(), 
-                tmpRoot, WEBPACK_CONFIG, tmpRoot, modules, true);
+        
+        node = new NodeUpdatePackages(getAnnotationValuesExtractor(), tmpRoot, modules, true);
+        webpackUpdater = new WebpackUpdater(tmpRoot, tmpRoot, WEBPACK_CONFIG);
+    }
+
+    private void execute() {
+        node.execute();
+        webpackUpdater.execute();
     }
 
     @After
@@ -67,7 +74,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     public void executeNpm_packageJsonMissing() throws Exception {
         Assert.assertFalse(packageJson.exists());
 
-        node.execute();
+        execute();
 
         assertPackageJsonContent();
 
@@ -83,12 +90,12 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
-        node.execute();
+        execute();
         long tsPackage2 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack2 = FileUtils.getFile(webpackConfig).lastModified();
 
         sleep(1000);
-        node.execute();
+        execute();
         long tsPackage3 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack3 = FileUtils.getFile(webpackConfig).lastModified();
 

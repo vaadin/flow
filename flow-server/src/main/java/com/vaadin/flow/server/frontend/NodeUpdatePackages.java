@@ -54,24 +54,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 public class NodeUpdatePackages extends NodeUpdater {
 
     /**
-     * The name of the webpack config file.
-     */
-    public static final String WEBPACK_CONFIG = "webpack.config.js";
-
-    private static final String VALUE = "value";
-    private final String webpackTemplate;
-    private final File webpackOutputDirectory;
-
-    /**
      * Create an instance of the updater given all configurable parameters.
      *
      * @param extractor
      *            a reusable annotation extractor
-     * @param webpackOutputDirectory
-     *            the directory to set for webpack to output its build results
-     * @param webpackTemplate
-     *            name of the webpack resource to be used as template when
-     *            creating the <code>webpack.config.js</code> file
      * @param npmFolder
      *            folder with the `package.json` file
      * @param nodeModulesPath
@@ -82,14 +68,8 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            updates
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor,
-            File webpackOutputDirectory, String webpackTemplate, File npmFolder,
-            File nodeModulesPath, boolean convertHtml) {
-        this.annotationValuesExtractor = extractor;
-        this.npmFolder = npmFolder;
-        this.nodeModulesPath = nodeModulesPath;
-        this.webpackOutputDirectory = webpackOutputDirectory;
-        this.webpackTemplate = webpackTemplate;
-        this.convertHtml = convertHtml;
+            File npmFolder, File nodeModulesPath, boolean convertHtml) {
+        super(extractor, npmFolder, nodeModulesPath, convertHtml);
     }
 
     /**
@@ -100,7 +80,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, new File(getBaseDir(), "src/main/webapp"), WEBPACK_CONFIG, new File(getBaseDir()),
+        this(extractor, new File(getBaseDir()),
                 new File(getBaseDir(), "node_modules"), true);
     }
 
@@ -116,37 +96,8 @@ public class NodeUpdatePackages extends NodeUpdater {
 
             updatePackageJsonDevDependencies(packageJson);
 
-            createWebpackConfig();
-
         } catch (IOException e) {
             throw new UncheckedIOException(e);
-        }
-    }
-
-    private void createWebpackConfig() throws IOException {
-        if (webpackTemplate == null || webpackTemplate.trim().isEmpty()) {
-            return;
-        }
-
-        File configFile = new File(npmFolder, WEBPACK_CONFIG);
-
-        if (configFile.exists()) {
-            log().info("{} already exists.", configFile);
-        } else {
-            URL resource = this.getClass().getClassLoader()
-                    .getResource(webpackTemplate);
-            if (resource == null) {
-                resource = new URL(webpackTemplate);
-            }
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    resource.openStream(), StandardCharsets.UTF_8))) {
-                List<String> webpackConfigLines = br.lines()
-                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
-                        .collect(Collectors.toList());
-                Files.write(configFile.toPath(), webpackConfigLines);
-                log().info("Created {} from {}", WEBPACK_CONFIG, resource);
-            }
         }
     }
 

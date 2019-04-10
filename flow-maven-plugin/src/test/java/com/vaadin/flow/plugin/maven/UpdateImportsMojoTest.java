@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.frontend.NodeUpdater;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
@@ -65,7 +66,7 @@ public class UpdateImportsMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
-        Assert.assertTrue(mojo.getUpdater().getFlowPackage().mkdirs());
+        Assert.assertTrue(getFlowPackage().mkdirs());
 
         createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
     }
@@ -126,8 +127,8 @@ public class UpdateImportsMojoTest {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(mojo.getUpdater().getFlowPackage().exists());
-        Assert.assertTrue(new File(mojo.getUpdater().getFlowPackage(), "ExampleConnector.js").exists());
+        Assert.assertTrue(getFlowPackage().exists());
+        Assert.assertTrue(new File(getFlowPackage(), "ExampleConnector.js").exists());
     }
 
     @Test
@@ -284,4 +285,10 @@ public class UpdateImportsMojoTest {
         File root = jsImport.startsWith("./") ? directoryWithImportsJs : nodeModulesPath;
         return new File(root, jsImport);
     }
+
+    private File getFlowPackage() {
+        return NodeUpdater.getFlowPackage(nodeModulesPath);
+    }
+
+
 }

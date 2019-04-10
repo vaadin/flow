@@ -17,6 +17,8 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 
+import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.frontend.WebpackUpdater;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -40,11 +42,11 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
      * the template provided by this plugin. Leave it blank to disable the
      * feature.
      */
-    @Parameter(defaultValue = NodeUpdatePackages.WEBPACK_CONFIG)
+    @Parameter(defaultValue = WebpackUpdater.WEBPACK_CONFIG)
     private String webpackTemplate;
 
     @Override
-    protected NodeUpdater getUpdater() {
+    protected Command getUpdater() {
         if (updater == null) {
             AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
                     getClassFinder(project));
@@ -52,9 +54,15 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
                     .toPath().relativize(getWebpackOutputDirectory().toPath())
                     .toFile();
 
-            updater = new NodeUpdatePackages(extractor,
-                    webpackOutputRelativeToProjectDir, webpackTemplate,
-                    npmFolder, nodeModulesPath, convertHtml);
+            NodeUpdatePackages packagesUpdater = new NodeUpdatePackages(
+                    extractor, npmFolder, nodeModulesPath, convertHtml);
+            WebpackUpdater webpackUpdater = new WebpackUpdater(npmFolder,
+                    webpackOutputRelativeToProjectDir, webpackTemplate);
+
+            updater = () -> {
+                packagesUpdater.execute();
+                webpackUpdater.execute();
+            };
         }
         return updater;
     }

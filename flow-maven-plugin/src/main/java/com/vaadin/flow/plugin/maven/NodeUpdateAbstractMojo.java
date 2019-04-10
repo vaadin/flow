@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.vaadin.flow.server.Command;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
@@ -123,7 +124,7 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/node_modules/")
     protected File nodeModulesPath;
 
-    protected NodeUpdater updater;
+    protected Command updater;
 
     @Override
     public void execute() {
@@ -153,7 +154,7 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         return bowerMode;
     }
 
-    protected abstract NodeUpdater getUpdater();
+    protected abstract Command getUpdater();
 
     static ClassFinder getClassFinder(MavenProject project) {
         final List<String> runtimeClasspathElements;

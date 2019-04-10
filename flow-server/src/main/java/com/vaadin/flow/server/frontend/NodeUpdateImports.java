@@ -52,10 +52,9 @@ public class NodeUpdateImports extends NodeUpdater {
      * It is also the entry-point for webpack.
      */
     public static final String MAIN_JS = "frontend/main.js";
-    private static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
+    static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
 
     private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
-    private static final String VALUE = "value";
 
     private final File jsFile;
 
@@ -77,11 +76,8 @@ public class NodeUpdateImports extends NodeUpdater {
      */
     public NodeUpdateImports(AnnotationValuesExtractor extractor, File jsFile, File npmFolder,
                              File nodeModulesPath, boolean convertHtml) {
-        this.annotationValuesExtractor = extractor;
-        this.npmFolder = npmFolder;
-        this.nodeModulesPath = nodeModulesPath;
+        super(extractor, npmFolder, nodeModulesPath, convertHtml);
         this.jsFile = jsFile;
-        this.convertHtml = convertHtml;
         this.themeDefinition = getThemeDefinition(annotationValuesExtractor);
     }
 

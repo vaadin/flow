@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.Command;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -55,7 +56,7 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     private boolean generateBundle;
 
     @Override
-    protected NodeUpdater getUpdater() {
+    protected Command getUpdater() {
         if (updater == null) {
             AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
                     getClassFinder(project));
