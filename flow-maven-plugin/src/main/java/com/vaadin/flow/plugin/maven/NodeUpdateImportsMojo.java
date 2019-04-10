@@ -31,6 +31,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.FrontendToolsLocator;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
@@ -80,9 +81,12 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
+        File nodePath = new FrontendToolsLocator().tryLocateTool("node")
+            .orElseThrow(() -> new IllegalStateException("Failed to determine 'node' tool. "
+                + "Please install it using the https://nodejs.org/en/download/ guide."));
         Process webpackLaunch = null;
         try {
-            webpackLaunch = new ProcessBuilder("node",
+            webpackLaunch = new ProcessBuilder(nodePath.getAbsolutePath(),
                     webpackExecutable.getAbsolutePath())
                             .directory(project.getBasedir())
                             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
