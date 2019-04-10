@@ -65,7 +65,7 @@
                     <webAppConfig>
                         <resourceBases>
                             <resourceBase>${transpilation.output}</resourceBase>
-                            <resourceBase>src/main/webapp</resourceBase>
+                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
                         </resourceBases>
                     </webAppConfig>
                 </configuration>
