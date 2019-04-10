@@ -38,8 +38,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
     private static final String GENERATE_MODULE_METHOD = "generateModule";
-    private static final String GET_TAG_METHOD = "getTag";
-    private static final String CREATE_METHOD = "create";
 
     private static final String ABSENT_METHOD_ERROR = String.format(
             "There is no method '%s' in the class '%s', consider updating flow-server dependency",
@@ -129,18 +127,20 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
     private String getTag(Class<? extends WebComponentExporter<?
             extends Component>> exporterClass) {
-        Class<?> util =
+        Class<?> extractorClass =
                 loadClassInProjectClassLoader(WebComponentExporterTagExtractor.class.getName());
 
-        Method tagMethod = Stream.of(util.getDeclaredMethods())
-                .filter(method -> method.getReturnType() == String.class && method.getParameterCount() == 1)
+        Method tagMethod = Stream.of(extractorClass.getDeclaredMethods())
+                .filter(method ->
+                        method.getReturnType() == String.class
+                                && method.getParameterCount() == 1)
                 .findFirst().orElseThrow(() -> new RuntimeException(
                         String.format("Failed to find tag extraction method " +
                                         "from '%s'",
                                 WebComponentExporterTagExtractor.class.getName())));
 
         try {
-            return (String) tagMethod.invoke(util.newInstance(), exporterClass);
+            return (String) tagMethod.invoke(extractorClass.newInstance(), exporterClass);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new RuntimeException(String.format("Unable to extract tag " +
                             "from '%s' using '%s'", exporterClass.getName(),
