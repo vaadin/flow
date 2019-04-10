@@ -10,11 +10,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.io.Files;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DevModeHandler;
@@ -36,15 +37,15 @@ public class DevModeInitializerTest {
     private ServletRegistration registration;
     private Set<Class<?>> classes;
 
-    File tmpDir;
+    @Rule
+    public final TemporaryFolder tmpDir = new TemporaryFolder();
 
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() {
-        tmpDir = Files.createTempDir();
-        tmpDir.deleteOnExit();
-        new File(tmpDir, "src").mkdir();
-        System.setProperty("user.dir", tmpDir.getAbsolutePath());
+
+        new File(tmpDir.getRoot(), "src").mkdir();
+        System.setProperty("user.dir", tmpDir.getRoot().getPath());
 
         servletContext = Mockito.mock(ServletContext.class);
         registration = Mockito.mock(ServletRegistration.class);
@@ -70,8 +71,8 @@ public class DevModeInitializerTest {
         System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "true");
         System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "true");
         devModeInitializer.onStartup(classes, servletContext);
-        assertFalse(new File(tmpDir, PACKAGE_JSON).canRead());
-        assertFalse(new File(tmpDir, WEBPACK_CONFIG).canRead());
+        assertFalse(new File(tmpDir.getRoot(), PACKAGE_JSON).canRead());
+        assertFalse(new File(tmpDir.getRoot(), WEBPACK_CONFIG).canRead());
         assertNull(DevModeHandler.getDevModeHandler());
     }
 
@@ -80,9 +81,9 @@ public class DevModeInitializerTest {
         devModeInitializer.onStartup(classes, servletContext);
         System.err.println(tmpDir + " " + PACKAGE_JSON);
 
-        System.err.println(new File(tmpDir, PACKAGE_JSON).getCanonicalPath());
-        assertTrue(new File(tmpDir, PACKAGE_JSON).canRead());
-        assertTrue(new File(tmpDir, WEBPACK_CONFIG).canRead());
+        System.err.println(new File(tmpDir.getRoot(), PACKAGE_JSON).getCanonicalPath());
+        assertTrue(new File(tmpDir.getRoot(), PACKAGE_JSON).canRead());
+        assertTrue(new File(tmpDir.getRoot(), WEBPACK_CONFIG).canRead());
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
 }

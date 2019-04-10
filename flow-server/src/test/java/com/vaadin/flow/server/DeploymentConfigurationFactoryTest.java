@@ -11,12 +11,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -36,7 +37,9 @@ import static org.junit.Assert.assertTrue;
 
 public class DeploymentConfigurationFactoryTest {
 
-    private File tmpDir;
+    @Rule
+    public final TemporaryFolder tmpDir = new TemporaryFolder();
+
 
     private static class NoSettings extends VaadinServlet {
     }
@@ -52,9 +55,7 @@ public class DeploymentConfigurationFactoryTest {
 
     @Before
     public void setup() throws IOException {
-        tmpDir = Files.createTempDir();
-        tmpDir.deleteOnExit();
-        System.setProperty("user.dir", tmpDir.getAbsolutePath());
+        System.setProperty("user.dir", tmpDir.getRoot().getAbsolutePath());
     }
 
     @Test
@@ -200,7 +201,6 @@ public class DeploymentConfigurationFactoryTest {
                 config.getHeartbeatInterval());
     }
 
-
     @Test
     public void should_not_SetBowerMode_when_NoBowerFrontendFolder() throws Exception {
         DeploymentConfiguration config = createConfig(emptyMap(), null);
@@ -209,23 +209,23 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void should_SetBowerMode_when_BowerFrontendFolder() throws Exception {
-        FileUtils.forceMkdir(new File(tmpDir, "src/main/webapp/frontend"));
+        FileUtils.forceMkdir(new File(tmpDir.getRoot(), "src/main/webapp/frontend"));
         DeploymentConfiguration config = createConfig(emptyMap(), null);
         assertTrue(config.isBowerMode());
     }
 
     @Test
     public void should_not_SetBowerMode_when_BowerFrontendFolderAndNpmFrontendFolder() throws Exception {
-        FileUtils.forceMkdir(new File(tmpDir, "src/main/webapp/frontend"));
-        FileUtils.forceMkdir(new File(tmpDir, "frontend"));
+        FileUtils.forceMkdir(new File(tmpDir.getRoot(), "src/main/webapp/frontend"));
+        FileUtils.forceMkdir(new File(tmpDir.getRoot(), "frontend"));
         DeploymentConfiguration config = createConfig(emptyMap(), null);
         assertFalse(config.isBowerMode());
     }
 
     @Test
     public void should_not_SetBowerMode_when_BowerFrontendFolderAndPackageAndWebpack() throws Exception {
-        FileUtils.forceMkdir(new File(tmpDir, "src/main/webapp/frontend"));
-        new File(tmpDir, PACKAGE_JSON).createNewFile();
+        FileUtils.forceMkdir(new File(tmpDir.getRoot(), "src/main/webapp/frontend"));
+        new File(tmpDir.getRoot(), PACKAGE_JSON).createNewFile();
         new File(FrontendUtils.WEBPACK_CONFIG).createNewFile();
         DeploymentConfiguration config = createConfig(emptyMap(), null);
         assertFalse(config.isBowerMode());

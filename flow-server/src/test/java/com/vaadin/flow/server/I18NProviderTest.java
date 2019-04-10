@@ -80,7 +80,7 @@ public class I18NProviderTest {
     }
 
     @After
-    public void clearCurrentInstances() throws Exception {
+    public void clearCurrentInstances() {
         CurrentInstance.clearAll();
     }
 
