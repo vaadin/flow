@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -104,9 +105,13 @@ public class DevModeHandler implements Serializable {
             return;
         }
 
-        File nodePath = new FrontendToolsLocator().tryLocateTool("node")
-            .orElseThrow(() -> new IllegalStateException("Failed to determine 'node' tool. "
-                + "Please install it using the https://nodejs.org/en/download/ guide."));
+        FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
+        File nodePath = Optional.of(new File("./node/node"))
+                .filter(frontendToolsLocator::verifyTool)
+                .orElseGet(() -> frontendToolsLocator.tryLocateTool("node")
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Failed to determine 'node' tool. "
+                                        + "Please install it using the https://nodejs.org/en/download/ guide.")));
 
         // We always compute a free port.
         port = getFreePort();
