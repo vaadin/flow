@@ -82,17 +82,19 @@ public class WebComponentExporterAwareValidatorTest {
     public static class NonRoutePush extends Component {
     }
 
-    @Tag(Tag.DIV)
+    public static class MyComponent extends Component {
+    }
+
     @Theme(MyTheme.class)
     @Push
-    public static class WCExporter extends WebComponentExporter<Component> {
+    public static class WCExporter extends WebComponentExporter<MyComponent> {
 
         public WCExporter() {
             super(Tag.DIV);
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
 
         }
     }

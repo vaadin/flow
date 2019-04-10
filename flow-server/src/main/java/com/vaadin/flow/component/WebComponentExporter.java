@@ -119,6 +119,12 @@ public abstract class WebComponentExporter<C extends Component>
                             "provide a valid type for %s as a type parameter.",
                     getClass().getName(),
                     WebComponentExporter.class.getSimpleName()));
+        } else if (Component.class.equals(componentClass)) {
+            throw new IllegalStateException(String.format("Found invalid " +
+                            "component type '%s' as a type parameter for " +
+                            "'%s'. '%s' cannot be exported as web component.",
+                    componentClass.getName(), getClass().getName(),
+                    componentClass.getSimpleName()));
         }
     }
 

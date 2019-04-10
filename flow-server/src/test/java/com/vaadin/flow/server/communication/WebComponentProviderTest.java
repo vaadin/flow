@@ -321,13 +321,14 @@ public class WebComponentProviderTest {
     @Push
     @Theme(MyTheme.class)
     public static class ThemedComponentExporter
-            extends WebComponentExporter<Component> {
+            extends WebComponentExporter<MyComponent> {
         public ThemedComponentExporter() {
             super ("foo");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                                      MyComponent component) {
 
         }
     }
@@ -335,39 +336,42 @@ public class WebComponentProviderTest {
     @Theme(MyTheme.class)
     @Push(value = PushMode.AUTOMATIC)
     public static class SameThemedComponentExporter
-            extends WebComponentExporter<Component> {
+            extends WebComponentExporter<MyComponent> {
         public SameThemedComponentExporter() {
             super ("foo");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                                      MyComponent component) {
 
         }
     }
 
     @Push(value = PushMode.DISABLED)
     public static class AnotherPushComponentExporter
-            extends WebComponentExporter<Component> {
+            extends WebComponentExporter<MyComponent> {
         public AnotherPushComponentExporter() {
             super ("foo-bar");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                                      MyComponent component) {
 
         }
     }
 
     @Theme(AnotherTheme.class)
     public static class AnotherThemedComponentExporter
-            extends WebComponentExporter<Component> {
+            extends WebComponentExporter<MyComponent> {
         public AnotherThemedComponentExporter() {
             super ("foo-bar");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                                      MyComponent component) {
 
         }
     }

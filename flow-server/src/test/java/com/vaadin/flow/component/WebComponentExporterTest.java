@@ -206,6 +206,11 @@ public class WebComponentExporterTest {
         NoComponentExporter exporter = new NoComponentExporter();
     }
 
+    @Test (expected = IllegalStateException.class)
+    public void exporterConstructorThrowsIfRawComponentDefined() {
+        ComponentExporter exporter = new ComponentExporter();
+    }
+
     @Tag("test")
     public static class MyComponent extends Component {
         private boolean flip = false;
@@ -288,6 +293,16 @@ public class WebComponentExporterTest {
 
     public static class NoComponentExporter extends WebComponentExporter {
         public NoComponentExporter() {
+            super("tag");
+        }
+
+        @Override
+        public void configureInstance(WebComponent webComponent,
+                                      Component component) { }
+    }
+
+    public static class ComponentExporter extends WebComponentExporter<Component> {
+        public ComponentExporter() {
             super("tag");
         }
 

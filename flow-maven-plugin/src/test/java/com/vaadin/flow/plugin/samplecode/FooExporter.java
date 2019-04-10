@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.plugin.samplecode;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class FooExporter extends WebComponentExporter<Component> {
+public class FooExporter extends WebComponentExporter<FakeComponent> {
 
     public FooExporter() {
         super("wc-foo");
@@ -27,8 +26,8 @@ public class FooExporter extends WebComponentExporter<Component> {
     }
 
     @Override
-    public void configureInstance(WebComponent<Component> webComponent,
-            Component component) {
+    public void configureInstance(WebComponent<FakeComponent> webComponent,
+            FakeComponent component) {
     }
 
 }

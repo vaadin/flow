@@ -13,19 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.plugin.samplecode;
 
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.component.Component;
 
-public class BarExporter extends WebComponentExporter<FakeComponent> {
-
-    protected BarExporter() {
-        super("wc-bar");
-    }
-
-    @Override
-    public void configureInstance(WebComponent<FakeComponent> webComponent,
-            FakeComponent component) {
-    }
+public class FakeComponent extends Component {
 }

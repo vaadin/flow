@@ -327,13 +327,16 @@ public class ServletDeployerTest {
         return registrationMock;
     }
 
-    public final static class FakeExporter extends WebComponentExporter<Component> {
+    private static final class MyComponent extends Component {
+    }
+
+    public final static class FakeExporter extends WebComponentExporter<MyComponent> {
         public FakeExporter() {
             super("tag");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
 
         }
     }

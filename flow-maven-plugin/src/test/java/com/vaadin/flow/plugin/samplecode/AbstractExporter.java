@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.plugin.samplecode;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 
-public abstract class AbstractExporter extends WebComponentExporter<Component> {
+public abstract class AbstractExporter extends WebComponentExporter<FakeComponent> {
 
     protected AbstractExporter(String tag) {
         super(tag);

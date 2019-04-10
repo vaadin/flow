@@ -110,16 +110,20 @@ public class FrontendDataProviderTest {
 
     }
 
+    private static final class MyComponent extends Component {
+
+    }
+
     public static class TestExporter
-            extends WebComponentExporter<Component> {
+            extends WebComponentExporter<MyComponent> {
 
         public TestExporter() {
             super("test-component");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                                      MyComponent component) {
         }
     }
 
