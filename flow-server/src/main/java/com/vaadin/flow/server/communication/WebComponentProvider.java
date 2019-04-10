@@ -103,8 +103,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     private String generateModule(String tag,
             WebComponentConfiguration<? extends Component> configuration,
             VaadinSession session, VaadinServletRequest request) {
-        if (request.getService().getDeploymentConfiguration()
-                .useCompiledFrontendResources()) {
+        if (session.getConfiguration().useCompiledFrontendResources()) {
             return generateCompiledUIDeclaration(session, request);
         } else {
             return WebComponentGenerator.generateModule(tag, configuration,
