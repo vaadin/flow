@@ -53,11 +53,21 @@ public class WebComponentConfigurationFactoryTest {
     public void create_class_throwsOnNullTag() {
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage("Unable to construct " +
-                "WebComponentConfiguration! Does 'com.vaadin.flow.component" +
-                ".WebComponentConfigurationFactoryTest.NullTagExporter' " +
-                "define a tag via super(String) constructor?");
+                "WebComponentConfiguration! Did 'com.vaadin.flow.component" +
+                ".WebComponentConfigurationFactoryTest.NullTagExporter' give " +
+                "null value to super(String) constructor?");
 
         factory.create(NullTagExporter.class);
+    }
+
+    @Test
+    public void create_class_throwsOnMissingDefaultConstructor() {
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(String.format("Unable to create an instance " +
+                "of '%s'. Make sure the class has a public no-arg constructor.",
+                NoDefaultConstructorExporter.class.getName()));
+
+        factory.create(NoDefaultConstructorExporter.class);
     }
 
     public static class MyComponent extends Component {
@@ -69,6 +79,18 @@ public class WebComponentConfigurationFactoryTest {
 
         public NullTagExporter() {
             super(null);
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
+        }
+    }
+
+    public static class NoDefaultConstructorExporter extends WebComponentExporter<MyComponent> {
+
+        public NoDefaultConstructorExporter(String tag) {
+            super(tag);
         }
 
         @Override

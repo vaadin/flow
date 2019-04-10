@@ -17,6 +17,7 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,8 +42,8 @@ import elemental.json.JsonValue;
 
 /**
  * Provides a way to exporter a class which extends {@link Component} as an
- * embeddable web component. A non-null tag must be provided by calling
- * {@code super(String)} in the no-args constructor of the extending exporter.
+ * embeddable web component. A non-null tag must be provided by calling {@code
+ * super(String)} in the no-args constructor of the extending exporter.
  * Otherwise an exception will be throw during startup.
  * <p>
  * Limitations regarding the tag are:
@@ -94,17 +95,18 @@ public abstract class WebComponentExporter<C extends Component>
      * tag name of the web component created based on this exporter.
      * <p>
      * This constructor is not meant to be overridden unless the {@code
-     * exporter} can be extended. Rather, create a non-args constructor and
-     * call this constructor from it.
+     * exporter} can be extended. Rather, create a non-args constructor and call
+     * this constructor from it.
      *
      * @param tag
-     *         tag name of the web component created by the exporter, cannot
-     *         be {@code null}
+     *         tag name of the web component created by the exporter, cannot be
+     *         {@code null}
      */
     @SuppressWarnings("unchecked")
     protected WebComponentExporter(String tag) {
-        Objects.requireNonNull(tag,
-                "Parameter 'tag' must not be null!");
+        if (tag == null) {
+            throw new NullTagException("Parameter 'tag' must not be null!");
+        }
         this.tag = tag;
 
         componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
@@ -424,11 +426,19 @@ public abstract class WebComponentExporter<C extends Component>
                 exporter = ReflectTools
                         .createInstance(clazz);
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(String.format("Unable to " +
-                                "construct %s! Does '%s' define a tag via " +
-                                "super(String) constructor?",
-                        WebComponentConfiguration.class.getSimpleName(),
-                        clazz.getCanonicalName()));
+                if (e.getCause() != null && e.getCause().getClass().equals(InvocationTargetException.class)) {
+                    Throwable cause2 = e.getCause().getCause();
+                    if (cause2 != null && cause2.getClass().equals(NullTagException.class)) {
+                        throw new IllegalArgumentException(
+                                String.format("Unable to construct %s! Did " +
+                                                "'%s' give null value to " +
+                                                "super(String) constructor?",
+                                        WebComponentConfiguration.class.getSimpleName(),
+                                        clazz.getCanonicalName()), e);
+                    }
+                }
+                // unknown reason, cannot add information
+                throw e;
             }
             return create(exporter);
         }
@@ -450,6 +460,12 @@ public abstract class WebComponentExporter<C extends Component>
                     "null!");
 
             return new WebComponentConfigurationImpl<>(exporter);
+        }
+    }
+
+    private static class NullTagException extends NullPointerException {
+        NullTagException(String msg) {
+            super(msg);
         }
     }
 }
