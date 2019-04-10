@@ -36,7 +36,7 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class ConstantPoolKey implements Serializable {
-    private JsonValue json;
+    private final JsonValue json;
     private final String id;
 
     /**
