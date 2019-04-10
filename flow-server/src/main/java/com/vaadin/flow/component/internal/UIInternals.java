@@ -657,25 +657,35 @@ public class UIInternals implements Serializable {
         }
 
         // Ensure the entire chain is connected
-        HasElement root = null;
-        for (HasElement part : routerTargetChain) {
-            if (root != null) {
-                assert part instanceof RouterLayout : "All parts of the chain except the first must implement "
+        HasElement previous = null;
+        for (HasElement current : routerTargetChain) {
+            if (previous != null || oldChildren.containsKey(current)) {
+                /*
+                 * Either we're beyond the initial leaf entry, or then it's now
+                 * the leaf but was previously a non-leaf.
+                 *
+                 * In either case, we should update the contents of the current
+                 * entry based on its current position in the chain.
+                 */
+                assert current instanceof RouterLayout : "All parts of the chain except the first must implement "
                         + RouterLayout.class.getSimpleName();
-                RouterLayout parent = (RouterLayout) part;
-                HasElement oldChild = oldChildren.get(parent);
-                if (oldChild != root) {
-                    removeFromParent(oldChild);
-                    parent.showRouterLayoutContent(root);
+
+                HasElement oldContent = oldChildren.get(current);
+                HasElement newContent = previous;
+
+                if (oldContent != newContent) {
+                    RouterLayout layout = (RouterLayout) current;
+                    if (oldContent != null) {
+                        layout.removeRouterLayoutContent(oldContent);
+                    }
+                    layout.showRouterLayoutContent(newContent);
                 }
-            } else if (part instanceof RouterLayout
-                    && oldChildren.containsKey(part)) {
-                // Remove old child view from leaf view if it had one
-                removeFromParent(oldChildren.get(part));
-                ((RouterLayout) part).showRouterLayoutContent(null);
             }
-            root = part;
+            previous = current;
         }
+
+        // Final "previous" from the chain is the root component
+        HasElement root = previous;
 
         if (root == null) {
             throw new IllegalArgumentException(
@@ -751,12 +761,6 @@ public class UIInternals implements Serializable {
             }
         }
         setTheme(result);
-    }
-
-    private void removeFromParent(HasElement component) {
-        if (component != null) {
-            component.getElement().removeFromParent();
-        }
     }
 
     /**
