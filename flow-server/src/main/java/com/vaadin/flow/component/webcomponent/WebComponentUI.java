@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import javax.servlet.ServletContext;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -24,12 +25,14 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -61,6 +64,24 @@ public class WebComponentUI extends UI {
         getPage().executeJavaScript(
                 "document.body.dispatchEvent(new CustomEvent('root-element', { detail: '"
                         + uiElementId + "' }))");
+        DeploymentConfiguration deploymentConfiguration = session.getService()
+                .getDeploymentConfiguration();
+        if (deploymentConfiguration.useCompiledFrontendResources()) {
+            ServletContext context = ((VaadinServletService) request
+                    .getService()).getServlet().getServletContext();
+            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                    .getInstance(context);
+
+            /*
+             * This code adds a number of HTML dependencies to the page but in
+             * fact there are no such HTML files: they should have been
+             * generated during transpilation via maven plugin. To be able to
+             * activate transpiled code the embedded application imports the
+             * "dependencies" which represent the transpiled files.
+             */
+            registry.getConfigurations().forEach(config -> getPage()
+                    .addHtmlImport(getWebComponentPath(config)));
+        }
     }
 
     /**
@@ -149,5 +170,18 @@ public class WebComponentUI extends UI {
             ThemeUtil.getLumoThemeDefinition().map(ThemeDefinition::getTheme)
                     .ifPresent(getInternals()::setTheme);
         }
+    }
+
+    private String getWebComponentPath(
+            WebComponentConfiguration<? extends Component> config) {
+        DeploymentConfiguration deploymentConfiguration = getSession()
+                .getService().getDeploymentConfiguration();
+        String path = deploymentConfiguration.getCompiledWebComponentsPath();
+
+        StringBuilder builder = new StringBuilder(path);
+        builder.append('/');
+        builder.append(config.getTag());
+        builder.append(".html");
+        return builder.toString();
     }
 }

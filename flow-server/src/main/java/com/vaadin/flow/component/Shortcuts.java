@@ -20,39 +20,51 @@ import com.vaadin.flow.server.Command;
 
 
 /**
+ * Collections of methods for configuring more complex Shortcut interactions.
+ * <p>
+ * Unlike the shortcut methods offered by {@link Focusable} and {@link
+ * ClickNotifier}, these methods allow for configuring the {@code
+ * lifecycleOwner} directly, making it possible to added the shortcut onto any
+ * component. The {@code lifecycleOwner} denotes the component to which the
+ * shortcut is bound to. If the lifecycle owner is not attached, visible, or
+ * enabled, the shortcut won't work, and vice-versa.
+ *
  * @author Vaadin Ltd.
- * @since
+ * @see Focusable#addFocusShortcut(Key, KeyModifier...) for adding a shortcut
+ *         for focusing the component
+ * @see ClickNotifier#addClickShortcut(Key, KeyModifier...) for adding a
+ *         shortcut which performs the click-action
  */
 public final class Shortcuts {
     static final String NULL = "Parameter '%s' must not be null!";
 
-    private Shortcuts() {}
+    private Shortcuts() {
+    }
 
     /**
      * Invoke a {@link Command} when the shortcut is invoked.
      * <p>
-     * Registering a shortcut using this method will tie it to
-     * {@code lifecycleOwner} and the shortcut is available in the global scope.
+     * Registering a shortcut using this method will tie it to {@code
+     * lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
      * By default, the shortcut's listener is bound to {@link UI}. The listening
-     * component can be changed by calling
-     * {@link ShortcutRegistration#listenOn(Component)}.
+     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component)}.
      *
      * @param lifecycleOwner
-     *              the component that controls, when the shortcut is active. If
-     *              the component is either invisible or detached, the shortcut
-     *              won't work. Cannot be null
+     *         the component that controls, when the shortcut is active. If the
+     *         component is either invisible or detached, the shortcut won't
+     *         work. Cannot be {@code null}
      * @param command
-     *              code to execute when the shortcut is invoked. Cannot be null
+     *         code to execute when the shortcut is invoked. Cannot be {@code
+     *         null}
      * @param key
-     *              primary {@link Key} used to trigger the shortcut. Cannot
-     *              be null
+     *         primary {@link Key} used to trigger the shortcut. Cannot be
+     *         {@code null}
      * @param keyModifiers
-     *              {@link KeyModifier KeyModifiers} which also need to be
-     *              pressed for the shortcut to trigger
-     * @return
-     *              {@link ShortcutRegistration} for configuring and removing the
-     *              shortcut
+     *         {@link KeyModifier KeyModifiers} which also need to be pressed
+     *         for the shortcut to trigger
+     * @return {@link ShortcutRegistration} for configuring and removing the
+     *         shortcut
      */
     public static ShortcutRegistration addShortcutListener(
             Component lifecycleOwner, Command command, Key key,
@@ -74,31 +86,29 @@ public final class Shortcuts {
     /**
      * Invoke a {@link ShortcutEventListener} when the shortcut is invoked.
      * <p>
-     * Registering a shortcut using this method will tie it to
-     * {@code lifecycleOwner} and the shortcut is available in the global scope.
+     * Registering a shortcut using this method will tie it to {@code
+     * lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
      * By default, the shortcut's listener is bound to {@link UI}. The listening
-     * component can be changed by calling
-     * {@link ShortcutRegistration#listenOn(Component)}.
+     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component)}.
      *
      * @param lifecycleOwner
-     *              the component that controls, when the shortcut is active. If
-     *              the component is either invisible or detached, the shortcut
-     *              won't work. Cannot be null
+     *         the component that controls, when the shortcut is active. If the
+     *         component is either invisible or detached, the shortcut won't
+     *         work. Cannot be {@code null}
      * @param listener
-     *              listener to execute when the shortcut is invoked. Receives a
-     *              {@link ShortcutEvent}. Cannot be null
+     *         listener to execute when the shortcut is invoked. Receives a
+     *         {@link ShortcutEvent}. Cannot be {@code null}
      * @param key
-     *              primary {@link Key} used to trigger the shortcut. Cannot
-     *              be null
+     *         primary {@link Key} used to trigger the shortcut. Cannot be
+     *         {@code null}
      * @param keyModifiers
-     *              {@link KeyModifier KeyModifiers} which also need to be
-     *              pressed for the shortcut to trigger
-     * @return
-     *              {@link ShortcutRegistration} for configuring and removing the
-     *              shortcut
+     *         {@link KeyModifier KeyModifiers} which also need to be pressed
+     *         for the shortcut to trigger
+     * @return {@link ShortcutRegistration} for configuring and removing the
+     *         shortcut
      */
-    public ShortcutRegistration addShortcutListener(
+    public static ShortcutRegistration addShortcutListener(
             Component lifecycleOwner, ShortcutEventListener listener, Key key,
             KeyModifier... keyModifiers) {
 

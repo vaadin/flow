@@ -82,8 +82,8 @@ public interface WebComponentConfiguration<C extends Component>
      * @param instantiator
      *         {@link Instantiator} used to construct instances
      * @param element
-     *         element which acts as the root element for the exported {@code
-     *         component} instance
+     *         element which acts as the root element for the exported
+     *         {@code component} instance
      * @return web component binding which can be used by the web component host
      *         to communicate with the component it is hosting
      */
@@ -91,7 +91,7 @@ public interface WebComponentConfiguration<C extends Component>
                                                      Element element);
 
     /**
-     * Retrieves the tag name configured of the web component.
+     * Retrieves the tag name configured by the web component exporter.
      *
      * @return tag name, not {@code null}
      */
