@@ -201,6 +201,11 @@ public class WebComponentExporterTest {
         Assert.assertFalse(config.hasProperty("does-not-exist"));
     }
 
+    @Test (expected = IllegalStateException.class)
+    public void exporterConstructorThrowsIfNoComponentDefined() {
+        NoComponentExporter exporter = new NoComponentExporter();
+    }
+
     @Tag("test")
     public static class MyComponent extends Component {
         private boolean flip = false;
@@ -279,6 +284,16 @@ public class WebComponentExporterTest {
         public void configureInstance(WebComponent<SharedTagComponent> webComponent, SharedTagComponent component) {
 
         }
+    }
+
+    public static class NoComponentExporter extends WebComponentExporter {
+        public NoComponentExporter() {
+            super("tag");
+        }
+
+        @Override
+        public void configureInstance(WebComponent webComponent,
+                                      Component component) { }
     }
 
     private static void assertProperty(WebComponentConfiguration<?> config,
