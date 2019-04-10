@@ -15,9 +15,8 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import java.util.Optional;
-
 import javax.servlet.ServletContext;
+import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +34,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -42,6 +42,8 @@ import com.vaadin.flow.theme.ThemeUtil;
 
 /**
  * Custom UI for use with WebComponents served from the server.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentUI extends UI {
 
@@ -77,28 +79,29 @@ public class WebComponentUI extends UI {
              * activate transpiled code the embedded application imports the
              * "dependencies" which represent the transpiled files.
              */
-            registry.getConfigurations().stream().forEach(config -> getPage()
+            registry.getConfigurations().forEach(config -> getPage()
                     .addHtmlImport(getWebComponentPath(config)));
         }
     }
 
     /**
-     * Connect a client side web component element with a server side
-     * {@link Component} that's added as a virtual child to the UI as the actual
+     * Connect a client side web component element with a server side {@link
+     * Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
      * @param tag
-     *            web component tag
+     *         web component tag
      * @param webComponentElementId
-     *            client side id of the element
+     *         client side id of the element
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration = WebComponentConfigurationRegistry
-                .getInstance(VaadinServlet.getCurrent().getServletContext())
-                .getConfiguration(tag);
+        Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
+                WebComponentConfigurationRegistry
+                        .getInstance(VaadinServlet.getCurrent().getServletContext())
+                        .getConfiguration(tag);
 
-        if (!webComponentConfiguration.isPresent()) {
+        if (!webComponentExporter.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received connect request for non existing WebComponent '{}'",
                     tag);
@@ -113,8 +116,9 @@ public class WebComponentUI extends UI {
          * configureWebComponentInstance sets up the component-to-host linkage.
          */
         Element el = new Element(tag);
-        WebComponentBinding binding = webComponentConfiguration.get()
-                .createWebComponentBinding(Instantiator.get(this), el);
+        WebComponentBinding binding = webComponentExporter.get()
+                .createWebComponentBinding(
+                        Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
         getElement().getStateProvider().appendVirtualChild(
@@ -130,7 +134,7 @@ public class WebComponentUI extends UI {
 
     @Override
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
+                                                 String path) {
         return Optional.empty();
     }
 
@@ -176,7 +180,7 @@ public class WebComponentUI extends UI {
 
         StringBuilder builder = new StringBuilder(path);
         builder.append('/');
-        builder.append(config.getWebComponentTag());
+        builder.append(config.getTag());
         builder.append(".html");
         return builder.toString();
     }

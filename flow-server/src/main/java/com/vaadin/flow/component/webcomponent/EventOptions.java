@@ -19,8 +19,10 @@ package com.vaadin.flow.component.webcomponent;
 import java.io.Serializable;
 
 /**
- * {@code EventOptions} is used to configure the custom event
- * published by an exported web component.
+ * {@code EventOptions} is used to configure the custom event published by an
+ * exported web component.
+ *
+ * @author Vaadin Ltd.
  */
 public class EventOptions implements Serializable {
     private boolean bubbles = false;
@@ -28,47 +30,47 @@ public class EventOptions implements Serializable {
     private boolean composed = false;
 
     /**
-     * Create {@code EventOptions} used to configure the custom event
-     * published by an exported web component.
+     * Create {@code EventOptions} used to configure the custom event published
+     * by an exported web component.
      *
      * @see #EventOptions(boolean, boolean, boolean) for all properties
      * @see com.vaadin.flow.component.WebComponentExporter for exporting web
-     * components
+     *         components
      */
-    public EventOptions() {}
+    public EventOptions() {
+    }
 
     /**
-     * Create {@code EventOptions} used to configure the custom event
-     * published by an exported web component.
+     * Create {@code EventOptions} used to configure the custom event published
+     * by an exported web component.
      *
      * @param bubbles
-     *          A Boolean indicating whether the event bubbles up through the
-     *          DOM or not.
+     *         A Boolean indicating whether the event bubbles up through the DOM
+     *         or not.
      * @see #EventOptions(boolean, boolean, boolean) for all properties
      * @see com.vaadin.flow.component.WebComponentExporter for exporting web
-     * components
+     *         components
      */
     public EventOptions(boolean bubbles) {
         this.bubbles = bubbles;
     }
 
     /**
-     * Create {@code EventOptions} used to configure the custom event
-     * published by an exported web component.
+     * Create {@code EventOptions} used to configure the custom event published
+     * by an exported web component.
      *
      * @param bubbles
-     *          indicates whether the event bubbles up through the
-     *          DOM or not.
+     *         indicates whether the event bubbles up through the DOM or not.
      * @param cancelable
-     *          indicates whether the event is cancelable.
+     *         indicates whether the event is cancelable.
      * @param composed
-     *          indicates whether or not the event can bubble
-     *          across the boundary between the shadow DOM and the regular DOM.
+     *         indicates whether or not the event can bubble across the boundary
+     *         between the shadow DOM and the regular DOM.
      * @see com.vaadin.flow.component.WebComponentExporter for exporting web
-     * components
+     *         components
      */
     public EventOptions(boolean bubbles, boolean cancelable,
-                         boolean composed) {
+                        boolean composed) {
         this.bubbles = bubbles;
         this.cancelable = cancelable;
         this.composed = composed;

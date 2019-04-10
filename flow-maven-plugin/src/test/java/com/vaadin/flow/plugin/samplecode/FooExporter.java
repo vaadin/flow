@@ -13,23 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.plugin.samplecode;
 
-package com.vaadin.flow.webcomponent;
-
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class ClientSelectExporter
-        extends WebComponentExporter<ClientSelectComponent> {
+public class FooExporter extends WebComponentExporter<Component> {
 
-    public ClientSelectExporter() {
-        super("client-select");
-        addProperty("show", false)
-                .onChange(ClientSelectComponent::setMessageVisible);
+    public FooExporter() {
+        super("wc-foo");
+        addProperty("age", 1);
     }
 
     @Override
-    public void configureInstance(WebComponent<ClientSelectComponent> webComponent, ClientSelectComponent component) {
-
+    public void configureInstance(WebComponent<Component> webComponent,
+            Component component) {
     }
+
 }

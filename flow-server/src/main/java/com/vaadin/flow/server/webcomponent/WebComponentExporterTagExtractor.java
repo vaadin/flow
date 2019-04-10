@@ -13,25 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.server.webcomponent;
 
-import java.util.Set;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * Data collector component for collecting web components in an OSGi
- * environment.
+ * Retrieves web component tag from a {@link com.vaadin.flow.component.WebComponentExporter}
+ * class.
  *
  * @author Vaadin Ltd.
  */
-public class OSGiWebComponentConfigurationRegistry extends WebComponentConfigurationRegistry {
+public final class WebComponentExporterTagExtractor
+        implements SerializableFunction<Class<? extends WebComponentExporter<? extends Component>>, String> {
 
     @Override
-    public boolean setConfigurations(Set<WebComponentConfiguration<? extends Component>> configurations) {
-
-        updateRegistry(configurations);
-        return true;
+    public String apply(Class<?
+            extends WebComponentExporter<? extends Component>> exporterClass) {
+        return new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(exporterClass)
+                .getTag();
     }
 }

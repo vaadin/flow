@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
-
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.theme.Theme;
@@ -34,8 +34,10 @@ import com.vaadin.flow.theme.Theme;
  * Checks that specific annotations are not configured wrong.
  * <p>
  * The validation is run during servlet container initialization.
+ *
+ * @author Vaadin Ltd.
  */
-@HandlesTypes({ Theme.class, Push.class })
+@HandlesTypes({Theme.class, Push.class})
 public class WebComponentExporterAwareValidator extends
         AbstractAnnotationValidator implements ServletContainerInitializer {
 

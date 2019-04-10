@@ -16,12 +16,19 @@
 
 package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporterAdapter;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.shared.communication.PushMode;
 
-@Tag("embedded-push")
 @Push(value = PushMode.AUTOMATIC)
-public class PushExporter extends WebComponentExporterAdapter<PushComponent> {
+public class PushExporter extends WebComponentExporter<PushComponent> {
+    public PushExporter() {
+        super("embedded-push");
+    }
+
+    @Override
+    public void configureInstance(WebComponent<PushComponent> webComponent, PushComponent component) {
+
+    }
 }

@@ -16,9 +16,7 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import javax.servlet.ServletContext;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -33,9 +31,9 @@ import java.util.stream.IntStream;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.startup.EnableOSGiRunner;
@@ -44,12 +42,18 @@ import com.vaadin.flow.server.startup.EnableOSGiRunner;
 @RunWith(EnableOSGiRunner.class)
 public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
 
+    @Before
+    @Override
+    public void init() {
+        registry = WebComponentConfigurationRegistry
+                .getInstance(OSGiAccess.getInstance().getOsgiServletContext());
+    }
+
     @After
     public void cleanUpOSGi() {
-        if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
-            OSGiWebComponentConfigurationRegistry.getInstance(
-                    OSGiAccess.getInstance().getOsgiServletContext());
-        }
+        OSGiAccess.getInstance().getOsgiServletContext().setAttribute(
+                WebComponentConfigurationRegistry.class.getName(),
+                null);
     }
 
     @Test
@@ -61,7 +65,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     @Test
     public void assertOsgiRegistryIsServedAsASingleton() {
         Assert.assertEquals(registry, WebComponentConfigurationRegistry
-                .getInstance(Mockito.mock(ServletContext.class)));
+                .getInstance(OSGiAccess.getInstance().getOsgiServletContext()));
     }
 
     @Override
@@ -71,43 +75,34 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     }
 
     @Override
-    public void setExporters_gettingBuildersDoesNotAllowAddingMore() {
+    public void setConfigurations_getConfigurationsCallDoesNotChangeSetProtection() {
         // OSGi accepts setting the web components multiple times.
         // NO-OP
     }
 
     @Test
     public void setBuildersTwice_allSetsAcceptedLastSetValid() {
+        Assert.assertFalse("Registry should have no configurations",
+                registry.hasConfigurations());
+
         Assert.assertTrue("Registry should have accepted the " +
                         "WebComponentExporters",
-                registry.setExporters(asMap(MyComponentExporter.class)));
+                registry.setConfigurations(createConfigurations(MyComponentExporter.class)));
 
         Assert.assertTrue(
                 "OSGi registry should have accept the second set of " +
                         "WebComponentExporters.",
-                registry.setExporters(asMap(UserBoxExporter.class)));
+                registry.setConfigurations(createConfigurations(UserBoxExporter.class)));
 
         Assert.assertEquals("Registry should contain only one builder",
                 1, registry.getConfigurations().size());
 
         Assert.assertEquals("Builder should be linked to UserBox.class",
-                UserBox.class, registry.getConfigurationInternal("user-box")
+                UserBox.class, registry.getConfiguration("user-box").get()
                         .getComponentClass());
-    }
 
-    @Override
-    public void hasExporters() {
-        // being a singleton caused this test to fail when inherited
-
-        OSGiWebComponentConfigurationRegistry registry =
-                new OSGiWebComponentConfigurationRegistry();
-
-        Assert.assertFalse("Should have no exporters", registry.hasExporters());
-
-        registry.setExporters(Collections.emptyMap());
-
-        Assert.assertTrue("Should have exporters, albeit empty",
-                registry.hasExporters());
+        Assert.assertTrue("Registry should have configurations",
+                registry.hasConfigurations());
     }
 
     @Override
@@ -124,7 +119,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
                         // same time
                         Thread.sleep(new Random().nextInt(200));
                         return new AtomicBoolean(
-                                registry.setExporters(asMap(
+                                registry.setConfigurations(createConfigurations(
                                         MyComponentExporter.class)));
                     };
                     return callable;
@@ -143,7 +138,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
             results.add(resultFuture.get());
         }
         Assert.assertEquals("All threads should have updated for OSGi", 0,
-                results.stream().filter(result -> result.get() == false)
+                results.stream().filter(result -> !result.get())
                         .count());
     }
 }

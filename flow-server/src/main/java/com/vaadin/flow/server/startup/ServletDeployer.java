@@ -159,7 +159,7 @@ public class ServletDeployer implements ServletContextListener {
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(context).hasExporters();
+                .getInstance(context).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(

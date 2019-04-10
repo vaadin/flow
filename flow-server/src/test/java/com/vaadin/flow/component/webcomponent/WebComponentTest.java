@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.webcomponent;
+package com.vaadin.flow.component.webcomponent;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,26 +22,26 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
-import com.vaadin.flow.component.webcomponent.WebComponentBinding;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WebComponentImplTest {
+public class WebComponentTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private WebComponentImpl<Component> webComponent;
+    private WebComponent<Component> webComponent;
 
     @Before
     public void init() {
-        webComponent = new WebComponentImpl<>(
-                mock(WebComponentBinding.class),
+        WebComponentBinding<Component> componentBinding =
+                new WebComponentBinding<>(mock(Component.class));
+        webComponent = new WebComponent<>(componentBinding,
                 new Element("tag"));
     }
 
@@ -72,29 +72,20 @@ public class WebComponentImplTest {
     }
 
     @Test
-    public void setProperty_throwsIfConfigurationIsNotAValidImplementation() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("must be an implementation of");
-
-        webComponent.setProperty(new CustomConfiguration(), "value");
-    }
-
-    @Test
     public void setProperty_throwsOnUnknownProperty() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("WebComponent does not have a property identified");
 
         WebComponentBinding<Component> binding =
-                mock(WebComponentBinding.class);
-        when(binding.hasProperty(anyString())).thenReturn(false);
+                new WebComponentBinding<>(mock(Component.class));
 
-        WebComponentImpl<Component> webComponent =
-                new WebComponentImpl<>(binding,
+        WebComponent<Component> webComponent =
+                new WebComponent<>(binding,
                 new Element("tag"));
 
         PropertyConfigurationImpl<Component, String> configuration =
-                new PropertyConfigurationImpl<>(Component.class, "property",
-                        String.class, "value");
+                new PropertyConfigurationImpl<>(
+                        Component.class, "property", String.class, "value");
 
         webComponent.setProperty(configuration, "newValue");
     }
@@ -106,31 +97,21 @@ public class WebComponentImplTest {
                 "'java.lang.Integer' cannot be assigned value of type " +
                 "'java.lang.String'!");
 
+        PropertyConfigurationImpl<Component, Integer> intConfiguration =
+        new PropertyConfigurationImpl<>(
+                Component.class, "property", Integer.class, 0);
+
         WebComponentBinding<Component> binding =
-                mock(WebComponentBinding.class);
-        when(binding.hasProperty(anyString())).thenReturn(true);
-        when(binding.getPropertyType(anyString())).thenReturn((Class)Integer.class);
+                new WebComponentBinding<>(mock(Component.class));
+        binding.bindProperty(intConfiguration);
 
-        WebComponentImpl<Component> webComponent =
-                new WebComponentImpl<>(binding, new Element("tag"));
+        WebComponent<Component> webComponent =
+                new WebComponent<>(binding, new Element("tag"));
 
-        PropertyConfigurationImpl<Component, String> configuration =
-                new PropertyConfigurationImpl<>(Component.class, "property",
-                        String.class, "value");
+        PropertyConfigurationImpl<Component, String> stringConfiguration =
+                new PropertyConfigurationImpl<>(
+                        Component.class, "property", String.class, "value");
 
-        webComponent.setProperty(configuration, "newValue");
-    }
-
-    private static class CustomConfiguration implements PropertyConfiguration<Component, String> {
-
-        @Override
-        public PropertyConfiguration<Component, String> onChange(SerializableBiConsumer<Component, String> onChangeHandler) {
-            return null;
-        }
-
-        @Override
-        public PropertyConfiguration<Component, String> readOnly() {
-            return null;
-        }
+        webComponent.setProperty(stringConfiguration, "newValue");
     }
 }

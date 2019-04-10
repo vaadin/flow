@@ -1,5 +1,38 @@
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.Registration;
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.easymock.Capture;
+import org.easymock.CaptureType;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -14,38 +47,6 @@ import static org.easymock.EasyMock.newCapture;
 import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.Registration;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
-import org.easymock.Capture;
-import org.easymock.CaptureType;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 public class ServletDeployerTest {
     private final ServletDeployer deployer = new ServletDeployer();
@@ -281,12 +282,12 @@ public class ServletDeployerTest {
             expect(contextMock.getAttribute(
                     WebComponentConfigurationRegistry.class.getName()))
                             .andAnswer(() -> {
-
-                                WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
-                                };
-                                registry.setExporters(
-                                        (Map) Collections.singletonMap("foo",
-                                                WebComponentExporter.class));
+                                WebComponentConfigurationRegistry registry =
+                                        new WebComponentConfigurationRegistry() {};
+                                registry.setConfigurations(Collections.singleton(
+                                        new WebComponentExporter
+                                                .WebComponentConfigurationFactory()
+                                                .create(FakeExporter.class)));
 
                                 return registry;
                             }).anyTimes();
@@ -324,5 +325,16 @@ public class ServletDeployerTest {
                 .anyTimes();
         replay(registrationMock);
         return registrationMock;
+    }
+
+    public final static class FakeExporter extends WebComponentExporter<Component> {
+        public FakeExporter() {
+            super("tag");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+
+        }
     }
 }

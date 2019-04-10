@@ -16,21 +16,19 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -42,6 +40,8 @@ import elemental.json.JsonValue;
  * <p>
  * Current implementation will create a Polymer 2 component that can be served
  * to the client.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentGenerator {
 
@@ -65,46 +65,46 @@ public class WebComponentGenerator {
     /**
      * Generate web component html/JS for given exporter class.
      *
-     * @param exporterType
-     *            web component exporter class, not {@code null}
+     * @param exporterClass
+     *         web component exporter class, not {@code null}
      * @param frontendURI
-     *            the frontend resources URI, not {@code null}
+     *         the frontend resources URI, not {@code null}
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
-            Class<? extends WebComponentExporter<? extends Component>> exporterType,
+            Class<? extends WebComponentExporter<? extends Component>> exporterClass,
             String frontendURI) {
-        Objects.requireNonNull(exporterType);
+        Objects.requireNonNull(exporterClass);
         Objects.requireNonNull(frontendURI);
 
-        WebComponentConfiguration<? extends Component> config = new WebComponentConfigurationFactory()
-                .apply(exporterType);
-        return generateModule(getTag(exporterType), config, frontendURI, false);
+        WebComponentConfiguration<? extends Component> config =
+                new WebComponentExporter.WebComponentConfigurationFactory()
+                        .create(exporterClass);
+
+        return generateModule(config, frontendURI, false);
     }
 
     /**
      * Generate web component html/JS for given tag and class.
      *
-     * @param tag
-     *            web component tag, not {@code null}
      * @param webComponentConfiguration
-     *            web component class implementation, not {@code null}
+     *         web component class implementation, not {@code null}
      * @param frontendURI
-     *            the frontend resources URI, not {@code null}
+     *         the frontend resources URI, not {@code null}
      * @return generated web component html/JS to be served to the client
      */
-    public static String generateModule(String tag,
+    public static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
             String frontendURI) {
-        Objects.requireNonNull(tag);
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
         Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
                 .getPropertyDataSet();
 
-        Map<String, String> replacements = getReplacementsMap(tag,
-                propertyDataSet, frontendURI, true);
+        Map<String, String> replacements =
+                getReplacementsMap(webComponentConfiguration.getTag(),
+                        propertyDataSet, frontendURI, true);
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -114,9 +114,10 @@ public class WebComponentGenerator {
         return template;
     }
 
-    static Map<String, String> getReplacementsMap(String tag,
-            Set<PropertyData<?>> propertyDataSet, String frontendURI,
-            boolean generateUiImport) {
+    static Map<String, String> getReplacementsMap(
+            String tag,
+            Set<PropertyData<? extends Serializable>> propertyDataSet,
+            String frontendURI, boolean generateUiImport) {
         Map<String, String> replacements = new HashMap<>();
 
         replacements.put("TagDash", tag);
@@ -138,18 +139,18 @@ public class WebComponentGenerator {
         return replacements;
     }
 
-    private static String generateModule(String tag,
+    private static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
             String frontendURI, boolean generateUiImport) {
-        Objects.requireNonNull(tag);
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
         Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
                 .getPropertyDataSet();
 
-        Map<String, String> replacements = getReplacementsMap(tag,
-                propertyDataSet, frontendURI, generateUiImport);
+        Map<String, String> replacements =
+                getReplacementsMap(webComponentConfiguration.getTag(),
+                        propertyDataSet, frontendURI, generateUiImport);
 
         String template = getTemplate();
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -189,9 +190,9 @@ public class WebComponentGenerator {
             } else if (JsonValue.class.isAssignableFrom(property.getType())) {
                 prop.put(propertyValue, (JsonValue) property.getDefaultValue());
             } else {
-                throw new UnsupportedPropertyTypeException(String.format("%s "
-                        + "is not a currently supported type for a Property. "
-                        + "Please use %s instead.",
+                throw new UnsupportedPropertyTypeException(String.format(
+                        "%s is not a currently supported type for a Property." +
+                                " Please use %s instead.",
                         property.getType().getSimpleName(),
                         JsonValue.class.getSimpleName()));
             }
@@ -218,13 +219,5 @@ public class WebComponentGenerator {
             methods.append("}\n");
         });
         return methods.toString();
-    }
-
-    private static String getTag(
-            Class<? extends WebComponentExporter<? extends Component>> exporterType) {
-        Optional<Tag> tag = AnnotationReader.getAnnotationFor(exporterType,
-                Tag.class);
-        assert tag.isPresent();
-        return tag.get().value();
     }
 }

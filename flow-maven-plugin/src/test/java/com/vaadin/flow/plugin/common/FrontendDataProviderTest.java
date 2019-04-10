@@ -59,7 +59,6 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 /**
  * @author Vaadin Ltd
@@ -112,14 +111,14 @@ public class FrontendDataProviderTest {
     }
 
     public static class TestExporter
-            implements WebComponentExporter<Component> {
+            extends WebComponentExporter<Component> {
 
-        @Override
-        public void define(WebComponentDefinition<Component> definition) {
+        public TestExporter() {
+            super("test-component");
         }
 
         @Override
-        public void configure(WebComponent<Component> webComponent,
+        public void configureInstance(WebComponent<Component> webComponent,
                 Component component) {
         }
     }

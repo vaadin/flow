@@ -19,9 +19,11 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Value object containing information of a WebComponent property field.
+ * Value object containing information of a web component's property field.
  *
- * @param <P>   type of the property's value
+ * @param <P>
+ *         type of the property's value
+ * @author Vaadin Ltd.
  */
 public final class PropertyData<P extends Serializable> implements Serializable {
     private final String name;
@@ -33,10 +35,14 @@ public final class PropertyData<P extends Serializable> implements Serializable 
      * Constructs a new {@code PropertyData} instance tied to the type of the
      * property's value given by {@code type}.
      *
-     * @param name          name of the property
-     * @param type          type of the property value
-     * @param readOnly      is the property read-only (on the client-side)
-     * @param defaultValue  default value for the property
+     * @param name
+     *         name of the property
+     * @param type
+     *         type of the property value
+     * @param readOnly
+     *         is the property read-only (on the client-side)
+     * @param defaultValue
+     *         default value for the property
      */
     public PropertyData(String name, Class<P> type, boolean readOnly,
                         P defaultValue) {
@@ -51,8 +57,10 @@ public final class PropertyData<P extends Serializable> implements Serializable 
     /**
      * Copy-constructor, which allows for changing the {@code readOnly} flag.
      *
-     * @param data      base property data
-     * @param readOnly  new read-only value
+     * @param data
+     *         base property data
+     * @param readOnly
+     *         new read-only value
      */
     public PropertyData(PropertyData<P> data, boolean readOnly) {
         this(data.name, data.type, readOnly, data.defaultValue);

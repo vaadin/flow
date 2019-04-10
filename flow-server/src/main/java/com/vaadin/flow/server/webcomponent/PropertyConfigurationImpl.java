@@ -24,30 +24,32 @@ import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 /**
- * Implements the {@link PropertyConfiguration} interface returned by any of the
- * {@link com.vaadin.flow.component.webcomponent.WebComponentDefinition}'s
- * {@code addProperty} methods. {@code PropertyConfigurationImpl} stores the
- * choices to be used by the web component generation process.
- *
- * @param <C>   type of the {@code component} being exported
- * @param <P>   type of the {@code property} owned by the component
+ * @param <C>
+ *         type of the exported {@code component}
+ * @param <P>
+ *         type of the property
+ * @author Vaadin Ltd.
  */
-public class PropertyConfigurationImpl<C extends Component, P extends Serializable> implements PropertyConfiguration<C, P> {
+public final class PropertyConfigurationImpl<C extends Component,
+        P extends Serializable> implements PropertyConfiguration<C, P> {
     private Class<C> componentClass;
     private PropertyData<P> data;
     private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
 
     /**
-     * Constructs a new {@code PropertyConfigurationImpl} tied to the
-     * exported {@link Component} type given by {@code componentType}.
+     * Constructs a new {@code PropertyConfigurationImpl} tied to the exported
+     * {@link Component} type given by {@code componentType}.
      *
-     * @param componentType     type of the exported {@code component}
-     * @param propertyName      name of the property
-     * @param propertyType      type of the property
-     * @param defaultValue      default value of the property. If the
-     *                          property type has a primitive version, this
-     *                          value is used when ever the property is being
-     *                          set to a {@code null}.
+     * @param componentType
+     *         type of the exported {@code component}
+     * @param propertyName
+     *         name of the property
+     * @param propertyType
+     *         type of the property
+     * @param defaultValue
+     *         default value of the property. If the property type has a
+     *         primitive version, this value is used when ever the property is
+     *         being set to a {@code null}.
      */
     public PropertyConfigurationImpl(Class<C> componentType, String propertyName,
                                      Class<P> propertyType, P defaultValue) {
@@ -57,10 +59,9 @@ public class PropertyConfigurationImpl<C extends Component, P extends Serializab
         this.componentClass = componentType;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
+    @SuppressWarnings("unchecked")
     public PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
         Objects.requireNonNull(onChangeHandler, "Parameter 'onChangeHandler' " +
                 "cannot be null!");
@@ -73,9 +74,7 @@ public class PropertyConfigurationImpl<C extends Component, P extends Serializab
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public PropertyConfiguration<C, P> readOnly() {
         data = new PropertyData<>(data, true);
@@ -98,12 +97,12 @@ public class PropertyConfigurationImpl<C extends Component, P extends Serializab
     }
 
     /**
-     * Retrieves the {@code onChangeHandler} tied to this property, if on
+     * Retrieves the {@code onChangeHandler} tied to this property, if one
      * exists.
      *
      * @return handler or {@code null}
      */
-    SerializableBiConsumer<C, Serializable> getOnChangeHandler() {
+    public SerializableBiConsumer<C, Serializable> getOnChangeHandler() {
         return onChangeHandler;
     }
 
@@ -112,7 +111,7 @@ public class PropertyConfigurationImpl<C extends Component, P extends Serializab
      *
      * @return {@code PropertyData} value object
      */
-    PropertyData<P> getPropertyData() {
+    public PropertyData<P> getPropertyData() {
         return data;
     }
 }

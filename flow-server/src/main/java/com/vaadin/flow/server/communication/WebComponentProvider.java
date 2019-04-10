@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
@@ -40,8 +39,10 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
- * Request handler that supplies the script/html of the WebComponent matching
+ * Request handler that supplies the script/html of the web component matching
  * the given tag.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentProvider extends SynchronizedRequestHandler {
 
@@ -53,8 +54,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     private Map<String, String> cache;
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(
+            VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
         VaadinServletRequest servletRequest = (VaadinServletRequest) request;
         String pathInfo = servletRequest.getPathInfo();
 
@@ -74,10 +75,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration = WebComponentConfigurationRegistry
-                .getInstance(
+        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
+                WebComponentConfigurationRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext())
-                .getConfiguration(tag.get());
+                        .getConfiguration(tag.get());
 
         if (optionalWebComponentConfiguration.isPresent()) {
             if (cache == null) {
@@ -86,9 +87,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             WebComponentConfiguration<? extends Component> webComponentConfiguration = optionalWebComponentConfiguration
                     .get();
             String generated = cache.computeIfAbsent(tag.get(),
-                    moduleTag -> generateModule(moduleTag,
-                            webComponentConfiguration, session,
-                            servletRequest));
+                    moduleTag -> generateModule(webComponentConfiguration,
+                            session, servletRequest));
 
             IOUtils.write(generated, response.getOutputStream(),
                     StandardCharsets.UTF_8);
@@ -100,19 +100,19 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return true;
     }
 
-    private String generateModule(String tag,
+    private String generateModule(
             WebComponentConfiguration<? extends Component> configuration,
             VaadinSession session, VaadinServletRequest request) {
         if (session.getConfiguration().useCompiledFrontendResources()) {
             return generateCompiledUIDeclaration(session, request);
         } else {
-            return WebComponentGenerator.generateModule(tag, configuration,
+            return WebComponentGenerator.generateModule(configuration,
                     getFrontendPath(request));
         }
     }
 
     private String generateCompiledUIDeclaration(VaadinSession session,
-            VaadinRequest request) {
+                                                 VaadinRequest request) {
         String contextRootRelativePath = ServletHelper
                 .getContextRootRelativePath(request) + "/";
 
@@ -129,7 +129,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     }
 
     private String generateAddPolyfillsScript(String polyFillsUri,
-            String jsParentRef) {
+                                              String jsParentRef) {
         StringBuilder builder = new StringBuilder("var scriptUri = ");
         builder.append(jsParentRef);
         builder.append(".src;");

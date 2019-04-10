@@ -22,9 +22,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporterAdapter;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 
 public class WebComponentGeneratorTest {
 
@@ -40,12 +39,13 @@ public class WebComponentGeneratorTest {
 
     public void assertGeneratedReplacementMapContainsExpectedEntries(
             boolean generateUi) {
-        WebComponentConfigurationImpl<MyComponent> builder = new WebComponentConfigurationImpl<>(
-                new MyComponentExporter());
+        MyComponentExporter exporter = new MyComponentExporter();
 
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("my-component",
-                        builder.getPropertyDataSet(), "/foo", generateUi);
+                        new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
+                                .getPropertyDataSet(),
+                        "/foo", generateUi);
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -108,17 +108,22 @@ public class WebComponentGeneratorTest {
         }
     }
 
-    @Tag("tag")
-    public static class MyComponentExporter
-            extends WebComponentExporterAdapter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            definition.addProperty("response", "hello")
+    private static class MyComponentExporter
+            extends WebComponentExporter<MyComponent> {
+
+        public MyComponentExporter() {
+            super("tag");
+            addProperty("response", "hello")
                     .onChange(MyComponent::setMessage);
-            definition.addProperty("integer-value", 0)
+            addProperty("integer-value", 0)
                     .onChange(MyComponent::setIntegerValue);
-            definition.addProperty("message", "")
+            addProperty("message", "")
                     .onChange(MyComponent::setMessage);
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
         }
     }
 }

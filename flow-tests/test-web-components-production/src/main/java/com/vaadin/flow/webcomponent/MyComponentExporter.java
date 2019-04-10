@@ -18,17 +18,15 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
 @Tag("embedded-component")
-public class MyComponentExporter implements WebComponentExporter<MyComponent> {
-
-    @Override
-    public void define(WebComponentDefinition<MyComponent> definition) {
+public class MyComponentExporter extends WebComponentExporter<MyComponent> {
+    public MyComponentExporter() {
+        super("embedded-component");
     }
 
     @Override
-    public void configure(WebComponent<MyComponent> webComponent,
+    public void configureInstance(WebComponent<MyComponent> webComponent,
             MyComponent component) {
     }
 
