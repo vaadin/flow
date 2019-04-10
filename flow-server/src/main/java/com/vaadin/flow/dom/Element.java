@@ -579,6 +579,17 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Removes this element from its parent and state tree.
+     *
+     * @return this element
+     */
+    public Element removeFromTree() {
+        removeFromParent();
+        getNode().removeFromTree();
+        return this;
+    }
+
+    /**
      * Gets the parent element.
      * <p>
      * The method may return {@code null} if the parent is not an element but a
@@ -1745,6 +1756,8 @@ public class Element extends Node<Element> {
     public boolean isEnabled() {
         return getNode().isEnabled();
     }
+
+
 
     @Override
     protected Element getSelf() {

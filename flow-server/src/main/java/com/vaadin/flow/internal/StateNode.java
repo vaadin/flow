@@ -369,13 +369,20 @@ public class StateNode implements Serializable {
      * from the state tree.
      */
     public void removeFromTree() {
-        visitNodeTree(node -> {
-                    node.owner = NullOwner.get();
-                    node.id = -1;
-                    node.wasAttached = false;
-                }
-        );
+        visitNodeTree(StateNode::reset);
         setParent(null);
+    }
+
+    /**
+     * Resets the node to the initial state where it is not owned by a state
+     * tree.
+     */
+    private void reset() {
+        owner = NullOwner.get();
+        id = -1;
+        wasAttached = false;
+        hasBeenAttached = false;
+        hasBeenDetached = false;
     }
 
     /**
@@ -671,8 +678,8 @@ public class StateNode implements Serializable {
             throw new IllegalStateException(
                     "Can't move a node from one state tree to another. " +
                             "If this is intentional, first remove the " +
-                            "component from its current state tree " +
-                            "by calling detachFromUI");
+                            "node from its current state tree by calling" +
+                            "removeFromTree");
         }
         owner = tree;
     }

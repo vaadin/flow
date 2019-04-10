@@ -383,8 +383,7 @@ public abstract class Component
      * existing UI to another UI.
      */
     public void detachFromUI() {
-        getElement().removeFromParent();
-        getElement().getNode().removeFromTree();
+        getElement().removeFromTree();
     }
 
     /**
