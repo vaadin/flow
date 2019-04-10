@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,6 +56,7 @@ import com.vaadin.flow.tests.data.bean.Sex;
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
+    private final Locale defaultLocale = Locale.getDefault();
 
     @Before
     public void setUp() {
@@ -75,6 +77,11 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         item = new Person();
         item.setFirstName("Johannes");
         item.setAge(32);
+    }
+
+    @After
+    public void tearDown() {
+        Locale.setDefault(defaultLocale);
     }
 
     @Test
@@ -1279,7 +1286,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertEquals(otherError, ageField.getErrorMessage());
 
         // No UI present for changing Locale, so need to change the default
-        Locale.setDefault(new Locale("fi"));
+        Locale.setDefault(new Locale("fi", "FI"));
         // Re-validate to get the error message with correct locale
         binder.validate();
         assertEquals(fiError, ageField.getErrorMessage());
