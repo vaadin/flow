@@ -116,10 +116,12 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         String contextRootRelativePath = ServletHelper
                 .getContextRootRelativePath(request) + "/";
 
-        BootstrapUriResolver resolover = new BootstrapUriResolver(
+        BootstrapUriResolver resolver = new BootstrapUriResolver(
                 contextRootRelativePath, session);
-        String polyFillsUri = resolover
+        String polyFillsUri = resolver
                 .resolveVaadinUri(BootstrapHandler.POLYFILLS_JS);
+        // <code>thisScript</code> below allows to refer the currently executing
+        // script
         return "var scripts = document.getElementsByTagName( 'script' );"
                 + "var thisScript = scripts[ scripts.length - 1 ];"
                 + generateAddPolyfillsScript(polyFillsUri, "thisScript")
