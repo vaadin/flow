@@ -37,7 +37,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.change.NodeAttachChange;
@@ -123,6 +127,56 @@ public class StateNode implements Serializable {
                     .sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR)
                     .forEach(key -> mappings.put(key,
                             Integer.valueOf(mappings.size())));
+        }
+    }
+
+    private class ClientSideInitializer implements Registration {
+        final Registration attach = addAttachListener(this::trigger);
+        final Registration detach = addDetachListener(this::clear);
+
+        PendingJavaScriptResult jsRegistration;
+        Registration clientResponseRegistration;
+
+        boolean initialRunPending = true;
+        private SerializableFunction<Page, PendingJavaScriptResult> initCallback;
+
+        private ClientSideInitializer(
+                SerializableFunction<Page, PendingJavaScriptResult> initCallback) {
+            this.initCallback = initCallback;
+        }
+
+        private void trigger() {
+            StateTree stateTree = (StateTree) owner;
+
+            clear();
+
+            clientResponseRegistration = stateTree
+                    .beforeClientResponse(StateNode.this, context -> {
+                        if (initialRunPending
+                                || !context.isClientSideInitialized()) {
+                            initialRunPending = false;
+                            jsRegistration = initCallback
+                                    .apply(context.getUI().getPage());
+                        }
+                    });
+        }
+
+        private void clear() {
+            if (jsRegistration != null) {
+                jsRegistration.cancelExecution();
+                jsRegistration = null;
+            }
+            if (clientResponseRegistration != null) {
+                clientResponseRegistration.remove();
+                clientResponseRegistration = null;
+            }
+        }
+
+        @Override
+        public void remove() {
+            attach.remove();
+            detach.remove();
+            clear();
         }
     }
 
@@ -1071,4 +1125,47 @@ public class StateNode implements Serializable {
         return isAttached() && getOwner().hasNode(this);
     }
 
+    /**
+     * Adds a callback that will be run whenever it would be necessary to
+     * execute JavaScript to initialize the client-side state associated with
+     * this state node. The callback will be run once as soon as possible, and
+     * after that only if this state node gets detached and then attached again
+     * in a way that causes client-side state to be discarded.
+     * <p>
+     * Since the state node might become detached again after the callback has
+     * been called but before any actions have been sent to the client, the
+     * callback should return a {@link PendingJavaScriptResult} that will be
+     * used to cancel the action when the node is detached.
+     * <p>
+     * Because of the way this method internally uses
+     * {@link StateTree#beforeClientResponse(StateNode, SerializableConsumer)}
+     * to run the initializer, care should be taken with regards to how the
+     * initialization is ordered relative to other JavaScript executions that
+     * depend on the initialization. One way of ensuring correct order is to
+     * make the initialization use
+     * {@link Page#executeJs(String, Serializable...)} and any dependent
+     * executions use either {@link Element#executeJs(String, Serializable...)}
+     * or {@link Element#callJsFunction(String, Serializable...)} since those
+     * methods also internally the execution in
+     * {@link StateTree#beforeClientResponse(StateNode, SerializableConsumer)}.
+     *
+     * @param initCallback
+     *            a callback to perform the initialization by executing
+     *            JavaScript for the provided page. Should return a pending
+     *            JavaScript result that might become canceled if the node is
+     *            detached again. Not <code>null</code>.
+     * @return a registration handle for removing the initializer
+     */
+    public Registration addClientSideInitializer(
+            SerializableFunction<Page, PendingJavaScriptResult> initCallback) {
+
+        ClientSideInitializer initializer = new ClientSideInitializer(
+                initCallback);
+
+        if (isAttached()) {
+            initializer.trigger();
+        }
+
+        return initializer;
+    }
 }
