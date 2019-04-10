@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.FrontendToolsLocator;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
@@ -80,9 +82,17 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
+        FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
+        File nodePath = Optional.of(new File("./node/node"))
+                .filter(frontendToolsLocator::verifyTool)
+                .orElseGet(() -> frontendToolsLocator.tryLocateTool("node")
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Failed to determine 'node' tool. "
+                                        + "Please install it using the https://nodejs.org/en/download/ guide.")));
+
         Process webpackLaunch = null;
         try {
-            webpackLaunch = new ProcessBuilder("node",
+            webpackLaunch = new ProcessBuilder(nodePath.getAbsolutePath(),
                     webpackExecutable.getAbsolutePath())
                             .directory(project.getBasedir())
                             .redirectOutput(ProcessBuilder.Redirect.INHERIT)

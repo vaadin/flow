@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.common;
+package com.vaadin.flow.server.frontend;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,11 +34,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Helps to locate the tools in the system by their names.
  */
-public class FrontendToolsLocator {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(FrontendToolsLocator.class);
-
-    private static class CommandResult {
+public class FrontendToolsLocator implements Serializable {
+    private static class CommandResult implements Serializable {
         private final String command;
         private final int exitCode;
         private final List<String> stdout;
@@ -102,8 +100,7 @@ public class FrontendToolsLocator {
         try {
             process = new ProcessBuilder(commandParts).start();
         } catch (IOException e) {
-            LOGGER.error("Failed to execute the command '{}'", commandString,
-                    e);
+            log().error("Failed to execute the command '{}'", commandString, e);
             return Optional.empty();
         }
 
@@ -111,7 +108,7 @@ public class FrontendToolsLocator {
         try {
             commandExited = process.waitFor(3, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            LOGGER.error(
+            log().error(
                     "Unexpected interruption happened during '{}' command execution",
                     commandString, e);
             return Optional.empty();
@@ -122,7 +119,7 @@ public class FrontendToolsLocator {
         }
 
         if (!commandExited) {
-            LOGGER.error(
+            log().error(
                     "Could not get a response from '{}' command in 3 seconds",
                     commandString);
             return Optional.empty();
@@ -133,8 +130,8 @@ public class FrontendToolsLocator {
                 process.getInputStream(), StandardCharsets.UTF_8))) {
             stdout = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
-            LOGGER.error("Failed to read the command '{}' stdout",
-                    commandString, e);
+            log().error("Failed to read the command '{}' stdout", commandString,
+                    e);
             return Optional.empty();
         }
 
@@ -143,8 +140,8 @@ public class FrontendToolsLocator {
                 process.getErrorStream(), StandardCharsets.UTF_8))) {
             stderr = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
-            LOGGER.error("Failed to read the command '{}' stderr",
-                    commandString, e);
+            log().error("Failed to read the command '{}' stderr", commandString,
+                    e);
             return Optional.empty();
         }
 
@@ -154,25 +151,35 @@ public class FrontendToolsLocator {
 
     private CommandResult omitErrorResult(CommandResult commandResult) {
         if (!commandResult.isSuccessful()) {
-            LOGGER.error(
-                    "Command '{}' exited with non-zero exit code: {}. stdout:\n'{}'\nstderr:\n'{}'",
-                    commandResult.command, commandResult.exitCode,
-                    commandResult.exitCode,
-                    String.join("\n", commandResult.stderr));
+            if (log().isDebugEnabled()) {
+                log().debug(
+                        "Command '{}' exited with non-zero exit code: {}. stdout:\n'{}'\nstderr:\n'{}'",
+                        commandResult.command, commandResult.exitCode,
+                        commandResult.exitCode,
+                        String.join("\n", commandResult.stderr));
+            }
             return null;
         }
         if (commandResult.stdout.isEmpty()) {
-            LOGGER.error("Command '{}' has no output, stderr:\n'{}'",
-                    commandResult.command,
-                    String.join("\n", commandResult.stderr));
+            if (log().isDebugEnabled()) {
+                log().debug("Command '{}' has no output, stderr:\n'{}'",
+                        commandResult.command,
+                        String.join("\n", commandResult.stderr));
+            }
             return null;
         }
         if (!commandResult.stderr.isEmpty()) {
-            LOGGER.error("Command '{}' has non-empty stderr:\n'{}'",
-                    commandResult.command,
-                    String.join("\n", commandResult.stderr));
+            if (log().isDebugEnabled()) {
+                log().debug("Command '{}' has non-empty stderr:\n'{}'",
+                        commandResult.command,
+                        String.join("\n", commandResult.stderr));
+            }
             return null;
         }
         return commandResult;
+    }
+
+    private Logger log() {
+        return LoggerFactory.getLogger(FrontendToolsLocator.class);
     }
 }

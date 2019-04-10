@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,6 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.server.DevModeHandler;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -213,10 +213,6 @@ public class NodeUpdatePackages extends NodeUpdater {
         ProcessBuilder builder = new ProcessBuilder(
                 getNpmCommand(dependencies, npmInstallArgs));
         builder.directory(npmFolder);
-        if (DevModeHandler.UNIX_OS) {
-            builder.environment().put("PATH",
-                    builder.environment().get("PATH") + ":/usr/local/bin");
-        }
         if (log().isInfoEnabled()) {
             log().info(
                 "Updating package.json and installing npm dependencies ...\n {}",
@@ -245,8 +241,15 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private List<String> getNpmCommand(List<String> dependencies,
             String... npmInstallArgs) {
+        FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
+        File npmPath = Optional.of(new File("./node/node_modules/npm/bin/npm"))
+            .filter(frontendToolsLocator::verifyTool)
+            .orElseGet(() -> frontendToolsLocator.tryLocateTool("npm")
+                .orElseThrow(() -> new IllegalStateException(
+                    "Failed to determine 'npm' tool. "
+                        + "Please install it using the https://nodejs.org/en/download/ guide.")));
         List<String> command = new ArrayList<>(5 + dependencies.size());
-        command.add(DevModeHandler.UNIX_OS ? "npm" : "npm.cmd");
+        command.add(npmPath.getAbsolutePath());
         command.add("--no-package-lock");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));

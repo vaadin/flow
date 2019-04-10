@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -39,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendToolsLocator;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN;
@@ -63,12 +65,6 @@ public class DevModeHandler implements Serializable {
 
     // Non final because tests need to reset this during teardown.
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
-
-    /**
-     * True when running in a unix like system. It's used to call the
-     * appropriate <code>npm</code> launcher in windows or unix.
-     */
-    public static final boolean UNIX_OS = !System.getProperty("os.name").matches("(?i).*windows.*");
 
     // It's not possible to know whether webpack is ready unless reading output messages.
     // When webpack finishes, it writes either a `Compiled` or `Failed` as the last line
@@ -109,21 +105,22 @@ public class DevModeHandler implements Serializable {
             return;
         }
 
+        FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
+        File nodePath = Optional.of(new File("./node/node"))
+                .filter(frontendToolsLocator::verifyTool)
+                .orElseGet(() -> frontendToolsLocator.tryLocateTool("node")
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Failed to determine 'node' tool. "
+                                        + "Please install it using the https://nodejs.org/en/download/ guide.")));
+
         // We always compute a free port.
         port = getFreePort();
 
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(directory);
 
-        // Add /usr/local/bin to the PATH in case of unixOS like
-        if (UNIX_OS) {
-            processBuilder.environment().put("PATH",
-                    processBuilder.environment().get("PATH")
-                            + ":/usr/local/bin");
-        }
-
         List<String> command = new ArrayList<>();
-        command.add("node");
+        command.add(nodePath.getAbsolutePath());
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());
