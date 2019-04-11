@@ -107,37 +107,15 @@
             <version>1.2.0.vaadin1</version>
         </dependency>
 
-        <!-- Closure for parsing javascript sources -->
+        <!--
+        Closure for parsing javascript sources.
+        unshaded means that there are no Guava and other libraries bundled in a dependency jar
+        This is needed since the regular jar breaks Spring initialization
+         -->
         <dependency>
             <groupId>com.google.javascript</groupId>
-            <artifactId>closure-compiler</artifactId>
-            <version>v20190121</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>args4j</groupId>
-                    <artifactId>args4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.errorprone</groupId>
-                    <artifactId>error_prone_annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.jsinterop</groupId>
-                    <artifactId>jsinterop-annotations</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>closure-compiler-unshaded</artifactId>
+            <version>v20190325</version>
         </dependency>
 
         <!-- TESTING DEPENDENCIES -->
