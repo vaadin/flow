@@ -42,13 +42,13 @@ public class FrontendUtils {
     public static final String WEBPACK_CONFIG ="webpack.config.js";
 
     private static final String NOT_FOUND =
-            "\n\n======================================================================================================"
-            + "\nFailed to determine '%s' tool."
-            + "\nPlease install it either:"
-            + "\n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "\n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "\n  $ mvn com.github.eirslett:frontend-maven-plugin:LATEST:install-node-and-npm -DnodeVersion=v11.6.0 "
-            + "\n======================================================================================================\n";
+            "%n%n======================================================================================================"
+            + "%nFailed to determine '%s' tool."
+            + "%nPlease install it either:"
+            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
+            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
+            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:LATEST:install-node-and-npm -DnodeVersion=v11.6.0 "
+            + "%n======================================================================================================%n";
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
@@ -113,20 +113,18 @@ public class FrontendUtils {
     }
 
     private static File getExecutable(String cmd, String defaultLocation) {
+        File file = null;
         try {
-            if (defaultLocation != null) {
-                return Optional
-                        .of(new File(getBaseDir(), defaultLocation))
-                        .filter(frontendToolsLocator::verifyTool)
-                        .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
-                        .orElseThrow(() -> new IllegalStateException()));
-            } else {
-                return frontendToolsLocator.tryLocateTool(cmd)
-                        .orElseThrow(() -> new IllegalStateException());
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
+            file = defaultLocation == null ? frontendToolsLocator.tryLocateTool(cmd).orElse(null)
+                    : Optional.of(new File(getBaseDir(), defaultLocation))
+                            .filter(frontendToolsLocator::verifyTool)
+                            .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd).orElse(null));
+        } catch (Exception e) { //NOSONAR
+            // There are IOException coming from process fork
+        }
+        if (file == null) {
             throw new IllegalStateException(String.format(NOT_FOUND, cmd));
         }
+        return file;
     }
 }
