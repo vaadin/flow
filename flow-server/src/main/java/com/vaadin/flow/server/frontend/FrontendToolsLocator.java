@@ -80,12 +80,14 @@ public class FrontendToolsLocator implements Serializable {
      * Verifies that the tool specified works by performing its test launch.
      *
      * @param toolPath
-     *            the path to a tool to check, not {@code null}
+     *            the path to a tool to check
      * @return {@code true} if the test launch had ended with successful error
      *         code, {@code false} otherwise
      */
     public boolean verifyTool(File toolPath) {
-        return executeCommand(toolPath.getAbsolutePath(), "-v")
+        return Optional.ofNullable(toolPath).filter(File::isFile)
+                .map(File::getAbsolutePath)
+                .flatMap(path -> executeCommand(path, "-v"))
                 .map(this::omitErrorResult).isPresent();
     }
 
