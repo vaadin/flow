@@ -214,6 +214,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         ProcessBuilder builder = new ProcessBuilder(
                 getNpmCommand(dependencies, npmInstallArgs));
         builder.directory(npmFolder);
+
         if (log().isInfoEnabled()) {
             log().info(
                 "Updating package.json and installing npm dependencies ...\n {}",
@@ -243,7 +244,7 @@ public class NodeUpdatePackages extends NodeUpdater {
     private List<String> getNpmCommand(List<String> dependencies,
             String... npmInstallArgs) {
         List<String> command = new ArrayList<>(5 + dependencies.size());
-        command.add(FrontendUtils.getNpmExecutable().getAbsolutePath());
+        command.addAll(FrontendUtils.getNpmExecutable());
         command.add("--no-package-lock");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));

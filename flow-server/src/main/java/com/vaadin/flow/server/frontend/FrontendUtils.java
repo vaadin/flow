@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -77,7 +79,7 @@ public class FrontendUtils {
         boolean hasBowerFrontend = new File(getBaseDir(), "src/main/webapp/frontend").isDirectory();
         boolean hasNpmFrontend = new File(getBaseDir(), "frontend").isDirectory();
         boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
-                && new File(FrontendUtils.WEBPACK_CONFIG).exists();
+                && new File(WEBPACK_CONFIG).exists();
 
         return hasBowerFrontend && !hasNpmFrontend && !hasNpmConfig ? true : false;
     }
@@ -87,27 +89,43 @@ public class FrontendUtils {
      *
      * @return the full path to the executable
      */
-    public static File getNodeExecutable() {
-        return getExecutable("node", "./node/node");
+    public static String getNodeExecutable() {
+        return getExecutable("node", "node/node").getAbsolutePath();
     }
 
     /**
-     * Locate <code>node</code> executable.
+     * Locate <code>npm</code> executable.
      *
-     * @return the full path to the executable
+     * @return the a list of all commands in sequence that need to be executed
+     *         to have npm running
      */
-    public static File getNpmExecutable() {
-        return getExecutable("npm", "./node/node_modules/npm/bin/npm");
+    public static List<String> getNpmExecutable() {
+        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will not work
+        // because it's a shell or windows script that looks for node and will fail.
+        // Thus we look for the `mpn-cli` node script instead
+        File file = new File(getBaseDir(), "node/node_modules/npm/bin/npm-cli.js");
+        if (file.canRead()) {
+            // We return a two element list with node binary and npm-cli script
+            return Arrays.asList(getNodeExecutable(), file.getAbsolutePath());
+        }
+        // Otherwise look for regulan `npm`
+        return Arrays.asList(getExecutable("npm", null).getAbsolutePath());
     }
 
     private static File getExecutable(String cmd, String defaultLocation) {
         try {
-            return Optional
-                .of(new File(defaultLocation))
-                .filter(frontendToolsLocator::verifyTool)
-                .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
-                .orElseThrow(() -> new IllegalStateException()));
+            if (defaultLocation != null) {
+                return Optional
+                        .of(new File(getBaseDir(), defaultLocation))
+                        .filter(frontendToolsLocator::verifyTool)
+                        .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
+                        .orElseThrow(() -> new IllegalStateException()));
+            } else {
+                return frontendToolsLocator.tryLocateTool(cmd)
+                        .orElseThrow(() -> new IllegalStateException());
+            }
         } catch (Throwable e) {
+            e.printStackTrace();
             throw new IllegalStateException(String.format(NOT_FOUND, cmd));
         }
     }

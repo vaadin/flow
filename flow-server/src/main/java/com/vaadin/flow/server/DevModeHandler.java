@@ -107,7 +107,7 @@ public class DevModeHandler implements Serializable {
                 .directory(directory);
 
         List<String> command = new ArrayList<>();
-        command.add(FrontendUtils.getNodeExecutable().getAbsolutePath());
+        command.add(FrontendUtils.getNodeExecutable());
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());
