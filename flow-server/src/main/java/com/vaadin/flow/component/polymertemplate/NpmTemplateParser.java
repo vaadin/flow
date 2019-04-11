@@ -144,19 +144,22 @@ public class NpmTemplateParser implements TemplateParser {
         if (content != null) {
             getLogger().debug("Found sources for the tag '{}' in the stats file '{}'", tag, stats);
         } else {
-            URL statsUrl;
-            if (service.getDeploymentConfiguration().isProductionMode()) {
-                // in production stats file is taken from the web resources
-                statsUrl = service.getStaticResource("/" + stats);
-            } else {
-                // in devmode stats file is taken from webpack via http
+            URL statsUrl = null;
+            if (!service.getDeploymentConfiguration().isProductionMode()) {
                 String port = service.getDeploymentConfiguration()
-                        .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
-                if (port == null || port.isEmpty()) {
-                    throw new IllegalStateException("Unable to get webpack port via "
-                            + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT + " property");
+                    .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
+                if (port != null && !port.isEmpty()) {
+                    statsUrl = new URL("http://localhost:" + port + "/" + stats);
+                } else {
+                    getLogger().warn(
+                            "Unable to get the stats file through webpack. "
+                                    + "The webpack port is unavailable via '{}' property. ",
+                            SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
                 }
-                statsUrl = new URL("http://localhost:" + port + "/" + stats);
+            }
+
+            if (statsUrl == null) {
+                statsUrl = service.getStaticResource("/" + stats);
             }
 
             if (statsUrl != null) {

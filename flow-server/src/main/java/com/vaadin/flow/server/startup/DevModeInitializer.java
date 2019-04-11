@@ -20,11 +20,13 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -83,15 +85,28 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
             return;
         }
 
-        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(new DefaultClassFinder(classes));
-        if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
-            new NodeUpdatePackages(extractor).execute();
-        }
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+                new DefaultClassFinder(classes));
+        try {
+            if (!config.getBooleanProperty(
+                    SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
+                new NodeUpdatePackages(extractor).execute();
+            }
 
-        if (!config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
-            new NodeUpdateImports(extractor).execute();
-        }
+            if (!config.getBooleanProperty(
+                    SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
+                new NodeUpdateImports(extractor).execute();
+            }
 
-        DevModeHandler.start(config);
+            DevModeHandler.start(config);
+        } catch (Exception e) {
+            log().warn(
+                    "Failed to start a dev mode, hot reload is disabled. Continuing to start the application.",
+                    e);
+        }
+    }
+
+    private Logger log() {
+        return LoggerFactory.getLogger(getClass());
     }
  }
