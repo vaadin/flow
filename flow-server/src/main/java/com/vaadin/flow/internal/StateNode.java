@@ -678,7 +678,7 @@ public class StateNode implements Serializable {
             throw new IllegalStateException(
                     "Can't move a node from one state tree to another. " +
                             "If this is intentional, first remove the " +
-                            "node from its current state tree by calling" +
+                            "node from its current state tree by calling " +
                             "removeFromTree");
         }
         owner = tree;

@@ -584,7 +584,11 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element removeFromTree() {
-        removeFromParent();
+        Node<?> parent = getParentNode();
+        if (parent != null
+                && parent.getChildren().anyMatch(Predicate.isEqual(this))) {
+            parent.removeChild(this);
+        }
         getNode().removeFromTree();
         return this;
     }
