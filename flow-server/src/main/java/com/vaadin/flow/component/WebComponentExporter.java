@@ -113,8 +113,13 @@ public abstract class WebComponentExporter<C extends Component>
         componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
                 this.getClass(), WebComponentExporter.class);
 
-        assert componentClass != null : "Failed to determine component class "
-                + "from WebComponentExporter's type parameter.";
+        if (componentClass == null) {
+            throw new IllegalStateException(String.format("Failed to " +
+                            "determine component type for '%s'. Please " +
+                            "provide a valid type for %s as a type parameter.",
+                    getClass().getName(),
+                    WebComponentExporter.class.getSimpleName()));
+        }
     }
 
     private <P extends Serializable> PropertyConfiguration<C, P> addProperty(
