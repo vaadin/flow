@@ -37,7 +37,7 @@ public class NodeValidateMojo extends AbstractMojo {
 
         // Do nothing when bower mode
         if (NodeUpdateAbstractMojo.isBowerMode(getLog())) {
-            getLog().info("Skipped 'validate' goal because `vaadin.bowerMode` is set.");
+            getLog().debug("Skipped 'validate' goal because `vaadin.bowerMode` is set.");
             return;
         }
 
