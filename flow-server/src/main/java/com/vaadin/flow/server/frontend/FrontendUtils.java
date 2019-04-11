@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.util.Optional;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
@@ -37,6 +38,17 @@ public class FrontendUtils {
      * The name of the webpack configuration file.
      */
     public static final String WEBPACK_CONFIG ="webpack.config.js";
+
+    private static final String NOT_FOUND =
+            "\n\n======================================================================================================"
+            + "\nFailed to determine '%s' tool."
+            + "\nPlease install it either:"
+            + "\n  - by following the https://nodejs.org/en/download/ guide to install it globally"
+            + "\n  - or by running the frontend-maven-plugin goal to install it in this project:"
+            + "\n  $ mvn com.github.eirslett:frontend-maven-plugin:LATEST:install-node-and-npm -DnodeVersion=v11.6.0 "
+            + "\n======================================================================================================\n";
+
+    private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     /**
      * Only static stuff here.
@@ -70,4 +82,33 @@ public class FrontendUtils {
         return hasBowerFrontend && !hasNpmFrontend && !hasNpmConfig ? true : false;
     }
 
+    /**
+     * Locate <code>node</code> executable.
+     *
+     * @return the full path to the executable
+     */
+    public static File getNodeExecutable() {
+        return getExecutable("node", "./node/node");
+    }
+
+    /**
+     * Locate <code>node</code> executable.
+     *
+     * @return the full path to the executable
+     */
+    public static File getNpmExecutable() {
+        return getExecutable("npm", "./node/node_modules/npm/bin/npm");
+    }
+
+    private static File getExecutable(String cmd, String defaultLocation) {
+        try {
+            return Optional
+                .of(new File(defaultLocation))
+                .filter(frontendToolsLocator::verifyTool)
+                .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
+                .orElseThrow(() -> new IllegalStateException()));
+        } catch (Throwable e) {
+            throw new IllegalStateException(String.format(NOT_FOUND, cmd));
+        }
+    }
 }
