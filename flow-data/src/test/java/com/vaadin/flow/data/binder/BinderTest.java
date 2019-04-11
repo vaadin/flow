@@ -16,17 +16,6 @@
 
 package com.vaadin.flow.data.binder;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -42,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
@@ -50,20 +40,31 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
-    private final Locale defaultLocale = Locale.getDefault();
 
     @Before
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
             protected void handleError(HasValue<?, ?> field,
-                    ValidationResult result) {
+                                       ValidationResult result) {
                 super.handleError(field, result);
                 componentErrors.put(field, result.getErrorMessage());
             }
@@ -81,7 +82,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @After
     public void tearDown() {
-        Locale.setDefault(defaultLocale);
+        CurrentInstance.clearAll();
     }
 
     @Test
@@ -585,7 +586,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Converter<String, String> stringBasicPreProcessingConverter = new Converter<String, String>() {
             @Override
             public Result<String> convertToModel(String value,
-                    ValueContext context) {
+                                                 ValueContext context) {
                 if (StringUtils.isBlank(value)) {
                     return Result.ok(null);
                 }
@@ -594,7 +595,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
             @Override
             public String convertToPresentation(String value,
-                    ValueContext context) {
+                                                ValueContext context) {
                 if (value == null) {
                     return "";
                 }
@@ -1269,6 +1270,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void conversionWithLocaleBasedErrorMessage() {
+        TestTextField ageField = new TestTextField();
+
         String fiError = "VIRHE";
         String otherError = "ERROR";
 
@@ -1278,15 +1281,18 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.forField(ageField).withConverter(converter).bind(Person::getAge,
                 Person::setAge);
-
         binder.setBean(item);
 
-        ageField.setValue("not a number");
+        UI testUI = new UI();
+        UI.setCurrent(testUI);
 
+        testUI.add(ageField);
+
+        ageField.setValue("not a number");
         assertEquals(otherError, ageField.getErrorMessage());
 
-        // No UI present for changing Locale, so need to change the default
-        Locale.setDefault(new Locale("fi", "FI"));
+        testUI.setLocale(new Locale("fi", "FI"));
+
         // Re-validate to get the error message with correct locale
         binder.validate();
         assertEquals(fiError, ageField.getErrorMessage());
