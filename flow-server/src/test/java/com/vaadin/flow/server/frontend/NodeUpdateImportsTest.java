@@ -34,16 +34,11 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+public class NodeUpdateImportsTest extends NodeUpdateTestBase {
 
     private File importsFile;
-    private File nodeModulesPath;
     private NodeUpdateImports node;
 
     @Before
@@ -237,53 +232,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             throws IOException {
         Files.write(Paths.get(importsFile.toURI()),
                 content.getBytes(StandardCharsets.UTF_8), options);
-    }
-
-    private List<String> getExpectedImports() {
-        return Arrays.asList("@polymer/iron-icon/iron-icon.js",
-                "@vaadin/vaadin-lumo-styles/spacing.js",
-                "@vaadin/vaadin-lumo-styles/icons.js",
-                "@vaadin/vaadin-lumo-styles/style.js",
-                "@vaadin/vaadin-lumo-styles/typography.js",
-                "@vaadin/vaadin-lumo-styles/color.js",
-                "@vaadin/vaadin-lumo-styles/sizing.js",
-                "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
-                "@vaadin/vaadin-element-mixin/src/something-else.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "@vaadin/flow-frontend/ExampleConnector.js",
-                "./local-p3-template.js", "./foo.js",
-                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-p2-template.js", "./foo-dir/vaadin-npm-component.js");
-    }
-
-    private void createExpectedImports(File directoryWithImportsJs,
-            File nodeModulesPath) throws IOException {
-        for (String expectedImport : getExpectedImports()) {
-            File newFile = resolveImportFile(directoryWithImportsJs,
-                    nodeModulesPath, expectedImport);
-            newFile.getParentFile().mkdirs();
-            Assert.assertTrue(newFile.createNewFile());
-        }
-    }
-
-    private void deleteExpectedImports(File directoryWithImportsJs,
-            File nodeModulesPath) {
-        for (String expectedImport : getExpectedImports()) {
-            Assert.assertTrue(resolveImportFile(directoryWithImportsJs,
-                    nodeModulesPath, expectedImport).delete());
-        }
-    }
-
-    private File resolveImportFile(File directoryWithImportsJs,
-            File nodeModulesPath, String jsImport) {
-        File root = jsImport.startsWith("./") ? directoryWithImportsJs
-                : nodeModulesPath;
-        return new File(root, jsImport);
-    }
-
-    private File getFlowPackage() {
-        return NodeUpdater.getFlowPackage(nodeModulesPath);
     }
 
 }

@@ -27,17 +27,12 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.WebpackUpdater.WEBPACK_CONFIG;
 
-public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+public class NodeUpdatePackagesTest extends NodeUpdateTestBase {
 
     NodeUpdatePackages node;
     WebpackUpdater webpackUpdater;
@@ -52,10 +47,10 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageJson = new File(tmpRoot, PACKAGE_JSON);
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG);
         
-        File modules = new File(tmpRoot, "node_modules");
+        nodeModulesPath = new File(tmpRoot, "node_modules");
 
-        
-        node = new NodeUpdatePackages(getAnnotationValuesExtractor(), tmpRoot, modules, true);
+        node = new NodeUpdatePackages(getAnnotationValuesExtractor(), tmpRoot,
+                nodeModulesPath, true);
         webpackUpdater = new WebpackUpdater(tmpRoot, tmpRoot, WEBPACK_CONFIG);
     }
 
