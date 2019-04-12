@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Command;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+
 public class WebpackUpdater implements Command {
 
     /**
@@ -42,7 +44,7 @@ public class WebpackUpdater implements Command {
     private File webpackFolder;
 
     public WebpackUpdater() {
-        this(new File("."), new File("./src/main/webapp"), WEBPACK_CONFIG);
+        this(new File(getBaseDir()), new File(getBaseDir(),"src/main/webapp"), WEBPACK_CONFIG);
     }
 
     /**
