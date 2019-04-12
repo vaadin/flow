@@ -291,7 +291,7 @@ public class VaadinServletContextInitializer
         // Skip custom web component builders search if registry already
         // initialized
         if (!WebComponentConfigurationRegistry.getInstance(servletContext)
-                .hasExporters()) {
+                .hasConfigurations()) {
             servletContext
                     .addListener(new WebComponentServletContextListener());
         }
