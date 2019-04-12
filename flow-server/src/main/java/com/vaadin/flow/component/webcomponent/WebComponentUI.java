@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import javax.servlet.ServletContext;
+import java.util.Map;
 import java.util.Optional;
+
+import javax.servlet.ServletContext;
 
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,7 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
@@ -52,7 +55,11 @@ public class WebComponentUI extends UI {
     @Override
     public void doInit(VaadinRequest request, int uiId) {
         super.doInit(request, uiId);
-        assignTheme();
+
+        ServletContext context = ((VaadinServletService) request.getService())
+                .getServlet().getServletContext();
+
+        assignTheme(context);
 
         VaadinSession session = getSession();
         String uiElementId;
@@ -67,11 +74,8 @@ public class WebComponentUI extends UI {
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
         if (deploymentConfiguration.useCompiledFrontendResources()) {
-            ServletContext context = ((VaadinServletService) request
-                    .getService()).getServlet().getServletContext();
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(context);
-
             /*
              * This code adds a number of HTML dependencies to the page but in
              * fact there are no such HTML files: they should have been
@@ -85,21 +89,20 @@ public class WebComponentUI extends UI {
     }
 
     /**
-     * Connect a client side web component element with a server side {@link
-     * Component} that's added as a virtual child to the UI as the actual
+     * Connect a client side web component element with a server side
+     * {@link Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
      * @param tag
-     *         web component tag
+     *            web component tag
      * @param webComponentElementId
-     *         client side id of the element
+     *            client side id of the element
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
-                WebComponentConfigurationRegistry
-                        .getInstance(VaadinServlet.getCurrent().getServletContext())
-                        .getConfiguration(tag);
+        Optional<WebComponentConfiguration<? extends Component>> webComponentExporter = WebComponentConfigurationRegistry
+                .getInstance(VaadinServlet.getCurrent().getServletContext())
+                .getConfiguration(tag);
 
         if (!webComponentExporter.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
@@ -117,8 +120,7 @@ public class WebComponentUI extends UI {
          */
         Element el = new Element(tag);
         WebComponentBinding binding = webComponentExporter.get()
-                .createWebComponentBinding(
-                        Instantiator.get(this), el);
+                .createWebComponentBinding(Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
         getElement().getStateProvider().appendVirtualChild(
@@ -134,7 +136,7 @@ public class WebComponentUI extends UI {
 
     @Override
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-                                                 String path) {
+            String path) {
         return Optional.empty();
     }
 
@@ -159,17 +161,40 @@ public class WebComponentUI extends UI {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
-    private void assignTheme() {
+    private void assignTheme(ServletContext context) {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(VaadinServlet.getCurrent().getServletContext());
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);
         if (theme.isPresent()) {
             getInternals().setTheme(theme.get().value());
+            assignVariant(context, theme.get());
         } else {
             ThemeUtil.getLumoThemeDefinition().map(ThemeDefinition::getTheme)
                     .ifPresent(getInternals()::setTheme);
         }
+    }
+
+    private void assignVariant(ServletContext context, Theme theme) {
+        AbstractTheme themeInstance = Instantiator.get(this)
+                .getOrCreate(theme.value());
+        ThemeDefinition definition = new ThemeDefinition(theme);
+        Map<String, String> attributes = themeInstance
+                .getHtmlAttributes(definition.getVariant());
+
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(context);
+        registry.getConfigurations()
+                .forEach(config -> addAttributes(config.getTag(), attributes));
+    }
+
+    private void addAttributes(String tag, Map<String, String> attributes) {
+        attributes.forEach((attr, value) -> getUI().get().getPage()
+                .executeJavaScript("var elements = document.querySelectorAll('"
+                        + tag + "'); "
+                        + "for (let i = 0; i < elements.length; i++) {"
+                        + "elements[i].setAttribute('" + attr + "','" + value
+                        + "');}"));
     }
 
     private String getWebComponentPath(
