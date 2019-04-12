@@ -27,6 +27,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.frontend.NodeExecutor;
+import com.vaadin.flow.server.frontend.NodeUpdatePackages;
+import com.vaadin.flow.server.frontend.WebpackUpdater;
+import org.apache.maven.model.Build;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -41,8 +45,9 @@ import com.vaadin.flow.server.frontend.NodeUpdater;
  * Goal that updates main.js file with @JsModule, @HtmlImport and @Theme
  * annotations defined in the classpath.
  */
-@Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
+@Mojo(name = "update-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
+
     /**
      * A Flow JavaScript file with all project's imports to update.
      */
@@ -55,13 +60,27 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean generateBundle;
 
+    /**
+     * Copy the `webapp.config.js` from the specified URL if missing. Default is
+     * the template provided by this plugin. Leave it blank to disable the
+     * feature.
+     */
+    @Parameter(defaultValue = WebpackUpdater.WEBPACK_CONFIG)
+    private String webpackTemplate;
+
     @Override
     protected Command getUpdater() {
         if (updater == null) {
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
-                    getClassFinder(project));
-            updater = new NodeUpdateImports(extractor, jsFile, npmFolder,
-                    nodeModulesPath, convertHtml);
+
+            File webpackOutputRelativeToProjectDir = project.getBasedir()
+                    .toPath().relativize(getWebpackOutputDirectory().toPath())
+                    .toFile();
+            
+            updater = new NodeExecutor.Builder(getClassFinder(project), jsFile,
+                    npmFolder, nodeModulesPath, convertHtml)
+                            .setWebpack(webpackOutputRelativeToProjectDir,
+                                    webpackTemplate)
+                            .build();
         }
         return updater;
     }
@@ -130,4 +149,20 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
             throw new UncheckedIOException(readErrorMessage, e);
         }
     }
+
+    private File getWebpackOutputDirectory() {
+        Build buildInformation = project.getBuild();
+        switch (project.getPackaging()) {
+            case "jar":
+                return new File(buildInformation.getOutputDirectory(),
+                        "META-INF/resources");
+            case "war":
+                return new File(buildInformation.getDirectory(),
+                        buildInformation.getFinalName());
+            default:
+                throw new IllegalStateException(String.format(
+                        "Unsupported packaging '%s'", project.getPackaging()));
+        }
+    }
+
 }

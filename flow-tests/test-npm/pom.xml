@@ -172,8 +172,7 @@
                         <executions>
                             <execution>
                                 <goals>
-                                    <goal>update-npm-dependencies</goal>
-                                    <goal>update-imports</goal>
+                                    <goal>update-frontend</goal>
                                 </goals>
                             </execution>
                         </executions>

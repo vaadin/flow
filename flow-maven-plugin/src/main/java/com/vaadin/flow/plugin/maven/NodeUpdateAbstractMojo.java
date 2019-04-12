@@ -40,7 +40,6 @@ import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
  * Common stuff for node update mojos.
@@ -130,10 +129,11 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
     public void execute() {
         // Do nothing when bower mode
         if (isBowerMode(getLog())) {
-            String goal = this.getClass().equals(NodeUpdateImportsMojo.class) ? "update-imports"  : "update-npm-dependencies";
+            String goal = "update-frontend";
             getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
             return;
         }
+
         getUpdater().execute();
     }
 
