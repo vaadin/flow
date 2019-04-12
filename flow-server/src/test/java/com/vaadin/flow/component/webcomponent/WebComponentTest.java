@@ -20,15 +20,19 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
-import static org.mockito.Matchers.anyString;
+import elemental.json.Json;
+import elemental.json.JsonValue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class WebComponentTest {
 
@@ -113,5 +117,53 @@ public class WebComponentTest {
                         Component.class, "property", String.class, "value");
 
         webComponent.setProperty(stringConfiguration, "newValue");
+    }
+
+    @Test
+    public void setProperty_attemptsToWriteSupportedTypes() {
+        Element element = spy(new Element("tag"));
+
+        // configurations
+        PropertyConfigurationImpl<Component, Integer> intConfiguration =
+                new PropertyConfigurationImpl<>(
+                        Component.class, "int", Integer.class, 0);
+        PropertyConfigurationImpl<Component, Double> doubleConfiguration =
+                new PropertyConfigurationImpl<>(
+                        Component.class, "double", Double.class, 0.0);
+        PropertyConfigurationImpl<Component, String> stringConfiguration =
+                new PropertyConfigurationImpl<>(
+                        Component.class, "string", String.class, "");
+        PropertyConfigurationImpl<Component, Boolean> booleanConfiguration =
+                new PropertyConfigurationImpl<>(
+                        Component.class, "boolean", Boolean.class, false);
+        PropertyConfigurationImpl<Component, JsonValue> jsonConfiguration =
+                new PropertyConfigurationImpl<>(
+                        Component.class, "json", JsonValue.class, Json.createNull());
+
+        // binding
+        WebComponentBinding<Component> binding =
+                new WebComponentBinding<>(mock(Component.class));
+        binding.bindProperty(intConfiguration);
+        binding.bindProperty(doubleConfiguration);
+        binding.bindProperty(stringConfiguration);
+        binding.bindProperty(booleanConfiguration);
+        binding.bindProperty(jsonConfiguration);
+
+        // test
+        WebComponent<Component> webComponent = new WebComponent<>(binding,
+                element);
+
+        webComponent.setProperty(intConfiguration, 1);
+        verify(element, Mockito.times(1)).executeJavaScript(Matchers.anyString(), Matchers.any(), Matchers.any());
+        webComponent.setProperty(doubleConfiguration, 1.0);
+        verify(element, Mockito.times(2)).executeJavaScript(Matchers.anyString(), Matchers.any(), Matchers.any());
+        webComponent.setProperty(stringConfiguration, "asd");
+        verify(element, Mockito.times(3)).executeJavaScript(Matchers.anyString(), Matchers.any(), Matchers.any());
+        webComponent.setProperty(booleanConfiguration, true);
+        verify(element, Mockito.times(4)).executeJavaScript(Matchers.anyString(), Matchers.any(), Matchers.any());
+        // JsonValue has a different number of arguments, so the invocation
+        // will be registered to a different overload
+        webComponent.setProperty(jsonConfiguration, Json.create(true));
+        verify(element, Mockito.times(1)).executeJavaScript(Matchers.anyString(), Matchers.any());
     }
 }
