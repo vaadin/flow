@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.webcomponent;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,5 +36,12 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
         TestBenchElement webComponent = $("themed-variant-web-component")
                 .first();
         Assert.assertEquals("dark", webComponent.getAttribute("theme"));
+
+        String customStyle = $("custom-style").first()
+                .getAttribute("innerHTML");
+        Assert.assertThat(customStyle,
+                CoreMatchers.allOf(
+                        CoreMatchers.containsString("theme~=\"dark\""),
+                        CoreMatchers.containsString("--lumo-base-color")));
     }
 }
