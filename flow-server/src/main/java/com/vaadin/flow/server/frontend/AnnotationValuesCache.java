@@ -46,16 +46,9 @@ class AnnotationValuesCache extends AnnotationValuesExtractor {
             Class<? extends Annotation> annotationClass,
             String valueGetterMethodName) {
 
-        String key = annotationClass.getName() + "#" + valueGetterMethodName;
-
-        Map<Class<?>, Set<String>> value = annotatedClassesMapCache.get(key);
-
-        if (value == null) {
-            value = super.getAnnotatedClasses(annotationClass,
-                    valueGetterMethodName);
-            annotatedClassesMapCache.put(key, value);
-        }
-
-        return value;
+        return annotatedClassesMapCache.computeIfAbsent(
+                annotationClass.getName() + "#" + valueGetterMethodName,
+                (k) -> super.getAnnotatedClasses(annotationClass,
+                        valueGetterMethodName));
     }
 }
