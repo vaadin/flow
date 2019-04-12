@@ -19,6 +19,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -26,9 +27,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -133,5 +138,66 @@ public class NodeUpdateTestBase {
         Thread.sleep(ms); // NOSONAR
     }
 
+    ClassFinder createProxyClassFinder(ClassFinder classFinder, ClassFinder monitor) throws ClassNotFoundException {
+        ClassFinder classFinderMock = Mockito.mock(ClassPathIntrospector.ClassFinder.class);
+
+        Mockito.when(classFinderMock.getAnnotatedClasses(Mockito.any()))
+                .thenAnswer(new Answer<Object>() {
+                    public Object answer(InvocationOnMock invocation) {
+                        Class<? extends Annotation> argument = (Class<? extends Annotation>) invocation
+                                .getArguments()[0];
+
+                        if (monitor != null) {
+                            monitor.getAnnotatedClasses(argument);
+                        }
+
+                        return classFinder.getAnnotatedClasses(argument);
+                    }
+                });
+
+        Mockito.when(classFinderMock.getResource(Mockito.any()))
+                .thenAnswer(new Answer<Object>() {
+                    public Object answer(InvocationOnMock invocation)
+                            throws ClassNotFoundException {
+                        String argument = (String) invocation.getArguments()[0];
+
+                        if (monitor != null) {
+                            monitor.getResource(argument);
+                        }
+
+                        return classFinder.getResource(argument);
+                    }
+                });
+
+        Mockito.when(classFinderMock.loadClass(Mockito.any()))
+                .thenAnswer(new Answer<Object>() {
+                    public Object answer(InvocationOnMock invocation)
+                            throws ClassNotFoundException {
+                        String argument = (String) invocation.getArguments()[0];
+
+                        if (monitor != null) {
+                            monitor.loadClass(argument);
+                        }
+
+                        return classFinder.loadClass(argument);
+                    }
+                });
+
+        Mockito.when(classFinderMock.getSubTypesOf(Mockito.any()))
+                .thenAnswer(new Answer<Object>() {
+                    public Object answer(InvocationOnMock invocation)
+                            throws ClassNotFoundException {
+                        Class argument = (Class) invocation.getArguments()[0];
+
+                        if (monitor != null) {
+                            monitor.getSubTypesOf(argument);
+                        }
+
+                        return classFinder.getSubTypesOf(argument);
+                    }
+                });
+
+        return classFinderMock;
+    }
 
 }

@@ -19,28 +19,29 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.internal.matchers.Any;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-public class NodeExecutorTest extends NodeUpdateTestBase {
+public class NodeExecutorTest extends NodeUpdateTestBase
+        implements ClassFinder {
 
     private File importsFile;
     private File nodeModulesPath;
 
-    NodeExecutor node;
+    private NodeExecutor node;
 
-    ClassPathIntrospector.ClassFinder classFinder;
-//    ClassPathIntrospector.ClassFinder classFinderMock;
+    private Map<Class<? extends Annotation>, Integer> annotationScanCount = new HashMap<>();
 
     @Before
     public void setup() throws Exception {
@@ -49,29 +50,9 @@ public class NodeExecutorTest extends NodeUpdateTestBase {
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
 
-//        classFinderMock = Mockito.mock(ClassPathIntrospector.ClassFinder.class);
-        classFinder = getClassFinder();
-
-//        Mockito.when(classFinderMock.getAnnotatedClasses(Mockito.any()))
-//                .thenAnswer(new Answer<Object>() {
-//                    public Object answer(InvocationOnMock invocation) {
-//                        return classFinder.getAnnotatedClasses(
-//                                (Class<? extends Annotation>) invocation
-//                                        .getArguments()[0]);
-//                    }
-//                });
-
-//        Mockito.when(classFinderMock.getAnnotatedClasses(Mockito.any()))
-//                .thenAnswer(new Answer<Object>() {
-//                    public Object answer(InvocationOnMock invocation) {
-//                        return classFinder.getAnnotatedClasses(
-//                                (Class<? extends Annotation>) invocation
-//                                        .getArguments()[0]);
-//                    }
-//                });
-
-        node = new NodeExecutor.Builder(classFinder, importsFile, tmpRoot,
-                nodeModulesPath, true).build();
+        node = new NodeExecutor.Builder(
+                createProxyClassFinder(getClassFinder(), this), importsFile,
+                tmpRoot, nodeModulesPath, true).build();
 
         createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
     }
@@ -79,5 +60,38 @@ public class NodeExecutorTest extends NodeUpdateTestBase {
     @Test
     public void should_ScanAnnotations_Once() {
         node.execute();
+
+        Assert.assertEquals("NpmPackage scanned more than once", 1,
+                annotationScanCount.get(NpmPackage.class).intValue());
+        Assert.assertEquals("HtmlImport scanned more than once", 1,
+                annotationScanCount.get(HtmlImport.class).intValue());
+        Assert.assertEquals("JsModule scanned more than once", 1,
+                annotationScanCount.get(JsModule.class).intValue());
+        Assert.assertEquals("JavaScript scanned more than once", 1,
+                annotationScanCount.get(JavaScript.class).intValue());
+    }
+
+    @Override
+    public Set<Class<?>> getAnnotatedClasses(
+            Class<? extends Annotation> clazz) {
+
+        annotationScanCount.compute(clazz, (k, v) -> v == null ? 1 : v + 1);
+
+        return null;
+    }
+
+    @Override
+    public URL getResource(String name) {
+        return null;
+    }
+
+    @Override
+    public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
+        return null;
+    }
+
+    @Override
+    public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
+        return null;
     }
 }
