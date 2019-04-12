@@ -104,7 +104,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         } else {
             try {
                 URI uri = new URI(serviceUrl);
-                pushURL = uri.resolve(pushURL).toASCIIString();
+                pushURL = uri.resolve(new URI(pushURL)).toASCIIString();
             } catch (URISyntaxException exception) {
                 throw new IllegalStateException(String.format(
                         "Can't resolve pushURL '%s' based on the service URL '%s'",
