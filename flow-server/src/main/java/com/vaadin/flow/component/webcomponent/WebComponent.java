@@ -215,6 +215,9 @@ public final class WebComponent<C extends Component> implements Serializable {
         } else if (value instanceof String) {
             componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
                     (String) value);
+        } else if (value instanceof Boolean) {
+            componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
+                    (Boolean) value);
         } else if (value instanceof JsonValue) {
             // this gets around executeJavaScript limitation.
             // Since properties can take JsonValues, this was needed to allow
