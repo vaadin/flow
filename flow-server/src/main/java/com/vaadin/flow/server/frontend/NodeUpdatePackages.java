@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -215,6 +214,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         ProcessBuilder builder = new ProcessBuilder(
                 getNpmCommand(dependencies, npmInstallArgs));
         builder.directory(npmFolder);
+
         if (log().isInfoEnabled()) {
             log().info(
                 "Updating package.json and installing npm dependencies ...\n {}",
@@ -243,15 +243,8 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private List<String> getNpmCommand(List<String> dependencies,
             String... npmInstallArgs) {
-        FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
-        File npmPath = Optional.of(new File("./node/node_modules/npm/bin/npm"))
-            .filter(frontendToolsLocator::verifyTool)
-            .orElseGet(() -> frontendToolsLocator.tryLocateTool("npm")
-                .orElseThrow(() -> new IllegalStateException(
-                    "Failed to determine 'npm' tool. "
-                        + "Please install it using the https://nodejs.org/en/download/ guide.")));
         List<String> command = new ArrayList<>(5 + dependencies.size());
-        command.add(npmPath.getAbsolutePath());
+        command.addAll(FrontendUtils.getNpmExecutable());
         command.add("--no-package-lock");
         command.add("install");
         command.addAll(Arrays.asList(npmInstallArgs));

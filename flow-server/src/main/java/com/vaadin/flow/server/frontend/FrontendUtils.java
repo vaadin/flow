@@ -16,6 +16,9 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
@@ -37,6 +40,17 @@ public class FrontendUtils {
      * The name of the webpack configuration file.
      */
     public static final String WEBPACK_CONFIG ="webpack.config.js";
+
+    private static final String NOT_FOUND =
+            "%n%n======================================================================================================"
+            + "%nFailed to determine '%s' tool."
+            + "%nPlease install it either:"
+            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
+            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
+            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:LATEST:install-node-and-npm -DnodeVersion=v11.6.0 "
+            + "%n======================================================================================================%n";
+
+    private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     /**
      * Only static stuff here.
@@ -65,9 +79,52 @@ public class FrontendUtils {
         boolean hasBowerFrontend = new File(getBaseDir(), "src/main/webapp/frontend").isDirectory();
         boolean hasNpmFrontend = new File(getBaseDir(), "frontend").isDirectory();
         boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
-                && new File(FrontendUtils.WEBPACK_CONFIG).exists();
+                && new File(WEBPACK_CONFIG).exists();
 
         return hasBowerFrontend && !hasNpmFrontend && !hasNpmConfig ? true : false;
     }
 
+    /**
+     * Locate <code>node</code> executable.
+     *
+     * @return the full path to the executable
+     */
+    public static String getNodeExecutable() {
+        return getExecutable("node", "node/node").getAbsolutePath();
+    }
+
+    /**
+     * Locate <code>npm</code> executable.
+     *
+     * @return the a list of all commands in sequence that need to be executed
+     *         to have npm running
+     */
+    public static List<String> getNpmExecutable() {
+        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will not work
+        // because it's a shell or windows script that looks for node and will fail.
+        // Thus we look for the `mpn-cli` node script instead
+        File file = new File(getBaseDir(), "node/node_modules/npm/bin/npm-cli.js");
+        if (file.canRead()) {
+            // We return a two element list with node binary and npm-cli script
+            return Arrays.asList(getNodeExecutable(), file.getAbsolutePath());
+        }
+        // Otherwise look for regulan `npm`
+        return Arrays.asList(getExecutable("npm", null).getAbsolutePath());
+    }
+
+    private static File getExecutable(String cmd, String defaultLocation) {
+        File file = null;
+        try {
+            file = defaultLocation == null ? frontendToolsLocator.tryLocateTool(cmd).orElse(null)
+                    : Optional.of(new File(getBaseDir(), defaultLocation))
+                            .filter(frontendToolsLocator::verifyTool)
+                            .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd).orElse(null));
+        } catch (Exception e) { //NOSONAR
+            // There are IOException coming from process fork
+        }
+        if (file == null) {
+            throw new IllegalStateException(String.format(NOT_FOUND, cmd));
+        }
+        return file;
+    }
 }

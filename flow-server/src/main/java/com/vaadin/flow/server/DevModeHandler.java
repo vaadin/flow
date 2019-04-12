@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -41,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FrontendToolsLocator;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -102,14 +100,6 @@ public class DevModeHandler implements Serializable {
             return;
         }
 
-        FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
-        File nodePath = Optional.of(new File("./node/node"))
-                .filter(frontendToolsLocator::verifyTool)
-                .orElseGet(() -> frontendToolsLocator.tryLocateTool("node")
-                        .orElseThrow(() -> new IllegalStateException(
-                                "Failed to determine 'node' tool. "
-                                        + "Please install it using the https://nodejs.org/en/download/ guide.")));
-
         // We always compute a free port.
         port = getFreePort();
 
@@ -117,7 +107,7 @@ public class DevModeHandler implements Serializable {
                 .directory(directory);
 
         List<String> command = new ArrayList<>();
-        command.add(nodePath.getAbsolutePath());
+        command.add(FrontendUtils.getNodeExecutable());
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());
