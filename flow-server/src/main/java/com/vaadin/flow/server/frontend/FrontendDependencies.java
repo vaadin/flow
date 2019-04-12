@@ -43,6 +43,7 @@ import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Represents the class dependency tree of the application.
@@ -110,6 +111,7 @@ public class FrontendDependencies {
                 endPoints.put(className, visitClass(className, new EndPoint(route)));
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new IllegalStateException(e);
         }
     }
@@ -148,12 +150,20 @@ public class FrontendDependencies {
     }
 
     public Class<?> getTheme() {
+        ThemeDefinition theme = getTheme(null);
+        return theme == null ? null : theme.getTheme();
+    }
+
+    public ThemeDefinition getTheme(String defaultTheme) {
         for (EndPoint r : endPoints.values()) {
             if (r.route.isEmpty() && !r.notheme) {
-                try {
-                    return finder.loadClass(r.theme != null ? r.theme : "");
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                String theme = r.theme != null ? r.theme : defaultTheme;
+                if (theme != null) {
+                    try {
+                        return new ThemeDefinition(finder.loadClass(theme), r.variant);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

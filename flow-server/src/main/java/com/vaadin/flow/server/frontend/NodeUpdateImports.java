@@ -35,6 +35,7 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -60,6 +61,17 @@ public class NodeUpdateImports extends NodeUpdater {
     private final File jsFile;
 
     private final ThemeDefinition themeDefinition;
+
+    public NodeUpdateImports(ClassFinder finder, File jsFile, File npmFolder, File nodeModulesPath,
+            boolean convertHtml) {
+        this.finder = finder;
+        this.frontDeps = new FrontendDependencies(finder);
+        this.npmFolder = npmFolder;
+        this.nodeModulesPath = nodeModulesPath;
+        this.jsFile = jsFile;
+        this.convertHtml = convertHtml;
+        this.themeDefinition = frontDeps.getTheme(LUMO);
+    }
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -99,18 +111,43 @@ public class NodeUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        // Using LinkedHashSet to maintain theme imports sorted at top
-        Set<String> modules = new LinkedHashSet<>();
-        modules.addAll(getThemeModules());
-        modules.addAll(getJsModules());
-        modules.addAll(getJavaScriptFiles());
+        if (annotationValuesExtractor != null) {
+            Set<String> modules = new HashSet<>();
+            modules.addAll(getThemeModules());
+            modules.addAll(getJsModules());
+            modules.addAll(getJavaScriptFiles());
+            modules = sortModules(modules);
 
-        try {
-            installFlowModules();
-            updateMainJsFile(getMainJsContent(modules));
-        } catch (Exception e) {
-            throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", jsFile), e);
+            print(modules);
+
+
+            try {
+                installFlowModules();
+                updateMainJsFile(getMainJsContent(modules));
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", jsFile), e);
+            }
+        } else {
+            Set<String> modules = new HashSet<>();
+            modules.addAll(frontDeps.getAllModules());
+            if (convertHtml) {
+                modules.addAll(getHtmlImportJsModules(frontDeps.getAllImports()));
+            }
+            modules.addAll(frontDeps.getAllScripts());
+            modules = sortModules(modules);
+
+            print(modules);
         }
+    }
+
+    private Set<String> sortModules(Set<String> modules) {
+        return modules.stream().map(this::toValidBrowserImport).sorted(Comparator.reverseOrder())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private void print(Set<String> s) {
+        System.err.println(s.toString().replaceAll("^\\[|\\]$|,", "\n").trim());
     }
 
     private List<String> getMainJsContent(Set<String> modules) throws InstantiationException, IllegalAccessException {
@@ -249,6 +286,10 @@ public class NodeUpdateImports extends NodeUpdater {
                     .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportJsModules(entry.getValue())));
             classes.putAll(classesWithHtmlImport);
         }
+    }
+
+    private ThemeDefinition getThemeDefinition(FrontendDependencies frontDeps) {
+        return frontDeps.getTheme(LUMO);
     }
 
     private ThemeDefinition getThemeDefinition(AnnotationValuesExtractor annotationValuesExtractor) {

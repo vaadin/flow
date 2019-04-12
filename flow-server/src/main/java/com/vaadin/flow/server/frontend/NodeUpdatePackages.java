@@ -25,20 +25,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -84,7 +79,17 @@ public class NodeUpdatePackages extends NodeUpdater {
     public NodeUpdatePackages(AnnotationValuesExtractor extractor,
             File webpackOutputDirectory, String webpackTemplate, File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
-        this.annotationValuesExtractor = extractor;
+        this.npmFolder = npmFolder;
+        this.nodeModulesPath = nodeModulesPath;
+        this.webpackOutputDirectory = webpackOutputDirectory;
+        this.webpackTemplate = webpackTemplate;
+        this.convertHtml = convertHtml;
+    }
+
+    public NodeUpdatePackages(ClassFinder finder, File webpackOutputDirectory, String webpackTemplate, File npmFolder,
+            File nodeModulesPath, boolean convertHtml) {
+        this.finder = finder;
+        this.frontDeps = new FrontendDependencies(finder);
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
         this.webpackOutputDirectory = webpackOutputDirectory;
@@ -104,20 +109,24 @@ public class NodeUpdatePackages extends NodeUpdater {
                 new File(getBaseDir(), "node_modules"), true);
     }
 
+    public NodeUpdatePackages(ClassFinder finder) {
+        this(finder, new File(getBaseDir(), "src/main/webapp"), WEBPACK_CONFIG, new File(getBaseDir()),
+                new File(getBaseDir(), "node_modules"), true);
+    }
+
     @Override
     public void execute() {
         try {
-            Map<Class<?>, Set<String>> classes = annotationValuesExtractor.getAnnotatedClasses(NpmPackage.class, VALUE);
-            classes.putAll(classesWithHtmlImport(classes));
-
             JsonObject packageJson = getPackageJson();
 
-            updatePackageJsonDependencies(packageJson, classes);
+            Set<String> deps = new HashSet<>(frontDeps.getAllPackages());
+            if (convertHtml) {
+                deps.addAll(getHtmlImportNpmPackages(frontDeps.getAllImports()));
+            }
 
+            updatePackageJsonDependencies(packageJson, deps);
             updatePackageJsonDevDependencies(packageJson);
-
             createWebpackConfig();
-
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -150,28 +159,11 @@ public class NodeUpdatePackages extends NodeUpdater {
         }
     }
 
-    private Map<Class<?>, Set<String>> classesWithHtmlImport(Map<Class<?>, Set<String>> classesWithNpmPackage) {
-        if (convertHtml) {
-            Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
-                    .getAnnotatedClasses(HtmlImport.class, VALUE);
-
-            Map<Class<?>, Set<String>> classesWithJsModule = annotationValuesExtractor
-                    .getAnnotatedClasses(JsModule.class, VALUE);
-
-            // Remove classes with HtmlImport that already have npm annotations
-            return classesWithHtmlImport.entrySet().stream()
-                    .filter(entry -> !classesWithNpmPackage.containsKey(entry.getKey())
-                            && !classesWithJsModule.containsKey(entry.getKey()))
-                    .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportNpmPackages(entry.getValue())));
-        }
-        return Collections.emptyMap();
-    }
-
-    private void updatePackageJsonDependencies(JsonObject packageJson, Map<Class<?>, Set<String>> classes) {
+    private void updatePackageJsonDependencies(JsonObject packageJson, Set<String> classes) {
         JsonObject currentDeps = packageJson.getObject("dependencies");
 
         Set<String> dependencies = new HashSet<>();
-        classes.values().stream().flatMap(Collection::stream).forEach(s -> {
+        classes.forEach(s -> {
             // exclude local dependencies (those starting with `.` or `/`
             if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)
                     && !s.startsWith(FLOW_PACKAGE)) {
@@ -209,7 +201,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         }
     }
 
-    private void updateDependencies(List<String> dependencies,
+    void updateDependencies(List<String> dependencies,
             String... npmInstallArgs) {
         ProcessBuilder builder = new ProcessBuilder(
                 getNpmCommand(dependencies, npmInstallArgs));

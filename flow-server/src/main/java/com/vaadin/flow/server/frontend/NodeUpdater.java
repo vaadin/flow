@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
@@ -62,6 +63,10 @@ public abstract class NodeUpdater implements Serializable {
     protected boolean convertHtml;
 
     AnnotationValuesExtractor annotationValuesExtractor;
+
+    ClassFinder finder;
+
+    FrontendDependencies frontDeps;
 
     private final Set<String> flowModules = new HashSet<>();
 
@@ -110,9 +115,9 @@ public abstract class NodeUpdater implements Serializable {
     }
 
     private URL getResourceUrl(String resource) {
-      URL url = annotationValuesExtractor.getResource(
-          RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_PACKAGE, ""));
-      return url != null && url.getPath().contains(".jar!") ? url : null;
+        resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_PACKAGE, "");
+        URL url = finder != null ? finder.getResource(resource) : annotationValuesExtractor.getResource(resource);
+        return url != null && url.getPath().contains(".jar!") ? url : null;
     }
 
     private String htmlImportToJsModule(String htmlImport) {

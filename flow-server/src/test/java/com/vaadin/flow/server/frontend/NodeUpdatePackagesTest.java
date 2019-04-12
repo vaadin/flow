@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.NodeUpdatePackages.*;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
@@ -50,10 +50,10 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         File tmpRoot = temporaryFolder.getRoot();
         packageJson = new File(tmpRoot, PACKAGE_JSON);
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG);
-        
+
         File modules = new File(tmpRoot, "node_modules");
 
-        node = new NodeUpdatePackages(getAnnotationValuesExtractor(), 
+        node = new NodeUpdatePackages(getClassFinder(),
                 tmpRoot, WEBPACK_CONFIG, tmpRoot, modules, true);
     }
 

@@ -38,6 +38,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
@@ -85,12 +86,13 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
             return;
         }
 
-        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
-                new DefaultClassFinder(classes));
+        ClassFinder finder = new DefaultClassFinder(classes);
+
+        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(finder);
         try {
             if (!config.getBooleanProperty(
                     SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
-                new NodeUpdatePackages(extractor).execute();
+                new NodeUpdatePackages(finder).execute();
             }
 
             if (!config.getBooleanProperty(

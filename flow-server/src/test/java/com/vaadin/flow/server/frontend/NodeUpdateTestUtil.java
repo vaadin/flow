@@ -18,11 +18,17 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.rules.TemporaryFolder;
+
+import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -34,6 +40,13 @@ public class NodeUpdateTestUtil {
                 new ClassPathIntrospector.DefaultClassFinder(
                         new URLClassLoader(getClassPath()),
                         NodeTestComponents.class.getDeclaredClasses()));
+    }
+
+    static ClassFinder getClassFinder()
+            throws MalformedURLException {
+        return new ClassPathIntrospector.DefaultClassFinder(
+                new URLClassLoader(getClassPath()),
+                NodeTestComponents.class.getDeclaredClasses());
     }
 
     static URL[] getClassPath() throws MalformedURLException {
@@ -54,6 +67,23 @@ public class NodeUpdateTestUtil {
         }
 
         return classPaths.toArray(new URL[0]);
+    }
+
+
+    static void createStubNode(TemporaryFolder tmpDir) throws IOException {
+        // Skip in windows because shell script does not work there
+        if (File.pathSeparatorChar == ';') {
+            return;
+        }
+
+        File npmCli = new File(tmpDir.getRoot(), "node/node_modules/npm/bin/npm-cli.js");
+        FileUtils.forceMkdirParent(npmCli);
+        npmCli.createNewFile();
+
+        File node = new File(tmpDir.getRoot(), "node/node");
+        node.createNewFile();
+        node.setExecutable(true);
+        FileUtils.write(node, "#!/bin/sh\n[ \"$1\" = -n ] && echo 8.0.0 || touch package.json\n", "UTF-8");
     }
 
     static URL getTestResource(String resourceName) {
