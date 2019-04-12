@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -296,104 +297,106 @@ public class StateNodeTest {
 
     @Test
     public void attachListener_onSetParent_listenerTriggered() {
-        StateNode root = new TestStateTree().getRootNode();
-        TestStateNode child = new TestStateNode();
+        Stream.of(new TestStateNode(), createMovedNode()).forEach(child -> {
+            StateNode root = new TestStateTree().getRootNode();
+            Assert.assertFalse(child.isAttached());
 
-        Assert.assertFalse(child.isAttached());
-        AtomicBoolean triggered = new AtomicBoolean(false);
+            AtomicBoolean triggered = new AtomicBoolean(false);
+            child.addAttachListener(() -> triggered.set(true));
 
-        child.addAttachListener(() -> triggered.set(true));
+            setParent(child, root);
 
-        setParent(child, root);
-
-        Assert.assertTrue(triggered.get());
+            Assert.assertTrue(triggered.get());
+        });
     }
 
     @Test
     public void attachListener_listenerRemoved_listenerNotTriggered() {
-        StateNode root = new TestStateTree().getRootNode();
-        TestStateNode child = new TestStateNode();
+        Stream.of(new TestStateNode(), createMovedNode()).forEach(child -> {
+            StateNode root = new TestStateTree().getRootNode();
+            Assert.assertFalse(child.isAttached());
+            AtomicBoolean triggered = new AtomicBoolean(false);
 
-        Assert.assertFalse(child.isAttached());
-        AtomicBoolean triggered = new AtomicBoolean(false);
+            Registration registrationHandle = child
+                    .addAttachListener(() -> triggered.set(true));
+            registrationHandle.remove();
 
-        Registration registrationHandle = child
-                .addAttachListener(() -> triggered.set(true));
-        registrationHandle.remove();
+            setParent(child, root);
 
-        setParent(child, root);
-
-        Assert.assertFalse(triggered.get());
+            Assert.assertFalse(triggered.get());
+        });
     }
 
     @Test
     public void detachListener_onSetParent_listenerTriggered() {
-        StateNode root = new TestStateTree().getRootNode();
-        TestStateNode child = new TestStateNode();
+        Stream.of(new TestStateNode(), createMovedNode()).forEach(child -> {
+            StateNode root = new TestStateTree().getRootNode();
 
-        setParent(child, root);
-        Assert.assertTrue(child.isAttached());
+            setParent(child, root);
+            Assert.assertTrue(child.isAttached());
 
-        AtomicBoolean triggered = new AtomicBoolean(false);
+            AtomicBoolean triggered = new AtomicBoolean(false);
 
-        child.addDetachListener(() -> triggered.set(true));
+            child.addDetachListener(() -> triggered.set(true));
 
-        setParent(child, null);
+            setParent(child, null);
 
-        Assert.assertTrue("Detach listener was not triggered.",
-                triggered.get());
+            Assert.assertTrue("Detach listener was not triggered.",
+                    triggered.get());
+        });
     }
 
     @Test
     public void detachListener_listenerRemoved_listenerNotTriggered() {
-        StateNode root = new TestStateTree().getRootNode();
-        TestStateNode child = new TestStateNode();
+        Stream.of(new TestStateNode(), createMovedNode()).forEach(child -> {
+            StateNode root = new TestStateTree().getRootNode();
 
-        setParent(child, root);
-        Assert.assertTrue(child.isAttached());
+            setParent(child, root);
+            Assert.assertTrue(child.isAttached());
 
-        AtomicBoolean triggered = new AtomicBoolean(false);
+            AtomicBoolean triggered = new AtomicBoolean(false);
 
-        Registration registrationHandle = child
-                .addDetachListener(() -> triggered.set(true));
-        registrationHandle.remove();
+            Registration registrationHandle = child
+                    .addDetachListener(() -> triggered.set(true));
+            registrationHandle.remove();
 
-        setParent(child, null);
+            setParent(child, null);
 
-        Assert.assertFalse(
-                "Detach listener was triggered even though handler was removed.",
-                triggered.get());
+            Assert.assertFalse(
+                    "Detach listener was triggered even though handler was removed.",
+                    triggered.get());
+        });
     }
 
     @Test
     public void detachListener_removesNode_notUnregisteredTwice() {
-        StateTree tree = createStateTree();
-        StateNode root = createParentNode("");
-        setParent(root, tree.getRootNode());
+        Stream.of(new TestStateNode(), createMovedNode()).forEach(child -> {
+            StateTree tree = createStateTree();
+            StateNode root = createParentNode("");
+            setParent(root, tree.getRootNode());
 
-        TestStateNode child = new TestStateNode();
+            setParent(child, root);
+            Assert.assertTrue(child.isAttached());
 
-        setParent(child, root);
-        Assert.assertTrue(child.isAttached());
+            AtomicBoolean triggered = new AtomicBoolean(false);
 
-        AtomicBoolean triggered = new AtomicBoolean(false);
+            child.addDetachListener(() -> {
+                Assert.assertTrue(
+                        "Child node should still have a parent and be been seen as attached",
+                        child.isAttached());
+                Assert.assertFalse("Child node should have been unregistered",
+                        tree.hasNode(child));
 
-        child.addDetachListener(() -> {
-            Assert.assertTrue(
-                    "Child node should still have a parent and be been seen as attached",
-                    child.isAttached());
-            Assert.assertFalse("Child node should have been unregistered",
-                    tree.hasNode(child));
+                child.setParent(null);
 
-            child.setParent(null);
+                triggered.set(true);
+            });
 
-            triggered.set(true);
+            setParent(child, null);
+
+            Assert.assertTrue("Detach listener was not triggered.",
+                    triggered.get());
         });
-
-        setParent(child, null);
-
-        Assert.assertTrue("Detach listener was not triggered.",
-                triggered.get());
     }
 
     public static StateNode createEmptyNode() {
@@ -433,6 +436,17 @@ public class StateNodeTest {
             }
 
         };
+    }
+
+    private static StateNode createMovedNode() {
+        return getMovedNode(new TestStateNode());
+    }
+
+    private static StateNode getMovedNode(StateNode node) {
+        final StateTree tree = createStateTree();
+        setParent(node, tree.getRootNode());
+        node.removeFromTree();
+        return node;
     }
 
     public static void setParent(StateNode child, StateNode parent) {
@@ -475,7 +489,7 @@ public class StateNodeTest {
         set.remove(node.getData());
     }
 
-    private StateTree createStateTree() {
+    private static StateTree createStateTree() {
         StateTree stateTree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);
         return stateTree;
@@ -483,55 +497,58 @@ public class StateNodeTest {
 
     @Test
     public void runWhenAttachedNodeNotAttached() {
-        StateTree tree = createStateTree();
-        AtomicInteger commandRun = new AtomicInteger(0);
-        StateNode n1 = createEmptyNode();
-        n1.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
-            commandRun.incrementAndGet();
+        Stream.of(new TestStateNode(), createMovedNode()).forEach(n1 -> {
+            StateTree tree = createStateTree();
+            AtomicInteger commandRun = new AtomicInteger(0);
+            n1.runWhenAttached(ui -> {
+                Assert.assertEquals(tree.getUI(), ui);
+                commandRun.incrementAndGet();
+            });
+
+            Assert.assertEquals(0, commandRun.get());
+
+            setParent(n1, tree.getRootNode());
+            Assert.assertEquals(1, commandRun.get());
+            setParent(n1, null);
+            setParent(n1, tree.getRootNode());
+            Assert.assertEquals(1, commandRun.get());
         });
-
-        Assert.assertEquals(0, commandRun.get());
-
-        setParent(n1, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
-        setParent(n1, null);
-        setParent(n1, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
     }
 
     @Test
     public void runMultipleWhenAttachedNodeNotAttached() {
-        StateTree tree = createStateTree();
-        AtomicInteger commandRun = new AtomicInteger(0);
-        StateNode n1 = createEmptyNode();
-        n1.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
-            commandRun.incrementAndGet();
-        });
-        n1.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
-            commandRun.incrementAndGet();
-        });
+        Stream.of(new TestStateNode(), createMovedNode()).forEach(n1 -> {
+            StateTree tree = createStateTree();
+            AtomicInteger commandRun = new AtomicInteger(0);
+            n1.runWhenAttached(ui -> {
+                Assert.assertEquals(tree.getUI(), ui);
+                commandRun.incrementAndGet();
+            });
+            n1.runWhenAttached(ui -> {
+                Assert.assertEquals(tree.getUI(), ui);
+                commandRun.incrementAndGet();
+            });
 
-        Assert.assertEquals(0, commandRun.get());
+            Assert.assertEquals(0, commandRun.get());
 
-        setParent(n1, tree.getRootNode());
-        Assert.assertEquals(2, commandRun.get());
+            setParent(n1, tree.getRootNode());
+            Assert.assertEquals(2, commandRun.get());
+        });
     }
 
     @Test
     public void runWhenAttachedNodeAttached() {
-        AtomicInteger commandRun = new AtomicInteger(0);
-        StateNode n1 = createEmptyNode();
-        StateTree tree = createStateTree();
-        setParent(n1, tree.getRootNode());
-        n1.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
-            commandRun.incrementAndGet();
-        });
+        Stream.of(new TestStateNode(), createMovedNode()).forEach(n1 -> {
+            AtomicInteger commandRun = new AtomicInteger(0);
+            StateTree tree = createStateTree();
+            setParent(n1, tree.getRootNode());
+            n1.runWhenAttached(ui -> {
+                Assert.assertEquals(tree.getUI(), ui);
+                commandRun.incrementAndGet();
+            });
 
-        Assert.assertEquals(1, commandRun.get());
+            Assert.assertEquals(1, commandRun.get());
+        });
     }
 
     @Test
@@ -553,102 +570,108 @@ public class StateNodeTest {
 
     @Test
     public void collectChanges_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
-        StateNode stateNode = createTestNode("Active node",
+        Supplier<StateNode> mkTestNode = () -> createTestNode("Active node",
                 ElementPropertyMap.class, ElementData.class);
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get()))
+                .forEach(stateNode -> {
+                    ElementData visibility = stateNode.getFeature(ElementData.class);
+                    ElementPropertyMap properties = stateNode
+                            .getFeature(ElementPropertyMap.class);
 
-        ElementData visibility = stateNode.getFeature(ElementData.class);
-        ElementPropertyMap properties = stateNode
-                .getFeature(ElementPropertyMap.class);
+                    TestStateTree tree = new TestStateTree();
 
-        TestStateTree tree = new TestStateTree();
+                    // attach the node to be able to get changes
+                    tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
+                            stateNode);
 
-        // attach the node to be able to get changes
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
-                stateNode);
-
-        assertCollectChanges_initiallyVisible(stateNode, properties,
-                isVisible -> {
-                    visibility.setVisible(isVisible);
-                    stateNode.updateActiveState();
+                    assertCollectChanges_initiallyVisible(stateNode, properties,
+                            isVisible -> {
+                                visibility.setVisible(isVisible);
+                                stateNode.updateActiveState();
+                            });
                 });
     }
 
     @Test
     public void collectChanges_inactivateViaParent_initiallyActiveElement_sendOnlyDisalowFeatureChangesWhenInactive() {
-        StateNode stateNode = createTestNode("Active node",
+        Supplier<StateNode> mkTestNode = () -> createTestNode("Active node",
                 ElementPropertyMap.class, ElementData.class);
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get()))
+                .forEach(stateNode -> {
 
-        StateNode parent = createTestNode("Parent node",
-                ElementPropertyMap.class, ElementData.class,
-                ElementChildrenList.class);
+                    StateNode parent = createTestNode("Parent node",
+                            ElementPropertyMap.class, ElementData.class,
+                            ElementChildrenList.class);
 
-        parent.getFeature(ElementChildrenList.class).add(0, stateNode);
+                    parent.getFeature(ElementChildrenList.class).add(0, stateNode);
 
-        ElementData visibility = parent.getFeature(ElementData.class);
-        ElementPropertyMap properties = stateNode
-                .getFeature(ElementPropertyMap.class);
+                    ElementData visibility = parent.getFeature(ElementData.class);
+                    ElementPropertyMap properties = stateNode
+                            .getFeature(ElementPropertyMap.class);
 
-        TestStateTree tree = new TestStateTree();
+                    TestStateTree tree = new TestStateTree();
 
-        // attach the node to be able to get changes
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
+                    // attach the node to be able to get changes
+                    tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
 
-        assertCollectChanges_initiallyVisible(stateNode, properties,
-                isVisible -> {
-                    visibility.setVisible(isVisible);
-                    parent.updateActiveState();
+                    assertCollectChanges_initiallyVisible(stateNode, properties,
+                            isVisible -> {
+                                visibility.setVisible(isVisible);
+                                parent.updateActiveState();
+                            });
                 });
     }
 
     @Test
     public void collectChanges_initiallyInactiveElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
-        Element element = ElementFactory.createAnchor();
+        Supplier<StateNode> mkTestNode = () -> ElementFactory.createAnchor().getNode();
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get()))
+                .forEach(stateNode -> {
 
-        StateNode stateNode = element.getNode();
+                    ElementData visibility = stateNode.getFeature(ElementData.class);
+                    ElementPropertyMap properties = stateNode
+                            .getFeature(ElementPropertyMap.class);
 
-        ElementData visibility = stateNode.getFeature(ElementData.class);
-        ElementPropertyMap properties = stateNode
-                .getFeature(ElementPropertyMap.class);
+                    TestStateTree tree = new TestStateTree();
 
-        TestStateTree tree = new TestStateTree();
+                    // attach the node to be able to get changes
+                    tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
+                            stateNode);
 
-        // attach the node to be able to get changes
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
-                stateNode);
-
-        assertCollectChanges_initiallyInactive(stateNode, properties,
-                isVisible -> {
-                    visibility.setVisible(isVisible);
-                    stateNode.updateActiveState();
+                    assertCollectChanges_initiallyInactive(stateNode, properties,
+                            isVisible -> {
+                                visibility.setVisible(isVisible);
+                                stateNode.updateActiveState();
+                            });
                 });
     }
 
     @Test
     public void collectChanges_initiallyInactiveViaParentElement_sendOnlyDisalowAndReportedFeatures_sendAllChangesWhenActive() {
-        Element element = ElementFactory.createAnchor();
+        Supplier<StateNode> mkTestNode = () -> ElementFactory.createAnchor().getNode();
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get()))
+                .forEach(stateNode -> {
+                    StateNode parent = createTestNode("Parent node",
+                            ElementPropertyMap.class, ElementData.class,
+                            ElementChildrenList.class);
 
-        StateNode stateNode = element.getNode();
+                    parent.getFeature(ElementChildrenList.class).add(0, stateNode);
 
-        StateNode parent = createTestNode("Parent node",
-                ElementPropertyMap.class, ElementData.class,
-                ElementChildrenList.class);
+                    ElementData visibility = parent.getFeature(ElementData.class);
 
-        parent.getFeature(ElementChildrenList.class).add(0, stateNode);
+                    ElementPropertyMap properties = stateNode
+                            .getFeature(ElementPropertyMap.class);
 
-        ElementData visibility = parent.getFeature(ElementData.class);
+                    TestStateTree tree = new TestStateTree();
 
-        ElementPropertyMap properties = stateNode
-                .getFeature(ElementPropertyMap.class);
+                    // attach the node to be able to get changes
+                    tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
 
-        TestStateTree tree = new TestStateTree();
-
-        // attach the node to be able to get changes
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(0, parent);
-
-        assertCollectChanges_initiallyInactive(stateNode, properties,
-                isVisible -> {
-                    visibility.setVisible(isVisible);
-                    parent.updateActiveState();
+                    assertCollectChanges_initiallyInactive(stateNode, properties,
+                            isVisible -> {
+                                visibility.setVisible(isVisible);
+                                parent.updateActiveState();
+                            });
                 });
     }
 
@@ -671,7 +694,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_firstAsParent_lastAsChild() {
-        assertAttachDetachEvents(createNodes(), "a", "c", false);
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertAttachDetachEvents(createNodes(), "a", "c", false)
+        );
     }
 
     /**
@@ -695,7 +720,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_lastAsParent_firstAsChild() {
-        assertAttachDetachEvents(createNodes(), "c", "a", true);
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertAttachDetachEvents(nodes, "c", "a", true)
+        );
     }
 
     /**
@@ -719,7 +746,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_middleAsParent_firstAsChild() {
-        assertAttachDetachEvents(createNodes(), "b", "a", true);
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertAttachDetachEvents(nodes, "b", "a", true)
+        );
     }
 
     /**
@@ -743,7 +772,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_firstAsParent_middleAsChild() {
-        assertAttachDetachEvents(createNodes(), "a", "b", true);
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertAttachDetachEvents(nodes, "a", "b", true)
+        );
     }
 
     /**
@@ -765,7 +796,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_middleAsParent_lastAsChild() {
-        assertAttachDetachEvents(createNodes(), "b", "c", false);
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertAttachDetachEvents(nodes, "b", "c", false)
+        );
     }
 
     /**
@@ -787,165 +820,179 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInAttachListener_lastAsParent_middleAsChild() {
-        assertAttachDetachEvents(createNodes(), "c", "b", false);
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertAttachDetachEvents(nodes, "c", "b", false)
+        );
     }
 
     @Test
     public void detachParent_detachFirstChildOnDetachLast_oneDetachEvent() {
-        TestStateTree tree = new TestStateTree();
+        final Supplier<StateNode> mkTestNode = () -> createParentNode("parent");
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get())).forEach(
+                parent -> {
+                    TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
-        StateNode b = createEmptyNode("b");
+                    StateNode a = createEmptyNode("a");
+                    StateNode b = createEmptyNode("b");
 
-        StateNode parent = createParentNode("parent");
+                    addChild(parent, a);
+                    addChild(parent, b);
 
-        addChild(parent, a);
-        addChild(parent, b);
+                    addChild(tree.getRootNode(), parent);
 
-        addChild(tree.getRootNode(), parent);
+                    AtomicInteger detachEvents = new AtomicInteger();
+                    b.addDetachListener(() -> removeFromParent(a));
+                    a.addDetachListener(() -> detachEvents.incrementAndGet());
 
-        AtomicInteger detachEvents = new AtomicInteger();
-        b.addDetachListener(() -> removeFromParent(a));
-        a.addDetachListener(() -> detachEvents.incrementAndGet());
+                    removeFromParent(parent);
 
-        removeFromParent(parent);
-
-        Assert.assertEquals(1, detachEvents.get());
+                    Assert.assertEquals(1, detachEvents.get());
+                });
     }
 
     @Test
     public void detachParent_detachLastChildOnDetachFirst_oneDetachEvent() {
-        TestStateTree tree = new TestStateTree();
+        final Supplier<StateNode> mkTestNode = () -> createParentNode("parent");
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get())).forEach(
+                parent -> {
+                    TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
-        StateNode b = createEmptyNode("b");
+                    StateNode a = createEmptyNode("a");
+                    StateNode b = createEmptyNode("b");
 
-        StateNode parent = createParentNode("parent");
+                    addChild(parent, a);
+                    addChild(parent, b);
 
-        addChild(parent, a);
-        addChild(parent, b);
+                    addChild(tree.getRootNode(), parent);
 
-        addChild(tree.getRootNode(), parent);
+                    AtomicInteger detachEvents = new AtomicInteger();
+                    a.addDetachListener(() -> removeFromParent(a));
+                    b.addDetachListener(() -> detachEvents.incrementAndGet());
 
-        AtomicInteger detachEvents = new AtomicInteger();
-        a.addDetachListener(() -> removeFromParent(a));
-        b.addDetachListener(() -> detachEvents.incrementAndGet());
+                    removeFromParent(parent);
 
-        removeFromParent(parent);
-
-        Assert.assertEquals(1, detachEvents.get());
+                    Assert.assertEquals(1, detachEvents.get());
+                });
     }
 
     @Test
     public void detachParent_appendChildOnDetach_noEvents() {
-        TestStateTree tree = new TestStateTree();
+        final Supplier<StateNode> mkTestNode = () -> createParentNode("parent");
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get())).forEach(
+                parent -> {
+                    TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
+                    StateNode a = createEmptyNode("a");
 
-        StateNode parent = createParentNode("parent");
+                    addChild(parent, a);
 
-        addChild(parent, a);
+                    addChild(tree.getRootNode(), parent);
 
-        addChild(tree.getRootNode(), parent);
+                    AtomicInteger events = new AtomicInteger();
+                    a.addDetachListener(() -> {
+                        StateNode b = createEmptyNode("b");
+                        b.addAttachListener(events::incrementAndGet);
+                        b.addDetachListener(events::incrementAndGet);
+                        addChild(parent, b);
+                    });
 
-        AtomicInteger events = new AtomicInteger();
-        a.addDetachListener(() -> {
-            StateNode b = createEmptyNode("b");
-            b.addAttachListener(events::incrementAndGet);
-            b.addDetachListener(events::incrementAndGet);
-            addChild(parent, b);
-        });
-
-        removeFromParent(parent);
-        Assert.assertEquals(0, events.get());
+                    removeFromParent(parent);
+                    Assert.assertEquals(0, events.get());
+                });
     }
 
     @Test
     public void detachParent_insertChildAsFirstOnDetach_noEvents() {
-        TestStateTree tree = new TestStateTree();
+        final Supplier<StateNode> mkTestNode = () -> createParentNode("parent");
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get())).forEach(
+                parent -> {
+                    TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
+                    StateNode a = createEmptyNode("a");
 
-        StateNode parent = createParentNode("parent");
+                    addChild(parent, a);
 
-        addChild(parent, a);
+                    addChild(tree.getRootNode(), parent);
 
-        addChild(tree.getRootNode(), parent);
+                    AtomicInteger events = new AtomicInteger();
+                    a.addDetachListener(() -> {
+                        StateNode b = createEmptyNode("b");
+                        b.addAttachListener(events::incrementAndGet);
+                        b.addDetachListener(events::incrementAndGet);
+                        ElementChildrenList list = parent
+                                .getFeature(ElementChildrenList.class);
+                        list.add(0, b);
+                    });
 
-        AtomicInteger events = new AtomicInteger();
-        a.addDetachListener(() -> {
-            StateNode b = createEmptyNode("b");
-            b.addAttachListener(events::incrementAndGet);
-            b.addDetachListener(events::incrementAndGet);
-            ElementChildrenList list = parent
-                    .getFeature(ElementChildrenList.class);
-            list.add(0, b);
-        });
-
-        removeFromParent(parent);
-        Assert.assertEquals(0, events.get());
+                    removeFromParent(parent);
+                    Assert.assertEquals(0, events.get());
+                });
     }
 
     @Test
     public void attachParent_detachFirstOnAttachLast_noEvents() {
-        TestStateTree tree = new TestStateTree();
+        final Supplier<StateNode> mkTestNode = () -> createParentNode("parent");
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get())).forEach(
+                parent -> {
+                    TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
-        StateNode b = createEmptyNode("a");
+                    StateNode a = createEmptyNode("a");
+                    StateNode b = createEmptyNode("a");
 
-        StateNode parent = createParentNode("parent");
+                    addChild(parent, a);
+                    addChild(parent, b);
 
-        addChild(parent, a);
-        addChild(parent, b);
+                    AtomicInteger events = new AtomicInteger();
+                    b.addAttachListener(() -> {
+                        removeFromParent(a);
+                    });
 
-        AtomicInteger events = new AtomicInteger();
-        b.addAttachListener(() -> {
-            removeFromParent(a);
-        });
+                    a.addAttachListener(events::incrementAndGet);
+                    a.addDetachListener(events::incrementAndGet);
 
-        a.addAttachListener(events::incrementAndGet);
-        a.addDetachListener(events::incrementAndGet);
+                    addChild(tree.getRootNode(), parent);
 
-        addChild(tree.getRootNode(), parent);
-
-        // events are fired from right to left, so <code>b</code> had been
-        // handled first and <code>a</code> had been detached before attach
-        // event has been fired for <code>a</code>. So no events for
-        // <code>a</code>
-        Assert.assertEquals(0, events.get());
+                    // events are fired from right to left, so <code>b</code> had been
+                    // handled first and <code>a</code> had been detached before attach
+                    // event has been fired for <code>a</code>. So no events for
+                    // <code>a</code>
+                    Assert.assertEquals(0, events.get());
+                });
     }
 
     @Test
     public void attachParent_detachLastOnAttachFirst_attachDetachEvents() {
-        TestStateTree tree = new TestStateTree();
+        final Supplier<StateNode> mkTestNode = () -> createParentNode("parent");
+        Stream.of(mkTestNode.get(), getMovedNode(mkTestNode.get())).forEach(
+                parent -> {
+                    TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
-        StateNode b = createEmptyNode("a");
+                    StateNode a = createEmptyNode("a");
+                    StateNode b = createEmptyNode("a");
 
-        StateNode parent = createParentNode("parent");
+                    addChild(parent, a);
+                    addChild(parent, b);
 
-        addChild(parent, a);
-        addChild(parent, b);
+                    a.addAttachListener(() -> {
+                        removeFromParent(b);
+                    });
 
-        a.addAttachListener(() -> {
-            removeFromParent(b);
-        });
+                    List<Boolean> attachDetachEvents = new ArrayList<>();
+                    b.addAttachListener(() -> attachDetachEvents.add(true));
+                    b.addDetachListener(() -> attachDetachEvents.add(false));
 
-        List<Boolean> attachDetachEvents = new ArrayList<>();
-        b.addAttachListener(() -> attachDetachEvents.add(true));
-        b.addDetachListener(() -> attachDetachEvents.add(false));
+                    addChild(tree.getRootNode(), parent);
 
-        addChild(tree.getRootNode(), parent);
-
-        /*
-         * Here attach event for <code>b</code> had been fired first since it
-         * had been handled first. Then on attach event for <code>a</code> the
-         * <code>b</code> has been removed. So we should get also a detach
-         * event.
-         */
-        Assert.assertEquals(2, attachDetachEvents.size());
-        Assert.assertTrue(attachDetachEvents.get(0));
-        Assert.assertFalse(attachDetachEvents.get(1));
+                    /*
+                     * Here attach event for <code>b</code> had been fired first since it
+                     * had been handled first. Then on attach event for <code>a</code> the
+                     * <code>b</code> has been removed. So we should get also a detach
+                     * event.
+                     */
+                    Assert.assertEquals(2, attachDetachEvents.size());
+                    Assert.assertTrue(attachDetachEvents.get(0));
+                    Assert.assertFalse(attachDetachEvents.get(1));
+                });
     }
 
     /**
@@ -967,7 +1014,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_firstAsParent_lastAsChild() {
-        assertDetachAttachEvents(createNodes(), "a", "c");
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertDetachAttachEvents(nodes, "a", "c")
+        );
     }
 
     /**
@@ -989,7 +1038,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_lastAsParent_firstAsChild() {
-        assertDetachAttachEvents(createNodes(), "c", "a");
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertDetachAttachEvents(nodes, "c", "a"))
+        ;
     }
 
     /**
@@ -1011,7 +1062,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_middleAsParent_firstAsChild() {
-        assertDetachAttachEvents(createNodes(), "b", "a");
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertDetachAttachEvents(nodes, "b", "a")
+        );
     }
 
     /**
@@ -1033,7 +1086,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_firstAsParent_middleAsChild() {
-        assertDetachAttachEvents(createNodes(), "a", "b");
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertDetachAttachEvents(nodes, "a", "b")
+        );
     }
 
     /**
@@ -1055,7 +1110,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_middleAsParent_lastAsChild() {
-        assertDetachAttachEvents(createNodes(), "b", "c");
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+            assertDetachAttachEvents(nodes, "b", "c")
+        );
     }
 
     /**
@@ -1077,7 +1134,9 @@ public class StateNodeTest {
      */
     @Test
     public void modifyNodeTreeInDetachListener_lastAsParent_middleAsChild() {
-        assertDetachAttachEvents(createNodes(), "c", "b");
+        Stream.of(createNodes(), createMovedNodes()).forEach(nodes ->
+                assertDetachAttachEvents(nodes, "c", "b")
+        );
     }
 
     /**
@@ -1086,7 +1145,7 @@ public class StateNodeTest {
      */
     @Test
     public void removeFromTree_nodeAttached_nodeDetachedAndChildrenReset() {
-        // given a is parent of b is parent c in tree
+        // given a is parent of b is a parent c in tree
         StateNode a = createParentNode("a");
         StateNode b = createParentNode("b");
         addChild(a, b);
@@ -1110,6 +1169,11 @@ public class StateNodeTest {
         };
         assertNodeReset.accept(b);
         assertNodeReset.accept(c);
+
+        List<NodeChange> changes = new ArrayList<>();
+        Consumer<NodeChange> collector = changes::add;
+
+        a.collectChanges(collector);
     }
 
     private void assertAttachDetachEvents(Map<String, StateNode> nodes,
@@ -1209,6 +1273,13 @@ public class StateNodeTest {
                         createParentNode("c"))
                 .collect(Collectors.toMap(node -> node.toString(),
                         Function.identity()));
+    }
+
+    private Map<String, StateNode> createMovedNodes() {
+        return createNodes().entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> e.getKey(),
+                        e -> getMovedNode(e.getValue())));
     }
 
     private void addChild(StateNode parent, StateNode node) {
