@@ -156,7 +156,7 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     @Test
-    public void mavenGoal_packageJsonMissing() throws Exception {
+    public void mavenGoal_when_packageJsonMissing() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
 
         mojo.execute();
@@ -167,7 +167,7 @@ public class UpdateNpmDependenciesMojoTest {
     }
 
     @Test
-    public void mavenGoal_packageJsonExists() throws Exception {
+    public void mavenGoal_when_packageJsonExists() throws Exception {
 
         FileUtils.fileWrite(packageJson, "{}");
         long tsPackage1 = FileUtils.getFile(packageJson).lastModified();

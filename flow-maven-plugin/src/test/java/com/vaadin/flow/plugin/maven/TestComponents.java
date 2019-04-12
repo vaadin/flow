@@ -37,19 +37,23 @@ public class TestComponents {
     class IconComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/vaadin-element-mixin.html")
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/something-else.html")
+    @NpmPackage("@vaadin/vaadin-date-picker")
+    @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
+    @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
     @JavaScript("frontend://ExampleConnector.js")
     public static class VaadinBowerComponent extends Component {
     }
 
     @NpmPackage("@vaadin/vaadin-element-mixin")
+    @JsModule("@vaadin/vaadin-element-mixin/vaadin-element-mixin.js")
+    public static class VaadinElementMixin extends Component {
+    }
+
     @JsModule("foo-dir/vaadin-npm-component.js")
     public static class VaadinNpmComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/foo-component.html")
-    @NpmPackage("@vaadin/vaadin-element-mixin")
+    @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
     @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
@@ -59,7 +63,6 @@ public class TestComponents {
     }
 
     @JsModule("./local-p3-template.js")
-    @Theme(value = Lumo.class, variant = Lumo.DARK)
     public static class LocalP3Template extends Component {
     }
 
@@ -72,5 +75,11 @@ public class TestComponents {
     public static class TranslatedImports extends Component {
 
     }
+
+    @Theme(value = Lumo.class, variant = Lumo.DARK)
+    public static class MainView extends Component {
+
+    }
+
 
 }
