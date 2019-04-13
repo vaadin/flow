@@ -22,6 +22,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -133,7 +134,10 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
             getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
             return;
         }
+        long l = new Date().getTime();
         getUpdater().execute();
+        long d = new Date().getTime() - l;
+        getLog().info("Took " + d + "ms.");
     }
 
     /**

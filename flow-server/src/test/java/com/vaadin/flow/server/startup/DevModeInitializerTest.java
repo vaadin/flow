@@ -79,9 +79,6 @@ public class DevModeInitializerTest {
     @Test
     public void should_Run_Updaters_when_Enabled() throws Exception {
         devModeInitializer.onStartup(classes, servletContext);
-        System.err.println(tmpDir + " " + PACKAGE_JSON);
-
-        System.err.println(new File(tmpDir.getRoot(), PACKAGE_JSON).getCanonicalPath());
         assertTrue(new File(tmpDir.getRoot(), PACKAGE_JSON).canRead());
         assertTrue(new File(tmpDir.getRoot(), WEBPACK_CONFIG).canRead());
         assertNotNull(DevModeHandler.getDevModeHandler());

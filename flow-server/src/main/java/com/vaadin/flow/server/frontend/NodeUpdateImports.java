@@ -18,14 +18,12 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,7 +31,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.theme.Theme;
@@ -56,12 +53,25 @@ public class NodeUpdateImports extends NodeUpdater {
     private static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
 
     private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
-    private static final String VALUE = "value";
 
     private final File jsFile;
 
     private final ThemeDefinition themeDefinition;
 
+    /**
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param finder
+     *            a reusable class finder
+     * @param jsFile
+     *            name of the JS file to update with the imports
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
+     */
     public NodeUpdateImports(ClassFinder finder, File jsFile, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
         this.finder = finder;
@@ -74,70 +84,31 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     /**
-     * Create an instance of the updater given all configurable parameters.
-     *
-     * @param extractor
-     *            a reusable annotation extractor
-     * @param jsFile
-     *            name of the JS file to update with the imports
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the project
-     * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
-     */
-    public NodeUpdateImports(AnnotationValuesExtractor extractor, File jsFile, File npmFolder,
-                             File nodeModulesPath, boolean convertHtml) {
-        this.annotationValuesExtractor = extractor;
-        this.npmFolder = npmFolder;
-        this.nodeModulesPath = nodeModulesPath;
-        this.jsFile = jsFile;
-        this.convertHtml = convertHtml;
-        this.themeDefinition = getThemeDefinition(annotationValuesExtractor);
-    }
-
-    /**
      * Create an instance of the updater given the reusable extractor, the rest
      * of the configurable parameters will be set to their default values.
      *
-     * @param extractor
-     *            a reusable annotation extractor
+     * @param finder
+     *            a reusable class finder
      */
-    public NodeUpdateImports(AnnotationValuesExtractor extractor) {
-        this(extractor, new File(getBaseDir(), System.getProperty(MAIN_JS_PARAM, MAIN_JS)),
+    public NodeUpdateImports(ClassFinder finder) {
+        this(finder, new File(getBaseDir(), System.getProperty(MAIN_JS_PARAM, MAIN_JS)),
                 new File(getBaseDir()), new File(getBaseDir(), "node_modules"), true);
     }
 
     @Override
     public void execute() {
-        if (annotationValuesExtractor != null) {
-            Set<String> modules = new HashSet<>();
-            modules.addAll(getThemeModules());
-            modules.addAll(getJsModules());
-            modules.addAll(getJavaScriptFiles());
-            modules = sortModules(modules);
+        Set<String> modules = new HashSet<>(frontDeps.getAllModules());
+        if (convertHtml) {
+            modules.addAll(getHtmlImportJsModules(frontDeps.getAllImports()));
+        }
+        modules.addAll(getJavascriptJsModules(frontDeps.getAllScripts()));
 
-            print(modules);
-
-
-            try {
-                installFlowModules();
-                updateMainJsFile(getMainJsContent(modules));
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", jsFile), e);
-            }
-        } else {
-            Set<String> modules = new HashSet<>();
-            modules.addAll(frontDeps.getAllModules());
-            if (convertHtml) {
-                modules.addAll(getHtmlImportJsModules(frontDeps.getAllImports()));
-            }
-            modules.addAll(frontDeps.getAllScripts());
-            modules = sortModules(modules);
-
-            print(modules);
+        modules = sortModules(modules);
+        try {
+            installFlowModules();
+            updateMainJsFile(getMainJsContent(modules));
+        } catch (Exception e) {
+            throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", jsFile), e);
         }
     }
 
@@ -146,24 +117,19 @@ public class NodeUpdateImports extends NodeUpdater {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private void print(Set<String> s) {
-        System.err.println(s.toString().replaceAll("^\\[|\\]$|,", "\n").trim());
-    }
-
-    private List<String> getMainJsContent(Set<String> modules) throws InstantiationException, IllegalAccessException {
+    private List<String> getMainJsContent(Set<String> modules) {
         List<String> lines = new ArrayList<>();
         Object theme = null;
         if (themeDefinition != null) {
-            // It's not possible to cast to AbstractTheme as a type here since
-            // it's loaded by different classloader.
-            // Thus we use reflection to invoke those methods in the different
-            // context.
-            theme = annotationValuesExtractor
-                    .loadClassInProjectClassLoader(themeDefinition.getTheme().getName()).newInstance();
+            try {
+                theme = themeDefinition.getTheme().newInstance();
+            } catch (Exception e) {
+                throw new IllegalStateException("Unable to create the theme instance.", e);
+            }
 
-            Map<String, String> htmlAttributes = annotationValuesExtractor.doInvokeMethod(theme, "getHtmlAttributes",
+            Map<String, String> htmlAttributes = ClassPathIntrospector.doInvokeMethod(theme, "getHtmlAttributes",
                     themeDefinition.getVariant());
-            List<String> headerContents = annotationValuesExtractor.doInvokeMethod(theme, "getHeaderInlineContents");
+            List<String> headerContents = ClassPathIntrospector.doInvokeMethod(theme, "getHeaderInlineContents");
 
             if (!headerContents.isEmpty()) {
                 lines.add("const div = document.createElement('div');");
@@ -177,6 +143,7 @@ public class NodeUpdateImports extends NodeUpdater {
         }
 
         lines.addAll(modulesToImports(modules, theme));
+
         return lines;
     }
 
@@ -187,9 +154,9 @@ public class NodeUpdateImports extends NodeUpdater {
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
             if (theme != null) {
-                String baseUrl = annotationValuesExtractor.doInvokeMethod(theme, "getBaseUrl");
+                String baseUrl = ClassPathIntrospector.doInvokeMethod(theme, "getBaseUrl");
                 if (translatedModulePath.contains(baseUrl)) {
-                    translatedModulePath = annotationValuesExtractor.doInvokeMethod(theme, "translateUrl",
+                    translatedModulePath = ClassPathIntrospector.doInvokeMethod(theme, "translateUrl",
                         translatedModulePath);
                 }
             }
@@ -237,80 +204,6 @@ public class NodeUpdateImports extends NodeUpdater {
         } else {
             return new File(nodeModulesPath, jsImport).isFile();
         }
-    }
-
-    private Set<String> getThemeModules() {
-        if (themeDefinition == null) {
-            return new HashSet<>();
-        }
-        Set<String> modules = annotationValuesExtractor.getClassAnnotationValues(themeDefinition.getTheme(),
-                JsModule.class, VALUE);
-        if (modules.isEmpty() && convertHtml) {
-            modules = getHtmlImportJsModules(annotationValuesExtractor
-                    .getClassAnnotationValues(themeDefinition.getTheme(), HtmlImport.class, VALUE));
-        }
-        return modules;
-    }
-
-    private Set<String> getJsModules() {
-        Map<Class<?>, Set<String>> classes = new HashMap<>();
-        addClassesWithJsModules(classes);
-        addClassesWithHtmlImports(classes);
-
-        return classes.values().stream().flatMap(Collection::stream).map(this::toValidBrowserImport)
-                .sorted(Comparator.reverseOrder()).collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    private Collection<? extends String> getJavaScriptFiles() {
-        return annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
-                .flatMap(Collection::stream).map(this::resolveInFlowFrontendDirectory).map(this::toValidBrowserImport)
-                .sorted(Comparator.reverseOrder()).collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    private String toValidBrowserImport(String s) {
-        // add `./` prefix to names starting with letters
-        return s.replaceFirst("(?i)^([a-z])", "./$1");
-    }
-
-    private void addClassesWithJsModules(Map<Class<?>, Set<String>> classes) {
-        classes.putAll(annotationValuesExtractor.getAnnotatedClasses(JsModule.class, VALUE));
-    }
-
-    private void addClassesWithHtmlImports(Map<Class<?>, Set<String>> classes) {
-        if (convertHtml) {
-            Map<Class<?>, Set<String>> classesWithHtmlImport = annotationValuesExtractor
-                    .getAnnotatedClasses(HtmlImport.class, VALUE);
-
-            classesWithHtmlImport = classesWithHtmlImport.entrySet().stream()
-                    .filter(entry -> !classes.containsKey(entry.getKey()))
-                    .collect(Collectors.toMap(Entry::getKey, entry -> getHtmlImportJsModules(entry.getValue())));
-            classes.putAll(classesWithHtmlImport);
-        }
-    }
-
-    private ThemeDefinition getThemeDefinition(FrontendDependencies frontDeps) {
-        return frontDeps.getTheme(LUMO);
-    }
-
-    private ThemeDefinition getThemeDefinition(AnnotationValuesExtractor annotationValuesExtractor) {
-        Map<ThemeDefinition, Class<?>> themes = annotationValuesExtractor.getAppThemeOrDefault(LUMO);
-
-        if (themes.isEmpty()) {
-            log().warn("No theme found for the app nor {} class found in the classpath.", LUMO);
-            return null;
-        }
-
-        if (themes.size() > 1 && log().isWarnEnabled()) {
-            log().warn("Found multiple themes for the application, vaadin-flow would only consider the first one\n{}",
-                    themes.entrySet().stream().map(e -> "   theme:" + e.getKey().getTheme().getName() + " "
-                            + e.getKey().getVariant() + " in class: " + e.getValue().getName())
-                            .collect(Collectors.joining("\n")));
-        }
-
-        ThemeDefinition themeDef = themes.keySet().iterator().next();
-        log().info("Using theme {} {}", themeDef.getTheme().getName(),
-                (themeDef.getVariant().isEmpty() ? "" : (" variant: " + themeDef.getVariant())));
-        return themeDef;
     }
 
     private void updateMainJsFile(List<String> newContent) throws IOException {

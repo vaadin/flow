@@ -53,15 +53,14 @@ public class NodeUpdatePackages extends NodeUpdater {
      */
     public static final String WEBPACK_CONFIG = "webpack.config.js";
 
-    private static final String VALUE = "value";
     private final String webpackTemplate;
     private final File webpackOutputDirectory;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param extractor
-     *            a reusable annotation extractor
+     * @param finder
+     *            a reusable class finder
      * @param webpackOutputDirectory
      *            the directory to set for webpack to output its build results
      * @param webpackTemplate
@@ -76,16 +75,6 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            whether to convert html imports or not during the package
      *            updates
      */
-    public NodeUpdatePackages(AnnotationValuesExtractor extractor,
-            File webpackOutputDirectory, String webpackTemplate, File npmFolder,
-            File nodeModulesPath, boolean convertHtml) {
-        this.npmFolder = npmFolder;
-        this.nodeModulesPath = nodeModulesPath;
-        this.webpackOutputDirectory = webpackOutputDirectory;
-        this.webpackTemplate = webpackTemplate;
-        this.convertHtml = convertHtml;
-    }
-
     public NodeUpdatePackages(ClassFinder finder, File webpackOutputDirectory, String webpackTemplate, File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
         this.finder = finder;
@@ -101,14 +90,9 @@ public class NodeUpdatePackages extends NodeUpdater {
      * Create an instance of the updater given the reusable extractor, the rest
      * of the configurable parameters will be set to their default values.
      *
-     * @param extractor
-     *            a reusable annotation extractor
+     * @param finder
+     *            a reusable class finder
      */
-    public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, new File(getBaseDir(), "src/main/webapp"), WEBPACK_CONFIG, new File(getBaseDir()),
-                new File(getBaseDir(), "node_modules"), true);
-    }
-
     public NodeUpdatePackages(ClassFinder finder) {
         this(finder, new File(getBaseDir(), "src/main/webapp"), WEBPACK_CONFIG, new File(getBaseDir()),
                 new File(getBaseDir(), "node_modules"), true);

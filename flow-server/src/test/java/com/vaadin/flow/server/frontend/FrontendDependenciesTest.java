@@ -24,11 +24,12 @@ import static org.junit.Assert.assertTrue;
 public class FrontendDependenciesTest {
 
     @Test
-    public void should_CorrectlyExtractClassesFromSignatures() {
+    public void should_extractClassesFromSignatures() {
         Set<String> classes = new HashSet<>();
-        FrontendDependencies.addSignatureToClasses(classes,
-                "(Lcom/vaadin/flow/component/tabs/Tabs;Ljava/lang/String;Ljava/lang/Character;CLjava/lang/Integer;ILjava/lang/Long;JLjava/lang/Double;DLjava/lang/Float;FLjava/lang/Byte;BLjava/lang/Boolean;Z)Lcom/vaadin/flow/component/button/Button;");
+        FlowClassVisitor visitor = new FlowClassVisitor(null, null);
 
+        visitor.addSignatureToClasses(classes,
+                "(Lcom/vaadin/flow/component/tabs/Tabs;Ljava/lang/String;Ljava/lang/Character;CLjava/lang/Integer;ILjava/lang/Long;JLjava/lang/Double;DLjava/lang/Float;FLjava/lang/Byte;BLjava/lang/Boolean;Z)Lcom/vaadin/flow/component/button/Button;");
         assertEquals(11, classes.size());
         assertArrayEquals(new String [] {
                 "",
@@ -43,12 +44,12 @@ public class FrontendDependenciesTest {
                 "java.lang.Byte",
                 "java.lang.Integer"}, classes.toArray());
 
-        FrontendDependencies.addSignatureToClasses(classes,
+        visitor.addSignatureToClasses(classes,
                 "([Lcom/vaadin/flow/component/Component;)V");
         assertEquals(12, classes.size());
         assertTrue(classes.contains("com.vaadin.flow.component.Component"));
 
-        FrontendDependencies.addSignatureToClasses(classes,
+        visitor.addSignatureToClasses(classes,
                 "(Lcom/vaadin/flow/component/orderedlayout/FlexComponent$Alignment;[Lcom/vaadin/flow/component/Component;)");
         assertEquals(13, classes.size());
         assertTrue(classes.contains("com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));

@@ -53,7 +53,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
 
-        node = new NodeUpdateImports(getAnnotationValuesExtractor(),
+        node = new NodeUpdateImports(getClassFinder(),
                 importsFile, tmpRoot, nodeModulesPath, true);
 
         Assert.assertTrue(node.getFlowPackage().mkdirs());

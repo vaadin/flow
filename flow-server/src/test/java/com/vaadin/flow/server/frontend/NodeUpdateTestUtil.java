@@ -34,14 +34,6 @@ import static org.junit.Assert.assertNotNull;
 
 public class NodeUpdateTestUtil {
 
-    static AnnotationValuesExtractor getAnnotationValuesExtractor()
-            throws MalformedURLException {
-        return new AnnotationValuesExtractor(
-                new ClassPathIntrospector.DefaultClassFinder(
-                        new URLClassLoader(getClassPath()),
-                        NodeTestComponents.class.getDeclaredClasses()));
-    }
-
     static ClassFinder getClassFinder()
             throws MalformedURLException {
         return new ClassPathIntrospector.DefaultClassFinder(

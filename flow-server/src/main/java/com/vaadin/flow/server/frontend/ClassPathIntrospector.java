@@ -281,7 +281,7 @@ public abstract class ClassPathIntrospector implements Serializable {
      * @return the object resulting from the method invocation
      */
     @SuppressWarnings("unchecked")
-    public <T> T doInvokeMethod(Object instance, String methodName, Object... arguments) {
+    public static <T> T doInvokeMethod(Object instance, String methodName, Object... arguments) {
         try {
             for (Method m : instance.getClass().getMethods()) {
                 if (m.getName().equals(methodName)) {

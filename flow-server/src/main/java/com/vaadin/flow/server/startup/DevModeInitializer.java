@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
@@ -37,7 +38,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -87,8 +87,6 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
         }
 
         ClassFinder finder = new DefaultClassFinder(classes);
-
-        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(finder);
         try {
             if (!config.getBooleanProperty(
                     SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
@@ -97,7 +95,7 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
 
             if (!config.getBooleanProperty(
                     SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
-                new NodeUpdateImports(extractor).execute();
+                new NodeUpdateImports(finder).execute();
             }
 
             DevModeHandler.start(config);

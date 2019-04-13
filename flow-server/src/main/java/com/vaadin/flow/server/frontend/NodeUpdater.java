@@ -62,8 +62,6 @@ public abstract class NodeUpdater implements Serializable {
      */
     protected boolean convertHtml;
 
-    AnnotationValuesExtractor annotationValuesExtractor;
-
     ClassFinder finder;
 
     FrontendDependencies frontDeps;
@@ -87,6 +85,16 @@ public abstract class NodeUpdater implements Serializable {
     Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    Set<String> getJavascriptJsModules(Set<String> javascripts) {
+        return javascripts.stream().map(this::resolveInFlowFrontendDirectory)
+                .collect(Collectors.toSet());
+    }
+
+    String toValidBrowserImport(String s) {
+        // add `./` prefix to names starting with letters
+        return s.replaceFirst("(?i)^([a-z])", "./$1");
     }
 
     String resolveInFlowFrontendDirectory(String importPath) {
@@ -116,7 +124,7 @@ public abstract class NodeUpdater implements Serializable {
 
     private URL getResourceUrl(String resource) {
         resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_PACKAGE, "");
-        URL url = finder != null ? finder.getResource(resource) : annotationValuesExtractor.getResource(resource);
+        URL url = finder.getResource(resource);
         return url != null && url.getPath().contains(".jar!") ? url : null;
     }
 
