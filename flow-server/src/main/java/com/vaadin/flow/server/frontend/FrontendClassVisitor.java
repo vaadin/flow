@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.util.ArrayList;
@@ -26,10 +41,10 @@ import com.vaadin.flow.theme.Theme;
 /**
  * A class visitor for Flow components.
  */
-class FlowClassVisitor extends ClassVisitor {
-    
-    private class FlowAnnotationVisitor extends AnnotationVisitor {
-        public FlowAnnotationVisitor() {
+class FrontendClassVisitor extends ClassVisitor {
+
+    private class FrontendAnnotationVisitor extends AnnotationVisitor {
+        public FrontendAnnotationVisitor() {
             super(Opcodes.ASM7);
         }
 
@@ -43,12 +58,12 @@ class FlowClassVisitor extends ClassVisitor {
             return this;
         }
     }
-    
+
     /**
      * A simple container with the information related to an application end-point,
      * i.e. those classes annotated with the {@link Route} annotation.
      */
-    static class EndPoint {
+    static class EndPointData {
         final String name;
         String route = "";
         boolean notheme = false;
@@ -61,11 +76,11 @@ class FlowClassVisitor extends ClassVisitor {
         HashMap<String, Set<String>> imports = new HashMap<>();
         Set<String> scripts = new HashSet<>();
         Set<String> npmClasses = new HashSet<>();
-    
-        public EndPoint(Class<?> clazz) {
+
+        public EndPointData(Class<?> clazz) {
             this.name = clazz.getName();
         }
-    
+
         // Used for debugging
         @Override
         public String toString() {
@@ -74,11 +89,11 @@ class FlowClassVisitor extends ClassVisitor {
                     name, route, notheme, theme, variant, layout, hash2Str(imports), col2Str(packages), col2Str(modules),
                     col2Str(scripts), col2Str(classes), col2Str(npmClasses));
         }
-    
+
         private String col2Str(Collection<String> s) {
             return new ArrayList<String>(s).toString().replaceAll("^\\[|\\]$|,", "\n         ").trim();
         }
-    
+
         private String hash2Str(HashMap<String, Set<String>> h) {
             String r = "";
             for (Entry<String, Set<String>> e : h.entrySet()) {
@@ -89,7 +104,7 @@ class FlowClassVisitor extends ClassVisitor {
     }
 
     private final String className;
-    private final FlowClassVisitor.EndPoint endPoint;
+    private final FrontendClassVisitor.EndPointData endPoint;
     private final MethodVisitor methodVisitor;
     private final AnnotationVisitor annotationVisitor;
     private final AnnotationVisitor routeVisitor;
@@ -103,13 +118,13 @@ class FlowClassVisitor extends ClassVisitor {
 
     /**
      * Constructor.
-     * 
+     *
      * @param className
      *            the class to visit
      * @param endPoint
      *            the end-point object that will be updated in the visit
      */
-    FlowClassVisitor(String className, FlowClassVisitor.EndPoint endPoint) {
+    FrontendClassVisitor(String className, FrontendClassVisitor.EndPointData endPoint) {
         super(Opcodes.ASM7);
         this.className = className;
         this.endPoint = endPoint;
@@ -119,7 +134,7 @@ class FlowClassVisitor extends ClassVisitor {
                 addSignatureToClasses(children, type);
             }
         };
-        annotationVisitor = new FlowAnnotationVisitor() {
+        annotationVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if (value != null && !value.getClass().isPrimitive() && !value.getClass().equals(String.class)) {
@@ -127,7 +142,7 @@ class FlowClassVisitor extends ClassVisitor {
                 }
             }
         };
-        routeVisitor = new FlowAnnotationVisitor() {
+        routeVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if ("layout".equals(name)) {
@@ -139,7 +154,7 @@ class FlowClassVisitor extends ClassVisitor {
                 }
             }
         };
-        themeRouteVisitor = new FlowAnnotationVisitor() {
+        themeRouteVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if ("value".equals(name)) {
@@ -152,7 +167,7 @@ class FlowClassVisitor extends ClassVisitor {
                 }
             }
         };
-        themeLayoutVisitor = new FlowAnnotationVisitor() {
+        themeLayoutVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if ("value".equals(name)) {
@@ -167,7 +182,7 @@ class FlowClassVisitor extends ClassVisitor {
                 }
             }
         };
-        htmlImportVisitor = new FlowAnnotationVisitor() {
+        htmlImportVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 Set<String> set = endPoint.imports.get(className);
@@ -178,19 +193,19 @@ class FlowClassVisitor extends ClassVisitor {
                 set.add(value.toString());
             }
         };
-        packageVisitor = new FlowAnnotationVisitor() {
+        packageVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 endPoint.packages.add(value.toString());
             }
         };
-        jsModuleVisitor = new FlowAnnotationVisitor() {
+        jsModuleVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 endPoint.modules.add(value.toString());
             }
         };
-        jScriptVisitor = new FlowAnnotationVisitor() {
+        jScriptVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 endPoint.scripts.add(value.toString());
@@ -254,10 +269,10 @@ class FlowClassVisitor extends ClassVisitor {
         addSignatureToClasses(children, descriptor);
         return null;
     }
-    
+
     /**
      * Return all discovered classes in the visit.
-     * 
+     *
      * @return used classes
      */
     public Set<String> getChildren() {
@@ -266,7 +281,7 @@ class FlowClassVisitor extends ClassVisitor {
 
     /**
      * Inspects a java signature string to extract all class names in it.
-     * 
+     *
      * @param classes
      *            collection to update with the classes present in the signature
      * @param signature

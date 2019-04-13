@@ -32,7 +32,6 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -127,9 +126,8 @@ public class NodeUpdateImports extends NodeUpdater {
                 throw new IllegalStateException("Unable to create the theme instance.", e);
             }
 
-            Map<String, String> htmlAttributes = ClassPathIntrospector.doInvokeMethod(theme, "getHtmlAttributes",
-                    themeDefinition.getVariant());
-            List<String> headerContents = ClassPathIntrospector.doInvokeMethod(theme, "getHeaderInlineContents");
+            Map<String, String> htmlAttributes = finder.invoke(theme, "getHtmlAttributes", themeDefinition.getVariant());
+            List<String> headerContents = finder.invoke(theme, "getHeaderInlineContents");
 
             if (!headerContents.isEmpty()) {
                 lines.add("const div = document.createElement('div');");
@@ -154,10 +152,9 @@ public class NodeUpdateImports extends NodeUpdater {
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
             if (theme != null) {
-                String baseUrl = ClassPathIntrospector.doInvokeMethod(theme, "getBaseUrl");
+                String baseUrl = finder.invoke(theme, "getBaseUrl");
                 if (translatedModulePath.contains(baseUrl)) {
-                    translatedModulePath = ClassPathIntrospector.doInvokeMethod(theme, "translateUrl",
-                        translatedModulePath);
+                    translatedModulePath = finder.invoke(theme, "translateUrl", translatedModulePath);
                 }
             }
             if (importedFileExists(translatedModulePath)) {

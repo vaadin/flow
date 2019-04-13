@@ -14,7 +14,6 @@
  * the License.
  *
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -28,7 +27,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TemporaryFolder;
 
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -36,7 +35,7 @@ public class NodeUpdateTestUtil {
 
     static ClassFinder getClassFinder()
             throws MalformedURLException {
-        return new ClassPathIntrospector.DefaultClassFinder(
+        return new DefaultClassFinder(
                 new URLClassLoader(getClassPath()),
                 NodeTestComponents.class.getDeclaredClasses());
     }
@@ -90,6 +89,4 @@ public class NodeUpdateTestUtil {
     void sleep(int ms) throws InterruptedException {
         Thread.sleep(ms); // NOSONAR
     }
-
-
 }

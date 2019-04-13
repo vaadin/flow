@@ -21,6 +21,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 
@@ -59,7 +60,6 @@ public class TestComponents {
     }
 
     @JsModule("./local-p3-template.js")
-    @Theme(value = Lumo.class, variant = Lumo.DARK)
     public static class LocalP3Template extends Component {
     }
 
@@ -71,6 +71,20 @@ public class TestComponents {
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-something-else.js")
     public static class TranslatedImports extends Component {
 
+    }
+
+    @Route
+    @Theme(value = Lumo.class, variant = Lumo.DARK)
+    class MainView extends Component {
+        ButtonComponent buttonComponent;
+        IconComponent iconComponent;
+        VaadinBowerComponent vaadinBowerComponent;
+        VaadinNpmComponent vaadinNpmComponent;
+        VaadinMixedComponent vaadinMixedComponent;
+        LocalP2Template localP2Template;
+        LocalP3Template localP3Template;
+        FlatImport flatImport;
+        TranslatedImports translatedImports;
     }
 
 }

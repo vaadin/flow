@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,8 +28,7 @@ import net.bytebuddy.jar.asm.ClassReader;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
-import com.vaadin.flow.server.frontend.FlowClassVisitor.EndPoint;
+import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -38,9 +38,10 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class FrontendDependencies implements Serializable {
 
     private final ClassFinder finder;
-    private final HashMap<String, EndPoint> endPoints = new HashMap<>();
-    private final Class<?> hasElement;
-    private final Class<?> abstractTheme;
+    private final HashMap<String, EndPointData> endPoints = new HashMap<>();
+    private final Class<?> hasElementClass;
+    private final Class<?> abstractThemeClass;
+    private final Class<? extends Annotation> routeClass;
 
     /**
      * Default constructor.
@@ -51,12 +52,12 @@ public class FrontendDependencies implements Serializable {
     public FrontendDependencies(ClassFinder finder) {
         this.finder = finder;
         try {
-            this.hasElement = finder.loadClass(HasElement.class.getName());
-            this.abstractTheme = finder.loadClass(AbstractTheme.class.getName());
-
-            for (Class<?> route : finder.getAnnotatedClasses(Route.class) ) {
+            this.hasElementClass = finder.loadClass(HasElement.class.getName());
+            this.abstractThemeClass = finder.loadClass(AbstractTheme.class.getName());
+            routeClass = finder.loadClass(Route.class.getName());
+            for (Class<?> route : finder.getAnnotatedClasses(routeClass) ) {
                 String className = route.getName();
-                endPoints.put(className, visitClass(className, new FlowClassVisitor.EndPoint(route)));
+                endPoints.put(className, visitClass(className, new FrontendClassVisitor.EndPointData(route)));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,28 +67,28 @@ public class FrontendDependencies implements Serializable {
 
     public Set<String> getAllPackages() {
         Set<String> all = new HashSet<>();
-        for (FlowClassVisitor.EndPoint r : endPoints.values()) {
+        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
             all.addAll(r.packages);
         }
         return all;
     }
     public Set<String> getAllModules() {
         Set<String> all = new HashSet<>();
-        for (FlowClassVisitor.EndPoint r : endPoints.values()) {
+        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
             all.addAll(r.modules);
         }
         return all;
     }
     public Set<String> getAllScripts() {
         Set<String> all = new HashSet<>();
-        for (FlowClassVisitor.EndPoint r : endPoints.values()) {
+        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
             all.addAll(r.scripts);
         }
         return all;
     }
     public Set<String> getAllImports() {
         Set<String> all = new HashSet<>();
-        for (FlowClassVisitor.EndPoint r : endPoints.values()) {
+        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
             for (Entry<String, Set<String>> e : r.imports.entrySet()) {
                 if (!r.npmClasses.contains(e.getKey())) {
                     all.addAll(e.getValue());
@@ -103,7 +104,7 @@ public class FrontendDependencies implements Serializable {
     }
 
     public ThemeDefinition getTheme(String defaultTheme) {
-        for (FlowClassVisitor.EndPoint r : endPoints.values()) {
+        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
             if (r.route.isEmpty() && !r.notheme) {
                 String theme = r.theme != null ? r.theme : defaultTheme;
                 if (theme != null) {
@@ -126,7 +127,7 @@ public class FrontendDependencies implements Serializable {
         try {
             Class<?> clazz = finder.loadClass(className);
             // Visit only components and themes
-            return hasElement.isAssignableFrom(clazz) || abstractTheme.isAssignableFrom(clazz);
+            return hasElementClass.isAssignableFrom(clazz) || abstractThemeClass.isAssignableFrom(clazz);
         } catch (Throwable ignore) { //NOSONAR
             // Ignore classes that cannot be loaded by the finder
             return false;
@@ -146,7 +147,7 @@ public class FrontendDependencies implements Serializable {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private EndPoint visitClass(String className, FlowClassVisitor.EndPoint endPoint)
+    private EndPointData visitClass(String className, FrontendClassVisitor.EndPointData endPoint)
                     throws IOException, ClassNotFoundException {
 
         if (endPoint.classes.contains(className)) {
@@ -159,7 +160,7 @@ public class FrontendDependencies implements Serializable {
             return endPoint;
         }
 
-        FlowClassVisitor visitor = new FlowClassVisitor(className, endPoint);
+        FrontendClassVisitor visitor = new FrontendClassVisitor(className, endPoint);
         ClassReader cr = new ClassReader(url.openStream());
         cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 

@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**

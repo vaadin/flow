@@ -39,7 +39,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector;
 
 public class WebComponentModulesGeneratorTest {
 

@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.TestComponents.FirstView;
 import com.vaadin.flow.server.frontend.TestComponents.RootViewWithLayoutTheme;
 import com.vaadin.flow.server.frontend.TestComponents.RootViewWithMultipleTheme;
@@ -26,7 +26,7 @@ public class FrontendDependenciesTest {
     @Test
     public void should_extractClassesFromSignatures() {
         Set<String> classes = new HashSet<>();
-        FlowClassVisitor visitor = new FlowClassVisitor(null, null);
+        FrontendClassVisitor visitor = new FrontendClassVisitor(null, null);
 
         visitor.addSignatureToClasses(classes,
                 "(Lcom/vaadin/flow/component/tabs/Tabs;Ljava/lang/String;Ljava/lang/Character;CLjava/lang/Integer;ILjava/lang/Long;JLjava/lang/Double;DLjava/lang/Float;FLjava/lang/Byte;BLjava/lang/Boolean;Z)Lcom/vaadin/flow/component/button/Button;");
