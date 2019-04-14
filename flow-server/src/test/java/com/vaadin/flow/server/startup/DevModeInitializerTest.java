@@ -24,6 +24,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -42,10 +43,13 @@ public class DevModeInitializerTest {
 
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void setup() {
+    public void setup() throws Exception {
 
         new File(tmpDir.getRoot(), "src").mkdir();
         System.setProperty("user.dir", tmpDir.getRoot().getPath());
+
+        createStubNode(false, true);
+        createStubWebpackServer("Compiled", 1500);
 
         servletContext = Mockito.mock(ServletContext.class);
         registration = Mockito.mock(ServletRegistration.class);

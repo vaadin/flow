@@ -32,7 +32,7 @@ import com.vaadin.flow.theme.Theme;
 /**
  * A container class for all components used in tests.
  */
-public class FrontendTestComponents {
+public class FrontendDependenciesTestComponents {
 
     @NpmPackage("@vaadin/theme-0")
     @JavaScript("frontend://theme-0.js")

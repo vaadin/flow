@@ -227,7 +227,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         return command;
     }
 
-    private JsonObject getPackageJson() throws IOException {
+    JsonObject getPackageJson() throws IOException {
         JsonObject packageJson;
         File packageFile = new File(npmFolder, PACKAGE_JSON);
 

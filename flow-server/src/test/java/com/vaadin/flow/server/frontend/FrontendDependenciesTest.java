@@ -7,15 +7,15 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.FirstView;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.RootViewWithLayoutTheme;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.RootViewWithMultipleTheme;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.RootViewWithTheme;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.RootViewWithoutTheme;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.SecondView;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.Theme1;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.Theme2;
-import com.vaadin.flow.server.frontend.FrontendTestComponents.Theme4;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.FirstView;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithLayoutTheme;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithMultipleTheme;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithTheme;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutTheme;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.SecondView;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
