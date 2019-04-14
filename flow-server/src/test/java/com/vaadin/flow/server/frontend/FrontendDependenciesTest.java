@@ -7,18 +7,19 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.TestComponents.FirstView;
-import com.vaadin.flow.server.frontend.TestComponents.RootViewWithLayoutTheme;
-import com.vaadin.flow.server.frontend.TestComponents.RootViewWithMultipleTheme;
-import com.vaadin.flow.server.frontend.TestComponents.RootViewWithTheme;
-import com.vaadin.flow.server.frontend.TestComponents.RootViewWithoutTheme;
-import com.vaadin.flow.server.frontend.TestComponents.SecondView;
-import com.vaadin.flow.server.frontend.TestComponents.Theme1;
-import com.vaadin.flow.server.frontend.TestComponents.Theme2;
-import com.vaadin.flow.server.frontend.TestComponents.Theme4;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.FirstView;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.RootViewWithLayoutTheme;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.RootViewWithMultipleTheme;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.RootViewWithTheme;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.RootViewWithoutTheme;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.SecondView;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.Theme1;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.Theme2;
+import com.vaadin.flow.server.frontend.FrontendTestComponents.Theme4;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class FrontendDependenciesTest {
@@ -63,42 +64,42 @@ public class FrontendDependenciesTest {
     public void should_takeThemeFromView() {
         FrontendDependencies deps = create(RootViewWithTheme.class);
 
-        assertEquals(Theme4.class, deps.getTheme());
+        assertEquals(Theme4.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(0, deps.getAllImports().size());
+        assertEquals(0, deps.getImports().size());
 
-        assertEquals(1, deps.getAllModules().size());
-        assertTrue(deps.getAllModules().contains("./theme-4.js"));
+        assertEquals(1, deps.getModules().size());
+        assertTrue(deps.getModules().contains("./theme-4.js"));
 
-        assertEquals(1, deps.getAllPackages().size());
-        assertTrue(deps.getAllPackages().contains("@vaadin/theme-0"));
+        assertEquals(1, deps.getPackages().size());
+        assertTrue(deps.getPackages().contains("@vaadin/theme-0"));
 
-        assertEquals(1, deps.getAllScripts().size());
-        assertTrue(deps.getAllScripts().contains("frontend://theme-0.js"));
+        assertEquals(1, deps.getScripts().size());
+        assertTrue(deps.getScripts().contains("frontend://theme-0.js"));
     }
 
     @Test
     public void should_not_takeTheme_when_NoTheme() {
         FrontendDependencies deps = create(RootViewWithoutTheme.class);
 
-        assertEquals(null, deps.getTheme());
+        assertNull(deps.getThemeDefinition());
 
-        assertEquals(0, deps.getAllImports().size());
-        assertEquals(2, deps.getAllModules().size());
-        assertEquals(0, deps.getAllPackages().size());
-        assertEquals(1, deps.getAllScripts().size());
+        assertEquals(0, deps.getImports().size());
+        assertEquals(2, deps.getModules().size());
+        assertEquals(0, deps.getPackages().size());
+        assertEquals(1, deps.getScripts().size());
     }
 
     @Test
     public void should_takeThemeFromLayout() {
         FrontendDependencies deps = create(RootViewWithLayoutTheme.class);
 
-        assertEquals(Theme1.class, deps.getTheme());
+        assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(2, deps.getAllImports().size());
-        assertEquals(8, deps.getAllModules().size());
-        assertEquals(3, deps.getAllPackages().size());
-        assertEquals(6, deps.getAllScripts().size());
+        assertEquals(2, deps.getImports().size());
+        assertEquals(8, deps.getModules().size());
+        assertEquals(3, deps.getPackages().size());
+        assertEquals(6, deps.getScripts().size());
     }
 
 
@@ -106,35 +107,36 @@ public class FrontendDependenciesTest {
     public void should_takeThemeFromView_when_MultipleTheme() {
         FrontendDependencies deps = create(RootViewWithMultipleTheme.class);
 
-        assertEquals(Theme2.class, deps.getTheme());
+        assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
+        assertEquals("foo", deps.getThemeDefinition().getVariant());
 
-        assertEquals(2, deps.getAllImports().size());
-        assertEquals(4, deps.getAllModules().size());
-        assertEquals(2, deps.getAllPackages().size());
-        assertEquals(2, deps.getAllScripts().size());
+        assertEquals(2, deps.getImports().size());
+        assertEquals(4, deps.getModules().size());
+        assertEquals(2, deps.getPackages().size());
+        assertEquals(2, deps.getScripts().size());
     }
 
     @Test
     public void should_not_takeTheme_when_NoRootView() {
         FrontendDependencies deps = create(SecondView.class);
 
-        assertEquals(null, deps.getTheme());
+        assertNull(deps.getThemeDefinition());
 
-        assertEquals(1, deps.getAllImports().size());
-        assertEquals(4, deps.getAllModules().size());
-        assertEquals(2, deps.getAllPackages().size());
-        assertEquals(2, deps.getAllScripts().size());
+        assertEquals(1, deps.getImports().size());
+        assertEquals(4, deps.getModules().size());
+        assertEquals(2, deps.getPackages().size());
+        assertEquals(2, deps.getScripts().size());
     }
 
     @Test
     public void should_summarize_when_MultipleViews() {
         FrontendDependencies deps = create(SecondView.class, FirstView.class);
 
-        assertEquals(Theme1.class, deps.getTheme());
+        assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(2, deps.getAllImports().size());
-        assertEquals(8, deps.getAllModules().size());
-        assertEquals(3, deps.getAllPackages().size());
-        assertEquals(6, deps.getAllScripts().size());
+        assertEquals(2, deps.getImports().size());
+        assertEquals(8, deps.getModules().size());
+        assertEquals(3, deps.getPackages().size());
+        assertEquals(6, deps.getScripts().size());
     }
 }

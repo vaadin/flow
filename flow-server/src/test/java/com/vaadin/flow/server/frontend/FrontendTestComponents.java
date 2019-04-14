@@ -32,7 +32,7 @@ import com.vaadin.flow.theme.Theme;
 /**
  * A container class for all components used in tests.
  */
-public class TestComponents {
+public class FrontendTestComponents {
 
     @NpmPackage("@vaadin/theme-0")
     @JavaScript("frontend://theme-0.js")
@@ -126,7 +126,7 @@ public class TestComponents {
     }
 
     @Route(value = "", layout = RouterLayout2.class)
-    @Theme(Theme2.class)
+    @Theme(value = Theme2.class, variant = "foo")
     @JsModule("./view-2.js")
     public static class RootViewWithMultipleTheme extends Component {
 

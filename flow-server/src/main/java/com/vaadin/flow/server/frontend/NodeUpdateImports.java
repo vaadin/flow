@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -51,11 +52,7 @@ public class NodeUpdateImports extends NodeUpdater {
     public static final String MAIN_JS = "frontend/main.js";
     private static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
 
-    private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
-
     private final File jsFile;
-
-    private final ThemeDefinition themeDefinition;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -79,7 +76,6 @@ public class NodeUpdateImports extends NodeUpdater {
         this.nodeModulesPath = nodeModulesPath;
         this.jsFile = jsFile;
         this.convertHtml = convertHtml;
-        this.themeDefinition = frontDeps.getTheme(LUMO);
     }
 
     /**
@@ -96,11 +92,11 @@ public class NodeUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        Set<String> modules = new HashSet<>(frontDeps.getAllModules());
+        Set<String> modules = new HashSet<>(frontDeps.getModules());
         if (convertHtml) {
-            modules.addAll(getHtmlImportJsModules(frontDeps.getAllImports()));
+            modules.addAll(getHtmlImportJsModules(frontDeps.getImports()));
         }
-        modules.addAll(getJavascriptJsModules(frontDeps.getAllScripts()));
+        modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
         modules = sortModules(modules);
         try {
@@ -118,25 +114,17 @@ public class NodeUpdateImports extends NodeUpdater {
 
     private List<String> getMainJsContent(Set<String> modules) {
         List<String> lines = new ArrayList<>();
-        Object theme = null;
-        if (themeDefinition != null) {
-            try {
-                theme = themeDefinition.getTheme().newInstance();
-            } catch (Exception e) {
-                throw new IllegalStateException("Unable to create the theme instance.", e);
-            }
-
-            Map<String, String> htmlAttributes = finder.invoke(theme, "getHtmlAttributes", themeDefinition.getVariant());
-            List<String> headerContents = finder.invoke(theme, "getHeaderInlineContents");
-
-            if (!headerContents.isEmpty()) {
+        AbstractTheme theme = frontDeps.getTheme();
+        ThemeDefinition themeDef = frontDeps.getThemeDefinition();
+        if (theme != null) {
+            if (!theme.getHeaderInlineContents().isEmpty()) {
                 lines.add("const div = document.createElement('div');");
-                headerContents.forEach(html -> {
+                theme.getHeaderInlineContents().forEach(html -> {
                     lines.add("div.innerHTML = '" + html.replaceAll("(?m)(^\\s+|\\s?\n)", "") + "';");
                     lines.add("document.head.insertBefore(div.firstElementChild, document.head.firstChild);");
                 });
             }
-            htmlAttributes
+            theme.getHtmlAttributes(themeDef.getVariant())
                     .forEach((key, value) -> lines.add("document.body.setAttribute('" + key + "', '" + value + "');"));
         }
 
@@ -145,16 +133,15 @@ public class NodeUpdateImports extends NodeUpdater {
         return lines;
     }
 
-    private List<String> modulesToImports(Set<String> modules, Object theme) {
+    private List<String> modulesToImports(Set<String> modules, AbstractTheme theme) {
         List<String> imports = new ArrayList<>(modules.size());
         Map<String, String> unresolvedImports = new HashMap<>(modules.size());
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
             if (theme != null) {
-                String baseUrl = finder.invoke(theme, "getBaseUrl");
-                if (translatedModulePath.contains(baseUrl)) {
-                    translatedModulePath = finder.invoke(theme, "translateUrl", translatedModulePath);
+                if (translatedModulePath.contains(theme.getBaseUrl())) {
+                    translatedModulePath = theme.translateUrl(translatedModulePath);
                 }
             }
             if (importedFileExists(translatedModulePath)) {

@@ -102,9 +102,9 @@ public class NodeUpdatePackages extends NodeUpdater {
         try {
             JsonObject packageJson = getPackageJson();
 
-            Set<String> deps = new HashSet<>(frontDeps.getAllPackages());
+            Set<String> deps = new HashSet<>(frontDeps.getPackages());
             if (convertHtml) {
-                deps.addAll(getHtmlImportNpmPackages(frontDeps.getAllImports()));
+                deps.addAll(getHtmlImportNpmPackages(frontDeps.getImports()));
             }
 
             updatePackageJsonDependencies(packageJson, deps);

@@ -77,7 +77,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     public void executeNpm_packageJsonExists() throws Exception {
 
-        FileUtils.write(packageJson, "{}");
+        FileUtils.write(packageJson, "{}", "UTF-8");
         long tsPackage1 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack1 = FileUtils.getFile(webpackConfig).lastModified();
 
