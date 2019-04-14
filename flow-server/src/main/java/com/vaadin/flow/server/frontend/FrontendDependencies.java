@@ -31,6 +31,7 @@ import java.util.Set;
 import net.bytebuddy.jar.asm.ClassReader;
 
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
@@ -125,13 +126,24 @@ public class FrontendDependencies implements Serializable {
                 EndPointData data = new EndPointData(route);
                 endPoints.put(className, visitClass(className, data));
 
-                // if this is the root level view (empty route value)
+                // if this is the root level view, use its theme
                 if (data.route.isEmpty() && !data.notheme) {
-                    String name = data.theme != null ? data.theme : LUMO;
-                    Class<? extends AbstractTheme> theme = finder.loadClass(name);
-                    String variant = data.variant != null ? data.variant : "";
-                    themeDefinition = new ThemeDefinition(theme, variant);
-                    themeInstance = new ThemeWrapper(theme);
+                    Class<? extends AbstractTheme> theme = null;
+                    String variant = "";
+                    if (data.theme == null) {
+                        // Try Lumo if it's in classpath
+                        try {
+                            finder.loadClass(LUMO);
+                        } catch (ClassNotFoundException ignore) { //NOSONAR
+                        }
+                    } else {
+                        theme = finder.loadClass(data.theme);
+                        variant = data.variant != null ? data.variant : "";
+                    }
+                    if (theme != null) {
+                        themeDefinition = new ThemeDefinition(theme, variant);
+                        themeInstance = new ThemeWrapper(theme);
+                    }
                 }
             }
         } catch (Exception e) {
