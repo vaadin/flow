@@ -34,8 +34,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
- * @author Vaadin Ltd
- *
+ * Finds web component exporters.
  */
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
 

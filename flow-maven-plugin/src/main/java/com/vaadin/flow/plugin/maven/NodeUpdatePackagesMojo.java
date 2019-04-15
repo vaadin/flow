@@ -26,6 +26,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+
 /**
  * Goal that updates <code>package.json</code> file with @NpmPackage annotations
  * defined in the classpath, and that creates <code>webpack.config.js</code> if
@@ -39,7 +41,7 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
      * the template provided by this plugin. Leave it blank to disable the
      * feature.
      */
-    @Parameter(defaultValue = NodeUpdatePackages.WEBPACK_CONFIG)
+    @Parameter(defaultValue = WEBPACK_CONFIG)
     private String webpackTemplate;
 
     @Override

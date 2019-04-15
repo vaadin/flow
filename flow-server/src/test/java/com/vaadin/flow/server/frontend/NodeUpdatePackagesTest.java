@@ -30,7 +30,8 @@ import org.junit.rules.TemporaryFolder;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
@@ -49,9 +50,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         NodeUpdateTestUtil.createStubNode(true, true);
         updater = createStubUpdater();
 
-        File tmpRoot = temporaryFolder.getRoot();
-        packageJson = new File(tmpRoot, PACKAGE_JSON);
-        webpackConfig = new File(tmpRoot, WEBPACK_CONFIG);
+        packageJson = new File(getBaseDir(), PACKAGE_JSON);
+        webpackConfig = new File(getBaseDir(), WEBPACK_CONFIG);
     }
 
     @Test

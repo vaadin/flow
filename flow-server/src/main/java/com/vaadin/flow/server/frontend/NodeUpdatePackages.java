@@ -38,6 +38,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 
@@ -46,11 +47,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
  * the classpath. It also visits classes annotated with {@link NpmPackage}
  */
 public class NodeUpdatePackages extends NodeUpdater {
-
-    /**
-     * The name of the webpack config file.
-     */
-    public static final String WEBPACK_CONFIG = "webpack.config.js";
 
     private final String webpackTemplate;
     private final File webpackOutputDirectory;
@@ -76,8 +72,12 @@ public class NodeUpdatePackages extends NodeUpdater {
      */
     public NodeUpdatePackages(ClassFinder finder, File webpackOutputDirectory, String webpackTemplate, File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
+        try {
+            this.frontDeps = new FrontendDependencies(finder);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to compute frontend dependencies", e);
+        }
         this.finder = finder;
-        this.frontDeps = new FrontendDependencies(finder);
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
         this.webpackOutputDirectory = webpackOutputDirectory;

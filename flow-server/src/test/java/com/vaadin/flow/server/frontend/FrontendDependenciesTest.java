@@ -56,12 +56,12 @@ public class FrontendDependenciesTest {
         assertTrue(classes.contains("com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));
     }
 
-    private FrontendDependencies create(Class<?> ...classes) {
+    private FrontendDependencies create(Class<?> ...classes) throws Exception {
         return new FrontendDependencies(new DefaultClassFinder(new HashSet<Class<?>>(Arrays.asList(classes))));
     }
 
     @Test
-    public void should_takeThemeFromView() {
+    public void should_takeThemeFromView() throws Exception {
         FrontendDependencies deps = create(RootViewWithTheme.class);
 
         assertEquals(Theme4.class, deps.getThemeDefinition().getTheme());
@@ -79,7 +79,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_not_takeTheme_when_NoTheme() {
+    public void should_not_takeTheme_when_NoTheme() throws Exception {
         FrontendDependencies deps = create(RootViewWithoutTheme.class);
 
         assertNull(deps.getThemeDefinition());
@@ -91,7 +91,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_takeThemeFromLayout() {
+    public void should_takeThemeFromLayout() throws Exception {
         FrontendDependencies deps = create(RootViewWithLayoutTheme.class);
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
@@ -104,7 +104,7 @@ public class FrontendDependenciesTest {
 
 
     @Test
-    public void should_takeThemeFromView_when_MultipleTheme() {
+    public void should_takeThemeFromView_when_MultipleTheme() throws Exception {
         FrontendDependencies deps = create(RootViewWithMultipleTheme.class);
 
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
@@ -117,7 +117,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_not_takeTheme_when_NoRootView() {
+    public void should_not_takeTheme_when_NoRootView() throws Exception {
         FrontendDependencies deps = create(SecondView.class);
 
         assertNull(deps.getThemeDefinition());
@@ -129,7 +129,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_summarize_when_MultipleViews() {
+    public void should_summarize_when_MultipleViews() throws Exception {
         FrontendDependencies deps = create(SecondView.class, FirstView.class);
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
