@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -48,16 +49,17 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
  */
 public class NodeUpdateImports extends NodeUpdater {
     /**
-     * File to be updated with imports, javascript, and theme annotations.
+     * File that contains Flow application imports, javascript, and theme annotations.
      * It is also the entry-point for webpack.
      */
-    public static final String MAIN_JS = "frontend/main.js";
+    public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
     private static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
 
     private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
     private static final String VALUE = "value";
 
     private final File jsFile;
+    private final File frontendDirectory;
 
     private final ThemeDefinition themeDefinition;
 
@@ -66,6 +68,8 @@ public class NodeUpdateImports extends NodeUpdater {
      *
      * @param extractor
      *            a reusable annotation extractor
+     * @param frontendDirectory
+     *            a directory with project's frontend files
      * @param jsFile
      *            name of the JS file to update with the imports
      * @param npmFolder
@@ -75,12 +79,14 @@ public class NodeUpdateImports extends NodeUpdater {
      * @param convertHtml
      *            true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(AnnotationValuesExtractor extractor, File jsFile, File npmFolder,
-                             File nodeModulesPath, boolean convertHtml) {
+    public NodeUpdateImports(AnnotationValuesExtractor extractor,
+            File frontendDirectory, File jsFile, File npmFolder,
+            File nodeModulesPath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
         this.jsFile = jsFile;
+        this.frontendDirectory = frontendDirectory;
         this.convertHtml = convertHtml;
         this.themeDefinition = getThemeDefinition(annotationValuesExtractor);
     }
@@ -93,8 +99,13 @@ public class NodeUpdateImports extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdateImports(AnnotationValuesExtractor extractor) {
-        this(extractor, new File(getBaseDir(), System.getProperty(MAIN_JS_PARAM, MAIN_JS)),
-                new File(getBaseDir()), new File(getBaseDir(), "node_modules"), true);
+        this(extractor, new File(getBaseDir(), "frontend"),
+                Paths.get(getBaseDir()).resolve("target")
+                        .resolve(System.getProperty(MAIN_JS_PARAM,
+                                FLOW_IMPORTS_FILE))
+                        .toFile(),
+                new File(getBaseDir()), new File(getBaseDir(), "node_modules"),
+                true);
     }
 
     @Override
@@ -196,7 +207,7 @@ public class NodeUpdateImports extends NodeUpdater {
 
     private boolean importedFileExists(String jsImport) {
         if (jsImport.startsWith("./")) {
-            return new File(jsFile.getParentFile(), jsImport).isFile();
+            return new File(frontendDirectory, jsImport).isFile();
         } else {
             return new File(nodeModulesPath, jsImport).isFile();
         }

@@ -54,7 +54,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         nodeModulesPath = new File(tmpRoot, "node_modules");
 
         node = new NodeUpdateImports(getAnnotationValuesExtractor(),
-                importsFile, tmpRoot, nodeModulesPath, true);
+                new File(tmpRoot, "frontend"), importsFile, tmpRoot,
+                nodeModulesPath, true);
 
         Assert.assertTrue(node.getFlowPackage().mkdirs());
 
