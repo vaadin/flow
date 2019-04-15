@@ -15,13 +15,11 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-@WebServlet(urlPatterns = { "/vaadin-push/*" }, initParams = {
-        @WebInitParam(name = "pushURL", value = "/vaadin-push") })
+@WebServlet(urlPatterns = "/vaadin-push/*")
 public class PushWebComponentServlet extends VaadinServlet {
 
 }
