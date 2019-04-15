@@ -39,6 +39,7 @@ import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.ClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
@@ -122,6 +123,18 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "${project.basedir}/node_modules/")
     protected File nodeModulesPath;
+
+    /**
+     * A Flow JavaScript file with all project's imports to update.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/" + NodeUpdateImports.FLOW_IMPORTS_FILE)
+    protected File generatedFlowImports;
+
+    /**
+     * A directory with project's frontend files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/frontend")
+    protected File frontendDirectory;
 
     protected NodeUpdater updater;
 

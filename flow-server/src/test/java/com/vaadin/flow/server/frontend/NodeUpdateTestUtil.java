@@ -37,6 +37,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
 import static org.junit.Assert.assertNotNull;
 public class NodeUpdateTestUtil {
 
@@ -123,7 +124,9 @@ public class NodeUpdateTestUtil {
         NodeUpdatePackages spy = Mockito.spy(
                 new NodeUpdatePackages(
                         NodeUpdateTestUtil.getClassFinder(),
-                            tmpRoot, WEBPACK_CONFIG, tmpRoot, modules, true));
+                        tmpRoot, WEBPACK_CONFIG,
+                        new File(tmpRoot, FLOW_IMPORTS_FILE), tmpRoot, modules,
+                        true));
 
         // Override the `updateDependencies` method
         Mockito.doAnswer(new Answer<Void>() {

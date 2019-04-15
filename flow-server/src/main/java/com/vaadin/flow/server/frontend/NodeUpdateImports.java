@@ -41,7 +41,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update
- * <code>main.js</code> and <code>node_module/@vaadin/flow-frontend</code>
+ * Flow imports file and <code>node_module/@vaadin/flow-frontend</code>
  * contents by visiting all classes with {@link JsModule} {@link HtmlImport} and
  * {@link Theme} annotations.
  */
@@ -51,9 +51,14 @@ public class NodeUpdateImports extends NodeUpdater {
      * It is also the entry-point for webpack.
      */
     public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
-    private static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
+    /**
+     * A parameter for overriding the
+     * {@link NodeUpdateImports#FLOW_IMPORTS_FILE} default value for the file
+     * with all Flow project imports.
+     */
+    public static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
 
-    private final File jsFile;
+    private final File generatedFlowImports;
     private final File frontendDirectory;
 
     /**
@@ -63,8 +68,8 @@ public class NodeUpdateImports extends NodeUpdater {
      *            a reusable class finder
      * @param frontendDirectory
      *            a directory with project's frontend files
-     * @param jsFile
-     *            name of the JS file to update with the imports
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
      * @param npmFolder
      *            folder with the `package.json` file
      * @param nodeModulesPath
@@ -72,10 +77,11 @@ public class NodeUpdateImports extends NodeUpdater {
      * @param convertHtml
      *            true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(ClassFinder finder, File frontendDirectory, File jsFile, File npmFolder, File nodeModulesPath,
+    public NodeUpdateImports(ClassFinder finder, File frontendDirectory,
+            File generatedFlowImports, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
         super(finder, npmFolder, nodeModulesPath, convertHtml);
-        this.jsFile = jsFile;
+        this.generatedFlowImports = generatedFlowImports;
         this.frontendDirectory = frontendDirectory;
     }
 
@@ -109,7 +115,7 @@ public class NodeUpdateImports extends NodeUpdater {
             installFlowModules();
             updateMainJsFile(getMainJsContent(modules));
         } catch (Exception e) {
-            throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", jsFile), e);
+            throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", generatedFlowImports), e);
         }
     }
 
@@ -194,13 +200,13 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private void updateMainJsFile(List<String> newContent) throws IOException {
-        List<String> oldContent = jsFile.exists() ? FileUtils.readLines(jsFile, "UTF-8") : null;
+        List<String> oldContent = generatedFlowImports.exists() ? FileUtils.readLines(generatedFlowImports, "UTF-8") : null;
         if (newContent.equals(oldContent)) {
             log().info("No js modules to update");
         } else {
-            FileUtils.forceMkdir(jsFile.getParentFile());
-            FileUtils.writeStringToFile(jsFile, String.join("\n", newContent), "UTF-8");
-            log().info("Updated {}", jsFile);
+            FileUtils.forceMkdir(generatedFlowImports.getParentFile());
+            FileUtils.writeStringToFile(generatedFlowImports, String.join("\n", newContent), "UTF-8");
+            log().info("Updated {}", generatedFlowImports);
         }
     }
 

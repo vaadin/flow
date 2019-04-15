@@ -27,7 +27,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    index: './main.js'
+    index: '{{GENERATED_FLOW_IMPORTS}}'
   },
 
   output: {
