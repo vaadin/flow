@@ -43,7 +43,7 @@ public class ValueContext implements Serializable {
     public ValueContext() {
         component = null;
         hasValue = null;
-        locale = findLocale();
+        locale = findLocale(component);
     }
 
     /**
@@ -75,7 +75,7 @@ public class ValueContext implements Serializable {
         } else {
             hasValue = null;
         }
-        locale = findLocale();
+        locale = findLocale(component);
     }
 
     /**
@@ -91,7 +91,7 @@ public class ValueContext implements Serializable {
                 "Component can't be null in ValueContext construction");
         this.component = component;
         this.hasValue = hasValue;
-        locale = findLocale();
+        locale = findLocale(component);
     }
 
     /**
@@ -112,7 +112,10 @@ public class ValueContext implements Serializable {
         this.locale = locale;
     }
 
-    private Locale findLocale() {
+    private Locale findLocale(Component component) {
+        if (component != null && component.getUI().isPresent()) {
+            return component.getUI().get().getLocale();
+        }
         Locale locale = null;
         if (UI.getCurrent() != null) {
             locale = UI.getCurrent().getLocale();
