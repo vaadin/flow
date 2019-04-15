@@ -114,7 +114,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     private void validateRouteImplementation(Class<?> route,
             Class<?> implementation) {
         Route annotation = route.getAnnotation(Route.class);
-        if (!UI.class.equals(annotation.layout())) {
+        if (annotation != null && !UI.class.equals(annotation.layout())) {
             if (implementation.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
@@ -184,7 +184,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     private void validateRouteAnnotation(Class<?> route,
             Class<? extends Annotation> annotation) {
         Route routeAnnotation = route.getAnnotation(Route.class);
-        if (!UI.class.equals(routeAnnotation.layout())) {
+        if (routeAnnotation != null
+                && !UI.class.equals(routeAnnotation.layout())) {
             if (route.isAnnotationPresent(annotation)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s annotation needs to be on the top parent layout '%s' not on '%s'",
