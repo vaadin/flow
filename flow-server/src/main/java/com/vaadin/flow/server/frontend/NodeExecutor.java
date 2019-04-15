@@ -18,6 +18,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,7 +44,7 @@ public class NodeExecutor implements Command {
     /**
      * Build a <code>NodeExecutor</code> instance.
      */
-    public static class Builder {
+    public static class Builder implements Serializable {
 
         private ClassFinder classFinder;
 
