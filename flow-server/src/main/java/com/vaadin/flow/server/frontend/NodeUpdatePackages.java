@@ -76,8 +76,12 @@ public class NodeUpdatePackages extends NodeUpdater {
      */
     public NodeUpdatePackages(ClassFinder finder, File webpackOutputDirectory, String webpackTemplate, File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
+        try {
+            this.frontDeps = new FrontendDependencies(finder);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to compute frontend dependencies", e);
+        }
         this.finder = finder;
-        this.frontDeps = new FrontendDependencies(finder);
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
         this.webpackOutputDirectory = webpackOutputDirectory;

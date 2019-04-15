@@ -51,8 +51,8 @@ public class FrontendDependencies implements Serializable {
      * plugins that use different classloaders for the running process and for
      * the project configuration.
      */
-    private class ThemeWrapper implements AbstractTheme, Serializable {
-        private final Object instance;
+    private static class ThemeWrapper implements AbstractTheme, Serializable {
+        private final transient Object instance;
 
         public ThemeWrapper(Class<? extends AbstractTheme> theme) throws InstantiationException, IllegalAccessException {
             instance = theme.newInstance();
@@ -111,44 +111,43 @@ public class FrontendDependencies implements Serializable {
      *
      * @param finder
      *            the class finder used in the application
+     * @throws ClassNotFoundException
+     * @throws IOException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
      */
-    public FrontendDependencies(ClassFinder finder) {
+    public FrontendDependencies(ClassFinder finder)
+            throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
         this.finder = finder;
-        try {
-            // Because of different classLoaders we need compare against class
-            // references loaded by the specific class finder loader
-            this.hasElementClass = finder.loadClass(HasElement.class.getName());
-            this.abstractThemeClass = finder.loadClass(AbstractTheme.class.getName());
-            routeClass = finder.loadClass(Route.class.getName());
+        // Because of different classLoaders we need compare against class
+        // references loaded by the specific class finder loader
+        this.hasElementClass = finder.loadClass(HasElement.class.getName());
+        this.abstractThemeClass = finder.loadClass(AbstractTheme.class.getName());
+        routeClass = finder.loadClass(Route.class.getName());
 
-            for (Class<?> route : finder.getAnnotatedClasses(routeClass) ) {
-                String className = route.getName();
-                EndPointData data = new EndPointData(route);
-                endPoints.put(className, visitClass(className, data));
+        for (Class<?> route : finder.getAnnotatedClasses(routeClass) ) {
+            String className = route.getName();
+            EndPointData data = new EndPointData(route);
+            endPoints.put(className, visitClass(className, data));
 
-                // if this is the root level view, use its theme
-                if (data.route.isEmpty() && !data.notheme) {
-                    Class<? extends AbstractTheme> theme = null;
-                    String variant = "";
-                    if (data.theme == null) {
-                        // Try Lumo if it's in classpath
-                        try {
-                            finder.loadClass(LUMO);
-                        } catch (ClassNotFoundException ignore) { //NOSONAR
-                        }
-                    } else {
-                        theme = finder.loadClass(data.theme);
-                        variant = data.variant != null ? data.variant : "";
-                    }
-                    if (theme != null) {
-                        themeDefinition = new ThemeDefinition(theme, variant);
-                        themeInstance = new ThemeWrapper(theme);
-                    }
+            // if this is the root level view, use its theme for the app
+            if (data.route.isEmpty() && !data.notheme) {
+                Class<? extends AbstractTheme> theme = data.theme != null ? finder.loadClass(data.theme)
+                        : getLumoTheme();
+                if (theme != null) {
+                    themeDefinition = new ThemeDefinition(theme, data.variant != null ? data.variant : "");
+                    themeInstance = new ThemeWrapper(theme);
+
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new IllegalStateException(e);
+        }
+    }
+
+    private Class<? extends AbstractTheme> getLumoTheme() {
+        try {
+            return finder.loadClass(LUMO);
+        } catch (ClassNotFoundException ignore) { //NOSONAR
+            return null;
         }
     }
 
@@ -276,10 +275,10 @@ public class FrontendDependencies implements Serializable {
             }
         }
 
-        if (className.equals(endPoint.name)) {
-            if (!endPoint.notheme && endPoint.route.isEmpty() && endPoint.theme != null) {
-                visitClass(endPoint.theme, endPoint);
-            }
+        boolean isRootLevel = className.equals(endPoint.name) && endPoint.route.isEmpty();
+        boolean hasTheme = !endPoint.notheme && endPoint.theme != null;
+        if (isRootLevel && hasTheme) {
+            visitClass(endPoint.theme, endPoint);
         }
 
         return endPoint;

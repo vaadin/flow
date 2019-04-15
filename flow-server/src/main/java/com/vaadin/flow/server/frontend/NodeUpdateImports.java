@@ -70,8 +70,12 @@ public class NodeUpdateImports extends NodeUpdater {
      */
     public NodeUpdateImports(ClassFinder finder, File jsFile, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
+        try {
+            this.frontDeps = new FrontendDependencies(finder);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to compute frontend dependencies", e);
+        }
         this.finder = finder;
-        this.frontDeps = new FrontendDependencies(finder);
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
         this.jsFile = jsFile;
@@ -139,17 +143,14 @@ public class NodeUpdateImports extends NodeUpdater {
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
-            if (theme != null) {
-                if (translatedModulePath.contains(theme.getBaseUrl())) {
-                    translatedModulePath = theme.translateUrl(translatedModulePath);
-                }
+            if (theme != null && translatedModulePath.contains(theme.getBaseUrl())) {
+                translatedModulePath = theme.translateUrl(translatedModulePath);
             }
             if (importedFileExists(translatedModulePath)) {
                 imports.add("import '" + translatedModulePath + "';");
 
             } else if (importedFileExists(originalModulePath)) {
                 imports.add("import '" + originalModulePath + "';");
-
             } else {
                 unresolvedImports.put(originalModulePath, translatedModulePath);
             }
