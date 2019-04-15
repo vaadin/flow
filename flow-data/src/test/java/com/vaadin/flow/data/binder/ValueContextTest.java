@@ -18,13 +18,16 @@ package com.vaadin.flow.data.binder;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.testcomponents.TestDatePicker;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 
 public class ValueContextTest extends UI {
@@ -86,12 +89,31 @@ public class ValueContextTest extends UI {
         Assert.assertEquals(Locale.CANADA, fromComponent.getLocale().get());
     }
 
+    @Test
+    public void getLocale_localeComesFromComponentUI() {
+        UI.setCurrent(null);
+
+        UI ui = new UI();
+        ui.setLocale(Locale.GERMAN);
+
+        Text text = new Text("");
+        ui.add(text);
+        ValueContext context = new ValueContext(text);
+
+        Assert.assertEquals(Locale.GERMAN, context.getLocale().get());
+    }
+
     @Before
     public void setUp() {
         setLocale(UI_LOCALE);
         UI.setCurrent(this);
         textField = new TestTextField();
         add(textField);
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
     }
 
     @Override
