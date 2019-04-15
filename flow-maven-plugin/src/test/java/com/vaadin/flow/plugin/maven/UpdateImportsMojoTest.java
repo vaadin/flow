@@ -60,7 +60,8 @@ public class UpdateImportsMojoTest {
         nodeModulesPath = new File(tmpRoot, "node_modules");
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "jsFile", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", new File(tmpRoot, "frontend"));
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);

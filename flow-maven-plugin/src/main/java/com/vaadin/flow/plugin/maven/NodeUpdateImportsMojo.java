@@ -44,8 +44,14 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     /**
      * A Flow JavaScript file with all project's imports to update.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + NodeUpdateImports.MAIN_JS)
-    private File jsFile;
+    @Parameter(defaultValue = "${project.build.directory}/" + NodeUpdateImports.FLOW_IMPORTS_FILE)
+    private File generatedFlowImports;
+
+    /**
+     * A directory with project's frontend files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/frontend")
+    private File frontendDirectory;
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
@@ -56,7 +62,8 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
-            updater = new NodeUpdateImports(getClassFinder(project), jsFile, npmFolder,
+            updater = new NodeUpdateImports(getClassFinder(project),
+                    frontendDirectory, generatedFlowImports, npmFolder,
                     nodeModulesPath, convertHtml);
         }
         return updater;
