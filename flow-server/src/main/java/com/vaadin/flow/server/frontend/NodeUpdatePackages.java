@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,9 +43,10 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.MAIN_JS_PARAM;
 
 
 /**
@@ -61,6 +63,7 @@ public class NodeUpdatePackages extends NodeUpdater {
     private static final String VALUE = "value";
     private final String webpackTemplate;
     private final File webpackOutputDirectory;
+    private final File generatedFlowImports;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -82,10 +85,13 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            updates
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor,
-            File webpackOutputDirectory, String webpackTemplate, File npmFolder,
+            File webpackOutputDirectory, String webpackTemplate,
+                              File generatedFlowImports,
+                              File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
         this.annotationValuesExtractor = extractor;
         this.npmFolder = npmFolder;
+        this.generatedFlowImports = generatedFlowImports;
         this.nodeModulesPath = nodeModulesPath;
         this.webpackOutputDirectory = webpackOutputDirectory;
         this.webpackTemplate = webpackTemplate;
@@ -100,7 +106,12 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable annotation extractor
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
-        this(extractor, new File(getBaseDir(), "src/main/webapp"), WEBPACK_CONFIG, new File(getBaseDir()),
+        this(extractor, new File(getBaseDir(), "src/main/webapp"),
+                WEBPACK_CONFIG, new File(getBaseDir()),
+                Paths.get(getBaseDir()).resolve("target")
+                        .resolve(System.getProperty(MAIN_JS_PARAM,
+                                FLOW_IMPORTS_FILE))
+                        .toFile(),
                 new File(getBaseDir(), "node_modules"), true);
     }
 
@@ -142,7 +153,9 @@ public class NodeUpdatePackages extends NodeUpdater {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
+                    // TODO kb replace another parameter
                     .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
+                    .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}", generatedFlowImports.getPath()))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
                 log().info("Created {} from {}", WEBPACK_CONFIG, resource);

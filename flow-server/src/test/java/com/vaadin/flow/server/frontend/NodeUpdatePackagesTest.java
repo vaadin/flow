@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,7 +29,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
@@ -50,11 +51,11 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         File tmpRoot = temporaryFolder.getRoot();
         packageJson = new File(tmpRoot, PACKAGE_JSON);
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG);
-        
+
         File modules = new File(tmpRoot, "node_modules");
 
-        node = new NodeUpdatePackages(getAnnotationValuesExtractor(), 
-                tmpRoot, WEBPACK_CONFIG, tmpRoot, modules, true);
+        node = new NodeUpdatePackages(getAnnotationValuesExtractor(),
+                tmpRoot, WEBPACK_CONFIG, new File(tmpRoot, FLOW_IMPORTS_FILE), tmpRoot, modules, true);
     }
 
     @After

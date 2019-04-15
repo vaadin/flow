@@ -52,8 +52,11 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
                     .toPath().relativize(getWebpackOutputDirectory().toPath())
                     .toFile();
 
-            updater = new NodeUpdatePackages(extractor,
-                    webpackOutputRelativeToProjectDir, webpackTemplate,
+            updater = new NodeUpdatePackages(
+                    extractor, webpackOutputRelativeToProjectDir,
+                    webpackTemplate, frontendDirectory.toPath()
+                // TODO kb this does not make webpack to see the actual files in the ${project_root}/frontend/ directory
+                            .relativize(generatedFlowImports.toPath()).toFile(),
                     npmFolder, nodeModulesPath, convertHtml);
         }
         return updater;

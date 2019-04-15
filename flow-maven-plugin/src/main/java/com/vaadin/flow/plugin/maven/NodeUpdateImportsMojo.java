@@ -37,23 +37,11 @@ import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
- * Goal that updates main.js file with @JsModule, @HtmlImport and @Theme
+ * Goal that updates Flow imports file with @JsModule, @HtmlImport and @Theme
  * annotations defined in the classpath.
  */
 @Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
-    /**
-     * A Flow JavaScript file with all project's imports to update.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + NodeUpdateImports.FLOW_IMPORTS_FILE)
-    private File generatedFlowImports;
-
-    /**
-     * A directory with project's frontend files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
-    private File frontendDirectory;
-
     /**
      * Whether to generate a bundle from the project frontend sources or not.
      */
