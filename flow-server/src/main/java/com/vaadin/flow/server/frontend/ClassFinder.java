@@ -34,9 +34,9 @@ public interface ClassFinder extends Serializable {
      */
     class DefaultClassFinder implements ClassFinder {
         private final Set<Class<?>> annotatedClasses;
-    
+
         private final transient ClassLoader classLoader;
-    
+
         /**
          * It uses current classloader for getting resources or loading classes.
          *
@@ -46,7 +46,7 @@ public interface ClassFinder extends Serializable {
             this.annotatedClasses = annotatedClasses;
             this.classLoader = getClass().getClassLoader();
         }
-    
+
         /**
          * ClassFinder using a specified <code>ClassLoader</code> to load
          * classes and a list of classes where to look for annotations.
@@ -64,7 +64,7 @@ public interface ClassFinder extends Serializable {
                 this.annotatedClasses.add(clazz);
             }
         }
-    
+
         @Override
         public Set<Class<?>> getAnnotatedClasses(
                 Class<? extends Annotation> annotation) {
@@ -72,22 +72,21 @@ public interface ClassFinder extends Serializable {
                     cl -> cl.getAnnotationsByType(annotation).length > 0)
                     .collect(Collectors.toSet());
         }
-    
+
         @Override
         public URL getResource(String name) {
             return classLoader.getResource(name);
         }
-    
+
         @SuppressWarnings("unchecked")
         @Override
         public <T> Class<T> loadClass(String name)
                 throws ClassNotFoundException {
             return (Class<T>) classLoader.loadClass(name);
         }
-    
+
         @Override
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
-            // TODO implement it
             throw new IllegalStateException("Unimplemented");
         }
     }
@@ -127,7 +126,7 @@ public interface ClassFinder extends Serializable {
      * @return set of the subtypes of the given class
      */
     <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type);
-    
+
     /**
      * Get the value of the the method {@code methodName} from the
      * {@code instance} with the given {@code arguments}.
@@ -152,5 +151,5 @@ public interface ClassFinder extends Serializable {
             throw new IllegalArgumentException(e);
         }
         return null;
-    }    
+    }
 }

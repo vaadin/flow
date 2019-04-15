@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import net.bytebuddy.jar.asm.AnnotationVisitor;
@@ -43,6 +41,10 @@ import com.vaadin.flow.theme.Theme;
  */
 class FrontendClassVisitor extends ClassVisitor {
 
+    private static final String VARIANT = "variant";
+    private static final String LAYOUT = "layout";
+    private static final String VALUE = "value";
+
     private class FrontendAnnotationVisitor extends AnnotationVisitor {
         public FrontendAnnotationVisitor() {
             super(Opcodes.ASM7);
@@ -63,43 +65,22 @@ class FrontendClassVisitor extends ClassVisitor {
      * A simple container with the information related to an application end-point,
      * i.e. those classes annotated with the {@link Route} annotation.
      */
-    static class EndPointData {
+    static class EndPointData implements Serializable {
         final String name;
         String route = "";
         boolean notheme = false;
         String theme;
         String variant;
         String layout;
-        Set<String> classes = new HashSet<>();
-        Set<String> packages = new HashSet<>();
-        Set<String> modules = new HashSet<>();
-        HashMap<String, Set<String>> imports = new HashMap<>();
-        Set<String> scripts = new HashSet<>();
-        Set<String> npmClasses = new HashSet<>();
+        final HashSet<String> classes = new HashSet<>();
+        final HashSet<String> packages = new HashSet<>();
+        final HashSet<String> modules = new HashSet<>();
+        final HashMap<String, Set<String>> imports = new HashMap<>();
+        final HashSet<String> scripts = new HashSet<>();
+        final HashSet<String> npmClasses = new HashSet<>();
 
         public EndPointData(Class<?> clazz) {
             this.name = clazz.getName();
-        }
-
-        // Used for debugging
-        @Override
-        public String toString() {
-            return String.format(
-                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n imports: %s%n pckages: %s%n modules: %s%n scripts: %s%n classes: %s%n npmclzs: %s%n",
-                    name, route, notheme, theme, variant, layout, hash2Str(imports), col2Str(packages), col2Str(modules),
-                    col2Str(scripts), col2Str(classes), col2Str(npmClasses));
-        }
-
-        private String col2Str(Collection<String> s) {
-            return new ArrayList<String>(s).toString().replaceAll("^\\[|\\]$|,", "\n         ").trim();
-        }
-
-        private String hash2Str(HashMap<String, Set<String>> h) {
-            String r = "";
-            for (Entry<String, Set<String>> e : h.entrySet()) {
-                r += "\n    " + e.getKey() + "\n          " + col2Str(e.getValue());
-            }
-            return r;
         }
     }
 
@@ -124,7 +105,7 @@ class FrontendClassVisitor extends ClassVisitor {
      * @param endPoint
      *            the end-point object that will be updated in the visit
      */
-    FrontendClassVisitor(String className, FrontendClassVisitor.EndPointData endPoint) {
+    FrontendClassVisitor(String className, FrontendClassVisitor.EndPointData endPoint) { //NOSONAR
         super(Opcodes.ASM7);
         this.className = className;
         this.endPoint = endPoint;
@@ -145,11 +126,11 @@ class FrontendClassVisitor extends ClassVisitor {
         routeVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if ("layout".equals(name)) {
+                if (LAYOUT.equals(name)) {
                     endPoint.layout = ((Type) value).getClassName();
                     children.add(endPoint.layout);
                 }
-                if ("value".equals(name)) {
+                if (VALUE.equals(name)) {
                     endPoint.route = value.toString();
                 }
             }
@@ -157,12 +138,12 @@ class FrontendClassVisitor extends ClassVisitor {
         themeRouteVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if ("value".equals(name)) {
+                if (VALUE.equals(name)) {
                     endPoint.theme = ((Type) value).getClassName();
                     children.add(endPoint.theme);
                     endPoint.variant = "";
                 }
-                if ("variant".equals(name)) {
+                if (VARIANT.equals(name)) {
                     endPoint.variant = value.toString();
                 }
             }
@@ -170,15 +151,11 @@ class FrontendClassVisitor extends ClassVisitor {
         themeLayoutVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if ("value".equals(name)) {
-                    if (endPoint.theme == null) {
-                        endPoint.theme = ((Type) value).getClassName();
-                    }
+                if (VALUE.equals(name) && endPoint.theme == null) {
+                    endPoint.theme = ((Type) value).getClassName();
                 }
-                if ("variant".equals(name)) {
-                    if (endPoint.variant == null) {
-                        endPoint.variant = value.toString();
-                    }
+                if (VARIANT.equals(name) && endPoint.variant == null) {
+                    endPoint.variant = value.toString();
                 }
             }
         };

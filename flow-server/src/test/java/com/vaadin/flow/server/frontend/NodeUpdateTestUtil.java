@@ -17,8 +17,6 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,8 +35,8 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
 import static org.junit.Assert.assertNotNull;
 public class NodeUpdateTestUtil {
 
