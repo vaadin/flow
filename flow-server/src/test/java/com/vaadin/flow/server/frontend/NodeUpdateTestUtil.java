@@ -104,7 +104,7 @@ public class NodeUpdateTestUtil {
             "const fs = require('fs');\n" +
             "const args = String(process.argv);\n" +
             "fs.writeFileSync('" + WEBPACK_TEST_OUT_FILE + "', args);\n" +
-            "console.log(args + '\\n[wps]: Compiled.');\n" +
+            "console.log(args + '\\n[wps]: "  + readyString + ".');\n" +
             "setTimeout(() => {}, " + milliSecondsToRun + ");\n"), "UTF-8");
     }
 

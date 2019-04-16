@@ -17,8 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -126,30 +124,4 @@ public interface ClassFinder extends Serializable {
      * @return set of the subtypes of the given class
      */
     <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type);
-
-    /**
-     * Get the value of the the method {@code methodName} from the
-     * {@code instance} with the given {@code arguments}.
-     *
-     * @param instance
-     *            instance with the method to invoke
-     * @param methodName
-     *            the method name
-     * @param arguments
-     *            a variable list with the arguments for the method invocation
-     * @return the object resulting from the method invocation
-     */
-    @SuppressWarnings("unchecked")
-    default <T> T invoke(Object instance, String methodName, Object... arguments) {
-        try {
-            for (Method m : instance.getClass().getMethods()) {
-                if (m.getName().equals(methodName)) {
-                    return (T) m.invoke(instance, arguments);
-                }
-            }
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-            throw new IllegalArgumentException(e);
-        }
-        return null;
-    }
 }

@@ -134,10 +134,10 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
             getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
             return;
         }
-        long l = new Date().getTime();
+        long start = System.nanoTime();
         getUpdater().execute();
-        long d = new Date().getTime() - l;
-        getLog().info("Took " + d + "ms.");
+        long ms = (System.nanoTime() - start) / 1000;
+        getLog().info("Took " + ms + "ms.");
     }
 
     /**

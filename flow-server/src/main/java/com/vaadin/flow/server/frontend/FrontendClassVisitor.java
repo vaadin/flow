@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,6 +46,9 @@ class FrontendClassVisitor extends ClassVisitor {
     private static final String LAYOUT = "layout";
     private static final String VALUE = "value";
 
+    /**
+     * An annotation implementation that enables repeated annotations.
+     */
     private class FrontendAnnotationVisitor extends AnnotationVisitor {
         public FrontendAnnotationVisitor() {
             super(Opcodes.ASM7);
@@ -77,15 +81,30 @@ class FrontendClassVisitor extends ClassVisitor {
         final HashSet<String> modules = new HashSet<>();
         final HashMap<String, Set<String>> imports = new HashMap<>();
         final HashSet<String> scripts = new HashSet<>();
-        final HashSet<String> npmClasses = new HashSet<>();
+        final HashSet<String> npmDone = new HashSet<>();
 
         public EndPointData(Class<?> clazz) {
             this.name = clazz.getName();
         }
+
+        // For debugging
+        @Override
+        public String toString() {
+            return String.format(
+                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n imports: %s%n pckages: %s%n modules: %s%n scripts: %s%n classes: %s%n npmDone: %s%n",
+                    name, route, notheme, theme, variant, layout, hash2Str(imports), col2Str(packages), col2Str(modules),
+                    col2Str(scripts), col2Str(classes), col2Str(npmDone));
+        }
+        private String col2Str(Collection<String> s) {
+            return String.join("\n          ", s);
+        }
+        private String hash2Str(HashMap<String, Set<String>> h) {
+            return h.keySet().stream().reduce("", (s, k) -> s + "\n    " + k + "\n          " + col2Str(h.get(k)));
+        }
     }
 
     private final String className;
-    private final FrontendClassVisitor.EndPointData endPoint;
+    private final EndPointData endPoint;
     private final MethodVisitor methodVisitor;
     private final AnnotationVisitor annotationVisitor;
     private final AnnotationVisitor routeVisitor;
@@ -98,31 +117,28 @@ class FrontendClassVisitor extends ClassVisitor {
     private final Set<String> children = new HashSet<>();
 
     /**
-     * Constructor.
+     * Create a new {@link ClassVisitor} that will be used for visiting a
+     * specific class.
      *
      * @param className
      *            the class to visit
      * @param endPoint
-     *            the end-point object that will be updated in the visit
+     *            the end-point object that will be updated during the visit
      */
-    FrontendClassVisitor(String className, FrontendClassVisitor.EndPointData endPoint) { //NOSONAR
+    FrontendClassVisitor(String className, EndPointData endPoint) { //NOSONAR
         super(Opcodes.ASM7);
         this.className = className;
         this.endPoint = endPoint;
+
+        // Visitor for each method in the class.
         methodVisitor = new MethodVisitor(Opcodes.ASM7) {
+            // We only are interested in the new instances created inside the method
             @Override
             public void visitTypeInsn(int opcode, String type) {
                 addSignatureToClasses(children, type);
             }
         };
-        annotationVisitor = new FrontendAnnotationVisitor() {
-            @Override
-            public void visit(String name, Object value) {
-                if (value != null && !value.getClass().isPrimitive() && !value.getClass().equals(String.class)) {
-                    addSignatureToClasses(children, value.toString());
-                }
-            }
-        };
+        // Visitor for each annotation in the class.
         routeVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
@@ -135,6 +151,8 @@ class FrontendClassVisitor extends ClassVisitor {
                 }
             }
         };
+
+        // Visitor for @Theme annotations in classes annotated with @Route
         themeRouteVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
@@ -148,6 +166,7 @@ class FrontendClassVisitor extends ClassVisitor {
                 }
             }
         };
+        // Visitor for @Theme annotations in classes extending RouterLayout
         themeLayoutVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
@@ -159,6 +178,7 @@ class FrontendClassVisitor extends ClassVisitor {
                 }
             }
         };
+        // Visitor for @HtmlImport annotations
         htmlImportVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
@@ -170,32 +190,47 @@ class FrontendClassVisitor extends ClassVisitor {
                 set.add(value.toString());
             }
         };
+        // Visitor for @NpmPackage annotations
         packageVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 endPoint.packages.add(value.toString());
             }
         };
+        // Visitor for @JsModule annotations
         jsModuleVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 endPoint.modules.add(value.toString());
             }
         };
+        // Visitor for @JavaScript annotations
         jScriptVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 endPoint.scripts.add(value.toString());
             }
         };
+        // Visitor all other annotations
+        annotationVisitor = new FrontendAnnotationVisitor() {
+            @Override
+            public void visit(String name, Object value) {
+                if (value != null && !value.getClass().isPrimitive() && !value.getClass().equals(String.class)) {
+                    addSignatureToClasses(children, value.toString());
+                }
+            }
+        };
+
     }
 
+    // Executed for the class definition info.
     @Override
     public void visit(int version, int access, String name, String signature, String superName,
             String[] interfaces) {
         addSignatureToClasses(children, superName);
     }
 
+    // Executed for each method defined in the class.
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
             String[] exceptions) {
@@ -203,9 +238,12 @@ class FrontendClassVisitor extends ClassVisitor {
         return methodVisitor;
     }
 
+    // Executed for each annotation in the class.
     @Override
     public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
         addSignatureToClasses(children, descriptor);
+
+        // We return different visitor implementations depending on the annotation
         String cname = descriptor.replace("/", ".");
         if (className.equals(endPoint.name) && cname.contains(Route.class.getName())) {
             return routeVisitor;
@@ -214,11 +252,11 @@ class FrontendClassVisitor extends ClassVisitor {
             return htmlImportVisitor;
         }
         if (cname.contains(NpmPackage.class.getName())) {
-            endPoint.npmClasses.add(className);
+            endPoint.npmDone.add(className);
             return packageVisitor;
         }
         if (cname.contains(JsModule.class.getName())) {
-            endPoint.npmClasses.add(className);
+            endPoint.npmDone.add(className);
             return jsModuleVisitor;
         }
         if (cname.contains(JavaScript.class.getName())) {
@@ -238,9 +276,11 @@ class FrontendClassVisitor extends ClassVisitor {
                 return themeLayoutVisitor;
             }
         }
+        // default visitor
         return annotationVisitor;
     }
 
+    // Executed for each field defined in the class.
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
         addSignatureToClasses(children, descriptor);
@@ -257,7 +297,14 @@ class FrontendClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Inspects a java signature string to extract all class names in it.
+     * Inspects the type description of a java field or a method type visited by
+     * the class visitor. It extracts all class names referenced in the
+     * signature and add updates the class collection passed as argument.
+     *
+     * Typical description formats are:
+     * <code>([Lcom/vaadin/flow/component/Component;)V</code>
+     *
+     * For more info about the format visit the {@link Type} class or the test.
      *
      * @param classes
      *            collection to update with the classes present in the signature
@@ -265,6 +312,9 @@ class FrontendClassVisitor extends ClassVisitor {
      *            the java signature to analyze
      */
     void addSignatureToClasses(Set<String> classes, String signature) {
+        if (signature == null || signature.isEmpty()) {
+            return;
+        }
         // This regular expression is able to split the signature and remove
         // primitive and other mark symbols, see test for more info.
         String[] tmp = signature.replace("/", ".")
