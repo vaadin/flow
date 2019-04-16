@@ -60,6 +60,7 @@ public class NodeUpdateImports extends NodeUpdater {
      */
     public static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
 
+    static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
     private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
     private static final String VALUE = "value";
 
@@ -172,12 +173,15 @@ public class NodeUpdateImports extends NodeUpdater {
                         translatedModulePath);
                 }
             }
-            if (importedFileExists(translatedModulePath)) {
-                imports.add("import '" + translatedModulePath + "';");
 
-            } else if (importedFileExists(originalModulePath)) {
-                imports.add("import '" + originalModulePath + "';");
-
+            String validTranslatedModulePath = toValidBrowserImport(
+                    translatedModulePath);
+            String validOriginalModulePath = toValidBrowserImport(
+                    originalModulePath);
+            if (importedFileExists(validTranslatedModulePath)) {
+                imports.add("import '" + validTranslatedModulePath + "';");
+            } else if (importedFileExists(validOriginalModulePath)) {
+                imports.add("import '" + validOriginalModulePath + "';");
             } else {
                 unresolvedImports.put(originalModulePath, translatedModulePath);
             }
@@ -186,8 +190,8 @@ public class NodeUpdateImports extends NodeUpdater {
         if (!unresolvedImports.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder(String.format(
                 "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
-                    "nor in project files: ",
-                nodeModulesPath)).append("\n");
+                    "nor in project files in '%s': ",
+                nodeModulesPath, frontendDirectory)).append("\n");
 
             unresolvedImports
                 .forEach((originalModulePath, translatedModulePath) -> {
@@ -218,6 +222,16 @@ public class NodeUpdateImports extends NodeUpdater {
         }
     }
 
+    private String toValidBrowserImport(String s) {
+        if (s.startsWith("./")) {
+            return WEBPACK_PREFIX_ALIAS + s.substring(2);
+        } else if (Character.isAlphabetic(s.charAt(0))
+            && !s.startsWith(WEBPACK_PREFIX_ALIAS)) {
+            return WEBPACK_PREFIX_ALIAS + s;
+        }
+        return s;
+    }
+
     private Set<String> getThemeModules() {
         if (themeDefinition == null) {
             return new HashSet<>();
@@ -236,14 +250,18 @@ public class NodeUpdateImports extends NodeUpdater {
         addClassesWithJsModules(classes);
         addClassesWithHtmlImports(classes);
 
-        return classes.values().stream().flatMap(Collection::stream).map(this::toValidBrowserImport)
-                .sorted(Comparator.reverseOrder()).collect(Collectors.toCollection(LinkedHashSet::new));
+        return classes.values().stream().flatMap(Collection::stream)
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private Collection<? extends String> getJavaScriptFiles() {
-        return annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
-                .flatMap(Collection::stream).map(this::resolveInFlowFrontendDirectory).map(this::toValidBrowserImport)
-                .sorted(Comparator.reverseOrder()).collect(Collectors.toCollection(LinkedHashSet::new));
+        return annotationValuesExtractor
+                .getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
+                .flatMap(Collection::stream)
+                .map(this::resolveInFlowFrontendDirectory)
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private void addClassesWithJsModules(Map<Class<?>, Set<String>> classes) {

@@ -46,12 +46,6 @@ public abstract class NodeUpdater implements Serializable {
     public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
 
     /**
-     * An analogue of {@link com.vaadin.flow.shared.ApplicationConstants#FRONTEND_PROTOCOL_PREFIX} for webpack.
-     * This value is used for pointing at the project's resources located in the frontend directory.
-     */
-    protected static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
-
-    /**
      * Folder with the <code>package.json</code> file.
      */
     protected File npmFolder;
@@ -100,17 +94,7 @@ public abstract class NodeUpdater implements Serializable {
           flowModules.add(pathWithNoProtocols);
           return FLOW_PACKAGE + pathWithNoProtocols;
         }
-        return toValidBrowserImport(pathWithNoProtocols);
-    }
-
-    String toValidBrowserImport(String s) {
-        // add `Frontend/` prefix to names starting with letters
-        if (Character.isAlphabetic(s.charAt(0))) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(1);
-        } else if (s.startsWith("./")) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(2);
-        }
-        return s;
+        return pathWithNoProtocols;
     }
 
     void installFlowModules() throws IOException {

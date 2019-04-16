@@ -107,12 +107,13 @@ public class NodeUpdatePackages extends NodeUpdater {
      */
     public NodeUpdatePackages(AnnotationValuesExtractor extractor) {
         this(extractor, new File(getBaseDir(), "src/main/webapp"),
-                WEBPACK_CONFIG, new File(getBaseDir()),
+                WEBPACK_CONFIG,
                 Paths.get(getBaseDir()).resolve("target")
                         .resolve(System.getProperty(MAIN_JS_PARAM,
                                 FLOW_IMPORTS_FILE))
                         .toFile(),
-                new File(getBaseDir(), "node_modules"), true);
+                new File(getBaseDir()), new File(getBaseDir(), "node_modules"),
+                true);
     }
 
     @Override
