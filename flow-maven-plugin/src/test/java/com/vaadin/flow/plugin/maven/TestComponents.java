@@ -30,7 +30,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * A container class for all components used in tests.
  */
 public class TestComponents {
-    @NpmPackage("@vaadin/vaadin-button")
+    @NpmPackage(value = "@vaadin/vaadin-button", version = "0.0.0")
     class ButtonComponent extends Component {
     }
 
@@ -44,13 +44,13 @@ public class TestComponents {
     public static class VaadinBowerComponent extends Component {
     }
 
-    @NpmPackage("@vaadin/vaadin-element-mixin")
+    @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "0.0.0")
     @JsModule("foo-dir/vaadin-npm-component.js")
     public static class VaadinNpmComponent extends Component {
     }
 
     @HtmlImport("frontend://bower_components/vaadin-element-mixin/foo-component.html")
-    @NpmPackage("@vaadin/vaadin-element-mixin")
+    @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "0.0.0")
     @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }

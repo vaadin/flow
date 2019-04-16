@@ -98,6 +98,16 @@ public interface ClassFinder extends Serializable {
     Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> clazz);
 
     /**
+     * Get annotated classes in the classloader.
+     *
+     * @param className the annotation class name
+     * @return a set with all classes that are annotated
+     */
+    default Set<Class<?>> getAnnotatedClasses(String className) throws ClassNotFoundException{
+        return getAnnotatedClasses(loadClass(className));
+    }
+
+    /**
      * Get a resource from the classpath.
      *
      * @param name class literal

@@ -31,7 +31,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Route(value = "")
 @Tag("my-component")
-@HtmlImport("frontend://my-component.html")
+@HtmlImport(value = "frontend://my-component.html", version="0.0.1")
 @NpmPackage("@polymer/polymer")
 @JsModule("./my-component.js")
 public class IdTestView extends PolymerTemplate<TemplateModel> {
