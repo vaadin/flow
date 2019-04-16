@@ -20,11 +20,16 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
@@ -33,8 +38,6 @@ import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
@@ -44,7 +47,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
  */
-@HandlesTypes({ Route.class })
+@HandlesTypes({ Route.class, NpmPackage.class })
 public class DevModeInitializer implements ServletContainerInitializer, Serializable {
 
     @Override
@@ -73,9 +76,9 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
 
         try {
             new NodeTasks.Builder(new DefaultClassFinder(classes))
-                    .setEnablePackagesUpdate(!config.getBooleanProperty(
+                    .enablePackagesUpdate(!config.getBooleanProperty(
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false))
-                    .setEnableImportsUpdate(!config.getBooleanProperty(
+                    .enableImportsUpdate(!config.getBooleanProperty(
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false))
                     .build().execute();
 
