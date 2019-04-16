@@ -70,6 +70,7 @@ public class UpdateNpmDependenciesMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", new File(tmpRoot, "node_modules"));
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", new File(tmpRoot, NodeUpdateImports.FLOW_IMPORTS_FILE));
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", new File(tmpRoot, "frontend"));
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
         setProject("war", "war_output");
     }
