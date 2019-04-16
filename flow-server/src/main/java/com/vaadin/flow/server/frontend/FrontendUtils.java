@@ -52,7 +52,7 @@ public class FrontendUtils {
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
-    private static String OS = null;
+    private static String operatingSystem = null;
 
     /**
      * Only static stuff here.
@@ -62,17 +62,19 @@ public class FrontendUtils {
 
     /**
      * Get the Operating System name from the {@code os.name} system property.
+     *
      * @return operating system name
      */
     public static String getOsName() {
-        if (OS == null) {
-            OS = System.getProperty("os.name");
+        if (operatingSystem == null) {
+            operatingSystem = System.getProperty("os.name");
         }
-        return OS;
+        return operatingSystem;
     }
 
     /**
-     * Check if the current os is Windows
+     * Check if the current os is Windows.
+     *
      * @return true if windows
      */
     public static boolean isWindows() {
