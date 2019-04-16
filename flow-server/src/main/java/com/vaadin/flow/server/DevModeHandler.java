@@ -77,6 +77,9 @@ public class DevModeHandler implements Serializable {
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
 
+    /**
+     * The local installation path of the webpack-dev-server node script.
+     */
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;

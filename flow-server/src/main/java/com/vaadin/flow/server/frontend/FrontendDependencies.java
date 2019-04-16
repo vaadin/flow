@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import javax.xml.ws.Endpoint;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -30,7 +32,6 @@ import java.util.Set;
 
 import net.bytebuddy.jar.asm.ClassReader;
 
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
@@ -91,7 +92,7 @@ public class FrontendDependencies implements Serializable {
                         return (T) m.invoke(instance, arguments);
                     }
                 }
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalArgumentException(e);
             }
             return null;
@@ -100,59 +101,23 @@ public class FrontendDependencies implements Serializable {
 
     private final ClassFinder finder;
     private final HashMap<String, EndPointData> endPoints = new HashMap<>();
-    private final Class<?> hasElementClass;
-    private final Class<?> abstractThemeClass;
-    private final Class<? extends Annotation> routeClass;
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
 
     /**
      * Default Constructor.
-     * 
+     *
      * @param finder
      *            the class finder
-     * @throws ClassNotFoundException
-     *             when theme class is not in the classpath
-     * @throws IOException
-     *             when route class is not in the classpath
-     * @throws InstantiationException
-     *             when theme cannot be instantiated
-     * @throws IllegalAccessException
-     *             when running methods in theme instance
      */
-    public FrontendDependencies(ClassFinder finder)
-            throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
+    public FrontendDependencies(ClassFinder finder) {
         this.finder = finder;
-        // Because of different classLoaders we need compare against class
-        // references loaded by the specific class finder loader
-        this.hasElementClass = finder.loadClass(HasElement.class.getName());
-        this.abstractThemeClass = finder.loadClass(AbstractTheme.class.getName());
-        routeClass = finder.loadClass(Route.class.getName());
-
-        for (Class<?> route : finder.getAnnotatedClasses(routeClass) ) {
-            String className = route.getName();
-            EndPointData data = new EndPointData(route);
-            endPoints.put(className, visitClass(className, data));
-
-            // if this is the root level view, use its theme for the app
-            if (data.route.isEmpty() && !data.notheme) {
-                Class<? extends AbstractTheme> theme = data.theme != null ? finder.loadClass(data.theme)
-                        : getLumoTheme();
-                if (theme != null) {
-                    themeDefinition = new ThemeDefinition(theme, data.variant != null ? data.variant : "");
-                    themeInstance = new ThemeWrapper(theme);
-
-                }
-            }
-        }
-    }
-
-    private Class<? extends AbstractTheme> getLumoTheme() {
         try {
-            return finder.loadClass(LUMO);
-        } catch (ClassNotFoundException ignore) { //NOSONAR
-            return null;
+            computeEndpoints();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to compute frontend dependencies", e);
         }
+
     }
 
     /**
@@ -203,7 +168,7 @@ public class FrontendDependencies implements Serializable {
         Set<String> all = new HashSet<>();
         for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
             for (Entry<String, Set<String>> e : r.imports.entrySet()) {
-                if (!r.npmClasses.contains(e.getKey())) {
+                if (!r.npmDone.contains(e.getKey())) {
                     all.addAll(e.getValue());
                 }
             }
@@ -229,22 +194,38 @@ public class FrontendDependencies implements Serializable {
         return themeInstance;
     }
 
-    private boolean isVisitable(String className) {
-        if (className == null || className.isEmpty()) {
-            return false;
-        }
-        try {
-            Class<?> clazz = finder.loadClass(className);
-            // Visit only components and themes
-            return hasElementClass.isAssignableFrom(clazz) || abstractThemeClass.isAssignableFrom(clazz);
-        } catch (Throwable ignore) { //NOSONAR
-            // Ignore classes that cannot be loaded by the finder
-            return false;
-        }
-    }
+    /**
+     * Visit all classes annotated with {@link Route} and update an
+     * {@link EndPointData} object with the info found.
+     *
+     * At the same time when the root level view is visited, compute the theme
+     * to use and create its instance.
+     *
+     * @throws ClassNotFoundException
+     * @throws IOException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
+    private void computeEndpoints() throws Exception {
+        // Because of different classLoaders we need compare against class
+        // references loaded by the specific class finder loader
+        Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
+        for (Class<?> route : finder.getAnnotatedClasses(routeClass) ) {
+            String className = route.getName();
+            EndPointData data = new EndPointData(route);
+            endPoints.put(className, visitClass(className, data));
 
-    private URL getUrl(String className) {
-        return finder.getResource(className.replace(".", "/") + ".class");
+            // if this is the root level view, use its theme for the app
+            if (data.route.isEmpty() && !data.notheme) {
+                Class<? extends AbstractTheme> theme = data.theme != null ? finder.loadClass(data.theme)
+                        : getLumoTheme();
+                if (theme != null) {
+                    themeDefinition = new ThemeDefinition(theme, data.variant != null ? data.variant : "");
+                    themeInstance = new ThemeWrapper(theme);
+
+                }
+            }
+        }
     }
 
     /**
@@ -254,10 +235,9 @@ public class FrontendDependencies implements Serializable {
      * @param endPoint
      * @return
      * @throws IOException
-     * @throws ClassNotFoundException
      */
     private EndPointData visitClass(String className, FrontendClassVisitor.EndPointData endPoint)
-                    throws IOException, ClassNotFoundException {
+            throws IOException {
 
         if (endPoint.classes.contains(className)) {
             return endPoint;
@@ -286,6 +266,33 @@ public class FrontendDependencies implements Serializable {
         }
 
         return endPoint;
+    }
+
+    private Class<? extends AbstractTheme> getLumoTheme() {
+        try {
+            return finder.loadClass(LUMO);
+        } catch (ClassNotFoundException ignore) { //NOSONAR
+            return null;
+        }
+    }
+
+    private boolean isVisitable(String className) {
+        // We should visit only those classes that might have import
+        // annotations, basically HasElement, and AbstractTheme classes,
+        // but that excludes some syntaxes like using factories. This is the
+        // reason of having just a black list of some common namespaces that
+        // would not have vaadin annotations.
+        return className != null &&  // @formatter:off
+                !className.matches(
+                    "(^$|"
+                    + ".*(slf4j).*|"
+                    + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
+                    + ".*(Exception)$"
+                    + ")"); // @formatter:on
+    }
+
+    private URL getUrl(String className) {
+        return finder.getResource(className.replace(".", "/") + ".class");
     }
 
     @Override

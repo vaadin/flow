@@ -16,6 +16,7 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Second
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -138,5 +139,17 @@ public class FrontendDependenciesTest {
         assertEquals(8, deps.getModules().size());
         assertEquals(3, deps.getPackages().size());
         assertEquals(6, deps.getScripts().size());
+    }
+
+    @Test
+    public void should_resolveComponentFactories() throws Exception {
+
+        FrontendDependencies deps = create(ThirdView.class);
+
+        assertEquals(0, deps.getImports().size());
+        assertEquals(1, deps.getModules().size());
+        assertEquals(0, deps.getPackages().size());
+        assertEquals(0, deps.getScripts().size());
+        assertTrue(deps.getModules().contains("./my-component.js"));
     }
 }

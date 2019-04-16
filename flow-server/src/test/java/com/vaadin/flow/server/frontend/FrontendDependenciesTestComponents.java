@@ -154,6 +154,9 @@ public class FrontendDependenciesTestComponents {
         }
     }
 
+    public static class MyComponent extends Component {
+    }
+
     @Route(value = "second", layout = RouterLayout2.class)
     @JsModule("./view-2.js")
     public static class SecondView extends Component {
@@ -166,4 +169,19 @@ public class FrontendDependenciesTestComponents {
             new Component3();
         }
     }
+
+    @Route()
+    public static class ThirdView {
+        public void foo() {
+            new ComponentFactory().createMyComponent();
+        }
+    }
+
+    @JsModule("./my-component.js")
+    public static class ComponentFactory {
+        public MyComponent createMyComponent()  {
+            return new MyComponent();
+        }
+    }
+
 }

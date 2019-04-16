@@ -70,16 +70,8 @@ public class NodeUpdateImports extends NodeUpdater {
      */
     public NodeUpdateImports(ClassFinder finder, File jsFile, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
-        try {
-            this.frontDeps = new FrontendDependencies(finder);
-        } catch (Exception e) {
-            throw new IllegalStateException("Unable to compute frontend dependencies", e);
-        }
-        this.finder = finder;
-        this.npmFolder = npmFolder;
-        this.nodeModulesPath = nodeModulesPath;
+        super(finder, npmFolder, nodeModulesPath, convertHtml);
         this.jsFile = jsFile;
-        this.convertHtml = convertHtml;
     }
 
     /**
