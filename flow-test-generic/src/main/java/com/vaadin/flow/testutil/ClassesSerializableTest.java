@@ -153,6 +153,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendClassVisitor(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendAnnotatedClassVisitor(\\$.*)?",
 
                 //Various test classes
                 ".*\\.test(s)?\\..*",

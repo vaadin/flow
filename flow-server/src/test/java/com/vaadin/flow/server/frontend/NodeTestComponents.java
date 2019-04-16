@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NodeTestComponents {
 
-    @NpmPackage("@vaadin/vaadin-button")
+    @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
     class ButtonComponent extends Component {
     }
 
@@ -51,13 +51,13 @@ public class NodeTestComponents {
     public static class VaadinBowerComponent extends Component {
     }
 
-    @NpmPackage("@vaadin/vaadin-element-mixin")
+    @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "1.1.2")
     @JsModule("foo-dir/vaadin-npm-component.js")
     public static class VaadinNpmComponent extends Component {
     }
 
     @HtmlImport("frontend://bower_components/vaadin-element-mixin/foo-component.html")
-    @NpmPackage("@vaadin/vaadin-element-mixin")
+    @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "1.1.2")
     @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
@@ -67,6 +67,7 @@ public class NodeTestComponents {
     }
 
     @JsModule("./local-p3-template.js")
+    @NpmPackage(value = "@foo/var-component", version = "1.1.0")
     public static class LocalP3Template extends Component {
     }
 
@@ -156,5 +157,9 @@ public class NodeTestComponents {
         }
     }
 
+
+    @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
+    public static class ExtraImport {
+    }
 }
 

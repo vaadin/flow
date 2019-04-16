@@ -37,12 +37,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
+import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static org.mockito.Mockito.mock;
@@ -75,6 +78,17 @@ public class UpdateNpmDependenciesMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", new File(baseDir, "frontend"));
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
         setProject("war", "war_output");
+    }
+
+    private void stubNpmInstall() throws Exception {
+        NodeUpdatePackages updater = (NodeUpdatePackages)mojo.getUpdater();
+        NodeUpdatePackages spy = Mockito.spy(updater);
+        Mockito.doAnswer(invocation -> {
+                System.err.println("Skipping npm install");
+                return null;
+        })
+        .when(spy).executeNpmInstall(Mockito.any());
+        ReflectionUtils.setVariableValueInObject(mojo, "updater", spy);
     }
 
     private void setProject(String packaging, String outputDirectory) throws Exception {
@@ -122,6 +136,7 @@ public class UpdateNpmDependenciesMojoTest {
         final String expectedOutput = "jar_output";
         setProject("jar", expectedOutput);
 
+        stubNpmInstall();
         mojo.execute();
 
         Files.lines(Paths.get(webpackConfig))
@@ -139,6 +154,7 @@ public class UpdateNpmDependenciesMojoTest {
         String expectedOutput = "war_output";
         setProject("war", expectedOutput);
 
+        stubNpmInstall();
         mojo.execute();
 
         Files.lines(Paths.get(webpackConfig))
@@ -153,11 +169,11 @@ public class UpdateNpmDependenciesMojoTest {
     @Test
     public void assertWebpackContent_NotWarNotJar() throws Exception {
         String unexpectedPackaging = "notWarAndNotJar";
-
         setProject(unexpectedPackaging, "whatever");
-
         exception.expect(IllegalStateException.class);
         exception.expectMessage(unexpectedPackaging);
+
+        stubNpmInstall();
         mojo.execute();
     }
 
@@ -165,6 +181,7 @@ public class UpdateNpmDependenciesMojoTest {
     public void mavenGoal_packageJsonMissing() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
 
+        stubNpmInstall();
         mojo.execute();
 
         assertPackageJsonContent();
@@ -178,6 +195,8 @@ public class UpdateNpmDependenciesMojoTest {
         FileUtils.fileWrite(packageJson, "{}");
         long tsPackage1 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack1 = FileUtils.getFile(webpackConfig).lastModified();
+
+        stubNpmInstall();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
