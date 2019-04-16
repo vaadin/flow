@@ -33,8 +33,8 @@ import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 /**
  * Goal that copies all JavaScript files into the {@link
  * CopyFrontendFilesMojo#frontendWorkingDirectory}
- * directory from regular jars, refer to {@link ProductionModeCopyStep} for
- * details.
+ * directory from ad-on jars that haven't published to NPM, refer to {@link
+ * ProductionModeCopyStep} for details.
  */
 @Mojo(name = "copy-frontend-files", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class CopyFrontendFilesMojo extends AbstractMojo {
@@ -52,7 +52,8 @@ public class CopyFrontendFilesMojo extends AbstractMojo {
     private File frontendWorkingDirectory;
 
     /**
-     * The path inside the JAR to copy frontend files matching the {@link CopyFrontendFilesMojo#includes} filter.
+     * The path inside the JAR to copy frontend files matching the {@link
+     * CopyFrontendFilesMojo#includes} filter.
      *
      * Default is 'META-INF/frontend'
      */
@@ -64,9 +65,10 @@ public class CopyFrontendFilesMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        // Do nothing when not in bower mode
-        if (!NodeUpdateAbstractMojo.isBowerMode(getLog())) {
-            getLog().info("Skipped `copy-frontend-files` goal because `vaadin.bowerMode` is not set.");
+        // Do nothing when in bower mode
+        if (NodeUpdateAbstractMojo.isBowerMode(getLog())) {
+            getLog().info(
+                    "Skipped `copy-frontend-files` goal because `vaadin.bowerMode` is set.");
             return;
         }
 
