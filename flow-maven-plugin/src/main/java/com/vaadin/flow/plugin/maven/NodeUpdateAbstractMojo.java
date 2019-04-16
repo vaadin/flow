@@ -135,7 +135,7 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         }
         long start = System.nanoTime();
         getUpdater().execute();
-        long ms = (System.nanoTime() - start) / 1000;
+        long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Took " + ms + "ms.");
     }
 

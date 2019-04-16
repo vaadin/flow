@@ -61,8 +61,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         updater.execute();
 
         assertPackageJsonContent();
-
-        Assert.assertTrue(webpackConfig.exists());
     }
 
     @Test
