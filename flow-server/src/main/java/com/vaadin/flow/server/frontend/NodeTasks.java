@@ -59,9 +59,11 @@ public class NodeTasks implements Command {
 
         private boolean enableImportsUpdate;
 
+        private boolean runNpmInstall;
+
         /**
          * Create a builder instance.
-         * 
+         *
          * @param classFinder
          *            a class finder
          */
@@ -110,7 +112,7 @@ public class NodeTasks implements Command {
 
         /**
          * Creates a <code>NodeExecutor</code> using this configuration.
-         * 
+         *
          * @return a <code>NodeExecutor</code> instance
          */
         public NodeTasks build() {
@@ -128,7 +130,7 @@ public class NodeTasks implements Command {
          *            creating the <code>webpack.config.js</code> file.
          * @return this builder
          */
-        public Builder setWebpack(File webpackOutputDirectory,
+        public Builder withWebpack(File webpackOutputDirectory,
                 String webpackTemplate) {
             this.webpackOutputDirectory = webpackOutputDirectory;
             this.webpackTemplate = webpackTemplate;
@@ -138,13 +140,13 @@ public class NodeTasks implements Command {
         /**
          * Sets whether to enable packages and webpack file updates. Default is
          * <code>true</code>.
-         * 
+         *
          * @param enablePackagesUpdate
          *            <code>true</code> to enable packages and webpack update,
          *            otherwise <code>false</code>
          * @return this builder
          */
-        public Builder setEnablePackagesUpdate(boolean enablePackagesUpdate) {
+        public Builder enablePackagesUpdate(boolean enablePackagesUpdate) {
             this.enablePackagesUpdate = enablePackagesUpdate;
             return this;
         }
@@ -152,14 +154,27 @@ public class NodeTasks implements Command {
         /**
          * Sets whether to enable imports file update. Default is
          * <code>true</code>.
-         * 
+         *
          * @param enableImportsUpdate
          *            <code>true</code> to enable imports file update, otherwise
          *            <code>false</code>
          * @return this builder
          */
-        public Builder setEnableImportsUpdate(boolean enableImportsUpdate) {
+        public Builder enableImportsUpdate(boolean enableImportsUpdate) {
             this.enableImportsUpdate = enableImportsUpdate;
+            return this;
+        }
+
+        /**
+         * Sets whether run <code>npm install</code> after updating
+         * dependencies.
+         *
+         * @param runNpmInstall
+         *            run npm install. Default is <code>true</code>
+         * @return
+         */
+        public Builder runNpmInstall(boolean runNpmInstall) {
+            this.runNpmInstall = runNpmInstall;
             return this;
         }
 
@@ -179,9 +194,15 @@ public class NodeTasks implements Command {
                 classFinder);
 
         if (builder.enablePackagesUpdate) {
-            commands.add(new NodeUpdatePackages(classFinder,
+            NodeUpdatePackages packageUpdater = new NodeUpdatePackages(classFinder,
                     frontendDependencies, builder.npmFolder,
-                    builder.nodeModulesPath, builder.convertHtml));
+                    builder.nodeModulesPath, builder.convertHtml);
+            commands.add(packageUpdater);
+
+            if (builder.runNpmInstall) {
+                commands.add(new NodeNpmInstall(packageUpdater));
+            }
+
             commands.add(new WebpackUpdater(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
                     builder.generatedFlowImports));
@@ -193,6 +214,7 @@ public class NodeTasks implements Command {
                     builder.generatedFlowImports, builder.npmFolder,
                     builder.nodeModulesPath, builder.convertHtml));
         }
+
     }
 
     @Override

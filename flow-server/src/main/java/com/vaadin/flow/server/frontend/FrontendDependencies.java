@@ -37,12 +37,28 @@ import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VALUE;
+import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VERSION;
 /**
  * Represents the class dependency tree of the application.
  */
 public class FrontendDependencies implements Serializable {
 
     private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
+
+    private static final String MULTIPLE_VERSIONS =
+            "%n%n======================================================================================================"
+            + "%nFailed to determine the version for the '%s' npm package."
+            + "%nFlow found multiple versions: %s"
+            + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
+            + "%nmeet the same version."
+            + "%n======================================================================================================%n";
+
+    private static final String BAD_VERSIOM =
+            "%n%n======================================================================================================"
+            + "%nFailed to determine the version for the '%s' npm package."
+            + "%nVersion '%s' is has an invalid format it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
+            + "%n======================================================================================================%n";
 
     /**
      * A wrapper for the Theme instance that use reflection for executing its
@@ -101,6 +117,7 @@ public class FrontendDependencies implements Serializable {
     private final HashMap<String, EndPointData> endPoints = new HashMap<>();
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
+    private final HashMap<String, String> packages = new HashMap<>();
 
     /**
      * Default Constructor.
@@ -112,10 +129,10 @@ public class FrontendDependencies implements Serializable {
         this.finder = finder;
         try {
             computeEndpoints();
-        } catch (Exception e) {
+            computePackages();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
             throw new IllegalStateException("Unable to compute frontend dependencies", e);
         }
-
     }
 
     /**
@@ -123,12 +140,8 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of npm packages
      */
-    public Set<String> getPackages() {
-        Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
-            all.addAll(r.packages);
-        }
-        return all;
+    public Map<String, String> getPackages() {
+        return packages;
     }
     /**
      * get all ES6 modules needed for run the application.
@@ -208,7 +221,7 @@ public class FrontendDependencies implements Serializable {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
-        for (Class<?> route : finder.getAnnotatedClasses(routeClass) ) {
+        for (Class<?> route : finder.getAnnotatedClasses(routeClass)) {
             String className = route.getName();
             EndPointData data = new EndPointData(route);
             endPoints.put(className, visitClass(className, data));
@@ -223,6 +236,38 @@ public class FrontendDependencies implements Serializable {
 
                 }
             }
+        }
+    }
+
+    /**
+     * Visit all classes annotated with {@link NpmPackage} and update the list
+     * of dependencies and their versions.
+     *
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    private void computePackages() throws ClassNotFoundException, IOException  {
+        FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(NpmPackage.class.getName());
+
+        for (Class<?> component : finder.getAnnotatedClasses(NpmPackage.class.getName())) {
+            URL url = getUrl(component.getName());
+            ClassReader cr = new ClassReader(url.openStream());
+            cr.accept(npmPackageVisitor, 0);
+        }
+
+        Set<String> dependencies = npmPackageVisitor.getValues(VALUE);
+        for (String dependency : dependencies) {
+            Set<String> versions = npmPackageVisitor.getValuesForKey(VALUE, dependency, VERSION);
+            if (versions.size() > 1) {
+                throw new IllegalStateException(String.format(MULTIPLE_VERSIONS, dependency, versions.toString()));
+            }
+
+            String version = versions.iterator().next();
+            if (!version.matches("^\\d+\\.\\d+\\.\\d+(-[A-z][\\w]*\\d+)?$")) {
+                throw new IllegalStateException(String.format(BAD_VERSIOM, dependency, version));
+            }
+
+            packages.put(dependency, version);
         }
     }
 
@@ -279,7 +324,7 @@ public class FrontendDependencies implements Serializable {
         // JsImport, JavaScript and HtmlImport annotations, basically
         // HasElement, and AbstractTheme classes, but that excludes some
         // syntaxes like using factories. This is the reason of having just a
-        // blacklist of some common name-spaces that would not have components. 
+        // blacklist of some common name-spaces that would not have components.
         return className != null &&  // @formatter:off
                 !className.matches(
                     "(^$|"

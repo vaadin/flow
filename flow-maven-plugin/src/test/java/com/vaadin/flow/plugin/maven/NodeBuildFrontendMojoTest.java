@@ -31,10 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -48,6 +44,12 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -55,7 +57,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class NodeUpdateFrontendMojoTest {
+public class NodeBuildFrontendMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -93,6 +95,7 @@ public class NodeUpdateFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
+        ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
 
         Assert.assertTrue(getFlowPackage().mkdirs());
 
