@@ -1081,12 +1081,12 @@ public class StateNodeTest {
     }
 
     /**
-     * #5316: removeFromTree recursively removes StateTree reference and resets
-     * node id to -1.
+     * #5316: removeFromTree removes StateTree reference and resets descendant
+     * nodes.
      */
     @Test
-    public void removeFromTree_nodeAttached_nodeDetachedAndChildrenReset() {
-        // given a is parent of b is parent c in tree
+    public void removeFromTree_nodeAttached_detachedAndDescendantsReset() {
+        // given a is parent of b is parent of c in tree
         StateNode a = createParentNode("a");
         StateNode b = createParentNode("b");
         addChild(a, b);
@@ -1102,14 +1102,43 @@ public class StateNodeTest {
         // then b's parent is null
         Assert.assertNull(b.getParent());
 
-        // then b and descendants are reset
-        final Consumer<StateNode> assertNodeReset = n -> {
-            Assert.assertEquals(-1, n.getId());
-            Assert.assertFalse(n.isAttached());
-            Assert.assertNotEquals(tree, n.getOwner());
-        };
-        assertNodeReset.accept(b);
-        assertNodeReset.accept(c);
+        // then b and its descendants are reset
+        assertNodesReset(b,c);
+    }
+
+    /**
+     * #5316: removeFromTree when invoked from a DetachListener removes
+     * StateTree reference and resets descendant nodes.
+     */
+    @Test
+    public void removeFromTree_nodeAttachedAndInDetachListener_detachedAndDescendantsReset() {
+        // given a is parent of b is parent of c in tree
+        StateNode a = createParentNode("a");
+        StateNode b = createParentNode("b");
+        addChild(a, b);
+        StateNode c = createEmptyNode("c");
+        addChild(b, c);
+
+        TestStateTree tree = new TestStateTree();
+        addChild(tree.getRootNode(), a);
+
+        // given b's detach listener removes the node from the tree
+        b.addDetachListener(() -> b.removeFromTree());
+
+        // when b is removed from the tree
+        b.setParent(null);
+
+        // then b and its descendants are reset
+        assertNodesReset(b,c);
+    }
+
+    private void assertNodesReset(StateNode... nodes) {
+        for (StateNode node : nodes) {
+            Assert.assertEquals(-1, node.getId());
+            Assert.assertFalse(node.isAttached());
+            Assert.assertEquals(NullOwner.get(), node.getOwner());
+            node.collectChanges(c -> Assert.fail("No changes expected"));
+        }
     }
 
     private void assertAttachDetachEvents(Map<String, StateNode> nodes,
