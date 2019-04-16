@@ -48,24 +48,48 @@ public abstract class NodeUpdater implements Serializable {
     /**
      * Folder with the <code>package.json</code> file.
      */
-    protected File npmFolder;
+    protected final File npmFolder;
 
     /**
      * The path to the {@literal node_modules} directory of the project.
      */
-    protected File nodeModulesPath;
+    protected final File nodeModulesPath;
 
     /**
      * Enable or disable legacy components annotated only with
      * {@link HtmlImport}.
      */
-    protected boolean convertHtml;
+    protected final boolean convertHtml;
 
-    ClassFinder finder;
+    /**
+     * The {@link FrontendDependencies} object representing the application
+     * dependencies.
+     */
+    protected final FrontendDependencies frontDeps;
 
-    FrontendDependencies frontDeps;
+    private final ClassFinder finder;
 
     private final Set<String> flowModules = new HashSet<>();
+
+    /**
+     * Constructor.
+     *
+     * @param finder
+     *            a reusable class finder
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
+     */
+    protected NodeUpdater(ClassFinder finder, File npmFolder, File nodeModulesPath, boolean convertHtml) {
+        this.frontDeps = new FrontendDependencies(finder);
+        this.finder = finder;
+        this.npmFolder = npmFolder;
+        this.nodeModulesPath = nodeModulesPath;
+        this.convertHtml = convertHtml;
+    }
 
     /**
      * Execute the update process.
@@ -93,7 +117,7 @@ public abstract class NodeUpdater implements Serializable {
 
     String toValidBrowserImport(String s) {
         // add `./` prefix to names starting with letters
-        return s.replaceFirst("(?i)^([a-z])", "./$1");
+        return Character.isAlphabetic(s.charAt(0)) ? "./" + s : s;
     }
 
     String resolveInFlowFrontendDirectory(String importPath) {
