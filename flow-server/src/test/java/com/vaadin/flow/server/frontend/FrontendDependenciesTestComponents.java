@@ -34,7 +34,7 @@ import com.vaadin.flow.theme.Theme;
  */
 public class FrontendDependenciesTestComponents {
 
-    @NpmPackage("@vaadin/theme-0")
+    @NpmPackage(value = "@vaadin/theme-0", version = "1.1.1")
     @JavaScript("frontend://theme-0.js")
     static class Theme0 implements AbstractTheme {
         public static final String DARK = "dark";
@@ -60,12 +60,13 @@ public class FrontendDependenciesTestComponents {
     static class Theme4 extends Theme0 {
     }
 
-    @NpmPackage("@vaadin/component-0")
+    @NpmPackage(value = "@vaadin/component-0", version = "2.1.0")
     @JsModule("./component-0.js")
     @HtmlImport("frontend://component-0.html")
     @JavaScript("frontend://component-0.js")
     @Tag("component-0")
-    @NpmPackage("@vaadin/component-0")
+    @NpmPackage(value = "@vaadin/component-0", version = "1.1.0")
+    @NpmPackage(value="@vaadin/vaadin-foo", version="1.23.114-alpha1")
     static class Component0 extends Component {
     }
 
@@ -73,6 +74,7 @@ public class FrontendDependenciesTestComponents {
     @HtmlImport("frontend://component-1.html")
     @JavaScript("frontend://component-1.js")
     @Tag("component-1")
+    @NpmPackage(value = "@vaadin/component-1", version = "1.1.1")
     static class Component1 extends Component0 {
     }
 
@@ -80,14 +82,15 @@ public class FrontendDependenciesTestComponents {
     @HtmlImport("frontend://component-2.html")
     @JavaScript("frontend://component-2.js")
     @Tag("component-2")
+    @NpmPackage(value = "@vaadin/component-2", version = "222.222.222")
     static class Component2 extends Component {
     }
 
-    @NpmPackage("@vaadin/component-3")
     @JsModule("./component-3.js")
     @HtmlImport("frontend://component-3.html")
     @JavaScript("frontend://component-3.js")
     @Tag("component-3")
+    @NpmPackage(value = "@vaadin/component-3", version = "~2.1.0")
     static class Component3 extends Component {
     }
 
@@ -141,6 +144,7 @@ public class FrontendDependenciesTestComponents {
 
     @Route(value = "", layout = RouterLayout1.class)
     @JsModule("./view-1.js")
+    @NpmPackage(value = "@foo/first-view", version = "0.0.1")
     public static class FirstView extends View0 {
         Component1 component1;
         RootViewWithMultipleTheme second;
@@ -183,5 +187,4 @@ public class FrontendDependenciesTestComponents {
             return new MyComponent();
         }
     }
-
 }
