@@ -218,7 +218,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         }
     }
 
-    String addWebpackPrefix(String s) {
+    private String addWebpackPrefix(String s) {
         if (s.startsWith("./")) {
             return WEBPACK_PREFIX_ALIAS + s.substring(2);
         }
