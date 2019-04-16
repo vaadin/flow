@@ -100,8 +100,7 @@ public class NodeUpdateFrontendMojoTest {
         FileUtils.fileDelete(packageJson);
         FileUtils.fileDelete(webpackConfig);
     }
-
-
+    
     private void setProject(String packaging, String outputDirectory) throws Exception {
         Build buildMock = mock(Build.class);
         when(buildMock.getOutputDirectory()).thenReturn(outputDirectory);
@@ -114,47 +113,6 @@ public class NodeUpdateFrontendMojoTest {
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-    }
-
-    @Test
-    public void should_ThrowException_WhenImportsDoNotExist() throws Exception {
-        deleteExpectedImports(importsFile.getParentFile(), nodeModulesPath);
-
-        boolean exceptionNotThrown = true;
-        try {
-            mojo.execute();
-        } catch (IllegalStateException expected) {
-            exceptionNotThrown = false;
-            String exceptionMessage = expected.getMessage();
-            Assert.assertTrue(exceptionMessage.contains(importsFile.getAbsolutePath()));
-
-            String content = null;
-            try {
-                content = FileUtils.fileRead(importsFile);
-            } catch (IOException e) {
-            }
-
-            String innerMessage = expected.getCause().getMessage();
-            Assert.assertTrue(
-                    innerMessage + " is missing "
-                            + nodeModulesPath.getAbsolutePath()
-                            + "\n While imports file is " + content + "\n",
-                    innerMessage.contains(nodeModulesPath.getAbsolutePath()));
-
-            List<String> expectedImports = new ArrayList<>(getExpectedImports());
-            expectedImports.remove("@vaadin/flow-frontend/ExampleConnector.js");
-
-            for (String expectedImport : expectedImports) {
-                Assert.assertTrue(
-                        innerMessage + " is missing " + expectedImport
-                                + "\n While imports file is " + content + "\n",
-                        innerMessage.contains(expectedImport));
-            }
-        }
-
-        if (exceptionNotThrown) {
-            Assert.fail("Expected an exception to be thrown when no imported files exist");
-        }
     }
 
     @Test

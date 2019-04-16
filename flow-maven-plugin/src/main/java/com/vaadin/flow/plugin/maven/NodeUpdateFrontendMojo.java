@@ -79,7 +79,7 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
             updater = new NodeExecutor.Builder(getClassFinder(project), jsFile,
                     npmFolder, nodeModulesPath, convertHtml)
                             .setWebpack(webpackOutputRelativeToProjectDir,
-                                    webpackTemplate)
+                                    webpackTemplate)//.setEnablePackagesUpdate(false)
                             .build();
         }
         return updater;
