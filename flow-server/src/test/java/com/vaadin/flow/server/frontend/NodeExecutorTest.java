@@ -19,12 +19,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import com.vaadin.flow.router.Route;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,6 +30,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import com.vaadin.flow.router.Route;
 
 public class NodeExecutorTest extends NodeUpdateTestUtil {
 
@@ -47,6 +46,7 @@ public class NodeExecutorTest extends NodeUpdateTestUtil {
 
     private Map<Class<? extends Annotation>, Integer> annotationScanCount = new HashMap<>();
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setup() throws Exception {
 
@@ -70,7 +70,7 @@ public class NodeExecutorTest extends NodeUpdateTestUtil {
 
                 return classFinder.getAnnotatedClasses(clazz);
             }
-        }).when(classFinderSpy).getAnnotatedClasses(Mockito.any());
+        }).when(classFinderSpy).getAnnotatedClasses((Class<? extends Annotation>)Mockito.any());
 
         node = new NodeTasks.Builder(classFinderSpy, frontendDirectory,
                 importsFile, tmpRoot, nodeModulesPath, true).build();

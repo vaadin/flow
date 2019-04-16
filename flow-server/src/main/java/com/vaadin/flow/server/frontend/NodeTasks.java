@@ -58,6 +58,8 @@ public class NodeTasks implements Command {
         private boolean enablePackagesUpdate;
 
         private boolean enableImportsUpdate;
+        
+        private boolean runNpmInstall;
 
         /**
          * Create a builder instance.
@@ -128,7 +130,7 @@ public class NodeTasks implements Command {
          *            creating the <code>webpack.config.js</code> file.
          * @return this builder
          */
-        public Builder setWebpack(File webpackOutputDirectory,
+        public Builder withWebpack(File webpackOutputDirectory,
                 String webpackTemplate) {
             this.webpackOutputDirectory = webpackOutputDirectory;
             this.webpackTemplate = webpackTemplate;
@@ -144,7 +146,7 @@ public class NodeTasks implements Command {
          *            otherwise <code>false</code>
          * @return this builder
          */
-        public Builder setEnablePackagesUpdate(boolean enablePackagesUpdate) {
+        public Builder enablePackagesUpdate(boolean enablePackagesUpdate) {
             this.enablePackagesUpdate = enablePackagesUpdate;
             return this;
         }
@@ -158,8 +160,13 @@ public class NodeTasks implements Command {
          *            <code>false</code>
          * @return this builder
          */
-        public Builder setEnableImportsUpdate(boolean enableImportsUpdate) {
+        public Builder enableImportsUpdate(boolean enableImportsUpdate) {
             this.enableImportsUpdate = enableImportsUpdate;
+            return this;
+        }
+
+        public Builder runNpmInstall(boolean runNpmInstall) {
+            this.runNpmInstall = runNpmInstall;
             return this;
         }
 
@@ -179,9 +186,15 @@ public class NodeTasks implements Command {
                 classFinder);
 
         if (builder.enablePackagesUpdate) {
-            commands.add(new NodeUpdatePackages(classFinder,
+            NodeUpdatePackages packageUpdater = new NodeUpdatePackages(classFinder,
                     frontendDependencies, builder.npmFolder,
-                    builder.nodeModulesPath, builder.convertHtml));
+                    builder.nodeModulesPath, builder.convertHtml);
+            commands.add(packageUpdater);
+            
+            if (builder.runNpmInstall) {
+                commands.add(new NodeNpmInstall(packageUpdater));
+            }
+            
             commands.add(new WebpackUpdater(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
                     builder.generatedFlowImports));
@@ -193,6 +206,7 @@ public class NodeTasks implements Command {
                     builder.generatedFlowImports, builder.npmFolder,
                     builder.nodeModulesPath, builder.convertHtml));
         }
+
     }
 
     @Override

@@ -38,7 +38,7 @@ import com.vaadin.flow.theme.Theme;
  */
 public class NodeTestComponents {
 
-    @NpmPackage("@vaadin/vaadin-button")
+    @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
     class ButtonComponent extends Component {
     }
 
@@ -52,7 +52,7 @@ public class NodeTestComponents {
     public static class VaadinBowerComponent extends Component {
     }
 
-    @NpmPackage("@vaadin/vaadin-element-mixin")
+    @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "1.1.2")
     @JsModule("@vaadin/vaadin-element-mixin/vaadin-element-mixin.js")
     public static class VaadinElementMixin extends Component {
     }
@@ -71,6 +71,7 @@ public class NodeTestComponents {
     }
 
     @JsModule("./local-p3-template.js")
+    @NpmPackage(value = "@foo/var-component", version = "1.1.0")
     public static class LocalP3Template extends Component {
     }
 
@@ -166,5 +167,9 @@ public class NodeTestComponents {
         }
     }
 
+
+    @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
+    public static class ExtraImport {
+    }
 }
 

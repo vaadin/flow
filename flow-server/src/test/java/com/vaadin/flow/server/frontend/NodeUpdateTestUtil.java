@@ -30,10 +30,10 @@ import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
+
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static org.junit.Assert.assertNotNull;
@@ -113,42 +113,22 @@ public class NodeUpdateTestUtil {
             "setTimeout(() => {}, " + milliSecondsToRun + ");\n"), "UTF-8");
     }
 
-
     // Creates a `NodeUpdatePackages` instance with a modified
-    // `updateDependencies` method able to write `dependencies` and
-    // `devDependencies` to the `package.json` file instead of calling
-    // `npm` which to speed up unit testing
-    @SuppressWarnings("unchecked")
+    // `executeNpmInstall` method to speed up tests
     static NodeUpdatePackages createStubUpdater() throws MalformedURLException {
         File tmpRoot = new File(getBaseDir());
         File modules = new File(tmpRoot, "node_modules");
-        File packageFile = new File(tmpRoot, PACKAGE_JSON);
 
         // Create a spy version of the updater instance
         NodeUpdatePackages spy = Mockito.spy(
                 new NodeUpdatePackages(
-                        getClassFinder(),
-                            tmpRoot, modules, true));
+                    getClassFinder(),
+                        tmpRoot, modules, true));
 
-        // Override the `updateDependencies` method
-        Mockito.doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation) throws Exception {
-                // Read the actual package.json file and parse into a json object
-                JsonObject json = ((NodeUpdatePackages)invocation.getMock()).getPackageJson();
-
-                // Add all dependencies to the appropriate key
-                String type = invocation.getArgumentAt(1, String.class);
-                List<String> deps = invocation.getArgumentAt(0, List.class);
-                JsonObject devs = json.getObject("--save".equals(type) ? "dependencies" : "devDependencies");
-                for (String dep : deps) {
-                    devs.put(dep, "latest");
-                }
-
-                // Write the file with the new content
-                FileUtils.writeStringToFile(packageFile, json.toJson(), "UTF-8");
-                return null;
-            }})
-        .when(spy).updateDependencies(Mockito.anyList(), Mockito.anyVararg());
+        Mockito.doAnswer(invocation -> {
+            NodeUpdater.log().info("Skipping `npm install` because of test stub.");
+            return null;
+        }).when(spy).executeNpmInstall(Mockito.any());
 
         return spy;
     }
