@@ -211,8 +211,8 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private boolean importedFileExists(String jsImport) {
-        if (jsImport.startsWith("./")) {
-            return new File(frontendDirectory, jsImport).isFile();
+        if (jsImport.startsWith(WEBPACK_PREFIX_ALIAS)) {
+            return new File(frontendDirectory, jsImport.replace(WEBPACK_PREFIX_ALIAS, "")).isFile();
         } else {
             return new File(nodeModulesPath, jsImport).isFile();
         }
@@ -244,11 +244,6 @@ public class NodeUpdateImports extends NodeUpdater {
         return annotationValuesExtractor.getAnnotatedClasses(JavaScript.class, VALUE).values().stream()
                 .flatMap(Collection::stream).map(this::resolveInFlowFrontendDirectory).map(this::toValidBrowserImport)
                 .sorted(Comparator.reverseOrder()).collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    private String toValidBrowserImport(String s) {
-        // add `./` prefix to names starting with letters
-        return s.replaceFirst("(?i)^([a-z])", "./$1");
     }
 
     private void addClassesWithJsModules(Map<Class<?>, Set<String>> classes) {
