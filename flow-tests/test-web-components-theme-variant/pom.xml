@@ -8,7 +8,7 @@
         <version>1.5-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-web-components-theme-variant</artifactId>
-    <name>Flow WebComponent tests</name>
+    <name>Flow WebComponent tests (theme variant)</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
