@@ -8,7 +8,8 @@ const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { BabelMultiTargetPlugin } = require('webpack-babel-multi-target-plugin');
 
-const baseDir = require('path').resolve(__dirname);
+const path = require('path');
+const baseDir = path.resolve(__dirname);
 // the folder of app resources (main.js and flow templates)
 const frontendFolder = `${baseDir}/frontend`;
 // the folder that java takes as webapp context
@@ -33,6 +34,12 @@ module.exports = {
   output: {
     filename: `${build}/[name].js`,
     path: webappFolder
+  },
+
+  resolve: {
+    alias: {
+      Frontend: path.resolve(__dirname, 'frontend/')
+    }
   },
 
   devServer: {
