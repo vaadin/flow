@@ -48,7 +48,7 @@ class AnnotationValuesCache extends AnnotationValuesExtractor {
 
         return annotatedClassesMapCache.computeIfAbsent(
                 annotationClass.getName() + "#" + valueGetterMethodName,
-                (k) -> super.getAnnotatedClasses(annotationClass,
+                key -> super.getAnnotatedClasses(annotationClass,
                         valueGetterMethodName));
     }
 }

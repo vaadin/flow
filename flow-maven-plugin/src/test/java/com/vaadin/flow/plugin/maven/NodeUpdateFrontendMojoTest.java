@@ -100,7 +100,7 @@ public class NodeUpdateFrontendMojoTest {
         FileUtils.fileDelete(packageJson);
         FileUtils.fileDelete(webpackConfig);
     }
-    
+
     private void setProject(String packaging, String outputDirectory) throws Exception {
         Build buildMock = mock(Build.class);
         when(buildMock.getOutputDirectory()).thenReturn(outputDirectory);

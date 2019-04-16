@@ -31,10 +31,15 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class NodeExecutorTest extends NodeUpdateTestBase
         implements ClassFinder {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
     private File nodeModulesPath;

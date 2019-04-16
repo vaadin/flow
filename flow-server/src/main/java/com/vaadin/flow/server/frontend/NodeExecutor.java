@@ -20,7 +20,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 import com.vaadin.flow.component.dependency.HtmlImport;

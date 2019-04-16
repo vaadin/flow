@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.frontend.NodeExecutor;
-import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 import com.vaadin.flow.server.frontend.WebpackUpdater;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -36,10 +35,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
-import com.vaadin.flow.server.frontend.NodeUpdater;
 
 /**
  * Goal that updates main.js file with @JsModule, @HtmlImport and @Theme
@@ -79,7 +76,7 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
             updater = new NodeExecutor.Builder(getClassFinder(project), jsFile,
                     npmFolder, nodeModulesPath, convertHtml)
                             .setWebpack(webpackOutputRelativeToProjectDir,
-                                    webpackTemplate)//.setEnablePackagesUpdate(false)
+                                    webpackTemplate)
                             .build();
         }
         return updater;

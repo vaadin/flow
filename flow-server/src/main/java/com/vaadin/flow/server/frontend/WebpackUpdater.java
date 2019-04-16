@@ -32,6 +32,9 @@ import com.vaadin.flow.server.Command;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
+/**
+ * Updates the webpack config file according with current project settings.
+ */
 public class WebpackUpdater implements Command {
 
     /**
@@ -43,6 +46,9 @@ public class WebpackUpdater implements Command {
 
     private File webpackFolder;
 
+    /**
+     * Create an instance of <code>WebpackUpdater</code>.
+     */
     public WebpackUpdater() {
         this(new File(getBaseDir()), new File(getBaseDir(),"src/main/webapp"), WEBPACK_CONFIG);
     }

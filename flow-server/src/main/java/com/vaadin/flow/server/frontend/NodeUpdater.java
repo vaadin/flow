@@ -44,17 +44,6 @@ public abstract class NodeUpdater implements Command {
      */
     public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
 
-    /**
-     * Gets the flow package inside node_modules.
-     * 
-     * @param nodeModulesPath
-     *            path to node_modules.
-     * @return the flow package folder.
-     */
-    public static File getFlowPackage(File nodeModulesPath) {
-        return new File(nodeModulesPath, FLOW_PACKAGE);
-    }
-
     static final String VALUE = "value";
 
     /**
@@ -160,6 +149,17 @@ public abstract class NodeUpdater implements Command {
           .replaceFirst("\\.html$", ".js")
         ); // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
+    }
+
+    /**
+     * Gets the flow package inside node_modules.
+     *
+     * @param nodeModulesPath
+     *            path to node_modules.
+     * @return the flow package folder.
+     */
+    public static File getFlowPackage(File nodeModulesPath) {
+        return new File(nodeModulesPath, FLOW_PACKAGE);
     }
 
     static Logger log() {

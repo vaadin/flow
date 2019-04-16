@@ -39,9 +39,6 @@ import static org.junit.Assert.assertNotNull;
 
 public class NodeUpdateTestBase {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
     File nodeModulesPath;
 
     static AnnotationValuesExtractor getAnnotationValuesExtractor()

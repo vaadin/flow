@@ -34,9 +34,14 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestBase {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
     private NodeUpdateImports node;
