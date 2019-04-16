@@ -58,6 +58,10 @@ public class NodeUpdateImports extends NodeUpdater {
      */
     public static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
 
+    static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
+    private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
+    private static final String VALUE = "value";
+
     private final File generatedFlowImports;
     private final File frontendDirectory;
 
@@ -154,11 +158,14 @@ public class NodeUpdateImports extends NodeUpdater {
             if (theme != null && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
             }
-            if (importedFileExists(translatedModulePath)) {
-                imports.add("import '" + translatedModulePath + "';");
-
-            } else if (importedFileExists(originalModulePath)) {
-                imports.add("import '" + originalModulePath + "';");
+            String validTranslatedModulePath = toValidBrowserImport(
+                    translatedModulePath);
+            String validOriginalModulePath = toValidBrowserImport(
+                    originalModulePath);
+            if (importedFileExists(validTranslatedModulePath)) {
+                imports.add("import '" + validTranslatedModulePath + "';");
+            } else if (importedFileExists(validOriginalModulePath)) {
+                imports.add("import '" + validOriginalModulePath + "';");
             } else {
                 unresolvedImports.put(originalModulePath, translatedModulePath);
             }
@@ -167,8 +174,8 @@ public class NodeUpdateImports extends NodeUpdater {
         if (!unresolvedImports.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder(String.format(
                 "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
-                    "nor in project files: ",
-                nodeModulesPath)).append("\n");
+                    "nor in project files in '%s': ",
+                nodeModulesPath, frontendDirectory)).append("\n");
 
             unresolvedImports
                 .forEach((originalModulePath, translatedModulePath) -> {
