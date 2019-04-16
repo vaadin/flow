@@ -56,10 +56,7 @@ public class WebComponentUI extends UI {
     public void doInit(VaadinRequest request, int uiId) {
         super.doInit(request, uiId);
 
-        ServletContext context = ((VaadinServletService) request.getService())
-                .getServlet().getServletContext();
-
-        assignTheme(context);
+        assignTheme();
 
         VaadinSession session = getSession();
         String uiElementId;
@@ -74,8 +71,6 @@ public class WebComponentUI extends UI {
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
         if (deploymentConfiguration.useCompiledFrontendResources()) {
-            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(context);
             /*
              * This code adds a number of HTML dependencies to the page but in
              * fact there are no such HTML files: they should have been
@@ -83,26 +78,25 @@ public class WebComponentUI extends UI {
              * activate transpiled code the embedded application imports the
              * "dependencies" which represent the transpiled files.
              */
-            registry.getConfigurations().forEach(config -> getPage()
-                    .addHtmlImport(getWebComponentPath(config)));
+            getConfigurationRegistry().getConfigurations().forEach(config ->
+                    getPage().addHtmlImport(getWebComponentPath(config)));
         }
     }
 
     /**
-     * Connect a client side web component element with a server side
-     * {@link Component} that's added as a virtual child to the UI as the actual
+     * Connect a client side web component element with a server side {@link
+     * Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
      * @param tag
-     *            web component tag
+     *         web component tag
      * @param webComponentElementId
-     *            client side id of the element
+     *         client side id of the element
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentExporter = WebComponentConfigurationRegistry
-                .getInstance(VaadinServlet.getCurrent().getServletContext())
-                .getConfiguration(tag);
+        Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
+                getConfigurationRegistry().getConfiguration(tag);
 
         if (!webComponentExporter.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
@@ -136,7 +130,7 @@ public class WebComponentUI extends UI {
 
     @Override
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
+                                                 String path) {
         return Optional.empty();
     }
 
@@ -161,40 +155,40 @@ public class WebComponentUI extends UI {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
-    private void assignTheme(ServletContext context) {
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(VaadinServlet.getCurrent().getServletContext());
+    private void assignTheme() {
+        WebComponentConfigurationRegistry registry = getConfigurationRegistry();
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);
         if (theme.isPresent()) {
             getInternals().setTheme(theme.get().value());
-            assignVariant(context, theme.get());
+            assignVariant(registry, theme.get());
         } else {
             ThemeUtil.getLumoThemeDefinition().map(ThemeDefinition::getTheme)
                     .ifPresent(getInternals()::setTheme);
         }
     }
 
-    private void assignVariant(ServletContext context, Theme theme) {
+    private void assignVariant(WebComponentConfigurationRegistry registry,
+                               Theme theme) {
         AbstractTheme themeInstance = Instantiator.get(this)
                 .getOrCreate(theme.value());
         ThemeDefinition definition = new ThemeDefinition(theme);
         Map<String, String> attributes = themeInstance
                 .getHtmlAttributes(definition.getVariant());
 
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(context);
         registry.getConfigurations()
                 .forEach(config -> addAttributes(config.getTag(), attributes));
     }
 
     private void addAttributes(String tag, Map<String, String> attributes) {
-        attributes.forEach((attr, value) -> getUI().get().getPage()
-                .executeJavaScript("var elements = document.querySelectorAll('"
-                        + tag + "'); "
-                        + "for (let i = 0; i < elements.length; i++) {"
-                        + "elements[i].setAttribute('" + attr + "','" + value
-                        + "');}"));
+        final StringBuilder builder = new StringBuilder();
+        builder.append("var elements = document.querySelectorAll('").append(tag)
+                .append("');").append("for (let i = 0; i < elements.length; i++) {");
+        attributes.forEach((attribute, value) ->
+                builder.append("elements[i].setAttribute('").append(attribute)
+                        .append("', '").append(value).append("');"));
+        builder.append("}");
+        getPage().executeJavaScript(builder.toString());
     }
 
     private String getWebComponentPath(
@@ -203,10 +197,11 @@ public class WebComponentUI extends UI {
                 .getService().getDeploymentConfiguration();
         String path = deploymentConfiguration.getCompiledWebComponentsPath();
 
-        StringBuilder builder = new StringBuilder(path);
-        builder.append('/');
-        builder.append(config.getTag());
-        builder.append(".html");
-        return builder.toString();
+        return path + '/' + config.getTag() + ".html";
+    }
+
+    private WebComponentConfigurationRegistry getConfigurationRegistry() {
+        return WebComponentConfigurationRegistry
+                .getInstance(VaadinServlet.getCurrent().getServletContext());
     }
 }
