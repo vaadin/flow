@@ -18,26 +18,33 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
+import java.net.URL;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import com.vaadin.flow.component.dependency.NpmPackage;
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 
+import com.vaadin.flow.component.dependency.NpmPackage;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
  * the classpath. It also visits classes annotated with {@link NpmPackage}
  */
+@NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
+@NpmPackage(value = "@polymer/polymer", version = "3.1.0")
 public class NodeUpdatePackages extends NodeUpdater {
+
+    private static final String DEV_DEPENDENCIES = "devDependencies";
+    private static final String DEPENDENCIES = "dependencies";
+    
+    boolean modified = false;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -85,101 +92,72 @@ public class NodeUpdatePackages extends NodeUpdater {
         try {
             JsonObject packageJson = getPackageJson();
 
-            Set<String> deps = new HashSet<>(frontDeps.getPackages());
+            Map<String, String> deps = frontDeps.getPackages();
             if (convertHtml) {
-                deps.addAll(getHtmlImportNpmPackages(frontDeps.getImports()));
+                addHtmlImportPackages(deps);
             }
 
-            updatePackageJsonDependencies(packageJson, deps);
-            updatePackageJsonDevDependencies(packageJson);
+            modified = updatePackageJsonDependencies(packageJson, deps);
+            modified = updatePackageJsonDevDependencies(packageJson) || modified ;
+
+            if (modified) {
+                writePackageFile(packageJson);
+            } else {
+                log().info("No packages to update");
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private void updatePackageJsonDependencies(JsonObject packageJson, Set<String> classes) {
-        JsonObject currentDeps = packageJson.getObject("dependencies");
-
-        Set<String> dependencies = new HashSet<>();
-        classes.forEach(s -> {
-            // exclude local dependencies (those starting with `.` or `/`
-            if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)
-                    && !s.startsWith(FLOW_NPM_PACKAGE_NAME)) {
-                dependencies.add(s);
-            }
-        });
-
-        if (!currentDeps.hasKey("@webcomponents/webcomponentsjs")) {
-            dependencies.add("@webcomponents/webcomponentsjs");
-        }
-
-        if (dependencies.isEmpty()) {
-            log().info("No npm packages to update");
-        } else {
-            updateDependencies(dependencies.stream().sorted().collect(Collectors.toList()), "--save");
-        }
-    }
-
-    private void updatePackageJsonDevDependencies(JsonObject packageJson) {
-        JsonObject currentDeps = packageJson.getObject("devDependencies");
-
-        Set<String> dependencies = new HashSet<>();
-        dependencies.add("webpack");
-        dependencies.add("webpack-cli");
-        dependencies.add("webpack-dev-server");
-        dependencies.add("webpack-babel-multi-target-plugin");
-        dependencies.add("copy-webpack-plugin");
-
-        dependencies.removeAll(Arrays.asList(currentDeps.keys()));
-
-        if (dependencies.isEmpty()) {
-            log().info("No npm dev packages to update");
-        } else {
-            updateDependencies(dependencies.stream().sorted().collect(Collectors.toList()), "--save-dev");
-        }
-    }
-
-    void updateDependencies(List<String> dependencies,
-            String... npmInstallArgs) {
-        ProcessBuilder builder = new ProcessBuilder(
-                getNpmCommand(dependencies, npmInstallArgs));
-        builder.directory(npmFolder);
-
-        if (log().isInfoEnabled()) {
-            log().info(
-                "Updating package.json and installing npm dependencies ...\n {}",
-                String.join(" ", builder.command()));
-        }
-
-        Process process = null;
-        try {
-            process = builder.inheritIO().start();
-            int errorCode = process.waitFor();
-            if (errorCode != 0) {
-                log().error(
-                        ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
-            } else {
-                log().info(
-                        "package.json updated and npm dependencies installed. ");
-            }
-        } catch (InterruptedException | IOException e) {
-            log().error("Error running npm", e);
-        } finally {
-            if (process != null) {
-                process.destroyForcibly();
+    private void addHtmlImportPackages(Map<String, String> packages) throws IOException {
+        JsonObject shrink = getShrinkwrapJson().getObject(DEPENDENCIES);
+        for (String s : getHtmlImportNpmPackages(frontDeps.getImports())) {
+            if (!packages.containsKey(s) && shrink.hasKey(s)) {
+                packages.put(s, shrink.getObject(s).getString("version"));
             }
         }
     }
 
-    private List<String> getNpmCommand(List<String> dependencies,
-            String... npmInstallArgs) {
-        List<String> command = new ArrayList<>(5 + dependencies.size());
-        command.addAll(FrontendUtils.getNpmExecutable());
-        command.add("--no-package-lock");
-        command.add("install");
-        command.addAll(Arrays.asList(npmInstallArgs));
-        command.addAll(dependencies);
-        return command;
+    private boolean updatePackageJsonDependencies(JsonObject packageJson, Map<String, String> deps) {
+        boolean modified = false;
+        JsonObject json = packageJson.getObject(DEPENDENCIES);
+
+        for(Entry<String, String> e : deps.entrySet()) {
+            String version = "=" + e.getValue();
+            if (!json.hasKey(e.getKey()) || !json.getString(e.getKey()).equals(version)) {
+                json.put(e.getKey(), version);
+                log().info("Added {}@{} dependency.", e.getKey(), version);
+                modified = true;
+            }
+        }
+
+        return modified;
+    }
+
+    private boolean updatePackageJsonDevDependencies(JsonObject packageJson) {
+        boolean modified = false;
+        JsonObject json = packageJson.getObject(DEV_DEPENDENCIES);
+
+        for (String pkg : Arrays.asList(
+                "webpack",
+                "webpack-cli",
+                "webpack-dev-server",
+                "webpack-babel-multi-target-plugin",
+                "copy-webpack-plugin"
+                )) {
+            if (!json.hasKey(pkg)) {
+                json.put(pkg, "latest");
+                log().info("Added {} dependency.", pkg);
+                modified = true;
+            }
+        }
+        return modified;
+    }
+
+    private void writePackageFile(JsonObject packageJson) throws IOException {
+        File packageFile = new File(npmFolder, PACKAGE_JSON);
+        FileUtils.writeStringToFile(packageFile, packageJson.toJson(), UTF_8.name());
     }
 
     JsonObject getPackageJson() throws IOException {
@@ -187,14 +165,15 @@ public class NodeUpdatePackages extends NodeUpdater {
         File packageFile = new File(npmFolder, PACKAGE_JSON);
 
         if (packageFile.exists()) {
-            packageJson = Json.parse(FileUtils.readFileToString(packageFile, "UTF-8"));
+            String s = FileUtils.readFileToString(packageFile, UTF_8.name());
+            packageJson = Json.parse(s);
         } else {
             log().info("Creating a default {}", packageFile);
-            FileUtils.writeStringToFile(packageFile, "{}", "UTF-8");
+            FileUtils.writeStringToFile(packageFile, "{}", UTF_8.name());
             packageJson = Json.createObject();
         }
-        ensureMissingObject(packageJson, "dependencies");
-        ensureMissingObject(packageJson, "devDependencies");
+        ensureMissingObject(packageJson, DEPENDENCIES);
+        ensureMissingObject(packageJson, DEV_DEPENDENCIES);
         return packageJson;
     }
 
@@ -202,5 +181,22 @@ public class NodeUpdatePackages extends NodeUpdater {
         if (!packageJson.hasKey(name)) {
             packageJson.put(name, Json.createObject());
         }
+    }
+
+    /**
+     * Get latest vaadin-core-shrinkwrap file so as we can set correctly the
+     * version of legacy elements marked with HtmlImport but not with NpmPackage
+     * or JsImport.
+     *
+     * This is a temporary solution during alpha period until all
+     * flow-components are updated and released
+     *
+     * @return
+     * @throws IOException
+     */
+    private JsonObject getShrinkwrapJson() throws IOException {
+        URL url = new URL("https://raw.githubusercontent.com/vaadin/vaadin-core-shrinkwrap/master/npm-shrinkwrap.json");
+        String content = FrontendUtils.streamToString(url.openStream());
+        return Json.parse(content);
     }
 }
