@@ -30,6 +30,8 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.theme.Theme;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update
@@ -48,22 +50,21 @@ public class NodeExecutor implements Command {
 
         private ClassFinder classFinder;
 
-        private File npmFolder = new File(".");
+        private File npmFolder;
 
-        private File nodeModulesPath = new File("./node_modules/");
+        private File nodeModulesPath;
 
-        private File jsFile = new File(System.getProperty(
-                NodeUpdateImports.MAIN_JS_PARAM, NodeUpdateImports.MAIN_JS));
+        private File jsFile;
 
-        private boolean convertHtml = true;
+        private boolean convertHtml;
 
-        private File webpackOutputDirectory = new File("./src/main/webapp");
+        private File webpackOutputDirectory;
 
-        private String webpackTemplate = WebpackUpdater.WEBPACK_CONFIG;
+        private String webpackTemplate;
 
-        private boolean enablePackagesUpdate = true;
+        private boolean enablePackagesUpdate;
 
-        private boolean enableImportsUpdate = true;
+        private boolean enableImportsUpdate;
 
         /**
          * Create a builder instance.
@@ -72,7 +73,12 @@ public class NodeExecutor implements Command {
          *            a class finder
          */
         public Builder(ClassFinder classFinder) {
-            this.classFinder = classFinder;
+            this(classFinder,
+                    new File(getBaseDir(),
+                            System.getProperty(NodeUpdateImports.MAIN_JS_PARAM,
+                                    NodeUpdateImports.MAIN_JS)),
+                    new File(getBaseDir()),
+                    new File(getBaseDir(), "node_modules"), true);
         }
 
         /**
@@ -98,6 +104,10 @@ public class NodeExecutor implements Command {
             this.npmFolder = npmFolder;
             this.nodeModulesPath = nodeModulesPath;
             this.convertHtml = convertHtml;
+            this.webpackOutputDirectory = new File("./src/main/webapp");
+            this.webpackTemplate = WebpackUpdater.WEBPACK_CONFIG;
+            this.enablePackagesUpdate = true;
+            this.enableImportsUpdate = true;
         }
 
         /**
