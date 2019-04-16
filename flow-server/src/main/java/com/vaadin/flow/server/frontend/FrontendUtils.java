@@ -52,10 +52,31 @@ public class FrontendUtils {
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
+    private static String OS = null;
+
     /**
      * Only static stuff here.
      */
     private FrontendUtils() {
+    }
+
+    /**
+     * Get the Operating System name from the {@code os.name} system property.
+     * @return operating system name
+     */
+    public static String getOsName() {
+        if (OS == null) {
+            OS = System.getProperty("os.name");
+        }
+        return OS;
+    }
+
+    /**
+     * Check if the current os is Windows
+     * @return true if windows
+     */
+    public static boolean isWindows() {
+        return getOsName().startsWith("Windows");
     }
 
     /**
@@ -90,7 +111,8 @@ public class FrontendUtils {
      * @return the full path to the executable
      */
     public static String getNodeExecutable() {
-        return getExecutable("node", "node/node").getAbsolutePath();
+        String command = isWindows() ? "node.exe" : "node";
+        return getExecutable(command, "node/node").getAbsolutePath();
     }
 
     /**
@@ -109,7 +131,8 @@ public class FrontendUtils {
             return Arrays.asList(getNodeExecutable(), file.getAbsolutePath());
         }
         // Otherwise look for regulan `npm`
-        return Arrays.asList(getExecutable("npm", null).getAbsolutePath());
+        String command = isWindows() ? "npm.cmd" : "npm";
+        return Arrays.asList(getExecutable(command, null).getAbsolutePath());
     }
 
     private static File getExecutable(String cmd, String defaultLocation) {
