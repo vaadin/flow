@@ -23,7 +23,6 @@ import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
@@ -55,8 +54,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     @Override
     public boolean synchronizedHandleRequest(
             VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        String pathInfo = servletRequest.getPathInfo();
+        String pathInfo = request.getPathInfo();
 
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
@@ -86,7 +84,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                     .get();
             String generated = cache.computeIfAbsent(tag.get(),
                     moduleTag -> generateModule(webComponentConfiguration,
-                            session, servletRequest));
+                            session, request));
 
             IOUtils.write(generated, response.getOutputStream(),
                     StandardCharsets.UTF_8);
@@ -100,7 +98,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private String generateModule(
             WebComponentConfiguration<? extends Component> configuration,
-            VaadinSession session, VaadinServletRequest request) {
+            VaadinSession session, VaadinRequest request) {
         if (session.getConfiguration().useCompiledFrontendResources()) {
             return generateCompiledUIDeclaration(session, request);
         } else {

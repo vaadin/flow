@@ -59,8 +59,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        String pathInfo = servletRequest.getPathInfo();
+        String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
         }
@@ -76,8 +75,13 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
 
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        String requestURL = servletRequest.getRequestURL().toString();
+        final String requestURL;
+        if(request instanceof VaadinServletRequest) {
+            VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+            requestURL = servletRequest.getRequestURL().toString();
+        }
+        else
+            requestURL = request.getContextPath();
 
         if (!requestURL.endsWith(PATH_PREFIX)) {
             throw new IllegalStateException("Unexpected request URL '"
