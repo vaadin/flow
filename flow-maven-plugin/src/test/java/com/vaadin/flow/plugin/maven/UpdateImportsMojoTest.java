@@ -41,6 +41,7 @@ import org.mockito.Mockito;
 
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.WEBPACK_PREFIX_ALIAS;
 
 public class UpdateImportsMojoTest {
     @Rule
@@ -48,6 +49,7 @@ public class UpdateImportsMojoTest {
 
     private File importsFile;
     private File nodeModulesPath;
+    private File frontendDirectory;
     private final NodeUpdateImportsMojo mojo = new NodeUpdateImportsMojo();
 
     @Before
@@ -58,21 +60,23 @@ public class UpdateImportsMojoTest {
         File tmpRoot = temporaryFolder.getRoot();
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
+        frontendDirectory = new File(tmpRoot, "frontend");
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "jsFile", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         Assert.assertTrue(mojo.getUpdater().getFlowPackage().mkdirs());
 
-        createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+        createExpectedImports(frontendDirectory, nodeModulesPath);
     }
 
     @Test
     public void should_ThrowException_WhenImportsDoNotExist() {
-        deleteExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+        deleteExpectedImports(frontendDirectory, nodeModulesPath);
 
         boolean exceptionNotThrown = true;
         try {
@@ -99,10 +103,13 @@ public class UpdateImportsMojoTest {
             expectedImports.remove("@vaadin/flow-frontend/ExampleConnector.js");
 
             for (String expectedImport : expectedImports) {
+                String normalizedImport = expectedImport.startsWith("./")
+                    ? expectedImport.substring(2)
+                    : expectedImport;
                 Assert.assertTrue(
                         innerMessage + " is missing " + expectedImport
                                 + "\n While imports file is " + content + "\n",
-                        innerMessage.contains(expectedImport));
+                        innerMessage.contains(normalizedImport));
             }
         }
 
@@ -206,11 +213,20 @@ public class UpdateImportsMojoTest {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertTrue(
                             s + " not found in:\n" + content,
-                            content.contains(s)));
+                            content.contains(addWebpackPrefix(s))));
         } else {
-            Arrays.asList(imports).forEach(s -> Assert.assertFalse(
-                    s + " found in:\n" + content, content.contains(s)));
+            Arrays.asList(imports)
+                    .forEach(s -> Assert.assertFalse(
+                            s + " found in:\n" + content,
+                            content.contains(addWebpackPrefix(s))));
         }
+    }
+
+    private String addWebpackPrefix(String s) {
+        if (s.startsWith("./")) {
+            return WEBPACK_PREFIX_ALIAS + s.substring(2);
+        }
+        return s;
     }
 
     private void removeImports(String... imports) throws IOException {
@@ -218,9 +234,9 @@ public class UpdateImportsMojoTest {
 
         List<String> current = FileUtils.loadFile(importsFile);
 
-        Set<String> removed = current.stream()
-                .filter(line -> importsList.stream()
-                        .anyMatch(line::contains))
+        Set<String> removed = current
+                .stream().filter(line -> importsList.stream()
+                        .map(this::addWebpackPrefix).anyMatch(line::contains))
                 .collect(Collectors.toSet());
 
         current.removeAll(removed);
@@ -231,7 +247,7 @@ public class UpdateImportsMojoTest {
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.stream(imports)
+        String content = Arrays.stream(imports).map(this::addWebpackPrefix)
                 .map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 

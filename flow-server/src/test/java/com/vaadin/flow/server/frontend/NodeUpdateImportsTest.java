@@ -38,12 +38,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.WEBPACK_PREFIX_ALIAS;
+
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
     private File nodeModulesPath;
+    private File frontendDirectory;
     private NodeUpdateImports node;
 
     @Before
@@ -52,18 +55,19 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         File tmpRoot = temporaryFolder.getRoot();
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
+        frontendDirectory = new File(tmpRoot, "frontend");
 
-        node = new NodeUpdateImports(getClassFinder(),
+        node = new NodeUpdateImports(getClassFinder(), frontendDirectory,
                 importsFile, tmpRoot, nodeModulesPath, true);
 
         Assert.assertTrue(node.getFlowPackage().mkdirs());
 
-        createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+        createExpectedImports(frontendDirectory, nodeModulesPath);
     }
 
     @Test
     public void should_ThrowException_WhenImportsDoNotExist() {
-        deleteExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+        deleteExpectedImports(frontendDirectory, nodeModulesPath);
 
         boolean exceptionNotThrown = true;
         try {
@@ -93,10 +97,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             expectedImports.remove("@vaadin/flow-frontend/ExampleConnector.js");
 
             for (String expectedImport : expectedImports) {
+                String normalizedImport = expectedImport.startsWith("./")
+                        ? expectedImport.substring(2)
+                        : expectedImport;
                 Assert.assertTrue(
                         innerMessage + " is missing " + expectedImport
                                 + "\n While imports file is " + content + "\n",
-                        innerMessage.contains(expectedImport));
+                        innerMessage.contains(normalizedImport));
             }
         }
 
@@ -202,11 +209,20 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertTrue(
                             s + " not found in:\n" + content,
-                            content.contains(s)));
+                            content.contains(addWebpackPrefix(s))));
         } else {
-            Arrays.asList(imports).forEach(s -> Assert.assertFalse(
-                    s + " found in:\n" + content, content.contains(s)));
+            Arrays.asList(imports)
+                    .forEach(s -> Assert.assertFalse(
+                            s + " found in:\n" + content,
+                            content.contains(addWebpackPrefix(s))));
         }
+    }
+
+    private String addWebpackPrefix(String s) {
+        if (s.startsWith("./")) {
+            return WEBPACK_PREFIX_ALIAS + s.substring(2);
+        }
+        return s;
     }
 
     private void removeImports(String... imports) throws IOException {
@@ -216,7 +232,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         Set<String> removed = current.stream()
-                .filter(line -> importsList.stream().anyMatch(line::contains))
+                .filter(line -> importsList.stream().map(this::addWebpackPrefix).anyMatch(line::contains))
                 .collect(Collectors.toSet());
 
         current.removeAll(removed);
@@ -227,7 +243,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.stream(imports).map(s -> "import '" + s + "';")
+        String content = Arrays.stream(imports).map(this::addWebpackPrefix).map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 
         replaceJsFile(content + "\n", StandardOpenOption.APPEND);
