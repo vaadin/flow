@@ -22,7 +22,7 @@ const buildFolder = `${webappFolder}/${build}`;
 const statsFile = `${buildFolder}/stats.json`;
 // make sure that build folder exists before outputting anything
 const mkdirp = require('mkdirp');
-mkdirp(buildFolder, function(err) {});
+mkdirp(buildFolder);
 
 module.exports = {
   mode: 'production',

@@ -73,7 +73,7 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     }
 
     private void runWebpack() {
-        String webpackCommand = FrontendUtils.isWindows() ? ".bin/webpack.cmd" : ".bin/webpack";
+        String webpackCommand = FrontendUtils.isWindows() ? "webpack/bin/webpack.js" : ".bin/webpack";
         File webpackExecutable = new File(nodeModulesPath, webpackCommand);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
@@ -91,15 +91,8 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
 
         Process webpackLaunch = null;
         try {
-            ProcessBuilder processBuilder = null;
-            if (FrontendUtils.isWindows()) {
-                processBuilder = new ProcessBuilder(
-                        webpackExecutable.getAbsolutePath());
-            } else {
-                processBuilder = new ProcessBuilder(nodePath.getAbsolutePath(),
-                        webpackExecutable.getAbsolutePath());
-            }
-            webpackLaunch = processBuilder.directory(project.getBasedir())
+            webpackLaunch =  new ProcessBuilder(nodePath.getAbsolutePath(),
+                    webpackExecutable.getAbsolutePath()).directory(project.getBasedir())
                     .redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
