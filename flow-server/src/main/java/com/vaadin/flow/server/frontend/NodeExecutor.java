@@ -25,7 +25,6 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
@@ -103,7 +102,7 @@ public class NodeExecutor implements Command {
             this.nodeModulesPath = nodeModulesPath;
             this.convertHtml = convertHtml;
             this.webpackOutputDirectory = new File("./src/main/webapp");
-            this.webpackTemplate = WebpackUpdater.WEBPACK_CONFIG;
+            this.webpackTemplate = FrontendUtils.WEBPACK_CONFIG;
             this.enablePackagesUpdate = true;
             this.enableImportsUpdate = true;
         }
@@ -172,11 +171,11 @@ public class NodeExecutor implements Command {
 
     private NodeExecutor(Builder builder) {
 
-        AnnotationValuesExtractor extractor = new AnnotationValuesCache(
+        ClassFinder classFinder = new ClassFinder.CachedClassFinder(
                 builder.classFinder);
 
         if (builder.enablePackagesUpdate) {
-            commands.add(new NodeUpdatePackages(extractor,
+            commands.add(new NodeUpdatePackages(classFinder,
                     builder.npmFolder, builder.nodeModulesPath,
                     builder.convertHtml));
             commands.add(new WebpackUpdater(builder.npmFolder,
@@ -184,7 +183,7 @@ public class NodeExecutor implements Command {
         }
         
         if (builder.enableImportsUpdate) {
-            commands.add(new NodeUpdateImports(extractor,
+            commands.add(new NodeUpdateImports(classFinder,
                     builder.jsFile, builder.npmFolder, builder.nodeModulesPath,
                     builder.convertHtml));
         }

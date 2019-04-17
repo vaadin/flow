@@ -28,14 +28,13 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class NodeExecutorTest extends NodeUpdateTestBase
+public class NodeExecutorTest extends NodeUpdateTestUtil
         implements ClassFinder {
 
     @Rule

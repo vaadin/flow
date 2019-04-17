@@ -38,12 +38,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class NodeUpdateImportsTest extends NodeUpdateTestBase {
+public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
+    private File nodeModulesPath;
     private NodeUpdateImports node;
 
     @Before
@@ -53,7 +54,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestBase {
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
 
-        node = new NodeUpdateImports(getAnnotationValuesExtractor(),
+        node = new NodeUpdateImports(getClassFinder(),
                 importsFile, tmpRoot, nodeModulesPath, true);
 
         Assert.assertTrue(getFlowPackage().mkdirs());
@@ -237,6 +238,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestBase {
             throws IOException {
         Files.write(Paths.get(importsFile.toURI()),
                 content.getBytes(StandardCharsets.UTF_8), options);
+    }
+
+    File getFlowPackage() {
+        return NodeUpdater.getFlowPackage(nodeModulesPath);
     }
 
 }

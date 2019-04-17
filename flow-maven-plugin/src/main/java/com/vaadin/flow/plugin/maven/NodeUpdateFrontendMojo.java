@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeExecutor;
 import com.vaadin.flow.server.frontend.WebpackUpdater;
 import org.apache.maven.model.Build;
@@ -62,7 +63,7 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
      * the template provided by this plugin. Leave it blank to disable the
      * feature.
      */
-    @Parameter(defaultValue = WebpackUpdater.WEBPACK_CONFIG)
+    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
     private String webpackTemplate;
 
     @Override

@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.server.Command;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 
 /**
  * Updates the webpack config file according with current project settings.
@@ -39,7 +40,6 @@ public class WebpackUpdater implements Command {
     /**
      * The name of the webpack config file.
      */
-    public static final String WEBPACK_CONFIG = "webpack.config.js";
     private final String webpackTemplate;
     private final File webpackOutputDirectory;
 
@@ -49,7 +49,8 @@ public class WebpackUpdater implements Command {
      * Create an instance of <code>WebpackUpdater</code>.
      */
     public WebpackUpdater() {
-        this(new File(getBaseDir()), new File(getBaseDir(),"src/main/webapp"), WEBPACK_CONFIG);
+        this(new File(getBaseDir()), new File(getBaseDir(), "src/main/webapp"),
+                WEBPACK_CONFIG);
     }
 
     /**
@@ -98,8 +99,7 @@ public class WebpackUpdater implements Command {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
-                        .map(line -> line.replace("{{OUTPUT_DIRECTORY}}",
-                                webpackOutputDirectory.getPath()))
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
                 NodeUpdater.log().info("Created {} from {}", WEBPACK_CONFIG, resource);

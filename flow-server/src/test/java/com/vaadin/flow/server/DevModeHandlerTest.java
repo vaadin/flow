@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -51,6 +50,9 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UP
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
@@ -61,13 +63,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+
 @NotThreadSafe
 @SuppressWarnings("restriction")
 public class DevModeHandlerTest {
 
     private MockDeploymentConfiguration configuration;
 
-    private static final String TEST_FILE = "webpack-out.test";
     private HttpServer httpServer;
     private int responseStatus;
 
@@ -75,33 +77,19 @@ public class DevModeHandlerTest {
     public ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
     public void setup() throws Exception {
-        System.setProperty("user.dir", tmpDir.getRoot().getAbsolutePath());
+        System.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
 
         configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(false);
         configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "true");
         configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "true");
-        createWebpackScript("Compiled", 100);
-    }
 
-    private void createWebpackScript(String readyString, int milliSecondsToRun) throws IOException {
-        File serverFile = new File(tmpDir.getRoot(), WEBPACK_SERVER);
-        FileUtils.forceMkdirParent(serverFile);
-
-        serverFile.createNewFile();
-        serverFile.setExecutable(true);
-        FileUtils.write(serverFile, (
-            "#!/usr/bin/env node\n" +
-            "const fs = require('fs');\n" +
-            "const args = String(process.argv);\n" +
-            "fs.writeFileSync('" + TEST_FILE + "', args);\n" +
-            "console.log(args + '\\n[wps]: Compiled.');\n" +
-            "setTimeout(() => {}, " + milliSecondsToRun + ");\n"), "UTF-8");
-        new File(tmpDir.getRoot(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
+        new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
+        createStubWebpackServer("Compiled", 100);
     }
 
     @After
@@ -119,7 +107,7 @@ public class DevModeHandlerTest {
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
         assertNotNull(DevModeHandler.start(configuration));
-        assertTrue(new File(tmpDir.getRoot(), FrontendUtils.WEBAPP_FOLDER + TEST_FILE).canRead());
+        assertTrue(new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER + WEBPACK_TEST_OUT_FILE).canRead());
         Thread.sleep(150); //NOSONAR
     }
 
@@ -129,14 +117,14 @@ public class DevModeHandlerTest {
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Webpack exited prematurely");
 
-        createWebpackScript("Foo", 0);
+        createStubWebpackServer("Foo", 0);
         DevModeHandler.start(configuration);
     }
 
     @Test
     public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
         configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
-        createWebpackScript("Foo", 300);
+        createStubWebpackServer("Foo", 300);
         assertNotNull(DevModeHandler.start(configuration));
         assertTrue(Integer.getInteger("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, 0) > 0);
         Thread.sleep(350); //NOSONAR
@@ -158,7 +146,7 @@ public class DevModeHandlerTest {
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
         DevModeHandler.start(configuration);
-        assertTrue(new File(tmpDir.getRoot(), FrontendUtils.WEBAPP_FOLDER + TEST_FILE).canRead());
+        assertTrue(new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER + WEBPACK_TEST_OUT_FILE).canRead());
         Thread.sleep(150); //NOSONAR
     }
 
@@ -166,19 +154,19 @@ public class DevModeHandlerTest {
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         prepareHttpServer(HTTP_OK, "bar");
         DevModeHandler.start(configuration);
-        assertFalse(new File(tmpDir.getRoot(), FrontendUtils.WEBAPP_FOLDER + TEST_FILE).canRead());
+        assertFalse(new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER + WEBPACK_TEST_OUT_FILE).canRead());
     }
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {
-        new File(tmpDir.getRoot(), WEBPACK_SERVER).delete();
+        new File(getBaseDir(), WEBPACK_SERVER).delete();
         assertNull(DevModeHandler.start(configuration));
     }
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackIsNotExecutable()  {
         // The set executable doesn't work in Windows and will always return false
-        boolean systemImplementsExecutable = new File(tmpDir.getRoot(), WEBPACK_SERVER).setExecutable(false);
+        boolean systemImplementsExecutable = new File(getBaseDir(), WEBPACK_SERVER).setExecutable(false);
         if(systemImplementsExecutable) {
             assertNull(DevModeHandler.start(configuration));
         }
@@ -186,7 +174,7 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackNotConfigured()  {
-        new File(tmpDir.getRoot(), FrontendUtils.WEBPACK_CONFIG).delete();
+        new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).delete();
         assertNull(DevModeHandler.start(configuration));
     }
 

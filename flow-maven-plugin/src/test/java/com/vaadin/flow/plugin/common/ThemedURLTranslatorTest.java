@@ -32,8 +32,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo.ReflectionsClassFinder;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder;
 
 public class ThemedURLTranslatorTest {
 

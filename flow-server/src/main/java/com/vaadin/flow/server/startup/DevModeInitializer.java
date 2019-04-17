@@ -25,24 +25,16 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeExecutor;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
@@ -52,11 +44,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
  */
-@HandlesTypes({
-    NpmPackage.class, JsModule.class,
-    HtmlImport.class, JavaScript.class,
-    Theme.class, AbstractTheme.class,
-    Route.class, Component.class })
+@HandlesTypes({ Route.class })
 public class DevModeInitializer implements ServletContainerInitializer, Serializable {
 
     @Override

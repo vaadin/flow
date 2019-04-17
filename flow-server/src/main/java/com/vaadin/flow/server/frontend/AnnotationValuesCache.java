@@ -25,17 +25,20 @@ import java.util.Set;
  * Extens the default <code>AnnotationValuesExtractor</code> to add Node
  * specific features.
  */
+/*
 class AnnotationValuesCache extends AnnotationValuesExtractor {
 
     private Map<String, Map<Class<?>, Set<String>>> annotatedClassesMapCache = new HashMap<>();
 
-    /**
+    */
+/**
      * Prepares the class to extract annotations with the class finder
      * specified.
      *
      * @param finder
      *            the specific ClassFinder to use
-     */
+     *//*
+
     public AnnotationValuesCache(ClassFinder finder) {
         super(finder);
     }
@@ -51,3 +54,4 @@ class AnnotationValuesCache extends AnnotationValuesExtractor {
                         valueGetterMethodName));
     }
 }
+*/
