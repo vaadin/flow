@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
@@ -38,10 +37,9 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    NodeUpdatePackages updater;
-
-    File packageJson;
-    File webpackConfig;
+    private NodeUpdatePackages updater;
+    private File packageJson;
+    private File webpackConfig;
 
     @Before
     public void setup() throws Exception {
@@ -84,8 +82,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue(tsPackage1 < tsPackage2);
         Assert.assertTrue(tsWebpack1 < tsWebpack2);
-        Assert.assertTrue(tsPackage2 == tsPackage3);
-        Assert.assertTrue(tsWebpack2 == tsWebpack3);
+        Assert.assertEquals(tsPackage2, tsPackage3);
+        Assert.assertEquals(tsWebpack2, tsWebpack3);
 
         assertPackageJsonContent();
     }

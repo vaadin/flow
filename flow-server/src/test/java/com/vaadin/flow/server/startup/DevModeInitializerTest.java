@@ -2,7 +2,6 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,10 +33,8 @@ import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class DevModeInitializerTest {
-
     private ServletContext servletContext;
     private DevModeInitializer devModeInitializer;
-    private ServletRegistration registration;
     private Set<Class<?>> classes;
 
     @Rule
@@ -54,20 +51,19 @@ public class DevModeInitializerTest {
         createStubWebpackServer("Compiled", 1500);
 
         servletContext = Mockito.mock(ServletContext.class);
-        registration = Mockito.mock(ServletRegistration.class);
+        ServletRegistration registration = Mockito.mock(ServletRegistration.class);
         classes = new HashSet<>();
 
         Map registry = new HashMap();
         registry.put("foo", registration);
         Mockito.when(servletContext.getServletRegistrations()).thenReturn(registry);
-
         Mockito.when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
 
         devModeInitializer = new DevModeInitializer();
     }
 
     @After
-    public void teardown() throws Exception {
+    public void teardown() {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS);
     }

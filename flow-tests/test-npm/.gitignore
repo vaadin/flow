@@ -1,4 +1,3 @@
 node_modules/
-package*.json
+package.json
 webpack.config.js
-frontend/main.js

@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -39,6 +40,8 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.MAIN_JS_PARAM;
 
 
 /**
@@ -49,6 +52,7 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private final String webpackTemplate;
     private final File webpackOutputDirectory;
+    private final File generatedFlowImports;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -60,6 +64,8 @@ public class NodeUpdatePackages extends NodeUpdater {
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
      * @param npmFolder
      *            folder with the `package.json` file
      * @param nodeModulesPath
@@ -69,9 +75,11 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            whether to convert html imports or not during the package
      *            updates
      */
-    public NodeUpdatePackages(ClassFinder finder, File webpackOutputDirectory, String webpackTemplate, File npmFolder,
+    public NodeUpdatePackages(ClassFinder finder, File webpackOutputDirectory,
+            String webpackTemplate, File generatedFlowImports, File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
         super(finder, npmFolder, nodeModulesPath, convertHtml);
+        this.generatedFlowImports = generatedFlowImports;
         this.webpackOutputDirectory = webpackOutputDirectory;
         this.webpackTemplate = webpackTemplate;
     }
@@ -84,8 +92,13 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            a reusable class finder
      */
     public NodeUpdatePackages(ClassFinder finder) {
-        this(finder, new File(getBaseDir(), "src/main/webapp"), WEBPACK_CONFIG, new File(getBaseDir()),
-                new File(getBaseDir(), "node_modules"), true);
+        this(finder, new File(getBaseDir(), "src/main/webapp"), WEBPACK_CONFIG,
+                Paths.get(getBaseDir()).resolve("target")
+                        .resolve(System.getProperty(MAIN_JS_PARAM,
+                                FLOW_IMPORTS_FILE))
+                        .toFile(),
+                new File(getBaseDir()), new File(getBaseDir(), "node_modules"),
+                true);
     }
 
     @Override
@@ -124,9 +137,12 @@ public class NodeUpdatePackages extends NodeUpdater {
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
-                List<String> webpackConfigLines = br.lines().map(line -> line
-                        .replace("{{OUTPUT_DIRECTORY}}",
+                List<String> webpackConfigLines = br.lines()
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", 
                                 webpackOutputDirectory.getPath()
+                                        .replaceAll("\\\\", "/")))
+                        .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
+                                generatedFlowImports.getPath()
                                         .replaceAll("\\\\", "/")))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
