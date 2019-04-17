@@ -73,8 +73,8 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     }
 
     private void runWebpack() {
-        String webpack_command = FrontendUtils.isWindows() ? ".bin/webpack.cmd" : ".bin/webpack";
-        File webpackExecutable = new File(nodeModulesPath, webpack_command);
+        String webpackCommand = FrontendUtils.isWindows() ? ".bin/webpack.cmd" : ".bin/webpack";
+        File webpackExecutable = new File(nodeModulesPath, webpackCommand);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate webpack executable by path '%s'. Double check that the plugin us executed correctly",
