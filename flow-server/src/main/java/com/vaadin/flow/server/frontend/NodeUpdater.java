@@ -44,7 +44,7 @@ public abstract class NodeUpdater implements Serializable {
      * jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
-    public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
+    public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
     /**
      * Folder with the <code>package.json</code> file.
@@ -98,7 +98,7 @@ public abstract class NodeUpdater implements Serializable {
     public abstract void execute();
 
     public File getFlowPackage() {
-        return new File(nodeModulesPath, FLOW_PACKAGE);
+        return new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
     }
 
     Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
@@ -126,7 +126,7 @@ public abstract class NodeUpdater implements Serializable {
         return s;
     }
 
-    String resolveInFlowFrontendDirectory(String importPath) {
+    private String resolveInFlowFrontendDirectory(String importPath) {
         if (importPath.startsWith("@")) {
             return importPath;
         }
@@ -134,7 +134,7 @@ public abstract class NodeUpdater implements Serializable {
 
         if (flowModules.contains(pathWithNoProtocols) || getResourceUrl(pathWithNoProtocols) != null) {
           flowModules.add(pathWithNoProtocols);
-          return FLOW_PACKAGE + pathWithNoProtocols;
+          return FLOW_NPM_PACKAGE_NAME + pathWithNoProtocols;
         }
         return pathWithNoProtocols;
     }
@@ -147,12 +147,12 @@ public abstract class NodeUpdater implements Serializable {
             FileUtils.copyURLToFile(source, destination);
         }
         if (log().isInfoEnabled()) {
-            log().info("Installed {} {} modules", flowModules.size(), FLOW_PACKAGE);
+            log().info("Installed {} {} modules", flowModules.size(), FLOW_NPM_PACKAGE_NAME);
         }
     }
 
     private URL getResourceUrl(String resource) {
-        resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_PACKAGE, "");
+        resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_NPM_PACKAGE_NAME, "");
         URL url = finder.getResource(resource);
         return url != null && url.getPath().contains(".jar!") ? url : null;
     }
