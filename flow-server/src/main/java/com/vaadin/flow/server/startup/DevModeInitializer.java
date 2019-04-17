@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
@@ -28,23 +29,16 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
@@ -54,11 +48,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
  */
-@HandlesTypes({
-    NpmPackage.class, JsModule.class,
-    HtmlImport.class, JavaScript.class,
-    Theme.class, AbstractTheme.class,
-    Route.class, Component.class })
+@HandlesTypes({ Route.class })
 public class DevModeInitializer implements ServletContainerInitializer, Serializable {
 
     @Override
@@ -85,17 +75,16 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
             return;
         }
 
-        AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
-                new DefaultClassFinder(classes));
+        ClassFinder finder = new DefaultClassFinder(classes);
         try {
             if (!config.getBooleanProperty(
                     SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false)) {
-                new NodeUpdatePackages(extractor).execute();
+                new NodeUpdatePackages(finder).execute();
             }
 
             if (!config.getBooleanProperty(
                     SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false)) {
-                new NodeUpdateImports(extractor).execute();
+                new NodeUpdateImports(finder).execute();
             }
 
             DevModeHandler.start(config);

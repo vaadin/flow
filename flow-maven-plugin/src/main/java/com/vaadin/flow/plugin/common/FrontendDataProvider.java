@@ -39,8 +39,6 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**

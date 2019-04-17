@@ -31,8 +31,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo.ReflectionsClassFinder;
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;

@@ -24,6 +24,9 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -38,14 +41,17 @@ public class DevModeInitializerTest {
     private Set<Class<?>> classes;
 
     @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void setup() {
+    public void setup() throws Exception {
 
-        new File(tmpDir.getRoot(), "src").mkdir();
-        System.setProperty("user.dir", tmpDir.getRoot().getPath());
+        System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
+        new File(getBaseDir(), "src").mkdir();
+
+        createStubNode(false, true);
+        createStubWebpackServer("Compiled", 1500);
 
         servletContext = Mockito.mock(ServletContext.class);
         registration = Mockito.mock(ServletRegistration.class);
@@ -71,19 +77,16 @@ public class DevModeInitializerTest {
         System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, "true");
         System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, "true");
         devModeInitializer.onStartup(classes, servletContext);
-        assertFalse(new File(tmpDir.getRoot(), PACKAGE_JSON).canRead());
-        assertFalse(new File(tmpDir.getRoot(), WEBPACK_CONFIG).canRead());
+        assertFalse(new File(getBaseDir(), PACKAGE_JSON).canRead());
+        assertFalse(new File(getBaseDir(), WEBPACK_CONFIG).canRead());
         assertNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_Enabled() throws Exception {
         devModeInitializer.onStartup(classes, servletContext);
-        System.err.println(tmpDir + " " + PACKAGE_JSON);
-
-        System.err.println(new File(tmpDir.getRoot(), PACKAGE_JSON).getCanonicalPath());
-        assertTrue(new File(tmpDir.getRoot(), PACKAGE_JSON).canRead());
-        assertTrue(new File(tmpDir.getRoot(), WEBPACK_CONFIG).canRead());
+        assertTrue(new File(getBaseDir(), PACKAGE_JSON).canRead());
+        assertTrue(new File(getBaseDir(), WEBPACK_CONFIG).canRead());
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
 }

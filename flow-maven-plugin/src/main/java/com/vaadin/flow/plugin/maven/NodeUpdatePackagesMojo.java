@@ -23,9 +23,10 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import com.vaadin.flow.server.frontend.AnnotationValuesExtractor;
 import com.vaadin.flow.server.frontend.NodeUpdatePackages;
 import com.vaadin.flow.server.frontend.NodeUpdater;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 
 /**
  * Goal that updates <code>package.json</code> file with @NpmPackage annotations
@@ -40,19 +41,17 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
      * the template provided by this plugin. Leave it blank to disable the
      * feature.
      */
-    @Parameter(defaultValue = NodeUpdatePackages.WEBPACK_CONFIG)
+    @Parameter(defaultValue = WEBPACK_CONFIG)
     private String webpackTemplate;
 
     @Override
     protected NodeUpdater getUpdater() {
         if (updater == null) {
-            AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
-                    getClassFinder(project));
             File webpackOutputRelativeToProjectDir = project.getBasedir()
                     .toPath().relativize(getWebpackOutputDirectory().toPath())
                     .toFile();
 
-            updater = new NodeUpdatePackages(extractor,
+            updater = new NodeUpdatePackages(getClassFinder(project),
                     webpackOutputRelativeToProjectDir, webpackTemplate,
                     npmFolder, nodeModulesPath, convertHtml);
         }

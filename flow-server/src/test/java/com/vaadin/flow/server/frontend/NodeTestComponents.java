@@ -27,6 +27,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import org.slf4j.LoggerFactory;
@@ -80,8 +81,17 @@ public class NodeTestComponents {
     }
 
     @Theme(value = LumoTest.class, variant = LumoTest.DARK)
+    @Route
     public static class MainView extends Component {
-
+        ButtonComponent buttonComponent;
+        IconComponent iconComponent;
+        VaadinBowerComponent vaadinBowerComponent;
+        VaadinNpmComponent vaadinNpmComponent;
+        VaadinMixedComponent vaadinMixedComponent;
+        LocalP2Template localP2Template;
+        LocalP3Template localP3Template;
+        FlatImport flatImport;
+        TranslatedImports translatedImports;
     }
 
     /**

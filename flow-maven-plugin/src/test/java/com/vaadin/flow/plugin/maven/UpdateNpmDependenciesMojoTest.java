@@ -42,10 +42,12 @@ import com.vaadin.flow.plugin.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 
 public class UpdateNpmDependenciesMojoTest {
     @Rule
@@ -61,25 +63,27 @@ public class UpdateNpmDependenciesMojoTest {
 
     @Before
     public void setup() throws Exception {
-        File tmpRoot = temporaryFolder.getRoot();
-        packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
-        webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
+        File baseDir = temporaryFolder.getRoot();
 
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", new File(tmpRoot, "node_modules"));
+        packageJson = new File(baseDir, PACKAGE_JSON).getAbsolutePath();
+        webpackConfig = new File(baseDir, WEBPACK_CONFIG).getAbsolutePath();
+
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", baseDir);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", new File(baseDir, "node_modules"));
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
         setProject("war", "war_output");
     }
 
     private void setProject(String packaging, String outputDirectory) throws Exception {
+        String baseDir = temporaryFolder.getRoot().getPath() + File.separator;
         Build buildMock = mock(Build.class);
-        when(buildMock.getOutputDirectory()).thenReturn(outputDirectory);
-        when(buildMock.getDirectory()).thenReturn(outputDirectory);
+        when(buildMock.getOutputDirectory()).thenReturn(baseDir + outputDirectory);
+        when(buildMock.getDirectory()).thenReturn(baseDir + outputDirectory);
         when(buildMock.getFinalName()).thenReturn("finalName");
 
         MavenProject project = mock(MavenProject.class);
-        when(project.getBasedir()).thenReturn(new File("."));
+        when(project.getBasedir()).thenReturn(new File(baseDir));
         when(project.getPackaging()).thenReturn(packaging);
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());

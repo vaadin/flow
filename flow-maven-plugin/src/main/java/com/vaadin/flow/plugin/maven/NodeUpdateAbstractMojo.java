@@ -37,7 +37,7 @@ import org.reflections.util.ConfigurationBuilder;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.ClassPathIntrospector.ClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
@@ -133,7 +133,10 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
             getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
             return;
         }
+        long start = System.nanoTime();
         getUpdater().execute();
+        long ms = (System.nanoTime() - start) / 1000;
+        getLog().info("Took " + ms + "ms.");
     }
 
     /**

@@ -19,55 +19,46 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.NodeUpdatePackages.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    NodeUpdatePackages node;
+    NodeUpdatePackages updater;
 
     File packageJson;
     File webpackConfig;
 
     @Before
     public void setup() throws Exception {
+        System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
 
-        File tmpRoot = temporaryFolder.getRoot();
-        packageJson = new File(tmpRoot, PACKAGE_JSON);
-        webpackConfig = new File(tmpRoot, WEBPACK_CONFIG);
-        
-        File modules = new File(tmpRoot, "node_modules");
+        NodeUpdateTestUtil.createStubNode(true, true);
+        updater = createStubUpdater();
 
-        node = new NodeUpdatePackages(getAnnotationValuesExtractor(), 
-                tmpRoot, WEBPACK_CONFIG, tmpRoot, modules, true);
-    }
-
-    @After
-    public void teardown() {
-        FileUtils.deleteQuietly(packageJson);
-        FileUtils.deleteQuietly(webpackConfig);
+        packageJson = new File(getBaseDir(), PACKAGE_JSON);
+        webpackConfig = new File(getBaseDir(), WEBPACK_CONFIG);
     }
 
     @Test
     public void executeNpm_packageJsonMissing() throws Exception {
         Assert.assertFalse(packageJson.exists());
 
-        node.execute();
+        updater.execute();
 
         assertPackageJsonContent();
 
@@ -76,19 +67,18 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     public void executeNpm_packageJsonExists() throws Exception {
-
-        FileUtils.write(packageJson, "{}");
+        FileUtils.write(packageJson, "{}", "UTF-8");
         long tsPackage1 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack1 = FileUtils.getFile(webpackConfig).lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
-        node.execute();
+        updater.execute();
         long tsPackage2 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack2 = FileUtils.getFile(webpackConfig).lastModified();
 
         sleep(1000);
-        node.execute();
+        updater.execute();
         long tsPackage3 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack3 = FileUtils.getFile(webpackConfig).lastModified();
 
@@ -101,7 +91,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     }
 
     private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = getPackageJson();
+        JsonObject packageJsonObject = updater.getPackageJson();
 
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
 
@@ -128,13 +118,4 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 devDependencies.hasKey("copy-webpack-plugin"));
     }
 
-    private JsonObject getPackageJson() throws IOException {
-        if (packageJson.exists()) {
-            return Json.parse(FileUtils.readFileToString(packageJson,
-                    Charset.defaultCharset()));
-
-        } else {
-            return Json.createObject();
-        }
-    }
 }

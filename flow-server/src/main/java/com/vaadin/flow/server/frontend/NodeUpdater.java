@@ -48,22 +48,48 @@ public abstract class NodeUpdater implements Serializable {
     /**
      * Folder with the <code>package.json</code> file.
      */
-    protected File npmFolder;
+    protected final File npmFolder;
 
     /**
      * The path to the {@literal node_modules} directory of the project.
      */
-    protected File nodeModulesPath;
+    protected final File nodeModulesPath;
 
     /**
      * Enable or disable legacy components annotated only with
      * {@link HtmlImport}.
      */
-    protected boolean convertHtml;
+    protected final boolean convertHtml;
 
-    AnnotationValuesExtractor annotationValuesExtractor;
+    /**
+     * The {@link FrontendDependencies} object representing the application
+     * dependencies.
+     */
+    protected final FrontendDependencies frontDeps;
+
+    private final ClassFinder finder;
 
     private final Set<String> flowModules = new HashSet<>();
+
+    /**
+     * Constructor.
+     *
+     * @param finder
+     *            a reusable class finder
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
+     */
+    protected NodeUpdater(ClassFinder finder, File npmFolder, File nodeModulesPath, boolean convertHtml) {
+        this.frontDeps = new FrontendDependencies(finder);
+        this.finder = finder;
+        this.npmFolder = npmFolder;
+        this.nodeModulesPath = nodeModulesPath;
+        this.convertHtml = convertHtml;
+    }
 
     /**
      * Execute the update process.
@@ -82,6 +108,16 @@ public abstract class NodeUpdater implements Serializable {
     Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    Set<String> getJavascriptJsModules(Set<String> javascripts) {
+        return javascripts.stream().map(this::resolveInFlowFrontendDirectory)
+                .collect(Collectors.toSet());
+    }
+
+    String toValidBrowserImport(String s) {
+        // add `./` prefix to names starting with letters
+        return Character.isAlphabetic(s.charAt(0)) ? "./" + s : s;
     }
 
     String resolveInFlowFrontendDirectory(String importPath) {
@@ -110,9 +146,9 @@ public abstract class NodeUpdater implements Serializable {
     }
 
     private URL getResourceUrl(String resource) {
-      URL url = annotationValuesExtractor.getResource(
-          RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_PACKAGE, ""));
-      return url != null && url.getPath().contains(".jar!") ? url : null;
+        resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_PACKAGE, "");
+        URL url = finder.getResource(resource);
+        return url != null && url.getPath().contains(".jar!") ? url : null;
     }
 
     private String htmlImportToJsModule(String htmlImport) {

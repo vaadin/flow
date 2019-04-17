@@ -102,7 +102,8 @@ public class FrontendUtils {
         boolean hasBowerFrontend = new File(getBaseDir(), "src/main/webapp/frontend").isDirectory();
         boolean hasNpmFrontend = new File(getBaseDir(), "frontend").isDirectory();
         boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
-                && new File(WEBPACK_CONFIG).exists();
+                && new File(getBaseDir(), WEBPACK_CONFIG).exists();
+        
 
         return hasBowerFrontend && !hasNpmFrontend && !hasNpmConfig ? true : false;
     }
