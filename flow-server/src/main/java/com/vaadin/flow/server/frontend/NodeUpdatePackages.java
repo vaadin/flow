@@ -64,6 +64,8 @@ public class NodeUpdatePackages extends NodeUpdater {
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
      * @param npmFolder
      *            folder with the `package.json` file
      * @param nodeModulesPath
@@ -136,7 +138,6 @@ public class NodeUpdatePackages extends NodeUpdater {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
-                    // TODO kb replace another parameter
                     .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
                     .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}", generatedFlowImports.getPath()))
                         .collect(Collectors.toList());

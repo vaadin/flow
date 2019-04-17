@@ -63,8 +63,6 @@ public class NodeUpdateImports extends NodeUpdater {
      * the import starting with a prefix in the Flow project frontend directory.
      */
     public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
-    private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
-    private static final String VALUE = "value";
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
