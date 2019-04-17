@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +33,13 @@ import static org.junit.Assert.assertThat;
 
 public class FrontendUtilsTest {
 
+    public static final String DEFAULT_NODE = FrontendUtils.isWindows() ?
+            "node\\node.exe" :
+            "node/node";
+
+    public static final String NPM_CLI_STRING = Stream
+            .of("node", "node_modules", "npm", "bin", "npm-cli.js")
+            .collect(Collectors.joining(File.separator));
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -44,9 +55,12 @@ public class FrontendUtilsTest {
     public void should_useProjectNodeFirst() throws Exception {
         createStubNode(true, true);
 
-        assertThat(FrontendUtils.getNodeExecutable(), containsString("node/node"));
-        assertThat(FrontendUtils.getNpmExecutable().get(0), containsString("node/node"));
-        assertThat(FrontendUtils.getNpmExecutable().get(1), containsString("node/node_modules/npm/bin/npm-cli.js"));
+        assertThat(FrontendUtils.getNodeExecutable(),
+                containsString(DEFAULT_NODE));
+        assertThat(FrontendUtils.getNpmExecutable().get(0),
+                containsString(DEFAULT_NODE));
+        assertThat(FrontendUtils.getNpmExecutable().get(1),
+                containsString(NPM_CLI_STRING));
     }
 
     @Test
@@ -54,17 +68,23 @@ public class FrontendUtilsTest {
         createStubNode(false, true);
 
         assertThat(FrontendUtils.getNodeExecutable(), containsString("node"));
-        assertThat(FrontendUtils.getNodeExecutable(), not(containsString("node/node")));
-        assertThat(FrontendUtils.getNpmExecutable().get(0), containsString("node"));
-        assertThat(FrontendUtils.getNpmExecutable().get(1), containsString("node/node_modules/npm/bin/npm-cli.js"));
+        assertThat(FrontendUtils.getNodeExecutable(),
+                not(containsString(DEFAULT_NODE)));
+        assertThat(FrontendUtils.getNpmExecutable().get(0),
+                containsString("node"));
+        assertThat(FrontendUtils.getNpmExecutable().get(1),
+                containsString(NPM_CLI_STRING));
     }
 
     @Test
-    public void should_useSystemNode() throws Exception {
+    public void should_useSystemNode() {
         assertThat(FrontendUtils.getNodeExecutable(), containsString("node"));
-        assertThat(FrontendUtils.getNodeExecutable(), not(containsString("node/node")));
-        assertThat(FrontendUtils.getNpmExecutable().get(0), containsString("npm"));
-        assertThat(FrontendUtils.getNodeExecutable(), not(containsString("node/node_modules/npm/bin/npm-cli.js")));
-        assertEquals(1 , FrontendUtils.getNpmExecutable().size());
+        assertThat(FrontendUtils.getNodeExecutable(),
+                not(containsString(DEFAULT_NODE)));
+        assertThat(FrontendUtils.getNpmExecutable().get(0),
+                containsString("npm"));
+        assertThat(FrontendUtils.getNodeExecutable(),
+                not(containsString(NPM_CLI_STRING)));
+        assertEquals(1, FrontendUtils.getNpmExecutable().size());
     }
 }
