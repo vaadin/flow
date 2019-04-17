@@ -32,6 +32,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
@@ -72,7 +73,8 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     }
 
     private void runWebpack() {
-        File webpackExecutable = new File(nodeModulesPath, ".bin/webpack");
+        String webpack_command = FrontendUtils.isWindows() ? ".bin/webpack.cmd" : ".bin/webpack";
+        File webpackExecutable = new File(nodeModulesPath, webpack_command);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate webpack executable by path '%s'. Double check that the plugin us executed correctly",
@@ -89,11 +91,16 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
 
         Process webpackLaunch = null;
         try {
-            webpackLaunch = new ProcessBuilder(nodePath.getAbsolutePath(),
-                    webpackExecutable.getAbsolutePath())
-                            .directory(project.getBasedir())
-                            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                            .start();
+            ProcessBuilder processBuilder = null;
+            if (FrontendUtils.isWindows()) {
+                processBuilder = new ProcessBuilder(
+                        webpackExecutable.getAbsolutePath());
+            } else {
+                processBuilder = new ProcessBuilder(nodePath.getAbsolutePath(),
+                        webpackExecutable.getAbsolutePath());
+            }
+            webpackLaunch = processBuilder.directory(project.getBasedir())
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
                 readDetailsAndThrowException(webpackLaunch);

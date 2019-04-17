@@ -36,7 +36,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
@@ -125,8 +124,10 @@ public class NodeUpdatePackages extends NodeUpdater {
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
-                List<String> webpackConfigLines = br.lines()
-                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
+                List<String> webpackConfigLines = br.lines().map(line -> line
+                        .replace("{{OUTPUT_DIRECTORY}}",
+                                webpackOutputDirectory.getPath()
+                                        .replaceAll("\\\\", "/")))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
                 log().info("Created {} from {}", WEBPACK_CONFIG, resource);
