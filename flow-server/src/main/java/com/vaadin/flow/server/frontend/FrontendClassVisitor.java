@@ -185,8 +185,6 @@ class FrontendClassVisitor extends ClassVisitor {
                 Set<String> set = endPoint.imports.computeIfAbsent(className,
                         k -> new HashSet<>());
                 set.add(value.toString());
-
-                System.err.println("imports: " + className + ": " + value.toString());
             }
         };
         // Visitor for @NpmPackage annotations

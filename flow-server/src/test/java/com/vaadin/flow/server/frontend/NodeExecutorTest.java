@@ -65,7 +65,7 @@ public class NodeExecutorTest extends NodeUpdateTestUtil {
 
                 annotationScanCount.compute(clazz,
                         (k, v) -> v == null ? 1 : v + 1);
-                
+
                 return classFinder.getAnnotatedClasses(clazz);
             }
         }).when(classFinderSpy).getAnnotatedClasses(Mockito.any());
