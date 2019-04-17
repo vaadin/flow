@@ -53,6 +53,8 @@ public class NodeUpdatePackagesMojo extends NodeUpdateAbstractMojo {
 
             updater = new NodeUpdatePackages(getClassFinder(project),
                     webpackOutputRelativeToProjectDir, webpackTemplate,
+                    frontendDirectory.toPath()
+                            .relativize(generatedFlowImports.toPath()).toFile(),
                     npmFolder, nodeModulesPath, convertHtml);
         }
         return updater;

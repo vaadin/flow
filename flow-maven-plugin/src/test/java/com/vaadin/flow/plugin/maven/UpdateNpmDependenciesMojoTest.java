@@ -39,10 +39,10 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.frontend.NodeUpdateImports;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static org.mockito.Mockito.mock;
@@ -70,7 +70,9 @@ public class UpdateNpmDependenciesMojoTest {
 
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", baseDir);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", new File(baseDir, "node_modules"));
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", new File(baseDir, NodeUpdateImports.FLOW_IMPORTS_FILE));
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", new File(baseDir, "frontend"));
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
         setProject("war", "war_output");
     }
