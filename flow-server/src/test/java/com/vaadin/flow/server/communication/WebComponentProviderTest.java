@@ -16,26 +16,6 @@
 
 package com.vaadin.flow.server.communication;
 
-import static org.mockito.Mockito.times;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -52,8 +32,25 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
-
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.mockito.Mockito.times;
 
 @NotThreadSafe
 public class WebComponentProviderTest {
@@ -277,7 +274,7 @@ public class WebComponentProviderTest {
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         Mockito.when(request.getContextPath()).thenReturn("");
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(servletContext);
+                .getInstance();
         Mockito.when(servletContext.getAttribute(
                 WebComponentConfigurationRegistry.class.getName()))
                 .thenReturn(registry);

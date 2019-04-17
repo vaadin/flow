@@ -15,7 +15,15 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import javax.servlet.ServletContext;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.theme.Theme;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -26,14 +34,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Registry for storing available web component configuration implementations.
@@ -214,28 +214,17 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
-     * Get WebComponentRegistry instance for given servlet context.
+     * Get WebComponentRegistry instance. This instance is based on
+     * current {@link VaadinService}.
      *
-     * @param servletContext
-     *         servlet context to get registry for
      * @return WebComponentRegistry instance
      */
-    public static WebComponentConfigurationRegistry getInstance(
-            ServletContext servletContext) {
-        assert servletContext != null;
+    public static WebComponentConfigurationRegistry getInstance() {
 
-        Object attribute;
-        synchronized (servletContext) {
-            attribute = servletContext.getAttribute(
-                    WebComponentConfigurationRegistry.class.getName());
+        VaadinService service = VaadinService.getCurrent();
 
-            if (attribute == null) {
-                attribute = createRegistry(servletContext);
-                servletContext.setAttribute(
-                        WebComponentConfigurationRegistry.class.getName(),
-                        attribute);
-            }
-        }
+        Object attribute = service.getAttribute(WebComponentConfigurationRegistry.class.getName(),
+            WebComponentConfigurationRegistry::createRegistry);
 
         if (attribute instanceof WebComponentConfigurationRegistry) {
             return (WebComponentConfigurationRegistry) attribute;
@@ -284,8 +273,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
     }
 
-    private static WebComponentConfigurationRegistry createRegistry(
-            ServletContext context) {
+    private static WebComponentConfigurationRegistry createRegistry() {
         if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return new WebComponentConfigurationRegistry();
         }

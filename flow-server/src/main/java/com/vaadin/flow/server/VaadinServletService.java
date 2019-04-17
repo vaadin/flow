@@ -16,26 +16,25 @@
 
 package com.vaadin.flow.server;
 
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.servlet.GenericServlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.GenericServlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -237,6 +236,35 @@ public class VaadinServletService extends VaadinService {
         return Optional.empty();
     }
 
+    @Override
+    public Object getAttribute(String name, Supplier<?> defaultValueSupplier) {
+        ServletContext servletContext = this.getServlet().getServletContext();
+        assert servletContext != null;
+
+        Object attribute;
+        synchronized (servletContext) {
+            attribute = servletContext.getAttribute(name);
+
+            if (attribute == null && defaultValueSupplier != null) {
+                attribute = defaultValueSupplier.get();
+                servletContext.setAttribute(
+                    name,
+                    attribute);
+            }
+        }
+
+        return attribute;
+    }
+
+    @Override
+    public void setAttribute(String name, Object value) {
+        ServletContext servletContext = this.getServlet().getServletContext();
+        assert servletContext != null;
+        synchronized (servletContext) {
+            servletContext.setAttribute(name, value);
+        }
+    }
+
     /**
      * Resolves the given {@code url} resource and tries to find a themed or raw
      * version.
@@ -356,5 +384,7 @@ public class VaadinServletService extends VaadinService {
         return getServlet().getWebJarServer()
                 .flatMap(server -> server.getWebJarResourcePath(path));
     }
+
+
 
 }

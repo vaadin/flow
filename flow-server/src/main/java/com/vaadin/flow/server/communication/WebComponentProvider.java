@@ -15,16 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -37,6 +27,15 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Request handler that supplies the script/html of the web component matching
@@ -76,8 +75,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
-                WebComponentConfigurationRegistry.getInstance(
-                        ((VaadinServletRequest) request).getServletContext())
+                WebComponentConfigurationRegistry.getInstance()
                         .getConfiguration(tag.get());
 
         if (optionalWebComponentConfiguration.isPresent()) {

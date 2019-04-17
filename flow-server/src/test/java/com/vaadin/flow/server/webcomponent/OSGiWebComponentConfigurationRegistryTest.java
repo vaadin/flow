@@ -16,6 +16,15 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.server.startup.EnableOSGiRunner;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,16 +37,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.server.startup.EnableOSGiRunner;
-
 @NotThreadSafe
 @RunWith(EnableOSGiRunner.class)
 public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
@@ -46,7 +45,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     @Override
     public void init() {
         registry = WebComponentConfigurationRegistry
-                .getInstance(OSGiAccess.getInstance().getOsgiServletContext());
+                .getInstance(); // OSGiAccess.getInstance().getOsgiServletContext()
     }
 
     @After
@@ -65,7 +64,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     @Test
     public void assertOsgiRegistryIsServedAsASingleton() {
         Assert.assertEquals(registry, WebComponentConfigurationRegistry
-                .getInstance(OSGiAccess.getInstance().getOsgiServletContext()));
+                .getInstance()); // OSGiAccess.getInstance().getOsgiServletContext())
     }
 
     @Override

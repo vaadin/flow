@@ -15,13 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.lang.annotation.Annotation;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Optional;
-
-import javax.servlet.ServletContext;
-
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
@@ -29,12 +22,15 @@ import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-
 import elemental.json.JsonObject;
+
+import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -55,10 +51,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         @Override
         public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
                 Class<T> annotationType) {
-            ServletContext servletContext = ((VaadinServletService) getRequest()
-                    .getService()).getServlet().getServletContext();
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(servletContext);
+                    .getInstance();
             return registry.getEmbeddedApplicationAnnotation(annotationType);
         }
     }

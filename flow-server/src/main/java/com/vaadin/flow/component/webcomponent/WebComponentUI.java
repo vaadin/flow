@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import javax.servlet.ServletContext;
-import java.util.Optional;
-
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -31,14 +26,15 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
+import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -67,10 +63,8 @@ public class WebComponentUI extends UI {
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
         if (deploymentConfiguration.useCompiledFrontendResources()) {
-            ServletContext context = ((VaadinServletService) request
-                    .getService()).getServlet().getServletContext();
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(context);
+                    .getInstance();
 
             /*
              * This code adds a number of HTML dependencies to the page but in
@@ -98,7 +92,7 @@ public class WebComponentUI extends UI {
     public void connectWebComponent(String tag, String webComponentElementId) {
         Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
                 WebComponentConfigurationRegistry
-                        .getInstance(VaadinServlet.getCurrent().getServletContext())
+                        .getInstance()
                         .getConfiguration(tag);
 
         if (!webComponentExporter.isPresent()) {
@@ -161,7 +155,7 @@ public class WebComponentUI extends UI {
 
     private void assignTheme() {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(VaadinServlet.getCurrent().getServletContext());
+                .getInstance();
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);
         if (theme.isPresent()) {
