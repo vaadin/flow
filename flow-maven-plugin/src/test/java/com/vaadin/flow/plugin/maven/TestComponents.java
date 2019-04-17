@@ -38,7 +38,6 @@ public class TestComponents {
     class IconComponent extends Component {
     }
 
-    @NpmPackage("@vaadin/vaadin-date-picker")
     @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
     @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
     @JavaScript("frontend://ExampleConnector.js")
@@ -83,6 +82,7 @@ public class TestComponents {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;
         VaadinBowerComponent vaadinBowerComponent;
+        VaadinElementMixin vaadinElementMixin;
         VaadinNpmComponent vaadinNpmComponent;
         VaadinMixedComponent vaadinMixedComponent;
         LocalP2Template localP2Template;

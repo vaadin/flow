@@ -70,20 +70,30 @@ public class NodeUpdateImports extends NodeUpdater {
      */
     public NodeUpdateImports(ClassFinder finder, File jsFile, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
-        super(finder, npmFolder, nodeModulesPath, convertHtml);
-        this.jsFile = jsFile;
+        this(finder, null, jsFile, npmFolder, nodeModulesPath, convertHtml);
     }
 
+
     /**
-     * Create an instance of the updater given the reusable extractor, the rest
-     * of the configurable parameters will be set to their default values.
+     * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
      *            a reusable class finder
+     * @param frontendDependencies
+     *            a reusable frontend dependencies
+     * @param jsFile
+     *            name of the JS file to update with the imports
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(ClassFinder finder) {
-        this(finder, new File(getBaseDir(), System.getProperty(MAIN_JS_PARAM, MAIN_JS)),
-                new File(getBaseDir()), new File(getBaseDir(), "node_modules"), true);
+    public NodeUpdateImports(ClassFinder finder, FrontendDependencies frontendDependencies, File jsFile, File npmFolder, File nodeModulesPath,
+                             boolean convertHtml) {
+        super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
+        this.jsFile = jsFile;
     }
 
     @Override

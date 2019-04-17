@@ -24,18 +24,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.router.Route;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
-public class NodeExecutorTest extends NodeUpdateTestUtil
-        implements ClassFinder {
+public class NodeExecutorTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -54,9 +53,25 @@ public class NodeExecutorTest extends NodeUpdateTestUtil
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
 
-        node = new NodeExecutor.Builder(
-                createProxyClassFinder(getClassFinder(), this), importsFile,
-                tmpRoot, nodeModulesPath, true).build();
+        ClassFinder classFinder = getClassFinder();
+        ClassFinder classFinderSpy = Mockito.spy(getClassFinder());
+
+        Mockito.doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+
+                Class<? extends Annotation> clazz = (Class<? extends Annotation>) invocation
+                        .getArguments()[0];
+
+                annotationScanCount.compute(clazz,
+                        (k, v) -> v == null ? 1 : v + 1);
+                
+                return classFinder.getAnnotatedClasses(clazz);
+            }
+        }).when(classFinderSpy).getAnnotatedClasses(Mockito.any());
+
+        node = new NodeExecutor.Builder(classFinderSpy, importsFile, tmpRoot,
+                nodeModulesPath, true).build();
 
         createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
     }
@@ -65,37 +80,8 @@ public class NodeExecutorTest extends NodeUpdateTestUtil
     public void should_ScanAnnotations_Once() {
         node.execute();
 
-        Assert.assertEquals("NpmPackage scanned more than once", 1,
-                annotationScanCount.get(NpmPackage.class).intValue());
-        Assert.assertEquals("HtmlImport scanned more than once", 1,
-                annotationScanCount.get(HtmlImport.class).intValue());
-        Assert.assertEquals("JsModule scanned more than once", 1,
-                annotationScanCount.get(JsModule.class).intValue());
-        Assert.assertEquals("JavaScript scanned more than once", 1,
-                annotationScanCount.get(JavaScript.class).intValue());
+        Assert.assertEquals("Route scanned more than once", 1,
+                annotationScanCount.get(Route.class).intValue());
     }
 
-    @Override
-    public Set<Class<?>> getAnnotatedClasses(
-            Class<? extends Annotation> clazz) {
-
-        annotationScanCount.compute(clazz, (k, v) -> v == null ? 1 : v + 1);
-
-        return null;
-    }
-
-    @Override
-    public URL getResource(String name) {
-        return null;
-    }
-
-    @Override
-    public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
-        return null;
-    }
-
-    @Override
-    public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
-        return null;
-    }
 }

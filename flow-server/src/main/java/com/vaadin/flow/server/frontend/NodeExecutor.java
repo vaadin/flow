@@ -174,18 +174,21 @@ public class NodeExecutor implements Command {
         ClassFinder classFinder = new ClassFinder.CachedClassFinder(
                 builder.classFinder);
 
+        FrontendDependencies frontendDependencies = new FrontendDependencies(
+                classFinder);
+
         if (builder.enablePackagesUpdate) {
             commands.add(new NodeUpdatePackages(classFinder,
-                    builder.npmFolder, builder.nodeModulesPath,
-                    builder.convertHtml));
+                    frontendDependencies, builder.npmFolder,
+                    builder.nodeModulesPath, builder.convertHtml));
             commands.add(new WebpackUpdater(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate));
         }
-        
+
         if (builder.enableImportsUpdate) {
             commands.add(new NodeUpdateImports(classFinder,
-                    builder.jsFile, builder.npmFolder, builder.nodeModulesPath,
-                    builder.convertHtml));
+                    frontendDependencies, builder.jsFile, builder.npmFolder,
+                    builder.nodeModulesPath, builder.convertHtml));
         }
     }
 

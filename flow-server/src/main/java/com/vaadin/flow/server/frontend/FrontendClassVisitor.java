@@ -182,12 +182,11 @@ class FrontendClassVisitor extends ClassVisitor {
         htmlImportVisitor = new FrontendAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                Set<String> set = endPoint.imports.get(className);
-                if (set == null) {
-                    set = new HashSet<>();
-                    endPoint.imports.put(className, set);
-                }
+                Set<String> set = endPoint.imports.computeIfAbsent(className,
+                        k -> new HashSet<>());
                 set.add(value.toString());
+
+                System.err.println("imports: " + className + ": " + value.toString());
             }
         };
         // Visitor for @NpmPackage annotations

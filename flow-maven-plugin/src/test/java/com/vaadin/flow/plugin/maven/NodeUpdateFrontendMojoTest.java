@@ -49,7 +49,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.WebpackUpdater.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

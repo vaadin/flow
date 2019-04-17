@@ -55,20 +55,30 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            updates
      */
     public NodeUpdatePackages(ClassFinder finder, File npmFolder,
-            File nodeModulesPath, boolean convertHtml) {
-        super(finder, npmFolder, nodeModulesPath, convertHtml);
+                              File nodeModulesPath, boolean convertHtml) {
+        this(finder, null, npmFolder, nodeModulesPath, convertHtml);
     }
 
     /**
-     * Create an instance of the updater given the reusable extractor, the rest
-     * of the configurable parameters will be set to their default values.
+     * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
      *            a reusable class finder
+     * @param frontendDependencies
+     *            a reusable frontend dependencies
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the
+     *            project
+     * @param convertHtml
+     *            whether to convert html imports or not during the package
+     *            updates
      */
-    public NodeUpdatePackages(ClassFinder finder) {
-        this(finder, new File(getBaseDir()),
-                new File(getBaseDir(), "node_modules"), true);
+    public NodeUpdatePackages(ClassFinder finder,
+            FrontendDependencies frontendDependencies, File npmFolder,
+            File nodeModulesPath, boolean convertHtml) {
+        super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
     }
 
     @Override

@@ -80,12 +80,34 @@ public abstract class NodeUpdater implements Command {
      * @param npmFolder
      *            folder with the `package.json` file
      * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the project
+     *            the path to the {@literal node_modules} directory of the
+     *            project
      * @param convertHtml
      *            true to enable polymer-2 annotated classes to be considered
      */
     protected NodeUpdater(ClassFinder finder, File npmFolder, File nodeModulesPath, boolean convertHtml) {
-        this.frontDeps = new FrontendDependencies(finder);
+        this(finder, null, npmFolder, nodeModulesPath, convertHtml);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param finder
+     *            a reusable class finder
+     * @param frontendDependencies
+     *            a reusable frontend dependencies
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the
+     *            project
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
+     */
+    protected NodeUpdater(ClassFinder finder, FrontendDependencies frontendDependencies, File npmFolder, File nodeModulesPath, boolean convertHtml) {
+        this.frontDeps = frontendDependencies == null
+                ? new FrontendDependencies(finder)
+                : frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesPath = nodeModulesPath;
