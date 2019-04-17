@@ -65,12 +65,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         @Override
         protected Optional<ThemeDefinition> getTheme() {
-            Optional<Theme> theme = getPageConfigurationAnnotation(Theme.class);
-            if (theme.isPresent()) {
-                return Optional
-                        .of(new ThemeDefinition(theme.get().value(), ""));
-            }
-            return Optional.empty();
+            Optional<Theme> optionalTheme = getPageConfigurationAnnotation(Theme.class);
+            return optionalTheme.map(ThemeDefinition::new);
         }
     }
 
