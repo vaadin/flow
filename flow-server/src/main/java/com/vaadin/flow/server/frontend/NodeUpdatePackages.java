@@ -139,7 +139,9 @@ public class NodeUpdatePackages extends NodeUpdater {
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
                     .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
-                    .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}", generatedFlowImports.getPath()))
+                        .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
+                                generatedFlowImports.getPath()
+                                        .replaceAll("\\\\", "/")))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
                 log().info("Created {} from {}", WEBPACK_CONFIG, resource);
