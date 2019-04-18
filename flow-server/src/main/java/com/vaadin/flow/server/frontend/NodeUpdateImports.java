@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -29,13 +28,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import org.apache.commons.io.FileUtils;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
@@ -81,6 +79,8 @@ public class NodeUpdateImports extends NodeUpdater {
      *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
+     * @param frontendDirectory
+     *            a directory with project's frontend files
      * @param generatedFlowImports
      *            name of the JS file to update with the imports
      * @param npmFolder
