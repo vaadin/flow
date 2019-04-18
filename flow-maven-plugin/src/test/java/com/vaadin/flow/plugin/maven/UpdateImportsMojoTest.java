@@ -41,6 +41,7 @@ import org.mockito.Mockito;
 
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.getClassPath;
 import static com.vaadin.flow.plugin.maven.UpdateNpmDependenciesMojoTest.sleep;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.NodeUpdateImports.WEBPACK_PREFIX_ALIAS;
 
 public class UpdateImportsMojoTest {
@@ -65,6 +66,7 @@ public class UpdateImportsMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);

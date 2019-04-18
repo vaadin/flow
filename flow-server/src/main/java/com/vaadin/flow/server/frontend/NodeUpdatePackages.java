@@ -158,7 +158,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         classes.forEach(s -> {
             // exclude local dependencies (those starting with `.` or `/`
             if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)
-                    && !s.startsWith(FLOW_PACKAGE)) {
+                    && !s.startsWith(FLOW_NPM_PACKAGE_NAME)) {
                 dependencies.add(s);
             }
         });
