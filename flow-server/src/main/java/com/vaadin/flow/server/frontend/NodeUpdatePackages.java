@@ -31,7 +31,7 @@ import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_PACKAGE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
@@ -104,7 +104,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         classes.forEach(s -> {
             // exclude local dependencies (those starting with `.` or `/`
             if (s.matches("[^./].*") && !s.matches("(?i)[a-z].*\\.js$") && !currentDeps.hasKey(s)
-                    && !s.startsWith(FLOW_PACKAGE)) {
+                    && !s.startsWith(FLOW_NPM_PACKAGE_NAME)) {
                 dependencies.add(s);
             }
         });

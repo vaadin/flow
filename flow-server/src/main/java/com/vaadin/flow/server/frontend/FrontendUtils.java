@@ -46,7 +46,7 @@ public class FrontendUtils {
      * jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
-    public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
+    public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
     /**
      * File that contains Flow application imports, javascript, and theme annotations.
@@ -126,7 +126,7 @@ public class FrontendUtils {
      * @return the flow package folder.
      */
     public static File getFlowPackage(File nodeModulesPath) {
-        return new File(nodeModulesPath, FLOW_PACKAGE);
+        return new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
     }
 
     /**

@@ -136,23 +136,6 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/frontend")
     protected File frontendDirectory;
 
-    private Command updater;
-
-    @Override
-    public void execute() {
-
-        long start = System.nanoTime();
-
-        if (updater == null) {
-            updater = createUpdater();
-        }
-
-        updater.execute();
-
-        long ms = (System.nanoTime() - start) / 1000;
-        getLog().info("Took " + ms + "ms.");
-    }
-
     /**
      * Check whether the goal should be run in bower mode, by checking the
      * corresponding system property, otherwise the folder structure.
@@ -169,8 +152,6 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         }
         return bowerMode;
     }
-
-    protected abstract Command createUpdater();
 
     static ClassFinder getClassFinder(MavenProject project) {
         final List<String> runtimeClasspathElements;

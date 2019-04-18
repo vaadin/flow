@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -35,7 +36,13 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.flow.plugin.common.ArtifactData;
+import com.vaadin.flow.plugin.common.JarContentsManager;
+import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
+
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
  * Goal that updates following:
@@ -64,18 +71,20 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
     @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
     private String webpackTemplate;
 
-    @Override
-    protected Command createUpdater() {
-        File webpackOutputRelativeToProjectDir = project.getBasedir().toPath()
-                .relativize(getWebpackOutputDirectory().toPath()).toFile();
+    /**
+     * Comma separated values for the paths that should be analyzed in every
+     * project dependency jar and, if files suitable for copying present in
+     * those paths, those should be copied.
+     */
+    @Parameter(name = "jarResourcePathsToCopy", defaultValue = RESOURCES_FRONTEND_DEFAULT)
+    private String jarResourcePathsToCopy;
 
-        return new NodeExecutor.Builder(getClassFinder(project),
-                frontendDirectory, generatedFlowImports, npmFolder,
-                nodeModulesPath, convertHtml)
-                        .setWebpack(webpackOutputRelativeToProjectDir,
-                                webpackTemplate)
-                        .build();
-    }
+    /**
+     * Comma separated wildcards for files and directories that should be
+     * copied. Default is only .js and .css files.
+     */
+    @Parameter(name = "includes", defaultValue = "**/*.js,**/*.css", required = true)
+    private String includes;
 
     @Override
     public void execute() {
@@ -85,13 +94,48 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
             return;
         }
 
-        super.execute();
+        long start = System.nanoTime();
+
+        copyFlowModuleDependencies();
+
+        runNodeUpdater();
 
         if (generateBundle) {
             runWebpack();
         }
+
+        long ms = (System.nanoTime() - start) / 1000;
+        getLog().info("update-frontend took " + ms + "ms.");
     }
 
+    private void copyFlowModuleDependencies() {
+        List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
+            .filter(artifact -> "jar".equals(artifact.getType()))
+            .map(artifact -> new ArtifactData(artifact.getFile(),
+                artifact.getArtifactId(), artifact.getVersion()))
+            .collect(Collectors.toList());
+
+        File frontendDirectory = new File(nodeModulesPath,
+                FLOW_NPM_PACKAGE_NAME);
+        ProductionModeCopyStep copyHelper = new ProductionModeCopyStep(
+                new JarContentsManager(), projectArtifacts);
+        for (String path : jarResourcePathsToCopy.split(",")) {
+            copyHelper.copyFrontendJavaScriptFiles(frontendDirectory, includes,
+                    path);
+        }
+    }
+
+    private void runNodeUpdater() {
+        File webpackOutputRelativeToProjectDir = project.getBasedir().toPath()
+                .relativize(getWebpackOutputDirectory().toPath()).toFile();
+
+        new NodeExecutor.Builder(getClassFinder(project), frontendDirectory,
+                generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
+                        .setWebpack(webpackOutputRelativeToProjectDir,
+                                webpackTemplate)
+                        .build().execute();
+    }
+    
     private void runWebpack() {
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(nodeModulesPath, webpackCommand);

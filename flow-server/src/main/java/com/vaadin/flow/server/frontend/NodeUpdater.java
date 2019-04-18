@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_PACKAGE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
@@ -38,6 +38,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
  */
+
 public abstract class NodeUpdater implements Command {
 
     static final String VALUE = "value";
@@ -114,6 +115,11 @@ public abstract class NodeUpdater implements Command {
         return FrontendUtils.getFlowPackage(nodeModulesPath);
     }
 
+    /**
+     * Execute the update process.
+     */
+    public abstract void execute();
+
     Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -139,7 +145,7 @@ public abstract class NodeUpdater implements Command {
         return s;
     }
 
-    String resolveInFlowFrontendDirectory(String importPath) {
+    private String resolveInFlowFrontendDirectory(String importPath) {
         if (importPath.startsWith("@")) {
             return importPath;
         }
@@ -147,7 +153,7 @@ public abstract class NodeUpdater implements Command {
 
         if (flowModules.contains(pathWithNoProtocols) || getResourceUrl(pathWithNoProtocols) != null) {
           flowModules.add(pathWithNoProtocols);
-          return FLOW_PACKAGE + pathWithNoProtocols;
+          return FLOW_NPM_PACKAGE_NAME + pathWithNoProtocols;
         }
         return pathWithNoProtocols;
     }
@@ -160,12 +166,12 @@ public abstract class NodeUpdater implements Command {
             FileUtils.copyURLToFile(source, destination);
         }
         if (log().isInfoEnabled()) {
-            log().info("Installed {} {} modules", flowModules.size(), FLOW_PACKAGE);
+            log().info("Installed {} {} modules", flowModules.size(), FLOW_NPM_PACKAGE_NAME);
         }
     }
 
     private URL getResourceUrl(String resource) {
-        resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_PACKAGE, "");
+        resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_NPM_PACKAGE_NAME, "");
         URL url = finder.getResource(resource);
         return url != null && url.getPath().contains(".jar!") ? url : null;
     }
