@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Predicates;
 import com.google.javascript.jscomp.NodeUtil;
 import com.google.javascript.jscomp.SourceFile;
 import com.google.javascript.jscomp.parsing.Config;
@@ -142,8 +141,7 @@ public final class BundleParser {
 
         // run the visitor on the ast to extract the needed values.
         DependencyVisitor visitor = new DependencyVisitor();
-        NodeUtil.visitPreOrder(parseResult.ast, visitor,
-                Predicates.alwaysTrue());
+        NodeUtil.visitPreOrder(parseResult.ast, visitor);
 
         Document templateDocument;
 
