@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import javax.servlet.ServletContext;
+import java.util.Map;
 import java.util.Optional;
+
+import javax.servlet.ServletContext;
 
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,7 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
@@ -52,6 +55,7 @@ public class WebComponentUI extends UI {
     @Override
     public void doInit(VaadinRequest request, int uiId) {
         super.doInit(request, uiId);
+
         assignTheme();
 
         VaadinSession session = getSession();
@@ -67,11 +71,6 @@ public class WebComponentUI extends UI {
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
         if (deploymentConfiguration.useCompiledFrontendResources()) {
-            ServletContext context = ((VaadinServletService) request
-                    .getService()).getServlet().getServletContext();
-            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(context);
-
             /*
              * This code adds a number of HTML dependencies to the page but in
              * fact there are no such HTML files: they should have been
@@ -79,8 +78,8 @@ public class WebComponentUI extends UI {
              * activate transpiled code the embedded application imports the
              * "dependencies" which represent the transpiled files.
              */
-            registry.getConfigurations().forEach(config -> getPage()
-                    .addHtmlImport(getWebComponentPath(config)));
+            getConfigurationRegistry().getConfigurations().forEach(config ->
+                    getPage().addHtmlImport(getWebComponentPath(config)));
         }
     }
 
@@ -97,9 +96,7 @@ public class WebComponentUI extends UI {
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
         Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
-                WebComponentConfigurationRegistry
-                        .getInstance(VaadinServlet.getCurrent().getServletContext())
-                        .getConfiguration(tag);
+                getConfigurationRegistry().getConfiguration(tag);
 
         if (!webComponentExporter.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
@@ -117,8 +114,7 @@ public class WebComponentUI extends UI {
          */
         Element el = new Element(tag);
         WebComponentBinding binding = webComponentExporter.get()
-                .createWebComponentBinding(
-                        Instantiator.get(this), el);
+                .createWebComponentBinding(Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
         getElement().getStateProvider().appendVirtualChild(
@@ -160,16 +156,39 @@ public class WebComponentUI extends UI {
     }
 
     private void assignTheme() {
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(VaadinServlet.getCurrent().getServletContext());
+        WebComponentConfigurationRegistry registry = getConfigurationRegistry();
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);
         if (theme.isPresent()) {
             getInternals().setTheme(theme.get().value());
+            assignVariant(registry, theme.get());
         } else {
             ThemeUtil.getLumoThemeDefinition().map(ThemeDefinition::getTheme)
                     .ifPresent(getInternals()::setTheme);
         }
+    }
+
+    private void assignVariant(WebComponentConfigurationRegistry registry,
+                               Theme theme) {
+        AbstractTheme themeInstance = Instantiator.get(this)
+                .getOrCreate(theme.value());
+        ThemeDefinition definition = new ThemeDefinition(theme);
+        Map<String, String> attributes = themeInstance
+                .getHtmlAttributes(definition.getVariant());
+
+        registry.getConfigurations()
+                .forEach(config -> addAttributes(config.getTag(), attributes));
+    }
+
+    private void addAttributes(String tag, Map<String, String> attributes) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("var elements = document.querySelectorAll('").append(tag)
+                .append("');").append("for (let i = 0; i < elements.length; i++) {");
+        attributes.forEach((attribute, value) ->
+                builder.append("elements[i].setAttribute('").append(attribute)
+                        .append("', '").append(value).append("');"));
+        builder.append("}");
+        getPage().executeJavaScript(builder.toString());
     }
 
     private String getWebComponentPath(
@@ -178,10 +197,11 @@ public class WebComponentUI extends UI {
                 .getService().getDeploymentConfiguration();
         String path = deploymentConfiguration.getCompiledWebComponentsPath();
 
-        StringBuilder builder = new StringBuilder(path);
-        builder.append('/');
-        builder.append(config.getTag());
-        builder.append(".html");
-        return builder.toString();
+        return path + '/' + config.getTag() + ".html";
+    }
+
+    private WebComponentConfigurationRegistry getConfigurationRegistry() {
+        return WebComponentConfigurationRegistry
+                .getInstance(VaadinServlet.getCurrent().getServletContext());
     }
 }

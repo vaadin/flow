@@ -69,6 +69,19 @@ public class BootstrapHandlerTest {
 
     static final String UI_TITLE = "UI_TITLE";
 
+    private static final String EXPECTED_THEME_CONTENTS =
+            "<script id=\"_theme-header-injection\">\n"
+            + "function _inlineHeader(tag, content){\n"
+            + "var customStyle = document.createElement(tag);\n"
+            + "customStyle.innerHTML= content;\n"
+            + "var firstScript=document.head.querySelector('script');\n"
+            + "document.head.insertBefore(customStyle,firstScript);\n"
+            + "}\n"
+            + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+            + "var script = document.getElementById('_theme-header-injection');"
+            + "if ( script ) { document.head.removeChild(script);}\n"
+            + "</script>";
+
     @PageTitle(UI_TITLE)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
@@ -1038,20 +1051,10 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        String expected = "<script id=\"_theme-header-injection\">\n"
-                + "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n"
-                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                + "</script>";
         // Custom style should have been added to head.
         Assert.assertTrue("Custom style should have been added to head.",
                 allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(expected)));
+                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
     }
 
     @Test // 3333
@@ -1076,20 +1079,10 @@ public class BootstrapHandlerTest {
         allElements = page.head().getAllElements();
 
         // Note element 0 is the full head element.
-        String expected = "<script id=\"_theme-header-injection\">\n"
-                + "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n"
-                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                + "</script>";
         // Custom style should have been added to head.
         Assert.assertTrue("Custom style should have been added to head.",
                 allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(expected)));
+                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
     }
 
     @Test // 3333
@@ -1124,20 +1117,10 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        String expected = "<script id=\"_theme-header-injection\">\n"
-                + "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n"
-                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                + "</script>";
         // Custom style should have been added to head.
         Assert.assertTrue("Custom style should have been added to head.",
                 allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(expected)));
+                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
     }
 
     @Test

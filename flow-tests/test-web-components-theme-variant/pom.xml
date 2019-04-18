@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -8,13 +7,11 @@
         <artifactId>flow-tests</artifactId>
         <version>1.5-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-web-components-production</artifactId>
-    <name>Flow WebComponent tests (production)</name>
+    <artifactId>flow-test-web-components-theme-variant</artifactId>
+    <name>Flow WebComponent tests (theme variant)</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.productionMode>true</vaadin.productionMode>
-        <transpilation.output>${project.build.directory}/build</transpilation.output>
     </properties>
 
     <dependencies>
@@ -23,16 +20,16 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-lumo-theme</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-production-mode</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -44,7 +41,7 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <executions>
-                    <!-- start and stop jetty (running our app) when running 
+                    <!-- start and stop jetty (running our app) when running
                         integration tests -->
                     <execution>
                         <id>start-jetty</id>
@@ -59,30 +56,6 @@
                         <goals>
                             <goal>stop</goal>
                         </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <webAppConfig>
-                        <resourceBases>
-                            <resourceBase>${transpilation.output}</resourceBase>
-                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                        </resourceBases>
-                    </webAppConfig>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>copy-production-files</goal>
-                            <goal>package-for-production</goal>
-                        </goals>
-                        <configuration>
-                            <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
