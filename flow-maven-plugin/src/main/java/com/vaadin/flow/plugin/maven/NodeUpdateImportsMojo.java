@@ -55,7 +55,16 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     private boolean generateBundle;
 
     /**
-     * Files and directories that should be copied. Default is only .js files.
+     * Comma separated values for the paths that should be analyzed in every
+     * project dependency jar and, if files suitable for copying present in
+     * those paths, those should be copied.
+     */
+    @Parameter(name = "jarResourcePathsToCopy", defaultValue = RESOURCES_FRONTEND_DEFAULT)
+    private String jarResourcePathsToCopy;
+
+    /**
+     * Comma separated wildcards for files and directories that should be
+     * copied. Default is only .js and .css files.
      */
     @Parameter(name = "includes", defaultValue = "**/*.js,**/*.css", required = true)
     private String includes;
@@ -88,10 +97,14 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
                 artifact.getArtifactId(), artifact.getVersion()))
             .collect(Collectors.toList());
 
-        new ProductionModeCopyStep(new JarContentsManager(), projectArtifacts)
-                .copyFrontendJavaScriptFiles(
-                        new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME),
-                        includes, RESOURCES_FRONTEND_DEFAULT);
+        File frontendDirectory = new File(nodeModulesPath,
+                FLOW_NPM_PACKAGE_NAME);
+        ProductionModeCopyStep copyHelper = new ProductionModeCopyStep(
+                new JarContentsManager(), projectArtifacts);
+        for (String path : jarResourcePathsToCopy.split(",")) {
+            copyHelper.copyFrontendJavaScriptFiles(frontendDirectory, includes,
+                    path);
+        }
     }
 
     private void runWebpack() {
