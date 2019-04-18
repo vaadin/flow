@@ -46,7 +46,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,11 +70,27 @@ public class WebComponentProviderTest {
     @Mock
     VaadinService service;
 
+    private final Map<String, Object> mockServiceAttributes = new HashMap<>();
+
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         Mockito.when(session.getService()).thenReturn(service);
         VaadinService.setCurrent(service);
+
+        // mocking setting attributes in tests
+        Mockito.when(service.getAttribute(Mockito.anyString(), Mockito.anyObject())).then(invocationOnMock -> {
+            final Object supplier = invocationOnMock.getArguments()[1];
+            final String key = invocationOnMock.getArguments()[0].toString();
+            if(supplier != null) {
+                mockServiceAttributes.put(key, ((Supplier<?>)supplier).get());
+            }
+            return mockServiceAttributes.get(key);
+        });
+        Mockito.doAnswer(invocationOnMock ->
+          mockServiceAttributes.put(invocationOnMock.getArguments()[0].toString(), invocationOnMock.getArguments()[1]))
+        .when(service).setAttribute(Mockito.anyString(), Mockito.anyObject());
+
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
 
