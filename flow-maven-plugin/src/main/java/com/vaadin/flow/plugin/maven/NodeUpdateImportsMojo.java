@@ -68,7 +68,7 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     }
 
     private void runWebpack() {
-        String webpackCommand = FrontendUtils.isWindows() ? "webpack/bin/webpack.js" : ".bin/webpack";
+        String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(nodeModulesPath, webpackCommand);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
