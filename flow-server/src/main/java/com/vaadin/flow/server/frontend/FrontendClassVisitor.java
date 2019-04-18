@@ -90,7 +90,7 @@ class FrontendClassVisitor extends ClassVisitor {
         @Override
         public String toString() {
             return String.format(
-                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n imports: %s%n pckages: %s%n modules: %s%n scripts: %s%n classes: %s%n npmDone: %s%n",
+                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n imports: %s%n modules: %s%n scripts: %s%n classes: %s%n npmDone: %s%n",
                     name, route, notheme, theme, variant, layout, hash2Str(imports), col2Str(modules),
                     col2Str(scripts), col2Str(classes), col2Str(npmDone));
         }

@@ -100,8 +100,11 @@ public interface ClassFinder extends Serializable {
     /**
      * Get annotated classes in the classloader.
      *
-     * @param className the annotation class name
+     * @param className
+     *            the annotation class name
      * @return a set with all classes that are annotated
+     * @throws ClassNotFoundException
+     *             when the class not found
      */
     default Set<Class<?>> getAnnotatedClasses(String className) throws ClassNotFoundException{
         return getAnnotatedClasses(loadClass(className));

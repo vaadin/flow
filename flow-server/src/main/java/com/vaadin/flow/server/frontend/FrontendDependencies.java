@@ -140,7 +140,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of npm packages
      */
-    public HashMap<String, String> getPackages() {
+    public Map<String, String> getPackages() {
         return packages;
     }
     /**

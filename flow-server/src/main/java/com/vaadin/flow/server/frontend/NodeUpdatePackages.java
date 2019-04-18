@@ -26,8 +26,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -43,6 +43,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.NodeUpdateImports.MAIN_JS_PARAM;
+import static java.nio.charset.StandardCharsets.*;
 
 
 /**
@@ -53,6 +54,8 @@ import static com.vaadin.flow.server.frontend.NodeUpdateImports.MAIN_JS_PARAM;
 @NpmPackage(value = "@polymer/polymer", version = "3.1.0")
 public class NodeUpdatePackages extends NodeUpdater {
 
+    private static final String DEV_DEPENDENCIES = "devDependencies";
+    private static final String DEPENDENCIES = "dependencies";
     private final String webpackTemplate;
     private final File webpackOutputDirectory;
     private final File generatedFlowImports;
@@ -109,7 +112,7 @@ public class NodeUpdatePackages extends NodeUpdater {
         try {
             JsonObject packageJson = getPackageJson();
 
-            HashMap<String, String> deps = frontDeps.getPackages();
+            Map<String, String> deps = frontDeps.getPackages();
             if (convertHtml) {
                 addHtmlImportPackages(deps);
             }
@@ -130,8 +133,8 @@ public class NodeUpdatePackages extends NodeUpdater {
         }
     }
 
-    private void addHtmlImportPackages(HashMap<String, String> packages) throws IOException {
-        JsonObject shrink = getShrinkwrapJson().getObject("dependencies");
+    private void addHtmlImportPackages(Map<String, String> packages) throws IOException {
+        JsonObject shrink = getShrinkwrapJson().getObject(DEPENDENCIES);
         for (String s : getHtmlImportNpmPackages(frontDeps.getImports())) {
             if (!packages.containsKey(s) && shrink.hasKey(s)) {
                 packages.put(s, shrink.getObject(s).getString("version"));
@@ -158,7 +161,7 @@ public class NodeUpdatePackages extends NodeUpdater {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
-                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", 
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}",
                                 webpackOutputDirectory.getPath()
                                         .replaceAll("\\\\", "/")))
                         .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
@@ -171,9 +174,9 @@ public class NodeUpdatePackages extends NodeUpdater {
         }
     }
 
-    private boolean updatePackageJsonDependencies(JsonObject packageJson, HashMap<String, String> deps) {
+    private boolean updatePackageJsonDependencies(JsonObject packageJson, Map<String, String> deps) {
         boolean modified = false;
-        JsonObject json = packageJson.getObject("dependencies");
+        JsonObject json = packageJson.getObject(DEPENDENCIES);
 
         for(Entry<String, String> e : deps.entrySet()) {
             String version = "=" + e.getValue();
@@ -189,7 +192,7 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private boolean updatePackageJsonDevDependencies(JsonObject packageJson) {
         boolean modified = false;
-        JsonObject json = packageJson.getObject("devDependencies");
+        JsonObject json = packageJson.getObject(DEV_DEPENDENCIES);
 
         for (String pkg : Arrays.asList(
                 "webpack",
@@ -225,6 +228,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      * Executes `npm install` after `package.json` has been updated.
      *
      * @param builder
+     *            the process builder to execute
      */
     // NOTE: public because needs to be stub in flow-maven-plugin
     public void executeNpmInstall(ProcessBuilder builder) {
@@ -250,7 +254,7 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private void writePackageFile(JsonObject packageJson) throws IOException {
         File packageFile = new File(npmFolder, PACKAGE_JSON);
-        FileUtils.writeStringToFile(packageFile, packageJson.toJson(), "UTF-8");
+        FileUtils.writeStringToFile(packageFile, packageJson.toJson(), UTF_8.name());
     }
 
     JsonObject getPackageJson() throws IOException {
@@ -258,15 +262,15 @@ public class NodeUpdatePackages extends NodeUpdater {
         File packageFile = new File(npmFolder, PACKAGE_JSON);
 
         if (packageFile.exists()) {
-            String s = FileUtils.readFileToString(packageFile, "UTF-8");
+            String s = FileUtils.readFileToString(packageFile, UTF_8.name());
             packageJson = Json.parse(s);
         } else {
             log().info("Creating a default {}", packageFile);
-            FileUtils.writeStringToFile(packageFile, "{}", "UTF-8");
+            FileUtils.writeStringToFile(packageFile, "{}", UTF_8.name());
             packageJson = Json.createObject();
         }
-        ensureMissingObject(packageJson, "dependencies");
-        ensureMissingObject(packageJson, "devDependencies");
+        ensureMissingObject(packageJson, DEPENDENCIES);
+        ensureMissingObject(packageJson, DEV_DEPENDENCIES);
         return packageJson;
     }
 

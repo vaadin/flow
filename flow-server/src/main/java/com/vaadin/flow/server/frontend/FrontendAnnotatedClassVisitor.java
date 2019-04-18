@@ -30,8 +30,8 @@ import com.vaadin.flow.server.frontend.FrontendClassVisitor.RepeatedAnnotationVi
 /**
  * A class visitor for annotated classes. It's used to visit multiple classes
  * and extract all the properties of an specific annotation defined in the
- * constructor
- * 
+ * constructor.
+ *
  */
 class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private final String annotationName;
@@ -39,7 +39,7 @@ class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
     /**
      * Create a new {@link ClassVisitor} that will be used for visiting a
-     * specific class to get the data of an annotation
+     * specific class to get the data of an annotation.
      *
      * @param annotationName
      */
@@ -55,16 +55,16 @@ class FrontendAnnotatedClassVisitor extends ClassVisitor {
             return new RepeatedAnnotationVisitor() {
                 // initialize for non repeated annotations
                 HashMap<String, Object> info = new HashMap<>();
-                
+
                 // Visited on each annotation attribute
                 @Override
                 public void visit(String name, Object value) {
-                    if (!data.contains(info)) {
+                    if (data.indexOf(info) < 0) {
                         data.add(info);
                     }
                     info.put(name, value);
                 }
-                
+
                 // Only visited when annotation is repeated
                 @Override
                 public AnnotationVisitor visitAnnotation(String name, String descriptor) {
@@ -77,19 +77,21 @@ class FrontendAnnotatedClassVisitor extends ClassVisitor {
         return null;
     }
 
-    
     /**
-     * Return all values of a repeated annotation parameter.
-     * For instance if we have the following code:
+     * Return all values of a repeated annotation parameter. For instance
+     * `getValues("value")` will return 'Bar' and 'Baz' when we have the
+     * following code:
+     *
+     * <pre>
      * <code>
-     * @MyAnnotation(value = "Bar", other = "aa")
-     * @MyAnnotation(value = "Baz", other = "bb")
+     * &#64;MyAnnotation(value = "Bar", other = "aa")
+     * &#64;MyAnnotation(value = "Baz", other = "bb")
      * class Foo {
      * }
      * </code>
-     * 
-     * <code>getValues("value")</code> will return Bar and Baz.
-     * 
+     * </pre>
+     *
+     *
      * @param parameter
      *            the annotation parameter used for getting values
      * @return a set of all values found
@@ -104,17 +106,18 @@ class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
     /**
      * Return all parameter values of a repeated annotation when they share the
-     * same value for a key parameter. For example if we have the following
-     * code: <code>
+     * same value for a key parameter. For example `getValuesForKey("value",
+     * "foo", "other")` will return 'aa' and 'bb' if we have the following code:
+     *
+     * <pre>
+     * <code>
      * &#64;MyAnnotation(value = "foo", other = "aa")
      * &#64;MyAnnotation(value = "foo", other = "bb")
      * class Bar {
      * }
      * </code>
-     * 
-     *                     <code>getValuesForKey("value", "foo", "other")</code>
-     *                     will return 'aa' and 'bb'.
-     * 
+     * </pre>
+     *
      * @param key
      *            the parameter name which all annotations share the same value
      * @param value
