@@ -57,7 +57,7 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     /**
      * Files and directories that should be copied. Default is only .js files.
      */
-    @Parameter(name = "includes", defaultValue = "**/*.js", required = true)
+    @Parameter(name = "includes", defaultValue = "**/*.js,**/*.css", required = true)
     private String includes;
 
     @Override
