@@ -31,6 +31,10 @@ selenium_standalone_zips
 driver_zips
 driver
 
-frontend
+bower_components
+node
 node_modules
+frontend
 package.json
+package-lock.json
+webpack.config.js
