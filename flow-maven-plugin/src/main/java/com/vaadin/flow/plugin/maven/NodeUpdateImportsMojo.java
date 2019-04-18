@@ -32,7 +32,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import com.vaadin.flow.server.frontend.NodeUpdater;
 
