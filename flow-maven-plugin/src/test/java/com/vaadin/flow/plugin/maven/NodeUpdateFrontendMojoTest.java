@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.server.frontend.NodeUpdater;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.apache.maven.model.Build;
@@ -50,9 +50,9 @@ import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static com.vaadin.flow.server.frontend.NodeUpdateImports.WEBPACK_PREFIX_ALIAS;
 
 public class NodeUpdateFrontendMojoTest {
     @Rule
@@ -400,19 +400,13 @@ public class NodeUpdateFrontendMojoTest {
         }
     }
 
-    private void deleteExpectedImports(File directoryWithImportsJs, File nodeModulesPath) {
-        for (String expectedImport : getExpectedImports()) {
-            Assert.assertTrue(resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport).delete());
-        }
-    }
-
     private File resolveImportFile(File directoryWithImportsJs, File nodeModulesPath, String jsImport) {
         File root = jsImport.startsWith("./") ? directoryWithImportsJs : nodeModulesPath;
         return new File(root, jsImport);
     }
 
     private File getFlowPackage() {
-        return NodeUpdater.getFlowPackage(nodeModulesPath);
+        return FrontendUtils.getFlowPackage(nodeModulesPath);
     }
 
     static void sleep(int ms) throws InterruptedException {

@@ -28,6 +28,8 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.theme.Theme;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.MAIN_JS_PARAM;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
@@ -75,8 +77,8 @@ public class NodeExecutor implements Command {
         public Builder(ClassFinder classFinder) {
             this(classFinder, new File(getBaseDir(), "frontend"),
                     Paths.get(getBaseDir()).resolve("target")
-                            .resolve(System.getProperty(NodeUpdateImports.MAIN_JS_PARAM,
-                                    NodeUpdateImports.FLOW_IMPORTS_FILE))
+                            .resolve(System.getProperty(MAIN_JS_PARAM,
+                                    FLOW_IMPORTS_FILE))
                             .toFile(),
                     new File(getBaseDir()),
                     new File(getBaseDir(), "node_modules"), true);

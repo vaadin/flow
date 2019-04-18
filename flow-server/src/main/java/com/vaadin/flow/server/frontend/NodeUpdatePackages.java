@@ -31,7 +31,7 @@ import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_PACKAGE;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in

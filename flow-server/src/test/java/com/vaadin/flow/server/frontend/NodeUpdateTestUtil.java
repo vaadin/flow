@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -26,23 +25,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
+import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
-
-import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
-import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
 import static org.junit.Assert.assertNotNull;
+
 public class NodeUpdateTestUtil {
 
     public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";

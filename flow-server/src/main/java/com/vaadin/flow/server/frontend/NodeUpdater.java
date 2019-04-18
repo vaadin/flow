@@ -30,7 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.NodeUpdateImports.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_PACKAGE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 /**
@@ -38,12 +39,6 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  * dev-mode or from the flow maven plugin.
  */
 public abstract class NodeUpdater implements Command {
-    /**
-     * NPM package name that will be used for the javascript files present in
-     * jar resources that will to be copied to the npm folder so as they are
-     * accessible to webpack.
-     */
-    public static final String FLOW_PACKAGE = "@vaadin/flow-frontend/";
 
     static final String VALUE = "value";
 
@@ -116,7 +111,7 @@ public abstract class NodeUpdater implements Command {
     }
 
     private File getFlowPackage() {
-        return new File(nodeModulesPath, FLOW_PACKAGE);
+        return FrontendUtils.getFlowPackage(nodeModulesPath);
     }
 
     Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
@@ -193,17 +188,6 @@ public abstract class NodeUpdater implements Command {
           .replaceFirst("\\.html$", ".js")
         ); // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
-    }
-
-    /**
-     * Gets the flow package inside node_modules.
-     *
-     * @param nodeModulesPath
-     *            path to node_modules.
-     * @return the flow package folder.
-     */
-    public static File getFlowPackage(File nodeModulesPath) {
-        return new File(nodeModulesPath, FLOW_PACKAGE);
     }
 
     static Logger log() {

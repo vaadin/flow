@@ -38,8 +38,14 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
 
 /**
- * Goal that updates Flow imports file with @JsModule, @HtmlImport and @Theme
- * annotations defined in the classpath.
+ * Goal that updates following:
+ * <ul>
+ * <li><code>package.json</code> file with @NpmPackage annotations defined in
+ * the classpath,</li>
+ * <li>creates <code>webpack.config.js</code> if does not exist yet,</li>
+ * <li>Flow imports file with @JsModule, @HtmlImport and @Theme annotations
+ * defined in the classpath.</li>
+ * </ul>
  */
 @Mojo(name = "update-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
@@ -59,25 +65,26 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
     private String webpackTemplate;
 
     @Override
-    protected Command getUpdater() {
-        if (updater == null) {
+    protected Command createUpdater() {
+        File webpackOutputRelativeToProjectDir = project.getBasedir().toPath()
+                .relativize(getWebpackOutputDirectory().toPath()).toFile();
 
-            File webpackOutputRelativeToProjectDir = project.getBasedir()
-                    .toPath().relativize(getWebpackOutputDirectory().toPath())
-                    .toFile();
-            
-            updater = new NodeExecutor.Builder(getClassFinder(project),
-                    frontendDirectory, generatedFlowImports, npmFolder,
-                    nodeModulesPath, convertHtml)
-                            .setWebpack(webpackOutputRelativeToProjectDir,
-                                    webpackTemplate)
-                            .build();
-        }
-        return updater;
+        return new NodeExecutor.Builder(getClassFinder(project),
+                frontendDirectory, generatedFlowImports, npmFolder,
+                nodeModulesPath, convertHtml)
+                        .setWebpack(webpackOutputRelativeToProjectDir,
+                                webpackTemplate)
+                        .build();
     }
 
     @Override
     public void execute() {
+        // Do nothing when bower mode
+        if (isBowerMode(getLog())) {
+            getLog().info("Skipped 'update-frontend' goal because 'vaadin.bowerMode' is set to true.");
+            return;
+        }
+
         super.execute();
 
         if (generateBundle) {

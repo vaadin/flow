@@ -38,7 +38,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static com.vaadin.flow.server.frontend.NodeUpdateImports.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -257,7 +257,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     File getFlowPackage() {
-        return NodeUpdater.getFlowPackage(nodeModulesPath);
+        return FrontendUtils.getFlowPackage(nodeModulesPath);
     }
 
 }

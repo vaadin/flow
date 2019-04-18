@@ -37,7 +37,8 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update
@@ -46,23 +47,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
  * {@link Theme} annotations.
  */
 public class NodeUpdateImports extends NodeUpdater {
-    /**
-     * File that contains Flow application imports, javascript, and theme annotations.
-     * It is also the entry-point for webpack.
-     */
-    public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
-    /**
-     * A parameter for overriding the
-     * {@link NodeUpdateImports#FLOW_IMPORTS_FILE} default value for the file
-     * with all Flow project imports.
-     */
-    public static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
-
-    /**
-     * A special prefix to use in the webpack config to tell webpack to look for
-     * the import starting with a prefix in the Flow project frontend directory.
-     */
-    public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
