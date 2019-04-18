@@ -42,16 +42,9 @@ public class WebpackUpdater implements Command {
      */
     private final String webpackTemplate;
     private final File webpackOutputDirectory;
+    private final File generatedFlowImports;
 
     private File webpackFolder;
-
-    /**
-     * Create an instance of <code>WebpackUpdater</code>.
-     */
-    public WebpackUpdater() {
-        this(new File(getBaseDir()), new File(getBaseDir(), "src/main/webapp"),
-                WEBPACK_CONFIG);
-    }
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -63,12 +56,15 @@ public class WebpackUpdater implements Command {
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file.
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
      */
     public WebpackUpdater(File webpackFolder, File webpackOutputDirectory,
-            String webpackTemplate) {
+            String webpackTemplate, File generatedFlowImports) {
         this.webpackFolder = webpackFolder;
         this.webpackOutputDirectory = webpackOutputDirectory;
         this.webpackTemplate = webpackTemplate;
+        this.generatedFlowImports = generatedFlowImports;
     }
 
     @Override
@@ -99,12 +95,14 @@ public class WebpackUpdater implements Command {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
-                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
+                        .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
+                        .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
+                                generatedFlowImports.getPath()
+                                        .replaceAll("\\\\", "/")))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
                 NodeUpdater.log().info("Created {} from {}", WEBPACK_CONFIG, resource);
             }
         }
     }
-
 }

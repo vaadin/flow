@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeExecutor;
-import com.vaadin.flow.server.frontend.WebpackUpdater;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -37,20 +36,13 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
-import com.vaadin.flow.server.frontend.NodeUpdateImports;
 
 /**
- * Goal that updates main.js file with @JsModule, @HtmlImport and @Theme
+ * Goal that updates Flow imports file with @JsModule, @HtmlImport and @Theme
  * annotations defined in the classpath.
  */
 @Mojo(name = "update-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
-
-    /**
-     * A Flow JavaScript file with all project's imports to update.
-     */
-    @Parameter(defaultValue = "${project.basedir}/" + NodeUpdateImports.MAIN_JS)
-    private File jsFile;
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
@@ -74,8 +66,9 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
                     .toPath().relativize(getWebpackOutputDirectory().toPath())
                     .toFile();
             
-            updater = new NodeExecutor.Builder(getClassFinder(project), jsFile,
-                    npmFolder, nodeModulesPath, convertHtml)
+            updater = new NodeExecutor.Builder(getClassFinder(project),
+                    frontendDirectory, generatedFlowImports, npmFolder,
+                    nodeModulesPath, convertHtml)
                             .setWebpack(webpackOutputRelativeToProjectDir,
                                     webpackTemplate)
                             .build();

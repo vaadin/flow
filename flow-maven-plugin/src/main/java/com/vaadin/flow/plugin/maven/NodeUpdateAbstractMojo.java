@@ -26,7 +26,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.ClassFinder;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeUpdateImports;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
@@ -34,12 +40,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
-
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.ClassFinder;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * Common stuff for node update mojos.
@@ -122,6 +122,18 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "${project.basedir}/node_modules/")
     protected File nodeModulesPath;
+
+    /**
+     * A Flow JavaScript file with all project's imports to update.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/" + NodeUpdateImports.FLOW_IMPORTS_FILE)
+    protected File generatedFlowImports;
+
+    /**
+     * A directory with project's frontend files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/frontend")
+    protected File frontendDirectory;
 
     protected Command updater;
 

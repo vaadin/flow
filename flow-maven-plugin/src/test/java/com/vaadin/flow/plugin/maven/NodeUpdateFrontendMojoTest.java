@@ -52,6 +52,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.WEBPACK_PREFIX_ALIAS;
 
 public class NodeUpdateFrontendMojoTest {
     @Rule
@@ -66,6 +67,7 @@ public class NodeUpdateFrontendMojoTest {
     private String packageJson;
     private String webpackConfig;
 
+    private File frontendDirectory;
     private final NodeUpdateFrontendMojo mojo = new NodeUpdateFrontendMojo();
 
     @Before
@@ -76,12 +78,14 @@ public class NodeUpdateFrontendMojoTest {
         File tmpRoot = temporaryFolder.getRoot();
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
+        frontendDirectory = new File(tmpRoot, "frontend");
 
         packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "jsFile", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
@@ -92,7 +96,7 @@ public class NodeUpdateFrontendMojoTest {
 
         setProject("war", "war_output");
 
-        createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+        createExpectedImports(frontendDirectory, nodeModulesPath);
     }
 
     @After
@@ -318,11 +322,20 @@ public class NodeUpdateFrontendMojoTest {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertTrue(
                             s + " not found in:\n" + content,
-                            content.contains(s)));
+                            content.contains(addWebpackPrefix(s))));
         } else {
-            Arrays.asList(imports).forEach(s -> Assert.assertFalse(
-                    s + " found in:\n" + content, content.contains(s)));
+            Arrays.asList(imports)
+                    .forEach(s -> Assert.assertFalse(
+                            s + " found in:\n" + content,
+                            content.contains(addWebpackPrefix(s))));
         }
+    }
+
+    private String addWebpackPrefix(String s) {
+        if (s.startsWith("./")) {
+            return WEBPACK_PREFIX_ALIAS + s.substring(2);
+        }
+        return s;
     }
 
     private void removeImports(String... imports) throws IOException {
@@ -330,9 +343,9 @@ public class NodeUpdateFrontendMojoTest {
 
         List<String> current = FileUtils.loadFile(importsFile);
 
-        Set<String> removed = current.stream()
-                .filter(line -> importsList.stream()
-                        .anyMatch(line::contains))
+        Set<String> removed = current
+                .stream().filter(line -> importsList.stream()
+                        .map(this::addWebpackPrefix).anyMatch(line::contains))
                 .collect(Collectors.toSet());
 
         current.removeAll(removed);
@@ -343,7 +356,7 @@ public class NodeUpdateFrontendMojoTest {
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.stream(imports)
+        String content = Arrays.stream(imports).map(this::addWebpackPrefix)
                 .map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 

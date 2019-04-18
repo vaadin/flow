@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.server.Command;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.mockito.Mockito;
@@ -40,6 +41,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
 import static org.junit.Assert.assertNotNull;
 public class NodeUpdateTestUtil {
 
@@ -147,6 +149,7 @@ public class NodeUpdateTestUtil {
                 return null;
             }})
         .when(spy).updateDependencies(Mockito.anyList(), Mockito.anyVararg());
+
         return spy;
     }
 
@@ -177,9 +180,11 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "@vaadin/flow-frontend/ExampleConnector.js",
-                "./local-p3-template.js", "./foo.js",
+                "./local-p3-template.js",
+                "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-p2-template.js", "./foo-dir/vaadin-npm-component.js");
+                "./local-p2-template.js",
+                "./foo-dir/vaadin-npm-component.js");
     }
 
     void createExpectedImports(File directoryWithImportsJs,

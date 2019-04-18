@@ -31,37 +31,36 @@ import org.junit.rules.TemporaryFolder;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    NodeUpdatePackages updater;
-    WebpackUpdater webpackUpdater;
-
-    File packageJson;
-    File webpackConfig;
+    private NodeUpdatePackages packageUpdater;
+    private WebpackUpdater webpackUpdater;
+    private File packageJson;
+    private File webpackConfig;
 
     @Before
     public void setup() throws Exception {
         System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
 
-        String baseDir = getBaseDir();
+        File baseDir = new File(getBaseDir());
 
         NodeUpdateTestUtil.createStubNode(true, true);
-        updater = createStubUpdater();
+        packageUpdater = createStubUpdater();
 
-        webpackUpdater = new WebpackUpdater(new File(baseDir),
-                new File(baseDir), WEBPACK_CONFIG);
+        webpackUpdater = new WebpackUpdater(baseDir,
+                baseDir, WEBPACK_CONFIG, new File(baseDir, FLOW_IMPORTS_FILE));
 
         packageJson = new File(baseDir, PACKAGE_JSON);
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
-
     }
 
     private void execute() {
-        updater.execute();
+        packageUpdater.execute();
         webpackUpdater.execute();
     }
 
@@ -99,14 +98,14 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue(tsPackage1 < tsPackage2);
         Assert.assertTrue(tsWebpack1 < tsWebpack2);
-        Assert.assertTrue(tsPackage2 == tsPackage3);
-        Assert.assertTrue(tsWebpack2 == tsWebpack3);
+        Assert.assertEquals(tsPackage2, tsPackage3);
+        Assert.assertEquals(tsWebpack2, tsWebpack3);
 
         assertPackageJsonContent();
     }
 
     private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = updater.getPackageJson();
+        JsonObject packageJsonObject = packageUpdater.getPackageJson();
 
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
 

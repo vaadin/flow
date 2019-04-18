@@ -41,6 +41,7 @@ public class NodeExecutorTest extends NodeUpdateTestUtil {
 
     private File importsFile;
     private File nodeModulesPath;
+    private File frontendDirectory;
 
     private NodeExecutor node;
 
@@ -52,6 +53,7 @@ public class NodeExecutorTest extends NodeUpdateTestUtil {
         File tmpRoot = temporaryFolder.getRoot();
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
+        frontendDirectory = new File(tmpRoot, "frontend");
 
         ClassFinder classFinder = getClassFinder();
         ClassFinder classFinderSpy = Mockito.spy(getClassFinder());
@@ -70,10 +72,10 @@ public class NodeExecutorTest extends NodeUpdateTestUtil {
             }
         }).when(classFinderSpy).getAnnotatedClasses(Mockito.any());
 
-        node = new NodeExecutor.Builder(classFinderSpy, importsFile, tmpRoot,
-                nodeModulesPath, true).build();
+        node = new NodeExecutor.Builder(classFinderSpy, frontendDirectory,
+                importsFile, tmpRoot, nodeModulesPath, true).build();
 
-        createExpectedImports(importsFile.getParentFile(), nodeModulesPath);
+        createExpectedImports(frontendDirectory, nodeModulesPath);
     }
 
     @Test

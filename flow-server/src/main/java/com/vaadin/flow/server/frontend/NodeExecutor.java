@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -51,7 +52,9 @@ public class NodeExecutor implements Command {
 
         private File nodeModulesPath;
 
-        private File jsFile;
+        private File frontendDirectory;
+
+        private File generatedFlowImports;
 
         private boolean convertHtml;
 
@@ -70,10 +73,11 @@ public class NodeExecutor implements Command {
          *            a class finder
          */
         public Builder(ClassFinder classFinder) {
-            this(classFinder,
-                    new File(getBaseDir(),
-                            System.getProperty(NodeUpdateImports.MAIN_JS_PARAM,
-                                    NodeUpdateImports.MAIN_JS)),
+            this(classFinder, new File(getBaseDir(), "frontend"),
+                    Paths.get(getBaseDir()).resolve("target")
+                            .resolve(System.getProperty(NodeUpdateImports.MAIN_JS_PARAM,
+                                    NodeUpdateImports.FLOW_IMPORTS_FILE))
+                            .toFile(),
                     new File(getBaseDir()),
                     new File(getBaseDir(), "node_modules"), true);
         }
@@ -83,7 +87,9 @@ public class NodeExecutor implements Command {
          *
          * @param classFinder
          *            a class finder
-         * @param jsFile
+         * @param frontendDirectory
+         *            a directory with project's frontend files
+         * @param generatedFlowImports
          *            name of the JS file to update with the imports
          * @param npmFolder
          *            folder with the `package.json` file
@@ -94,10 +100,12 @@ public class NodeExecutor implements Command {
          *            <code>true</code> to enable polymer-2 annotated classes to
          *            be considered. Default is <code>true</code>.
          */
-        public Builder(ClassFinder classFinder, File jsFile, File npmFolder,
-                File nodeModulesPath, boolean convertHtml) {
+        public Builder(ClassFinder classFinder, File frontendDirectory,
+                File generatedFlowImports, File npmFolder, File nodeModulesPath,
+                boolean convertHtml) {
             this.classFinder = classFinder;
-            this.jsFile = jsFile;
+            this.frontendDirectory = frontendDirectory;
+            this.generatedFlowImports = generatedFlowImports;
             this.npmFolder = npmFolder;
             this.nodeModulesPath = nodeModulesPath;
             this.convertHtml = convertHtml;
@@ -182,12 +190,14 @@ public class NodeExecutor implements Command {
                     frontendDependencies, builder.npmFolder,
                     builder.nodeModulesPath, builder.convertHtml));
             commands.add(new WebpackUpdater(builder.npmFolder,
-                    builder.webpackOutputDirectory, builder.webpackTemplate));
+                    builder.webpackOutputDirectory, builder.webpackTemplate,
+                    builder.generatedFlowImports));
         }
 
         if (builder.enableImportsUpdate) {
             commands.add(new NodeUpdateImports(classFinder,
-                    frontendDependencies, builder.jsFile, builder.npmFolder,
+                    frontendDependencies, builder.frontendDirectory,
+                    builder.generatedFlowImports, builder.npmFolder,
                     builder.nodeModulesPath, builder.convertHtml));
         }
     }
