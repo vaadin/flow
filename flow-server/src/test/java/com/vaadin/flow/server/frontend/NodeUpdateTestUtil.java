@@ -73,10 +73,6 @@ public class NodeUpdateTestUtil {
     // frontend-maven-plugin does
     // Also creates a stub version of webpack-devmode-server
     public static void createStubNode(boolean stubNode, boolean stubNpm) throws IOException {
-        // Skip in windows because shell script does not work there
-        if (File.pathSeparatorChar == ';') {
-            return;
-        }
 
         if (stubNpm) {
             File npmCli = new File(getBaseDir(), "node/node_modules/npm/bin/npm-cli.js");
@@ -84,10 +80,19 @@ public class NodeUpdateTestUtil {
             npmCli.createNewFile();
         }
         if (stubNode) {
-            File node = new File(getBaseDir(), "node/node");
+            File node = new File(getBaseDir(),
+                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
             node.createNewFile();
             node.setExecutable(true);
-            FileUtils.write(node, "#!/bin/sh\n[ \"$1\" = -v ] && echo 8.0.0 || sleep 1\n", "UTF-8");
+            if (FrontendUtils.isWindows()) {
+                FileUtils.copyFile(new File(
+                        getClassFinder().getClass().getClassLoader().getResource("test_node.exe").getFile()
+                ), node);
+            } else {
+                FileUtils.write(node,
+                        "#!/bin/sh\n[ \"$1\" = -v ] && echo 8.0.0 || sleep 1\n",
+                        "UTF-8");
+            }
         }
     }
 

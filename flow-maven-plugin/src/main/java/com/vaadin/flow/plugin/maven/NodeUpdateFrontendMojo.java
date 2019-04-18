@@ -93,7 +93,8 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
     }
 
     private void runWebpack() {
-        File webpackExecutable = new File(nodeModulesPath, ".bin/webpack");
+        String webpackCommand = "webpack/bin/webpack.js";
+        File webpackExecutable = new File(nodeModulesPath, webpackCommand);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate webpack executable by path '%s'. Double check that the plugin us executed correctly",
@@ -110,11 +111,9 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
 
         Process webpackLaunch = null;
         try {
-            webpackLaunch = new ProcessBuilder(nodePath.getAbsolutePath(),
-                    webpackExecutable.getAbsolutePath())
-                            .directory(project.getBasedir())
-                            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                            .start();
+            webpackLaunch =  new ProcessBuilder(nodePath.getAbsolutePath(),
+                    webpackExecutable.getAbsolutePath()).directory(project.getBasedir())
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
                 readDetailsAndThrowException(webpackLaunch);

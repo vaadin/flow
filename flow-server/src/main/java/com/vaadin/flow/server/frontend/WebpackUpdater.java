@@ -95,7 +95,9 @@ public class WebpackUpdater implements Command {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
-                        .map(line -> line.replace("{{OUTPUT_DIRECTORY}}", webpackOutputDirectory.getPath()))
+                        .map(line -> line.replace("{{OUTPUT_DIRECTORY}}",
+                                webpackOutputDirectory.getPath()
+                                        .replaceAll("\\\\", "/")))
                         .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
                                 generatedFlowImports.getPath()
                                         .replaceAll("\\\\", "/")))

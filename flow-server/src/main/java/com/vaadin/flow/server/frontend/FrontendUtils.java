@@ -151,7 +151,8 @@ public class FrontendUtils {
      */
     public static String getNodeExecutable() {
         String command = isWindows() ? "node.exe" : "node";
-        return getExecutable(command, "node/node").getAbsolutePath();
+        String defaultNode = FrontendUtils.isWindows() ? "node/node.exe" : "node/node";
+        return getExecutable(command, defaultNode).getAbsolutePath();
     }
 
     /**

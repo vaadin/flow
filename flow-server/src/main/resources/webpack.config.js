@@ -22,7 +22,8 @@ const buildFolder = `${webappFolder}/${build}`;
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${buildFolder}/stats.json`;
 // make sure that build folder exists before outputting anything
-require('mkdirp').sync(buildFolder);
+const mkdirp = require('mkdirp');
+mkdirp(buildFolder);
 
 module.exports = {
   mode: 'production',
