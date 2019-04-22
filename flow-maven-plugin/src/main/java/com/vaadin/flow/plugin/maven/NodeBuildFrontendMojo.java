@@ -27,9 +27,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.NodeExecutor;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -40,6 +37,8 @@ import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeTasks;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -54,8 +53,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
  * defined in the classpath.</li>
  * </ul>
  */
-@Mojo(name = "update-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
+@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+public class NodeBuildFrontendMojo extends NodeUpdateAbstractMojo {
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
@@ -129,7 +128,7 @@ public class NodeUpdateFrontendMojo extends NodeUpdateAbstractMojo {
         File webpackOutputRelativeToProjectDir = project.getBasedir().toPath()
                 .relativize(getWebpackOutputDirectory().toPath()).toFile();
 
-        new NodeExecutor.Builder(getClassFinder(project), frontendDirectory,
+        new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
                 generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
                         .setWebpack(webpackOutputRelativeToProjectDir,
                                 webpackTemplate)

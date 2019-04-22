@@ -121,7 +121,6 @@ public interface ClassFinder extends Serializable {
             return classFinder.getResource(name);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public <T> Class<T> loadClass(String name)
                 throws ClassNotFoundException {

@@ -7,7 +7,8 @@
           <goal>copy-frontend-files</goal>
           <goal>copy-production-files</goal>
           <goal>package-for-production</goal>
-          <goal>update-frontend</goal>
+          <goal>validate</goal>
+          <goal>build-frontend</goal>
         </goals>
       </pluginExecutionFilter>
       <action>

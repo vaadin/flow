@@ -43,7 +43,7 @@ public class NodeExecutorTest extends NodeUpdateTestUtil {
     private File nodeModulesPath;
     private File frontendDirectory;
 
-    private NodeExecutor node;
+    private NodeTasks node;
 
     private Map<Class<? extends Annotation>, Integer> annotationScanCount = new HashMap<>();
 
@@ -72,7 +72,7 @@ public class NodeExecutorTest extends NodeUpdateTestUtil {
             }
         }).when(classFinderSpy).getAnnotatedClasses(Mockito.any());
 
-        node = new NodeExecutor.Builder(classFinderSpy, frontendDirectory,
+        node = new NodeTasks.Builder(classFinderSpy, frontendDirectory,
                 importsFile, tmpRoot, nodeModulesPath, true).build();
 
         createExpectedImports(frontendDirectory, nodeModulesPath);

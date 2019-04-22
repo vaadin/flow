@@ -69,7 +69,7 @@ public class NodeUpdateFrontendMojoTest {
     private String webpackConfig;
 
     private File frontendDirectory;
-    private final NodeUpdateFrontendMojo mojo = new NodeUpdateFrontendMojo();
+    private final NodeBuildFrontendMojo mojo = new NodeBuildFrontendMojo();
 
     @Before
     public void setup() throws Exception {

@@ -22,26 +22,17 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.MAIN_JS_PARAM;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
- * An updater that it's run when the servlet context is initialised in dev-mode
- * or when flow-maven-plugin goals are run in order to update
- * <code>package.json</code> by visiting {@link NpmPackage} annotations found in
- * the classpath. It also updates <code>main.js</code> and
- * <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
- * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
- * annotations.
+ * An executor that it's run when the servlet context is initialised in dev-mode
+ * or when flow-maven-plugin goals are run. It can chain a set of task to run.
  */
-public class NodeExecutor implements Command {
+public class NodeTasks implements Command {
 
     /**
      * Build a <code>NodeExecutor</code> instance.
@@ -122,8 +113,8 @@ public class NodeExecutor implements Command {
          * 
          * @return a <code>NodeExecutor</code> instance
          */
-        public NodeExecutor build() {
-            return new NodeExecutor(this);
+        public NodeTasks build() {
+            return new NodeTasks(this);
         }
 
         /**
@@ -176,10 +167,10 @@ public class NodeExecutor implements Command {
 
     private Collection<Command> commands = new ArrayList<>();
 
-    private NodeExecutor() {
+    private NodeTasks() {
     }
 
-    private NodeExecutor(Builder builder) {
+    private NodeTasks(Builder builder) {
 
         ClassFinder classFinder = new ClassFinder.CachedClassFinder(
                 builder.classFinder);

@@ -31,7 +31,7 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.NodeExecutor;
+import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +72,7 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
         }
 
         try {
-            new NodeExecutor.Builder(new DefaultClassFinder(classes))
+            new NodeTasks.Builder(new DefaultClassFinder(classes))
                     .setEnablePackagesUpdate(!config.getBooleanProperty(
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false))
                     .setEnableImportsUpdate(!config.getBooleanProperty(

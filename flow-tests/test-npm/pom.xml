@@ -155,9 +155,9 @@
             </build>
         </profile>
 
-        <!-- Update npm deps and imports when not in bower mode -->
+        <!-- Update npm deps and imports and build frontend when not in bower mode -->
         <profile>
-            <id>npm-update</id>
+            <id>npm-build</id>
             <activation>
                 <property>
                     <name>!vaadin.bowerMode</name>
@@ -172,7 +172,7 @@
                         <executions>
                             <execution>
                                 <goals>
-                                    <goal>update-frontend</goal>
+                                    <goal>build-frontend</goal>
                                 </goals>
                             </execution>
                         </executions>
