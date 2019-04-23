@@ -44,7 +44,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     @Before
     @Override
     public void init() {
-
+        super.init();
         registry = WebComponentConfigurationRegistry
                 .getInstance(); // OSGiAccess.getInstance().getOsgiServletContext()
     }
