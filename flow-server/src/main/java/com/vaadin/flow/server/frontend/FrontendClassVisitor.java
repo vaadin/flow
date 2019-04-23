@@ -32,7 +32,6 @@ import net.bytebuddy.jar.asm.Type;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -44,13 +43,14 @@ class FrontendClassVisitor extends ClassVisitor {
 
     private static final String VARIANT = "variant";
     private static final String LAYOUT = "layout";
-    private static final String VALUE = "value";
+    static final String VALUE = "value";
+    static final String VERSION = "version";
 
     /**
-     * An annotation implementation that enables repeated annotations.
+     * An annotation visitor implementation that enables repeated annotations.
      */
-    private class FrontendAnnotationVisitor extends AnnotationVisitor {
-        public FrontendAnnotationVisitor() {
+    static class RepeatedAnnotationVisitor extends AnnotationVisitor {
+        public RepeatedAnnotationVisitor() {
             super(Opcodes.ASM7);
         }
 
@@ -77,7 +77,6 @@ class FrontendClassVisitor extends ClassVisitor {
         String variant;
         String layout;
         final HashSet<String> classes = new HashSet<>();
-        final HashSet<String> packages = new HashSet<>();
         final HashSet<String> modules = new HashSet<>();
         final HashMap<String, Set<String>> imports = new HashMap<>();
         final HashSet<String> scripts = new HashSet<>();
@@ -91,8 +90,8 @@ class FrontendClassVisitor extends ClassVisitor {
         @Override
         public String toString() {
             return String.format(
-                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n imports: %s%n pckages: %s%n modules: %s%n scripts: %s%n classes: %s%n npmDone: %s%n",
-                    name, route, notheme, theme, variant, layout, hash2Str(imports), col2Str(packages), col2Str(modules),
+                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n imports: %s%n modules: %s%n scripts: %s%n classes: %s%n npmDone: %s%n",
+                    name, route, notheme, theme, variant, layout, hash2Str(imports), col2Str(modules),
                     col2Str(scripts), col2Str(classes), col2Str(npmDone));
         }
         private String col2Str(Collection<String> s) {
@@ -111,7 +110,6 @@ class FrontendClassVisitor extends ClassVisitor {
     private final AnnotationVisitor themeRouteVisitor;
     private final AnnotationVisitor themeLayoutVisitor;
     private final AnnotationVisitor htmlImportVisitor;
-    private final AnnotationVisitor packageVisitor;
     private final AnnotationVisitor jsModuleVisitor;
     private final AnnotationVisitor jScriptVisitor;
     private final Set<String> children = new HashSet<>();
@@ -139,7 +137,7 @@ class FrontendClassVisitor extends ClassVisitor {
             }
         };
         // Visitor for each annotation in the class.
-        routeVisitor = new FrontendAnnotationVisitor() {
+        routeVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if (LAYOUT.equals(name)) {
@@ -151,9 +149,8 @@ class FrontendClassVisitor extends ClassVisitor {
                 }
             }
         };
-
         // Visitor for @Theme annotations in classes annotated with @Route
-        themeRouteVisitor = new FrontendAnnotationVisitor() {
+        themeRouteVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if (VALUE.equals(name)) {
@@ -167,7 +164,7 @@ class FrontendClassVisitor extends ClassVisitor {
             }
         };
         // Visitor for @Theme annotations in classes extending RouterLayout
-        themeLayoutVisitor = new FrontendAnnotationVisitor() {
+        themeLayoutVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if (VALUE.equals(name) && endPoint.theme == null) {
@@ -179,40 +176,30 @@ class FrontendClassVisitor extends ClassVisitor {
             }
         };
         // Visitor for @HtmlImport annotations
-        htmlImportVisitor = new FrontendAnnotationVisitor() {
+        htmlImportVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                Set<String> set = endPoint.imports.get(className);
-                if (set == null) {
-                    set = new HashSet<>();
-                    endPoint.imports.put(className, set);
-                }
+                Set<String> set = endPoint.imports.computeIfAbsent(className,
+                        k -> new HashSet<>());
                 set.add(value.toString());
             }
         };
-        // Visitor for @NpmPackage annotations
-        packageVisitor = new FrontendAnnotationVisitor() {
-            @Override
-            public void visit(String name, Object value) {
-                endPoint.packages.add(value.toString());
-            }
-        };
         // Visitor for @JsModule annotations
-        jsModuleVisitor = new FrontendAnnotationVisitor() {
+        jsModuleVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 endPoint.modules.add(value.toString());
             }
         };
         // Visitor for @JavaScript annotations
-        jScriptVisitor = new FrontendAnnotationVisitor() {
+        jScriptVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 endPoint.scripts.add(value.toString());
             }
         };
         // Visitor all other annotations
-        annotationVisitor = new FrontendAnnotationVisitor() {
+        annotationVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
                 if (value != null && !value.getClass().isPrimitive() && !value.getClass().equals(String.class)) {
@@ -250,10 +237,6 @@ class FrontendClassVisitor extends ClassVisitor {
         }
         if (cname.contains(HtmlImport.class.getName())) {
             return htmlImportVisitor;
-        }
-        if (cname.contains(NpmPackage.class.getName())) {
-            endPoint.npmDone.add(className);
-            return packageVisitor;
         }
         if (cname.contains(JsModule.class.getName())) {
             endPoint.npmDone.add(className);

@@ -27,32 +27,61 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.maven.model.Build;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
-import com.vaadin.flow.server.frontend.NodeUpdateImports;
-import com.vaadin.flow.server.frontend.NodeUpdater;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.NodeUpdater.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
- * Goal that updates Flow imports file with @JsModule, @HtmlImport and @Theme
- * annotations defined in the classpath.
+ * Goal that builds frontend bundle by:
+ * <ul>
+ * <li>Updating <code>package.json</code> file with the {@link NpmPackage}
+ * annotations defined in the classpath,</li>
+ * <li>Installing dependencies by running <code>npm install</code></li>
+ * <li>Updating the {@link FrontendUtils#FLOW_IMPORTS_FILE} file imports with
+ * the {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined
+ * in the classpath,</li>
+ * <li>creating <code>webpack.config.js</code> if it does not exist yet, or
+ * updating it otherwise</li>
+ * </ul>
  */
-@Mojo(name = "update-imports", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
+@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+public class NodeBuildFrontendMojo extends NodeUpdateAbstractMojo {
+
     /**
      * Whether to generate a bundle from the project frontend sources or not.
      */
     @Parameter(defaultValue = "true")
     private boolean generateBundle;
+
+    /**
+     * Whether to run <code>npm install</code> after updating dependencies.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean runNpmInstall;
+
+    /**
+     * Copy the `webapp.config.js` from the specified URL if missing. Default is
+     * the template provided by this plugin. Leave it blank to disable the
+     * feature.
+     */
+    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
+    private String webpackTemplate;
 
     /**
      * Comma separated values for the paths that should be analyzed in every
@@ -70,24 +99,25 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
     private String includes;
 
     @Override
-    protected NodeUpdater getUpdater() {
-        if (updater == null) {
-            updater = new NodeUpdateImports(getClassFinder(project),
-                    frontendDirectory, generatedFlowImports, npmFolder,
-                    nodeModulesPath, convertHtml);
-        }
-        return updater;
-    }
-
-    @Override
     public void execute() {
+        // Do nothing when bower mode
+        if (isBowerMode(getLog())) {
+            getLog().info("Skipped 'update-frontend' goal because 'vaadin.bowerMode' is set to true.");
+            return;
+        }
+
+        long start = System.nanoTime();
+
         copyFlowModuleDependencies();
 
-        super.execute();
+        runNodeUpdater();
 
         if (generateBundle) {
             runWebpack();
         }
+
+        long ms = (System.nanoTime() - start) / 1000;
+        getLog().info("update-frontend took " + ms + "ms.");
     }
 
     private void copyFlowModuleDependencies() {
@@ -107,6 +137,18 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
         }
     }
 
+    private void runNodeUpdater() {
+        File webpackOutputRelativeToProjectDir = project.getBasedir().toPath()
+                .relativize(getWebpackOutputDirectory().toPath()).toFile();
+
+        new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
+                generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
+                        .withWebpack(webpackOutputRelativeToProjectDir,
+                                webpackTemplate)
+                        .runNpmInstall(runNpmInstall)
+                        .build().execute();
+    }
+    
     private void runWebpack() {
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(nodeModulesPath, webpackCommand);
@@ -161,4 +203,20 @@ public class NodeUpdateImportsMojo extends NodeUpdateAbstractMojo {
             throw new UncheckedIOException(readErrorMessage, e);
         }
     }
+
+    private File getWebpackOutputDirectory() {
+        Build buildInformation = project.getBuild();
+        switch (project.getPackaging()) {
+            case "jar":
+                return new File(buildInformation.getOutputDirectory(),
+                        "META-INF/resources");
+            case "war":
+                return new File(buildInformation.getDirectory(),
+                        buildInformation.getFinalName());
+            default:
+                throw new IllegalStateException(String.format(
+                        "Unsupported packaging '%s'", project.getPackaging()));
+        }
+    }
+
 }

@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,7 +36,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update
@@ -46,23 +47,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
  * {@link Theme} annotations.
  */
 public class NodeUpdateImports extends NodeUpdater {
-    /**
-     * File that contains Flow application imports, javascript, and theme annotations.
-     * It is also the entry-point for webpack.
-     */
-    public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
-    /**
-     * A parameter for overriding the
-     * {@link NodeUpdateImports#FLOW_IMPORTS_FILE} default value for the file
-     * with all Flow project imports.
-     */
-    public static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
-
-    /**
-     * A special prefix to use in the webpack config to tell webpack to look for
-     * the import starting with a prefix in the Flow project frontend directory.
-     */
-    public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
@@ -86,31 +70,40 @@ public class NodeUpdateImports extends NodeUpdater {
     public NodeUpdateImports(ClassFinder finder, File frontendDirectory,
             File generatedFlowImports, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
-        super(finder, npmFolder, nodeModulesPath, convertHtml);
+        this(finder, null, frontendDirectory, generatedFlowImports, npmFolder, nodeModulesPath, convertHtml);
+    }
+
+
+    /**
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param finder
+     *            a reusable class finder
+     * @param frontendDependencies
+     *            a reusable frontend dependencies
+     * @param frontendDirectory
+     *            a directory with project's frontend files
+     * @param generatedFlowImports
+     *            name of the JS file to update with the imports
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
+     */
+    public NodeUpdateImports(ClassFinder finder,
+            FrontendDependencies frontendDependencies, File frontendDirectory,
+            File generatedFlowImports, File npmFolder, File nodeModulesPath,
+            boolean convertHtml) {
+        super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
         this.generatedFlowImports = generatedFlowImports;
         this.frontendDirectory = frontendDirectory;
     }
 
-    /**
-     * Create an instance of the updater given the reusable extractor, the rest
-     * of the configurable parameters will be set to their default values.
-     *
-     * @param finder
-     *            a reusable class finder
-     */
-    public NodeUpdateImports(ClassFinder finder) {
-        this(finder, new File(getBaseDir(), "frontend"),
-                Paths.get(getBaseDir()).resolve("target")
-                        .resolve(System.getProperty(MAIN_JS_PARAM,
-                                FLOW_IMPORTS_FILE))
-                        .toFile(),
-                new File(getBaseDir()), new File(getBaseDir(), "node_modules"),
-                true);
-    }
-
     @Override
     public void execute() {
-        Set<String> modules = new HashSet<>(frontDeps.getModules());
+        Set<String> modules = new HashSet<>(getJavascriptJsModules(frontDeps.getModules()));
         if (convertHtml) {
             modules.addAll(getHtmlImportJsModules(frontDeps.getImports()));
         }
@@ -126,7 +119,7 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private Set<String> sortModules(Set<String> modules) {
-        return modules.stream().map(this::toValidBrowserImport).sorted(Comparator.reverseOrder())
+        return modules.stream().sorted(Comparator.reverseOrder())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
@@ -160,14 +153,12 @@ public class NodeUpdateImports extends NodeUpdater {
             if (theme != null && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
             }
-            String validTranslatedModulePath = toValidBrowserImport(
-                    translatedModulePath);
-            String validOriginalModulePath = toValidBrowserImport(
-                    originalModulePath);
-            if (importedFileExists(validTranslatedModulePath)) {
-                imports.add("import '" + validTranslatedModulePath + "';");
-            } else if (importedFileExists(validOriginalModulePath)) {
-                imports.add("import '" + validOriginalModulePath + "';");
+            if (importedFileExists(translatedModulePath)) {
+                imports.add("import '" + toValidBrowserImport(
+                    translatedModulePath) + "';");
+            } else if (importedFileExists(originalModulePath)) {
+                imports.add("import '" + toValidBrowserImport(
+                    originalModulePath) + "';");
             } else {
                 unresolvedImports.put(originalModulePath, translatedModulePath);
             }
@@ -201,11 +192,19 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private boolean importedFileExists(String jsImport) {
-        if (jsImport.startsWith(WEBPACK_PREFIX_ALIAS)) {
-            return new File(frontendDirectory, jsImport.replace(WEBPACK_PREFIX_ALIAS, "")).isFile();
-        } else {
-            return new File(nodeModulesPath, jsImport).isFile();
+        return new File(frontendDirectory, jsImport).isFile()
+            || new File(nodeModulesPath, jsImport).isFile()
+            || new File(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME), jsImport).isFile();
+    }
+
+    private String toValidBrowserImport(String s) {
+        if (s.startsWith("./")) {
+            return WEBPACK_PREFIX_ALIAS + s.substring(2);
+        } else if (Character.isAlphabetic(s.charAt(0))
+            && !s.startsWith(WEBPACK_PREFIX_ALIAS)) {
+            return WEBPACK_PREFIX_ALIAS + s;
         }
+        return s;
     }
 
     private void updateMainJsFile(List<String> newContent) throws IOException {

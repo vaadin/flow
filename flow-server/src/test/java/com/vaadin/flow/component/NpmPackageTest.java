@@ -19,10 +19,11 @@ package com.vaadin.flow.component;
 
 import java.lang.annotation.Annotation;
 
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 
 public class NpmPackageTest {
 
@@ -31,7 +32,7 @@ public class NpmPackageTest {
     // inside flow-server, yet.
 
     @JsModule("test-component")
-    @NpmPackage("test-package")
+    @NpmPackage(value = "test-package", version = "0.0.0")
     private static class TestComponent extends Component {
     }
 

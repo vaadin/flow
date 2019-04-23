@@ -30,7 +30,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * A container class for all components used in tests.
  */
 public class TestComponents {
-    @NpmPackage("@vaadin/vaadin-button")
+    @NpmPackage(value = "@vaadin/vaadin-button", version = "0.0.0")
     class ButtonComponent extends Component {
     }
 
@@ -38,19 +38,22 @@ public class TestComponents {
     class IconComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/vaadin-element-mixin.html")
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/src/something-else.html")
+    @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
+    @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
     @JavaScript("frontend://ExampleConnector.js")
     public static class VaadinBowerComponent extends Component {
     }
 
-    @NpmPackage("@vaadin/vaadin-element-mixin")
+    @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "0.0.0")
+    @JsModule("@vaadin/vaadin-element-mixin/vaadin-element-mixin.js")
+    public static class VaadinElementMixin extends Component {
+    }
+
     @JsModule("foo-dir/vaadin-npm-component.js")
     public static class VaadinNpmComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-element-mixin/foo-component.html")
-    @NpmPackage("@vaadin/vaadin-element-mixin")
+    @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
     @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
@@ -61,6 +64,10 @@ public class TestComponents {
 
     @JsModule("./local-p3-template.js")
     public static class LocalP3Template extends Component {
+    }
+
+    @JsModule("frontend://frontend-p3-template.js")
+    public static class FrontendP3Template extends Component {
     }
 
     @HtmlImport("foo.html")
@@ -75,14 +82,17 @@ public class TestComponents {
 
     @Route
     @Theme(value = Lumo.class, variant = Lumo.DARK)
-    class MainView extends Component {
+    @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
+    public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;
         VaadinBowerComponent vaadinBowerComponent;
+        VaadinElementMixin vaadinElementMixin;
         VaadinNpmComponent vaadinNpmComponent;
         VaadinMixedComponent vaadinMixedComponent;
         LocalP2Template localP2Template;
         LocalP3Template localP3Template;
+        FrontendP3Template frontendP3Template;
         FlatImport flatImport;
         TranslatedImports translatedImports;
     }

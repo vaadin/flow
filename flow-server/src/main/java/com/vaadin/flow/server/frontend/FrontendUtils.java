@@ -15,10 +15,18 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
@@ -40,6 +48,32 @@ public class FrontendUtils {
      * The name of the webpack configuration file.
      */
     public static final String WEBPACK_CONFIG ="webpack.config.js";
+
+    /**
+     * NPM package name that will be used for the javascript files present in
+     * jar resources that will to be copied to the npm folder so as they are
+     * accessible to webpack.
+     */
+    public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
+
+    /**
+     * File that contains Flow application imports, javascript, and theme annotations.
+     * It is also the entry-point for webpack.
+     */
+    public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
+    /**
+     *
+     * A parameter for overriding the
+     * {@link FrontendUtils#FLOW_IMPORTS_FILE} default value for the file
+     * with all Flow project imports.
+     */
+    public static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
+
+    /**
+     * A special prefix to use in the webpack config to tell webpack to look for
+     * the import starting with a prefix in the Flow project frontend directory.
+     */
+    public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
 
     private static final String NOT_FOUND =
             "%n%n======================================================================================================"
@@ -93,6 +127,17 @@ public class FrontendUtils {
     }
 
     /**
+     * Gets the flow package inside node_modules.
+     *
+     * @param nodeModulesPath
+     *            path to node_modules.
+     * @return the flow package folder.
+     */
+    public static File getFlowPackage(File nodeModulesPath) {
+        return new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+    }
+
+    /**
      * Check that the folder structure does not meet a proper npm mode project.
      * It is useful to run V13 projects in V14 before they have been migrated.
      *
@@ -103,8 +148,6 @@ public class FrontendUtils {
         boolean hasNpmFrontend = new File(getBaseDir(), "frontend").isDirectory();
         boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
                 && new File(getBaseDir(), WEBPACK_CONFIG).exists();
-        
-
         return hasBowerFrontend && !hasNpmFrontend && !hasNpmConfig ? true : false;
     }
 
@@ -153,5 +196,25 @@ public class FrontendUtils {
             throw new IllegalStateException(String.format(NOT_FOUND, cmd));
         }
         return file;
+    }
+
+    /**
+     * Read a stream and copy the content in a String.
+     *
+     * @param inputStream
+     *            the input stream
+     * @return the string
+     */
+    public static String streamToString(InputStream inputStream) {
+        String ret = "";
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8.name()))) {
+
+            ret = br.lines().collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException exception) {
+            // ignore exception on close()
+            LoggerFactory.getLogger(FrontendUtils.class).warn("Couldn't close template input stream", exception);
+        }
+        return ret;
     }
 }

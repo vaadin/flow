@@ -28,7 +28,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
@@ -37,7 +39,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private NodeUpdatePackages updater;
+    private NodeUpdatePackages packageUpdater;
+    private WebpackUpdater webpackUpdater;
     private File packageJson;
     private File webpackConfig;
 
@@ -45,22 +48,33 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     public void setup() throws Exception {
         System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
 
-        NodeUpdateTestUtil.createStubNode(true, true);
-        updater = createStubUpdater();
+        File baseDir = new File(getBaseDir());
 
-        packageJson = new File(getBaseDir(), PACKAGE_JSON);
-        webpackConfig = new File(getBaseDir(), WEBPACK_CONFIG);
+        NodeUpdateTestUtil.createStubNode(true, true);
+        
+        packageUpdater = new NodeUpdatePackages(
+                getClassFinder(),
+                baseDir, new File(baseDir, "node_modules"), true);
+                    
+        webpackUpdater = new WebpackUpdater(baseDir,
+                baseDir, WEBPACK_CONFIG, new File(baseDir, FLOW_IMPORTS_FILE));
+
+        packageJson = new File(baseDir, PACKAGE_JSON);
+        webpackConfig = new File(baseDir, WEBPACK_CONFIG);
+    }
+
+    private void execute() {
+        packageUpdater.execute();
+        webpackUpdater.execute();
     }
 
     @Test
     public void executeNpm_packageJsonMissing() throws Exception {
         Assert.assertFalse(packageJson.exists());
 
-        updater.execute();
+        execute();
 
         assertPackageJsonContent();
-
-        Assert.assertTrue(webpackConfig.exists());
     }
 
     @Test
@@ -71,12 +85,16 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
-        updater.execute();
+
+        execute();
+
         long tsPackage2 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack2 = FileUtils.getFile(webpackConfig).lastModified();
 
         sleep(1000);
-        updater.execute();
+
+        execute();
+
         long tsPackage3 = FileUtils.getFile(packageJson).lastModified();
         long tsWebpack3 = FileUtils.getFile(webpackConfig).lastModified();
 
@@ -89,9 +107,11 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     }
 
     private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = updater.getPackageJson();
+        JsonObject packageJsonObject = packageUpdater.getPackageJson();
 
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
+        
+        System.err.println(dependencies.toJson());
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
                 dependencies.hasKey("@vaadin/vaadin-button"));

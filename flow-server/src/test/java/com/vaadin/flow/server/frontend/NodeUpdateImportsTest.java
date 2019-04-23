@@ -38,9 +38,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static com.vaadin.flow.server.frontend.NodeUpdateImports.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -60,7 +61,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         node = new NodeUpdateImports(getClassFinder(), frontendDirectory,
                 importsFile, tmpRoot, nodeModulesPath, true);
 
-        Assert.assertTrue(node.getFlowPackage().mkdirs());
+        Assert.assertTrue(getFlowPackage().mkdirs());
 
         createExpectedImports(frontendDirectory, nodeModulesPath);
     }
@@ -128,8 +129,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(node.getFlowPackage().exists());
-        Assert.assertTrue(new File(node.getFlowPackage(), "ExampleConnector.js")
+        Assert.assertTrue(getFlowPackage().exists());
+        Assert.assertTrue(new File(getFlowPackage(), "ExampleConnector.js")
                 .exists());
     }
 
@@ -204,18 +205,18 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
+        for (String importString : imports) {
+                if (contains) {
+                    Assert.assertTrue(
+                        importString + " not found in:\n" + content,
+                        content.contains(addWebpackPrefix(importString)));
+                } else {
+                    Assert.assertFalse(
+                        importString + " not found in:\n" + content,
+                        content.contains(addWebpackPrefix(importString)));
+                }
+            }
 
-        if (contains) {
-            Arrays.asList(imports)
-                    .forEach(s -> Assert.assertTrue(
-                            s + " not found in:\n" + content,
-                            content.contains(addWebpackPrefix(s))));
-        } else {
-            Arrays.asList(imports)
-                    .forEach(s -> Assert.assertFalse(
-                            s + " found in:\n" + content,
-                            content.contains(addWebpackPrefix(s))));
-        }
     }
 
     private String addWebpackPrefix(String s) {
@@ -255,47 +256,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 content.getBytes(StandardCharsets.UTF_8), options);
     }
 
-    private List<String> getExpectedImports() {
-        return Arrays.asList("@polymer/iron-icon/iron-icon.js",
-                "@vaadin/vaadin-lumo-styles/spacing.js",
-                "@vaadin/vaadin-lumo-styles/icons.js",
-                "@vaadin/vaadin-lumo-styles/style.js",
-                "@vaadin/vaadin-lumo-styles/typography.js",
-                "@vaadin/vaadin-lumo-styles/color.js",
-                "@vaadin/vaadin-lumo-styles/sizing.js",
-                "@vaadin/vaadin-element-mixin/theme/lumo/vaadin-element-mixin.js",
-                "@vaadin/vaadin-element-mixin/src/something-else.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "@vaadin/flow-frontend/ExampleConnector.js",
-                "./local-p3-template.js", "./foo.js",
-                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-p2-template.js", "./foo-dir/vaadin-npm-component.js");
-    }
-
-    private void createExpectedImports(File directoryWithImportsJs,
-            File nodeModulesPath) throws IOException {
-        for (String expectedImport : getExpectedImports()) {
-            File newFile = resolveImportFile(directoryWithImportsJs,
-                    nodeModulesPath, expectedImport);
-            newFile.getParentFile().mkdirs();
-            Assert.assertTrue(newFile.createNewFile());
-        }
-    }
-
-    private void deleteExpectedImports(File directoryWithImportsJs,
-            File nodeModulesPath) {
-        for (String expectedImport : getExpectedImports()) {
-            Assert.assertTrue(resolveImportFile(directoryWithImportsJs,
-                    nodeModulesPath, expectedImport).delete());
-        }
-    }
-
-    private File resolveImportFile(File directoryWithImportsJs,
-            File nodeModulesPath, String jsImport) {
-        File root = jsImport.startsWith("./") ? directoryWithImportsJs
-                : nodeModulesPath;
-        return new File(root, jsImport);
+    File getFlowPackage() {
+        return FrontendUtils.getFlowPackage(nodeModulesPath);
     }
 
 }

@@ -15,12 +15,9 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +34,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 
@@ -128,7 +126,7 @@ public class NpmTemplateParser implements TemplateParser {
         InputStream content = getClass().getClassLoader().getResourceAsStream(url);
         if (content != null) {
             getLogger().debug("Found sources from the tag '{}' in the template '{}'", tag, url);
-            return streamToString(content);
+            return FrontendUtils.streamToString(content);
         }
         return null;
     }
@@ -169,7 +167,7 @@ public class NpmTemplateParser implements TemplateParser {
             }
         }
         if (content != null) {
-            updateCache(url, streamToString(content));
+            updateCache(url, FrontendUtils.streamToString(content));
         }
         return cache.get(url);
     }
@@ -187,19 +185,6 @@ public class NpmTemplateParser implements TemplateParser {
         if (!cache.containsKey(url)) {
             cache.put(url, BundleParser.getSourceFromStatistics(url, jsonStats));
         }
-    }
-
-    private String streamToString(InputStream inputStream) {
-        String ret = "";
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(inputStream, StandardCharsets.UTF_8.name()))) {
-
-            ret = br.lines().collect(Collectors.joining(System.lineSeparator()));
-        } catch (IOException exception) {
-            // ignore exception on close()
-            getLogger().warn("Couldn't close template input stream", exception);
-        }
-        return ret;
     }
 
     private Logger getLogger() {

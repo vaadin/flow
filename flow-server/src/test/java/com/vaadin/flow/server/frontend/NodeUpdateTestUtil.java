@@ -22,22 +22,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.junit.Assert;
 
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 
-import elemental.json.JsonObject;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
-import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
 import static org.junit.Assert.assertNotNull;
+
 public class NodeUpdateTestUtil {
 
     public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
@@ -113,47 +109,6 @@ public class NodeUpdateTestUtil {
             "setTimeout(() => {}, " + milliSecondsToRun + ");\n"), "UTF-8");
     }
 
-
-    // Creates a `NodeUpdatePackages` instance with a modified
-    // `updateDependencies` method able to write `dependencies` and
-    // `devDependencies` to the `package.json` file instead of calling
-    // `npm` which to speed up unit testing
-    @SuppressWarnings("unchecked")
-    static NodeUpdatePackages createStubUpdater() throws MalformedURLException {
-        File tmpRoot = new File(getBaseDir());
-        File modules = new File(tmpRoot, "node_modules");
-        File packageFile = new File(tmpRoot, PACKAGE_JSON);
-
-        // Create a spy version of the updater instance
-        NodeUpdatePackages spy = Mockito.spy(
-                new NodeUpdatePackages(
-                        NodeUpdateTestUtil.getClassFinder(),
-                        tmpRoot, WEBPACK_CONFIG,
-                        new File(tmpRoot, FLOW_IMPORTS_FILE), tmpRoot, modules,
-                        true));
-
-        // Override the `updateDependencies` method
-        Mockito.doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation) throws Exception {
-                // Read the actual package.json file and parse into a json object
-                JsonObject json = ((NodeUpdatePackages)invocation.getMock()).getPackageJson();
-
-                // Add all dependencies to the appropriate key
-                String type = invocation.getArgumentAt(1, String.class);
-                List<String> deps = invocation.getArgumentAt(0, List.class);
-                JsonObject devs = json.getObject("--save".equals(type) ? "dependencies" : "devDependencies");
-                for (String dep : deps) {
-                    devs.put(dep, "latest");
-                }
-
-                // Write the file with the new content
-                FileUtils.writeStringToFile(packageFile, json.toJson(), "UTF-8");
-                return null;
-            }})
-        .when(spy).updateDependencies(Mockito.anyList(), Mockito.anyVararg());
-        return spy;
-    }
-
     static URL getTestResource(String resourceName) {
         URL resourceUrl = NodeUpdateTestUtil.class.getClassLoader()
                 .getResource(resourceName);
@@ -166,4 +121,52 @@ public class NodeUpdateTestUtil {
     void sleep(int ms) throws InterruptedException {
         Thread.sleep(ms); // NOSONAR
     }
+
+    List<String> getExpectedImports() {
+        return Arrays.asList("@polymer/iron-icon/iron-icon.js",
+                "@vaadin/vaadin-lumo-styles/spacing.js",
+                "@vaadin/vaadin-lumo-styles/icons.js",
+                "@vaadin/vaadin-lumo-styles/style.js",
+                "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/sizing.js",
+                "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
+                "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
+                "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
+                "@vaadin/flow-frontend/ExampleConnector.js",
+                "./frontend-p3-template.js",
+                "./local-p3-template.js",
+                "./foo.js",
+                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "./local-p2-template.js",
+                "./foo-dir/vaadin-npm-component.js");
+    }
+
+    void createExpectedImports(File directoryWithImportsJs,
+                               File nodeModulesPath) throws IOException {
+        for (String expectedImport : getExpectedImports()) {
+            File newFile = resolveImportFile(directoryWithImportsJs,
+                    nodeModulesPath, expectedImport);
+            newFile.getParentFile().mkdirs();
+            Assert.assertTrue(newFile.createNewFile());
+        }
+    }
+
+    void deleteExpectedImports(File directoryWithImportsJs,
+                               File nodeModulesPath) {
+        for (String expectedImport : getExpectedImports()) {
+            Assert.assertTrue(resolveImportFile(directoryWithImportsJs,
+                    nodeModulesPath, expectedImport).delete());
+        }
+    }
+
+    File resolveImportFile(File directoryWithImportsJs,
+                           File nodeModulesPath, String jsImport) {
+        File root = jsImport.startsWith("./") ? directoryWithImportsJs
+                : nodeModulesPath;
+        return new File(root, jsImport);
+    }
+
 }

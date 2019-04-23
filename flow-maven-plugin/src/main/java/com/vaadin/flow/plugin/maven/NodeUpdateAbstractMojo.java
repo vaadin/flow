@@ -39,8 +39,8 @@ import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.ClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.NodeUpdateImports;
-import com.vaadin.flow.server.frontend.NodeUpdater;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 
 /**
  * Common stuff for node update mojos.
@@ -127,7 +127,7 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
     /**
      * A Flow JavaScript file with all project's imports to update.
      */
-    @Parameter(defaultValue = "${project.build.directory}/" + NodeUpdateImports.FLOW_IMPORTS_FILE)
+    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
     protected File generatedFlowImports;
 
     /**
@@ -135,22 +135,6 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "${project.basedir}/frontend")
     protected File frontendDirectory;
-
-    protected NodeUpdater updater;
-
-    @Override
-    public void execute() {
-        // Do nothing when bower mode
-        if (isBowerMode(getLog())) {
-            String goal = this.getClass().equals(NodeUpdateImportsMojo.class) ? "update-imports"  : "update-npm-dependencies";
-            getLog().info("Skipped '" + goal + "' goal because `vaadin.bowerMode` is set.");
-            return;
-        }
-        long start = System.nanoTime();
-        getUpdater().execute();
-        long ms = (System.nanoTime() - start) / 1000;
-        getLog().info("Took " + ms + "ms.");
-    }
 
     /**
      * Check whether the goal should be run in bower mode, by checking the
@@ -168,8 +152,6 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         }
         return bowerMode;
     }
-
-    protected abstract NodeUpdater getUpdater();
 
     static ClassFinder getClassFinder(MavenProject project) {
         final List<String> runtimeClasspathElements;
