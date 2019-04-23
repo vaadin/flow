@@ -17,6 +17,8 @@
 package com.vaadin.flow.function;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -24,6 +26,11 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import static com.vaadin.flow.server.Constants.JSBUNDLE_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_JSBUNDLE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
 /**
  * A collection of properties configured at deploy time as well as a way of
@@ -40,6 +47,15 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if in production mode, false otherwise.
      */
     boolean isProductionMode();
+
+    /**
+     * Returns whether Vaadin is running in bower mode.
+     *
+     * NOTE: bower mode will be unsupported in future versions.
+     *
+     * @return true if in bower mode, false otherwise.
+     */
+    boolean isBowerMode();
 
     /**
      * Returns whether the server provides timing info to the client.
@@ -329,5 +345,46 @@ public interface DeploymentConfiguration extends Serializable {
     default String getCompiledWebComponentsPath() {
         return getStringProperty(Constants.COMPILED_WEB_COMPONENTS_PATH,
                 "vaadin-web-components");
+    }
+
+    /**
+     * Determines the main application file to load when starting the
+     * application for browsers supporting ES6 imports.
+     *
+     * The default value is <code>build/index.js</code> but it can be changed by
+     * setting the {@link Constants#SERVLET_PARAMETER_JSBUNDLE}.
+     *
+     * @return the ES6 bundle path
+     */
+    default String getJsModuleBundle() {
+        return getStringProperty(SERVLET_PARAMETER_JSBUNDLE, JSBUNDLE_DEFAULT_VALUE);
+    }
+
+    /**
+     * Determines the main application file to load when starting the
+     * application for browsers supporting ES6 imports
+     *
+     * It returns the value returned by
+     * {@link DeploymentConfiguration#getJsModuleBundle()} but adding the
+     * <code>.es5</code> fragment before the extension, so by default it will
+     * return <code>build/index.es5.js</code>
+     *
+     * @return the ES5 bundle path
+     */
+    default String getJsModuleBundleEs5() {
+        return getJsModuleBundle().replaceFirst("(\\.[^\\.]+)$", ".es5$1");
+    }
+
+    /**
+     * Returns an array with polyfills to be loaded when the app is loaded.
+     *
+     * The default value is <code>build/webcomponentsjs/webcomponents-loader.js</code>
+     * but it can be changed by setting the {@link Constants#SERVLET_PARAMETER_POLYFILLS}
+     * as a comma separated list of JS files to load.
+     *
+     * @return polyfills to load
+     */
+    default List<String> getPolyfills() {
+        return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS, POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
     }
 }

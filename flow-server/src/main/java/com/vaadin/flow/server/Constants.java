@@ -30,6 +30,10 @@ public final class Constants implements Serializable {
     public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.vaadin1";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
+
+    /** enable it if your project is a Polymer 2.0 one, should be removed in V15 */
+    public static final String SERVLET_PARAMETER_BOWER_MODE = "bowerMode";
+
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed
     public static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
@@ -41,6 +45,12 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
+
+    public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
+    public static final String JSBUNDLE_DEFAULT_VALUE = "build/index.js";
+    public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
+    public static final String POLYFILLS_DEFAULT_VALUE = "build/webcomponentsjs/webcomponents-loader.js";
+
     /**
      * Configuration name for the parameter that determines whether Brotli
      * compression should be used for static resources in cases when a
@@ -113,6 +123,69 @@ public final class Constants implements Serializable {
      * component UI imports them as dependencies.
      */
     public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
+
+    /**
+     * Configuration name for the WebPack profile statistics json file to use to
+     * determine template contents.
+     * <p>
+     * File needs to be available either for the ClassLoader as a resource, or
+     * as a static web resource. By default it returns the value in
+     * {@link Constants#STATISTICS_JSON_DEFAULT}
+     */
+    public static final String SERVLET_PARAMETER_STATISTICS_JSON = "statistics.file.path";
+
+    /**
+     * Default path for the WebPack profile statistics json file. It can be
+     * modifyied by setting the system property "statistics.file.path".
+     */
+    public static final String STATISTICS_JSON_DEFAULT = "/build/stats.json";
+
+    /**
+     * Name of the <code>npm</code> main file.
+     */
+    public static final String PACKAGE_JSON = "package.json";
+
+    /**
+     * Location for the frontend resources in jar files.
+     */
+    public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
+
+    /**
+     * Configuration name for the parameter that indicates the tcp port of a webpack-dev-server
+     * already running. This property is automatically defined when
+     * {@link DevModeHandler} starts the webpack server. If you have your own
+     * server already running, define this property and {@link DevModeHandler}
+     * will re-use that server.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT = "devmode.webpack.running-port";
+
+    /**
+     * Configuration name for the time waiting for webpack output pattern
+     * defined by {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN}.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = "devmode.webpack.output.pattern.timeout";
+
+    /**
+     * Configuration name for the pattern used to inspect the webpack output to
+     * assure it is up and running. Default value is defined in
+     * {@link DevModeHandler} as the <code>: (Compiled|Failed)</code> expression.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN = "devmode.webpack.output.pattern";
+
+    /**
+     * Configuration name for adding extra options to the webpack-dev-server.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
+
+    /**
+     * Configuration name which disables the node imports updater.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS = "devmode.skip.update-imports";
+
+    /**
+     * Configuration name  which disables the node dependencies updater.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM = "devmode.skip.update-npm-dependencies";
 
     private Constants() {
         // prevent instantiation constants class only

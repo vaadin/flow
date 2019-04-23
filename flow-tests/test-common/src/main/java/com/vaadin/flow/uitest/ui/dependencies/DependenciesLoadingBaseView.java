@@ -31,6 +31,6 @@ public class DependenciesLoadingBaseView extends AbstractDivView {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         // See eager.js for attachTestDiv code
-        getPage().executeJavaScript("attachTestDiv($0)", DOM_CHANGE_TEXT);
+        getPage().executeJs("attachTestDiv($0)", DOM_CHANGE_TEXT);
     }
 }

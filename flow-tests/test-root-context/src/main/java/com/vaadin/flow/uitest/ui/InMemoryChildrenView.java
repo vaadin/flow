@@ -32,14 +32,14 @@ public class InMemoryChildrenView extends AbstractDivView {
         label.setId("in-memory");
         label.setText("In memory element");
         getElement().appendVirtualChild(label.getElement());
-        getElement().executeJavaScript(
-                "window.inMemoryConnector.init(this, $0)", label);
+        getElement().executeJs("window.inMemoryConnector.init(this, $0)",
+                label);
         Div target = new Div();
         target.setId("target");
         add(target);
         NativeButton button = new NativeButton(
                 "Add copy of in-memory element to the target",
-                event -> getElement().callFunction("useInMemoryElement",
+                event -> getElement().callJsFunction("useInMemoryElement",
                         target));
         button.setId("copy");
         add(button);

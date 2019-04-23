@@ -1,4 +1,4 @@
-package com.vaadin.flow.plugin.common;
+package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.util.Optional;

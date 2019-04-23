@@ -66,7 +66,7 @@ public class TrackMessageSizeView extends Div {
         String methodImplementation = findMethodImplementation();
 
         logElement.getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                .runWhenAttached(ui -> ui.getPage().executeJs(
                         methodImplementation + testMethod + buildTestCase(), logElement));
 
     }

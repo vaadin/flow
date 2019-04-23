@@ -14,6 +14,7 @@ public class MockDeploymentConfiguration
     private final String webComponentsPolyfillBase;
 
     private boolean productionMode = false;
+    private boolean bowerMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int webComponentDisconnect = 300;
@@ -37,6 +38,11 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isProductionMode() {
         return productionMode;
+    }
+
+    @Override
+    public boolean isBowerMode() {
+      return bowerMode;
     }
 
     @Override
@@ -143,6 +149,10 @@ public class MockDeploymentConfiguration
 
     public void setBrotli(boolean brotli) {
         this.brotli = brotli;
+    }
+
+    public void setBowerMode(boolean bower) {
+        bowerMode = bower;
     }
 
 }

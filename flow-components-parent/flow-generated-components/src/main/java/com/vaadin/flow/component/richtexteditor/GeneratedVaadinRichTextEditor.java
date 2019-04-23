@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2018 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,21 +16,23 @@
 package com.vaadin.flow.component.richtexteditor;
 
 import javax.annotation.Generated;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HasTheme;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
-import com.vaadin.flow.component.Synchronize;
-import elemental.json.JsonArray;
-import com.vaadin.flow.component.DomEvent;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasTheme;
+import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.function.SerializableBiFunction;
-import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonArray;
 
 /**
  * <p>
@@ -197,7 +199,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
 
     /**
      * Adds theme variants to the component.
-     * 
+     *
      * @param variants
      *            theme variants to add
      */
@@ -209,7 +211,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
 
     /**
      * Removes theme variants from the component.
-     * 
+     *
      * @param variants
      *            theme variants to remove
      */
@@ -229,7 +231,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
      * This property is synchronized automatically from client side when a
      * 'html-value-changed' event happens.
      * </p>
-     * 
+     *
      * @return the {@code htmlValue} property from the webcomponent
      */
     @Synchronize(property = "htmlValue", value = "html-value-changed")
@@ -247,7 +249,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code disabled} property from the webcomponent
      */
     protected boolean isDisabledBoolean() {
@@ -261,7 +263,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
      * <p>
      * When true, the user can not modify, nor copy the editor content.
      * </p>
-     * 
+     *
      * @param disabled
      *            the boolean value to set
      */
@@ -279,7 +281,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code readonly} property from the webcomponent
      */
     protected boolean isReadonlyBoolean() {
@@ -293,7 +295,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
      * <p>
      * When true, the user can not modify the editor content, but can copy it.
      * </p>
-     * 
+     *
      * @param readonly
      *            the boolean value to set
      */
@@ -312,7 +314,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
-     * 
+     *
      * @return the {@code i18n} property from the webcomponent
      */
     protected JsonArray getI18nJsonArray() {
@@ -327,7 +329,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
      * An object used to localize this component. The properties are used e.g.
      * as the tooltips for the editor toolbar buttons.
      * </p>
-     * 
+     *
      * @param i18n
      *            the JsonArray value to set
      */
@@ -345,7 +347,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
 
     /**
      * Adds a listener for {@code change} events fired by the webcomponent.
-     * 
+     *
      * @param listener
      *            the listener
      * @return a {@link Registration} for removing the event listener
@@ -360,7 +362,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
     /**
      * Constructs a new GeneratedVaadinRichTextEditor component with the given
      * arguments.
-     * 
+     *
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue
@@ -389,7 +391,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
     /**
      * Constructs a new GeneratedVaadinRichTextEditor component with the given
      * arguments.
-     * 
+     *
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue
@@ -409,7 +411,7 @@ public abstract class GeneratedVaadinRichTextEditor<R extends GeneratedVaadinRic
     /**
      * Constructs a new GeneratedVaadinRichTextEditor component with the given
      * arguments.
-     * 
+     *
      * @param initialValue
      *            the initial value to set to the value
      * @param defaultValue

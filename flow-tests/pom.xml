@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>1.5-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>test-npm</module>
         <module>test-pwa</module>
         <module>test-resources</module>
         <module>test-common</module>
@@ -96,26 +97,6 @@
                     <excludedGroups>${test.excludegroup}</excludedGroups>
                 </configuration>
             </plugin>
-            <!-- jetty plugin for those child modules that need it -->
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-                <!-- Jetty execution is mapped in those modules that actually
-                    use Jetty -->
-                <configuration>
-                    <webAppConfig>
-                        <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                    </webAppConfig>
-                    <scanIntervalSeconds>-1</scanIntervalSeconds>
-                    <httpConnector>
-                        <port>${server.port}</port>
-                    </httpConnector>
-                    <stopPort>${server.stop.port}</stopPort>
-                    <stopKey>foo</stopKey>
-                    <stopWait>5</stopWait>
-                </configuration>
-            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -156,6 +137,32 @@
                     <artifactId>nexus-staging-maven-plugin</artifactId>
                     <configuration>
                         <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                    </configuration>
+                </plugin>
+                <!-- jetty plugin for those child modules that need it -->
+                <plugin>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-maven-plugin</artifactId>
+                    <version>${jetty.version}</version>
+                    <!-- Jetty execution is mapped in those modules that actually
+                        use Jetty -->
+                    <configuration>
+                        <webAppConfig>
+                            <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+                        </webAppConfig>
+                        <scanIntervalSeconds>-1</scanIntervalSeconds>
+                        <httpConnector>
+                            <port>${server.port}</port>
+                        </httpConnector>
+                        <stopPort>${server.stop.port}</stopPort>
+                        <stopKey>foo</stopKey>
+                        <stopWait>5</stopWait>
+                        <systemProperties>
+                            <systemProperty>
+                                <name>vaadin.bowerMode</name>
+                                <value>true</value>
+                            </systemProperty>
+                        </systemProperties>
                     </configuration>
                 </plugin>
             </plugins>

@@ -52,7 +52,7 @@ public class FragmentLinkView extends AbstractDivView {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         Page page = attachEvent.getUI().getPage();
-        page.executeJavaScript("var i = 0;"
+        page.executeJs("var i = 0;"
                 + "window.addEventListener('hashchange', function(event) {"
                 + "var x = document.createElement('span');"
                 + "x.textContent = ' ' + i;" + "i++;"

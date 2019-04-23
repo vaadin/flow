@@ -161,7 +161,7 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used for data related to
-     * {@link Page#executeJavaScript(String, Serializable...)} in UIDL messages.
+     * {@link Page#executeJs(String, Serializable...)} in UIDL messages.
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
 
@@ -267,11 +267,6 @@ public class JsonConstants implements Serializable {
      * Key used when informing the client side that the session has expired.
      */
     public static final String META_SESSION_EXPIRED = "sessionExpired";
-
-    /**
-     * Key used for storing child template nodes.
-     */
-    public static final String CHILD_TEMPLATE_KEY = "children";
 
     /**
      * Key holding the debounce phase for an event data map from the client.

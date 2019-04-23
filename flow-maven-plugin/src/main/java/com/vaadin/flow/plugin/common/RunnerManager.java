@@ -35,6 +35,8 @@ import com.helger.commons.url.URLValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.frontend.FrontendToolsLocator;
+
 /**
  * The class to manage the runners for frontend tools – gulp, node and yarn. The
  * manager first attempts to use the local tools, if the paths are provided,

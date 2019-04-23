@@ -15,18 +15,13 @@
  */
 package com.vaadin.flow.plugin.common;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Repeatable;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collections;
-import java.util.Set;
 import java.util.stream.Stream;
 
-import org.reflections.Reflections;
-import org.reflections.util.ConfigurationBuilder;
+import com.vaadin.flow.server.frontend.ClassFinder;
 
 /**
  * Abstract class which allows to find classes in the project classpath.
@@ -35,35 +30,38 @@ import org.reflections.util.ConfigurationBuilder;
  * @since 1.0
  *
  */
-public abstract class ClassPathIntrospector {
+public abstract class ClassPathIntrospector implements Serializable {
 
-    private final ClassLoader projectClassLoader;
-    private final Reflections reflections;
+    private final ClassFinder finder;
 
     /**
-     * Creates a new instance of class path introspector using the
-     * {@code projectClassesLocations}.
+     * Creates a new instance of class.
      *
-     * @param projectClassesLocations
-     *            urls to project class locations (directories, jars etc.)
+     * @param finder the ClassFinder instance to use for class searches.
      */
-    protected ClassPathIntrospector(URL... projectClassesLocations) {
-        projectClassLoader = new URLClassLoader(projectClassesLocations, null);
-        reflections = new Reflections(
-                new ConfigurationBuilder().addClassLoader(projectClassLoader)
-                        .addUrls(projectClassesLocations));
+    protected ClassPathIntrospector(ClassFinder finder) {
+        this.finder = finder;
     }
 
     /**
-     * Creates a new instance of class path introspector using the
-     * {@code otherIntrpespector}'s reflection tools.
+     * Create a new instance but reusing the instrospector.
      *
      * @param otherIntrospector
-     *            the introspector whose reflection tools will be reused
+     *            the other instance.
      */
-    protected ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
-        projectClassLoader = otherIntrospector.projectClassLoader;
-        reflections = otherIntrospector.reflections;
+    public ClassPathIntrospector(ClassPathIntrospector otherIntrospector) {
+        this.finder = otherIntrospector.finder;
+    }
+
+    /**
+     * Returns a resource {@link URL} given a file name.
+     *
+     * @param name
+     *            the name of the resource
+     * @return the URL with the resource or null if not found
+     */
+    protected URL getResource(String name) {
+        return finder.getResource(name);
     }
 
     /**
@@ -76,12 +74,7 @@ public abstract class ClassPathIntrospector {
      */
     protected Stream<Class<?>> getAnnotatedClasses(
             Class<? extends Annotation> annotationInProjectContext) {
-        Set<Class<?>> annotatedBySingleAnnotation = reflections
-                .getTypesAnnotatedWith(annotationInProjectContext, true);
-        Set<Class<?>> annotatedByRepeatedAnnotation = getAnnotatedByRepeatedAnnotation(
-                annotationInProjectContext);
-        return Stream.concat(annotatedBySingleAnnotation.stream(),
-                annotatedByRepeatedAnnotation.stream());
+        return finder.getAnnotatedClasses(annotationInProjectContext).stream();
     }
 
     /**
@@ -92,9 +85,9 @@ public abstract class ClassPathIntrospector {
      * @return all subtypes of the given {@code type}
      */
     protected Stream<Class<?>> getSubtypes(Class<?> type) {
-        return reflections
-                .getSubTypesOf(loadClassInProjectClassLoader(type.getName()))
-                .stream();
+        return finder
+            .getSubTypesOf(loadClassInProjectClassLoader(type.getName()))
+            .stream();
     }
 
     /**
@@ -111,10 +104,9 @@ public abstract class ClassPathIntrospector {
      * @return the class with the given {@code className} loaded by the project
      *         class loader
      */
-    @SuppressWarnings("unchecked")
-    protected <T> Class<T> loadClassInProjectClassLoader(String className) {
+    public <T> Class<T> loadClassInProjectClassLoader(String className) {
         try {
-            return (Class<T>) projectClassLoader.loadClass(className);
+            return finder.loadClass(className);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(String.format(
                     "Failed to load class '%s' in custom classloader",
@@ -123,18 +115,18 @@ public abstract class ClassPathIntrospector {
     }
 
     /**
-     * Get the String value of the method {@code methodName} from the
+     * Get the value of the method {@code methodName} from the
      * {@code target} annotation.
      *
      * @param target
      *            the target annotation
      * @param methodName
      *            the method name to execute
-     * @return the String representation of the execution result
+     * @return the Value of the execution result
      */
-    protected String invokeAnnotationMethod(Annotation target,
-            String methodName) {
-        return String.valueOf(doInvokeAnnotationMethod(target, methodName));
+    @SuppressWarnings("unchecked")
+    protected <T> T invokeAnnotationMethod(Annotation target, String methodName) {
+        return (T) doInvokeAnnotationMethod(target, methodName);
     }
 
     /**
@@ -167,16 +159,5 @@ public abstract class ClassPathIntrospector {
                             target, methodName),
                     e);
         }
-    }
-
-    private Set<Class<?>> getAnnotatedByRepeatedAnnotation(
-            AnnotatedElement annotationClass) {
-        Repeatable repeatableAnnotation = annotationClass
-                .getAnnotation(Repeatable.class);
-        if (repeatableAnnotation != null) {
-            return reflections
-                    .getTypesAnnotatedWith(repeatableAnnotation.value(), true);
-        }
-        return Collections.emptySet();
     }
 }
