@@ -466,12 +466,14 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if(hasAttribute(lowerCaseAttribute)) {
-            Optional<CustomAttribute> customAttribute = CustomAttribute.get(lowerCaseAttribute);
+        if (hasAttribute(lowerCaseAttribute)) {
+            Optional<CustomAttribute> customAttribute = CustomAttribute
+                    .get(lowerCaseAttribute);
             if (customAttribute.isPresent()) {
                 customAttribute.get().removeAttribute(this);
             } else {
-                getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
+                getStateProvider().removeAttribute(getNode(),
+                        lowerCaseAttribute);
             }
         }
         return this;
@@ -704,9 +706,11 @@ public class Element extends Node<Element> {
      *
      * @see #synchronizeProperty(String, String)
      * @param name
-     *            the property name to add the listener for
+     *            the property name to add the listener for, not
+     *            <code>null</code>
      * @param listener
-     *            listener to get notifications about property value changes
+     *            listener to get notifications about property value changes,
+     *            not <code>null</code>
      * @return an event registration handle for removing the listener
      */
     public Registration addPropertyChangeListener(String name,
@@ -1338,12 +1342,13 @@ public class Element extends Node<Element> {
                 // This explicit class instantiation is the workaround
                 // which fixes a JVM optimization+serialization bug.
                 // Do not convert to lambda
-                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
                 // see ElementAttributeMap#deferRegistration
                 new Command() {
                     @Override
                     public void execute() {
-                        attachListener.onAttach(new ElementAttachEvent(Element.this));
+                        attachListener
+                                .onAttach(new ElementAttachEvent(Element.this));
                     }
                 });
     }
@@ -1370,12 +1375,13 @@ public class Element extends Node<Element> {
                 // This explicit class instantiation is the workaround
                 // which fixes a JVM optimization+serialization bug.
                 // Do not convert to lambda
-                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
                 // see ElementAttributeMap#deferRegistration
                 new Command() {
                     @Override
                     public void execute() {
-                        detachListener.onDetach(new ElementDetachEvent(Element.this));
+                        detachListener
+                                .onDetach(new ElementDetachEvent(Element.this));
                     }
                 });
     }
