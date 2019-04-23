@@ -30,3 +30,11 @@ scripts/*.pyc
 selenium_standalone_zips
 driver_zips
 driver
+
+bower_components
+node
+node_modules
+frontend
+package.json
+package-lock.json
+webpack.config.js

@@ -22,22 +22,22 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
+import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
-
-import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
-import static com.vaadin.flow.server.frontend.NodeUpdateImports.FLOW_IMPORTS_FILE;
 import static org.junit.Assert.assertNotNull;
+
 public class NodeUpdateTestUtil {
 
     public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
@@ -127,10 +127,8 @@ public class NodeUpdateTestUtil {
         // Create a spy version of the updater instance
         NodeUpdatePackages spy = Mockito.spy(
                 new NodeUpdatePackages(
-                        NodeUpdateTestUtil.getClassFinder(),
-                        tmpRoot, WEBPACK_CONFIG,
-                        new File(tmpRoot, FLOW_IMPORTS_FILE), tmpRoot, modules,
-                        true));
+                        getClassFinder(),
+                            tmpRoot, modules, true));
 
         // Override the `updateDependencies` method
         Mockito.doAnswer(new Answer<Void>() {
@@ -151,6 +149,7 @@ public class NodeUpdateTestUtil {
                 return null;
             }})
         .when(spy).updateDependencies(Mockito.anyList(), Mockito.anyVararg());
+
         return spy;
     }
 
@@ -166,4 +165,51 @@ public class NodeUpdateTestUtil {
     void sleep(int ms) throws InterruptedException {
         Thread.sleep(ms); // NOSONAR
     }
+
+    List<String> getExpectedImports() {
+        return Arrays.asList("@polymer/iron-icon/iron-icon.js",
+                "@vaadin/vaadin-lumo-styles/spacing.js",
+                "@vaadin/vaadin-lumo-styles/icons.js",
+                "@vaadin/vaadin-lumo-styles/style.js",
+                "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/sizing.js",
+                "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
+                "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
+                "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
+                "@vaadin/flow-frontend/ExampleConnector.js",
+                "./local-p3-template.js",
+                "./foo.js",
+                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "./local-p2-template.js",
+                "./foo-dir/vaadin-npm-component.js");
+    }
+
+    void createExpectedImports(File directoryWithImportsJs,
+                               File nodeModulesPath) throws IOException {
+        for (String expectedImport : getExpectedImports()) {
+            File newFile = resolveImportFile(directoryWithImportsJs,
+                    nodeModulesPath, expectedImport);
+            newFile.getParentFile().mkdirs();
+            Assert.assertTrue(newFile.createNewFile());
+        }
+    }
+
+    void deleteExpectedImports(File directoryWithImportsJs,
+                               File nodeModulesPath) {
+        for (String expectedImport : getExpectedImports()) {
+            Assert.assertTrue(resolveImportFile(directoryWithImportsJs,
+                    nodeModulesPath, expectedImport).delete());
+        }
+    }
+
+    File resolveImportFile(File directoryWithImportsJs,
+                           File nodeModulesPath, String jsImport) {
+        File root = jsImport.startsWith("./") ? directoryWithImportsJs
+                : nodeModulesPath;
+        return new File(root, jsImport);
+    }
+
 }

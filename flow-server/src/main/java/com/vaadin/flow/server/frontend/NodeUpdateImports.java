@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -29,15 +28,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import org.apache.commons.io.FileUtils;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update
@@ -46,23 +45,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
  * {@link Theme} annotations.
  */
 public class NodeUpdateImports extends NodeUpdater {
-    /**
-     * File that contains Flow application imports, javascript, and theme annotations.
-     * It is also the entry-point for webpack.
-     */
-    public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
-    /**
-     * A parameter for overriding the
-     * {@link NodeUpdateImports#FLOW_IMPORTS_FILE} default value for the file
-     * with all Flow project imports.
-     */
-    public static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
-
-    /**
-     * A special prefix to use in the webpack config to tell webpack to look for
-     * the import starting with a prefix in the Flow project frontend directory.
-     */
-    public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
@@ -86,26 +68,35 @@ public class NodeUpdateImports extends NodeUpdater {
     public NodeUpdateImports(ClassFinder finder, File frontendDirectory,
             File generatedFlowImports, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
-        super(finder, npmFolder, nodeModulesPath, convertHtml);
-        this.generatedFlowImports = generatedFlowImports;
-        this.frontendDirectory = frontendDirectory;
+        this(finder, null, frontendDirectory, generatedFlowImports, npmFolder, nodeModulesPath, convertHtml);
     }
 
+
     /**
-     * Create an instance of the updater given the reusable extractor, the rest
-     * of the configurable parameters will be set to their default values.
+     * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
      *            a reusable class finder
+     * @param frontendDependencies
+     *            a reusable frontend dependencies
+     * @param frontendDirectory
+     *            a directory with project's frontend files
+     * @param generatedFlowImports
+     *            name of the JS file to update with the imports
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param nodeModulesPath
+     *            the path to the {@literal node_modules} directory of the project
+     * @param convertHtml
+     *            true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(ClassFinder finder) {
-        this(finder, new File(getBaseDir(), "frontend"),
-                Paths.get(getBaseDir()).resolve("target")
-                        .resolve(System.getProperty(MAIN_JS_PARAM,
-                                FLOW_IMPORTS_FILE))
-                        .toFile(),
-                new File(getBaseDir()), new File(getBaseDir(), "node_modules"),
-                true);
+    public NodeUpdateImports(ClassFinder finder,
+            FrontendDependencies frontendDependencies, File frontendDirectory,
+            File generatedFlowImports, File npmFolder, File nodeModulesPath,
+            boolean convertHtml) {
+        super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
+        this.generatedFlowImports = generatedFlowImports;
+        this.frontendDirectory = frontendDirectory;
     }
 
     @Override

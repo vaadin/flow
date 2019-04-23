@@ -18,7 +18,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,7 @@ import java.util.stream.Collectors;
 public interface ClassFinder extends Serializable {
 
     /**
-     * Implementation that searchs for annotated classes in a list of classes.
+     * Implementation that search for annotated classes in a list of classes.
      */
     class DefaultClassFinder implements ClassFinder {
         private final Set<Class<?>> annotatedClasses;
@@ -86,6 +88,48 @@ public interface ClassFinder extends Serializable {
         @Override
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             throw new IllegalStateException("Unimplemented");
+        }
+    }
+
+    /**
+     * Implementation that proxy and cache a real <code>ClassFinder</code>.
+     */
+    class CachedClassFinder implements ClassFinder {
+
+        private ClassFinder classFinder;
+
+        private Map<Class<? extends Annotation>, Set<Class<?>>> annotatedClassesMapCache = new HashMap<>();
+
+        /**
+         * It uses specified classFinder and caches scanned annotation.
+         *
+         * @param classFinder A real classFinder.
+         */
+        public CachedClassFinder(ClassFinder classFinder) {
+            this.classFinder = classFinder;
+        }
+
+        @Override
+        public Set<Class<?>> getAnnotatedClasses(
+                Class<? extends Annotation> annotation) {
+            return annotatedClassesMapCache.computeIfAbsent(annotation,
+                    key -> classFinder.getAnnotatedClasses(key));
+        }
+
+        @Override
+        public URL getResource(String name) {
+            return classFinder.getResource(name);
+        }
+
+        @Override
+        public <T> Class<T> loadClass(String name)
+                throws ClassNotFoundException {
+            return classFinder.loadClass(name);
+        }
+
+        @Override
+        public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
+            return classFinder.getSubTypesOf(type);
         }
     }
 
