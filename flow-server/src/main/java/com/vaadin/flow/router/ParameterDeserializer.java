@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 
@@ -187,26 +187,22 @@ public final class ParameterDeserializer {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             return false;
         }
-        try {
-            String methodName = "setParameter";
-            assert methodName.equals(ReflectTools
-                    .getFunctionalMethod(HasUrlParameter.class).getName());
+        String methodName = "setParameter";
+        assert methodName.equals(ReflectTools
+                .getFunctionalMethod(HasUrlParameter.class).getName());
 
-            // Raw method has no parameter annotations if compiled by Eclipse
-            Type parameterType = GenericTypeReflector.getTypeParameter(
-                    navigationTarget,
-                    HasUrlParameter.class.getTypeParameters()[0]);
-            Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
+        // Raw method has no parameter annotations if compiled by Eclipse
+        Type parameterType = GenericTypeReflector.getTypeParameter(
+                navigationTarget,
+                HasUrlParameter.class.getTypeParameters()[0]);
+        Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
 
-            Method setParameter = navigationTarget.getMethod(methodName,
-                    BeforeEvent.class, parameterClass);
-            return setParameter.getParameters()[1]
-                    .isAnnotationPresent(parameterAnnotation);
-        } catch (NoSuchMethodException e) {
-            String msg = String.format(
-                    "Failed to find HasUrlParameter::setParameter method when checking for @%s",
-                    parameterAnnotation.getSimpleName());
-            throw new IllegalStateException(msg, e);
-        }
+
+        return Stream.of(parameterClass.getMethods()).anyMatch(m ->
+                methodName.equals(m.getName())
+                        && m.getParameterCount() == 2
+                        && m.getParameterTypes()[0] == BeforeEvent.class
+                        && m.getParameterTypes()[1].isAssignableFrom(parameterClass)
+                        && m.getParameters()[1].isAnnotationPresent(parameterAnnotation));
     }
 }
