@@ -42,7 +42,7 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT, HTML_IMPORT;
+        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT;
 
         /**
          * Check if the given value is contained as a enum value.
@@ -88,8 +88,12 @@ public class Dependency implements Serializable {
         assert type != null;
 
         this.type = type;
-        this.url = SharedUtil.prefixIfRelative(url,
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        if (type.equals(Type.JS_MODULE)) {
+            this.url = url;
+        } else {
+            this.url = SharedUtil.prefixIfRelative(url,
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        }
         this.loadMode = loadMode;
     }
 

@@ -32,7 +32,7 @@ public class CallFunctionBeforeRemoveView extends AbstractDivView {
         add(button);
         button.addClickListener(event -> {
             if (input.getParent().isPresent()) {
-                input.getElement().callFunction("focus");
+                input.getElement().callJsFunction("focus");
                 remove(input);
             }
         });

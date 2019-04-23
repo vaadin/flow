@@ -18,8 +18,6 @@ package com.vaadin.flow.component.webcomponent;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.ServletContext;
-
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -34,7 +32,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -65,7 +62,7 @@ public class WebComponentUI extends UI {
         } else {
             uiElementId = session.getConfiguration().getRootElementId();
         }
-        getPage().executeJavaScript(
+        getPage().executeJs(
                 "document.body.dispatchEvent(new CustomEvent('root-element', { detail: '"
                         + uiElementId + "' }))");
         DeploymentConfiguration deploymentConfiguration = session.getService()
@@ -84,21 +81,21 @@ public class WebComponentUI extends UI {
     }
 
     /**
-     * Connect a client side web component element with a server side {@link
-     * Component} that's added as a virtual child to the UI as the actual
+     * Connect a client side web component element with a server side
+     * {@link Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
      * @param tag
-     *         web component tag
+     *            web component tag
      * @param webComponentElementId
-     *         client side id of the element
+     *            client side id of the element
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
+        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration =
                 getConfigurationRegistry().getConfiguration(tag);
 
-        if (!webComponentExporter.isPresent()) {
+        if (!webComponentConfiguration.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received connect request for non existing WebComponent '{}'",
                     tag);
@@ -113,14 +110,14 @@ public class WebComponentUI extends UI {
          * configureWebComponentInstance sets up the component-to-host linkage.
          */
         Element el = new Element(tag);
-        WebComponentBinding binding = webComponentExporter.get()
+        WebComponentBinding binding = webComponentConfiguration.get()
                 .createWebComponentBinding(Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), wrapper.getElement(),
                 NodeProperties.INJECT_BY_ID, webComponentElementId);
-        wrapper.getElement().executeJavaScript("$0.serverConnected()");
+        wrapper.getElement().executeJs("$0.serverConnected()");
     }
 
     @Override

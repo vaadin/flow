@@ -54,8 +54,6 @@ import elemental.json.JsonObject;
 public class UidlRequestHandler extends SynchronizedRequestHandler
         implements SessionExpiredHandler {
 
-    public static final String UIDL_PATH = "UIDL/";
-
     private ServerRpcHandler rpcHandler;
 
     @Override
@@ -95,8 +93,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             writeRefresh(response);
             return true;
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().warn(
-                    "Invalid security key received from {}",
+            getLogger().warn("Invalid security key received from {}",
                     request.getRemoteHost());
             // Refresh on client side
             writeRefresh(response);

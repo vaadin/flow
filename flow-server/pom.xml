@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>1.5-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-server</artifactId>
     <name>Flow Server</name>
@@ -107,6 +107,17 @@
             <version>1.2.0.vaadin1</version>
         </dependency>
 
+        <!--
+        Closure for parsing javascript sources.
+        unshaded means that there are no Guava and other libraries bundled in a dependency jar
+        This is needed since the regular jar breaks Spring initialization
+         -->
+        <dependency>
+            <groupId>com.google.javascript</groupId>
+            <artifactId>closure-compiler-unshaded</artifactId>
+            <version>v20190325</version>
+        </dependency>
+
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -148,7 +159,7 @@
             <version>${osgi.core.version}</version>
             <scope>provided</scope>
         </dependency>
-        
+
     </dependencies>
 
     <build>

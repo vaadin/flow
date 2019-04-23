@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -78,6 +76,8 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -446,8 +446,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 initialPageSettings -> handleInitialPageSettings(context, head,
                         initialPageSettings));
 
-        /* Append any theme elements to initial page. */
-        handleThemeContents(context, document);
+        if (context.getSession().getConfiguration().isBowerMode()) {
+            /* Append any theme elements to initial page. */
+            handleThemeContents(context, document);
+        }
 
         if (!context.isProductionMode()) {
             exportUsageStatistics(document);
@@ -573,7 +575,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .filter(item -> !(item instanceof Document)
                             && element.equals(item.parent()))
                     .forEach(action::accept);
-        } else {
+        } else if (element != null) {
             action.accept(element);
         }
     }
@@ -651,7 +653,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void setupFrameworkLibraries(Element head,
             JsonObject initialUIDL, BootstrapContext context) {
         inlineEs6Collections(head, context);
-        appendWebComponentsPolyfills(head, context);
+
+        DeploymentConfiguration conf = context.getSession().getConfiguration();
+
+        if (conf.isBowerMode()) {
+            appendWebComponentsPolyfills(head, context);
+        } else {
+            conf.getPolyfills().forEach(polyfill -> head.appendChild(createJavaScriptElement(polyfill, false)));
+            head.appendChild(createJavaScriptElement(conf.getJsModuleBundle()).attr("type", "module"));
+            head.appendChild(createJavaScriptElement(conf.getJsModuleBundleEs5()).attr("nomodule", true));
+        }
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -660,6 +671,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendChild(getBootstrapScript(initialUIDL, context));
         head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
     }
+
 
     private static void inlineEs6Collections(Element head,
             BootstrapContext context) {
@@ -840,6 +852,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return jsElement;
     }
 
+
     private static Element createJavaScriptElement(String sourceUrl) {
         return createJavaScriptElement(sourceUrl, true);
     }
@@ -860,6 +873,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             break;
         case JAVASCRIPT:
             dependencyElement = createJavaScriptElement(url, !inlineElement);
+            break;
+        case JS_MODULE:
+            dependencyElement = null;
             break;
         case HTML_IMPORT:
             dependencyElement = createHtmlImportElement(url);

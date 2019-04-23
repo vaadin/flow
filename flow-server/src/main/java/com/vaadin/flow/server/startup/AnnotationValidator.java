@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;

@@ -33,17 +33,16 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.Router;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.startup.BundleDependencyFilter;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -281,6 +280,10 @@ public class VaadinServiceTest {
             public boolean useCompiledFrontendResources() {
                 return true;
             }
+            @Override
+            public boolean isBowerMode() {
+                return true;
+            };
         };
 
         // Service that pretends to have a proper bundle

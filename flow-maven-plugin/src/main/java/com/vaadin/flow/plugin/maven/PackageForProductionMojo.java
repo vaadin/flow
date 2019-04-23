@@ -16,7 +16,6 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
@@ -40,7 +38,6 @@ import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.plugin.common.FrontendDataProvider;
 import com.vaadin.flow.plugin.common.FrontendToolsManager;
 import com.vaadin.flow.plugin.common.RunnerManager;
@@ -208,6 +205,13 @@ public class PackageForProductionMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+
+        // Do nothing when not in bower mode
+        if (!NodeUpdateAbstractMojo.isBowerMode(getLog())) {
+            getLog().info("Skipped `package-for-production` goal because `vaadin.bowerMode` is not set.");
+            return;
+        }
+
         if (transpileOutputDirectory == null) {
             if ("jar".equals(project.getPackaging()) && project.getArtifactMap()
                     .containsKey("com.vaadin:vaadin-spring-boot-starter")) {
@@ -225,7 +229,7 @@ public class PackageForProductionMojo extends AbstractMojo {
 
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
                 bundle, minify, hash, transpileEs6SourceDirectory,
-                new AnnotationValuesExtractor(getProjectClassPathUrls()),
+                new AnnotationValuesExtractor(NodeUpdateAbstractMojo.getClassFinder(project)),
                 bundleConfiguration, webComponentOutputDirectoryName,
                 getFragmentsData(fragments));
 
@@ -262,19 +266,6 @@ public class PackageForProductionMojo extends AbstractMojo {
                     "Each fragment definition should have a name and list of files to include defined. Got incorrect definition: '%s'",
                     fragment));
         }
-    }
-
-    private URL[] getProjectClassPathUrls() {
-        final List<String> runtimeClasspathElements;
-        try {
-            runtimeClasspathElements = project.getRuntimeClasspathElements();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to retrieve runtime classpath elements from project '%s'",
-                    project), e);
-        }
-        return runtimeClasspathElements.stream().map(File::new)
-                .map(FlowPluginFileUtils::convertToUrl).toArray(URL[]::new);
     }
 
     private ProxyConfig getProxyConfig() {

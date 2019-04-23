@@ -250,6 +250,8 @@ public class BootstrapHandlerDependenciesTest {
         BootstrapHandler.clientEngineFile = () -> "foobar";
 
         mocks = new MockServletServiceSessionSetup();
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         service = mocks.getService();
         TestVaadinServlet servlet = mocks.getServlet();
         for (String type : new String[] { "html", "js", "css" }) {

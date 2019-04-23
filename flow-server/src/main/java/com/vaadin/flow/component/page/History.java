@@ -184,7 +184,7 @@ public class History implements Serializable {
     public void pushState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJavaScript("history.pushState($0, '', $1)", state,
+        ui.getPage().executeJs("history.pushState($0, '', $1)", state,
                 location.getPathWithQueryParameters());
     }
 
@@ -220,7 +220,7 @@ public class History implements Serializable {
     public void replaceState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJavaScript("history.replaceState($0, '', $1)",
+        ui.getPage().executeJs("history.replaceState($0, '', $1)",
                 state, location.getPathWithQueryParameters());
     }
 
@@ -260,7 +260,7 @@ public class History implements Serializable {
      * onpopstate documentation</a> are met.
      */
     public void back() {
-        ui.getPage().executeJavaScript("history.back()");
+        ui.getPage().executeJs("history.back()");
     }
 
     /**
@@ -272,7 +272,7 @@ public class History implements Serializable {
      * onpopstate documentation</a> are met.
      */
     public void forward() {
-        ui.getPage().executeJavaScript("history.forward()");
+        ui.getPage().executeJs("history.forward()");
     }
 
     /**
@@ -289,6 +289,6 @@ public class History implements Serializable {
      *            current page to be reloaded
      */
     public void go(int steps) {
-        ui.getPage().executeJavaScript("history.go($0)", steps);
+        ui.getPage().executeJs("history.go($0)", steps);
     }
 }
