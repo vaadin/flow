@@ -205,18 +205,18 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
+        for (String importString : imports) {
+                if (contains) {
+                    Assert.assertTrue(
+                        importString + " not found in:\n" + content,
+                        content.contains(addWebpackPrefix(importString)));
+                } else {
+                    Assert.assertFalse(
+                        importString + " not found in:\n" + content,
+                        content.contains(addWebpackPrefix(importString)));
+                }
+            }
 
-        if (contains) {
-            Arrays.asList(imports)
-                    .forEach(s -> Assert.assertTrue(
-                            s + " not found in:\n" + content,
-                            content.contains(addWebpackPrefix(s))));
-        } else {
-            Arrays.asList(imports)
-                    .forEach(s -> Assert.assertFalse(
-                            s + " found in:\n" + content,
-                            content.contains(addWebpackPrefix(s))));
-        }
     }
 
     private String addWebpackPrefix(String s) {
