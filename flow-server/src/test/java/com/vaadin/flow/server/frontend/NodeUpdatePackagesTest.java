@@ -20,13 +20,14 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
-import elemental.json.JsonObject;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
@@ -50,8 +51,11 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         File baseDir = new File(getBaseDir());
 
         NodeUpdateTestUtil.createStubNode(true, true);
-        packageUpdater = createStubUpdater();
-
+        
+        packageUpdater = new NodeUpdatePackages(
+                getClassFinder(),
+                baseDir, new File(baseDir, "node_modules"), true);
+                    
         webpackUpdater = new WebpackUpdater(baseDir,
                 baseDir, WEBPACK_CONFIG, new File(baseDir, FLOW_IMPORTS_FILE));
 
@@ -71,8 +75,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         execute();
 
         assertPackageJsonContent();
-
-        Assert.assertTrue(webpackConfig.exists());
     }
 
     @Test
@@ -108,6 +110,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         JsonObject packageJsonObject = packageUpdater.getPackageJson();
 
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
+        
+        System.err.println(dependencies.toJson());
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
                 dependencies.hasKey("@vaadin/vaadin-button"));

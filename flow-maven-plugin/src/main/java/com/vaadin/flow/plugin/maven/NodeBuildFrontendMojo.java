@@ -33,24 +33,31 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
- * Goal that updates following:
+ * Goal that builds frontend bundle by:
  * <ul>
- * <li><code>package.json</code> file with @NpmPackage annotations defined in
- * the classpath,</li>
- * <li>creates <code>webpack.config.js</code> if does not exist yet,</li>
- * <li>Flow imports file with @JsModule, @HtmlImport and @Theme annotations
- * defined in the classpath.</li>
+ * <li>Updating <code>package.json</code> file with the {@link NpmPackage}
+ * annotations defined in the classpath,</li>
+ * <li>Installing dependencies by running <code>npm install</code></li>
+ * <li>Updating the {@link FrontendUtils#FLOW_IMPORTS_FILE} file imports with
+ * the {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined
+ * in the classpath,</li>
+ * <li>creating <code>webpack.config.js</code> if it does not exist yet, or
+ * updating it otherwise</li>
  * </ul>
  */
 @Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
@@ -61,6 +68,12 @@ public class NodeBuildFrontendMojo extends NodeUpdateAbstractMojo {
      */
     @Parameter(defaultValue = "true")
     private boolean generateBundle;
+
+    /**
+     * Whether to run <code>npm install</code> after updating dependencies.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean runNpmInstall;
 
     /**
      * Copy the `webapp.config.js` from the specified URL if missing. Default is
@@ -130,8 +143,9 @@ public class NodeBuildFrontendMojo extends NodeUpdateAbstractMojo {
 
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
                 generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
-                        .setWebpack(webpackOutputRelativeToProjectDir,
+                        .withWebpack(webpackOutputRelativeToProjectDir,
                                 webpackTemplate)
+                        .runNpmInstall(runNpmInstall)
                         .build().execute();
     }
     

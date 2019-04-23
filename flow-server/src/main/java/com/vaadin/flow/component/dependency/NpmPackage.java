@@ -55,7 +55,7 @@ public @interface NpmPackage {
      *
      * @return NPM package version
      */
-    String version() default "";
+    String version();
 
     /**
      * Internal annotation to enable use of multiple {@link NpmPackage}
