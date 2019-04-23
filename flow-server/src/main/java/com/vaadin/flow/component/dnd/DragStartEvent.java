@@ -27,7 +27,7 @@ import com.vaadin.flow.component.DomEvent;
  * @author Vaadin Ltd
  * @see DragSource#addDragStartListener(DragStartListener)
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 @DomEvent("dragstart")
 public class DragStartEvent<T extends Component> extends ComponentEvent<T> {

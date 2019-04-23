@@ -14,10 +14,11 @@ import com.vaadin.flow.shared.Registration;
  * This can be used by either implementing this interface with the static API
  * {@link #of(Component)}.
  *
- * @param <T> the type of the drop target component
+ * @param <T>
+ *            the type of the drop target component
  * @see DragSource
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 public interface DropTarget<T extends Component> extends HasElement {
 
@@ -116,18 +117,19 @@ public interface DropTarget<T extends Component> extends HasElement {
 
     /**
      * Sets the drop effect for the current drop target. This is set to the
-     * dropEffect on {@code dragenter}, {@code dragover} and {@drop} events and
-     * needs to match the {@code effectAllowed} property for the drag operation.
+     * dropEffect on {@code dragenter}, {@code dragover} and {@code drop} events
+     * and needs to match the {@code effectAllowed} property for the drag
+     * operation.
      * <p>
      * <em>NOTE: If the drop effect that doesn't match the effectAllowed of the
      * drag source, it DOES NOT prevent drop on IE11 and Safari! For FireFox and
      * Chrome the drop is prevented if there they don't match.</em>
      *
-     * @see <a href="https://developer.mozilla
-     *      .org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations
-     *      #drageffects">MDN web docs</a> for more information.
      * @param dropEffect
      *            the drop effect to be set or {@code null} to not modify
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations#drageffects">
+     *      MDN web docs</a> for more information.
      */
     default void setDropEffect(DropEffect dropEffect) {
         if (!Objects.equals(getDropEffect(), dropEffect)) {

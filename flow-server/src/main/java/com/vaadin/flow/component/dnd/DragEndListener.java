@@ -26,7 +26,7 @@ import com.vaadin.flow.component.ComponentEventListener;
  *            Type of draggable component.
  * @see DragSource#addDragEndListener(DragEndListener)
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 @FunctionalInterface
 public interface DragEndListener<T extends Component>
