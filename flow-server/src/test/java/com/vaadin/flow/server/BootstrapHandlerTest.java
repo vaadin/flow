@@ -1180,22 +1180,6 @@ public class BootstrapHandlerTest {
 
     @Test
     public void themeContents_htmlAttributesAreAddedToHtmlTag() {
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(MyThemeTest.class));
-
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
-
-        Element html = page.body().parent();
-
-        // self check
-        Assert.assertEquals("html", html.tagName());
-
-        Assert.assertEquals("bar", html.attr("foo"));
-    }
-
-    @Test
-    public void themeContents_htmlAttributesAreAddedToHtmlTag() {
         mocks.getDeploymentConfiguration().setBowerMode(true);
 
         initUI(testUI, createVaadinRequest(),
