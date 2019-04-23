@@ -23,15 +23,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.server.Command;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.server.Command;
+
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 /**
@@ -115,11 +115,6 @@ public abstract class NodeUpdater implements Command {
         return FrontendUtils.getFlowPackage(nodeModulesPath);
     }
 
-    /**
-     * Execute the update process.
-     */
-    public abstract void execute();
-
     Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -133,16 +128,6 @@ public abstract class NodeUpdater implements Command {
     Set<String> getJavascriptJsModules(Set<String> javascripts) {
         return javascripts.stream().map(this::resolveInFlowFrontendDirectory)
                 .collect(Collectors.toSet());
-    }
-
-    String toValidBrowserImport(String s) {
-        if (s.startsWith("./")) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(2);
-        } else if (Character.isAlphabetic(s.charAt(0))
-            && !s.startsWith(WEBPACK_PREFIX_ALIAS)) {
-            return WEBPACK_PREFIX_ALIAS + s;
-        }
-        return s;
     }
 
     private String resolveInFlowFrontendDirectory(String importPath) {
