@@ -38,6 +38,8 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 
+import elemental.json.JsonValue;
+
 /**
  * Represents the web page open in the browser, containing the UI it is
  * connected to.
@@ -130,7 +132,7 @@ public class Page implements Serializable {
          * Cancel the javascript execution, if it was not yet sent to the
          * browser for execution.
          *
-         * @return <code>true</code> if the execution was be canceled,
+         * @return <code>true</code> if the execution was canceled,
          *         <code>false</code> if not
          */
         boolean cancelExecution();
@@ -309,6 +311,7 @@ public class Page implements Serializable {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
+     * <li>{@link JsonValue}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
