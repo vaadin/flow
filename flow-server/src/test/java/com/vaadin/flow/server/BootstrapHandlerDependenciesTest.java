@@ -485,6 +485,9 @@ public class BootstrapHandlerDependenciesTest {
                     if (userDependencyMinIndex > i) {
                         userDependencyMinIndex = i;
                     }
+                    if (elementString.contains("dndConnector.js")) {
+                        continue;
+                    }
                     assertThat(
                             "Expected to have here dependencies added with Flow public api",
                             elementString,
