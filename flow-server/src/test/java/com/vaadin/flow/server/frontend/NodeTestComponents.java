@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -30,7 +32,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
-import org.slf4j.LoggerFactory;
 
 /**
  * A container class for all components used in tests.
@@ -70,6 +71,10 @@ public class NodeTestComponents {
     public static class LocalP3Template extends Component {
     }
 
+    @JsModule("frontend://frontend-p3-template.js")
+    public static class FrontendP3Template extends Component {
+    }
+
     @HtmlImport("foo.html")
     public static class FlatImport extends Component {
     }
@@ -90,6 +95,7 @@ public class NodeTestComponents {
         VaadinMixedComponent vaadinMixedComponent;
         LocalP2Template localP2Template;
         LocalP3Template localP3Template;
+        FrontendP3Template frontendP3Template;
         FlatImport flatImport;
         TranslatedImports translatedImports;
     }
