@@ -25,6 +25,7 @@ import com.vaadin.flow.component.dnd.DropEvent;
 import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.dnd.EffectAllowed;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.tests.util.MockUI;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,7 +46,7 @@ public class DropTargetTest {
         DropTarget<RouterLink> dropTarget = DropTarget.of(component);
 
         Assert.assertTrue(component.getElement()
-                .getProperty(DropTarget.ACTIVE_PROPERTY, false));
+                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
         Assert.assertNull(dropTarget.getDropEffect());
     }
 

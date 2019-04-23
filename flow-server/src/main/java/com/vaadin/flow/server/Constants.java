@@ -114,6 +114,41 @@ public final class Constants implements Serializable {
      */
     public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
 
+    /**
+     * Property name for storing the
+     * {@link com.vaadin.flow.component.dnd.EffectAllowed} on element level.
+     */
+    public static final String EFFECT_ALLOWED_ELEMENT_PROPERTY = "__effectAllowed";
+
+    /**
+     * Key for storing server side drag data for a
+     * {@link com.vaadin.flow.component.dnd.DragSource}.
+     */
+    public static final String DRAG_SOURCE_DATA_KEY = "drag-source-data";
+
+    /**
+     * Key for storing an internal drag start listener registration for a
+     * {@link com.vaadin.flow.component.dnd.DragSource}.
+     */
+    public static final String START_LISTENER_REGISTRATION_KEY = "_startListenerRegistration";
+
+    /**
+     * Key for storing an internal drag end listener registration for a
+     * {@link com.vaadin.flow.component.dnd.DragSource}.
+     */
+    public static final String END_LISTENER_REGISTRATION_KEY = "_endListenerRegistration";
+
+    /**
+     * Property name for storing drop target activity data for an element.
+     */
+    public static final String DROP_TARGET_ACTIVE_PROPERTY = "__active";
+
+    /**
+     * Property name for storing the
+     * {@link com.vaadin.flow.component.dnd.DropEffect} on element level.
+     */
+    public static final String DROP_EFFECT_ELEMENT_PROPERTY = "__dropEffect";
+
     private Constants() {
         // prevent instantiation constants class only
     }
