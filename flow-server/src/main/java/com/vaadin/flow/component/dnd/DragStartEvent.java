@@ -25,7 +25,7 @@ import com.vaadin.flow.component.DomEvent;
  * @param <T>
  *            Type of the component that is dragged.
  * @author Vaadin Ltd
- * @see DragSource#addDragStartListener(DragStartListener)
+ * @see DragSource#addDragStartListener(com.vaadin.flow.component.ComponentEventListener)
  * @author Vaadin Ltd
  * @since 2.0
  */
