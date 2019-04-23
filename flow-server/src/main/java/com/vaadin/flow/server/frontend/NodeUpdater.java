@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 /**
@@ -133,16 +132,6 @@ public abstract class NodeUpdater implements Command {
     Set<String> getJavascriptJsModules(Set<String> javascripts) {
         return javascripts.stream().map(this::resolveInFlowFrontendDirectory)
                 .collect(Collectors.toSet());
-    }
-
-    String toValidBrowserImport(String s) {
-        if (s.startsWith("./")) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(2);
-        } else if (Character.isAlphabetic(s.charAt(0))
-            && !s.startsWith(WEBPACK_PREFIX_ALIAS)) {
-            return WEBPACK_PREFIX_ALIAS + s;
-        }
-        return s;
     }
 
     private String resolveInFlowFrontendDirectory(String importPath) {

@@ -101,7 +101,7 @@ public class NodeUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        Set<String> modules = new HashSet<>(frontDeps.getModules());
+        Set<String> modules = new HashSet<>(getJavascriptJsModules(frontDeps.getModules()));
         if (convertHtml) {
             modules.addAll(getHtmlImportJsModules(frontDeps.getImports()));
         }
@@ -117,7 +117,7 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private Set<String> sortModules(Set<String> modules) {
-        return modules.stream().map(this::toValidBrowserImport).sorted(Comparator.reverseOrder())
+        return modules.stream().sorted(Comparator.reverseOrder())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
@@ -147,18 +147,17 @@ public class NodeUpdateImports extends NodeUpdater {
         Map<String, String> unresolvedImports = new HashMap<>(modules.size());
 
         for (String originalModulePath : modules) {
+            // TODO kb refactor and remove the 2nd if below with this
             String translatedModulePath = originalModulePath;
             if (theme != null && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
             }
-            String validTranslatedModulePath = toValidBrowserImport(
-                    translatedModulePath);
-            String validOriginalModulePath = toValidBrowserImport(
-                    originalModulePath);
-            if (importedFileExists(validTranslatedModulePath)) {
-                imports.add("import '" + validTranslatedModulePath + "';");
-            } else if (importedFileExists(validOriginalModulePath)) {
-                imports.add("import '" + validOriginalModulePath + "';");
+            if (importedFileExists(translatedModulePath)) {
+                imports.add("import '" + toValidBrowserImport(
+                    translatedModulePath) + "';");
+            } else if (importedFileExists(originalModulePath)) {
+                imports.add("import '" + toValidBrowserImport(
+                    originalModulePath) + "';");
             } else {
                 unresolvedImports.put(originalModulePath, translatedModulePath);
             }
@@ -192,11 +191,19 @@ public class NodeUpdateImports extends NodeUpdater {
     }
 
     private boolean importedFileExists(String jsImport) {
-        if (jsImport.startsWith(WEBPACK_PREFIX_ALIAS)) {
-            return new File(frontendDirectory, jsImport.replace(WEBPACK_PREFIX_ALIAS, "")).isFile();
-        } else {
-            return new File(nodeModulesPath, jsImport).isFile();
+        return new File(frontendDirectory, jsImport).isFile()
+            || new File(nodeModulesPath, jsImport).isFile()
+            || new File(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME), jsImport).isFile();
+    }
+
+    private String toValidBrowserImport(String s) {
+        if (s.startsWith("./")) {
+            return WEBPACK_PREFIX_ALIAS + s.substring(2);
+        } else if (Character.isAlphabetic(s.charAt(0))
+            && !s.startsWith(WEBPACK_PREFIX_ALIAS)) {
+            return WEBPACK_PREFIX_ALIAS + s;
         }
+        return s;
     }
 
     private void updateMainJsFile(List<String> newContent) throws IOException {
