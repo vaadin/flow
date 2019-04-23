@@ -45,7 +45,7 @@ public class DnDView extends Div {
         eventLog = new Div();
         eventLog.add(new Text("Events:"));
         eventLog.add(new NativeButton("Clear", event -> {
-            eventLog.getChildren().filter(c -> c instanceof Div)
+            eventLog.getChildren().filter(component -> component instanceof Div)
                     .forEach(eventLog::remove);
             eventCounter = 0;
         }));
@@ -73,7 +73,7 @@ public class DnDView extends Div {
         Div deactivatedLane = createDropLane(DropEffect.COPY);
         deactivatedLane.setId("lane-deactivated");
         deactivatedLane.getChildren().findFirst()
-                .ifPresent(c -> c.getElement().setText("deactivated"));
+                .ifPresent(component -> component.getElement().setText("deactivated"));
         DropTarget.of(deactivatedLane).setActive(false);
 
         add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane,

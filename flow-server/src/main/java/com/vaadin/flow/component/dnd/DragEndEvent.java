@@ -21,12 +21,12 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 
 /**
- * HTML5 drag end event, fired when the user stops dragging a drag source
- * either by dropping on top of a valid drop target or by canceling to drop.
+ * HTML5 drag end event, fired when the user stops dragging a drag source either
+ * by dropping on top of a valid drop target or by canceling to drop.
  *
  * @param <T>
  *            Type of the component that was dragged.
- * @see DragSource#addDragEndListener(DragEndListener)
+ * @see DragSource#addDragEndListener(com.vaadin.flow.component.ComponentEventListener)
  * @author Vaadin Ltd
  * @since 2.0
  */
@@ -48,16 +48,16 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
     public DragEndEvent(T source, boolean fromClient,
             @EventData("event.dataTransfer.dropEffect") String dropEffect) {
         super(source, fromClient);
-        this.dropEffect = DropEffect.valueOf(dropEffect.toUpperCase());
+        this.dropEffect = DropEffect.fromString(dropEffect);
     }
 
     /**
      * Get drop effect of the dragend event. The value will be in priority
-     * order: the desired action set by the drop target, effectAllowed parameter
-     * of the drag source and modifier keys the user presses. <em>NOTE:</em>
-     * there are some browser specific differences to this - Chrome does not
-     * change the drop effect based on modifier keys but only what the drop
-     * target sets.
+     * order: the desired action set by the drop target, {@code effectAllowed}
+     * parameter of the drag source and modifier keys the user presses.
+     * <em>NOTE:</em> there are some browser specific differences to this -
+     * Chrome does not change the drop effect based on modifier keys but only
+     * what the drop target sets.
      * <p>
      * If the drop is not successful, the value will be {@code NONE}.
      * <p>

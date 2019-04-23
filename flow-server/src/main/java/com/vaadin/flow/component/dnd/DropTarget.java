@@ -1,11 +1,14 @@
 package com.vaadin.flow.component.dnd;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -22,9 +25,6 @@ import com.vaadin.flow.shared.Registration;
  */
 public interface DropTarget<T extends Component> extends HasElement {
 
-    String DROP_EFFECT_ELEMENT_PROPERTY = "__dropEffect";
-    String ACTIVE_PROPERTY = "__active";
-
     /**
      * Makes the given component a drop target and gives access to the generic
      * drop target API for the component.
@@ -34,6 +34,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @param <T>
      *            the type of the component
      * @return drop target API for the component
+     * @see #of(Component, boolean)
      */
     static <T extends Component> DropTarget<T> of(T component) {
         return of(component, true);
@@ -41,7 +42,7 @@ public interface DropTarget<T extends Component> extends HasElement {
 
     /**
      * Gives access to the generic drop target API for the given component,
-     * optionally making it an active drop target.
+     * optionally makes it an active drop target.
      * 
      * @param component
      *            the component to provide drop target API for
@@ -51,6 +52,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @param <T>
      *            the type of the component
      * @return the drop target API for the component
+     * @see #of(Component)
      */
     static <T extends Component> DropTarget<T> of(T component, boolean active) {
         DropTarget<T> dropTarget = new DropTarget<T>() {
@@ -91,7 +93,8 @@ public interface DropTarget<T extends Component> extends HasElement {
      */
     default void setActive(boolean active) {
         if (isActive() != active) {
-            getElement().setProperty(ACTIVE_PROPERTY, active);
+            getElement().setProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY,
+                    active);
             if (active) {
                 getElement().executeJavaScript(
                         "window.Vaadin.Flow"
@@ -112,7 +115,8 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @return {@code true} to allow drops, {@code false} to not
      */
     default boolean isActive() {
-        return getElement().getProperty("__active", false);
+        return getElement().getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY,
+                false);
     }
 
     /**
@@ -134,10 +138,11 @@ public interface DropTarget<T extends Component> extends HasElement {
     default void setDropEffect(DropEffect dropEffect) {
         if (!Objects.equals(getDropEffect(), dropEffect)) {
             if (dropEffect == null) {
-                getElement().removeProperty(DROP_EFFECT_ELEMENT_PROPERTY);
+                getElement()
+                        .removeProperty(Constants.DROP_EFFECT_ELEMENT_PROPERTY);
             } else {
-                getElement().setProperty(DROP_EFFECT_ELEMENT_PROPERTY,
-                        dropEffect.toString().toLowerCase());
+                getElement().setProperty(Constants.DROP_EFFECT_ELEMENT_PROPERTY,
+                        dropEffect.toString().toLowerCase(Locale.ENGLISH));
             }
         }
     }
@@ -150,17 +155,16 @@ public interface DropTarget<T extends Component> extends HasElement {
      */
     default DropEffect getDropEffect() {
         String dropEffect = getElement()
-                .getProperty(DROP_EFFECT_ELEMENT_PROPERTY, null);
-        return dropEffect == null ? null
-                : DropEffect.valueOf(dropEffect.toUpperCase());
+                .getProperty(Constants.DROP_EFFECT_ELEMENT_PROPERTY, null);
+        return dropEffect == null ? null : DropEffect.fromString(dropEffect);
     }
 
     /**
-     * Attaches drop listener for the component this maps to.
-     * {@link DropListener#drop(DropEvent)} is called when the user performs a
-     * drop operation on the client side, and the criteria set with
-     * {@link #setDropEffect(DropEffect)} matches a one set for the drag
-     * operation (see {@link DragSource#setEffectAllowed(EffectAllowed)}).
+     * Attaches drop listener for the component this maps to. The listener is
+     * triggered when the user performs a drop operation on the client side, and
+     * the criteria set with {@link #setDropEffect(DropEffect)} matches a one
+     * set for the drag operation (see
+     * {@link DragSource#setEffectAllowed(EffectAllowed)}).
      * <p>
      * <em>NOTE:</em> the drop listener might be triggered for a drop inside
      * another drop target that is inside this drop target component! For this,
@@ -170,8 +174,9 @@ public interface DropTarget<T extends Component> extends HasElement {
      *            Listener to handle drop event.
      * @return Handle to be used to remove this listener.
      */
-    default Registration addDropListener(DropListener<T> listener) {
+    default Registration addDropListener(
+            ComponentEventListener<DropEvent<T>> listener) {
         return ComponentUtil.addListener(getDropTargetComponent(),
-                DropEvent.class, (DropListener) listener);
+                DropEvent.class, (ComponentEventListener) listener);
     }
 }

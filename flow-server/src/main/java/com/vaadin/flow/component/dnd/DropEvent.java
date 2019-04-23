@@ -16,13 +16,13 @@
 package com.vaadin.flow.component.dnd;
 
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.server.Constants;
 
 /**
  * Server side drop event. Fired when an HTML5 drop happens on a valid drop
@@ -31,7 +31,7 @@ import com.vaadin.flow.component.EventData;
  * @param <T>
  *            Type of the drop target component.
  * @author Vaadin Ltd
- * @see DropTarget#addDropListener(DropListener)
+ * @see DropTarget#addDropListener(com.vaadin.flow.component.ComponentEventListener)
  * @author Vaadin Ltd
  * @since 2.0
  */
@@ -57,12 +57,11 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
             @EventData("event.dataTransfer.effectAllowed") String effectAllowed) {
         super(source, fromClient);
 
-        this.effectAllowed = Stream.of(EffectAllowed.values())
-                .filter(ea -> ea.getValue().equalsIgnoreCase(effectAllowed))
-                .findFirst().get();
+        this.effectAllowed = EffectAllowed.fromString(effectAllowed);
         // capture drop effect from server side, since it is meant for drag
         // end event
-        dropEffect = source.getElement().getProperty("__dropEffect");
+        dropEffect = source.getElement()
+                .getProperty(Constants.DROP_EFFECT_ELEMENT_PROPERTY);
         // when the event is created, the drop target is always attached
         dragSourceComponent = getComponent().getUI()
                 .orElseThrow(() -> new IllegalStateException(
@@ -82,7 +81,7 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
     public Optional<Object> getDragData() {
         Optional<Component> dragSourceComponent = getDragSourceComponent();
         return dragSourceComponent.map(component -> ComponentUtil
-                .getData(component, DragSource.DRAG_SOURCE_DATA_KEY));
+                .getData(component, Constants.DRAG_SOURCE_DATA_KEY));
     }
 
     /**
@@ -92,8 +91,7 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
      * @see DropTarget#setDropEffect(DropEffect)
      */
     public DropEffect getDropEffect() {
-        return dropEffect == null ? null
-                : DropEffect.valueOf(dropEffect.toUpperCase());
+        return dropEffect == null ? null : DropEffect.fromString(dropEffect);
     }
 
     /**

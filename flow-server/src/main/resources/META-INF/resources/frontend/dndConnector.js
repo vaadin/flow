@@ -60,7 +60,7 @@ window.Vaadin.Flow.dndConnector = {
   /** DRAG SOURCE METHODS: */
 
   __dragstartListener: function (event) {
-    event.dataTransfer.setData("text/plain","perkele");
+    event.dataTransfer.setData("text/plain", "");
     if (event.currentTarget['__effectAllowed']) {
       event.dataTransfer.effectAllowed = event.currentTarget['__effectAllowed'];
     }

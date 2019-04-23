@@ -24,6 +24,7 @@ import com.vaadin.flow.component.dnd.DragStartEvent;
 import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.EffectAllowed;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.tests.util.MockUI;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,8 +48,8 @@ public class DragSourceTest {
 
         Assert.assertEquals(
                 component.getElement().getProperty(
-                        DragSource.EFFECT_ALLOWED_ELEMENT_PROPERTY),
-                EffectAllowed.COPY_MOVE.getValue());
+                        Constants.EFFECT_ALLOWED_ELEMENT_PROPERTY),
+                EffectAllowed.COPY_MOVE.getClientPropertyValue());
     }
 
     @Test

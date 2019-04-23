@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.dnd;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
 /**
  * Used to specify the effect that is allowed for a drag operation.
  *
@@ -67,19 +70,38 @@ public enum EffectAllowed {
      */
     UNINITIALIZED("uninitialized");
 
-    private final String value;
+    private final String clientPropertyValue;
 
     EffectAllowed(String value) {
-        this.value = value;
+        this.clientPropertyValue = value;
     }
 
     /**
      * Get the lower case string value that is accepted by the client side drag
      * event.
      *
-     * @return String value accepted by the client side drag event.
+     * @return String clientPropertyValue accepted by the client side drag
+     *         event.
      */
-    public String getValue() {
-        return value;
+    public String getClientPropertyValue() {
+        return clientPropertyValue;
+    }
+
+    /**
+     * Parses effect allowed from the given non-null string or throws an illegal
+     * argument exception if fails to parse it.
+     * 
+     * @param string
+     *            the string to parse
+     * @return the matching effect allowed
+     */
+    static EffectAllowed fromString(String string) {
+        Optional<EffectAllowed> effectAllowed = Stream
+                .of(EffectAllowed.values())
+                .filter(ea -> ea.getClientPropertyValue()
+                        .equalsIgnoreCase(string.replace("_", "")))
+                .findFirst();
+        return effectAllowed.orElseThrow(() -> new IllegalArgumentException(
+                "Could not parse effect allowed from string " + string));
     }
 }

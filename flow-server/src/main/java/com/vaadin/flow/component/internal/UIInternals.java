@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.dnd.DragSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -193,6 +194,8 @@ public class UIInternals implements Serializable {
     private String contextRootRelativePath;
 
     private String appId;
+
+    private Component activeDragSourceComponent;
 
     /**
      * Creates a new instance for the given UI.
@@ -1004,6 +1007,31 @@ public class UIInternals implements Serializable {
      */
     public String getContextRootRelativePath() {
         return contextRootRelativePath;
+    }
+
+    /**
+     * Sets the drag source of an active HTML5 drag event.
+     *
+     * @param activeDragSourceComponent
+     *            the drag source component
+     * @see DragSource
+     * @since 2.0
+     */
+    public void setActiveDragSourceComponent(
+            Component activeDragSourceComponent) {
+        this.activeDragSourceComponent = activeDragSourceComponent;
+    }
+
+    /**
+     * Gets the drag source of an active HTML5 drag event.
+     *
+     * @return Extension of the drag source component if the drag event is
+     *         active and originated from this UI, {@literal null} otherwise.
+     * @see DragSource
+     * @since 2.0
+     */
+    public Component getActiveDragSourceComponent() {
+        return activeDragSourceComponent;
     }
 
     /**

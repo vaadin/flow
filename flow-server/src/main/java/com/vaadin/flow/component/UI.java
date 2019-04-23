@@ -112,8 +112,6 @@ public class UI extends Component
 
     private final Page page = new Page(this);
 
-    private Component activeDragSourceComponent;
-
     /**
      * Creates a new empty UI.
      */
@@ -1093,27 +1091,14 @@ public class UI extends Component
     }
 
     /**
-     * Sets the drag source of an active HTML5 drag event.
-     *
-     * @param activeDragSourceComponent
-     *            the drag source component
-     * @see DragSource
-     * @since
-     */
-    public void setActiveDragSourceComponent(
-            Component activeDragSourceComponent) {
-        this.activeDragSourceComponent = activeDragSourceComponent;
-    }
-
-    /**
      * Gets the drag source of an active HTML5 drag event.
      *
      * @return Extension of the drag source component if the drag event is
      *         active and originated from this UI, {@literal null} otherwise.
      * @see DragSource
-     * @since
+     * @since 2.0
      */
     public Component getActiveDragSourceComponent() {
-        return activeDragSourceComponent;
+        return getInternals().getActiveDragSourceComponent();
     }
 }
