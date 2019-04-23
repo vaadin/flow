@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.ServletContext;
+import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
+
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
@@ -25,6 +31,9 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
+
 import elemental.json.JsonObject;
 
 import java.lang.annotation.Annotation;
@@ -44,7 +53,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
         private WebComponentBootstrapContext(VaadinRequest request,
-                VaadinResponse response, UI ui) {
+                                             VaadinResponse response, UI ui) {
             super(request, response, ui.getInternals().getSession(), ui);
         }
 
@@ -54,6 +63,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance();
             return registry.getEmbeddedApplicationAnnotation(annotationType);
+        }
+
+        @Override
+        protected Optional<ThemeDefinition> getTheme() {
+            Optional<Theme> optionalTheme = getPageConfigurationAnnotation(Theme.class);
+            return optionalTheme.map(ThemeDefinition::new);
         }
     }
 
@@ -69,8 +84,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
-            VaadinRequest request, VaadinResponse response,
-            VaadinSession session) {
+                                               VaadinRequest request, VaadinResponse response,
+                                               VaadinSession session) {
         BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
@@ -120,7 +135,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
-            VaadinResponse response, UI ui) {
+                                                      VaadinResponse response, UI ui) {
         return new WebComponentBootstrapContext(request, response, ui);
     }
 }

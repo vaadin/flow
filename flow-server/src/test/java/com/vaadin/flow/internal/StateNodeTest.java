@@ -485,18 +485,18 @@ public class StateNodeTest {
     public void runWhenAttachedNodeNotAttached() {
         StateTree tree = createStateTree();
         AtomicInteger commandRun = new AtomicInteger(0);
-        StateNode n1 = createEmptyNode();
-        n1.runWhenAttached(ui -> {
+        StateNode node = createEmptyNode();
+        node.runWhenAttached(ui -> {
             Assert.assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
 
         Assert.assertEquals(0, commandRun.get());
 
-        setParent(n1, tree.getRootNode());
+        setParent(node, tree.getRootNode());
         Assert.assertEquals(1, commandRun.get());
-        setParent(n1, null);
-        setParent(n1, tree.getRootNode());
+        setParent(node, null);
+        setParent(node, tree.getRootNode());
         Assert.assertEquals(1, commandRun.get());
     }
 
@@ -504,29 +504,29 @@ public class StateNodeTest {
     public void runMultipleWhenAttachedNodeNotAttached() {
         StateTree tree = createStateTree();
         AtomicInteger commandRun = new AtomicInteger(0);
-        StateNode n1 = createEmptyNode();
-        n1.runWhenAttached(ui -> {
+        StateNode node = createEmptyNode();
+        node.runWhenAttached(ui -> {
             Assert.assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
-        n1.runWhenAttached(ui -> {
+        node.runWhenAttached(ui -> {
             Assert.assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
 
         Assert.assertEquals(0, commandRun.get());
 
-        setParent(n1, tree.getRootNode());
+        setParent(node, tree.getRootNode());
         Assert.assertEquals(2, commandRun.get());
     }
 
     @Test
     public void runWhenAttachedNodeAttached() {
         AtomicInteger commandRun = new AtomicInteger(0);
-        StateNode n1 = createEmptyNode();
+        StateNode node = createEmptyNode();
         StateTree tree = createStateTree();
-        setParent(n1, tree.getRootNode());
-        n1.runWhenAttached(ui -> {
+        setParent(node, tree.getRootNode());
+        node.runWhenAttached(ui -> {
             Assert.assertEquals(tree.getUI(), ui);
             commandRun.incrementAndGet();
         });
@@ -794,19 +794,19 @@ public class StateNodeTest {
     public void detachParent_detachFirstChildOnDetachLast_oneDetachEvent() {
         TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
-        StateNode b = createEmptyNode("b");
+        StateNode childA = createEmptyNode("a");
+        StateNode childB = createEmptyNode("b");
 
         StateNode parent = createParentNode("parent");
 
-        addChild(parent, a);
-        addChild(parent, b);
+        addChild(parent, childA);
+        addChild(parent, childB);
 
         addChild(tree.getRootNode(), parent);
 
         AtomicInteger detachEvents = new AtomicInteger();
-        b.addDetachListener(() -> removeFromParent(a));
-        a.addDetachListener(() -> detachEvents.incrementAndGet());
+        childB.addDetachListener(() -> removeFromParent(childA));
+        childA.addDetachListener(() -> detachEvents.incrementAndGet());
 
         removeFromParent(parent);
 
@@ -817,19 +817,19 @@ public class StateNodeTest {
     public void detachParent_detachLastChildOnDetachFirst_oneDetachEvent() {
         TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
-        StateNode b = createEmptyNode("b");
+        StateNode childA = createEmptyNode("a");
+        StateNode childB = createEmptyNode("b");
 
         StateNode parent = createParentNode("parent");
 
-        addChild(parent, a);
-        addChild(parent, b);
+        addChild(parent, childA);
+        addChild(parent, childB);
 
         addChild(tree.getRootNode(), parent);
 
         AtomicInteger detachEvents = new AtomicInteger();
-        a.addDetachListener(() -> removeFromParent(a));
-        b.addDetachListener(() -> detachEvents.incrementAndGet());
+        childA.addDetachListener(() -> removeFromParent(childA));
+        childB.addDetachListener(() -> detachEvents.incrementAndGet());
 
         removeFromParent(parent);
 
@@ -840,16 +840,16 @@ public class StateNodeTest {
     public void detachParent_appendChildOnDetach_noEvents() {
         TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
+        StateNode childA = createEmptyNode("a");
 
         StateNode parent = createParentNode("parent");
 
-        addChild(parent, a);
+        addChild(parent, childA);
 
         addChild(tree.getRootNode(), parent);
 
         AtomicInteger events = new AtomicInteger();
-        a.addDetachListener(() -> {
+        childA.addDetachListener(() -> {
             StateNode b = createEmptyNode("b");
             b.addAttachListener(events::incrementAndGet);
             b.addDetachListener(events::incrementAndGet);
@@ -864,16 +864,16 @@ public class StateNodeTest {
     public void detachParent_insertChildAsFirstOnDetach_noEvents() {
         TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
+        StateNode child = createEmptyNode("a");
 
         StateNode parent = createParentNode("parent");
 
-        addChild(parent, a);
+        addChild(parent, child);
 
         addChild(tree.getRootNode(), parent);
 
         AtomicInteger events = new AtomicInteger();
-        a.addDetachListener(() -> {
+        child.addDetachListener(() -> {
             StateNode b = createEmptyNode("b");
             b.addAttachListener(events::incrementAndGet);
             b.addDetachListener(events::incrementAndGet);
@@ -890,21 +890,21 @@ public class StateNodeTest {
     public void attachParent_detachFirstOnAttachLast_noEvents() {
         TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
-        StateNode b = createEmptyNode("a");
+        StateNode childA = createEmptyNode("a");
+        StateNode childB = createEmptyNode("b");
 
         StateNode parent = createParentNode("parent");
 
-        addChild(parent, a);
-        addChild(parent, b);
+        addChild(parent, childA);
+        addChild(parent, childB);
 
         AtomicInteger events = new AtomicInteger();
-        b.addAttachListener(() -> {
-            removeFromParent(a);
+        childB.addAttachListener(() -> {
+            removeFromParent(childA);
         });
 
-        a.addAttachListener(events::incrementAndGet);
-        a.addDetachListener(events::incrementAndGet);
+        childA.addAttachListener(events::incrementAndGet);
+        childA.addDetachListener(events::incrementAndGet);
 
         addChild(tree.getRootNode(), parent);
 
@@ -919,21 +919,21 @@ public class StateNodeTest {
     public void attachParent_detachLastOnAttachFirst_attachDetachEvents() {
         TestStateTree tree = new TestStateTree();
 
-        StateNode a = createEmptyNode("a");
-        StateNode b = createEmptyNode("a");
+        StateNode childA = createEmptyNode("a");
+        StateNode childB = createEmptyNode("b");
 
         StateNode parent = createParentNode("parent");
 
-        addChild(parent, a);
-        addChild(parent, b);
+        addChild(parent, childA);
+        addChild(parent, childB);
 
-        a.addAttachListener(() -> {
-            removeFromParent(b);
+        childA.addAttachListener(() -> {
+            removeFromParent(childB);
         });
 
         List<Boolean> attachDetachEvents = new ArrayList<>();
-        b.addAttachListener(() -> attachDetachEvents.add(true));
-        b.addDetachListener(() -> attachDetachEvents.add(false));
+        childB.addAttachListener(() -> attachDetachEvents.add(true));
+        childB.addDetachListener(() -> attachDetachEvents.add(false));
 
         addChild(tree.getRootNode(), parent);
 
@@ -1080,14 +1080,75 @@ public class StateNodeTest {
         assertDetachAttachEvents(createNodes(), "c", "b");
     }
 
+    /**
+     * #5316: removeFromTree removes StateTree reference and resets descendant
+     * nodes.
+     */
+    @Test
+    public void removeFromTree_nodeAttached_detachedAndDescendantsReset() {
+        // given grandParent -> parent -> child
+        StateNode grandParent = createParentNode("grandParent");
+        StateNode parent = createParentNode("parent");
+        addChild(grandParent, parent);
+        StateNode child = createEmptyNode("child");
+        addChild(parent, child);
+
+        TestStateTree tree = new TestStateTree();
+        addChild(tree.getRootNode(), grandParent);
+
+        // when parent is removed from the tree
+        parent.removeFromTree();
+
+        // then parent's parent is null
+        Assert.assertNull(parent.getParent());
+
+        // then parent and its descendants are reset
+        assertNodesReset(parent,child);
+    }
+
+    /**
+     * #5316: removeFromTree when invoked from a DetachListener removes
+     * StateTree reference and resets descendant nodes.
+     */
+    @Test
+    public void removeFromTree_nodeAttachedAndInDetachListener_detachedAndDescendantsReset() {
+        // given grandParent -> parent -> child
+        StateNode grandParent = createParentNode("grandParent");
+        StateNode parent = createParentNode("parent");
+        addChild(grandParent, parent);
+        StateNode child = createEmptyNode("child");
+        addChild(parent, child);
+
+        TestStateTree tree = new TestStateTree();
+        addChild(tree.getRootNode(), grandParent);
+
+        // given parent's detach listener removes the node from the tree
+        parent.addDetachListener(() -> parent.removeFromTree());
+
+        // when parent is removed from the tree
+        parent.setParent(null);
+
+        // then parent and its descendants are reset
+        assertNodesReset(parent,child);
+    }
+
+    private void assertNodesReset(StateNode... nodes) {
+        for (StateNode node : nodes) {
+            Assert.assertEquals(-1, node.getId());
+            Assert.assertFalse(node.isAttached());
+            Assert.assertEquals(NullOwner.get(), node.getOwner());
+            node.collectChanges(c -> Assert.fail("No changes expected"));
+        }
+    }
+
     private void assertAttachDetachEvents(Map<String, StateNode> nodes,
             String newParent, String child, boolean expectSingleEvent) {
         TestStateTree tree = new TestStateTree();
 
         // use the order from the list
-        StateNode a = nodes.get("a");
-        StateNode b = nodes.get("b");
-        StateNode c = nodes.get("c");
+        StateNode childA = nodes.get("a");
+        StateNode childB = nodes.get("b");
+        StateNode childC = nodes.get("c");
 
         // those are the same nodes that above but it's easier to have a
         // dedicate variables for them
@@ -1107,9 +1168,9 @@ public class StateNodeTest {
 
         StateNode parent = createParentNode("parent");
 
-        addChild(parent, a);
-        addChild(parent, b);
-        addChild(parent, c);
+        addChild(parent, childA);
+        addChild(parent, childB);
+        addChild(parent, childC);
 
         addChild(tree.getRootNode(), parent);
 
@@ -1136,9 +1197,9 @@ public class StateNodeTest {
         TestStateTree tree = new TestStateTree();
 
         // use the order from the list
-        StateNode a = nodes.get("a");
-        StateNode b = nodes.get("b");
-        StateNode c = nodes.get("c");
+        StateNode childA = nodes.get("a");
+        StateNode childB = nodes.get("b");
+        StateNode childC = nodes.get("c");
 
         // those are the same nodes that above but it's easier to have a
         // dedicate variables for them
@@ -1152,9 +1213,9 @@ public class StateNodeTest {
 
         StateNode parent = createParentNode("parent");
 
-        addChild(parent, a);
-        addChild(parent, b);
-        addChild(parent, c);
+        addChild(parent, childA);
+        addChild(parent, childB);
+        addChild(parent, childC);
 
         addChild(tree.getRootNode(), parent);
 

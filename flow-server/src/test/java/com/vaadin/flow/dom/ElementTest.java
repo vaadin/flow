@@ -2051,6 +2051,19 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(1, detached.get());
     }
 
+    @Test
+    public void testRemoveFromTree_inDetachListener_removedFromParent() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+
+        child.addDetachListener(event -> child.removeFromTree());
+
+        body.removeAllChildren();
+
+        Assert.assertEquals(null, child.getParent());
+    }
+
     private StreamResource createEmptyResource(String resName) {
         return new StreamResource(resName,
                 () -> new ByteArrayInputStream(new byte[0]));
