@@ -37,12 +37,13 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo;
+import com.vaadin.flow.plugin.samplecode.AbstractExporter;
+import com.vaadin.flow.plugin.samplecode.BarExporter;
+import com.vaadin.flow.plugin.samplecode.FooExporter;
 
 public class WebComponentModulesGeneratorTest {
 
-    private static final String FOO_EXPORTER_FQN = "com.example.FooExporter";
+    private static final String FOO_EXPORTER_FQN = FooExporter.class.getName();
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -51,17 +52,13 @@ public class WebComponentModulesGeneratorTest {
 
     private WebComponentModulesGenerator generator;
 
-    /**
-     * The jar contains : two real exporters FooExporter and BarExporter and
-     * other exporters which are abstract.
-     */
-    private static final String EXPORTER_JAR = "annotation-extractor-test/exporters.jar";
-
     @Before
     public void init() {
         List<URL> urls = new ArrayList<>();
         for (String path : getRawClasspathEntries()) {
-            if (path.contains("api") || path.contains("maven")
+            if (path.contains("api")
+                    || (path.contains("maven")
+                            && !path.contains("flow-maven-plugin"))
                     || path.contains("plexus") || path.contains("eclipse")
                     || path.contains("helger") || path.contains("com/google")) {
                 continue;
@@ -74,19 +71,17 @@ public class WebComponentModulesGeneratorTest {
             }
         }
 
-        urls.add(TestUtils.getTestResource(EXPORTER_JAR));
-
-        introspector = new ClassPathIntrospector(
-                new NodeUpdateAbstractMojo.ReflectionsClassFinder(
-                        urls.toArray(new URL[0]))) {
+        introspector = new ClassPathIntrospector(urls.toArray(new URL[0])) {
         };
         generator = new WebComponentModulesGenerator(introspector);
     }
 
     @Test
-    public void getExporters_exportersAreDiscovered() {
-        Set<String> exporterFQNs = generator.getExporters().map(Class::getName)
-                .collect(Collectors.toSet());
+    public void getExporters_exportersAreDiscovered() throws IOException {
+        Set<String> exporterFQNs = generator.getExporters()
+                .filter(clazz -> clazz.getPackage().getName()
+                        .equals(AbstractExporter.class.getPackage().getName()))
+                .map(Class::getName).collect(Collectors.toSet());
 
         Assert.assertEquals(2, exporterFQNs.size());
 
@@ -94,8 +89,8 @@ public class WebComponentModulesGeneratorTest {
                 "FooExporter class is not discovered as an exporter class",
                 exporterFQNs.contains(FOO_EXPORTER_FQN));
         Assert.assertTrue(
-                "barExporter class is not discovered as an exporter class",
-                exporterFQNs.contains("com.example.BarExporter"));
+                "BarExporter class is not discovered as an exporter class",
+                exporterFQNs.contains(BarExporter.class.getName()));
     }
 
     @Test

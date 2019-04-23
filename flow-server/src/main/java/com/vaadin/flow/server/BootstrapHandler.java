@@ -87,6 +87,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
+    public static final String POLYFILLS_JS = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
+
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -340,16 +342,28 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private String servletPathToContextRoot;
 
         /**
-         * Creates a new bootstrap resolver based on the given request and
-         * session.
+         * Creates a new bootstrap resolver based on the given ui.
          *
          * @param ui
          *            the ui to resolve for
          */
         protected BootstrapUriResolver(UI ui) {
-            servletPathToContextRoot = ui.getInternals()
-                    .getContextRootRelativePath();
-            VaadinSession session = ui.getSession();
+            this(ui.getInternals().getContextRootRelativePath(),
+                    ui.getSession());
+        }
+
+        /**
+         * Creates a new bootstrap resolver based on the given session.
+         *
+         * @param contextRootRelatiePath
+         *            the relative path from the UI (servlet) path to the
+         *            context root
+         * @param session
+         *            the vaadin session
+         */
+        public BootstrapUriResolver(String contextRootRelatiePath,
+                VaadinSession session) {
+            servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
             if (session.getBrowser().isEs6Supported()) {
                 frontendRootUrl = config.getEs6FrontendPrefix();
@@ -785,11 +799,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         VaadinSession session = context.getSession();
         DeploymentConfiguration config = session.getConfiguration();
 
-        String webcomponentsLoaderUrl = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
         String es5AdapterUrl = "frontend://bower_components/webcomponentsjs/custom-elements-es5-adapter.js";
         VaadinService service = session.getService();
-        if (!service.isResourceAvailable(webcomponentsLoaderUrl,
-                session.getBrowser(), null)) {
+        if (!service.isResourceAvailable(POLYFILLS_JS, session.getBrowser(),
+                null)) {
             // No webcomponents polyfill, load nothing
             return;
         }
@@ -813,7 +826,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         String resolvedUrl = context.getUriResolver()
-                .resolveVaadinUri(webcomponentsLoaderUrl);
+                .resolveVaadinUri(POLYFILLS_JS);
         head.appendChild(createJavaScriptElement(resolvedUrl, false));
 
     }

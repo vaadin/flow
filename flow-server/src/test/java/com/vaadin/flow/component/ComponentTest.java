@@ -1587,4 +1587,16 @@ public class ComponentTest {
                 subSubChild.getElement().getAttribute("disabled"));
 
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void add_componentIsAttachedToAnotherUI_throwsIllegalStateException() {
+        // given
+        TestComponent child = new TestComponent();
+        UI ui1 = new UI();
+        ui1.add(child);
+        UI ui2 = new UI();
+
+        // then
+        ui2.add(child);
+    }
 }

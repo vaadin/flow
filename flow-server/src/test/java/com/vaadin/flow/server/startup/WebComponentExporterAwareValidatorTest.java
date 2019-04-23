@@ -20,7 +20,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -86,15 +85,15 @@ public class WebComponentExporterAwareValidatorTest {
     @Tag(Tag.DIV)
     @Theme(MyTheme.class)
     @Push
-    public static class WCExporter implements WebComponentExporter<Component> {
+    public static class WCExporter extends WebComponentExporter<Component> {
 
-        @Override
-        public void define(WebComponentDefinition<Component> definition) {
+        public WCExporter() {
+            super(Tag.DIV);
         }
 
         @Override
-        public void configure(WebComponent<Component> webComponent,
-                Component component) {
+        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+
         }
     }
 

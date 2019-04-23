@@ -22,9 +22,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporterAdapter;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 
 public class WebComponentGeneratorTest {
 
@@ -40,12 +39,13 @@ public class WebComponentGeneratorTest {
 
     public void assertGeneratedReplacementMapContainsExpectedEntries(
             boolean generateUi) {
-        WebComponentConfigurationImpl<MyComponent> builder = new WebComponentConfigurationImpl<>(
-                new MyComponentExporter());
+        MyComponentExporter exporter = new MyComponentExporter();
 
         Map<String, String> replacementsMap = WebComponentGenerator
-                .getReplacementsMap("document.body", "my-component",
-                        builder.getPropertyDataSet(), "/foo", generateUi, "/foo");
+                .getReplacementsMap("my-component",
+                        new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
+                                .getPropertyDataSet(),
+                        "/foo", generateUi);
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -55,10 +55,6 @@ public class WebComponentGeneratorTest {
                 replacementsMap.containsKey("PropertyMethods"));
         Assert.assertTrue("Missing 'Properties'",
                 replacementsMap.containsKey("Properties"));
-        Assert.assertTrue("No 'RootElement' specified",
-            replacementsMap.containsKey("RootElement"));
-        Assert.assertTrue("Missing servlet context path",
-            replacementsMap.containsKey("servlet_context"));
         Assert.assertTrue("Missing frontend resources path",
                 replacementsMap.containsKey("frontend_resources"));
         Assert.assertTrue("Missing ui import",
@@ -66,8 +62,6 @@ public class WebComponentGeneratorTest {
 
         Assert.assertEquals("my-component", replacementsMap.get("TagDash"));
         Assert.assertEquals("MyComponent", replacementsMap.get("TagCamel"));
-
-        Assert.assertEquals("document.body", replacementsMap.get("RootElement"));
 
         Assert.assertEquals("/foo", replacementsMap.get("frontend_resources"));
 
@@ -78,8 +72,6 @@ public class WebComponentGeneratorTest {
         } else {
             Assert.assertEquals("", replacementsMap.get("ui_import"));
         }
-
-        Assert.assertEquals("/foo", replacementsMap.get("servlet_context"));
 
         String propertyMethods = replacementsMap.get("PropertyMethods");
         Assert.assertTrue(propertyMethods.contains("_sync_message"));
@@ -116,17 +108,22 @@ public class WebComponentGeneratorTest {
         }
     }
 
-    @Tag("tag")
-    public static class MyComponentExporter
-            extends WebComponentExporterAdapter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            definition.addProperty("response", "hello")
+    private static class MyComponentExporter
+            extends WebComponentExporter<MyComponent> {
+
+        public MyComponentExporter() {
+            super("tag");
+            addProperty("response", "hello")
                     .onChange(MyComponent::setMessage);
-            definition.addProperty("integer-value", 0)
+            addProperty("integer-value", 0)
                     .onChange(MyComponent::setIntegerValue);
-            definition.addProperty("message", "")
+            addProperty("message", "")
                     .onChange(MyComponent::setMessage);
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+
         }
     }
 }

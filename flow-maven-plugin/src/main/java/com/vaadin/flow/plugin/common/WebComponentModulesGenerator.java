@@ -18,7 +18,6 @@ package com.vaadin.flow.plugin.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -28,13 +27,16 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterTagExtractor;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
- * Finds web component exporters.
+ * @author Vaadin Ltd
  */
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
@@ -44,13 +46,16 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
             "There is no method '%s' in the class '%s', consider updating flow-server dependency",
             GENERATE_MODULE_METHOD, WebComponentExporter.class.getName());
 
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(WebComponentModulesGenerator.class);
+
     /**
      * Prepares the class to find web component exporters from the project
      * classes specified.
      *
      * @param introspector
-     *            another introspector whose reflection tools will be reused to
-     *            find the web component exporters
+     *         another introspector whose reflection tools will be reused to
+     *         find the web component exporters
      */
     public WebComponentModulesGenerator(ClassPathIntrospector introspector) {
         super(introspector);
@@ -75,9 +80,9 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      * class in the given {@code outputFolder}.
      *
      * @param clazz
-     *            web component exporter class
+     *         web component exporter class
      * @param outputFolder
-     *            output folder
+     *         folder into which the generate file is written
      * @return the generated module content
      */
     public File generateModuleFile(
@@ -85,14 +90,14 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
             File outputFolder) {
         String tag = getTag(clazz);
 
-        String fileName = tag;
-        int index = 1;
-        Path generatedFile;
-        do {
-            generatedFile = outputFolder.toPath().resolve(fileName + ".html");
-            index++;
-            fileName = tag + index;
-        } while (generatedFile.toFile().exists());
+        Path generatedFile = outputFolder.toPath().resolve(tag + ".html");
+        if (generatedFile.toFile().exists()) {
+            LOGGER.debug("File '{}' already exists in the '{}' directory."
+                    + "It might be a previously generated web component " +
+                            "module file "
+                    + "or it's an imported dependency. The file will be overwritten.",
+                    generatedFile.getFileName(), outputFolder.getPath());
+        }
         try {
             Files.write(generatedFile,
                     Collections.singletonList(generateModule(clazz)),
@@ -106,30 +111,48 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
     }
 
     private String generateModule(
-            Class<? extends WebComponentExporter<? extends Component>> clazz) {
+            Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
         Class<?> generatorClass = loadClassInProjectClassLoader(
                 WebComponentGenerator.class.getName());
         Method generateMethod = Stream.of(generatorClass.getDeclaredMethods())
                 .filter(method -> method.getParameters().length == 2
-                        && method.getName().equals(GENERATE_MODULE_METHOD))
+                        && method.getName().equals(GENERATE_MODULE_METHOD)
+                        && Class.class.isAssignableFrom(method.getParameterTypes()[0]))
                 .findFirst().orElseThrow(
                         () -> new IllegalStateException(ABSENT_METHOD_ERROR));
 
         try {
-            return (String) generateMethod.invoke(null, clazz, "");
+            return (String) generateMethod.invoke(null, exporterClass, "../");
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException exception) {
             throw new RuntimeException(String.format(
                     "Unable to invoke '%s::%s' for the exporter type '%s'",
                     WebComponentGenerator.class.getName(),
-                    GENERATE_MODULE_METHOD, clazz.getName()), exception);
+                    GENERATE_MODULE_METHOD, exporterClass.getName()),
+                    exception);
         }
     }
 
-    private String getTag(
-            Class<? extends WebComponentExporter<? extends Component>> clazz) {
-        Annotation tagAnnotation = clazz.getAnnotation(
-                loadClassInProjectClassLoader(Tag.class.getName()));
-        return invokeAnnotationMethod(tagAnnotation, "value");
+    private String getTag(Class<? extends WebComponentExporter<?
+            extends Component>> exporterClass) {
+        Class<?> extractorClass =
+                loadClassInProjectClassLoader(WebComponentExporterTagExtractor.class.getName());
+
+        Method tagMethod = Stream.of(extractorClass.getDeclaredMethods())
+                .filter(method ->
+                        method.getReturnType() == String.class
+                                && method.getParameterCount() == 1)
+                .findFirst().orElseThrow(() -> new RuntimeException(
+                        String.format("Failed to find tag extraction method " +
+                                        "from '%s'",
+                                WebComponentExporterTagExtractor.class.getName())));
+
+        try {
+            return (String) tagMethod.invoke(extractorClass.newInstance(), exporterClass);
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new RuntimeException(String.format("Unable to extract tag " +
+                            "from '%s' using '%s'", exporterClass.getName(),
+                    WebComponentExporterTagExtractor.class.getName()), e);
+        }
     }
 }

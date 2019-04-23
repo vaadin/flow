@@ -17,8 +17,11 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletContext;
 import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -29,11 +32,15 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.JsonObject;
 
 /**
  * Bootstrap handler for WebComponent requests.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentBootstrapHandler extends BootstrapHandler {
 
@@ -42,7 +49,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
         private WebComponentBootstrapContext(VaadinRequest request,
-                VaadinResponse response, UI ui) {
+                                             VaadinResponse response, UI ui) {
             super(request, response, ui.getInternals().getSession(), ui);
         }
 
@@ -54,6 +61,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(servletContext);
             return registry.getEmbeddedApplicationAnnotation(annotationType);
+        }
+
+        @Override
+        protected Optional<ThemeDefinition> getTheme() {
+            Optional<Theme> optionalTheme = getPageConfigurationAnnotation(Theme.class);
+            return optionalTheme.map(ThemeDefinition::new);
         }
     }
 
@@ -70,8 +83,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
-            VaadinRequest request, VaadinResponse response,
-            VaadinSession session) {
+                                               VaadinRequest request, VaadinResponse response,
+                                               VaadinSession session) {
         BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
@@ -88,8 +101,26 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         // remove path prefix but keep the trailing slash
         String serviceUrl = requestURL.substring(0,
                 requestURL.length() - PATH_PREFIX.length() + 1);
-        // replace http:// or https:// with // to work with https:// proxies which proxies to the same http:// url
+        // replace http:// or https:// with // to work with https:// proxies
+        // which proxies to the same http:// url
         serviceUrl = serviceUrl.replaceFirst("^.*://", "//");
+
+        String pushURL = context.getSession().getConfiguration().getPushURL();
+        if (pushURL == null) {
+            pushURL = serviceUrl;
+        } else {
+            try {
+                URI uri = new URI(serviceUrl);
+                pushURL = uri.resolve(new URI(pushURL)).toASCIIString();
+            } catch (URISyntaxException exception) {
+                throw new IllegalStateException(String.format(
+                        "Can't resolve pushURL '%s' based on the service URL '%s'",
+                        pushURL, serviceUrl), exception);
+            }
+        }
+        PushConfiguration pushConfiguration = context.getUI()
+                .getPushConfiguration();
+        pushConfiguration.setPushUrl(pushURL);
 
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
@@ -98,7 +129,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
-            VaadinResponse response, UI ui) {
+                                                      VaadinResponse response, UI ui) {
         return new WebComponentBootstrapContext(request, response, ui);
     }
 }

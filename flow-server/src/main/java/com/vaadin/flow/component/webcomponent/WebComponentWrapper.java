@@ -26,18 +26,21 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.JsonValue;
 
 /**
- * Wrapper component for a WebComponent that exposes client callable methods
- * that the client side components expect to be available.
+ * Wrapper component for a web component that exposes {@link ClientCallable}
+ * methods that the client-side components expect to be available.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentWrapper extends Component {
 
-    private final Component child;
-    private final WebComponentBinding<? extends Serializable> webComponentBinding;
+    private Component child;
+    private WebComponentBinding<?> webComponentBinding;
 
     // Disconnect timeout
     private Registration disconnectRegistration;
@@ -45,17 +48,19 @@ public class WebComponentWrapper extends Component {
 
     /**
      * Wrapper class for the server side WebComponent.
+     *
      * @param rootElement
-     *          {@link Element} to which the {@code WebComponentWrapper} is
-     *          bound to.
+     *         {@link Element} to which the {@code WebComponentWrapper} is bound
+     *         to.
      * @param binding
-     *          binding that offers methods for delivering property updates
-     *          to the {@code component} being wrapped by {@code
-     *          WebComponentWrapper}
+     *         binding that offers methods for delivering property updates to
+     *         the {@code component} being wrapped by {@code
+     *         WebComponentWrapper}
      */
-    public WebComponentWrapper(Element rootElement, WebComponentBinding binding) {
+    public WebComponentWrapper(Element rootElement,
+                               WebComponentBinding<?> binding) {
         super(rootElement);
-        Objects.requireNonNull(binding,"Parameter 'binding' must not be null!");
+        Objects.requireNonNull(binding, "Parameter 'binding' must not be null!");
 
         this.webComponentBinding = binding;
         this.child = webComponentBinding.getComponent();
@@ -141,13 +146,5 @@ public class WebComponentWrapper extends Component {
                     String.format("Received value was not convertible to '%s'",
                             propertyType.getName()));
         }
-    }
-
-    /**
-     * For testing purposes only.
-     * @return  web component binding
-     */
-    protected WebComponentBinding<? extends Serializable> getWebComponentBinding() {
-        return webComponentBinding;
     }
 }

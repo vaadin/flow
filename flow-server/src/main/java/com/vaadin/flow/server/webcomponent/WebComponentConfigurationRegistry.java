@@ -36,9 +36,11 @@ import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.theme.Theme;
 
 /**
- * Registry for storing available web component builder implementations.
+ * Registry for storing available web component configuration implementations.
+ *
+ * @author Vaadin Ltd.
  */
-@EmbeddedApplicationAnnotations({ Theme.class, Push.class })
+@EmbeddedApplicationAnnotations({Theme.class, Push.class})
 public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
@@ -48,8 +50,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      */
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
-    private Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporterClasses;
-    private Map<String, WebComponentConfiguration<? extends Component>> builderCache = new HashMap<>();
+    private boolean configurationsSet = false;
+    private HashMap<String, WebComponentConfiguration<? extends Component>> configurationMap =
+            new HashMap<>();
 
     private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
 
@@ -60,40 +63,22 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
-     * Get a web component class for given custom element tag if one is
+     * Get a web component configuration for given custom element tag if one is
      * registered.
      *
      * @param tag
-     *            custom element tag
-     * @return Optional containing a web component matching given tag
+     *         custom element tag
+     * @return Optional containing a web component configuration matching given
+     *         tag
      */
     public Optional<WebComponentConfiguration<? extends Component>> getConfiguration(
             String tag) {
-        return Optional.ofNullable(getConfigurationInternal(tag));
-    }
-
-    /**
-     * Retrieves {@link WebComponentConfigurationImpl} matching the {@code} tag.
-     * If the builder is not readily available, attempts to construct it from
-     * the web component exporter cache.
-     *
-     * @param tag
-     *            tag name of the web component
-     * @return {@link WebComponentConfigurationImpl} by the tag
-     */
-    protected WebComponentConfiguration<? extends Component> getConfigurationInternal(
-            String tag) {
-        WebComponentConfiguration<? extends Component> configuration = null;
-        configurationLock.lock();
+        lock();
         try {
-            if (exporterClasses != null) {
-                populateCacheByTag(tag);
-                configuration = builderCache.get(tag);
-            }
+            return Optional.ofNullable(configurationMap.get(tag));
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
-        return configuration;
     }
 
     /**
@@ -101,95 +86,86 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * configurations for a specific {@link Component} type.
      *
      * @param componentClass
-     *            type of the exported {@link Component}
+     *         type of the exported {@link Component}
      * @param <T>
-     *            component
+     *         component
      * @return set of {@link WebComponentConfiguration} or an empty set.
      */
+    @SuppressWarnings("unchecked")
     public <T extends Component> Set<WebComponentConfiguration<T>> getConfigurationsByComponentType(
             Class<T> componentClass) {
-        configurationLock.lock();
+        lock();
         try {
-            if (exporterClasses == null) {
-                return Collections.emptySet();
-            }
-            if (!areAllConfigurationsAvailable()) {
-                populateCacheWithMissingConfigurations();
-            }
-            return Collections.unmodifiableSet(builderCache.values().stream()
-                    .filter(b -> componentClass.equals(b.getComponentClass()))
+            return Collections.unmodifiableSet(configurationMap.values().stream()
+                    .filter(config -> componentClass.equals(config.getComponentClass()))
                     .map(b -> (WebComponentConfiguration<T>) b)
                     .collect(Collectors.toSet()));
-
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
     }
 
     /**
      * Internal method for updating registry.
      *
-     * @param exporters
-     *            map of web component exporters to register
+     * @param configurations
+     *         set of web component configurations to register
      */
     protected void updateRegistry(
-            Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporters) {
-        configurationLock.lock();
+            Set<WebComponentConfiguration<? extends Component>> configurations) {
+        lock();
         try {
-            if (exporters.isEmpty()) {
-                exporterClasses = new HashMap<>(0);
-            } else {
-                exporterClasses = new HashMap<>(exporters);
-            }
-            updateConfiguration();
-            // since we updated our exporter selection, we need to clear our
-            // builder cache
-            builderCache.clear();
+            updateConfiguration(configurations);
+
+            configurationMap =
+                    new HashMap<>(configurations.stream().collect(
+                            Collectors.toMap(
+                                    WebComponentConfiguration::getTag,
+                                    config -> config)));
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
     }
 
     /**
-     * Register all available unique web component exporters to the registry.
-     * The builders are instantiated lazily.
+     * Registers all available web component configurations to the registry.
      * <p>
      * This can be done only once and any following set should only return
      * false.
      *
-     * @param exporters
-     *            map of web component exporters to register
-     * @return true if set successfully or false if not set
+     * @param configurations
+     *         set of web component configurations to register. These
+     *         configurations must have both unique and valid tag names.
+     * @return {@code true} if set successfully or {@code false} if not set
      */
-    public boolean setExporters(
-            Map<String, Class<? extends WebComponentExporter<? extends Component>>> exporters) {
-        configurationLock.lock();
+    public boolean setConfigurations(
+            Set<WebComponentConfiguration<? extends Component>> configurations) {
+        lock();
         try {
-            if (exporterClasses != null) {
+            if (configurationsSet) {
                 return false;
             }
+            configurationsSet = true;
 
-            updateRegistry(exporters);
+            updateRegistry(configurations);
             return true;
-
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
     }
 
     /**
-     * Checks if {@link WebComponentExporter WebComponentExporters} have been
-     * set.
+     * Checks whether the registry contains any web component configurations.
      *
-     * @return {@code true} if {@link #setExporters(Map)} has been called with
-     *         {@code non-null} value
+     * @return {@code true} if {@link #setConfigurations(Set)} has been called a
+     *         non-empty set.
      */
-    public boolean hasExporters() {
-        configurationLock.lock();
+    public boolean hasConfigurations() {
+        lock();
         try {
-            return exporterClasses != null;
+            return configurationMap.size() > 0;
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
     }
 
@@ -202,14 +178,13 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * servlet initialization (exporter classes discovering).
      *
      * @param type
-     *            the configuration annotation type
-     *
+     *         the configuration annotation type
      * @return an optional configuration annotation, or an empty optional if
      *         there is no configuration annotation with the given {@code type}
      */
     public <T extends Annotation> Optional<T> getEmbeddedApplicationAnnotation(
             Class<T> type) {
-        configurationLock.lock();
+        lock();
         try {
             if (embeddedAppAnnotations == null) {
                 return Optional.empty();
@@ -217,7 +192,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             return Optional
                     .ofNullable(type.cast(embeddedAppAnnotations.get(type)));
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
     }
 
@@ -225,20 +200,16 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Get an unmodifiable set containing all registered web component
      * configurations.
      *
-     * @return unmodifiable set of web component builders in registry or empty
-     *         set
+     * @return unmodifiable set of web component configurations in registry or
+     *         an empty set
      */
     public Set<WebComponentConfiguration<? extends Component>> getConfigurations() {
-        configurationLock.lock();
+        lock();
         try {
-            if (!areAllConfigurationsAvailable()) {
-                populateCacheWithMissingConfigurations();
-            }
-
             return Collections
-                    .unmodifiableSet(new HashSet<>(builderCache.values()));
+                    .unmodifiableSet(new HashSet<>(configurationMap.values()));
         } finally {
-            configurationLock.unlock();
+            unlock();
         }
     }
 
@@ -246,7 +217,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Get WebComponentRegistry instance for given servlet context.
      *
      * @param servletContext
-     *            servlet context to get registry for
+     *         servlet context to get registry for
      * @return WebComponentRegistry instance
      */
     public static WebComponentConfigurationRegistry getInstance(
@@ -274,8 +245,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
         }
     }
 
-    private void updateConfiguration() {
-        assert configurationLock.isHeldByCurrentThread();
+    private void updateConfiguration(Set<WebComponentConfiguration<? extends Component>> webComponentConfigurations) {
+        assertLockHeld();
 
         Optional<Class<? extends Annotation>[]> annotationTypes = AnnotationReader
                 .getAnnotationValueFor(WebComponentConfigurationRegistry.class,
@@ -284,29 +255,31 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
         HashMap<Class<? extends Annotation>, Annotation> map = new HashMap<>();
 
-        exporterClasses.values().stream()
-                .forEach(exporter -> addEmbeddedApplicationAnnotation(exporter,
-                        annotationTypes.get(), map));
+        webComponentConfigurations.forEach(config ->
+                addEmbeddedApplicationAnnotation(config, annotationTypes.get(),
+                        map));
+
         embeddedAppAnnotations = map;
     }
 
     private void addEmbeddedApplicationAnnotation(
-            Class<? extends WebComponentExporter<? extends Component>> exporter,
+            WebComponentConfiguration<? extends Component> configuration,
             Class<? extends Annotation>[] types,
             Map<Class<? extends Annotation>, Annotation> map) {
         for (Class<? extends Annotation> type : types) {
             Annotation annotation = map.get(type);
-            Annotation exporterAnnotation = exporter.getAnnotation(type);
-            if (exporterAnnotation == null) {
+            Annotation configAnnotation =
+                    configuration.getExporterClass().getAnnotation(type);
+            if (configAnnotation == null) {
                 continue;
             }
-            if (annotation != null && !annotation.equals(exporterAnnotation)) {
+            if (annotation != null && !annotation.equals(configAnnotation)) {
                 throw new IllegalStateException(String.format(
                         "Different annotations of type '%s' are declared by the web component exporters: %s, %s",
                         type.getName(), annotation.toString(),
-                        exporterAnnotation.toString()));
+                        configAnnotation.toString()));
             }
-            map.put(type, exporter.getAnnotation(type));
+            map.put(type, configAnnotation);
         }
 
     }
@@ -326,61 +299,15 @@ public class WebComponentConfigurationRegistry implements Serializable {
         return new OSGiWebComponentConfigurationRegistry();
     }
 
-    /**
-     * Adds a builder to the builder cache if one is not already present,
-     * exporters have been set, and a matching exporter is found.
-     *
-     * @param tag
-     *            name of the web component
-     */
-    protected void populateCacheByTag(String tag) {
+    private void lock() {
         configurationLock.lock();
-
-        try {
-            if (builderCache.containsKey(tag)) {
-                return;
-            }
-
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass = exporterClasses
-                    .get(tag);
-
-            if (exporterClass != null) {
-                builderCache.put(tag, constructConfigurations(exporterClass));
-                // remove the class reference from the data bank - it has
-                // already been constructed and is no longer needed
-                exporterClasses.remove(tag);
-            }
-        } finally {
-            configurationLock.unlock();
-        }
     }
 
-    /**
-     * Constructs and adds all the missing configurations into the {@code
-     * builderCache} based on the exporters.
-     */
-    protected void populateCacheWithMissingConfigurations() {
-        if (exporterClasses == null) {
-            return;
-        }
-        exporterClasses.forEach((key, value) -> builderCache.put(key,
-                constructConfigurations(value)));
-        // empty the exporter data bank - every builder has been constructed
-        exporterClasses.clear();
+    private void unlock() {
+        configurationLock.unlock();
     }
 
-    protected boolean areAllConfigurationsAvailable() {
-        configurationLock.lock();
-
-        try {
-            return exporterClasses != null && exporterClasses.size() == 0;
-        } finally {
-            configurationLock.unlock();
-        }
-    }
-
-    protected WebComponentConfiguration<? extends Component> constructConfigurations(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
-        return new WebComponentConfigurationFactory().apply(exporterClass);
+    private void assertLockHeld() {
+        assert configurationLock.isHeldByCurrentThread();
     }
 }

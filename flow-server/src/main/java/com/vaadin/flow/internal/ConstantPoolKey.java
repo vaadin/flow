@@ -36,8 +36,7 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class ConstantPoolKey implements Serializable {
-    // Only stored until delivered to the client
-    private JsonValue json;
+    private final JsonValue json;
     private final String id;
 
     /**
@@ -66,20 +65,17 @@ public class ConstantPoolKey implements Serializable {
 
     /**
      * Exports the this key into a JSON object to send to the client. This
-     * method should only be called once and only by the {@link ConstantPool}
-     * instance that manages this value.
+     * method should be called only by the {@link ConstantPool} instance that
+     * manages this value. It may be called multiple times.
      *
      * @param clientConstantPoolUpdate
      *            the constant pool update that is to be sent to the client, not
      *            <code>null</code>
      */
     public void export(JsonObject clientConstantPoolUpdate) {
-        assert json != null : "Process can only be called once";
         assert id.equals(calculateHash(json)) : "Json value has been changed";
 
         clientConstantPoolUpdate.put(id, json);
-
-        json = null;
     }
 
     /**

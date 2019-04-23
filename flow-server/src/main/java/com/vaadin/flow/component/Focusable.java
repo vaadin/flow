@@ -23,6 +23,7 @@ package com.vaadin.flow.component;
  * @see BlurNotifier
  * @see FocusNotifier
  * @author Vaadin Ltd.
+ * @since
  */
 public interface Focusable<T extends Component>
         extends HasElement, BlurNotifier<T>, FocusNotifier<T>, HasEnabled {

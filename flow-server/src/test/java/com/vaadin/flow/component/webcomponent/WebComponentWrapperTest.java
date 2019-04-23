@@ -34,7 +34,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationImpl;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import elemental.json.Json;
@@ -50,17 +50,16 @@ public class WebComponentWrapperTest {
     private Element element;
     private MyComponent component;
     private WebComponentBinding<MyComponent> binding;
-    private WebComponentConfiguration<MyComponent> configuration;
+    private WebComponentExporter<MyComponent> exporter;
     private WebComponentWrapper wrapper;
 
     @Before
     public void init() {
         element = new Element("tag");
-        configuration = new WebComponentConfigurationImpl<>(
-                new MyComponentExporter());
+        exporter = new MyComponentExporter();
 
         // make component available and bind properties to it
-        binding = configuration
+        binding = (WebComponentBinding<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
                 .createWebComponentBinding(new MockInstantiator(), element);
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
@@ -88,27 +87,27 @@ public class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, Json.create(4));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two string messages should have come through", 3,
+        Assert.assertEquals("Three string messages should have come through", 3,
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two integer messages should have come through", 3,
-                component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through",
+                3, component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
                 Arrays.asList("", "one", "three"), component.oldMessages);
 
         Assert.assertEquals("Integer messages arrived in correct order",
                 Arrays.asList(0, 2, 4), component.oldIntegers);
+
     }
 
     @Test
     public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
-        WebComponentWrapper wrapper = constructWrapper(
-                new MyExtensionExporter(), null, null);
+        WebComponentBinding<MyExtension> binding =
+                constructWrapperAndGetBinding(new MyExtensionExporter(), null, null);
 
-        MyExtension component = (MyExtension) wrapper.getWebComponentBinding()
-                .getComponent();
+        MyExtension component = binding.getComponent();
 
         wrapper.sync(MSG_PROPERTY, Json.create("one"));
         wrapper.sync(INT_PROPERTY, Json.create(2));
@@ -116,12 +115,12 @@ public class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, Json.create(4));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two string messages should have come through", 3,
+        Assert.assertEquals("Three string messages should have come through", 3,
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two integer messages should have come through", 3,
-                component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through",
+                3, component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
                 Arrays.asList("Extended ", "Extended one", "Extended three"),
@@ -133,11 +132,11 @@ public class WebComponentWrapperTest {
 
     @Test
     public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
-        WebComponentWrapper wrapper = constructWrapper(new ExtendedExporter(),
+        WebComponentBinding<MyComponent> binding =
+                constructWrapperAndGetBinding(new ExtendedExporter(),
                 null, null);
 
-        MyComponent component = (MyComponent) wrapper.getWebComponentBinding()
-                .getComponent();
+        MyComponent component = binding.getComponent();
 
         wrapper.sync(MSG_PROPERTY, Json.create("one"));
         wrapper.sync(INT_PROPERTY, Json.create(2));
@@ -146,12 +145,12 @@ public class WebComponentWrapperTest {
         wrapper.sync(BOOLEAN_PROPERTY, Json.create(true));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two string messages should have come through", 3,
+        Assert.assertEquals("Three string messages should have come through", 3,
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two integer messages should have come through", 3,
-                component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through",
+                3, component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
                 Arrays.asList("Default", "one", "three"),
@@ -168,8 +167,7 @@ public class WebComponentWrapperTest {
     public void disconnectReconnect_componentIsNotCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
-        WebComponentWrapper wrapper = constructWrapper(
-                new MyComponentExporter(), element, ui);
+        constructWrapperAndGetBinding(new MyComponentExporter(), element, ui);
         UIInternals internals = ui.getInternals();
 
         wrapper.disconnected();
@@ -191,8 +189,7 @@ public class WebComponentWrapperTest {
     public void disconnectOnClient_componentIsCleaned() {
         Element element = new Element("tag");
         WebComponentUI ui = constructWebComponentUI(element);
-        WebComponentWrapper wrapper = constructWrapper(
-                new MyComponentExporter(), element, ui);
+        constructWrapperAndGetBinding(new MyComponentExporter(), element, ui);
         UIInternals internals = ui.getInternals();
 
         wrapper.disconnected();
@@ -211,30 +208,31 @@ public class WebComponentWrapperTest {
 
     /**
      * @param exporter
-     *            exporter of the correct type, defines C
+     *         exporter of the correct type, defines C
      * @param element
-     *            nullable root element
+     *         nullable root element
      * @param ui
-     *            nullable WebComponentUI
+     *         nullable WebComponentUI
      * @param <C>
-     *            type of the exported component
+     *         type of the exported component
      * @return web component wrapper
      */
-    private static <C extends Component> WebComponentWrapper constructWrapper(
+    private <C extends Component> WebComponentBinding<C> constructWrapperAndGetBinding(
             WebComponentExporter<C> exporter, Element element,
             WebComponentUI ui) {
         if (element == null) {
             element = new Element("tag");
         }
-        WebComponentConfiguration<C> configuration = new WebComponentConfigurationImpl<>(
-                exporter);
-        return new WebComponentWrapper(element, configuration
-                .createWebComponentBinding(new MockInstantiator(), element)) {
+        WebComponentBinding<C> binding = (WebComponentBinding<C>)
+                new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
+                        .createWebComponentBinding(new MockInstantiator(), element);
+        wrapper = new WebComponentWrapper(element, binding) {
             @Override
             public Optional<UI> getUI() {
                 return Optional.of(ui);
             }
         };
+        return binding;
     }
 
     private static WebComponentUI constructWebComponentUI(
@@ -301,51 +299,59 @@ public class WebComponentWrapperTest {
     public static class Parent extends Component {
     }
 
-    @Tag("my-component")
     public static class MyComponentExporter
-            implements WebComponentExporter<MyComponent> {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            definition.addProperty(MSG_PROPERTY, "")
+            extends WebComponentExporter<MyComponent> {
+
+        public MyComponentExporter() {
+            this("my-component");
+        }
+
+        // extension point
+        protected MyComponentExporter(String tag) {
+            super(tag);
+            addProperty(MSG_PROPERTY, "")
                     .onChange(MyComponent::setMessage);
-            definition.addProperty(INT_PROPERTY, 0)
+            addProperty(INT_PROPERTY, 0)
                     .onChange(MyComponent::setIntegerValue);
         }
 
         @Override
-        public void configure(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                                      MyComponent component) {
         }
     }
 
-    @Tag("extended-component")
     public static class MyExtensionExporter
-            implements WebComponentExporter<MyExtension> {
-        @Override
-        public void define(WebComponentDefinition<MyExtension> definition) {
-            definition.addProperty(MSG_PROPERTY, "")
+            extends WebComponentExporter<MyExtension> {
+
+        public MyExtensionExporter() {
+            super("extended-component");
+            addProperty(MSG_PROPERTY, "")
                     .onChange(MyExtension::setMessage);
-            definition.addProperty(INT_PROPERTY, 0)
+            addProperty(INT_PROPERTY, 0)
                     .onChange(MyExtension::setIntegerValue);
         }
 
         @Override
-        public void configure(WebComponent<MyExtension> webComponent,
-                MyExtension component) {
+        public void configureInstance(WebComponent<MyExtension> webComponent,
+                                      MyExtension component) {
         }
     }
 
-    @Tag("my-component-extended")
     public static class ExtendedExporter extends MyComponentExporter {
-        @Override
-        public void define(WebComponentDefinition<MyComponent> definition) {
-            super.define(definition);
+        public ExtendedExporter() {
+            super("my-component-extended");
 
-            definition.addProperty(MSG_PROPERTY, "Default")
+            addProperty(MSG_PROPERTY, "Default")
                     .onChange(MyComponent::setMessage);
 
-            definition.addProperty(BOOLEAN_PROPERTY, false)
+            addProperty(BOOLEAN_PROPERTY, false)
                     .onChange(MyComponent::setBooleanValue);
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+            super.configureInstance(webComponent, component);
         }
     }
 }

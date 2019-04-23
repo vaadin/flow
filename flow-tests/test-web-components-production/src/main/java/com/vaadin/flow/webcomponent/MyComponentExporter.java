@@ -13,31 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.webcomponent;
 
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentDefinition;
 
-/**
- * An abstract adapter class for {@link WebComponentExporter} implementations.
- * <p>
- * The methods in this class are empty. This class exists as convenience for
- * creating exporter objects.
- *
- * @author Vaadin Ltd
- *
- * @param <C>
- *            type of the component to export
- */
-public abstract class WebComponentExporterAdapter<C extends Component>
-        implements WebComponentExporter<C> {
-
-    @Override
-    public void define(WebComponentDefinition<C> definition) {
+@Tag("embedded-component")
+public class MyComponentExporter extends WebComponentExporter<MyComponent> {
+    public MyComponentExporter() {
+        super("embedded-component");
     }
 
     @Override
-    public void configure(WebComponent<C> webComponent, C component) {
+    public void configureInstance(WebComponent<MyComponent> webComponent,
+            MyComponent component) {
     }
 
 }

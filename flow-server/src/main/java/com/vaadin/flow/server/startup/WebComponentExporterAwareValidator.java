@@ -34,8 +34,10 @@ import com.vaadin.flow.theme.Theme;
  * Checks that specific annotations are not configured wrong.
  * <p>
  * The validation is run during servlet container initialization.
+ *
+ * @author Vaadin Ltd.
  */
-@HandlesTypes({ Theme.class, Push.class })
+@HandlesTypes({Theme.class, Push.class})
 public class WebComponentExporterAwareValidator extends
         AbstractAnnotationValidator implements ServletContainerInitializer {
 

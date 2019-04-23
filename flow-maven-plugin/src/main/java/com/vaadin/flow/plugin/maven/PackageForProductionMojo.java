@@ -125,6 +125,14 @@ public class PackageForProductionMojo extends AbstractMojo {
     private File bundleConfiguration;
 
     /**
+     * Set the web components module files output folder name. The default is
+     * <code>vaadin-web-components</code>. The folder is used to generate the
+     * web component module files.
+     */
+    @Parameter(property = "webComponentOutputDirectoryName", defaultValue = "vaadin-web-components")
+    private String webComponentOutputDirectoryName;
+
+    /**
      * Defines the path to node executable to use. If specified,
      * {@code nodeVersion} parameter is ignored.
      */
@@ -222,7 +230,8 @@ public class PackageForProductionMojo extends AbstractMojo {
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
                 bundle, minify, hash, transpileEs6SourceDirectory,
                 new AnnotationValuesExtractor(NodeUpdateAbstractMojo.getClassFinder(project)),
-                bundleConfiguration, getFragmentsData(fragments));
+                bundleConfiguration, webComponentOutputDirectoryName,
+                getFragmentsData(fragments));
 
         FrontendToolsManager frontendToolsManager = new FrontendToolsManager(
                 transpileWorkingDirectory, es5OutputDirectoryName,

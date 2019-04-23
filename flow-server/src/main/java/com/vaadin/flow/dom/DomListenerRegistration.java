@@ -21,6 +21,9 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * A registration for configuring or removing a DOM event listener added to an
  * element.

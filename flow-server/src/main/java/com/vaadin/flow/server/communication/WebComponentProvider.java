@@ -27,6 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
+import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -36,20 +39,23 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
- * Request handler that supplies the script/html of the WebComponent matching
+ * Request handler that supplies the script/html of the web component matching
  * the given tag.
+ *
+ * @author Vaadin Ltd.
  */
 public class WebComponentProvider extends SynchronizedRequestHandler {
 
-    private static final String PATH_PREFIX = "/web-component/";
+    private static final String WEB_COMPONENT_PATH = "web-component/";
+    private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
     private static final String SUFFIX = ".html";
 
     // tag name -> generated html
     private Map<String, String> cache;
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(
+            VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
         VaadinServletRequest servletRequest = (VaadinServletRequest) request;
         String pathInfo = servletRequest.getPathInfo();
 
@@ -69,10 +75,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration = WebComponentConfigurationRegistry
-                .getInstance(
+        Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
+                WebComponentConfigurationRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext())
-                .getConfiguration(tag.get());
+                        .getConfiguration(tag.get());
 
         if (optionalWebComponentConfiguration.isPresent()) {
             if (cache == null) {
@@ -80,24 +86,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             }
             WebComponentConfiguration<? extends Component> webComponentConfiguration = optionalWebComponentConfiguration
                     .get();
-            String generated;
-            if (cache.containsKey(tag.get())) {
-                generated = cache.get(tag.get());
-            } else {
-                String uiElement;
-                if (session.getConfiguration().getRootElementId().isEmpty()) {
-                    uiElement = "document.body";
-                } else {
-                    uiElement = "document.getElementById('"
-                        + session.getConfiguration().getRootElementId()
-                        + "')";
-                }
-
-                generated = WebComponentGenerator.generateModule(uiElement, tag.get(),
-                        webComponentConfiguration,
-                        getFrontendPath(servletRequest), request);
-                cache.put(tag.get(), generated);
-            }
+            String generated = cache.computeIfAbsent(tag.get(),
+                    moduleTag -> generateModule(webComponentConfiguration,
+                            session, servletRequest));
 
             IOUtils.write(generated, response.getOutputStream(),
                     StandardCharsets.UTF_8);
@@ -107,6 +98,71 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         return true;
+    }
+
+    private String generateModule(
+            WebComponentConfiguration<? extends Component> configuration,
+            VaadinSession session, VaadinServletRequest request) {
+        if (session.getConfiguration().useCompiledFrontendResources()) {
+            return generateCompiledUIDeclaration(session, request);
+        } else {
+            return WebComponentGenerator.generateModule(configuration,
+                    getFrontendPath(request));
+        }
+    }
+
+    private String generateCompiledUIDeclaration(VaadinSession session,
+                                                 VaadinRequest request) {
+        String contextRootRelativePath = ServletHelper
+                .getContextRootRelativePath(request) + "/";
+
+        BootstrapUriResolver resolver = new BootstrapUriResolver(
+                contextRootRelativePath, session);
+        String polyFillsUri = resolver
+                .resolveVaadinUri(BootstrapHandler.POLYFILLS_JS);
+        // <code>thisScript</code> below allows to refer the currently executing
+        // script
+        return "var scripts = document.getElementsByTagName( 'script' );"
+                + "var thisScript = scripts[ scripts.length - 1 ];"
+                + generateAddPolyfillsScript(polyFillsUri, "thisScript")
+                + generateUiImport("thisScript");
+    }
+
+    private String generateAddPolyfillsScript(String polyFillsUri,
+                                              String jsParentRef) {
+        StringBuilder builder = new StringBuilder("var scriptUri = ");
+        builder.append(jsParentRef);
+        builder.append(".src;");
+        builder.append("var indx = scriptUri.lastIndexOf('");
+        builder.append(WEB_COMPONENT_PATH);
+        builder.append("');");
+        builder.append("var embeddedWebApp = scriptUri.substring(0, indx);");
+        builder.append("var js = document.createElement('script');"
+                + "js.setAttribute('type','text/javascript');"
+                + "js.setAttribute('src', embeddedWebApp+'");
+        builder.append(polyFillsUri);
+        builder.append("'); document.head.insertBefore(js, ");
+        builder.append(jsParentRef);
+        builder.append(".nextSibling);");
+        return builder.toString();
+    }
+
+    private String generateUiImport(String jsParentRef) {
+        StringBuilder builder = new StringBuilder("var scriptUri = ");
+        builder.append(jsParentRef);
+        builder.append(".src;");
+        builder.append("var indx = scriptUri.lastIndexOf('");
+        builder.append(WEB_COMPONENT_PATH);
+        builder.append("');");
+        builder.append("var uiUri = scriptUri.substring(0, indx+");
+        builder.append(WEB_COMPONENT_PATH.length()).append(");");
+        builder.append("var link = document.createElement('link');"
+                + "link.setAttribute('rel','import');"
+                + "link.setAttribute('href', uiUri+'web-component-ui.html');");
+        builder.append("document.head.insertBefore(link, ");
+        builder.append(jsParentRef);
+        builder.append(".nextSibling);");
+        return builder.toString();
     }
 
     private static String getFrontendPath(VaadinRequest request) {

@@ -20,15 +20,23 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyData;
+import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 /**
- * The configuration is used to construct the web component, and further-more
- * the {@link WebComponentBinding}.
+ * Result of defining an embeddable web component using {@link
+ * WebComponentExporter}. Provides all the necessary information to generate the
+ * web component resources and constructs new {@link WebComponentBinding}
+ * instances with {@link #createWebComponentBinding(Instantiator, Element)};
  *
- * @param <C> type of the component being exported
+ * @param <C>
+ *         type of the component being exported
+ * @author Vaadin Ltd.
+ * @see com.vaadin.flow.component.WebComponentExporter.WebComponentConfigurationFactory
+ *         for constructing new instances
  */
 public interface WebComponentConfiguration<C extends Component>
         extends Serializable {
@@ -37,7 +45,8 @@ public interface WebComponentConfiguration<C extends Component>
      * Check if the configuration has a property identified by the {@code
      * propertyName}.
      *
-     * @param propertyName  name of the property, not null
+     * @param propertyName
+     *         name of the property, not null
      * @return has property
      */
     boolean hasProperty(String propertyName);
@@ -46,7 +55,8 @@ public interface WebComponentConfiguration<C extends Component>
      * Retrieve the type of a property's value. If the property is not known,
      * returns {@code null}
      *
-     * @param propertyName  name of the property, not null
+     * @param propertyName
+     *         name of the property, not null
      * @return property type or null
      */
     Class<? extends Serializable> getPropertyType(String propertyName);
@@ -59,27 +69,39 @@ public interface WebComponentConfiguration<C extends Component>
     Class<C> getComponentClass();
 
     /**
-     * Set of all the {@link PropertyData} objects defining the web
-     * component's properties.
+     * Set of all the {@link PropertyData} objects defining the web component's
+     * properties.
      *
      * @return set of {@code PropertyData}
      */
     Set<PropertyData<? extends Serializable>> getPropertyDataSet();
 
     /**
-     * Creates the component instance of type {@link C} using {@code
-     * instantiator} and then constructs a {@link WebComponentBinding} which
-     * allows for pushing property updates to the component {@code C} in a
-     * fashion defined by the associated
-     * {@link com.vaadin.flow.component.WebComponentExporter}.
+     * Creates a new {@link WebComponentBinding} instance.
      *
-     * @param instantiator  {@link Instantiator} using to construct component
-                            instance
-     * @param el            element which acts as the root element for the
-     *                      {@code component instance}
-     * @return  web component binding which can be used by the web component
-     *          host to communicate with the component it is hosting
+     * @param instantiator
+     *         {@link Instantiator} used to construct instances
+     * @param element
+     *         element which acts as the root element for the exported
+     *         {@code component} instance
+     * @return web component binding which can be used by the web component host
+     *         to communicate with the component it is hosting
      */
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
-    Element el);
+                                                     Element element);
+
+    /**
+     * Retrieves the tag name configured by the web component exporter.
+     *
+     * @return tag name, not {@code null}
+     */
+    String getTag();
+
+    /**
+     * Retrieves the type of the {@link WebComponentExporter} from which this
+     * configuration has been generated.
+     *
+     * @return web component exporter class
+     */
+    Class<? extends WebComponentExporter<C>> getExporterClass();
 }

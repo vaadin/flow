@@ -31,6 +31,8 @@
         <module>test-material-theme</module>
         <module>servlet-containers</module>
         <module>test-web-components</module>
+        <module>test-web-components-production</module>
+        <module>test-web-components-theme-variant</module>
     </modules>
 
     <properties>

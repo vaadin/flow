@@ -109,10 +109,20 @@ public final class Constants implements Serializable {
     public static final String I18N_PROVIDER = "i18n.provider";
 
     /**
-     * Configuration name for the parameter that determines if Flow should automatically
-     * register servlets needed for the application to work.
+     * Configuration name for the parameter that determines if Flow should
+     * automatically register servlets needed for the application to work.
      */
     public static final String DISABLE_AUTOMATIC_SERVLET_REGISTRATION = "disable.automatic.servlet.registration";
+
+    /**
+     * Configuration name for the parameter that sets the compiled web
+     * components path. The path should be the same as
+     * {@code webComponentOutputDirectoryName} in the maven plugin that
+     * transpiles ES6 code. This path is only used for generated web components
+     * (server side web components) module in case they are transpiled: web
+     * component UI imports them as dependencies.
+     */
+    public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
 
     /**
      * Configuration name for the WebPack profile statistics json file to use to

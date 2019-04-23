@@ -177,12 +177,25 @@ public class ServletDeployer implements ServletContextListener {
         return result;
     }
 
+    private DeploymentConfiguration createDeploymentConfiguration(
+            ServletConfig servletConfig, Class<?> servletClass) {
+        try {
+            return DeploymentConfigurationFactory
+                    .createPropertyDeploymentConfiguration(servletClass,
+                            servletConfig);
+        } catch (ServletException e) {
+            throw new IllegalStateException(String.format(
+                    "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
+                    servletConfig.getServletName(), servletClass), e);
+        }
+    }
+
     private void createAppServlet(ServletContext context) {
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(context).hasExporters();
+                .getInstance(context).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(
