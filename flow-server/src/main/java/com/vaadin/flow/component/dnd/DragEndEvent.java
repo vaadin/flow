@@ -28,7 +28,7 @@ import com.vaadin.flow.component.EventData;
  *            Type of the component that was dragged.
  * @see DragSource#addDragEndListener(DragEndListener)
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 @DomEvent("dragend")
 public class DragEndEvent<T extends Component> extends ComponentEvent<T> {

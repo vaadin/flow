@@ -52,8 +52,6 @@ public class DnDIT extends ChromeBrowserTest {
         dragBoxToLanes(boxElement, getLaneElement("deactivated"), false);
     }
 
-    // TODO add test for retrieving server side drag data
-
     private void dragBoxToLanes(TestBenchElement boxElement,
             TestBenchElement laneElement, boolean dropShouldOccur) {
         clearEvents();

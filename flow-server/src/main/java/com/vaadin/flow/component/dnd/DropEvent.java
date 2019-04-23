@@ -33,7 +33,7 @@ import com.vaadin.flow.component.EventData;
  * @author Vaadin Ltd
  * @see DropTarget#addDropListener(DropListener)
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 @DomEvent("drop")
 public class DropEvent<T extends Component> extends ComponentEvent<T> {

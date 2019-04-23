@@ -19,7 +19,7 @@ package com.vaadin.flow.component.dnd;
  * Used to specify the effect that is allowed for a drag operation.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 public enum EffectAllowed {
     /**

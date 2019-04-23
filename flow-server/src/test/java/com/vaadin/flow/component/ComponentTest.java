@@ -1060,7 +1060,7 @@ public class ComponentTest {
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(4, pendingDependencies.size());
+        Assert.assertEquals(5, pendingDependencies.size());
 
         assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
                 pendingDependencies);
@@ -1079,7 +1079,7 @@ public class ComponentTest {
                 UsesUsesComponentWithDependencies.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(5, pendingDependencies.size());
+        Assert.assertEquals(6, pendingDependencies.size());
 
         assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
                 pendingDependencies);
@@ -1101,7 +1101,7 @@ public class ComponentTest {
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
-        Assert.assertEquals(2, pendingDependencies.size());
+        Assert.assertEquals(3, pendingDependencies.size());
 
         assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
                 pendingDependencies);
@@ -1113,7 +1113,7 @@ public class ComponentTest {
         internals.addComponentDependencies(CircularDependencies2.class);
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
-        Assert.assertEquals(2, pendingDependencies.size());
+        Assert.assertEquals(3, pendingDependencies.size());
         assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
                 pendingDependencies);
         assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",

@@ -33,7 +33,7 @@ import com.vaadin.flow.shared.Registration;
  *            the type of the drag source component
  * @see DropTarget
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 public interface DragSource<T extends Component> extends HasElement {
 
@@ -88,9 +88,11 @@ public interface DragSource<T extends Component> extends HasElement {
      * @return the drag source component
      */
     /*
-     * This could be mayhaps removed and replaced with magic that digs the
-     * component from an element. But keeping this method adds some convenience
-     * to the static usage. And it enables
+     * Implementation note: This could be mayhaps removed and replaced with
+     * magic that digs the component from an element. But keeping this method
+     * adds some convenience to the static usage. And it enables using an
+     * element that is not the root element of this component as the draggable
+     * element.
      */
     T getDragSourceComponent();
 
@@ -197,12 +199,12 @@ public interface DragSource<T extends Component> extends HasElement {
      * By default the value is {@link EffectAllowed#UNINITIALIZED} which is
      * equivalent to {@link EffectAllowed#ALL}.
      * 
-     * @see <a href="https://developer.mozilla
-     *      .org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations
-     *      #drageffects">MDN web docs</a> for more information.
      * @param effect
      *            Effects to allow for this draggable element. Cannot be {@code
      *               null}.
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations#drageffects">
+     *      MDN web docs</a> for more information.
      */
     default void setEffectAllowed(EffectAllowed effect) {
         if (effect == null) {
