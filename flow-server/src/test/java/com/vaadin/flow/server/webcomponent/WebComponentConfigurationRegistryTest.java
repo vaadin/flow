@@ -20,14 +20,22 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -36,6 +44,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -48,8 +57,36 @@ public class WebComponentConfigurationRegistryTest {
 
     protected WebComponentConfigurationRegistry registry;
 
+    @Mock
+    VaadinSession session;
+
+    @Mock
+    VaadinService service;
+
+    private final Map<String, Object> mockServiceAttributes = new HashMap<>();
+
     @Before
     public void init() {
+        MockitoAnnotations.initMocks(this);
+        Mockito.when(session.getService()).thenReturn(service);
+        VaadinService.setCurrent(service);
+
+        // mocking setting attributes in tests
+        Mockito.when(service.getAttribute(Mockito.anyString(), Mockito.anyObject())).then(invocationOnMock -> {
+            final Object supplier = invocationOnMock.getArguments()[1];
+            final String key = invocationOnMock.getArguments()[0].toString();
+            if(supplier != null) {
+                mockServiceAttributes.put(key, ((Supplier<?>)supplier).get());
+            }
+            return mockServiceAttributes.get(key);
+        });
+        Mockito.doAnswer(invocationOnMock ->
+                             mockServiceAttributes.put(invocationOnMock.getArguments()[0].toString(), invocationOnMock.getArguments()[1]))
+            .when(service).setAttribute(Mockito.anyString(), Mockito.anyObject());
+
+        Mockito.when(service.getInstantiator())
+            .thenReturn(new MockInstantiator());
+
         registry = WebComponentConfigurationRegistry
                 .getInstance();
     }
