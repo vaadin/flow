@@ -16,13 +16,14 @@
 
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import java.security.InvalidParameterException;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.InvalidCustomElementNameException;
+import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import net.jcip.annotations.NotThreadSafe;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -36,14 +37,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.MockInstantiator;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.mockito.Mockito.when;
 
@@ -61,6 +62,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
+    private final Map<String, Object> mockServiceAttributes = new HashMap<>();
+
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
@@ -70,6 +73,21 @@ public class WebComponentConfigurationRegistryInitializerTest {
                         .thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
+
+        // mocking setting attributes in tests
+        Mockito.when(vaadinService.getAttribute(Mockito.anyString(), Mockito.anyObject())).then(invocationOnMock -> {
+            final Object supplier = invocationOnMock.getArguments()[1];
+            final String key = invocationOnMock.getArguments()[0].toString();
+            if(supplier != null) {
+                mockServiceAttributes.put(key, ((Supplier<?>)supplier).get());
+            }
+            return mockServiceAttributes.get(key);
+        });
+        Mockito.doAnswer(invocationOnMock ->
+                             mockServiceAttributes.put(invocationOnMock.getArguments()[0].toString(), invocationOnMock.getArguments()[1]))
+            .when(vaadinService).setAttribute(Mockito.anyString(), Mockito.anyObject());
+
+
         when(vaadinService.getInstantiator())
                 .thenReturn(new MockInstantiator());
     }
