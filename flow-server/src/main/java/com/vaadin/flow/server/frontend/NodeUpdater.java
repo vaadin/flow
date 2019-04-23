@@ -23,11 +23,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.server.Command;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.server.Command;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -113,11 +114,6 @@ public abstract class NodeUpdater implements Command {
     private File getFlowPackage() {
         return FrontendUtils.getFlowPackage(nodeModulesPath);
     }
-
-    /**
-     * Execute the update process.
-     */
-    public abstract void execute();
 
     Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)

@@ -149,7 +149,6 @@ public class NodeUpdateImports extends NodeUpdater {
         Map<String, String> unresolvedImports = new HashMap<>(modules.size());
 
         for (String originalModulePath : modules) {
-            // TODO kb refactor and remove the 2nd if below with this
             String translatedModulePath = originalModulePath;
             if (theme != null && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
