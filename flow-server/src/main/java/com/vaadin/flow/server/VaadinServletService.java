@@ -238,14 +238,16 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
-        ServletContext context = this.getServlet().getServletContext();
-        Object result = context.getAttribute(type.getName());
-        if(result == null && defaultValueSupplier != null) {
-            result = defaultValueSupplier.get();
-            context.setAttribute(type.getName(), result);
-            return type.cast(result);
+        ServletContext context;
+        synchronized (context = this.getServlet().getServletContext()) {
+            Object result = context.getAttribute(type.getName());
+            if (result == null && defaultValueSupplier != null) {
+                result = defaultValueSupplier.get();
+                context.setAttribute(type.getName(), result);
+                return type.cast(result);
+            } else
+                return null;
         }
-        else return null;
     }
 
     @Override

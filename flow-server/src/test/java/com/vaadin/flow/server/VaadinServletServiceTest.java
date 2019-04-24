@@ -259,24 +259,24 @@ public class VaadinServletServiceTest {
     }
 
     @Test
-    public void testGetAttributeWithProvider() {
+    public void getAttributeWithProvider() {
         String value = service.getAttribute(String.class, VaadinServletServiceTest::testAttributeProvider);
         Assert.assertEquals(testAttributeProvider(), value);
     }
 
     @Test(expected = AssertionError.class)
-    public void testSetNullAttribute() {
+    public void setNullAttributeNotAllowed() {
         service.setAttribute(null);
     }
 
     @Test
-    public void testGetAttributeWithoutProvider() {
+    public void getAttributeWithoutProvider() {
         String value = service.getAttribute(String.class);
         Assert.assertNull(value);
     }
 
     @Test
-    public void testSetGetAttributes() {
+    public void setAndGetAttribute() {
         String value = testAttributeProvider();
         service.setAttribute(value);
         String result = service.getAttribute(String.class);
