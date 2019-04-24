@@ -50,6 +50,9 @@ public class DragSourceTest {
                 component.getElement().getProperty(
                         Constants.EFFECT_ALLOWED_ELEMENT_PROPERTY),
                 EffectAllowed.COPY_MOVE.getClientPropertyValue());
+
+        DragSource.of(component, false);
+        Assert.assertNull(component.getElement().getProperty("draggable"));
     }
 
     @Test
