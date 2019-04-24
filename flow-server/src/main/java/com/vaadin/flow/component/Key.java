@@ -47,7 +47,6 @@ import java.util.stream.Stream;
  * event.code values.
  *
  * @author Vaadin Ltd.
- * @since
  */
 @FunctionalInterface
 public interface Key extends Serializable {

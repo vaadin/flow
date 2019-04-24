@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +41,12 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -82,7 +84,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class UIInternals implements Serializable {
 
     /**
-     * A {@link Page#executeJavaScript(String, Serializable...)} invocation that
+     * A {@link Page#executeJs(String, Serializable...)} invocation that
      * has not yet been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
@@ -99,6 +101,17 @@ public class UIInternals implements Serializable {
          */
         public JavaScriptInvocation(String expression,
                 Serializable... parameters) {
+            /*
+             * To ensure attached elements are actually attached, the parameters
+             * won't be serialized until the phase the UIDL message is created.
+             * To give the user immediate feedback if using a parameter type
+             * that can't be serialized, we do a dry run at this point.
+             */
+            for (Object argument : parameters) {
+                // Throws IAE for unsupported types
+                JsonCodec.encodeWithTypeInfo(argument);
+            }
+
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
         }
@@ -120,7 +133,6 @@ public class UIInternals implements Serializable {
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
-
     }
 
     /**
@@ -142,7 +154,7 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
-    private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+    private List<PendingJavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
     /**
      * The related UI.
@@ -151,7 +163,7 @@ public class UIInternals implements Serializable {
 
     private String title;
 
-    private ExecutionCanceler pendingTitleUpdateCanceler;
+    private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
@@ -518,13 +530,11 @@ public class UIInternals implements Serializable {
      *
      * @param invocation
      *            the invocation to add
-     * @return a callback for canceling the execution if not yet sent to browser
      */
-    public ExecutionCanceler addJavaScriptInvocation(
-            JavaScriptInvocation invocation) {
+    public void addJavaScriptInvocation(
+            PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
-        return () -> pendingJsInvocations.remove(invocation);
     }
 
     /**
@@ -532,14 +542,16 @@ public class UIInternals implements Serializable {
      *
      * @return a list of pending JavaScript invocations
      */
-    public List<JavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+    public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
         pendingTitleUpdateCanceler = null;
 
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<JavaScriptInvocation> currentList = pendingJsInvocations;
+        List<PendingJavaScriptInvocation> currentList = getPendingJavaScriptInvocations()
+                .peek(PendingJavaScriptInvocation::setSentToBrowser)
+                .collect(Collectors.toList());
 
         pendingJsInvocations = new ArrayList<>();
 
@@ -548,14 +560,15 @@ public class UIInternals implements Serializable {
 
     /**
      * Gets the pending javascript invocations added with
-     * {@link #addJavaScriptInvocation(JavaScriptInvocation)} after last
+     * {@link #addJavaScriptInvocation(PendingJavaScriptInvocation)} after last
      * {@link #dumpPendingJavaScriptInvocations()}.
      *
      * @return the pending javascript invocations, never <code>null</code>
      */
     // Non-private for testing purposes
-    List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
-        return pendingJsInvocations;
+    Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+        return pendingJsInvocations.stream()
+                .filter(invocation -> !invocation.isCanceled());
     }
 
     /**
@@ -572,7 +585,9 @@ public class UIInternals implements Serializable {
         JavaScriptInvocation invocation = new JavaScriptInvocation(
                 "document.title = $0", title);
 
-        pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
+        pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
+                getStateTree().getRootNode(), invocation);
+        addJavaScriptInvocation(pendingTitleUpdateCanceler);
 
         this.title = title;
     }
@@ -822,10 +837,12 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        dependencies.getHtmlImports()
-                .forEach(html -> addHtmlImport(html, page));
-        dependencies.getJavaScripts()
+        if (getSession().getConfiguration().isBowerMode()) {
+            dependencies.getHtmlImports()
+                    .forEach(html -> addHtmlImport(html, page));
+            dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
@@ -967,7 +984,7 @@ public class UIInternals implements Serializable {
      */
     public boolean isDirty() {
         return getStateTree().isDirty()
-                || !getPendingJavaScriptInvocations().isEmpty();
+                || getPendingJavaScriptInvocations().count() != 0;
     }
 
     /**

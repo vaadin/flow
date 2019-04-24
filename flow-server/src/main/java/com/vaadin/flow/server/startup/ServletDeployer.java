@@ -67,11 +67,23 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 public class ServletDeployer implements ServletContextListener {
     private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
 
-    private static class StubServletConfig implements ServletConfig {
+    /**
+     * Default ServletConfig implementation.
+     */
+    public static class StubServletConfig
+            implements ServletConfig {
         private final ServletContext context;
         private final ServletRegistration registration;
 
-        private StubServletConfig(ServletContext context,
+        /**
+         * Constructor.
+         *
+         * @param context
+         *            the ServletContext
+         * @param registration
+         *            the ServletRegistration for this ServletConfig instance
+         */
+        public StubServletConfig(ServletContext context,
                 ServletRegistration registration) {
             this.context = context;
             this.registration = registration;
@@ -97,7 +109,31 @@ public class ServletDeployer implements ServletContextListener {
             return Collections
                     .enumeration(registration.getInitParameters().keySet());
         }
+
+        /**
+         * Creates a DeploymentConfiguration.
+         *
+         * @param context
+         *            the ServletContext
+         * @param registration
+         *            the ServletRegistration
+         * @param servletClass
+         *            the class to look for properties defined with annotations
+         * @return a DeploymentConfiguration instance
+         */
+        public static DeploymentConfiguration createDeploymentConfiguration(ServletContext context,
+                ServletRegistration registration, Class<?> servletClass) {
+            try {
+                ServletConfig servletConfig = new StubServletConfig(context, registration);
+                return DeploymentConfigurationFactory.createPropertyDeploymentConfiguration(servletClass, servletConfig);
+            } catch (ServletException e) {
+                throw new IllegalStateException(String.format(
+                        "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
+                        registration.getName(), servletClass), e);
+            }
+        }
     }
+
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -133,9 +169,8 @@ public class ServletDeployer implements ServletContextListener {
             loadClass(context.getClassLoader(), registration.getClassName())
                     .ifPresent(
                             servletClass -> result
-                                    .add(createDeploymentConfiguration(
-                                            new StubServletConfig(context,
-                                                    registration),
+                                    .add(StubServletConfig.createDeploymentConfiguration(context,
+                                            registration,
                                             servletClass)));
         }
         return result;

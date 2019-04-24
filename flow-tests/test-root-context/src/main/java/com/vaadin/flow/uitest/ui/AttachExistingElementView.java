@@ -87,10 +87,10 @@ public class AttachExistingElementView extends AbstractDivView {
         add(attachNonExistingElement);
 
         add(div);
-        getPage().executeJavaScript(
+        getPage().executeJs(
                 "$0.appendChild(document.createElement('label'));", shadowRoot);
 
-        getPage().executeJavaScript(
+        getPage().executeJs(
                 "$0.appendChild(document.createElement('span')); $0.appendChild(document.createElement('label'));"
                         + "$0.appendChild(document.createElement('h1'));",
                 getElement());

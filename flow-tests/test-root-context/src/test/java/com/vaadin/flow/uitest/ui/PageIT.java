@@ -1,14 +1,15 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.html.testbench.InputTextElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import java.util.ArrayList;
+
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
-import java.util.ArrayList;
+import com.vaadin.flow.component.html.testbench.InputTextElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PageIT extends ChromeBrowserTest {
 

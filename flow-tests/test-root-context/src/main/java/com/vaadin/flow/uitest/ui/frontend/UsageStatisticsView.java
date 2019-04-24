@@ -33,11 +33,11 @@ public class UsageStatisticsView extends Div {
     public UsageStatisticsView() {
         NativeButton print = new NativeButton(
                 "Print usage statistics to the console", e -> {
-                    getUI().get().getPage().executeJavaScript(
+                    getUI().get().getPage().executeJs(
                             "var basket = localStorage.getItem('vaadin.statistics.basket'); if (basket) basket = JSON.parse(basket); console.log(basket)");
                 });
         NativeButton clear = new NativeButton("Clear usage statistics", e -> {
-            getUI().get().getPage().executeJavaScript(
+            getUI().get().getPage().executeJs(
                     "localStorage.removeItem('vaadin.statistics.basket')");
         });
         NativeButton push = new NativeButton("Enable push", e -> getUI().get()
@@ -54,7 +54,7 @@ public class UsageStatisticsView extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        attachEvent.getUI().getPage().executeJavaScript(
+        attachEvent.getUI().getPage().executeJs(
                 "window.Vaadin.runIfDevelopmentMode('vaadin-usage-statistics');");
     }
 }

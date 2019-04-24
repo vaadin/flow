@@ -37,9 +37,11 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo;
 import com.vaadin.flow.plugin.samplecode.AbstractExporter;
 import com.vaadin.flow.plugin.samplecode.BarExporter;
 import com.vaadin.flow.plugin.samplecode.FooExporter;
+import com.vaadin.flow.server.frontend.ClassFinder;
 
 public class WebComponentModulesGeneratorTest {
 
@@ -71,7 +73,10 @@ public class WebComponentModulesGeneratorTest {
             }
         }
 
-        introspector = new ClassPathIntrospector(urls.toArray(new URL[0])) {
+        ClassFinder finder = new NodeUpdateAbstractMojo.ReflectionsClassFinder(
+                urls.toArray(new URL[0]));
+
+        introspector = new ClassPathIntrospector(finder) {
         };
         generator = new WebComponentModulesGenerator(introspector);
     }

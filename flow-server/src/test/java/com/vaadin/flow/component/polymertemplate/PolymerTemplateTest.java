@@ -45,6 +45,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -124,8 +125,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     public static class CustomComponent extends Component {
 
         public CustomComponent() {
-            getElement().getNode().runWhenAttached(
-                    ui -> ui.getPage().executeJavaScript("foo"));
+            getElement().getNode()
+                    .runWhenAttached(ui -> ui.getPage().executeJs("foo"));
         }
 
     }
@@ -365,8 +366,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     public static class ExecutionChild extends PolymerTemplate<ModelClass> {
         public ExecutionChild() {
             super(new SimpleTemplateParser());
-            getElement().getNode().runWhenAttached(
-                    ui -> ui.getPage().executeJavaScript("bar"));
+            getElement().getNode()
+                    .runWhenAttached(ui -> ui.getPage().executeJs("bar"));
         }
     }
 
@@ -430,11 +431,11 @@ public class PolymerTemplateTest extends HasCurrentService {
             private Page page = new Page(this) {
 
                 @Override
-                public ExecutionCanceler executeJavaScript(String expression,
+                public PendingJavaScriptResult executeJs(String expression,
                         Serializable... parameters) {
                     executionOrder.add(expression);
                     executionParams.add(parameters);
-                    return () -> true;
+                    return null;
                 }
             };
 

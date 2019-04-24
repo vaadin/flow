@@ -66,6 +66,12 @@ public class CopyProductionFilesMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        // Do nothing when not in bower mode
+        if (!NodeUpdateAbstractMojo.isBowerMode(getLog())) {
+            getLog().info("Skipped `copy-production-files` goal because `vaadin.bowerMode` is not set.");
+            return;
+        }
+
         List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(artifact -> new ArtifactData(artifact.getFile(),
