@@ -115,21 +115,50 @@
 
         <!--
         Closure for parsing javascript sources.
-        unshaded means that there are no Guava and other libraries bundled in a dependency jar
-        This is needed since the regular jar breaks Spring initialization
+        All transitive dependencies should be excluded to avoid braking users' projects
+        and avoid adding extra dependencies into the framework.
+
+        FIXME
+        Even though those dependencies are excluded, the closure-compiler jar has their *.class files
+        packed in the jar itself which plays trick with Spring.
+        More info: https://github.com/vaadin/flow/issues/5554
          -->
         <dependency>
             <groupId>com.google.javascript</groupId>
-            <artifactId>closure-compiler-unshaded</artifactId>
-            <version>v20190325</version>
+            <artifactId>closure-compiler</artifactId>
+            <version>v20190415</version>
             <exclusions>
+                <exclusion>
+                    <groupId>com.google.javascript</groupId>
+                    <artifactId>closure-compiler-externs</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.google.code.findbugs</groupId>
                     <artifactId>jsr305</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>args4j</groupId>
+                    <artifactId>args4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.google.errorprone</groupId>
                     <artifactId>error_prone_annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.jsinterop</groupId>
+                    <artifactId>jsinterop-annotations</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
