@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +27,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
@@ -51,7 +50,7 @@ import elemental.json.JsonArray;
  * @since 1.0
  *
  */
-class TemplateDataAnalyzer {
+public class TemplateDataAnalyzer {
 
     // {{propertyName}} or {{propertyName::event}}
     private static final Pattern TWO_WAY_BINDING_PATTERN = Pattern
@@ -62,25 +61,21 @@ class TemplateDataAnalyzer {
     private final String tag;
     private final VaadinService service;
 
-    private final Map<String, String> tagById = new HashMap<>();
-    private final Map<Field, String> idByField = new HashMap<>();
-
     private final Collection<SubTemplateData> subTemplates = new ArrayList<>();
     private final Set<String> twoWayBindingPaths = new HashSet<>();
     private final Set<String> notInjectableElementIds = new HashSet<>();
 
-    private org.jsoup.nodes.Element templateRoot;
     private String htmlImportUri;
 
     /**
      * Three argument consumer.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      *
      */
     @FunctionalInterface
-    interface InjectableFieldCunsumer {
+    public interface InjectableFieldCunsumer {
 
         /**
          * Performs this operation on the given arguments.
@@ -102,7 +97,7 @@ class TemplateDataAnalyzer {
     /**
      * Immutable parser data which may be stored in cache.
      */
-    static class ParserData {
+    public static class ParserData {
 
         private final Map<String, String> tagById;
         private final Map<Field, String> idByField;
@@ -111,7 +106,19 @@ class TemplateDataAnalyzer {
 
         private final Collection<SubTemplateData> subTemplates;
 
-        private ParserData(Map<Field, String> fields, Map<String, String> tags,
+        /**
+         * Constructs an immutable data object with the given information.
+         *
+         * @param fields
+         *            a map of fields to their ids
+         * @param tags
+         *            a map of ids to their tags
+         * @param twoWayBindings
+         *            the properties which support two way binding
+         * @param subTemplates
+         *            data for sub templates
+         */
+        public ParserData(Map<Field, String> fields, Map<String, String> tags,
                 Set<String> twoWayBindings,
                 Collection<SubTemplateData> subTemplates) {
             tagById = Collections.unmodifiableMap(tags);
@@ -121,7 +128,13 @@ class TemplateDataAnalyzer {
                     .unmodifiableCollection(subTemplates);
         }
 
-        void forEachInjectedField(InjectableFieldCunsumer consumer) {
+        /**
+         * Applies the given consumer to each mapped field.
+         *
+         * @param consumer
+         *            the consumer to call for each mapped field
+         */
+        public void forEachInjectedField(InjectableFieldCunsumer consumer) {
             idByField.forEach(
                     (field, id) -> consumer.apply(field, id, tagById.get(id)));
         }
@@ -186,7 +199,7 @@ class TemplateDataAnalyzer {
     ParserData parseTemplate() {
         TemplateData templateData = parser.getTemplateContent(templateClass,
                 tag, service);
-        templateRoot = templateData.getTemplateElement();
+        Element templateRoot = templateData.getTemplateElement();
         htmlImportUri = templateData.getHtmlImportUri();
         Elements templates = templateRoot.getElementsByTag("template");
         for (org.jsoup.nodes.Element element : templates) {
@@ -197,48 +210,10 @@ class TemplateDataAnalyzer {
                 inspectTwoWayBindings(element);
             }
         }
-        collectInjectedIds(templateClass);
-        return readData();
-    }
-
-    private void collectInjectedIds(Class<?> cls) {
-        if (!AbstractTemplate.class.equals(cls.getSuperclass())) {
-            // Parent fields
-            collectInjectedIds(cls.getSuperclass());
-        }
-
-        Stream.of(cls.getDeclaredFields()).filter(field -> !field.isSynthetic())
-                .forEach(field -> collectedInjectedId(field));
-    }
-
-    private void collectedInjectedId(Field field) {
-        Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
-                Id.class);
-        if (!idAnnotation.isPresent()) {
-            return;
-        }
-        String id = idAnnotation.get().value();
-        boolean emptyValue = id.isEmpty();
-        if (emptyValue) {
-            id = field.getName();
-        }
-        if (notInjectableElementIds.contains(id)) {
-            throw new IllegalStateException(String.format(
-                    "Class '%s' whose template URI is '%s' contains field '%s' annotated with @Id%s. "
-                            + "Corresponding element was found in a sub template, "
-                            + "for which injection is not supported.",
-                    templateClass.getName(), htmlImportUri, field.getName(),
-                    emptyValue
-                            ? " without value (so the name of the field should match the id of an element in the template)"
-                            : "(\"" + id + "\")"));
-        }
-
-        if (!addTagName(id, field).isPresent()) {
-            throw new IllegalStateException(String.format(
-                    "There is no element with "
-                            + "id='%s' in the template file '%s'. Cannot map it using @%s",
-                    id, htmlImportUri, Id.class.getSimpleName()));
-        }
+        IdCollector idExtractor = new IdCollector(templateClass, htmlImportUri,
+                templateRoot);
+        idExtractor.collectInjectedIds(notInjectableElementIds);
+        return readData(idExtractor);
     }
 
     private void inspectTwoWayBindings(org.jsoup.nodes.Element element) {
@@ -251,10 +226,13 @@ class TemplateDataAnalyzer {
                 for (Attribute attribute : node.attributes()) {
                     String value = attribute.getValue();
 
-                    //It is legal for attributes in templates not to have values,
-                    //which is a short form for giving the attribute the value 'true'.
-                    //These attributes don't contain bindings (they're just 'true'), so we
-                    //skip them.
+                    // It is legal for attributes in templates not to have
+                    // values,
+                    // which is a short form for giving the attribute the value
+                    // 'true'.
+                    // These attributes don't contain bindings (they're just
+                    // 'true'), so we
+                    // skip them.
                     if (value == null) {
                         continue;
                     }
@@ -274,9 +252,9 @@ class TemplateDataAnalyzer {
         });
     }
 
-    private ParserData readData() {
-        return new ParserData(idByField, tagById, twoWayBindingPaths,
-                subTemplates);
+    private ParserData readData(IdCollector idExtractor) {
+        return new ParserData(idExtractor.getIdByField(),
+                idExtractor.getTagById(), twoWayBindingPaths, subTemplates);
     }
 
     private String getTag(Class<? extends PolymerTemplate<?>> clazz) {
@@ -391,14 +369,4 @@ class TemplateDataAnalyzer {
         twoWayBindingPaths.add(path);
     }
 
-    private Optional<String> addTagName(String id, Field field) {
-        idByField.put(field, id);
-        Optional<String> tagName = Optional
-                .ofNullable(templateRoot.getElementById(id))
-                .map(org.jsoup.nodes.Element::tagName);
-        if (tagName.isPresent()) {
-            tagById.put(id, tagName.get());
-        }
-        return tagName;
-    }
 }

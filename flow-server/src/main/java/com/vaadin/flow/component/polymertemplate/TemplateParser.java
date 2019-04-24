@@ -42,7 +42,7 @@ public interface TemplateParser {
      * and its content as an {@link Element} instance.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      *
      */
     class TemplateData {

@@ -135,6 +135,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.internal\\.ReflectionCache",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer",
+                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.IdCollector",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeList(\\$.*)?",
