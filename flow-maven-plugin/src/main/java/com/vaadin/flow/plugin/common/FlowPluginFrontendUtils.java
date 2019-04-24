@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -96,6 +96,9 @@ public class FlowPluginFrontendUtils {
         }
     }
 
+    private FlowPluginFrontendUtils() {
+    }
+
     /**
      * Check whether the goal should be run in bower mode, by checking the
      * corresponding system property, otherwise the folder structure.
@@ -134,9 +137,6 @@ public class FlowPluginFrontendUtils {
                 .map(FlowPluginFileUtils::convertToUrl).toArray(URL[]::new);
 
         return new ReflectionsClassFinder(urls);
-    }
-
-    private FlowPluginFrontendUtils() {
     }
 
 }
