@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-tests</artifactId>
-        <version>11.1-SNAPSHOT</version>
+        <version>12.0-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-test-spring-boot-scan</artifactId>
     <name>Vaadin Spring Boot integration tests with custom packages to scan</name>
@@ -83,7 +83,7 @@
                     <version>${spring-boot.version}</version>
                 </plugin>
 
-                <!--This plugin's configuration is used to store Eclipse 
+                <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -119,6 +119,19 @@
         </pluginManagement>
 
         <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>${vaadin.flow.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>validate</goal>
+                            <goal>build-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- unpack common tests to run it in the project -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -148,7 +161,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <executions>
-                    <!-- start and stop jetty (running our app) when running 
+                    <!-- start and stop jetty (running our app) when running
                         integration tests -->
                     <execution>
                         <id>start-app</id>

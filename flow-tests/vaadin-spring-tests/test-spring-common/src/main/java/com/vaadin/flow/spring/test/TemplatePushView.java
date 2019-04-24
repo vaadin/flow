@@ -1,9 +1,11 @@
 package com.vaadin.flow.spring.test;
 
+import java.util.concurrent.locks.Lock;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.Push;
@@ -13,11 +15,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-import java.util.concurrent.locks.Lock;
-
 @Route("template-push")
 @Push(transport = Transport.WEBSOCKET)
-@HtmlImport("TemplatePushView.html")
+@JsModule("TemplatePushView.js")
 @Tag("template-push-view")
 public class TemplatePushView extends PolymerTemplate<TemplateModel> {
 

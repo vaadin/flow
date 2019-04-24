@@ -20,13 +20,13 @@ import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("child-template")
-@HtmlImport("ChildTemplate.html")
+@JsModule("ChildTemplate.js")
 public class ChildTemplate extends PolymerTemplate<TemplateModel> {
 
     @Component
