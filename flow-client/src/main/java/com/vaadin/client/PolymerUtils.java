@@ -233,18 +233,18 @@ public final class PolymerUtils {
         JsArray<Object> array = JsCollections.array();
         add.forEach(item -> array.push(createModelTree(item)));
 
-        if (isPolymerElement((Element) root.getDomNode())) {
-            String path = getNotificationPath(root, node, null);
-            if (path != null) {
-
-                splice((Element) root.getDomNode(), path, index, remove,
-                        WidgetUtil.crazyJsoCast(array));
-                return;
-            }
+        Element domNode = (Element) root.getDomNode();
+        String path = getNotificationPath(root, node, null);
+        if (path == null) {
+            return;
         }
-        @SuppressWarnings("unchecked")
-        JsArray<Object> payload = (JsArray<Object>) value;
-        payload.spliceArray(index, remove, array);
+        if (LitUtils.isLitElement(domNode)) {
+            LitUtils.splice(domNode, path, index, remove,
+                    WidgetUtil.crazyJsoCast(array));
+        } else if (isPolymerElement(domNode)) {
+            splice(domNode, path, index, remove,
+                    WidgetUtil.crazyJsoCast(array));
+        }
     }
 
     private static void handlePropertyChange(MapProperty property,
