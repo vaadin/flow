@@ -54,17 +54,17 @@ public class FrontendDependencies implements Serializable {
 
     private static final String MULTIPLE_VERSIONS =
             "%n%n======================================================================================================"
-                    + "%nFailed to determine the version for the '%s' npm package."
-                    + "%nFlow found multiple versions: %s"
-                    + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
-                    + "%nmeet the same version."
-                    + "%n======================================================================================================%n";
+            + "%nFailed to determine the version for the '%s' npm package."
+            + "%nFlow found multiple versions: %s"
+            + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
+            + "%nmeet the same version."
+            + "%n======================================================================================================%n";
 
     private static final String BAD_VERSIOM =
             "%n%n======================================================================================================"
-                    + "%nFailed to determine the version for the '%s' npm package."
-                    + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
-                    + "%n======================================================================================================%n";
+            + "%nFailed to determine the version for the '%s' npm package."
+            + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
+            + "%n======================================================================================================%n";
 
     /**
      * A wrapper for the Theme instance that use reflection for executing its
@@ -454,11 +454,11 @@ public class FrontendDependencies implements Serializable {
         // blacklist of some common name-spaces that would not have components.
         return className != null &&  // @formatter:off
                 !className.matches(
-                        "(^$|"
-                                + ".*(slf4j).*|"
-                                + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
-                                + ".*(Exception)$"
-                                + ")"); // @formatter:on
+                    "(^$|"
+                    + ".*(slf4j).*|"
+                    + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
+                    + ".*(Exception)$"
+                    + ")"); // @formatter:on
     }
 
     private URL getUrl(String className) {
