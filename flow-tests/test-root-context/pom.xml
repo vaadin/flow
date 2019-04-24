@@ -84,9 +84,6 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
-                <configuration>
-                    <scanIntervalSeconds>2</scanIntervalSeconds>
-                </configuration>
                 <executions>
                     <!-- start and stop jetty (running our app) when running
                         integration tests -->
