@@ -35,6 +35,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
@@ -43,6 +44,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
  * the given tag.
  *
  * @author Vaadin Ltd.
+ * @since
  */
 public class WebComponentProvider extends SynchronizedRequestHandler {
 
@@ -107,7 +109,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return generateCompiledUIDeclaration(session, request);
         } else {
             return WebComponentGenerator.generateModule(configuration,
-                    getFrontendPath(request));
+                    getFrontendPath(request),
+                    FrontendUtils.isBowerLegacyMode());
         }
     }
 

@@ -37,6 +37,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
  * @author Vaadin Ltd
+ * @since
  */
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
@@ -115,14 +116,15 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
         Class<?> generatorClass = loadClassInProjectClassLoader(
                 WebComponentGenerator.class.getName());
         Method generateMethod = Stream.of(generatorClass.getDeclaredMethods())
-                .filter(method -> method.getParameters().length == 2
+                .filter(method -> method.getParameters().length == 3
                         && method.getName().equals(GENERATE_MODULE_METHOD)
                         && Class.class.isAssignableFrom(method.getParameterTypes()[0]))
                 .findFirst().orElseThrow(
                         () -> new IllegalStateException(ABSENT_METHOD_ERROR));
 
         try {
-            return (String) generateMethod.invoke(null, exporterClass, "../");
+            return (String) generateMethod.invoke(null, exporterClass, "../",
+                    true);
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException exception) {
             throw new RuntimeException(String.format(
