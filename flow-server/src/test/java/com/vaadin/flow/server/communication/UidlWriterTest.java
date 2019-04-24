@@ -415,6 +415,7 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
+
         assertEquals(4, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then

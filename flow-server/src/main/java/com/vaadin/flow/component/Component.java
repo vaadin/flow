@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
@@ -47,6 +48,7 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@JavaScript("frontend://dndConnector.js")
 public abstract class Component
         implements HasElement, AttachNotifier, DetachNotifier {
 

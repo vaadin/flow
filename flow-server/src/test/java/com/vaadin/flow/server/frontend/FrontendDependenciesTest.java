@@ -108,7 +108,7 @@ public class FrontendDependenciesTest {
 
         assertEquals(0, deps.getPackages().size());
 
-        assertEquals(1, deps.getScripts().size());
+        assertEquals(2, deps.getScripts().size());
         assertTrue(deps.getScripts().contains("frontend://theme-0.js"));
     }
 
@@ -121,7 +121,7 @@ public class FrontendDependenciesTest {
         assertEquals(0, deps.getImports().size());
         assertEquals(2, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(1, deps.getScripts().size());
+        assertEquals(2, deps.getScripts().size());
     }
 
     @Test
@@ -132,7 +132,7 @@ public class FrontendDependenciesTest {
         assertEquals(2, deps.getImports().size());
         assertEquals(8, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(6, deps.getScripts().size());
+        assertEquals(7, deps.getScripts().size());
     }
 
 
@@ -146,7 +146,7 @@ public class FrontendDependenciesTest {
         assertEquals(2, deps.getImports().size());
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
+        assertEquals(3, deps.getScripts().size());
     }
 
     @Test
@@ -158,7 +158,7 @@ public class FrontendDependenciesTest {
         assertEquals(1, deps.getImports().size());
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
+        assertEquals(3, deps.getScripts().size());
     }
 
 
@@ -171,7 +171,7 @@ public class FrontendDependenciesTest {
         assertEquals(2, deps.getImports().size());
         assertEquals(8, deps.getModules().size());
         assertEquals(1, deps.getPackages().size());
-        assertEquals(6, deps.getScripts().size());
+        assertEquals(7, deps.getScripts().size());
     }
 
     @Test
@@ -182,7 +182,7 @@ public class FrontendDependenciesTest {
         assertEquals(0, deps.getImports().size());
         assertEquals(1, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(0, deps.getScripts().size());
+        assertEquals(1, deps.getScripts().size());
         assertTrue(deps.getModules().contains("./my-component.js"));
     }
 }

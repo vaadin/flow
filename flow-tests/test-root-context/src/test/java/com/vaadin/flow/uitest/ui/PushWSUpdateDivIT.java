@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
 import com.vaadin.flow.testcategory.IgnoreOSGi;
