@@ -27,6 +27,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.ReflectionsClassFinder;
+import com.vaadin.flow.plugin.samplecode.AbstractExporter;
+import com.vaadin.flow.plugin.samplecode.BarExporter;
+import com.vaadin.flow.plugin.samplecode.FooExporter;
+import com.vaadin.flow.server.frontend.ClassFinder;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -34,14 +41,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo;
-import com.vaadin.flow.plugin.samplecode.AbstractExporter;
-import com.vaadin.flow.plugin.samplecode.BarExporter;
-import com.vaadin.flow.plugin.samplecode.FooExporter;
-import com.vaadin.flow.server.frontend.ClassFinder;
 
 public class WebComponentModulesGeneratorTest {
 
@@ -73,7 +72,7 @@ public class WebComponentModulesGeneratorTest {
             }
         }
 
-        ClassFinder finder = new NodeUpdateAbstractMojo.ReflectionsClassFinder(
+        ClassFinder finder = new ReflectionsClassFinder(
                 urls.toArray(new URL[0]));
 
         introspector = new ClassPathIntrospector(finder) {

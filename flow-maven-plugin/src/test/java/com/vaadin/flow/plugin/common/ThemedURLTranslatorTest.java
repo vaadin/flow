@@ -23,16 +23,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.ReflectionsClassFinder;
+import com.vaadin.flow.server.frontend.ClassFinder;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-
-import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.plugin.maven.NodeUpdateAbstractMojo.ReflectionsClassFinder;
-import com.vaadin.flow.server.frontend.ClassFinder;
 
 public class ThemedURLTranslatorTest {
 
