@@ -80,6 +80,7 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false))
                     .enableImportsUpdate(!config.getBooleanProperty(
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false))
+                    .runNpmInstall(true)
                     .build().execute();
 
             DevModeHandler.start(config);
