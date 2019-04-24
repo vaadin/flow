@@ -2270,7 +2270,7 @@ public abstract class VaadinService implements Serializable {
      * @return Value of the specified attribute.
      */
     public <T> T getAttribute(Class<T> type) {
-        return this.getAttribute(type, null);
+        return getAttribute(type, null);
     }
 
     /**
