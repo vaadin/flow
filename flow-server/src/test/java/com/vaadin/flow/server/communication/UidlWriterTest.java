@@ -415,8 +415,8 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
-        // there is one extra from the dndConnector.js
-        assertEquals(5, dependenciesMap.size());
+
+        assertEquals(4, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
