@@ -23,6 +23,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
+import com.vaadin.flow.plugin.common.FrontendDataProvider;
+import com.vaadin.flow.plugin.common.FrontendToolsManager;
+import com.vaadin.flow.plugin.common.RunnerManager;
+import com.vaadin.flow.plugin.production.TranspilationStep;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
@@ -36,12 +43,7 @@ import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
-import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FrontendDataProvider;
-import com.vaadin.flow.plugin.common.FrontendToolsManager;
-import com.vaadin.flow.plugin.common.RunnerManager;
-import com.vaadin.flow.plugin.production.TranspilationStep;
+import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 
 /**
  * Goal that prepares all web files from
@@ -207,7 +209,7 @@ public class PackageForProductionMojo extends AbstractMojo {
     public void execute() {
 
         // Do nothing when not in bower mode
-        if (!NodeUpdateAbstractMojo.isBowerMode(getLog())) {
+        if (!FlowPluginFrontendUtils.isBowerMode(getLog())) {
             getLog().info("Skipped `package-for-production` goal because `vaadin.bowerMode` is not set.");
             return;
         }
@@ -229,7 +231,7 @@ public class PackageForProductionMojo extends AbstractMojo {
 
         FrontendDataProvider frontendDataProvider = new FrontendDataProvider(
                 bundle, minify, hash, transpileEs6SourceDirectory,
-                new AnnotationValuesExtractor(NodeUpdateAbstractMojo.getClassFinder(project)),
+                new AnnotationValuesExtractor(getClassFinder(project)),
                 bundleConfiguration, webComponentOutputDirectoryName,
                 getFragmentsData(fragments));
 

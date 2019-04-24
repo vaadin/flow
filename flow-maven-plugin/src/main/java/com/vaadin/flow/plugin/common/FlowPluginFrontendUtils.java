@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -12,8 +12,10 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package com.vaadin.flow.plugin.maven;
+
+package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -26,26 +28,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.ClassFinder;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.ClassFinder;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
-
 /**
- * Common stuff for node update mojos.
+ * Utility methods used by all goals.
  */
-public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
+public class FlowPluginFrontendUtils {
 
     /**
      * A class finder using org.reflections.
@@ -102,40 +96,6 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
         }
     }
 
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    protected MavenProject project;
-
-    /**
-     * Enable or disable legacy components annotated only with
-     * {@link HtmlImport}.
-     */
-    @Parameter(defaultValue = "true")
-    protected boolean convertHtml;
-
-    /**
-     * The folder where `package.json` file is located. Default is current dir.
-     */
-    @Parameter(defaultValue = "${project.basedir}")
-    protected File npmFolder;
-
-    /**
-     * The path to the {@literal node_modules} directory of the project.
-     */
-    @Parameter(defaultValue = "${project.basedir}/node_modules/")
-    protected File nodeModulesPath;
-
-    /**
-     * A Flow JavaScript file with all project's imports to update.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
-    protected File generatedFlowImports;
-
-    /**
-     * A directory with project's frontend files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
-    protected File frontendDirectory;
-
     /**
      * Check whether the goal should be run in bower mode, by checking the
      * corresponding system property, otherwise the folder structure.
@@ -144,16 +104,24 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
      *            logger instance
      * @return true when in bower mode.
      */
-    static boolean isBowerMode(Log log) {
+    public static boolean isBowerMode(Log log) {
         boolean bowerMode = Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE);
-        if (!bowerMode && FrontendUtils.isBowerLegacyMode()) {
+        if (!bowerMode && com.vaadin.flow.server.frontend.FrontendUtils.isBowerLegacyMode()) {
             log.warn("enabling `vaadin.bowerMode` because the project has not been migrated to `npm` yet.");
             bowerMode = true;
         }
         return bowerMode;
     }
 
-    static ClassFinder getClassFinder(MavenProject project) {
+    /**
+     * Gets a <code>ClassFinder</code> for the maven project.
+     * 
+     * @param project
+     *            a maven project instance used as source for the
+     *            <code>ClassFinder</code>.
+     * @return a <code>ClassFinder</code> instance.
+     */
+    public static ClassFinder getClassFinder(MavenProject project) {
         final List<String> runtimeClasspathElements;
         try {
             runtimeClasspathElements = project.getRuntimeClasspathElements();
@@ -167,4 +135,5 @@ public abstract class NodeUpdateAbstractMojo extends AbstractMojo {
 
         return new ReflectionsClassFinder(urls);
     }
+
 }

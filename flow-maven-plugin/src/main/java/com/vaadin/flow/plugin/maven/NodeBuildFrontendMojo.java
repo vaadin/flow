@@ -27,24 +27,29 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.apache.maven.model.Build;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.ArtifactData;
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.server.frontend.FrontendToolsLocator;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
+import org.apache.maven.model.Build;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
 
+import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
@@ -61,7 +66,41 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
  * </ul>
  */
 @Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class NodeBuildFrontendMojo extends NodeUpdateAbstractMojo {
+public class NodeBuildFrontendMojo extends AbstractMojo {
+
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    private MavenProject project;
+
+    /**
+     * Enable or disable legacy components annotated only with
+     * {@link HtmlImport}.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean convertHtml;
+
+    /**
+     * The folder where `package.json` file is located. Default is current dir.
+     */
+    @Parameter(defaultValue = "${project.basedir}")
+    private File npmFolder;
+
+    /**
+     * The path to the {@literal node_modules} directory of the project.
+     */
+    @Parameter(defaultValue = "${project.basedir}/node_modules/")
+    private File nodeModulesPath;
+
+    /**
+     * A Flow JavaScript file with all project's imports to update.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
+    private File generatedFlowImports;
+
+    /**
+     * A directory with project's frontend files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/frontend")
+    private File frontendDirectory;
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
@@ -77,8 +116,8 @@ public class NodeBuildFrontendMojo extends NodeUpdateAbstractMojo {
 
     /**
      * Copy the `webapp.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Leave it blank to disable the
-     * feature.
+     * the template provided by this plugin. Set it to empty string to disable
+     * the feature.
      */
     @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
     private String webpackTemplate;
@@ -88,20 +127,20 @@ public class NodeBuildFrontendMojo extends NodeUpdateAbstractMojo {
      * project dependency jar and, if files suitable for copying present in
      * those paths, those should be copied.
      */
-    @Parameter(name = "jarResourcePathsToCopy", defaultValue = RESOURCES_FRONTEND_DEFAULT)
+    @Parameter(defaultValue = RESOURCES_FRONTEND_DEFAULT)
     private String jarResourcePathsToCopy;
 
     /**
      * Comma separated wildcards for files and directories that should be
      * copied. Default is only .js and .css files.
      */
-    @Parameter(name = "includes", defaultValue = "**/*.js,**/*.css", required = true)
+    @Parameter(defaultValue = "**/*.js,**/*.css", required = true)
     private String includes;
 
     @Override
     public void execute() {
         // Do nothing when bower mode
-        if (isBowerMode(getLog())) {
+        if (FlowPluginFrontendUtils.isBowerMode(getLog())) {
             getLog().info("Skipped 'update-frontend' goal because 'vaadin.bowerMode' is set to true.");
             return;
         }
@@ -145,8 +184,7 @@ public class NodeBuildFrontendMojo extends NodeUpdateAbstractMojo {
                 generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
                         .withWebpack(webpackOutputRelativeToProjectDir,
                                 webpackTemplate)
-                        .runNpmInstall(runNpmInstall)
-                        .build().execute();
+                        .runNpmInstall(runNpmInstall).build().execute();
     }
     
     private void runWebpack() {

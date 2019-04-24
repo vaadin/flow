@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -29,6 +30,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
  */
 @Mojo(name = "validate", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class NodeValidateMojo extends AbstractMojo {
+
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
@@ -36,7 +38,7 @@ public class NodeValidateMojo extends AbstractMojo {
     public void execute() {
 
         // Do nothing when bower mode
-        if (NodeUpdateAbstractMojo.isBowerMode(getLog())) {
+        if (FlowPluginFrontendUtils.isBowerMode(getLog())) {
             getLog().debug("Skipped 'validate' goal because `vaadin.bowerMode` is set.");
             return;
         }
