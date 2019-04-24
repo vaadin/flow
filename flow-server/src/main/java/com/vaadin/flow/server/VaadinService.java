@@ -16,6 +16,40 @@
 
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.DependencyTreeCache;
+import com.vaadin.flow.component.internal.HtmlImportParser;
+import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.SessionRequestHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
+import com.vaadin.flow.server.communication.WebComponentProvider;
+import com.vaadin.flow.server.startup.BundleFilterFactory;
+import com.vaadin.flow.server.startup.FakeBrowser;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.theme.AbstractTheme;
+import elemental.json.Json;
+import elemental.json.JsonException;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
@@ -44,45 +78,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.DependencyTreeCache;
-import com.vaadin.flow.component.internal.HtmlImportParser;
-import com.vaadin.flow.di.DefaultInstantiator;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.HeartbeatHandler;
-import com.vaadin.flow.server.communication.PwaHandler;
-import com.vaadin.flow.server.communication.SessionRequestHandler;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.communication.UidlRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.startup.BundleFilterFactory;
-import com.vaadin.flow.server.startup.FakeBrowser;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
-
-import elemental.json.Json;
-import elemental.json.JsonException;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -2249,4 +2249,38 @@ public abstract class VaadinService implements Serializable {
     public DependencyTreeCache<String> getHtmlImportDependencyCache() {
         return htmlImportDependencyCache;
     }
+
+    /**
+     * Returns value of the specified attribute, creating a default value if not present.
+
+     * @param type
+     *          Type of the attribute.
+     * @param defaultValueSupplier
+     *          {@link Supplier} of the default value, called when there is
+     *                                            no value already present. May be {@code null}.
+     * @return Value of the specified attribute.
+     */
+    public abstract <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier);
+
+    /**
+     * Returns value of the specified attribute.
+
+     * @param type
+     *          Type of the attribute.
+     * @return Value of the specified attribute.
+     */
+    public <T> T getAttribute(Class<T> type) {
+        return this.getAttribute(type, null);
+    }
+
+    /**
+     * Sets the attribute value, overriding previously existing one.
+     * Values are based on exact type, meaning only one attribute of given type is possible at any
+     * given time.
+     *
+     * @param value
+     *          Value of the attribute. May not be {@code null}.
+     */
+    public abstract <T> void setAttribute(T value);
+
 }

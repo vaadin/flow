@@ -1,19 +1,22 @@
 package com.vaadin.flow.server;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.theme.AbstractTheme;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.theme.AbstractTheme;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class VaadinServletServiceTest {
+
+    private static String testAttributeProvider() {
+        return "RELAX_THIS_IS_A_TEST";
+    }
 
     private final class TestTheme implements AbstractTheme {
         @Override
@@ -253,6 +256,39 @@ public class VaadinServletServiceTest {
                             "frontend://theme/has-theme-variant.txt", browser,
                             null)); // No theme -> raw version
         }
+    }
+
+    @Test
+    public void testGetAttributeWithProvider() {
+        String value = service.getAttribute(String.class, VaadinServletServiceTest::testAttributeProvider);
+        Assert.assertEquals(testAttributeProvider(), value);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testSetNullAttribute() {
+        service.setAttribute(null);
+    }
+
+    @Test
+    public void testGetAttributeWithoutProvider() {
+        String value = service.getAttribute(String.class);
+        Assert.assertNull(value);
+    }
+
+    @Test
+    public void testSetGetAttributes() {
+        String value = testAttributeProvider();
+        service.setAttribute(value);
+        String result = service.getAttribute(String.class);
+        Assert.assertEquals(value, result);
+        // overwrite
+        String newValue = "this is a new value";
+        service.setAttribute(newValue);
+        result = service.getAttribute(String.class);
+        Assert.assertEquals(newValue, result);
+        // now the provider should not be called, so value should be still there
+        result = service.getAttribute(String.class, VaadinServletServiceTest::testAttributeProvider);
+        Assert.assertEquals(newValue, result);
     }
 
 }
