@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.spring.scopes;
 
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
@@ -29,10 +25,16 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.spring.SpringVaadinSession;
+
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public abstract class AbstractScopeTest {
 
@@ -134,7 +136,9 @@ public abstract class AbstractScopeTest {
         doCallRealMethod().when(session).getService();
 
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
-
+        when(session.getConfiguration())
+                .thenReturn(new DefaultDeploymentConfiguration(getClass(),
+                        new Properties()));
         VaadinSession.setCurrent(session);
         when(session.hasLock()).thenReturn(true);
 
