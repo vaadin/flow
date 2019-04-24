@@ -68,7 +68,7 @@ public interface DropTarget<T extends Component> extends HasElement {
                 return component;
             }
         };
-        dropTarget.setActive(true);
+        dropTarget.setActive(active);
         return dropTarget;
     }
 

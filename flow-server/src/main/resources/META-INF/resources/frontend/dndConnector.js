@@ -3,15 +3,16 @@ window.Vaadin.Flow.dndConnector = {
   __ondragenterListener: function (event) {
     // TODO filter by data type
     // TODO prevent dropping on itself (by default)
-    // TODO filter by effectAllowed != dropEffect ?
     const effect = event.currentTarget['__dropEffect'];
     if (effect) {
       event.dataTransfer.dropEffect = effect;
     }
-    event.currentTarget.classList.add("v-drop-target");
-    // enables browser specific pseudo classes (at least FF)
-    event.preventDefault();
-    event.stopPropagation(); // don't let parents know
+    if (effect && effect !== 'none') {
+      event.currentTarget.classList.add("v-drag-over-target");
+      // enables browser specific pseudo classes (at least FF)
+      event.preventDefault();
+      event.stopPropagation(); // don't let parents know
+    }
   },
 
   __ondragoverListener: function (event) {
@@ -27,7 +28,7 @@ window.Vaadin.Flow.dndConnector = {
   },
 
   __ondragleaveListener: function (event) {
-    event.currentTarget.classList.remove("v-drop-target");
+    event.currentTarget.classList.remove("v-drag-over-target");
   },
 
   __ondropListener: function (event) {
@@ -35,14 +36,13 @@ window.Vaadin.Flow.dndConnector = {
     if (effect) {
       event.dataTransfer.dropEffect = effect;
     }
-    event.currentTarget.classList.remove("v-drop-target");
+    event.currentTarget.classList.remove("v-drag-over-target");
     // prevent browser handling && don't let parents know
     event.preventDefault();
     event.stopPropagation();
   },
 
   activateDropTarget: function (element) {
-    // TODO figure out if capture would make sense ?
     element.addEventListener('dragenter', this.__ondragenterListener, false);
     element.addEventListener('dragover', this.__ondragoverListener, false);
     element.addEventListener('dragleave', this.__ondragleaveListener, false);
@@ -54,7 +54,7 @@ window.Vaadin.Flow.dndConnector = {
     element.removeEventListener('dragover', this.__ondragoverListener, false);
     element.removeEventListener('dragleave', this.__ondragleaveListener, false);
     element.removeEventListener('drop', this.__ondropListener, false);
-    element.classList.remove("v-drop-target");
+    element.classList.remove("v-drag-over-target");
   },
 
   /** DRAG SOURCE METHODS: */

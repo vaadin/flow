@@ -48,6 +48,10 @@ public class DropTargetTest {
         Assert.assertTrue(component.getElement()
                 .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
         Assert.assertNull(dropTarget.getDropEffect());
+
+        DropTarget.of(component, false);
+        Assert.assertFalse(component.getElement()
+                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
     }
 
     @Test
