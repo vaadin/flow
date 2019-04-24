@@ -27,7 +27,6 @@ import org.openqa.selenium.By;
  * because the headless chrome doesn't support html5 dnd:
  * https://bugs.chromium.org/p/chromedriver/issues/detail?id=2695
  */
-@Ignore("Causes lots of other failures (?)")
 public class DnDIT extends ChromeBrowserTest {
 
     @Test
