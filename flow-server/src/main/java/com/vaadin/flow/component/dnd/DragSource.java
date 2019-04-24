@@ -43,6 +43,10 @@ public interface DragSource<T extends Component> extends HasElement {
     /**
      * Makes the given component draggable and gives access to the generic drag
      * source API for the component.
+     * <p>
+     * The given component will be always set as draggable, if this is not
+     * desired, use either method {@link #of(Component, boolean)} or
+     * {@link #setDraggable(boolean)}.
      *
      * @param component
      *            the component to make draggable
@@ -58,6 +62,9 @@ public interface DragSource<T extends Component> extends HasElement {
     /**
      * Gives access to the generic drag source API for the given component and
      * optionally makes it draggable.
+     * <p>
+     * The component draggable state can be changed later on with
+     * {@link #setDraggable(boolean)}.
      * 
      * @param component
      *            the component to make draggable
