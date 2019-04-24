@@ -102,7 +102,8 @@ public class IdMapper implements Serializable {
         Class<?> fieldType = field.getType();
 
         Tag tag = fieldType.getAnnotation(Tag.class);
-        if (tag != null && !tagName.equalsIgnoreCase(tag.value())) {
+        if (tag != null && tagName != null
+                && !tagName.equalsIgnoreCase(tag.value())) {
             String msg = String.format(
                     "Class '%s' has field '%s' whose type '%s' is annotated with "
                             + "tag '%s' but the element defined in the HTML "
@@ -111,7 +112,8 @@ public class IdMapper implements Serializable {
                     fieldType.getName(), tag.value(), id, tagName);
             throw new IllegalStateException(msg);
         }
-        attachExistingElementById(tagName, id, field, beforeComponentInject);
+        attachExistingElementById(tag.value(), id, field,
+                beforeComponentInject);
     }
 
     /**
