@@ -166,12 +166,12 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
                 artifact.getArtifactId(), artifact.getVersion()))
             .collect(Collectors.toList());
 
-        File frontendDirectory = new File(nodeModulesPath,
+        File frontendNodeDirectory = new File(nodeModulesPath,
                 FLOW_NPM_PACKAGE_NAME);
         ProductionModeCopyStep copyHelper = new ProductionModeCopyStep(
                 new JarContentsManager(), projectArtifacts);
         for (String path : jarResourcePathsToCopy.split(",")) {
-            copyHelper.copyFrontendJavaScriptFiles(frontendDirectory, includes,
+            copyHelper.copyFrontendJavaScriptFiles(frontendNodeDirectory, includes,
                     path);
         }
     }

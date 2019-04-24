@@ -136,4 +136,7 @@ public class FlowPluginFrontendUtils {
         return new ReflectionsClassFinder(urls);
     }
 
+    private FlowPluginFrontendUtils() {
+    }
+
 }
