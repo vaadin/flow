@@ -28,6 +28,10 @@ public interface DropTarget<T extends Component> extends HasElement {
     /**
      * Makes the given component a drop target and gives access to the generic
      * drop target API for the component.
+     * <p>
+     * The given component will be always set an active drop target, if this is
+     * not desired, use either method {@link #of(Component, boolean)} or
+     * {@link #setActive(boolean)}.
      * 
      * @param component
      *            the component to make a drop target
@@ -43,6 +47,9 @@ public interface DropTarget<T extends Component> extends HasElement {
     /**
      * Gives access to the generic drop target API for the given component,
      * optionally makes it an active drop target.
+     * <p>
+     * The drop target active state can be changed at any time with
+     * {@link #setActive(boolean)}.
      * 
      * @param component
      *            the component to provide drop target API for
