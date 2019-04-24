@@ -132,17 +132,15 @@ public interface DragSource<T extends Component> extends HasElement {
                     + ".activateDragSource($0)", getElement());
             // store & clear the component as active drag source for the UI
             Registration startListenerRegistration = addDragStartListener(
-                    event -> {
-                        getDragSourceComponent().getUI()
-                                .orElseThrow(() -> new IllegalStateException(
-                                        "DragSource not attached to an UI but received a drag start event."))
-                                .getInternals().setActiveDragSourceComponent(
-                                        getDragSourceComponent());
-                    });
-            Registration endListenerRegistration = addDragEndListener(event -> {
-                getDragSourceComponent().getUI().orElse(UI.getCurrent())
-                        .getInternals().setActiveDragSourceComponent(null);
-            });
+                    event -> getDragSourceComponent().getUI()
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "DragSource not attached to an UI but received a drag start event."))
+                            .getInternals().setActiveDragSourceComponent(
+                                    getDragSourceComponent()));
+            Registration endListenerRegistration = addDragEndListener(
+                    event -> getDragSourceComponent().getUI()
+                            .orElse(UI.getCurrent()).getInternals()
+                            .setActiveDragSourceComponent(null));
             ComponentUtil.setData(getDragSourceComponent(),
                     Constants.START_LISTENER_REGISTRATION_KEY,
                     startListenerRegistration);

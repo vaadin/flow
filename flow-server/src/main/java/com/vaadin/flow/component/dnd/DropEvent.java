@@ -79,8 +79,7 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
      *         drop target are in the same UI, otherwise empty {@code Optional}.
      */
     public Optional<Object> getDragData() {
-        Optional<Component> dragSourceComponent = getDragSourceComponent();
-        return dragSourceComponent.map(component -> ComponentUtil
+        return getDragSourceComponent().map(component -> ComponentUtil
                 .getData(component, Constants.DRAG_SOURCE_DATA_KEY));
     }
 
