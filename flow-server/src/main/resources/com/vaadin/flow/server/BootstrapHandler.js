@@ -151,11 +151,11 @@
            var params = {  };
 
            /* Screen height and width */
-           params['v-sh'] = window.screen.height.toString();
-           params['v-sw'] = window.screen.width.toString();
+           params['v-sh'] = window.screen.height;
+           params['v-sw'] = window.screen.width;
 
            var d = new Date();
-           params['v-curdate'] = d.getTime().toString();
+           params['v-curdate'] = d.getTime();
 
            var tzo1 = d.getTimezoneOffset(); /* current offset */
            var dstDiff = 0;
@@ -172,16 +172,16 @@
            }
 
            /* Time zone offset */
-           params['v-tzo'] = tzo1.toString();
+           params['v-tzo'] = tzo1;
 
            /* DST difference */
-           params['v-dstd'] = dstDiff.toString();
+           params['v-dstd'] = dstDiff;
 
            /* Raw time zone offset */
-           params['v-rtzo'] = rtzo.toString();
+           params['v-rtzo'] = rtzo;
 
            /* DST in effect? */
-           params['v-dston'] = (tzo1 != rtzo).toString();
+           params['v-dston'] = (tzo1 != rtzo);
 
            /* Time zone id (if available) */
            try {
@@ -207,6 +207,13 @@
            }
            params['v-td'] = false;
 
+           /* Stringify each value (they are parsed on the server side) */
+           Object.keys(params).forEach(function(key) {
+                var value = params[key];
+                if (typeof value !== 'undefined') {
+                    params[key] = value.toString();
+                }
+           });
            return params;
         }
 	};

@@ -39,6 +39,8 @@ public class ExtendedClientDetails implements Serializable {
      *            the difference between the raw TimeZone and DST in minutes
      * @param dstInEffect
      *            is DST currently active in the region or not?
+     * @param tzId
+     *            time zone id
      * @param curDate
      *            the current date in milliseconds since the epoch
      * @param touchDevice
@@ -47,12 +49,12 @@ public class ExtendedClientDetails implements Serializable {
      *            a unique browser window name which persists on reload
      */
     ExtendedClientDetails(String sw, String sh, String tzo, String rtzo,
-                          String dstSavings, String dstInEffect, String tzId, String curDate,
-                          boolean touchDevice, String windowName) {
+                          String dstSavings, String dstInEffect, String tzId,
+                          String curDate, String touchDevice, String windowName) {
         if (sw != null) {
             try {
-                screenHeight = Integer.parseInt(sh);
                 screenWidth = Integer.parseInt(sw);
+                screenHeight = Integer.parseInt(sh);
             } catch (final NumberFormatException e) {
                 screenHeight = screenWidth = -1;
             }
@@ -99,19 +101,11 @@ public class ExtendedClientDetails implements Serializable {
                 clientServerTimeDelta = 0;
             }
         }
-        this.touchDevice = touchDevice;
+        if (touchDevice != null) {
+            this.touchDevice = Boolean.parseBoolean(touchDevice);
+        }
 
         this.windowName = windowName;
-    }
-
-    /**
-     * Gets the height of the screen in pixels. This is the full screen
-     * resolution and not the height available for the application.
-     *
-     * @return the height of the screen in pixels.
-     */
-    public int getScreenHeight() {
-        return screenHeight;
     }
 
     /**
@@ -122,6 +116,16 @@ public class ExtendedClientDetails implements Serializable {
      */
     public int getScreenWidth() {
         return screenWidth;
+    }
+
+    /**
+     * Gets the height of the screen in pixels. This is the full screen
+     * resolution and not the height available for the application.
+     *
+     * @return the height of the screen in pixels.
+     */
+    public int getScreenHeight() {
+        return screenHeight;
     }
 
     /**

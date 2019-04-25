@@ -538,9 +538,14 @@ public class Page implements Serializable {
 
     /**
      * Obtain extended client side details, such as time screen and time zone
-     * information, via callback.
+     * information, via callback. If already obtained, the callback is
+     * called directly. Otherwise, a client-side roundtrip will be carried out.
+     *
+     * @param receiver
+     *              the callback to which the details are provided
      */
-    public void retrieveExtendedClientDetails(ExtendedClientDetailsReceiver receiver) {
+    public void retrieveExtendedClientDetails(
+            ExtendedClientDetailsReceiver receiver) {
         if (extendedClientDetails != null) {
             receiver.receiveDetails(extendedClientDetails);
             return;
@@ -549,27 +554,35 @@ public class Page implements Serializable {
         executeJs(js).then(
                 json -> {
                     if (json instanceof JsonObject) {
-                        // TODO: handle errors
+                        // note that JSON object is a plain string -> string
+                        // map, and actual parsing of the fields happens in
+                        // ExtendedClient's constructor
                         final JsonObject jsonObj = (JsonObject) json;
+                        final String sw,sh,tzo,rtzo,dstd,dstOn,tzId,cd,td,wn;
+                        try {
+                            sw = jsonObj.getString("v-sw");
+                            sh = jsonObj.getString("v-sh");
+                            tzo = jsonObj.getString("v-tzo");
+                            rtzo = jsonObj.getString("v-rtzo");
+                            dstd = jsonObj.getString("v-dstd");
+                            dstOn = jsonObj.getString("v-dston");
+                            tzId = jsonObj.getString("v-tzid");
+                            cd = jsonObj.getString("v-curdate");
+                            td = jsonObj.getString("v-td");
+                            wn = jsonObj.getString("v-wn");
+                        } catch (NullPointerException e) {
+                            throw new RuntimeException("Client side response "+
+                                    "was not of expected format");
+                        }
                         final ExtendedClientDetails extendedClientDetails =
-                                new ExtendedClientDetails(
-                                        jsonObj.getString("v-sw"),
-                                        jsonObj.getString("v-sh"),
-                                        jsonObj.getString("v-tzo"),
-                                        jsonObj.getString("v-rtzo"),
-                                        jsonObj.getString("v-dstd"),
-                                        jsonObj.getString("v-dston"),
-                                        jsonObj.getString("v-tzid"),
-                                        jsonObj.getString("v-curdate"),
-                                        jsonObj.getBoolean("v-td"),
-                                        jsonObj.getString("v-wn"));
+                                new ExtendedClientDetails(sw, sh, tzo, rtzo,
+                                        dstd, dstOn, tzId, cd,td,wn);
                         receiver.receiveDetails(extendedClientDetails);
                     }
                 },
                 err -> {
                     throw new RuntimeException("Unable to retrieve extended " +
-                            "client details: " + err);
+                            "client details. JS error is '" + err+"'");
                 });
-
     }
 }
