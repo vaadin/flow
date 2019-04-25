@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import com.vaadin.flow.server.Command;
 
@@ -60,6 +61,8 @@ public class NodeTasks implements Command {
         private boolean enableImportsUpdate;
 
         private boolean runNpmInstall;
+
+        private List<File> exportedWebComponents;
 
         /**
          * Create a builder instance.
@@ -178,6 +181,10 @@ public class NodeTasks implements Command {
             return this;
         }
 
+        public Builder withExportedWebComponents(List<File> exportedWebComponents) {
+            this.exportedWebComponents = exportedWebComponents;
+            return this;
+        }
     }
 
     private final Collection<Command> commands = new ArrayList<>();
@@ -209,7 +216,8 @@ public class NodeTasks implements Command {
             commands.add(new NodeUpdateImports(classFinder,
                     frontendDependencies, builder.frontendDirectory,
                     builder.generatedFlowImports, builder.npmFolder,
-                    builder.nodeModulesPath, builder.convertHtml));
+                    builder.nodeModulesPath, builder.exportedWebComponents,
+                    builder.convertHtml));
         }
 
     }

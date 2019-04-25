@@ -50,6 +50,7 @@ public class NodeUpdateImports extends NodeUpdater {
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
+    private final List<File> exportedWebComponents;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -70,7 +71,8 @@ public class NodeUpdateImports extends NodeUpdater {
     public NodeUpdateImports(ClassFinder finder, File frontendDirectory,
             File generatedFlowImports, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
-        this(finder, null, frontendDirectory, generatedFlowImports, npmFolder, nodeModulesPath, convertHtml);
+        this(finder, null, frontendDirectory, generatedFlowImports, npmFolder
+                , nodeModulesPath, null, convertHtml);
     }
 
 
@@ -95,10 +97,11 @@ public class NodeUpdateImports extends NodeUpdater {
     public NodeUpdateImports(ClassFinder finder,
             FrontendDependencies frontendDependencies, File frontendDirectory,
             File generatedFlowImports, File npmFolder, File nodeModulesPath,
-            boolean convertHtml) {
+            List<File> exportedWebComponents, boolean convertHtml) {
         super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
         this.generatedFlowImports = generatedFlowImports;
         this.frontendDirectory = frontendDirectory;
+        this.exportedWebComponents = exportedWebComponents;
     }
 
     @Override
@@ -109,12 +112,25 @@ public class NodeUpdateImports extends NodeUpdater {
         }
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
+        if (exportedWebComponents != null) {
+            modules.addAll(getExportedJsModules(exportedWebComponents));
+        }
+
         modules = sortModules(modules);
         try {
             updateMainJsFile(getMainJsContent(modules));
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", generatedFlowImports), e);
         }
+    }
+
+    private List<String> getExportedJsModules(List<File> exportedWebComponents) {
+        return exportedWebComponents.stream().map(file -> {
+            // get the import part of the file path and replace potential
+            // backward slashes with *nix compatible slashes
+            int index = file.getAbsolutePath().indexOf("@vaadin");
+            return file.getAbsolutePath().substring(index).replace('\\', '/');
+        }).collect(Collectors.toList());
     }
 
     private Set<String> sortModules(Set<String> modules) {
