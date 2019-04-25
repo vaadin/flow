@@ -24,10 +24,8 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
@@ -213,9 +211,6 @@ public class MockServletServiceSessionSetup {
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
 
-    // needed to store servlet context attributes
-    private final Map<String, Object> servletAttributesMap = new HashMap<>();
-
     public MockServletServiceSessionSetup() throws Exception {
         this(true);
     }
@@ -228,13 +223,6 @@ public class MockServletServiceSessionSetup {
         deploymentConfiguration.setXsrfProtectionEnabled(false);
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
-
-        // mock servlet context attributes
-        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
-            .thenAnswer(invocationOnMock -> servletAttributesMap.get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> servletAttributesMap.put(invocationOnMock.getArguments()[0].toString(),
-            invocationOnMock.getArguments()[1]))
-            .when(servletContext).setAttribute(Mockito.anyString(), Mockito.any());
 
         servlet.init(servletConfig);
 
