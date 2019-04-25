@@ -16,6 +16,15 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <!--
+        FIXME flow-server has a transitive closure-compiler dependency that includes Gson *.class files
+        into its jar this makes Spring runtime explode without this dependency
+        More info: https://github.com/vaadin/flow/issues/5554
+        -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
