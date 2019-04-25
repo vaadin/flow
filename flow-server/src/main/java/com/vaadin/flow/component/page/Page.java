@@ -532,7 +532,7 @@ public class Page implements Serializable {
      * Callback for receiving extende client-side details.
      */
     @FunctionalInterface
-    public interface ExtendedClientDetailsReceiver {
+    public interface ExtendedClientDetailsReceiver extends Serializable {
         void receiveDetails(ExtendedClientDetails extendedClientDetails);
     }
 
