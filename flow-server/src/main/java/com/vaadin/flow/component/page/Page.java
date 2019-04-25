@@ -341,10 +341,15 @@ public class Page implements Serializable {
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
-     * Asynchronously runs the given JavaScript expression in the browser. The
-     * given parameters will be available to the expression as variables named
-     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
-     * are:
+     * Asynchronously runs the given JavaScript expression in the browser.
+     * <p>
+     * It is possible to get access to the return value of the execution by
+     * registering a handler with the returned pending result. If no handler is
+     * registered, the return value will be ignored.
+     * <p>
+     * The given parameters will be available to the expression as variables
+     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
+     * types are:
      * <ul>
      * <li>{@link String}
      * <li>{@link Integer}
