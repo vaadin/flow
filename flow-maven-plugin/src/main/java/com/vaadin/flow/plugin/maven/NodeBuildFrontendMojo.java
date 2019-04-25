@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -37,13 +38,16 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
+import com.vaadin.flow.plugin.common.WebComponentModulesGenerator;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
  * Goal that builds frontend bundle by:
@@ -138,9 +142,31 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     }
 
 
+    /**
+     * Uses
+     * {@link com.vaadin.flow.plugin.common.WebComponentModulesGenerator} to
+     * generate JavaScript files from the {@code WebComponentExporters}
+     * present in the code base. The generated JavaScript files are placed in
+     * {@code node_modules/@vaadin/flow-frontend}.
+     *
+     * @return list of generated javascript files
+     */
+    private List<File> getExportedWebComponents() {
+        WebComponentModulesGenerator generator =
+                new WebComponentModulesGenerator(new AnnotationValuesExtractor(
+                        NodeBuildFrontendMojo.getClassFinder(project)), false);
+
+        File target = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+
+        return generator.getExporters()
+                .map(exporter -> generator.generateModuleFile(exporter, target))
+                .collect(Collectors.toList());
+    }
+
     private void runNodeUpdater() {
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
                 generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
+                        .withExportedWebComponents(getExportedWebComponents())
                         .withWebpack(getWebpackOutputDirectory(),
                                 webpackTemplate)
                         .runNpmInstall(runNpmInstall).build().execute();

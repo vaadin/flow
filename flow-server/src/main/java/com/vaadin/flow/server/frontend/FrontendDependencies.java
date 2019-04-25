@@ -130,6 +130,7 @@ public class FrontendDependencies implements Serializable {
         try {
             computeEndpoints();
             computePackages();
+            computeExporters();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
             throw new IllegalStateException("Unable to compute frontend dependencies", e);
         }
@@ -298,6 +299,10 @@ public class FrontendDependencies implements Serializable {
 
             packages.put(dependency, version);
         }
+    }
+
+    private void computeExporters() {
+
     }
 
     /**
