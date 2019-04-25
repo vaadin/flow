@@ -130,7 +130,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
         try {
             return (String) generateMethod.invoke(null, exporterClass, "../",
-                    true);
+                    bowerMode);
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException exception) {
             throw new RuntimeException(String.format(
