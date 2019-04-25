@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
