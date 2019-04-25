@@ -28,5 +28,6 @@ public class VerifyBrowserVersionView extends Div {
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
         Span userAgent = new Span(browser.getBrowserApplication());
         userAgent.setId("userAgent");
+        add(userAgent);
     }
 }
