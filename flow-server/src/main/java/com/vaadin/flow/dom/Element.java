@@ -1588,6 +1588,10 @@ public class Element extends Node<Element> {
     /**
      * Calls the given function on the element with the given arguments.
      * <p>
+     * It is possible to get access to the return value of the execution by
+     * registering a handler with the returned pending result. If no handler is
+     * registered, the return value will be ignored.
+     * <p>
      * The function will be called after all pending DOM updates have completed,
      * at the same time that {@link Page#executeJs(String, Serializable...)}
      * calls are invoked.
@@ -1664,10 +1668,14 @@ public class Element extends Node<Element> {
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser in the
-     * context of this element. This element will be available to the expression
-     * as <code>this</code>. The given parameters will be available as variables
-     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
-     * types are:
+     * context of this element. It is possible to get access to the return value
+     * of the execution by registering a handler with the returned pending
+     * result. If no handler is registered, the return value will be ignored.
+     * <p>
+     * This element will be available to the expression as <code>this</code>.
+     * The given parameters will be available as variables named
+     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
+     * are:
      * <ul>
      * <li>{@link String}
      * <li>{@link Integer}
@@ -1834,8 +1842,6 @@ public class Element extends Node<Element> {
     public boolean isEnabled() {
         return getNode().isEnabled();
     }
-
-
 
     @Override
     protected Element getSelf() {
