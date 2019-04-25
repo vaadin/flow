@@ -79,7 +79,8 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     private boolean convertHtml;
 
     /**
-     * The folder where `package.json` file is located. Default is current dir.
+     * The folder where `package.json` file is located. Default is project root
+     * dir.
      */
     @Parameter(defaultValue = "${project.basedir}")
     private File npmFolder;
@@ -91,13 +92,14 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     private File nodeModulesPath;
 
     /**
-     * A Flow JavaScript file with all project's imports to update.
+     * The JavaScript file used as entry point of the application, and which is
+     * automatically updated by flow by reading java annotations.
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
     private File generatedFlowImports;
 
     /**
-     * A directory with project's frontend files.
+     * A directory with project's frontend source files.
      */
     @Parameter(defaultValue = "${project.basedir}/frontend")
     private File frontendDirectory;
