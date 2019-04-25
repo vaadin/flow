@@ -71,6 +71,7 @@ public class NodeBuildFrontendMojoTest {
     private String webpackConfig;
 
     private File frontendDirectory;
+    private final NodeValidateMojo validate = new NodeValidateMojo();
     private final NodeBuildFrontendMojo mojo = new NodeBuildFrontendMojo();
 
     @Before
@@ -89,7 +90,6 @@ public class NodeBuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
@@ -102,6 +102,11 @@ public class NodeBuildFrontendMojoTest {
         setProject("war", "war_output");
 
         createExpectedImports(frontendDirectory, nodeModulesPath);
+
+        ReflectionUtils.setVariableValueInObject(validate, "project", project);
+        ReflectionUtils.setVariableValueInObject(validate, "nodeModulesPath", nodeModulesPath);
+        ReflectionUtils.setVariableValueInObject(validate, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
+        validate.execute();
     }
 
     @After
