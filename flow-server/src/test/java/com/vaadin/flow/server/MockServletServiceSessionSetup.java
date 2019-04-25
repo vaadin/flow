@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
@@ -97,7 +98,13 @@ public class MockServletServiceSessionSetup {
 
         @Override
         public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
-            return type.cast(attributes.computeIfAbsent(type.getName(), key -> defaultValueSupplier.get()));
+            return
+                type.cast(attributes.computeIfAbsent(
+                    type.getName(),
+                    key -> Optional.ofNullable(defaultValueSupplier)
+                               .map(Supplier::get)
+                               .orElse(null))
+                );
         }
 
         @Override
