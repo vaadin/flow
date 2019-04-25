@@ -15,16 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -37,6 +27,15 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Request handler that supplies the script/html of the web component matching
@@ -56,8 +55,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     @Override
     public boolean synchronizedHandleRequest(
             VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        String pathInfo = servletRequest.getPathInfo();
+        String pathInfo = request.getPathInfo();
 
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
@@ -88,7 +86,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                     .get();
             String generated = cache.computeIfAbsent(tag.get(),
                     moduleTag -> generateModule(webComponentConfiguration,
-                            session, servletRequest));
+                            session, request));
 
             IOUtils.write(generated, response.getOutputStream(),
                     StandardCharsets.UTF_8);
@@ -102,7 +100,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private String generateModule(
             WebComponentConfiguration<? extends Component> configuration,
-            VaadinSession session, VaadinServletRequest request) {
+            VaadinSession session, VaadinRequest request) {
         if (session.getConfiguration().useCompiledFrontendResources()) {
             return generateCompiledUIDeclaration(session, request);
         } else {

@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
-import java.lang.annotation.Annotation;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Optional;
-
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
@@ -34,8 +28,13 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
-
 import elemental.json.JsonObject;
+
+import javax.servlet.ServletContext;
+import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -72,8 +71,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        String pathInfo = servletRequest.getPathInfo();
+        String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;
         }
