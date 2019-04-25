@@ -224,8 +224,7 @@ public class NodeTasks implements Command {
                     frontendDependencies, builder.frontendDirectory,
                     builder.generatedFrontendDirectory,
                     builder.generatedFlowImports, builder.npmFolder,
-                    builder.nodeModulesPath,
-                    builder.convertHtml));
+                    builder.nodeModulesPath, builder.convertHtml));
         }
 
     }
