@@ -51,7 +51,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.mockito.Mockito.mock;
@@ -71,7 +70,6 @@ public class NodeBuildFrontendMojoTest {
     private String webpackConfig;
 
     private File frontendDirectory;
-    private final NodeValidateMojo validate = new NodeValidateMojo();
     private final NodeBuildFrontendMojo mojo = new NodeBuildFrontendMojo();
 
     @Before
@@ -101,12 +99,9 @@ public class NodeBuildFrontendMojoTest {
 
         setProject("war", "war_output");
 
+        // Install all imports used in the tests on node_modules so as we don't
+        // need to run `npm install`
         createExpectedImports(frontendDirectory, nodeModulesPath);
-
-        ReflectionUtils.setVariableValueInObject(validate, "project", project);
-        ReflectionUtils.setVariableValueInObject(validate, "nodeModulesPath", nodeModulesPath);
-        ReflectionUtils.setVariableValueInObject(validate, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
-        validate.execute();
     }
 
     @After
@@ -394,6 +389,7 @@ public class NodeBuildFrontendMojoTest {
             "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
             "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
             "@vaadin/flow-frontend/ExampleConnector.js",
+            "@vaadin/flow-frontend/dndConnector.js",
             "./frontend-p3-template.js",
             "./local-p3-template.js",
             "./foo.js",
