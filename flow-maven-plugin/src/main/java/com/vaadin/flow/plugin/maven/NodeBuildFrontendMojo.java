@@ -22,23 +22,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.plugin.common.ArtifactData;
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
-import com.vaadin.flow.plugin.common.JarContentsManager;
-import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
-import com.vaadin.flow.server.frontend.FrontendToolsLocator;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.theme.Theme;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -47,10 +34,18 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendToolsLocator;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.theme.Theme;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
  * Goal that builds frontend bundle by:
@@ -122,21 +117,6 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
     private String webpackTemplate;
 
-    /**
-     * Comma separated values for the paths that should be analyzed in every
-     * project dependency jar and, if files suitable for copying present in
-     * those paths, those should be copied.
-     */
-    @Parameter(defaultValue = RESOURCES_FRONTEND_DEFAULT)
-    private String jarResourcePathsToCopy;
-
-    /**
-     * Comma separated wildcards for files and directories that should be
-     * copied. Default is only .js and .css files.
-     */
-    @Parameter(defaultValue = "**/*.js,**/*.css", required = true)
-    private String includes;
-
     @Override
     public void execute() {
         // Do nothing when bower mode
@@ -146,9 +126,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         }
 
         long start = System.nanoTime();
-
-        copyFlowModuleDependencies();
-
+        
         runNodeUpdater();
 
         if (generateBundle) {
@@ -159,22 +137,6 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
-    private void copyFlowModuleDependencies() {
-        List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
-            .filter(artifact -> "jar".equals(artifact.getType()))
-            .map(artifact -> new ArtifactData(artifact.getFile(),
-                artifact.getArtifactId(), artifact.getVersion()))
-            .collect(Collectors.toList());
-
-        File frontendNodeDirectory = new File(nodeModulesPath,
-                FLOW_NPM_PACKAGE_NAME);
-        ProductionModeCopyStep copyHelper = new ProductionModeCopyStep(
-                new JarContentsManager(), projectArtifacts);
-        for (String path : jarResourcePathsToCopy.split(",")) {
-            copyHelper.copyFrontendJavaScriptFiles(frontendNodeDirectory, includes,
-                    path);
-        }
-    }
 
     private void runNodeUpdater() {
         File webpackOutputRelativeToProjectDir = project.getBasedir().toPath()
