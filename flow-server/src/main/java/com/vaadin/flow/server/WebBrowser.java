@@ -17,9 +17,7 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import com.vaadin.flow.shared.BrowserDetails;
 
