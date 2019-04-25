@@ -66,6 +66,14 @@ public class NodeNpmInstall implements Command {
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(packageUpdater.npmFolder);
 
+        // For a locally installed Node on windows we need to add the node folder
+        // to the path for it to work as expected with NPM
+        if (FrontendUtils.isWindows() && command.get(0).contains("node.exe")) {
+            String nodeExecutable = command.get(0).replace("\\node.exe", "");
+            builder.environment().put("PATH",
+                    System.getenv().get("PATH") + ";" + nodeExecutable);
+        }
+
         Process process = null;
         try {
             process = builder.inheritIO().start();
