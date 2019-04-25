@@ -146,7 +146,69 @@
 				}
 				ws.pendingApps = null;
 			}
-		}
+		},
+        getBrowserDetailsParameters: function() {
+           var params = {  };
+
+           /* Screen height and width */
+           params['v-sh'] = window.screen.height.toString();
+           params['v-sw'] = window.screen.width.toString();
+
+           var d = new Date();
+           params['v-curdate'] = d.getTime().toString();
+
+           var tzo1 = d.getTimezoneOffset(); /* current offset */
+           var dstDiff = 0;
+           var rtzo = tzo1;
+
+           for (var m = 12; m > 0; m--) {
+               d.setUTCMonth(m);
+               var tzo2 = d.getTimezoneOffset();
+               if (tzo1 != tzo2) {
+                   dstDiff = (tzo1 > tzo2 ? tzo1 - tzo2 : tzo2 - tzo1);
+                   rtzo = (tzo1 > tzo2 ? tzo1 : tzo2);
+                   break;
+               }
+           }
+
+           /* Time zone offset */
+           params['v-tzo'] = tzo1.toString();
+
+           /* DST difference */
+           params['v-dstd'] = dstDiff.toString();
+
+           /* Raw time zone offset */
+           params['v-rtzo'] = rtzo.toString();
+
+           /* DST in effect? */
+           params['v-dston'] = (tzo1 != rtzo).toString();
+
+           /* Time zone id (if available) */
+           try {
+               params['v-tzid'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+           } catch (err) {
+               params['v-tzid'] = '';
+           }
+
+           /* Window name */
+           if (window.name) {
+               params['v-wn'] = window.name;
+           }
+
+           /* Detect touch device support */
+           var supportsTouch = false;
+           try {
+               document.createEvent("TouchEvent");
+               supportsTouch = true;
+           } catch (e) {
+               /* Chrome and IE10 touch detection */
+               supportsTouch = 'ontouchstart' in window
+                   || (typeof navigator.msMaxTouchPoints !== 'undefined');
+           }
+           params['v-td'] = false;
+
+           return params;
+        }
 	};
 	
 	log('Flow bootstrap loaded');

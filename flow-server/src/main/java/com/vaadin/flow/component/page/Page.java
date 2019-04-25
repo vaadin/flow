@@ -39,6 +39,7 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -143,6 +144,9 @@ public class Page implements Serializable {
 
     private final UI ui;
     private final History history;
+
+    private ExtendedClientDetails extendedClientDetails = null;
+
 
     /**
      * Creates a page instance for the given UI.
@@ -522,5 +526,50 @@ public class Page implements Serializable {
                         e);
             }
         }
+    }
+
+    /**
+     * Callback for receiving extende client-side details.
+     */
+    @FunctionalInterface
+    public interface ExtendedClientDetailsReceiver {
+        void receiveDetails(ExtendedClientDetails extendedClientDetails);
+    }
+
+    /**
+     * Obtain extended client side details, such as time screen and time zone
+     * information, via callback.
+     */
+    public void retrieveExtendedClientDetails(ExtendedClientDetailsReceiver receiver) {
+        if (extendedClientDetails != null) {
+            receiver.receiveDetails(extendedClientDetails);
+            return;
+        }
+        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
+        executeJs(js).then(
+                json -> {
+                    if (json instanceof JsonObject) {
+                        // TODO: handle errors
+                        final JsonObject jsonObj = (JsonObject) json;
+                        final ExtendedClientDetails extendedClientDetails =
+                                new ExtendedClientDetails(
+                                        jsonObj.getString("v-sw"),
+                                        jsonObj.getString("v-sh"),
+                                        jsonObj.getString("v-tzo"),
+                                        jsonObj.getString("v-rtzo"),
+                                        jsonObj.getString("v-dstd"),
+                                        jsonObj.getString("v-dston"),
+                                        jsonObj.getString("v-tzid"),
+                                        jsonObj.getString("v-curdate"),
+                                        jsonObj.getBoolean("v-td"),
+                                        jsonObj.getString("v-wn"));
+                        receiver.receiveDetails(extendedClientDetails);
+                    }
+                },
+                err -> {
+                    throw new RuntimeException("Unable to retrieve extended " +
+                            "client details: " + err);
+                });
+
     }
 }

@@ -36,9 +36,6 @@ public class VerifyBrowserVersionIT extends ChromeBrowserTest {
         }
 
         assertThat(userAgent, containsString(browserIdentifier));
-
-        assertThat(findElement(By.id("touchDevice")).getText(),
-                is("Touch device? No"));
     }
 
     private String getExpectedUserAgentString(DesiredCapabilities dCap) {

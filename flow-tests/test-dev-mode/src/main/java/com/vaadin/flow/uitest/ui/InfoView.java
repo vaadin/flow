@@ -77,7 +77,6 @@ public class InfoView extends Div {
 
         info("Os", os.stream().collect(Collectors.joining(", ")));
 
-        add(browser, "Touch device", webBrowser.isTouchDevice());
         add(browser, "Chrome", webBrowser.isChrome());
         add(browser, "Edge", webBrowser.isEdge());
         add(browser, "Firefox", webBrowser.isFirefox());
@@ -92,8 +91,6 @@ public class InfoView extends Div {
         info("User-agent", webBrowser.getBrowserApplication());
         info("Browser major", webBrowser.getBrowserMajorVersion());
         info("Browser minor", webBrowser.getBrowserMinorVersion());
-        info("Screen height", webBrowser.getScreenHeight());
-        info("Screen width", webBrowser.getScreenWidth());
         info("Locale", webBrowser.getLocale());
 
         info("Secure connection (https)", webBrowser.isSecureConnection());
