@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -136,16 +137,16 @@ public class NodeUpdatePackages extends NodeUpdater {
     private boolean updatePackageJsonDevDependencies(JsonObject packageJson) {
         boolean added = false;
         JsonObject json = packageJson.getObject(DEV_DEPENDENCIES);
-        for (String pkg : Arrays.asList(
-                "webpack",
-                "webpack-cli",
-                "webpack-dev-server",
-                "webpack-babel-multi-target-plugin",
-                "copy-webpack-plugin"
-                )) {
-            if (!json.hasKey(pkg)) {
-                json.put(pkg, "latest");
-                log().info("Added {} dependency.", pkg);
+        Map<String, String> devDependencies = new HashMap<>();
+        devDependencies.put("webpack", "4.30.0");
+        devDependencies.put("webpack-cli", "3.3.0");
+        devDependencies.put("webpack-dev-server", "3.3.0");
+        devDependencies.put("webpack-babel-multi-target-plugin", "2.1.0");
+        devDependencies.put("copy-webpack-plugin", "5.0.3");
+        for(Entry<String, String> entry: devDependencies.entrySet()) {
+            if(!json.hasKey(entry.getKey())) {
+                json.put(entry.getKey(), entry.getValue());
+                log().info("Added {} dependency.", entry.getKey());
                 added = true;
             }
         }

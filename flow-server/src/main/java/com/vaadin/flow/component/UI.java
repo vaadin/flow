@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
@@ -88,6 +89,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Tag("body")
+@NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.10")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
