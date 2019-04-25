@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,7 +37,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
  * the classpath. It also visits classes annotated with {@link NpmPackage}
  */
-@NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
 @NpmPackage(value = "@polymer/polymer", version = "3.1.0")
 public class NodeUpdatePackages extends NodeUpdater {
 
@@ -130,6 +128,9 @@ public class NodeUpdatePackages extends NodeUpdater {
                 log().info("Added {}@{} dependency.", e.getKey(), version);
                 added = true;
             }
+        }
+        if(!json.hasKey("@webcomponents/webcomponentsjs")) {
+            json.put("@webcomponents/webcomponentsjs", "2.2.10");
         }
         return added;
     }

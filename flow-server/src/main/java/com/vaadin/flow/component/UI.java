@@ -89,7 +89,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Tag("body")
-@NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.10")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
