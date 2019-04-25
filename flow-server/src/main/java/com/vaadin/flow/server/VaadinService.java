@@ -2254,8 +2254,8 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * <<<<<<< Upstream, based on master Returns value of the specified
-     * attribute, creating a default value if not present.
+     * Returns value of the specified attribute, creating a default value if not
+     * present.
      *
      * @param type
      *            Type of the attribute.
@@ -2289,10 +2289,10 @@ public abstract class VaadinService implements Serializable {
     public abstract <T> void setAttribute(T value);
 
     /**
-     * 
+     *
      * Executes a {@code runnable} with a {@link VaadinService} available in the
-     * {@link CurrentInstance}context.
-     * 
+     * {@link CurrentInstance} context.
+     *
      * @param runnable
      *            command to execute
      */
