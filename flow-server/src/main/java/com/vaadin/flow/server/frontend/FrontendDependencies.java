@@ -57,7 +57,7 @@ public class FrontendDependencies implements Serializable {
     private static final String BAD_VERSIOM =
             "%n%n======================================================================================================"
             + "%nFailed to determine the version for the '%s' npm package."
-            + "%nVersion '%s' is has an invalid format it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
+            + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
             + "%n======================================================================================================%n";
 
     /**

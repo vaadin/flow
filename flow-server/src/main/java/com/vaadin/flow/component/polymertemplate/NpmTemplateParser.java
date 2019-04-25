@@ -39,7 +39,9 @@ import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 
@@ -145,18 +147,25 @@ public class NpmTemplateParser implements TemplateParser {
             URL statsUrl = null;
             if (!service.getDeploymentConfiguration().isProductionMode()) {
                 String port = service.getDeploymentConfiguration()
-                    .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
+                        .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
                 if (port != null && !port.isEmpty()) {
                     statsUrl = new URL("http://localhost:" + port + "/" + stats);
-                } else {
-                    getLogger().warn(
-                            "Unable to get the stats file through webpack. "
-                                    + "The webpack port is unavailable via '{}' property. ",
-                            SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
                 }
-            }
-
-            if (statsUrl == null) {
+                if (statsUrl == null) {
+                    statsUrl = service.getStaticResource("/" + stats);
+                    if (statsUrl == null) {
+                        getLogger().warn(
+                                "Cannot get the stats file through webpack-dev-server. "
+                                + "The webpack port is unavailable via '{}' property. ",
+                                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
+                    } else {
+                        getLogger().debug("Cannot get the stats file through webpack-dev-server, "
+                                + "however it was found in the web contenxt, which means that the application was build previously. "
+                                + "To disable this message just set the '{}' property.",
+                                SERVLET_PARAMETER_PRODUCTION_MODE);
+                    }
+                }
+            } else {
                 statsUrl = service.getStaticResource("/" + stats);
             }
 
