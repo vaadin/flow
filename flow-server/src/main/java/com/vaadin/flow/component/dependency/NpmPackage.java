@@ -51,7 +51,12 @@ public @interface NpmPackage {
     String value();
 
     /**
-     * Defines the NPM package version. By default the latest version is used.
+     * Defines the NPM package version. It should meet the 'd.d.d' or the
+     * 'd.d.d-prefix' pattern.
+     *
+     * Troubleshooting: when two or more annotations with the same package value
+     * are found in the class-path, and the version do not match the build
+     * process will fail.
      *
      * @return NPM package version
      */
