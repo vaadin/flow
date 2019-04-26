@@ -160,17 +160,11 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
-        FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
-        File nodePath = Optional.of(new File("./node/node"))
-                .filter(frontendToolsLocator::verifyTool)
-                .orElseGet(() -> frontendToolsLocator.tryLocateTool("node")
-                        .orElseThrow(() -> new IllegalStateException(
-                                "Failed to determine 'node' tool. "
-                                        + "Please install it using the https://nodejs.org/en/download/ guide.")));
+        String nodePath  = FrontendUtils.getNodeExecutable();
 
         Process webpackLaunch = null;
         try {
-            webpackLaunch =  new ProcessBuilder(nodePath.getAbsolutePath(),
+            webpackLaunch =  new ProcessBuilder(nodePath,
                     webpackExecutable.getAbsolutePath()).directory(project.getBasedir())
                     .redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
             int errorCode = webpackLaunch.waitFor();
