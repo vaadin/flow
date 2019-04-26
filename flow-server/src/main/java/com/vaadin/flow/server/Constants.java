@@ -160,17 +160,27 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT = "devmode.webpack.running-port";
 
     /**
-     * Configuration name for the time waiting for webpack output pattern
-     * defined by {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN}.
+     * Configuration name for the time waiting for webpack output success or
+     * error pattern defined in
+     * {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN} and
+     * {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN}
+     * parameters.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = "devmode.webpack.output.pattern.timeout";
 
     /**
      * Configuration name for the pattern used to inspect the webpack output to
      * assure it is up and running. Default value is defined in
-     * {@link DevModeHandler} as the <code>: (Compiled|Failed)</code> expression.
+     * {@link DevModeHandler} as the <code>: Compiled</code> expression.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN = "devmode.webpack.output.pattern";
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = "devmode.webpack.output.success.pattern";
+
+    /**
+     * Configuration name for the pattern used to inspect the webpack output to
+     * detecting when compilation failed. Default value is defined in
+     * {@link DevModeHandler} as the <code>: Failed</code> expression.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = "devmode.webpack.output.error.pattern";
 
     /**
      * Configuration name for adding extra options to the webpack-dev-server.
