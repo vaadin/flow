@@ -63,6 +63,10 @@ import static java.net.HttpURLConnection.HTTP_OK;
  */
 public class DevModeHandler implements Serializable {
 
+    private enum LOG_LEVEL {
+        WARN, ERROR, INFO
+    }
+
     // Non final because tests need to reset this during teardown.
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
@@ -305,8 +309,28 @@ public class DevModeHandler implements Serializable {
         Thread thread = new Thread(() -> {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
             try {
+                LOG_LEVEL level = LOG_LEVEL.INFO;
                 for (String line; ((line = reader.readLine()) != null);) {
-                    getLogger().info(line);
+
+                    if(line.contains("WARNING")) {
+                        level = LOG_LEVEL.WARN;
+                    }else if(line.contains("ERROR")) {
+                        level = LOG_LEVEL.ERROR;
+                    } else if(line.trim().isEmpty()){
+                        level = LOG_LEVEL.INFO;
+                    }
+
+                    switch(level) {
+                    case WARN:
+                        getLogger().warn(line);
+                        break;
+                    case ERROR:
+                        getLogger().error(line);
+                        break;
+                    case INFO:
+                    default:
+                        getLogger().info(line);
+                    }
                     // We found the started pattern in stream, notify
                     // DevModeHandler to continue
                     if (notify && pattern.matcher(line).find()) {
