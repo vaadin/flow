@@ -421,10 +421,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     static Document getBootstrapPage(BootstrapContext context) {
+        DeploymentConfiguration config = context.getSession().getConfiguration();
+
         Document document = new Document("");
-        DocumentType doctype = new DocumentType("html", "", "",
-                document.baseUri());
+        DocumentType doctype = new DocumentType("html", "", "");
         document.appendChild(doctype);
+
         Element html = document.appendElement("html");
         html.attr("lang", context.getUI().getLocale().getLanguage());
         Element head = html.appendElement("head");
@@ -446,16 +448,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 initialPageSettings -> handleInitialPageSettings(context, head,
                         initialPageSettings));
 
-        if (context.getSession().getConfiguration().isBowerMode()) {
+        if (config.isBowerMode()) {
             /* Append any theme elements to initial page. */
             handleThemeContents(context, document);
         }
 
-        if (!context.isProductionMode()) {
+        if (!config.isProductionMode()) {
             exportUsageStatistics(document);
         }
 
         setupPwa(document, context);
+
+        if (!config.isBowerMode() && !config.isProductionMode()) {
+            checkWebpackStatus(document);
+        }
 
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
@@ -464,6 +470,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         context.getSession().getService().modifyBootstrapPage(response);
 
         return document;
+    }
+
+    private static void checkWebpackStatus(Document document) {
+        String errorMsg = DevModeHandler.getFailedOutput();
+        if (errorMsg != null) {
+            document.body().appendChild(
+                new Element(Tag.valueOf("div"), "")
+                    .attr("class", "v-system-error")
+                    .html("<h3>Webpack Error</h3><pre>" + errorMsg + "</pre>"));
+        }
     }
 
     private static void exportUsageStatistics(Document document) {
@@ -687,30 +703,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // @BodySize
         String bodySizeContent = BootstrapUtils.getBodySizeContent(context);
         styles.appendText(bodySizeContent);
-        // Basic reconnect dialog style just to make it visible and outside of
-        // normal flow
-        styles.appendText(".v-reconnect-dialog {" //
-                + "position: absolute;" //
-                + "top: 1em;" //
-                + "right: 1em;" //
-                + "border: 1px solid black;" //
-                + "padding: 1em;" //
-                + "z-index: 10000;" //
-                + "}");
 
-        // Basic system error dialog style just to make it visible and outside
-        // of normal flow
-        styles.appendText(".v-system-error {" //
-                + "color: red;" //
-                + "background: white;" //
-                + "position: absolute;" //
-                + "top: 1em;" //
-                + "right: 1em;" //
-                + "border: 1px solid black;" //
-                + "padding: 1em;" //
-                + "z-index: 10000;" //
-                + "pointer-events: auto;" //
-                + "}");
+        // Basic reconnect and system error dialog styles just to make them
+        // visible and outside of normal flow
+        styles.appendText(".v-reconnect-dialog, .v-system-error {" // @formatter:off
+                +   "position: absolute;"
+                +   "color: black;"
+                +   "background: white;"
+                +   "top: 1em;"
+                +   "right: 1em;"
+                +   "border: 1px solid black;"
+                +   "padding: 1em;"
+                +   "z-index: 10000;"
+                +   "max-width: calc(100vw - 4em);"
+                +   "max-height: calc(100vh - 4em);"
+                +   "overflow: auto;"
+                + "} .v-system-error {"
+                +   "color: red;"
+                +   "pointer-events: auto;"
+                + "}"); // @formatter:on
     }
 
     private static void setupMetaAndTitle(Element head,
