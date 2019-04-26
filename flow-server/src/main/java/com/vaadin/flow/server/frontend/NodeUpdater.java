@@ -16,14 +16,12 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,10 +109,6 @@ public abstract class NodeUpdater implements Command {
         this.convertHtml = convertHtml;
     }
 
-    private File getFlowPackage() {
-        return FrontendUtils.getFlowPackage(nodeModulesPath);
-    }
-
     Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
         return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -141,18 +135,6 @@ public abstract class NodeUpdater implements Command {
           return FLOW_NPM_PACKAGE_NAME + pathWithNoProtocols;
         }
         return pathWithNoProtocols;
-    }
-
-    void installFlowModules() throws IOException {
-        for (String resource : flowModules) {
-            URL source = getResourceUrl(resource);
-            File destination = new File(getFlowPackage(), resource);
-            FileUtils.forceMkdir(destination.getParentFile());
-            FileUtils.copyURLToFile(source, destination);
-        }
-        if (log().isInfoEnabled()) {
-            log().info("Installed {} {} modules", flowModules.size(), FLOW_NPM_PACKAGE_NAME);
-        }
     }
 
     private URL getResourceUrl(String resource) {
