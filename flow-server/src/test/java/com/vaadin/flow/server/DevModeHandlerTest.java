@@ -108,6 +108,7 @@ public class DevModeHandlerTest {
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
         assertNotNull(DevModeHandler.start(configuration));
         assertTrue(new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER + WEBPACK_TEST_OUT_FILE).canRead());
+        assertNull(DevModeHandler.getFailedOutput());
         Thread.sleep(150); //NOSONAR
     }
 
@@ -128,6 +129,14 @@ public class DevModeHandlerTest {
         assertNotNull(DevModeHandler.start(configuration));
         assertTrue(Integer.getInteger("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, 0) > 0);
         Thread.sleep(350); //NOSONAR
+    }
+
+    @Test
+    public void should_CaptureWebpackOutput_When_Failed() throws Exception {
+        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
+        createStubWebpackServer("Failed to compile", 300);
+        assertNotNull(DevModeHandler.start(configuration));
+        assertNotNull(DevModeHandler.getFailedOutput());
     }
 
     @Test

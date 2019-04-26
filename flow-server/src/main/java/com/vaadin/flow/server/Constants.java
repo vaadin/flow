@@ -168,9 +168,16 @@ public final class Constants implements Serializable {
     /**
      * Configuration name for the pattern used to inspect the webpack output to
      * assure it is up and running. Default value is defined in
-     * {@link DevModeHandler} as the <code>: (Compiled|Failed)</code> expression.
+     * {@link DevModeHandler} as the <code>: Compiled</code> expression.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN = "devmode.webpack.output.pattern";
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = "devmode.webpack.output.success.pattern";
+
+    /**
+     * Configuration name for the pattern used to inspect the webpack output to
+     * detecting when compilation failed. Default value is defined in
+     * {@link DevModeHandler} as the <code>: Failed</code> expression.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = "devmode.webpack.output.error.pattern";
 
     /**
      * Configuration name for adding extra options to the webpack-dev-server.
