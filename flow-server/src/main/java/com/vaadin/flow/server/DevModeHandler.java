@@ -343,17 +343,6 @@ public class DevModeHandler implements Serializable {
 
     private void readLinesLoop(Pattern success, Pattern failure, BufferedReader reader) throws IOException {
       LOG_LEVEL level = LOG_LEVEL.INFO;
-                for (String line; ((line = reader.readLine()) != null);) {
-
-                   
-                    // We found the started pattern in stream, notify
-                    // DevModeHandler to continue
-                    if (notify && pattern.matcher(line).find()) {
-                        synchronized (this) {
-                            notify();//NOSONAR
-                        }
-                    }
-                }
         String output = "";
         for (String line; ((line = reader.readLine()) != null);) {
             // copy output to user console
