@@ -42,15 +42,15 @@ public class ExtendedClientDetails implements Serializable {
      * For internal use only. Updates all properties in the class according to
      * the given information.
      *
-     * @param sw
+     * @param screenWidth
      *            Screen width
-     * @param sh
+     * @param screenHeight
      *            Screen height
-     * @param tzo
+     * @param tzOffset
      *            TimeZone offset in minutes from GMT
-     * @param rtzo
+     * @param rawTzOffset
      *            raw TimeZone offset in minutes from GMT (w/o DST adjustment)
-     * @param dstSavings
+     * @param dstShift
      *            the difference between the raw TimeZone and DST in minutes
      * @param dstInEffect
      *            is DST currently active in the region or not?
@@ -63,37 +63,38 @@ public class ExtendedClientDetails implements Serializable {
      * @param windowName
      *            a unique browser window name which persists on reload
      */
-    ExtendedClientDetails(String sw, String sh, String tzo, String rtzo,
-                          String dstSavings, String dstInEffect, String tzId,
-                          String curDate, String touchDevice, String windowName) {
-        if (sw != null) {
+    ExtendedClientDetails(String screenWidth, String screenHeight,
+                          String tzOffset, String rawTzOffset, String dstShift,
+                          String dstInEffect, String tzId, String curDate,
+                          String touchDevice, String windowName) {
+        if (screenWidth != null) {
             try {
-                screenWidth = Integer.parseInt(sw);
-                screenHeight = Integer.parseInt(sh);
+                this.screenWidth = Integer.parseInt(screenWidth);
+                this.screenHeight = Integer.parseInt(screenHeight);
             } catch (final NumberFormatException e) {
-                screenHeight = screenWidth = -1;
+                this.screenHeight = this.screenWidth = -1;
             }
         }
-        if (tzo != null) {
+        if (tzOffset != null) {
             try {
                 // browser->java conversion: min->ms, reverse sign
-                timezoneOffset = -Integer.parseInt(tzo) * 60 * 1000;
+                timezoneOffset = -Integer.parseInt(tzOffset) * 60 * 1000;
             } catch (final NumberFormatException e) {
                 timezoneOffset = 0; // default gmt+0
             }
         }
-        if (rtzo != null) {
+        if (rawTzOffset != null) {
             try {
                 // browser->java conversion: min->ms, reverse sign
-                rawTimezoneOffset = -Integer.parseInt(rtzo) * 60 * 1000;
+                rawTimezoneOffset = -Integer.parseInt(rawTzOffset) * 60 * 1000;
             } catch (final NumberFormatException e) {
                 rawTimezoneOffset = 0; // default gmt+0
             }
         }
-        if (dstSavings != null) {
+        if (dstShift != null) {
             try {
                 // browser->java conversion: min->ms
-                this.dstSavings = Integer.parseInt(dstSavings) * 60 * 1000;
+                this.dstSavings = Integer.parseInt(dstShift) * 60 * 1000;
             } catch (final NumberFormatException e) {
                 this.dstSavings = 0; // default no savings
             }

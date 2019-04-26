@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -35,12 +37,14 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
@@ -530,13 +534,13 @@ public class Page implements Serializable {
     }
 
     /**
-     * Callback for receiving extende client-side details.
+     * Callback for receiving extended client-side details.
      */
     @FunctionalInterface
     public interface ExtendedClientDetailsReceiver extends Serializable {
 
         /**
-         * I called by the framework when the client-side details are available.
+         * Invoked when the client-side details are available.
          * @param extendedClientDetails
          *          object containing extended client details
          */
@@ -558,39 +562,45 @@ public class Page implements Serializable {
             return;
         }
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
-
-        // note that JSON object is a plain string -> string
-        // map, and actual parsing of the fields happens in
-        // ExtendedClient's constructor
         final SerializableConsumer<JsonValue> resultHandler = json -> {
-            if (json instanceof JsonObject) {
-                final JsonObject jsonObj = (JsonObject) json;
-                final String sw, sh, tzo, rtzo, dstd, dstOn, tzId, cd, td, wn;
-                try {
-                    sw = jsonObj.getString("v-sw");
-                    sh = jsonObj.getString("v-sh");
-                    tzo = jsonObj.getString("v-tzo");
-                    rtzo = jsonObj.getString("v-rtzo");
-                    dstd = jsonObj.getString("v-dstd");
-                    dstOn = jsonObj.getString("v-dston");
-                    tzId = jsonObj.getString("v-tzid");
-                    cd = jsonObj.getString("v-curdate");
-                    td = jsonObj.getString("v-td");
-                    wn = jsonObj.getString("v-wn");
-                } catch (NullPointerException e) {
-                    throw new RuntimeException("Client side response " +
-                            "was not of expected format", e);
-                }
-                extendedClientDetails =
-                        new ExtendedClientDetails(sw, sh, tzo, rtzo,
-                                dstd, dstOn, tzId, cd, td, wn);
-                receiver.receiveDetails(extendedClientDetails);
-            } else throw new RuntimeException("Not a JSON object");
+            handleExtendedClientDetailsResponse(json);
+            receiver.receiveDetails(extendedClientDetails);
         };
         final SerializableConsumer<String> errorHandler = err -> {
             throw new RuntimeException("Unable to retrieve extended " +
                     "client details. JS error is '" + err + "'");
         };
         executeJs(js).then(resultHandler, errorHandler);
+    }
+
+    private void handleExtendedClientDetailsResponse(JsonValue json) {
+        if (!(json instanceof JsonObject)) {
+            throw new RuntimeException("Expected a JSON object");
+        }
+        final JsonObject jsonObj = (JsonObject) json;
+
+        // Note that JSON returned is a plain string -> string map, the actual
+        // parsing of the fields happens in ExtendedClient's constructor. If a
+        // field is missing or the wrong type, pass on null for default.
+        final Function<String, String> getStringElseNull = key -> {
+            final JsonValue jsValue = jsonObj.get(key);
+            if (jsValue != null && JsonType.STRING.equals(jsValue.getType())) {
+                return jsValue.asString();
+            } else {
+                return null;
+            }
+        };
+        extendedClientDetails = new ExtendedClientDetails(
+                getStringElseNull.apply("v-sw"),
+                getStringElseNull.apply("v-sh"),
+                getStringElseNull.apply("v-tzo"),
+                getStringElseNull.apply("v-rtzo"),
+                getStringElseNull.apply("v-dstd"),
+                getStringElseNull.apply("v-dston"),
+                getStringElseNull.apply("v-tzid"),
+                getStringElseNull.apply("v-curdate"),
+                getStringElseNull.apply("v-td"),
+                getStringElseNull.apply("v-wn"));
+
     }
 }
