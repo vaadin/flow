@@ -340,36 +340,39 @@ public class DevModeHandler implements Serializable {
 
     private void readLinesLoop(Pattern success, Pattern failure, BufferedReader reader) throws IOException {
         String output = "";
-        Logger logger = getLogger();
-        Consumer<String> log = logger::info;
+        Consumer<String> info = s -> getLogger().info("\u001b[38;5;35m" + s + "\u001b[0m");
+        Consumer<String> error = s -> getLogger().error("\u001b[38;5;196m" + s + "\u001b[0m");
+        Consumer<String> warn = s -> getLogger().warn("\u001b[38;5;111m" + s + "\u001b[0m");
+        Consumer<String> log = info;
         for (String line; ((line = reader.readLine()) != null);) {
+            line = line
+                    // remove color escape codes for console
+                    .replaceAll("\u001b\\[[;\\d]*m", "")
+                    // remove babel query string which is confusing
+                    .replaceAll("\\?babel-target=[\\w\\d]+", "");
 
             // write each line read to logger, but selecting its correct level
-            log = line.contains("WARNING") ? logger::warn 
-                    : line.contains("ERROR") ? logger::error
-                    : line.trim().isEmpty() ? logger::info : log;
+            log = line.contains("WARNING") ? warn : line.contains("ERROR") ? error : log;
             log.accept(line);
 
-            // save output so as it can be used to notify user
-            output += line
-                    // remove color escape codes for console 
-                    .replaceAll("\u001B\\[[;\\d]*m", "")
-                    // remove babel query string which confuses
-                    .replaceAll("\\?babel-target=[^\"]+", "") + "\n";
+            // save output so as it can be used to alert user in browser.
+            output += line + "\n";
 
-            // We found the success pattern in stream, notify
-            // DevModeHandler to continue
-            if (success.matcher(line).find()) {
-                failedOutput = null;
-                output = "";
-                doNotify();
-            }
+            boolean succeed = success.matcher(line).find();
+            boolean failed = failure.matcher(line).find();
 
-            // We found the failure pattern in stream, copy output
-            // text to the static field, so as bootstrap can check it
-            if (failure.matcher(line).find()) {
-                failedOutput = output;
+            // We found the success or failure pattern in stream
+            if (succeed || failed) {
+                // save output in case of failure
+                failedOutput = failed ? output : null;
+                // reset output for the next compilation
                 output = "";
+                // Add a new line to separate and reset level
+                log.accept(succeed
+                        ? "\n----------------- 👍  Frontend compiled successfully. 👍 -----------------"
+                        : "\n------------------ 🚫  Frontend compilation failed. 🚫 -----------------");
+                log = info;
+                // Notify DevModeHandler to continue
                 doNotify();
             }
         }
@@ -389,8 +392,8 @@ public class DevModeHandler implements Serializable {
     }
 
     private static Logger getLogger() {
-        // Using short prefix so as webpack output is more readable
-        return LoggerFactory.getLogger("dev-server");
+        // Using an empty prefix so as webpack output is more readable
+        return LoggerFactory.getLogger("");
     }
 
     /**
