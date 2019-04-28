@@ -64,7 +64,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  */
 public class DevModeHandler implements Serializable {
-
     // Non final because tests need to reset this during teardown.
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
@@ -72,6 +71,11 @@ public class DevModeHandler implements Serializable {
     // When webpack finishes, it writes either a `Compiled` or a `Failed` in  the last line
     private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
     private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
+    private static final String FAILED_MSG = "\n------------------ 🚫  Frontend compilation failed. 🚫 -----------------";
+    private static final String SUCCEED_MSG = "\n----------------- 👍  Frontend compiled successfully. 👍 -----------------";
+    private static final String YELLOW = "\u001b[38;5;111m{}\u001b[0m";
+    private static final String RED = "\u001b[38;5;196m{}\u001b[0m";
+    private static final String GREEN = "\u001b[38;5;35m{}\u001b[0m";
 
     // If after this time in millisecs, the pattern was not found, we unlock the process
     // and continue. It might happen if webpack changes their output without advise.
@@ -340,36 +344,36 @@ public class DevModeHandler implements Serializable {
 
     private void readLinesLoop(Pattern success, Pattern failure, BufferedReader reader) throws IOException {
         String output = "";
-        Logger logger = getLogger();
-        Consumer<String> log = logger::info;
+        Consumer<String> info = s -> getLogger().info(GREEN, s);
+        Consumer<String> error = s -> getLogger().error(RED, s);
+        Consumer<String> warn = s -> getLogger().warn(YELLOW, s);
+        Consumer<String> log = info;
         for (String line; ((line = reader.readLine()) != null);) {
+            String cleanLine = line
+                    // remove color escape codes for console
+                    .replaceAll("\u001b\\[[;\\d]*m", "")
+                    // remove babel query string which is confusing
+                    .replaceAll("\\?babel-target=[\\w\\d]+", "");
 
             // write each line read to logger, but selecting its correct level
-            log = line.contains("WARNING") ? logger::warn 
-                    : line.contains("ERROR") ? logger::error
-                    : line.trim().isEmpty() ? logger::info : log;
-            log.accept(line);
+            log = line.contains("WARNING") ? warn : line.contains("ERROR") ? error : log;
+            log.accept(cleanLine);
 
-            // save output so as it can be used to notify user
-            output += line
-                    // remove color escape codes for console 
-                    .replaceAll("\u001B\\[[;\\d]*m", "")
-                    // remove babel query string which confuses
-                    .replaceAll("\\?babel-target=[^\"]+", "") + "\n";
+            // save output so as it can be used to alert user in browser.
+            output += cleanLine + "\n";
 
-            // We found the success pattern in stream, notify
-            // DevModeHandler to continue
-            if (success.matcher(line).find()) {
-                failedOutput = null;
+            boolean succeed = success.matcher(line).find();
+            boolean failed = failure.matcher(line).find();
+
+            // We found the success or failure pattern in stream
+            if (succeed || failed) {
+                log.accept(succeed ? SUCCEED_MSG : FAILED_MSG);
+                // save output in case of failure
+                failedOutput = failed ? output : null;
+                // reset output and logger for the next compilation
                 output = "";
-                doNotify();
-            }
-
-            // We found the failure pattern in stream, copy output
-            // text to the static field, so as bootstrap can check it
-            if (failure.matcher(line).find()) {
-                failedOutput = output;
-                output = "";
+                log = info;
+                // Notify DevModeHandler to continue
                 doNotify();
             }
         }
@@ -389,8 +393,8 @@ public class DevModeHandler implements Serializable {
     }
 
     private static Logger getLogger() {
-        // Using short prefix so as webpack output is more readable
-        return LoggerFactory.getLogger("dev-server");
+        // Using an empty prefix so as webpack output is more readable
+        return LoggerFactory.getLogger("");
     }
 
     /**
