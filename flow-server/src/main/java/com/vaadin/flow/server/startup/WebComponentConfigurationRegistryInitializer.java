@@ -15,6 +15,14 @@
  */
 package com.vaadin.flow.server.startup;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.internal.CustomElementNameValidator;
+import com.vaadin.flow.server.InvalidCustomElementNameException;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -26,13 +34,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.internal.CustomElementNameValidator;
-import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
  * Servlet initializer for collecting all classes that extend {@link
@@ -51,7 +52,7 @@ public class WebComponentConfigurationRegistryInitializer
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
         WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
-                .getInstance(servletContext);
+                .getInstance(VaadinService.getCurrent());
 
         if (set == null || set.isEmpty()) {
             instance.setConfigurations(Collections.emptySet());

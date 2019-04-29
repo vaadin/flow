@@ -16,7 +16,16 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import javax.servlet.ServletContext;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.server.VaadinService;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,24 +41,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.MockInstantiator;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
-
 import static org.mockito.Mockito.mock;
 
 @NotThreadSafe
@@ -62,8 +53,9 @@ public class WebComponentConfigurationRegistryTest {
 
     @Before
     public void init() {
+        VaadinService service = mock(VaadinService.class);
         registry = WebComponentConfigurationRegistry
-                .getInstance(mock(ServletContext.class));
+                .getInstance(service);
     }
 
     @Test

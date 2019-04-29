@@ -23,7 +23,7 @@ import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
@@ -74,8 +74,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
-                WebComponentConfigurationRegistry.getInstance(
-                        ((VaadinServletRequest) request).getServletContext())
+                WebComponentConfigurationRegistry.getInstance(VaadinService.getCurrent())
                         .getConfiguration(tag.get());
 
         if (optionalWebComponentConfiguration.isPresent()) {
