@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -42,9 +43,10 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
@@ -62,17 +64,19 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  */
 public class DevModeHandler implements Serializable {
-
-    private enum LOG_LEVEL {
-        WARN, ERROR, INFO
-    }
-
     // Non final because tests need to reset this during teardown.
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
     // It's not possible to know whether webpack is ready unless reading output messages.
-    // When webpack finishes, it writes either a `Compiled` or `Failed` as the last line
-    private static final String DEFAULT_OUTPUT_PATTERN = ": (Compiled|Failed)";
+    // When webpack finishes, it writes either a `Compiled` or a `Failed` in  the last line
+    private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
+    private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
+    private static final String FAILED_MSG = "\n------------------ 🚫  Frontend compilation failed. 🚫 -----------------";
+    private static final String SUCCEED_MSG = "\n----------------- 👍  Frontend compiled successfully. 👍 -----------------";
+    private static final String YELLOW = "\u001b[38;5;111m{}\u001b[0m";
+    private static final String RED = "\u001b[38;5;196m{}\u001b[0m";
+    private static final String GREEN = "\u001b[38;5;35m{}\u001b[0m";
+
     // If after this time in millisecs, the pattern was not found, we unlock the process
     // and continue. It might happen if webpack changes their output without advise.
     private static final String DEFAULT_TIMEOUT_FOR_PATTERN = "60000";
@@ -80,6 +84,10 @@ public class DevModeHandler implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
     private static final String WEBPACK_HOST = "http://localhost";
+
+    private boolean notified = false;
+
+    private String failedOutput;
 
     /**
      * The local installation path of the webpack-dev-server node script.
@@ -138,10 +146,15 @@ public class DevModeHandler implements Serializable {
             Runtime.getRuntime()
                     .addShutdownHook(new Thread(webpackProcess::destroy));
 
-            Pattern pattern = Pattern.compile(config.getStringProperty(
-                    SERVLET_PARAMETER_DEVMODE_WEBPACK_PATTERN,
+            Pattern succeed = Pattern.compile(config.getStringProperty(
+                    SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
                     DEFAULT_OUTPUT_PATTERN));
-            logStream(webpackProcess.getInputStream(), pattern);
+
+            Pattern failure = Pattern.compile(config.getStringProperty(
+                    SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
+                    DEFAULT_ERROR_PATTERN));
+
+            logStream(webpackProcess.getInputStream(), succeed, failure);
 
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
@@ -302,57 +315,67 @@ public class DevModeHandler implements Serializable {
         return connection;
     }
 
-    // mirrors a stream to logger, and check whether a pattern is found in the output.
-    private void logStream(InputStream input, Pattern pattern) {
-        boolean notify = pattern != null;
+    private void doNotify() {
+        if (!notified) {
+            notified = true;
+            synchronized (this) {
+                notify(); //NOSONAR
+            }
+        }
+    }
 
+    // mirrors a stream to logger, and check whether a success or error pattern is found in the output.
+    private void logStream(InputStream input, Pattern success, Pattern failure) {
         Thread thread = new Thread(() -> {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
             try {
-                LOG_LEVEL level = LOG_LEVEL.INFO;
-                for (String line; ((line = reader.readLine()) != null);) {
-
-                    if(line.contains("WARNING")) {
-                        level = LOG_LEVEL.WARN;
-                    }else if(line.contains("ERROR")) {
-                        level = LOG_LEVEL.ERROR;
-                    } else if(line.trim().isEmpty()){
-                        level = LOG_LEVEL.INFO;
-                    }
-
-                    switch(level) {
-                    case WARN:
-                        getLogger().warn(line);
-                        break;
-                    case ERROR:
-                        getLogger().error(line);
-                        break;
-                    case INFO:
-                    default:
-                        getLogger().info(line);
-                    }
-                    // We found the started pattern in stream, notify
-                    // DevModeHandler to continue
-                    if (notify && pattern.matcher(line).find()) {
-                        synchronized (this) {
-                            notify();//NOSONAR
-                        }
-                    }
-                }
+                readLinesLoop(success, failure, reader);
             } catch (IOException e) {
                 getLogger().error("Exception when reading webpack output.", e);
             }
 
             // Process closed stream, means that it exited, notify
             // DevModeHandler to continue
-            if (notify) {
-                synchronized (this) {
-                    notify();//NOSONAR
-                }
-            }
+            doNotify();
         });
         thread.setName("webpack");
         thread.start();
+    }
+
+    private void readLinesLoop(Pattern success, Pattern failure, BufferedReader reader) throws IOException {
+        StringBuilder output = new StringBuilder();
+        Consumer<String> info = s -> getLogger().info(GREEN, s);
+        Consumer<String> error = s -> getLogger().error(RED, s);
+        Consumer<String> warn = s -> getLogger().warn(YELLOW, s);
+        Consumer<String> log = info;
+        for (String line; ((line = reader.readLine()) != null);) {
+            String cleanLine = line
+                    // remove color escape codes for console
+                    .replaceAll("\u001b\\[[;\\d]*m", "")
+                    // remove babel query string which is confusing
+                    .replaceAll("\\?babel-target=[\\w\\d]+", "");
+
+            // write each line read to logger, but selecting its correct level
+            log = line.contains("WARNING") ? warn : line.contains("ERROR") ? error : log;
+            log.accept(cleanLine);
+
+            // save output so as it can be used to alert user in browser.
+            output.append(cleanLine).append('\n');
+
+            boolean succeed = success.matcher(line).find();
+            boolean failed = failure.matcher(line).find();
+            // We found the success or failure pattern in stream
+            if (succeed || failed) {
+                log.accept(succeed ? SUCCEED_MSG : FAILED_MSG);
+                // save output in case of failure
+                failedOutput = failed ? output.toString() : null;
+                // reset output and logger for the next compilation
+                output = new StringBuilder();
+                log = info;
+                // Notify DevModeHandler to continue
+                doNotify();
+            }
+        }
     }
 
     private void writeStream(ServletOutputStream outputStream, InputStream inputStream) throws IOException {
@@ -369,8 +392,17 @@ public class DevModeHandler implements Serializable {
     }
 
     private static Logger getLogger() {
-        // Using short prefix so as webpack output is more readable
-        return LoggerFactory.getLogger("dev-server");
+        // Using an empty prefix so as webpack output is more readable
+        return LoggerFactory.getLogger("");
+    }
+
+    /**
+     * Return webpack console output when a compilation error happened.
+     *
+     * @return console output if error or null otherwise.
+     */
+    public String getFailedOutput() {
+        return failedOutput;
     }
 
     /**
