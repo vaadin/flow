@@ -111,7 +111,6 @@ public class NodeUpdateImports extends NodeUpdater {
 
         modules = sortModules(modules);
         try {
-            installFlowModules();
             updateMainJsFile(getMainJsContent(modules));
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", generatedFlowImports), e);

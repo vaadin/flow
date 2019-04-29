@@ -1,5 +1,15 @@
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -14,21 +24,13 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
-
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class MockServletServiceSessionSetup {
 
@@ -38,6 +40,7 @@ public class MockServletServiceSessionSetup {
         private TestRouteRegistry routeRegistry;
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
+        private final Map<String, Object> attributes = new HashMap<>();
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -93,6 +96,22 @@ public class MockServletServiceSessionSetup {
             super.modifyBootstrapPage(response);
         }
 
+        @Override
+        public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
+            return
+                type.cast(attributes.computeIfAbsent(
+                    type.getName(),
+                    key -> Optional.ofNullable(defaultValueSupplier)
+                               .map(Supplier::get)
+                               .orElse(null))
+                );
+        }
+
+        @Override
+        public <T> void setAttribute(T value) {
+            assert value != null;
+            attributes.put(value.getClass().getName(), value);
+        }
     }
 
     public class TestVaadinServlet extends VaadinServlet {
