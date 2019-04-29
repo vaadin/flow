@@ -24,13 +24,13 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Command;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
  * Updates the webpack config file according with current project settings.
@@ -41,15 +41,14 @@ public class WebpackUpdater implements Command {
      * The name of the webpack config file.
      */
     private final String webpackTemplate;
-    private final File webpackOutputDirectory;
-    private final File generatedFlowImports;
-
-    private final File webpackFolder;
+    private final Path webpackOutputDirectory;
+    private final Path generatedFlowImports;
+    private final Path webpackConfigFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param webpackFolder
+     * @param webpackConfigFolder
      *            folder with the `webpack.config.js` file.
      * @param webpackOutputDirectory
      *            the directory to set for webpack to output its build results.
@@ -59,13 +58,12 @@ public class WebpackUpdater implements Command {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      */
-    public WebpackUpdater(File webpackFolder, File webpackOutputDirectory,
+    public WebpackUpdater(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, File generatedFlowImports) {
-        this.webpackFolder = webpackFolder;
         this.webpackTemplate = webpackTemplate;
-
-        this.webpackOutputDirectory = webpackOutputDirectory;
-        this.generatedFlowImports = generatedFlowImports;
+        this.webpackOutputDirectory = webpackOutputDirectory.toPath();
+        this.generatedFlowImports = generatedFlowImports.toPath();
+        this.webpackConfigFolder = webpackConfigFolder.toPath();
     }
 
     @Override
@@ -82,7 +80,8 @@ public class WebpackUpdater implements Command {
             return;
         }
 
-        File configFile = new File(webpackFolder, WEBPACK_CONFIG);
+        File configFile = new File(webpackConfigFolder.toString(),
+                WEBPACK_CONFIG);
 
         if (configFile.exists()) {
             NodeUpdater.log().info("{} already exists.", configFile);
@@ -97,10 +96,10 @@ public class WebpackUpdater implements Command {
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
                         .map(line -> line.replace("{{OUTPUT_DIRECTORY}}",
-                                getEscapedRelativePathForConfig(
+                                getEscapedRelativeWebpackPath(
                                         webpackOutputDirectory)))
                         .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
-                                getEscapedRelativePathForConfig(
+                                getEscapedRelativeWebpackPath(
                                         generatedFlowImports)))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
@@ -110,8 +109,10 @@ public class WebpackUpdater implements Command {
         }
     }
 
-    private String getEscapedRelativePathForConfig(File path) {
-        return new File(getBaseDir()).toPath().relativize(path.toPath())
-                .toString().replaceAll("\\\\", "/");
+    private String getEscapedRelativeWebpackPath(Path path) {
+        Path relativePath = path.isAbsolute()
+                ? webpackConfigFolder.relativize(path)
+                : path;
+        return relativePath.toString().replaceAll("\\\\", "/");
     }
 }
