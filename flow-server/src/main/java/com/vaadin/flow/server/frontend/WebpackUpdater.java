@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Command;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
  * Updates the webpack config file according with current project settings.
@@ -44,7 +44,7 @@ public class WebpackUpdater implements Command {
     private final File webpackOutputDirectory;
     private final File generatedFlowImports;
 
-    private File webpackFolder;
+    private final File webpackFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -62,8 +62,9 @@ public class WebpackUpdater implements Command {
     public WebpackUpdater(File webpackFolder, File webpackOutputDirectory,
             String webpackTemplate, File generatedFlowImports) {
         this.webpackFolder = webpackFolder;
-        this.webpackOutputDirectory = webpackOutputDirectory;
         this.webpackTemplate = webpackTemplate;
+
+        this.webpackOutputDirectory = webpackOutputDirectory;
         this.generatedFlowImports = generatedFlowImports;
     }
 
@@ -96,15 +97,21 @@ public class WebpackUpdater implements Command {
                     resource.openStream(), StandardCharsets.UTF_8))) {
                 List<String> webpackConfigLines = br.lines()
                         .map(line -> line.replace("{{OUTPUT_DIRECTORY}}",
-                                webpackOutputDirectory.getPath()
-                                        .replaceAll("\\\\", "/")))
+                                getEscapedRelativePathForConfig(
+                                        webpackOutputDirectory)))
                         .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
-                                generatedFlowImports.getPath()
-                                        .replaceAll("\\\\", "/")))
+                                getEscapedRelativePathForConfig(
+                                        generatedFlowImports)))
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), webpackConfigLines);
-                NodeUpdater.log().info("Created {} from {}", WEBPACK_CONFIG, resource);
+                NodeUpdater.log().info("Created {} from {}", WEBPACK_CONFIG,
+                        resource);
             }
         }
+    }
+
+    private String getEscapedRelativePathForConfig(File path) {
+        return new File(getBaseDir()).toPath().relativize(path.toPath())
+                .toString().replaceAll("\\\\", "/");
     }
 }
