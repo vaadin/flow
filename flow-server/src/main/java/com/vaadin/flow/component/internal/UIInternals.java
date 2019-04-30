@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -196,6 +197,9 @@ public class UIInternals implements Serializable {
     private String appId;
 
     private Component activeDragSourceComponent;
+
+    private ExtendedClientDetails extendedClientDetails = null;
+
 
     /**
      * Creates a new instance for the given UI.
@@ -1041,5 +1045,25 @@ public class UIInternals implements Serializable {
      */
     public UI getUI() {
         return ui;
+    }
+
+    /**
+     * The extended client details, if obtained, are cached in this field.
+     *
+     * @return the extended client details, or {@literal null} if not yet
+     *         received.
+     */
+    public ExtendedClientDetails getExtendedClientDetails() {
+        return extendedClientDetails;
+    }
+
+    /**
+     * Updates the extended client details.
+     *
+     * @param details
+     *              the updated extended client details.
+     */
+    public void setExtendedClientDetails(ExtendedClientDetails details) {
+        this.extendedClientDetails = details;
     }
 }
