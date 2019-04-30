@@ -45,7 +45,7 @@ public class NodeNpmInstall implements Command {
 
     @Override
     public void execute() {
-        if (shouldRunNpmInstall()) {
+        if (packageUpdater.modified || shouldRunNpmInstall()) {
             log().info("Running `npm install` ...");
             runNpmInstall();
         } else {

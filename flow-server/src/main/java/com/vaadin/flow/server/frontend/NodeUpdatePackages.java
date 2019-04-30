@@ -42,6 +42,8 @@ public class NodeUpdatePackages extends NodeUpdater {
     private static final String DEV_DEPENDENCIES = "devDependencies";
     private static final String DEPENDENCIES = "dependencies";
 
+    boolean modified = false;
+
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -93,8 +95,8 @@ public class NodeUpdatePackages extends NodeUpdater {
                 addHtmlImportPackages(deps);
             }
 
-            boolean modified = updatePackageJsonDependencies(packageJson, deps);
-            modified = updatePackageJsonDevDependencies(packageJson) || modified;
+            modified = updatePackageJsonDependencies(packageJson, deps);
+            modified = updatePackageJsonDevDependencies(packageJson) || modified ;
 
             if (modified) {
                 writePackageFile(packageJson);
