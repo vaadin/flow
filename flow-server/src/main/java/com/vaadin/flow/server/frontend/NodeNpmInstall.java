@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.server.Command;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 
 /**
@@ -43,24 +45,29 @@ public class NodeNpmInstall implements Command {
 
     @Override
     public void execute() {
-        if (packageUpdater.modified) {
-            if (log().isInfoEnabled()) {
-                log().info("Running `npm install` ...");
-            }
+        if (shouldRunNpmInstall()) {
+            log().info("Running `npm install` ...");
             runNpmInstall();
         } else {
-            if (log().isInfoEnabled()) {
-                log().info("Skipping `npm install`.");
-            }
+            log().info("Skipping `npm install`.");
         }
+    }
+
+    private boolean shouldRunNpmInstall() {
+        if (packageUpdater.nodeModulesPath.isDirectory()) {
+            File[] installedPackages = packageUpdater.nodeModulesPath.listFiles();
+            return installedPackages == null
+                    || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
+                            .startsWith(installedPackages[0].getName()));
+        }
+        return true;
     }
 
     /**
      * Executes `npm install` after `package.json` has been updated.
      */
     private void runNpmInstall() {
-        List<String> command = new ArrayList<>();
-        command.addAll(FrontendUtils.getNpmExecutable());
+        List<String> command = new ArrayList<>(FrontendUtils.getNpmExecutable());
         command.add("install");
 
         ProcessBuilder builder = new ProcessBuilder(command);

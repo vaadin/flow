@@ -29,7 +29,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -42,8 +41,6 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private static final String DEV_DEPENDENCIES = "devDependencies";
     private static final String DEPENDENCIES = "dependencies";
-
-    boolean modified = false;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -96,8 +93,8 @@ public class NodeUpdatePackages extends NodeUpdater {
                 addHtmlImportPackages(deps);
             }
 
-            modified = updatePackageJsonDependencies(packageJson, deps);
-            modified = updatePackageJsonDevDependencies(packageJson) || modified ;
+            boolean modified = updatePackageJsonDependencies(packageJson, deps);
+            modified = updatePackageJsonDevDependencies(packageJson) || modified;
 
             if (modified) {
                 writePackageFile(packageJson);
