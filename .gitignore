@@ -32,8 +32,8 @@ driver_zips
 driver
 
 bower_components
-node
-node_modules
+node/
+node_modules/
 frontend
 package.json
 package-lock.json
