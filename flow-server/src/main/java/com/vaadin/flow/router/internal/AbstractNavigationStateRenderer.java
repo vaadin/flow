@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -527,7 +528,7 @@ public abstract class AbstractNavigationStateRenderer
     private static class PreservedComponentCache extends HashMap<String,
             PreservedComponentCache.LocationComponent> {
 
-        private static class LocationComponent {
+        private static class LocationComponent implements Serializable {
             private final String location;
             private final Component component;
 
