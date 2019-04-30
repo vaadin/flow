@@ -19,10 +19,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -49,9 +51,11 @@ import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -137,7 +141,6 @@ public abstract class AbstractNavigationStateRenderer
         checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         if (eventActionsSupported()) {
-
             BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
                     event, routeTargetType);
 
@@ -175,7 +178,64 @@ public abstract class AbstractNavigationStateRenderer
             }
         }
 
-        Component componentInstance = getRouteTarget(routeTargetType, event);
+        final Component componentInstance;
+        final Supplier<Component> defaultComponentSupplier = () ->
+                getRouteTarget(routeTargetType, event);
+
+        final VaadinSession session = ui.getSession();
+
+        if (routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)) {
+            final Location location = event.getLocation();
+
+            if (ui.getInternals().getExtendedClientDetails() == null) {
+                if (hasPreservedComponentOfLocation(session, location)) {
+                    // We may have a cached instance for this location, but we
+                    // need to retrieve the window name before we can determine
+                    // this, so execute a client-side request.
+                    ui.getPage().retrieveExtendedClientDetails(ecd ->
+                            handle(event));
+                    return HttpServletResponse.SC_OK;
+                } else {
+                    // We can immediately create the new component instance and
+                    // route to it. But we also want to retrieve the window
+                    // name in order to cache the component for later potential
+                    // refreshes.
+                    componentInstance = defaultComponentSupplier.get();
+                    ui.getPage().retrieveExtendedClientDetails(ecd -> {
+                        final String windowName = ui.getInternals()
+                                .getExtendedClientDetails().getWindowName();
+                        setPreservedComponent(session, windowName, location,
+                                componentInstance);
+                    });
+                }
+            } else {
+                final String windowName = ui.getInternals()
+                        .getExtendedClientDetails().getWindowName();
+
+                final Optional<Component> maybePreserved =
+                        getPreservedComponent(session, windowName,
+                                event.getLocation());
+                if (maybePreserved.isPresent()) {
+                    // Re-use preserved component for this route
+                    componentInstance = maybePreserved.get();
+                    componentInstance.getElement().getNode().removeFromTree();
+                } else {
+                    // Instantiate new component for the route
+                    componentInstance = defaultComponentSupplier.get();
+                    setPreservedComponent(session, windowName, location,
+                            componentInstance);
+                }
+            }
+        } else {
+            // Clear cached components for this same window name
+            if (ui.getInternals().getExtendedClientDetails() != null) {
+                final String windowName = ui.getInternals()
+                        .getExtendedClientDetails().getWindowName();
+                clearPreservedComponent(session, windowName);
+            }
+            componentInstance = defaultComponentSupplier.get();
+        }
+
         List<HasElement> chain = new ArrayList<>();
         chain.add(componentInstance);
 
@@ -463,4 +523,63 @@ public abstract class AbstractNavigationStateRenderer
                 routeTarget.getClass().getAnnotation(PageTitle.class));
     }
 
+
+    private static class PreservedComponentCache extends HashMap<String,
+            PreservedComponentCache.LocationComponent> {
+
+        private static class LocationComponent {
+            private final String location;
+            private final Component component;
+
+            private LocationComponent(String location, Component component) {
+                this.location = location;
+                this.component = component;
+            }
+
+            public String getLocation() {
+                return location;
+            }
+
+            public Component getComponent() {
+                return component;
+            }
+        }
+    }
+
+    static boolean hasPreservedComponentOfLocation(
+            VaadinSession session, Location location ) {
+        return Optional
+                .ofNullable(session.getAttribute(PreservedComponentCache.class))
+                .map(cache ->
+                        cache.values().stream().anyMatch(entry ->
+                                entry.getLocation().equals(location.getPath())))
+                .orElse(false);
+    }
+
+    static Optional<Component> getPreservedComponent(
+            VaadinSession session, String windowName, Location location) {
+        return Optional
+                .ofNullable(session.getAttribute(PreservedComponentCache.class))
+                .filter(cache -> cache.containsKey(windowName))
+                .map(cache -> cache.get(windowName))
+                .filter(entry -> entry.location.equals(location.getPath()))
+                .map(PreservedComponentCache.LocationComponent::getComponent);
+    }
+
+    static void setPreservedComponent(VaadinSession session, String windowName,
+                                      Location location, Component component) {
+        final PreservedComponentCache cache = Optional
+                .ofNullable(session.getAttribute(PreservedComponentCache.class))
+                .orElse(new PreservedComponentCache());
+        cache.put(windowName,
+                new PreservedComponentCache.LocationComponent(
+                        location.getPath(), component));
+        session.setAttribute(PreservedComponentCache.class, cache);
+    }
+
+    private static void clearPreservedComponent(VaadinSession session,
+                                                String windowName) {
+        Optional.ofNullable(session.getAttribute(PreservedComponentCache.class))
+                .ifPresent(cache -> cache.remove(windowName));
+    }
 }
