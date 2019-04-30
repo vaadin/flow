@@ -180,10 +180,7 @@ public class NodeTasks implements Command {
 
     }
 
-    private Collection<Command> commands = new ArrayList<>();
-
-    private NodeTasks() {
-    }
+    private final Collection<Command> commands = new ArrayList<>();
 
     private NodeTasks(Builder builder) {
 

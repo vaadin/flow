@@ -126,7 +126,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         }
 
         long start = System.nanoTime();
-        
+
         runNodeUpdater();
 
         if (generateBundle) {
@@ -139,16 +139,13 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
 
 
     private void runNodeUpdater() {
-        File webpackOutputRelativeToProjectDir = project.getBasedir().toPath()
-                .relativize(getWebpackOutputDirectory().toPath()).toFile();
-
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
                 generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
-                        .withWebpack(webpackOutputRelativeToProjectDir,
+                        .withWebpack(getWebpackOutputDirectory(),
                                 webpackTemplate)
                         .runNpmInstall(runNpmInstall).build().execute();
     }
-    
+
     private void runWebpack() {
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(nodeModulesPath, webpackCommand);
