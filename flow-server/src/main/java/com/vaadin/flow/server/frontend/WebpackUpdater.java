@@ -41,9 +41,9 @@ public class WebpackUpdater implements Command {
      * The name of the webpack config file.
      */
     private final String webpackTemplate;
-    private final Path webpackOutputDirectory;
-    private final Path generatedFlowImports;
-    private final Path webpackConfigFolder;
+    private final transient Path webpackOutputDirectory;
+    private final transient Path generatedFlowImports;
+    private final transient Path webpackConfigFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -80,7 +80,7 @@ public class WebpackUpdater implements Command {
             return;
         }
 
-        File configFile = new File(webpackConfigFolder.toString(),
+        File configFile = new File(webpackConfigFolder.toFile(),
                 WEBPACK_CONFIG);
 
         if (configFile.exists()) {
