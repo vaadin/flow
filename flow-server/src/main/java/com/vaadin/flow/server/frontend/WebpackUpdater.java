@@ -68,44 +68,43 @@ public class WebpackUpdater implements Command {
 
     @Override
     public void execute() {
+        File configFile = new File(webpackConfigFolder.toFile(),
+                WEBPACK_CONFIG);
         try {
-            createWebpackConfig();
+            createWebpackConfig(configFile);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException(String.format(
+                    "Failed to update the webpack config file '%s'",
+                    configFile), e);
         }
     }
 
-    private void createWebpackConfig() throws IOException {
+    private void createWebpackConfig(File configFile) throws IOException {
         if (webpackTemplate == null || webpackTemplate.trim().isEmpty()) {
+            NodeUpdater.log()
+                    .debug("No webpack template provided, skipping the update");
             return;
         }
 
-        File configFile = new File(webpackConfigFolder.toFile(),
-                WEBPACK_CONFIG);
+        URL resource = this.getClass().getClassLoader()
+                .getResource(webpackTemplate);
+        if (resource == null) {
+            resource = new URL(webpackTemplate);
+        }
 
-        if (configFile.exists()) {
-            NodeUpdater.log().info("{} already exists.", configFile);
-        } else {
-            URL resource = this.getClass().getClassLoader()
-                    .getResource(webpackTemplate);
-            if (resource == null) {
-                resource = new URL(webpackTemplate);
-            }
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    resource.openStream(), StandardCharsets.UTF_8))) {
-                List<String> webpackConfigLines = br.lines()
-                        .map(line -> line.replace("{{OUTPUT_DIRECTORY}}",
-                                getEscapedRelativeWebpackPath(
-                                        webpackOutputDirectory)))
-                        .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
-                                getEscapedRelativeWebpackPath(
-                                        generatedFlowImports)))
-                        .collect(Collectors.toList());
-                Files.write(configFile.toPath(), webpackConfigLines);
-                NodeUpdater.log().info("Created {} from {}", WEBPACK_CONFIG,
-                        resource);
-            }
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                resource.openStream(), StandardCharsets.UTF_8))) {
+            List<String> webpackConfigLines = br.lines()
+                    .map(line -> line.replace("{{OUTPUT_DIRECTORY}}",
+                            getEscapedRelativeWebpackPath(
+                                    webpackOutputDirectory)))
+                    .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
+                            getEscapedRelativeWebpackPath(
+                                    generatedFlowImports)))
+                    .collect(Collectors.toList());
+            Files.write(configFile.toPath(), webpackConfigLines);
+            NodeUpdater.log().info("Created {} from {}", WEBPACK_CONFIG,
+                    resource);
         }
     }
 
