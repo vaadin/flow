@@ -286,7 +286,7 @@ public class NodeBuildFrontendMojoTest {
         Assert.assertTrue(tsPackage1 < tsPackage2);
         Assert.assertTrue(tsWebpack1 < tsWebpack2);
         Assert.assertEquals(tsPackage2, tsPackage3);
-        Assert.assertEquals(tsWebpack2, tsWebpack3);
+        Assert.assertTrue(tsWebpack2 < tsWebpack3);
 
         assertPackageJsonContent();
     }
