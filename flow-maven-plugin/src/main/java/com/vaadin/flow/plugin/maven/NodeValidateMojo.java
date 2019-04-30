@@ -118,7 +118,7 @@ public class NodeValidateMojo extends AbstractMojo {
             .distinct().filter(File::isDirectory).collect(Collectors.toList());
 
         if (projectFrontendDirectories.isEmpty()) {
-            getLog().debug("Found no frontend resources for the project");
+            getLog().debug("Found no local frontend resources for the project");
         } else {
             for (File frontendDirectory : projectFrontendDirectories) {
                 try {
