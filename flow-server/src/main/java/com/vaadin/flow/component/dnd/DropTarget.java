@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.component.dnd;
 
 import java.util.Locale;
@@ -15,7 +30,8 @@ import com.vaadin.flow.shared.Registration;
  * Mixin interface that provides basic drop target API for any component.
  * <p>
  * This can be used by either implementing this interface with the static API
- * {@link #of(Component)}.
+ * {@link #create(Component)}, {@link #configure(Component)} or
+ * {@link #configure(Component, boolean)}.
  *
  * @param <T>
  *            the type of the drop target component
@@ -30,7 +46,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * drop target API for the component.
      * <p>
      * The given component will be always set an active drop target, if this is
-     * not desired, use either method {@link #of(Component, boolean)} or
+     * not desired, use either method {@link #configure(Component, boolean)} or
      * {@link #setActive(boolean)}.
      * 
      * @param component
@@ -38,15 +54,43 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @param <T>
      *            the type of the component
      * @return drop target API for the component
-     * @see #of(Component, boolean)
+     * @see #configure(Component)
+     * @see #configure(Component, boolean)
      */
-    static <T extends Component> DropTarget<T> of(T component) {
-        return of(component, true);
+    static <T extends Component> DropTarget<T> create(T component) {
+        return configure(component, true);
     }
 
     /**
-     * Gives access to the generic drop target API for the given component,
-     * optionally makes it an active drop target.
+     * Gives access to the generic drop target API for the given component.
+     * <p>
+     * Unlike {@link #create(Component)} and
+     * {@link #configure(Component, boolean)}, this method does not change the
+     * active drop target status of the given component.
+     * 
+     * @param component
+     *            the component to make a drop target
+     * @param <T>
+     *            the type of the component
+     * @return drop target API for the component
+     * @see #configure(Component, boolean)
+     * @see #create(Component)
+     */
+    static <T extends Component> DropTarget<T> configure(T component) {
+        return new DropTarget<T>() {
+            @Override
+            public T getDropTargetComponent() {
+                return component;
+            }
+        };
+    }
+
+    /**
+     * Gives access to the generic drop target API for the given component and
+     * either activates or deactivates the drop target.
+     * <p>
+     * This method is a shorthand for calling {@link #configure(Component)} and
+     * {@link #setActive(boolean)}.
      * <p>
      * The drop target active state can be changed at any time with
      * {@link #setActive(boolean)}.
@@ -59,15 +103,12 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @param <T>
      *            the type of the component
      * @return the drop target API for the component
-     * @see #of(Component)
+     * @see #create(Component)
+     * @see #configure(Component)
      */
-    static <T extends Component> DropTarget<T> of(T component, boolean active) {
-        DropTarget<T> dropTarget = new DropTarget<T>() {
-            @Override
-            public T getDropTargetComponent() {
-                return component;
-            }
-        };
+    static <T extends Component> DropTarget<T> configure(T component,
+            boolean active) {
+        DropTarget<T> dropTarget = configure(component);
         dropTarget.setActive(active);
         return dropTarget;
     }
@@ -75,10 +116,16 @@ public interface DropTarget<T extends Component> extends HasElement {
     /**
      * Returns the drop target component. This component is used in the drop
      * event as the source, and its element is made as a drop target by default.
+     * <p>
+     * The default implementation of this method returns {@code this}. This
+     * method exists for type safe access for the drop target component and
+     * being able to provide access to drop target API for any component.
      * 
      * @return the drop target component
      */
-    T getDropTargetComponent();
+    default T getDropTargetComponent() {
+        return (T) this;
+    };
 
     /**
      * Returns the element which is made as a drop target in the UI. By default

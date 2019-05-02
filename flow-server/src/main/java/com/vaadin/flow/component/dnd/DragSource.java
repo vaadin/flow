@@ -30,7 +30,8 @@ import com.vaadin.flow.shared.Registration;
  * Mixin interface that provides basic drag source API for any component.
  * <p>
  * This can be used by either implementing this interface, or with the static
- * API {@link #of(Component)}.
+ * API {@link #create(Component)}, {@link #configure(Component)} or
+ * {@link #configure(Component, boolean)}.
  *
  * @param <T>
  *            the type of the drag source component
@@ -45,7 +46,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * source API for the component.
      * <p>
      * The given component will be always set as draggable, if this is not
-     * desired, use either method {@link #of(Component, boolean)} or
+     * desired, use either method {@link #configure(Component, boolean)} or
      * {@link #setDraggable(boolean)}.
      *
      * @param component
@@ -53,15 +54,43 @@ public interface DragSource<T extends Component> extends HasElement {
      * @param <T>
      *            the type of the component
      * @return drag source API mapping to the component
-     * @see #of(Component, boolean)
+     * @see #configure(Component)
+     * @see #configure(Component, boolean)
      */
-    static <T extends Component> DragSource<T> of(T component) {
-        return of(component, true);
+    static <T extends Component> DragSource<T> create(T component) {
+        return configure(component, true);
+    }
+
+    /**
+     * Gives access to the generic drag source API for the given component.
+     * <p>
+     * Unlike {@link #create(Component)} and
+     * {@link #configure(Component, boolean)}, this method does not change the
+     * active drop target status of the given component.
+     *
+     * @param component
+     *            the component to make draggable
+     * @param <T>
+     *            the type of the component
+     * @return drag source API mapping to the component
+     * @see #create(Component)
+     * @see #configure(Component, boolean)
+     */
+    static <T extends Component> DragSource<T> configure(T component) {
+        return new DragSource<T>() {
+            @Override
+            public T getDragSourceComponent() {
+                return component;
+            }
+        };
     }
 
     /**
      * Gives access to the generic drag source API for the given component and
-     * optionally makes it draggable.
+     * applies the given draggable status to it.
+     * <p>
+     * This method is a shorthand for calling {@link #configure(Component)} and
+     * {@link #setDraggable(boolean)}.
      * <p>
      * The component draggable state can be changed later on with
      * {@link #setDraggable(boolean)}.
@@ -73,9 +102,10 @@ public interface DragSource<T extends Component> extends HasElement {
      * @param <T>
      *            the type of the component
      * @return drag source API mapping to the component
-     * @see #of(Component)
+     * @see #create(Component)
+     * @see #configure(Component, boolean)
      */
-    static <T extends Component> DragSource<T> of(T component,
+    static <T extends Component> DragSource<T> configure(T component,
             boolean draggable) {
         DragSource<T> dragSource = new DragSource<T>() {
             @Override
@@ -91,6 +121,9 @@ public interface DragSource<T extends Component> extends HasElement {
      * Returns the drag source component. This component is used in the drag
      * start and end events, and set as active drag source for the UI when
      * dragged.
+     * <p>
+     * The default implementation of this method returns {@code this}. This
+     * method exists for type safe access for the drag source component.
      * 
      * @return the drag source component
      */
@@ -101,7 +134,9 @@ public interface DragSource<T extends Component> extends HasElement {
      * element that is not the root element of this component as the draggable
      * element.
      */
-    T getDragSourceComponent();
+    default T getDragSourceComponent() {
+        return (T) this;
+    };
 
     /**
      * Returns the element where the {@code draggable} attribute is applied,
@@ -180,10 +215,16 @@ public interface DragSource<T extends Component> extends HasElement {
      * Set server side drag data. This data is available in the drop event and
      * can be used to transfer data between drag source and {@link DropTarget}
      * if they are in the same UI.
+     * <p>
+     * The drag data can be set also in the drag start event listener added with
+     * {@link #addDragStartListener(ComponentEventListener)} using
+     * {@link DragStartEvent#setDragData(Object)}.
      *
      * @param data
      *            Data to transfer to drop event.
      * @see DropEvent#getDragData()
+     * @see DragStartEvent#setDragData(Object)
+     * @see DragEndEvent#clearDragData()
      */
     default void setDragData(Object data) {
         ComponentUtil.setData(getDragSourceComponent(),

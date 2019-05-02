@@ -92,4 +92,18 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
     public T getComponent() {
         return getSource();
     }
+
+    /**
+     * Clears the drag data for this drag operation (and the drag source
+     * component).
+     * <p>
+     * This method is a shorthand for calling
+     * {@link DragSource#setDragData(Object)} with {@code null} parameter.
+     * 
+     * @see DragStartEvent#setDragData(Object)
+     * @see DragSource#setDragData(Object)
+     */
+    public void clearDragData() {
+        DragSource.configure(getComponent()).setDragData(null);
+    }
 }

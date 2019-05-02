@@ -53,4 +53,21 @@ public class DragStartEvent<T extends Component> extends ComponentEvent<T> {
     public T getComponent() {
         return getSource();
     }
+
+    /**
+     * Set server side drag data for this started drag operation. This data is
+     * available in the drop event and can be used to transfer data between drag
+     * source and {@link DropTarget} if they are in the same UI.
+     * <p>
+     * This method is a shorthand for {@link DragSource#setDragData(Object)} and
+     * overrides any previously set drag data.
+     *
+     * @param data
+     *            Data to transfer to drop event.
+     * @see DropEvent#getDragData()
+     * @see DragEndEvent#clearDragData()
+     */
+    public void setDragData(Object data) {
+        DragSource.configure(getComponent()).setDragData(data);
+    }
 }
