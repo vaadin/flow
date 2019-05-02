@@ -31,6 +31,7 @@ import java.util.Properties;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.isBowerLegacyMode;
 
@@ -136,7 +137,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
     private static boolean isBowerLegacyProdMode(ServletContext context) {
         try {
-            URL resource = context.getResource("frontend-es6/vaadin-flow-bundle-manifest.json");
+            URL resource = context.getResource("/" + Constants.FRONTEND_URL_ES6_DEFAULT_VALUE.replace(
+                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")+ "vaadin-flow-bundle-manifest.json");
             if (resource != null) {
                 return true;
             }
