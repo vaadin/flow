@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.function.Function;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -34,11 +35,14 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 
+import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
@@ -143,6 +147,9 @@ public class Page implements Serializable {
 
     private final UI ui;
     private final History history;
+
+    private ExtendedClientDetails extendedClientDetails = null;
+
 
     /**
      * Creates a page instance for the given UI.
@@ -527,5 +534,76 @@ public class Page implements Serializable {
                         e);
             }
         }
+    }
+
+    /**
+     * Callback for receiving extended client-side details.
+     */
+    @FunctionalInterface
+    public interface ExtendedClientDetailsReceiver extends Serializable {
+
+        /**
+         * Invoked when the client-side details are available.
+         * @param extendedClientDetails
+         *          object containing extended client details
+         */
+        void receiveDetails(ExtendedClientDetails extendedClientDetails);
+    }
+
+    /**
+     * Obtain extended client side details, such as time screen and time zone
+     * information, via callback. If already obtained, the callback is
+     * called directly. Otherwise, a client-side roundtrip will be carried out.
+     *
+     * @param receiver
+     *              the callback to which the details are provided
+     */
+    public void retrieveExtendedClientDetails(
+            ExtendedClientDetailsReceiver receiver) {
+        if (extendedClientDetails != null) {
+            receiver.receiveDetails(extendedClientDetails);
+            return;
+        }
+        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
+        final SerializableConsumer<JsonValue> resultHandler = json -> {
+            handleExtendedClientDetailsResponse(json);
+            receiver.receiveDetails(extendedClientDetails);
+        };
+        final SerializableConsumer<String> errorHandler = err -> {
+            throw new RuntimeException("Unable to retrieve extended " +
+                    "client details. JS error is '" + err + "'");
+        };
+        executeJs(js).then(resultHandler, errorHandler);
+    }
+
+    private void handleExtendedClientDetailsResponse(JsonValue json) {
+        if (!(json instanceof JsonObject)) {
+            throw new RuntimeException("Expected a JSON object");
+        }
+        final JsonObject jsonObj = (JsonObject) json;
+
+        // Note that JSON returned is a plain string -> string map, the actual
+        // parsing of the fields happens in ExtendedClient's constructor. If a
+        // field is missing or the wrong type, pass on null for default.
+        final Function<String, String> getStringElseNull = key -> {
+            final JsonValue jsValue = jsonObj.get(key);
+            if (jsValue != null && JsonType.STRING.equals(jsValue.getType())) {
+                return jsValue.asString();
+            } else {
+                return null;
+            }
+        };
+        extendedClientDetails = new ExtendedClientDetails(
+                getStringElseNull.apply("v-sw"),
+                getStringElseNull.apply("v-sh"),
+                getStringElseNull.apply("v-tzo"),
+                getStringElseNull.apply("v-rtzo"),
+                getStringElseNull.apply("v-dstd"),
+                getStringElseNull.apply("v-dston"),
+                getStringElseNull.apply("v-tzid"),
+                getStringElseNull.apply("v-curdate"),
+                getStringElseNull.apply("v-td"),
+                getStringElseNull.apply("v-wn"));
+
     }
 }

@@ -29,7 +29,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static java.nio.charset.StandardCharsets.UTF_8;
 

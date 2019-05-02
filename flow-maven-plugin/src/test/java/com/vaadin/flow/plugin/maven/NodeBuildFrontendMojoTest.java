@@ -49,7 +49,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
@@ -69,7 +68,6 @@ public class NodeBuildFrontendMojoTest {
     private String packageJson;
     private String webpackConfig;
 
-    private File frontendDirectory;
     private final NodeBuildFrontendMojo mojo = new NodeBuildFrontendMojo();
 
     @Before
@@ -80,7 +78,7 @@ public class NodeBuildFrontendMojoTest {
         File tmpRoot = temporaryFolder.getRoot();
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
-        frontendDirectory = new File(tmpRoot, "frontend");
+        File frontendDirectory = new File(tmpRoot, "frontend");
 
         packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
