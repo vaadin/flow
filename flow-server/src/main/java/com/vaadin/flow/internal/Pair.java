@@ -23,22 +23,22 @@ import java.io.Serializable;
  * @author Vaadin Ltd
  *
  */
-class Pair<U extends Serializable, V extends Serializable>
+public class Pair<U extends Serializable, V extends Serializable>
         implements Serializable {
 
     private final U first;
     private final V second;
 
-    Pair(U u, V v) {
+    public Pair(U u, V v) {
         first = u;
         second = v;
     }
 
-    U getFirst() {
+    public U getFirst() {
         return first;
     }
 
-    V getSecond() {
+    public V getSecond() {
         return second;
     }
 
