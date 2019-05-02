@@ -82,7 +82,6 @@ public class TestComponents {
 
     @Route
     @Theme(value = Lumo.class, variant = Lumo.DARK)
-    @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;

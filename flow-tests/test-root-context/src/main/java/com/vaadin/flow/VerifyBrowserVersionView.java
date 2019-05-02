@@ -28,11 +28,6 @@ public class VerifyBrowserVersionView extends Div {
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
         Span userAgent = new Span(browser.getBrowserApplication());
         userAgent.setId("userAgent");
-
-        Span touchDevice = new Span(
-                "Touch device? " + (browser.isTouchDevice() ? "YES" : "No"));
-        touchDevice.setId("touchDevice");
-
-        add(userAgent, touchDevice);
+        add(userAgent);
     }
 }

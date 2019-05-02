@@ -26,7 +26,7 @@ public class VerifyBrowserVersionIT extends ChromeBrowserTest {
             // Chrome version does not necessarily match the desired version
             // because of auto updates...
             browserIdentifier = getExpectedUserAgentString(
-                    getDesiredCapabilities()) + "73";
+                    getDesiredCapabilities()) + "74";
         } else if (BrowserUtil.isFirefox(getDesiredCapabilities())) {
             browserIdentifier = getExpectedUserAgentString(
                     getDesiredCapabilities()) + "58";
@@ -36,9 +36,6 @@ public class VerifyBrowserVersionIT extends ChromeBrowserTest {
         }
 
         assertThat(userAgent, containsString(browserIdentifier));
-
-        assertThat(findElement(By.id("touchDevice")).getText(),
-                is("Touch device? No"));
     }
 
     private String getExpectedUserAgentString(DesiredCapabilities dCap) {

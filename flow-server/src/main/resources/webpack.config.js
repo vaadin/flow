@@ -29,7 +29,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    index: '{{GENERATED_FLOW_IMPORTS}}'
+    index: `${baseDir}/{{GENERATED_FLOW_IMPORTS}}`
   },
 
   output: {
