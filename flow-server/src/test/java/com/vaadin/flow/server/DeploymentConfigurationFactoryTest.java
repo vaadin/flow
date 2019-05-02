@@ -18,10 +18,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -41,6 +43,7 @@ public class DeploymentConfigurationFactoryTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    ServletContext contextMock;
 
     private static class NoSettings extends VaadinServlet {
     }
@@ -57,6 +60,7 @@ public class DeploymentConfigurationFactoryTest {
     @Before
     public void setup() throws IOException {
         System.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
+        contextMock = mock(ServletContext.class);
     }
 
     @Test
@@ -66,7 +70,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap(), null));
+                        createServletConfigMock(emptyMap(), emptyMap(), null,true));
 
         Class<?> customUiClass = servlet.getEnclosingClass();
         assertTrue(String.format(
@@ -85,7 +89,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap(), null));
+                        createServletConfigMock(emptyMap(), emptyMap(), null,true));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
         assertFalse(String.format(
@@ -102,7 +106,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap(), null));
+                        createServletConfigMock(emptyMap(), emptyMap(), null,true));
 
         assertTrue(String.format(
                 "Unexpected value for production mode, check '%s' class annotation",
@@ -128,7 +132,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet, createServletConfigMock(
-                        servletConfigParams, emptyMap(), null));
+                        servletConfigParams, emptyMap(), null,true));
 
         assertEquals(
                 "Unexpected value for production mode, should be the same as in servlet config parameters",
@@ -155,7 +159,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet, createServletConfigMock(
-                        emptyMap(), servletContextParams, null));
+                        emptyMap(), servletContextParams, null,true));
 
         assertEquals(
                 "Unexpected value for production mode, should be the same as in servlet context parameters",
@@ -191,7 +195,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet, createServletConfigMock(
-                        servletConfigParams, servletContextParams, null));
+                        servletConfigParams, servletContextParams, null,true));
 
         assertEquals(
                 "Unexpected value for production mode, should be the same as in servlet context parameters",
@@ -204,14 +208,14 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void should_not_SetBowerMode_when_NoBowerFrontendFolder() throws Exception {
-        DeploymentConfiguration config = createConfig(emptyMap(), null);
+        DeploymentConfiguration config = createConfig(emptyMap(), null,true);
         assertFalse(config.isBowerMode());
     }
 
     @Test
     public void should_SetBowerMode_when_BowerFrontendFolder() throws Exception {
         FileUtils.forceMkdir(new File(getBaseDir(), "src/main/webapp/frontend"));
-        DeploymentConfiguration config = createConfig(emptyMap(), null);
+        DeploymentConfiguration config = createConfig(emptyMap(), null,true);
         assertTrue(config.isBowerMode());
     }
 
@@ -219,7 +223,7 @@ public class DeploymentConfigurationFactoryTest {
     public void should_not_SetBowerMode_when_BowerFrontendFolderAndNpmFrontendFolder() throws Exception {
         FileUtils.forceMkdir(new File(getBaseDir(), "src/main/webapp/frontend"));
         FileUtils.forceMkdir(new File(getBaseDir(), "frontend"));
-        DeploymentConfiguration config = createConfig(emptyMap(), null);
+        DeploymentConfiguration config = createConfig(emptyMap(), null,true);
         assertFalse(config.isBowerMode());
     }
 
@@ -228,7 +232,7 @@ public class DeploymentConfigurationFactoryTest {
         FileUtils.forceMkdir(new File(getBaseDir(), "src/main/webapp/frontend"));
         new File(getBaseDir(), PACKAGE_JSON).createNewFile();
         new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        DeploymentConfiguration config = createConfig(emptyMap(), null);
+        DeploymentConfiguration config = createConfig(emptyMap(), null,true);
         assertFalse(config.isBowerMode());
     }
 
@@ -236,28 +240,31 @@ public class DeploymentConfigurationFactoryTest {
     public void should_not_SetBowerMode_when_ProdModeAndNoBundleEs6() throws Exception {
         Map<String, String> pars = new HashMap<>();
         pars.put(SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
-        DeploymentConfiguration config = createConfig(pars, null);
+        DeploymentConfiguration config = createConfig(pars, null,true);
         assertFalse(config.isBowerMode());
     }
 
     @Test
     public void should_SetBowerMode_when_ProdModeAndBundleEs6() throws Exception {
+        expect(contextMock.getResource("/" + Constants.FRONTEND_URL_ES6_DEFAULT_VALUE.replace(
+                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")+ "vaadin-flow-bundle-manifest.json"))
+                .andReturn(new URL("http://works")).anyTimes();
+
         Map<String, String> pars = new HashMap<>();
         pars.put(SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
-        DeploymentConfiguration config = createConfig(pars, new File(".").toURI().toURL());
+        DeploymentConfiguration config = createConfig(pars, new File(".").toURI().toURL(),false);
         assertTrue(config.isBowerMode());
     }
 
-    private DeploymentConfiguration createConfig(Map<String, String> map, URL url) throws Exception {
+    private DeploymentConfiguration createConfig(Map<String, String> map, URL url, boolean captureResource) throws Exception {
         return DeploymentConfigurationFactory
                 .createDeploymentConfiguration(VaadinServlet.class, createServletConfigMock(
-                        map, emptyMap(), url));
+                        map, emptyMap(), url,captureResource));
     }
 
     private ServletConfig createServletConfigMock(
             Map<String, String> servletConfigParameters,
-            Map<String, String> servletContextParameters, URL url) throws Exception {
-        ServletContext contextMock = mock(ServletContext.class);
+            Map<String, String> servletContextParameters, URL url, boolean captureResource) throws Exception {
         expect(contextMock.getInitParameterNames())
                 .andAnswer(() -> Collections
                         .enumeration(servletContextParameters.keySet()))
@@ -268,11 +275,10 @@ public class DeploymentConfigurationFactoryTest {
                         .get(initParameterNameCapture.getValue()))
                 .anyTimes();
 
-        Capture<String> resourceCapture = EasyMock.newCapture();
-        expect(contextMock.getResource(capture(resourceCapture)))
-                .andReturn(url).anyTimes();
-
-
+if(captureResource) {
+    Capture<String> resourceCapture = EasyMock.newCapture();
+    expect(contextMock.getResource(capture(resourceCapture))).andReturn(url).anyTimes();
+}
         replay(contextMock);
 
         return new ServletConfig() {
