@@ -148,9 +148,6 @@ public class Page implements Serializable {
     private final UI ui;
     private final History history;
 
-    private ExtendedClientDetails extendedClientDetails = null;
-
-
     /**
      * Creates a page instance for the given UI.
      *
@@ -560,14 +557,17 @@ public class Page implements Serializable {
      */
     public void retrieveExtendedClientDetails(
             ExtendedClientDetailsReceiver receiver) {
-        if (extendedClientDetails != null) {
-            receiver.receiveDetails(extendedClientDetails);
+        final ExtendedClientDetails cachedDetails =
+                ui.getInternals().getExtendedClientDetails();
+        if (cachedDetails != null) {
+            receiver.receiveDetails(cachedDetails);
             return;
         }
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
         final SerializableConsumer<JsonValue> resultHandler = json -> {
             handleExtendedClientDetailsResponse(json);
-            receiver.receiveDetails(extendedClientDetails);
+            receiver.receiveDetails(
+                    ui.getInternals().getExtendedClientDetails());
         };
         final SerializableConsumer<String> errorHandler = err -> {
             throw new RuntimeException("Unable to retrieve extended " +
@@ -593,7 +593,7 @@ public class Page implements Serializable {
                 return null;
             }
         };
-        extendedClientDetails = new ExtendedClientDetails(
+        ui.getInternals().setExtendedClientDetails(new ExtendedClientDetails(
                 getStringElseNull.apply("v-sw"),
                 getStringElseNull.apply("v-sh"),
                 getStringElseNull.apply("v-tzo"),
@@ -603,7 +603,7 @@ public class Page implements Serializable {
                 getStringElseNull.apply("v-tzid"),
                 getStringElseNull.apply("v-curdate"),
                 getStringElseNull.apply("v-td"),
-                getStringElseNull.apply("v-wn"));
+                getStringElseNull.apply("v-wn")));
 
     }
 }

@@ -18,27 +18,44 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 
 /**
- * Represents a pair of two values.
+ * Generic class representing an immutable pair of values.
  *
  * @author Vaadin Ltd
  *
  */
-class Pair<U extends Serializable, V extends Serializable>
+public class Pair<U extends Serializable, V extends Serializable>
         implements Serializable {
 
     private final U first;
     private final V second;
 
-    Pair(U u, V v) {
+    /**
+     * Creates a new pair.
+     * @param u
+     *      the value of the first component
+     * @param v
+     *      the value of the second component
+     */
+    public Pair(U u, V v) {
         first = u;
         second = v;
     }
 
-    U getFirst() {
+    /**
+     * Gets the first component of the pair.
+     * @return
+     *      the first component of the pair
+     */
+    public U getFirst() {
         return first;
     }
 
-    V getSecond() {
+    /**
+     * Gets the second component of the pair.
+     * @return
+     *      the second component of the pair
+     */
+    public V getSecond() {
         return second;
     }
 
