@@ -47,8 +47,7 @@ import elemental.json.JsonValue;
 public class WebComponentGenerator {
     private static final String HTML_TEMPLATE = "webcomponent-template.html";
     private static final String JS_TEMPLATE = "webcomponent-template.js";
-    private static final String SCRIPT_TEMPLATE = "webcomponent-template" +
-            "-script.js";
+    private static final String SCRIPT_TEMPLATE = "webcomponent-script-template.js";
 
     private static final String INDENTATION = "    ";
 
@@ -66,11 +65,15 @@ public class WebComponentGenerator {
         }
     }
 
-    private static String getTemplate(String templateName) {
-        String template = getStringResource(templateName);
+    private static String getTemplate(boolean bowerMode) {
+        String templateHead;
+        if (bowerMode) {
+            templateHead = getStringResource(HTML_TEMPLATE);
+        } else {
+            templateHead = getStringResource(JS_TEMPLATE);
+        }
         String scriptTemplate = getStringResource(SCRIPT_TEMPLATE);
-
-        return template.replace("_script_template_", scriptTemplate);
+        return templateHead.replace("_script_template_", scriptTemplate);
     }
 
     /**
@@ -133,9 +136,7 @@ public class WebComponentGenerator {
                 getReplacementsMap(webComponentConfiguration.getTag(),
                         propertyDataSet, frontendURI, generateUiImport);
 
-        String templateFile = bowerMode ? HTML_TEMPLATE : JS_TEMPLATE;
-
-        String template = getTemplate(templateFile);
+        String template = getTemplate(bowerMode);
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
             template = template.replace("_" + replacement.getKey() + "_",
                     replacement.getValue());

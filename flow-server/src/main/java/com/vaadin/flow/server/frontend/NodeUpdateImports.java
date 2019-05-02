@@ -113,6 +113,8 @@ public class NodeUpdateImports extends NodeUpdater {
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
         if (exportedWebComponents != null) {
+            System.out.println("Found " + exportedWebComponents.size() + " " +
+                    "exported web components!");
             modules.addAll(getExportedJsModules(exportedWebComponents));
         }
 
@@ -153,6 +155,8 @@ public class NodeUpdateImports extends NodeUpdater {
             theme.getHtmlAttributes(themeDef.getVariant())
                     .forEach((key, value) -> lines.add("document.body.setAttribute('" + key + "', '" + value + "');"));
         }
+        // DEBUG
+        modules.forEach(System.out::println);
 
         lines.addAll(modulesToImports(modules, theme));
 

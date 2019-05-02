@@ -16,26 +16,38 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletContext;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import java.util.regex.Pattern;
+
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.JsonObject;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -43,8 +55,9 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd.
  */
 public class WebComponentBootstrapHandler extends BootstrapHandler {
-
-    private static final String PATH_PREFIX = "/web-component/web-component-ui.html";
+    private static final String PATH_PREFIX = "/web-component/web-component";
+    private static final Pattern PATH_PATTERN =
+            Pattern.compile(".*" + PATH_PREFIX + "-(ui|bootstrap)(\\.js|\\.html)$");
 
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
@@ -78,7 +91,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             return false;
         }
 
-        return (pathInfo.equals(PATH_PREFIX));
+        return (PATH_PATTERN.matcher(pathInfo).find());
     }
 
     @Override
@@ -92,15 +105,15 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         VaadinServletRequest servletRequest = (VaadinServletRequest) request;
         String requestURL = servletRequest.getRequestURL().toString();
 
-        if (!requestURL.endsWith(PATH_PREFIX)) {
+        if (!PATH_PATTERN.matcher(requestURL).find()) {
             throw new IllegalStateException("Unexpected request URL '"
                     + requestURL
                     + "' in the bootstrap handler for web component UI which should handle path "
-                    + PATH_PREFIX);
+                    + PATH_PATTERN);
         }
         // remove path prefix but keep the trailing slash
         String serviceUrl = requestURL.substring(0,
-                requestURL.length() - PATH_PREFIX.length() + 1);
+                requestURL.indexOf(PATH_PREFIX) + 1);
         // replace http:// or https:// with // to work with https:// proxies
         // which proxies to the same http:// url
         serviceUrl = serviceUrl.replaceFirst("^.*://", "//");
@@ -131,5 +144,101 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
                                                       VaadinResponse response, UI ui) {
         return new WebComponentBootstrapContext(request, response, ui);
+    }
+
+
+    @Override
+    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+        if (FrontendUtils.isBowerLegacyMode()) {
+            return super.synchronizedHandleRequest(session, request, response);
+        } else {
+            // Find UI class
+            Class<? extends UI> uiClass = getUIClass(request);
+
+            BootstrapContext context = createAndInitUI(uiClass, request, response,
+                    session);
+
+            ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+                    response::setDateHeader);
+
+            Document document = getBootstrapPage(context);
+            writeBootstrapPage(response, document.head());
+            return true;
+        }
+    }
+
+    /**
+     * Copies the {@link org.jsoup.nodes.Element Elements} found in the given
+     * {@code head} elements into the head of the embedding website using
+     * JavaScript. Drops {@code <base>} element.
+     *
+     * @param response
+     *         {@link com.vaadin.flow.server.VaadinResponse} into which the
+     *         script is written
+     * @param head
+     *         head element of Vaadin Bootstrap page. The child elements are
+     *         copied into the embedding page's head using JavaScript.
+     * @throws IOException
+     *         if writing fails
+     */
+    private static void writeBootstrapPage(VaadinResponse response,
+                                           Element head) throws IOException {
+        /*
+            The elements found in the head are reconstructed using JavaScript and
+            document.createElement(...). Since innerHTML and related methods
+            do not execute <script> blocks, the contents cannot be copied as
+            pure string into the head. The each element is created separately
+            and then attributes are copied and innerHTML set, if the element
+            has innerHTML. The innerHTMLs are in-lined for easier copying.
+        */
+        response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+            String varName = "vdnHdEl"; // generated head element
+            writer.append("var ").append(varName).append("= null");
+            for (Element element : head.children()) {
+                // we skip base href adjustment, since we are in a 3rd party
+                // context (TODO: there could be a problem, when Vaadin embeds Vaadin)
+                if ("base".equals(element.tagName())) {
+                    continue;
+                }
+                writer.append(varName).append("=");
+                writer.append("document.createElement('").append(element.tagName()).append("');");
+                // add all the attributes to the element
+                for (Attribute attribute : element.attributes()) {
+                    writer.append(varName).append(".setAttribute('").append(attribute.getKey()).append("',");
+                    if (attribute.getValue() == null) {
+                        writer.append("true");
+                    } else {
+                        writer.append("'").append(attribute.getValue()).append("'");
+                    }
+                    writer.append(");");
+                }
+                // set cleaned html as innerHTML for the element
+                String elementHtml = element.html();
+                if (elementHtml != null && elementHtml.length() > 0) {
+                    writer.append(varName).append(".innerHTML=\"")
+                            .append(inlineHTML(elementHtml)).append("\";");
+                }
+                writer.append("document.head.appendChild(").append(varName).append(");");
+            }
+        }
+    }
+
+    private static String inlineHTML(String html) {
+        // Format the received html into a form which will fit nicely as a
+        // one-liner to .innerHTML="{html}", since we cannot use
+        // ES6 back-ticks (``) for multi-line text
+        return html
+                // escape quotes
+                .replace("\"", "\\\"")
+                // change CDATA comment style for one-lining
+                .replace("//<![CDATA[", "/*<![CDATA[*/")
+                .replace("//]]>", "/*]]>*/")
+                // get rid of all the unnecessary white-space
+                .replaceAll("\\s{2,}", "")
+                .replace("\t", "")
+                .replace("\n", "")
+                .replace("\r", "");
     }
 }

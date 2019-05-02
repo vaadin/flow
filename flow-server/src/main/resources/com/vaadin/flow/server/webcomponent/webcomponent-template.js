@@ -1,6 +1,15 @@
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-_ui_import_
+import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
 
 class _TagCamel_ extends PolymerElement {
-_script_template_
+  static get template() {
+    return html`
+        <style>
+          :host {
+            display: inline-block;
+          }
+        </style>
+        <slot></slot>
+    `;
+  }
+  _script_template_
 

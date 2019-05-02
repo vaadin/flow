@@ -420,7 +420,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return true;
     }
 
-    static Document getBootstrapPage(BootstrapContext context) {
+    protected static Document getBootstrapPage(BootstrapContext context) {
         DeploymentConfiguration config = context.getSession().getConfiguration();
 
         Document document = new Document("");

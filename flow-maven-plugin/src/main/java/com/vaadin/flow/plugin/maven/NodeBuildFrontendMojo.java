@@ -95,6 +95,10 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
     private File generatedFlowImports;
 
+    @Parameter(defaultValue = "${project.build.directory}/" + "/frontend" +
+            "/generated")
+    private File exportedWebComponents;
+
     /**
      * A directory with project's frontend source files.
      */
@@ -154,9 +158,10 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     private List<File> getExportedWebComponents() {
         WebComponentModulesGenerator generator =
                 new WebComponentModulesGenerator(new AnnotationValuesExtractor(
-                        NodeBuildFrontendMojo.getClassFinder(project)), false);
+                        getClassFinder(project)), false);
 
-        File target = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+        File target = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME +
+                "/generated");
 
         return generator.getExporters()
                 .map(exporter -> generator.generateModuleFile(exporter, target))

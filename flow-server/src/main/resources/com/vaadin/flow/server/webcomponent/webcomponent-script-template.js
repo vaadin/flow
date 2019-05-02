@@ -36,7 +36,7 @@
   connectedCallback() {
     super.connectedCallback();
 
-    if (_TagCamel_.rootId){
+    if (_TagCamel_.rootId != null){
         this._connect(_TagCamel_.rootId);
     }
     else {
@@ -95,10 +95,13 @@
   }
 }
 
+_TagCamel_.rootId = null;
 _TagCamel_.id = 0;
 
 function addRootElementEventListener(){
+    console.log("addRootElementEventListener");
     document.body.addEventListener('root-element', function(event) {
+        console.log("root-element found, with id " + event.detail);
         _TagCamel_.rootId = event.detail;
     });
 }
