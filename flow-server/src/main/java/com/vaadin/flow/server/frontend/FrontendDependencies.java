@@ -227,13 +227,12 @@ public class FrontendDependencies implements Serializable {
             endPoints.put(className, visitClass(className, data));
 
             // if this is the root level view, use its theme for the app
-            if (data.route.isEmpty() && !data.notheme) {
+            if (data.route.isEmpty() || !data.notheme) {
                 Class<? extends AbstractTheme> theme = data.theme != null ? finder.loadClass(data.theme)
                         : getLumoTheme();
-                if (theme != null) {
+                if (theme != null && (themeDefinition == null || data.route.isEmpty())) {
                     themeDefinition = new ThemeDefinition(theme, data.variant != null ? data.variant : "");
                     themeInstance = new ThemeWrapper(theme);
-
                 }
             }
         }
