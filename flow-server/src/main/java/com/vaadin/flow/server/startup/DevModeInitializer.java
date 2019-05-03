@@ -22,9 +22,7 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import java.io.File;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -81,7 +79,6 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false))
                     .enableImportsUpdate(!config.getBooleanProperty(
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false))
-                    .withExportedWebComponents(collectExportedWebComponents())
                     .runNpmInstall(true)
                     .build().execute();
 
@@ -91,18 +88,6 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
                     "Failed to start a dev mode, hot reload is disabled. Continuing to start the application.",
                     e);
         }
-    }
-
-    private List<File> collectExportedWebComponents() {
-        File file = new File(FrontendUtils.getBaseDir() + "/node_modules" +
-                "/@vaadin/flow-frontend/generated/");
-        if (file.exists()) {
-            File[] files = file.listFiles();
-            if (files != null) {
-                return Arrays.asList(files);
-            }
-        }
-        return null;
     }
 
     private Logger log() {
