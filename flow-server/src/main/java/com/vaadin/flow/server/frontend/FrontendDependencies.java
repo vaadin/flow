@@ -147,7 +147,9 @@ public class FrontendDependencies implements Serializable {
         try {
             computeEndpoints();
             computePackages();
-            computeExporters();
+            if (generateEmbeddableWebComponents) {
+                computeExporters();
+            }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
             throw new IllegalStateException("Unable to compute frontend dependencies", e);
         }
