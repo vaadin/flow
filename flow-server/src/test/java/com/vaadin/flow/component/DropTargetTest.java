@@ -33,6 +33,11 @@ import org.junit.Test;
 
 public class DropTargetTest {
 
+    @Tag("div")
+    class TestComponent extends Component implements DropTarget<TestComponent> {
+
+    }
+
     private MockUI ui;
 
     @Before
@@ -41,16 +46,53 @@ public class DropTargetTest {
     }
 
     @Test
+    public void testDropTarget_mixinInterface() {
+        TestComponent component = new TestComponent();
+        ui.add(component);
+
+        component.setActive(true);
+        Assert.assertTrue(component.getElement()
+                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+
+        AtomicReference<DropEvent<TestComponent>> eventCapture = new AtomicReference<>();
+        component.addDropListener(eventCapture::set);
+
+        DropEvent<TestComponent> dropEvent = new DropEvent<>(component, true,
+                "all");
+        ComponentUtil.fireEvent(component, dropEvent);
+
+        DropEvent<TestComponent> actualEvent = eventCapture.get();
+        Assert.assertEquals(dropEvent, actualEvent);
+        Assert.assertTrue(actualEvent.isFromClient());
+        Assert.assertEquals(component, actualEvent.getComponent());
+        Assert.assertEquals(EffectAllowed.ALL, actualEvent.getEffectAllowed());
+        Assert.assertEquals(null, actualEvent.getDropEffect());
+        Assert.assertFalse(actualEvent.getDragData().isPresent());
+    }
+
+    @Test
     public void testDropTarget_staticBuilder_wrapsComponent() {
         RouterLink component = new RouterLink();
-        DropTarget<RouterLink> dropTarget = DropTarget.of(component);
+        DropTarget<RouterLink> dropTarget = DropTarget.create(component);
 
         Assert.assertTrue(component.getElement()
                 .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
         Assert.assertNull(dropTarget.getDropEffect());
 
-        DropTarget.of(component, false);
+        DropTarget.configure(component, false);
         Assert.assertFalse(component.getElement()
+                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+
+        DropTarget.configure(component);
+        Assert.assertFalse(component.getElement()
+                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+
+        DropTarget.configure(component, true);
+        Assert.assertTrue(component.getElement()
+                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+
+        DropTarget.configure(component);
+        Assert.assertTrue(component.getElement()
                 .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
     }
 
@@ -58,7 +100,7 @@ public class DropTargetTest {
     public void testDropTarget_dropListener_correctData() {
         RouterLink component = new RouterLink();
         ui.add(component);
-        DropTarget<RouterLink> dropTarget = DropTarget.of(component);
+        DropTarget<RouterLink> dropTarget = DropTarget.create(component);
 
         AtomicReference<DropEvent<RouterLink>> eventCapture = new AtomicReference<>();
         dropTarget.addDropListener(eventCapture::set);
@@ -94,11 +136,11 @@ public class DropTargetTest {
     public void testDragAndDrop_serverSideDragData() {
         RouterLink source = new RouterLink();
         ui.add(source);
-        DragSource<RouterLink> dragSource = DragSource.of(source);
+        DragSource<RouterLink> dragSource = DragSource.create(source);
 
         RouterLink target = new RouterLink();
         ui.add(target);
-        DropTarget<RouterLink> dropTarget = DropTarget.of(target);
+        DropTarget<RouterLink> dropTarget = DropTarget.create(target);
 
         dragSource.setDragData("FOOBAR");
 
@@ -132,7 +174,7 @@ public class DropTargetTest {
     @Test(expected = IllegalStateException.class)
     public void testDropTarget_notAttachedToUIAndReceivesDropEvent_throws() {
         RouterLink component = new RouterLink();
-        DropTarget<RouterLink> dropTarget = DropTarget.of(component);
+        DropTarget<RouterLink> dropTarget = DropTarget.create(component);
 
         DropEvent<RouterLink> dropEvent = new DropEvent<>(component, true,
                 "all");

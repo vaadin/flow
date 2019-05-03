@@ -19,10 +19,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,6 +32,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -49,9 +52,11 @@ import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -137,7 +142,6 @@ public abstract class AbstractNavigationStateRenderer
         checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         if (eventActionsSupported()) {
-
             BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
                     event, routeTargetType);
 
@@ -175,7 +179,26 @@ public abstract class AbstractNavigationStateRenderer
             }
         }
 
-        Component componentInstance = getRouteTarget(routeTargetType, event);
+        final Component componentInstance;
+
+        if (routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)) {
+            final Optional<Component> maybeCreated =
+                    createOrRehandlePreserveOnRefreshComponent(event);
+            if (!maybeCreated.isPresent()) {
+                return HttpServletResponse.SC_OK;
+            } else {
+                componentInstance = maybeCreated.get();
+            }
+        } else {
+            // Non-preserving component, create fresh
+            componentInstance = getRouteTarget(routeTargetType, event);
+
+            // Has any preserved components already been created here? If so,
+            // we don't want to navigate back to them ever so clear cache for
+            // window.
+            clearAllPreservedComponents(ui);
+        }
+
         List<HasElement> chain = new ArrayList<>();
         chain.add(componentInstance);
 
@@ -414,6 +437,68 @@ public abstract class AbstractNavigationStateRenderer
                 NavigationTrigger.PROGRAMMATIC);
     }
 
+    /**
+     * Creates a new instance of the target component for the route when the
+     * target class is annotated with @PreserveOnRefresh. It checks if there
+     * exists a cached component of the route location in the current window.
+     * If retrieving the window name requires another round-trip, schedule it
+     * and make a new call to the handle {@link #handle(NavigationEvent)} in
+     * the callback. In this case, this method returns {@link Optional#empty()}.
+     */
+    private Optional<Component> createOrRehandlePreserveOnRefreshComponent(
+            NavigationEvent event){
+        Class<? extends Component> routeTargetType = navigationState
+                .getNavigationTarget();
+
+        final Location location = event.getLocation();
+        final UI ui = event.getUI();
+        final VaadinSession session = ui.getSession();
+
+        final Supplier<Component> defaultComponentSupplier = () ->
+                getRouteTarget(routeTargetType, event);
+        final Component componentInstance;
+
+        if (ui.getInternals().getExtendedClientDetails() == null) {
+            if (hasPreservedComponentOfLocation(session, location)) {
+                // We may have a cached instance for this location, but we
+                // need to retrieve the window name before we can determine
+                // this, so execute a client-side request.
+                ui.getPage().retrieveExtendedClientDetails(details ->
+                        handle(event));
+                return Optional.empty();
+            } else {
+                // We can immediately create the new component instance and
+                // route to it. But we also want to retrieve the window
+                // name in order to cache the component for later potential
+                // refreshes.
+                componentInstance = defaultComponentSupplier.get();
+                ui.getPage().retrieveExtendedClientDetails(details -> {
+                    final String windowName = ui.getInternals()
+                            .getExtendedClientDetails().getWindowName();
+                    setPreservedComponent(session, windowName, location,
+                            componentInstance);
+                });
+            }
+        } else {
+            final String windowName = ui.getInternals()
+                    .getExtendedClientDetails().getWindowName();
+            final Optional<Component> maybePreserved =
+                    getPreservedComponent(session, windowName,
+                            event.getLocation());
+            if (maybePreserved.isPresent()) {
+                // Re-use preserved component for this route
+                componentInstance = maybePreserved.get();
+                componentInstance.getElement().getNode().removeFromTree();
+            } else {
+                // Instantiate new component for the route
+                componentInstance = defaultComponentSupplier.get();
+                setPreservedComponent(session, windowName, location,
+                        componentInstance);
+            }
+        }
+        return Optional.of(componentInstance);
+    }
+
     private static void validateStatusCode(int statusCode,
             Class<? extends Component> targetClass) {
         if (!statusCodes.contains(statusCode)) {
@@ -463,4 +548,63 @@ public abstract class AbstractNavigationStateRenderer
                 routeTarget.getClass().getAnnotation(PageTitle.class));
     }
 
+    private static class PreservedComponentCache extends
+            HashMap<String, Pair<String, Component>> {
+    }
+
+    static boolean hasPreservedComponent(VaadinSession session) {
+        final PreservedComponentCache cache =
+                session.getAttribute(PreservedComponentCache.class);
+        return cache!=null && !cache.isEmpty();
+    }
+
+    static boolean hasPreservedComponentOfLocation(
+            VaadinSession session, Location location) {
+        final PreservedComponentCache cache =
+                session.getAttribute(PreservedComponentCache.class);
+        return cache != null &&
+                cache.values().stream().anyMatch(entry ->
+                        entry.getFirst().equals(location.getPath()));
+    }
+
+    static Optional<Component> getPreservedComponent(
+            VaadinSession session, String windowName, Location location) {
+        final PreservedComponentCache cache =
+                session.getAttribute(PreservedComponentCache.class);
+        if (cache!=null && cache.containsKey(windowName) &&
+                cache.get(windowName).getFirst().equals(location.getPath())) {
+            return Optional.of(cache.get(windowName).getSecond());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    static void setPreservedComponent(VaadinSession session, String windowName,
+                                      Location location, Component component) {
+        PreservedComponentCache cache =
+                session.getAttribute(PreservedComponentCache.class);
+        if (cache == null) {
+            cache = new PreservedComponentCache();
+        }
+        cache.put(windowName, new Pair<>(location.getPath(), component));
+        session.setAttribute(PreservedComponentCache.class, cache);
+    }
+
+
+    private static void clearAllPreservedComponents(UI ui ) {
+        final VaadinSession session = ui.getSession();
+        // Note that this check is always false if @PreserveOnRefresh has not
+        // been used at all, avoiding the round-trip overhead.
+        if (hasPreservedComponent(session)) {
+            ui.getPage().retrieveExtendedClientDetails(details -> {
+                final String windowName = ui.getInternals()
+                        .getExtendedClientDetails().getWindowName();
+                final PreservedComponentCache cache =
+                        session.getAttribute(PreservedComponentCache.class);
+                if (cache!=null) {
+                    cache.remove(windowName);
+                }
+            });
+        }
+    }
 }

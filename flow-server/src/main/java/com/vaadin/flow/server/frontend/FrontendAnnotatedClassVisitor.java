@@ -44,7 +44,7 @@ class FrontendAnnotatedClassVisitor extends ClassVisitor {
      * @param annotationName
      */
     FrontendAnnotatedClassVisitor(String annotationName) {
-        super(Opcodes.ASM7);
+        super(Opcodes.ASM6);
         this.annotationName = annotationName;
     }
 

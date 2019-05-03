@@ -72,9 +72,9 @@ public class DnDView extends Div {
 
         Div deactivatedLane = createDropLane(DropEffect.COPY);
         deactivatedLane.setId("lane-deactivated");
-        deactivatedLane.getChildren().findFirst()
-                .ifPresent(component -> component.getElement().setText("deactivated"));
-        DropTarget.of(deactivatedLane).setActive(false);
+        deactivatedLane.getChildren().findFirst().ifPresent(
+                component -> component.getElement().setText("deactivated"));
+        DropTarget.configure(deactivatedLane, false);
 
         add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane,
                 noneDropLane, deactivatedLane);
@@ -94,7 +94,7 @@ public class DnDView extends Div {
 
         Div box = createBox(identifier);
 
-        DragSource<Div> dragSource = DragSource.of(box);
+        DragSource<Div> dragSource = DragSource.create(box);
         dragSource.setDraggable(true);
         if (effectAllowed != null) {
             dragSource.setEffectAllowed(effectAllowed);
@@ -118,7 +118,7 @@ public class DnDView extends Div {
 
         Div lane = createLane(identifier);
 
-        DropTarget<Div> dropTarget = DropTarget.of(lane);
+        DropTarget<Div> dropTarget = DropTarget.create(lane);
         dropTarget.setActive(true);
         if (dropEffect != null) {
             dropTarget.setDropEffect(dropEffect);
