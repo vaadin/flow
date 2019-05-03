@@ -44,7 +44,7 @@ import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VERSION;
  */
 public class FrontendDependencies implements Serializable {
 
-    private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
+    public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
 
     private static final String MULTIPLE_VERSIONS =
             "%n%n======================================================================================================"
@@ -218,6 +218,9 @@ public class FrontendDependencies implements Serializable {
      * @throws IllegalAccessException
      */
     private void computeEndpoints() throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
+
+        EndPointData rootData = null;
+
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
@@ -227,15 +230,41 @@ public class FrontendDependencies implements Serializable {
             endPoints.put(className, visitClass(className, data));
 
             // if this is the root level view, use its theme for the app
-            if (data.route.isEmpty() && !data.notheme) {
-                Class<? extends AbstractTheme> theme = data.theme != null ? finder.loadClass(data.theme)
-                        : getLumoTheme();
-                if (theme != null) {
-                    themeDefinition = new ThemeDefinition(theme, data.variant != null ? data.variant : "");
-                    themeInstance = new ThemeWrapper(theme);
-
-                }
+            if (rootData == null && data.route.isEmpty()) {
+                rootData = data;
             }
+        }
+
+        setTheme(rootData);
+    }
+
+    private void setTheme(EndPointData rootData) throws ClassNotFoundException,
+            InstantiationException, IllegalAccessException {
+
+        Class<? extends AbstractTheme> theme = null;
+        String variant = null;
+
+        if (rootData != null) {
+
+            if (rootData.notheme) {
+                return;
+            }
+
+            if (rootData.theme != null) {
+                theme = finder.loadClass(rootData.theme);
+                variant = rootData.variant;
+            }
+        }
+
+        if (theme == null) {
+            theme = getLumoTheme();
+            variant = null;
+        }
+
+        if (theme != null) {
+            themeDefinition = new ThemeDefinition(theme,
+                    variant != null ? variant : "");
+            themeInstance = new ThemeWrapper(theme);
         }
     }
 
