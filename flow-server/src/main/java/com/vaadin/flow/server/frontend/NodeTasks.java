@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import com.vaadin.flow.server.Command;
 
@@ -48,6 +47,8 @@ public class NodeTasks implements Command {
 
         private File frontendDirectory;
 
+        private File generatedFrontendDirectory;
+
         private File generatedFlowImports;
 
         private boolean convertHtml;
@@ -62,8 +63,6 @@ public class NodeTasks implements Command {
 
         private boolean runNpmInstall;
 
-        private List<File> exportedWebComponents;
-
         /**
          * Create a builder instance.
          *
@@ -72,6 +71,7 @@ public class NodeTasks implements Command {
          */
         public Builder(ClassFinder classFinder) {
             this(classFinder, new File(getBaseDir(), "frontend"),
+                    new File(getBaseDir(), "target/frontend"),
                     Paths.get(getBaseDir()).resolve("target")
                             .resolve(System.getProperty(MAIN_JS_PARAM,
                                     FLOW_IMPORTS_FILE))
@@ -87,6 +87,8 @@ public class NodeTasks implements Command {
          *            a class finder
          * @param frontendDirectory
          *            a directory with project's frontend files
+         * @param generatedFrontendDirectory
+         *            a directory with project's generated frontend files
          * @param generatedFlowImports
          *            name of the JS file to update with the imports
          * @param npmFolder
@@ -99,10 +101,12 @@ public class NodeTasks implements Command {
          *            be considered. Default is <code>true</code>.
          */
         public Builder(ClassFinder classFinder, File frontendDirectory,
+                       File generatedFrontendDirectory,
                 File generatedFlowImports, File npmFolder, File nodeModulesPath,
                 boolean convertHtml) {
             this.classFinder = classFinder;
             this.frontendDirectory = frontendDirectory;
+            this.generatedFrontendDirectory = generatedFrontendDirectory;
             this.generatedFlowImports = generatedFlowImports;
             this.npmFolder = npmFolder;
             this.nodeModulesPath = nodeModulesPath;
@@ -180,11 +184,6 @@ public class NodeTasks implements Command {
             this.runNpmInstall = runNpmInstall;
             return this;
         }
-
-        public Builder withExportedWebComponents(List<File> exportedWebComponents) {
-            this.exportedWebComponents = exportedWebComponents;
-            return this;
-        }
     }
 
     private final Collection<Command> commands = new ArrayList<>();
@@ -215,8 +214,9 @@ public class NodeTasks implements Command {
         if (builder.enableImportsUpdate) {
             commands.add(new NodeUpdateImports(classFinder,
                     frontendDependencies, builder.frontendDirectory,
+                    builder.generatedFrontendDirectory,
                     builder.generatedFlowImports, builder.npmFolder,
-                    builder.nodeModulesPath, builder.exportedWebComponents,
+                    builder.nodeModulesPath,
                     builder.convertHtml));
         }
 

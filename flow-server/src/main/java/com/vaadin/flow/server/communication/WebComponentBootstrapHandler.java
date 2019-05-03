@@ -208,7 +208,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 for (Attribute attribute : element.attributes()) {
                     writer.append(varName).append(".setAttribute('").append(attribute.getKey()).append("',");
                     if (attribute.getValue() == null) {
-                        writer.append("true");
+                        writer.append("''");
                     } else {
                         writer.append("'").append(attribute.getValue()).append("'");
                     }

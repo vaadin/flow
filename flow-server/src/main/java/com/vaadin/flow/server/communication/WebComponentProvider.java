@@ -172,7 +172,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + "var context = scriptUri.substring(0, index+" + WEB_COMPONENT_PATH.length() + ");"
                 // figure out if we have already bootstrapped Vaadin client & ui
                 + "var bootstrapped = false;"
-                + "var bootstrapAddress=context+'web-component-ui.html';"
+                + "var bootstrapAddress=context+'web-component-bootstrap.js';"
                 + "for (var ii = 0; ii < scripts.length; ii++){"
                 + "if (scripts[ii].src === bootstrapAddress){"
                 + "bootstrapped=true; break;"

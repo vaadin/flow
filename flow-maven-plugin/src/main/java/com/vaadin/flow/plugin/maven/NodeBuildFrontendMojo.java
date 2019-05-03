@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -46,8 +45,8 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_GENERATED_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
  * Goal that builds frontend bundle by:
@@ -95,9 +94,11 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
     private File generatedFlowImports;
 
-    @Parameter(defaultValue = "${project.build.directory}/" + "/frontend" +
-            "/generated")
-    private File exportedWebComponents;
+    /**
+     * A directory for generated frontend source files.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_GENERATED_FOLDER)
+    private File generatedFrontendDirectory;
 
     /**
      * A directory with project's frontend source files.
@@ -155,23 +156,23 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
      *
      * @return list of generated javascript files
      */
-    private List<File> getExportedWebComponents() {
+    private void generateExportedWebComponents() {
         WebComponentModulesGenerator generator =
                 new WebComponentModulesGenerator(new AnnotationValuesExtractor(
                         getClassFinder(project)), false);
 
-        File target = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME +
-                "/generated");
+        File target = generatedFrontendDirectory;
+        target.mkdirs();
 
-        return generator.getExporters()
-                .map(exporter -> generator.generateModuleFile(exporter, target))
-                .collect(Collectors.toList());
+        generator.getExporters().forEach(exporter ->
+                generator.generateModuleFile(exporter, target));
     }
 
     private void runNodeUpdater() {
+        generateExportedWebComponents();
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
-                generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
-                        .withExportedWebComponents(getExportedWebComponents())
+                generatedFrontendDirectory, generatedFlowImports, npmFolder,
+                nodeModulesPath, convertHtml)
                         .withWebpack(getWebpackOutputDirectory(),
                                 webpackTemplate)
                         .runNpmInstall(runNpmInstall).build().execute();
@@ -182,7 +183,8 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         File webpackExecutable = new File(nodeModulesPath, webpackCommand);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
-                    "Unable to locate webpack executable by path '%s'. Double check that the plugin us executed correctly",
+                    "Unable to locate webpack executable by path '%s'. Double" +
+                            " check that the plugin is executed correctly",
                     webpackExecutable.getAbsolutePath()));
         }
 
