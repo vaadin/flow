@@ -52,8 +52,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private static final String WEB_COMPONENT_PATH = "web-component/";
     private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
-    private static final String HTML_SUFFIX = ".html";
-    private static final Pattern TAG_PATTERN = Pattern.compile(".*/([^/]+)(\\.js|\\.html)$");
+    // match paths ending in words separated by at least one dash, and ending
+    // in either .js or .html (words cannot contain underscore)
+    private static final Pattern TAG_PATTERN = Pattern
+            .compile(".*/(([\\w&&[^_]]+-)+([\\w&&[^_]]+))(\\.js|\\.html)$");
 
     // tag name -> generated html
     private Map<String, String> cache;
@@ -210,16 +212,5 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             tag = matcher.group(1);
         }
         return Optional.ofNullable(tag);
-
-//        String tag = pathInfo.substring(PATH_PREFIX.length());
-//        if (!tag.endsWith(HTML_SUFFIX)) {
-//            tag = null;
-//        } else {
-//            tag = tag.substring(0, tag.length() - HTML_SUFFIX.length());
-//            if (!tag.contains("-")) {
-//                tag = null;
-//            }
-//        }
-//        return Optional.ofNullable(tag);
     }
 }
