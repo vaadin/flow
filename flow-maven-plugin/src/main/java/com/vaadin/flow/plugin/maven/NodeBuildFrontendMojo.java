@@ -143,7 +143,9 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         }
 
         long start = System.nanoTime();
+
         generateExportedWebComponents();
+
         runNodeUpdater();
 
         if (generateBundle) {

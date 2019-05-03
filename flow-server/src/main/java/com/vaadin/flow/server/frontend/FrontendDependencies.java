@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,8 +31,11 @@ import java.util.Set;
 
 import net.bytebuddy.jar.asm.ClassReader;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -147,6 +151,9 @@ public class FrontendDependencies implements Serializable {
         try {
             computeEndpoints();
             computePackages();
+            if (generateEmbeddableWebComponents) {
+                computeExporters();
+            }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
             throw new IllegalStateException("Unable to compute frontend dependencies", e);
         }
@@ -317,6 +324,61 @@ public class FrontendDependencies implements Serializable {
 
             packages.put(dependency, version);
         }
+    }
+
+    /**
+     * Visits all classes extending
+     * {@link com.vaadin.flow.component.WebComponentExporter} and update an {@link
+     * EndPointData} object with the info found.
+     * <p>
+     * The last visited {@code exporter} will decide the the theme. If no
+     * theme is found, {@code Lumo} is used. If the exporters have configured
+     * different themes, this will be caught at runtime.
+     *
+     * @throws ClassNotFoundException
+     * @throws IOException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
+    @SuppressWarnings("unchecked")
+    private void computeExporters() throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException {
+        // Because of different classLoaders we need compare against class
+        // references loaded by the specific class finder loader
+        Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
+        Class<WebComponentExporter<? extends Component>> exporterClass =
+                finder.loadClass(WebComponentExporter.class.getName());
+
+        for (Class<?> exporter : finder.getSubTypesOf(exporterClass)) {
+            String exporterClassName = exporter.getName();
+            EndPointData exporterData = new EndPointData(exporter);
+            endPoints.put(exporterClassName, visitClass(exporterClassName, exporterData));
+
+            System.out.println("Exporter class is " + exporterClassName);
+            if (!Modifier.isAbstract(exporter.getModifiers())) {
+                Class<? extends Component> componentClass =
+                        (Class<? extends Component>) ReflectTools
+                                .getGenericInterfaceType(exporter, exporterClass);
+                if (componentClass != null && !componentClass.isAnnotationPresent(routeClass)) {
+                    String componentClassName = componentClass.getName();
+                    EndPointData configurationData =
+                            new EndPointData(componentClass);
+                    endPoints.put(componentClassName,
+                            visitClass(componentClassName, configurationData));
+                }
+            }
+            // any theme found on an exporter should be fine
+            Class<? extends AbstractTheme> theme = exporterData.theme != null ? finder.loadClass(exporterData.theme)
+                    : getLumoTheme();
+            if (theme != null) {
+                themeDefinition = new ThemeDefinition(theme, exporterData.variant != null ? exporterData.variant : "");
+                themeInstance = new ThemeWrapper(theme);
+            }
+        }
+    }
+
+    private static EndPointData endPointDataFromExporter(Class<WebComponentExporter<? extends Component>> exporterClass) {
+        EndPointData data = new EndPointData(exporterClass);
+        return null;
     }
 
     /**
