@@ -22,6 +22,7 @@ import com.vaadin.flow.component.dnd.DragEndEvent;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DragStartEvent;
 import com.vaadin.flow.component.dnd.DropEffect;
+import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.dnd.EffectAllowed;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.Constants;
@@ -31,11 +32,78 @@ import org.junit.Test;
 
 public class DragSourceTest {
 
+    @Tag("div")
+    class TestComponent extends Component implements DragSource<TestComponent> {
+
+    }
+
+    @Test
+    public void testDragSource_mixinInterface() {
+        TestComponent component = new TestComponent();
+        new MockUI().add(component);
+        component.setDraggable(true);
+
+        Assert.assertEquals("component element not set draggable", "true",
+                component.getElement().getProperty("draggable"));
+
+        AtomicReference<DragStartEvent<TestComponent>> startEventCapture = new AtomicReference<>();
+        AtomicReference<DragEndEvent<TestComponent>> endEventCapture = new AtomicReference<>();
+        component.addDragStartListener(startEventCapture::set);
+        component.addDragEndListener(endEventCapture::set);
+
+        DragStartEvent<TestComponent> startEvent = new DragStartEvent<TestComponent>(
+                component, true);
+        ComponentUtil.fireEvent(component, startEvent);
+
+        Assert.assertEquals(startEvent, startEventCapture.get());
+        Assert.assertEquals(component,
+                UI.getCurrent().getActiveDragSourceComponent());
+        Assert.assertTrue(startEvent.isFromClient());
+
+        DragEndEvent<TestComponent> endEvent = new DragEndEvent<TestComponent>(
+                component, false, DropEffect.MOVE.name().toLowerCase());
+        ComponentUtil.fireEvent(component, endEvent);
+
+        DragEndEvent<TestComponent> endEvent2 = endEventCapture.get();
+        Assert.assertEquals(endEvent, endEvent2);
+        Assert.assertNull(UI.getCurrent().getActiveDragSourceComponent());
+        Assert.assertEquals(DropEffect.MOVE, endEvent2.getDropEffect());
+        Assert.assertTrue(endEvent2.isSuccesful());
+        Assert.assertFalse(endEvent2.isFromClient());
+    }
+
+    @Test
+    public void testDragSource_dragStartEvent_canSetDragData() {
+        TestComponent component = new TestComponent();
+        new MockUI().add(component);
+        component.setDraggable(true);
+
+        final String dragData = "FOOBAR";
+        component.addDragStartListener(event -> {
+            event.setDragData(dragData);
+        });
+        component.addDragEndListener(DragEndEvent::clearDragData);
+
+        Assert.assertNull(component.getDragData());
+
+        DragStartEvent<TestComponent> startEvent = new DragStartEvent<TestComponent>(
+                component, true);
+        ComponentUtil.fireEvent(component, startEvent);
+
+        Assert.assertEquals("Drag data not set from event", dragData,
+                component.getDragData());
+
+        ComponentUtil.fireEvent(component,
+                new DragEndEvent<>(component, true, "none"));
+
+        Assert.assertNull(component.getDragData());
+    }
+
     @Test
     public void testDragSource_staticBuilder_wrapsComponent() {
         RouterLink component = new RouterLink();
 
-        DragSource<RouterLink> dragSource = DragSource.of(component);
+        DragSource<RouterLink> dragSource = DragSource.create(component);
 
         Assert.assertEquals("component element not set draggable", "true",
                 component.getElement().getProperty("draggable"));
@@ -47,19 +115,30 @@ public class DragSourceTest {
         dragSource.setEffectAllowed(EffectAllowed.COPY_MOVE);
 
         Assert.assertEquals(
-                component.getElement().getProperty(
-                        Constants.EFFECT_ALLOWED_ELEMENT_PROPERTY),
+                component.getElement()
+                        .getProperty(Constants.EFFECT_ALLOWED_ELEMENT_PROPERTY),
                 EffectAllowed.COPY_MOVE.getClientPropertyValue());
 
-        DragSource.of(component, false);
+        DragSource.configure(component, false);
         Assert.assertNull(component.getElement().getProperty("draggable"));
+
+        DropTarget.configure(component);
+        Assert.assertNull(component.getElement().getProperty("draggable"));
+
+        DragSource.configure(component, true);
+        Assert.assertEquals("component element not set draggable", "true",
+                component.getElement().getProperty("draggable"));
+
+        DropTarget.configure(component);
+        Assert.assertEquals("component element not set draggable", "true",
+                component.getElement().getProperty("draggable"));
     }
 
     @Test
     public void testDragSource_serverSideEvents_correctData() {
         RouterLink component = new RouterLink();
         new MockUI().add(component);
-        DragSource<RouterLink> dragSource = DragSource.of(component);
+        DragSource<RouterLink> dragSource = DragSource.create(component);
 
         AtomicReference<DragStartEvent<RouterLink>> startEventCapture = new AtomicReference<>();
         AtomicReference<DragEndEvent<RouterLink>> endEventCapture = new AtomicReference<>();
@@ -100,7 +179,7 @@ public class DragSourceTest {
     @Test(expected = IllegalStateException.class)
     public void testDragSource_notAttachedToUIAndCatchesDragStartEvent_throws() {
         RouterLink component = new RouterLink();
-        DragSource<RouterLink> dragSource = DragSource.of(component);
+        DragSource<RouterLink> dragSource = DragSource.create(component);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
                 component, true);
@@ -112,7 +191,7 @@ public class DragSourceTest {
         RouterLink component = new RouterLink();
         MockUI mockUI = new MockUI();
         mockUI.add(component);
-        DragSource<RouterLink> dragSource = DragSource.of(component);
+        DragSource<RouterLink> dragSource = DragSource.create(component);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
                 component, true);
