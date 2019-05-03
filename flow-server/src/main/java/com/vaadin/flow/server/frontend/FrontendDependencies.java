@@ -39,6 +39,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VALUE;
 import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VERSION;
+
 /**
  * Represents the class dependency tree of the application.
  */
@@ -48,17 +49,17 @@ public class FrontendDependencies implements Serializable {
 
     private static final String MULTIPLE_VERSIONS =
             "%n%n======================================================================================================"
-            + "%nFailed to determine the version for the '%s' npm package."
-            + "%nFlow found multiple versions: %s"
-            + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
-            + "%nmeet the same version."
-            + "%n======================================================================================================%n";
+                    + "%nFailed to determine the version for the '%s' npm package."
+                    + "%nFlow found multiple versions: %s"
+                    + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
+                    + "%nmeet the same version."
+                    + "%n======================================================================================================%n";
 
     private static final String BAD_VERSIOM =
             "%n%n======================================================================================================"
-            + "%nFailed to determine the version for the '%s' npm package."
-            + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
-            + "%n======================================================================================================%n";
+                    + "%nFailed to determine the version for the '%s' npm package."
+                    + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
+                    + "%n======================================================================================================%n";
 
     /**
      * A wrapper for the Theme instance that use reflection for executing its
@@ -123,14 +124,32 @@ public class FrontendDependencies implements Serializable {
      * Default Constructor.
      *
      * @param finder
-     *            the class finder
+     *         the class finder
      */
     public FrontendDependencies(ClassFinder finder) {
+        this(finder, true);
+    }
+
+    /**
+     * Secondary constructor, which allows declaring whether embeddable web
+     * components should be checked for resource dependencies.
+     *
+     * @param finder
+     *         the class finder
+     * @param generateEmbeddableWebComponents
+     *         {@code true} checks the {@link com.vaadin.flow.component.WebComponentExporter}
+     *         classes for dependencies. {@code true} is default for {@link
+     *         FrontendDependencies#FrontendDependencies(ClassFinder)}
+     */
+    public FrontendDependencies(ClassFinder finder,
+                                boolean generateEmbeddableWebComponents) {
         this.finder = finder;
         try {
             computeEndpoints();
             computePackages();
-            computeExporters();
+            if (generateEmbeddableWebComponents) {
+                computeExporters();
+            }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
             throw new IllegalStateException("Unable to compute frontend dependencies", e);
         }
@@ -144,6 +163,7 @@ public class FrontendDependencies implements Serializable {
     public Map<String, String> getPackages() {
         return packages;
     }
+
     /**
      * get all ES6 modules needed for run the application.
      *
@@ -156,6 +176,7 @@ public class FrontendDependencies implements Serializable {
         }
         return all;
     }
+
     /**
      * get all JS files used by the application.
      *
@@ -171,8 +192,8 @@ public class FrontendDependencies implements Serializable {
 
     /**
      * get all HTML imports used in the application. It excludes imports from
-     * classes that are already annotated with {@link NpmPackage} or
-     * {@link JsModule}
+     * classes that are already annotated with {@link NpmPackage} or {@link
+     * JsModule}
      *
      * @return the set of HTML imports
      */
@@ -207,9 +228,9 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * Visit all classes annotated with {@link Route} and update an
-     * {@link EndPointData} object with the info found.
-     *
+     * Visit all classes annotated with {@link Route} and update an {@link
+     * EndPointData} object with the info found.
+     * <p>
      * At the same time when the root level view is visited, compute the theme
      * to use and create its instance.
      *
@@ -276,7 +297,7 @@ public class FrontendDependencies implements Serializable {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    private void computePackages() throws ClassNotFoundException, IOException  {
+    private void computePackages() throws ClassNotFoundException, IOException {
         FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(NpmPackage.class.getName());
 
         for (Class<?> component : finder.getAnnotatedClasses(NpmPackage.class.getName())) {
@@ -361,11 +382,11 @@ public class FrontendDependencies implements Serializable {
         // blacklist of some common name-spaces that would not have components.
         return className != null &&  // @formatter:off
                 !className.matches(
-                    "(^$|"
-                    + ".*(slf4j).*|"
-                    + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
-                    + ".*(Exception)$"
-                    + ")"); // @formatter:on
+                        "(^$|"
+                                + ".*(slf4j).*|"
+                                + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
+                                + ".*(Exception)$"
+                                + ")"); // @formatter:on
     }
 
     private URL getUrl(String className) {
