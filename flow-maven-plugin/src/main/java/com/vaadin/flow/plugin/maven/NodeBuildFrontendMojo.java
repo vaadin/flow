@@ -119,6 +119,13 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     private boolean runNpmInstall;
 
     /**
+     * Whether to generate embeddable web components from
+     * WebComponentExporter inheritors.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean generateEmbeddableWebComponents;
+
+    /**
      * Copy the `webapp.config.js` from the specified URL if missing. Default is
      * the template provided by this plugin. Set it to empty string to disable
      * the feature.
@@ -135,7 +142,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         }
 
         long start = System.nanoTime();
-
+        generateExportedWebComponents();
         runNodeUpdater();
 
         if (generateBundle) {
@@ -152,11 +159,12 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
      * {@link com.vaadin.flow.plugin.common.WebComponentModulesGenerator} to
      * generate JavaScript files from the {@code WebComponentExporters}
      * present in the code base. The generated JavaScript files are placed in
-     * {@code node_modules/@vaadin/flow-frontend}.
-     *
-     * @return list of generated javascript files
+     * {@code ./target/frontend}.
      */
     private void generateExportedWebComponents() {
+        if (!generateEmbeddableWebComponents) {
+            return;
+        }
         WebComponentModulesGenerator generator =
                 new WebComponentModulesGenerator(new AnnotationValuesExtractor(
                         getClassFinder(project)), false);
@@ -169,13 +177,13 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     }
 
     private void runNodeUpdater() {
-        generateExportedWebComponents();
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
                 generatedFrontendDirectory, generatedFlowImports, npmFolder,
                 nodeModulesPath, convertHtml)
-                        .withWebpack(getWebpackOutputDirectory(),
-                                webpackTemplate)
-                        .runNpmInstall(runNpmInstall).build().execute();
+                .withWebpack(getWebpackOutputDirectory(), webpackTemplate)
+                .runNpmInstall(runNpmInstall)
+                .withEmbeddableWebComponents(generateEmbeddableWebComponents)
+                .build().execute();
     }
 
     private void runWebpack() {
@@ -242,5 +250,4 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
                         "Unsupported packaging '%s'", project.getPackaging()));
         }
     }
-
 }

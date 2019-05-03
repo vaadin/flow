@@ -63,6 +63,8 @@ public class NodeTasks implements Command {
 
         private boolean runNpmInstall;
 
+        private boolean generateEmbeddableWebComponents;
+
         /**
          * Create a builder instance.
          *
@@ -184,6 +186,12 @@ public class NodeTasks implements Command {
             this.runNpmInstall = runNpmInstall;
             return this;
         }
+
+        public Builder withEmbeddableWebComponents(boolean generateEmbeddableWebComponents) {
+            this.generateEmbeddableWebComponents =
+                    generateEmbeddableWebComponents;
+            return this;
+        }
     }
 
     private final Collection<Command> commands = new ArrayList<>();
@@ -194,7 +202,7 @@ public class NodeTasks implements Command {
                 builder.classFinder);
 
         FrontendDependencies frontendDependencies = new FrontendDependencies(
-                classFinder);
+                classFinder, builder.generateEmbeddableWebComponents);
 
         if (builder.enablePackagesUpdate) {
             NodeUpdatePackages packageUpdater = new NodeUpdatePackages(classFinder,
