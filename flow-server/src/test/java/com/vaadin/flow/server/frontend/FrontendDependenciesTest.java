@@ -1,10 +1,16 @@
 package com.vaadin.flow.server.frontend;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,6 +30,7 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -34,6 +41,20 @@ public class FrontendDependenciesTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    @Before
+    public void setup() throws NoSuchFieldException, IllegalAccessException {
+
+        // TODO: This is not working yet, need to be fixed and adjust the test //NOSONAR
+        Field field = FieldUtils.getDeclaredField(FrontendDependencies.class, "LUMO", true);
+        FieldUtils.removeFinalModifier(field, true);
+        FieldUtils.writeStaticField(field, "com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeDefault");
+    }
+
+    private FrontendDependencies create(Class<?> ...classes) throws Exception {
+        FrontendDependencies frontendDependencies = new FrontendDependencies(new DefaultClassFinder(new HashSet<Class<?>>(new ArrayList<>(Arrays.asList(classes)))));
+        return frontendDependencies;
+    }
 
     @Test
     public void should_extractClassesFromSignatures() {
@@ -65,10 +86,6 @@ public class FrontendDependenciesTest {
                 "(Lcom/vaadin/flow/component/orderedlayout/FlexComponent$Alignment;[Lcom/vaadin/flow/component/Component;)");
         assertEquals(13, classes.size());
         assertTrue(classes.contains("com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));
-    }
-
-    private FrontendDependencies create(Class<?> ...classes) throws Exception {
-        return new FrontendDependencies(new DefaultClassFinder(new HashSet<Class<?>>(Arrays.asList(classes))));
     }
 
     @Test
