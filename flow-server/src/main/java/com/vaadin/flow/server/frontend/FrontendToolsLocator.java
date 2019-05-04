@@ -22,7 +22,6 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -72,7 +71,12 @@ public class FrontendToolsLocator implements Serializable {
     public Optional<File> tryLocateTool(String toolName) {
         return executeCommand(isWindows() ? "where" : "which", toolName)
                 .map(this::omitErrorResult).map(CommandResult::getStdout)
-                .orElse(Collections.emptyList()).stream().map(File::new)
+                // Add most common paths in unix #5611
+                .orElse(Arrays.asList(
+                        "/usr/local/bin/" + toolName,
+                        "/opt/local/bin/" + toolName,
+                        "/opt/bin/" + toolName))
+                .stream().map(File::new)
                 .filter(this::verifyTool).findFirst();
     }
 
