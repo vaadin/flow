@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,6 +34,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -53,6 +56,7 @@ import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -181,7 +185,7 @@ public abstract class AbstractNavigationStateRenderer
 
         final Component componentInstance;
 
-        if (routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)) {
+        if (isPreserveOnRefreshComponent(routeTargetType)) {
             final Optional<Component> maybeCreated =
                     createOrRehandlePreserveOnRefreshComponent(event);
             if (!maybeCreated.isPresent()) {
@@ -488,6 +492,24 @@ public abstract class AbstractNavigationStateRenderer
             if (maybePreserved.isPresent()) {
                 // Re-use preserved component for this route
                 componentInstance = maybePreserved.get();
+
+                final Element componentElement = componentInstance.getElement();
+                // Transfer all elements not on the ancestor chain of the routed
+                // component (typically dialogs and notifications) to the new UI
+                componentInstance.getUI().ifPresent(prevUi -> {
+                    final Set<Element> ancestorsReflexive =
+                            Stream.concat(Stream.of(componentElement),
+                                    componentElement.getAncestors())
+                                    .collect(Collectors.toSet());
+                    final List<Element> uiChildren = prevUi.getElement()
+                            .getChildren()
+                            .filter(elem -> !ancestorsReflexive.contains(elem))
+                            .collect(Collectors.toList());
+                    uiChildren.forEach(element -> {
+                        element.removeFromTree();
+                        ui.getElement().appendChild(element);
+                    });
+                });
                 componentInstance.getElement().getNode().removeFromTree();
             } else {
                 // Instantiate new component for the route
@@ -546,6 +568,19 @@ public abstract class AbstractNavigationStateRenderer
             Component routeTarget) {
         return Optional.ofNullable(
                 routeTarget.getClass().getAnnotation(PageTitle.class));
+    }
+
+    private static boolean isPreserveOnRefreshComponent(
+            Class<? extends Component> routeTargetType) {
+        if (routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)) {
+            return true;
+        }
+        if (routeTargetType.isAnnotationPresent(Route.class)) {
+            final Class<? extends RouterLayout> layout =
+                    routeTargetType.getAnnotation(Route.class).layout();
+            return layout.isAnnotationPresent(PreserveOnRefresh.class);
+        }
+        return false;
     }
 
     private static class PreservedComponentCache extends

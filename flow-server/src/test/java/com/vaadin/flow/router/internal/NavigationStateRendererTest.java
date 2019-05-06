@@ -17,7 +17,9 @@ package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
@@ -33,6 +35,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
@@ -162,7 +165,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void preserveOnRefreshAndWindowNameNotKnown_firstNavigationEvent_clientSideCallTriggered() {
+    public void handle_preserveOnRefreshAndWindowNameNotKnown_clientSideCallTriggered() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -206,7 +209,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void preserveOnRefreshAndWindowNameKnown_navigationEvents_componentIsCachedRetrievedAndFlushed() {
+    public void handle_preserveOnRefreshAndWindowNameKnown_componentIsCachedRetrievedAndFlushed() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -275,18 +278,118 @@ public class NavigationStateRendererTest {
                         session, new Location("preserved")));
     }
 
+    @Test
+    public void handle_preserveOnRefresh_otherUIChildrenAreMoved() {
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        // given a NavigationStateRenderer mapping to PreservedView
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(PreservedView.class));
+
+        // given the session has a cache of PreservedView at this location
+        final PreservedView view = new PreservedView();
+        AbstractNavigationStateRenderer.setPreservedComponent(session,
+                "ROOT.123", new Location("preserved"),
+                view);
+
+        // given an old UI that contains the component and an extra element
+        MockUI ui0 = new MockUI(session);
+        ui0.add(view);
+        final Element otherElement = new Element("div");
+        ui0.getElement().insertChild(1, otherElement);
+        System.out.println("Component parent is "+view.getUI());
+
+        // given a new UI after a refresh with the same window name
+        MockUI ui1 = new MockUI(session);
+        ExtendedClientDetails details =
+                Mockito.mock(ExtendedClientDetails.class);
+        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ui1.getInternals().setExtendedClientDetails(details);
+
+        // when a navigation event reaches the renderer
+        renderer.handle(new NavigationEvent(
+                new Router(new TestRouteRegistry()),
+                new Location("preserved"), ui1, NavigationTrigger.PAGE_LOAD));
+
+        // then both the view element and the other element are expected to be
+        // transferred from the previous UI to the new UI
+        final Set<Element> uiChildren = ui1.getElement().getChildren()
+                .collect(Collectors.toSet());
+        Assert.assertTrue("Component element expected transferred",
+                uiChildren.contains(view.getElement()));
+        Assert.assertTrue("Extra element expected transferred",
+                uiChildren.contains(otherElement));
+    }
+
     @Route(value = "preserved")
     @PreserveOnRefresh
     private static class PreservedView extends Text {
-        public PreservedView() {
-            super("abc");
+        PreservedView() {
+            super("");
         }
     }
 
     @Route(value = "regular")
     private static class RegularView extends Text {
-        public RegularView() {
-            super("def");
+        RegularView() {
+            super("");
+        }
+    }
+
+    @Test
+    public void handle_preserveOnRefreshRouterLayout_childIsPreserved() {
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        // given a NavigationStateRenderer mapping to PreservedNestedView
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(PreservedNestedView.class));
+
+        // given the session has a cache of PreservedNestedView at this location
+        final PreservedNestedView nestedView = new PreservedNestedView();
+        AbstractNavigationStateRenderer.setPreservedComponent(session,
+                "ROOT.123", new Location("preservedNested"),
+                nestedView);
+
+        // given a UI that contain a window name ROOT.123
+        MockUI ui = new MockUI(session);
+        ExtendedClientDetails details =
+                Mockito.mock(ExtendedClientDetails.class);
+        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ui.getInternals().setExtendedClientDetails(details);
+
+        // when a navigation event reaches the renderer
+        renderer.handle(new NavigationEvent(
+                new Router(new TestRouteRegistry()),
+                new Location("preservedNested"), ui,
+                NavigationTrigger.PAGE_LOAD));
+
+        // then the same view is routed to
+        Assert.assertEquals("Expected same view",
+                nestedView,
+                ui.getInternals().getActiveRouterTargetsChain().get(0));
+    }
+
+    @Route(value = "preservedLayout")
+    @PreserveOnRefresh
+    private static class PreservedLayoutView extends Text
+            implements RouterLayout{
+        PreservedLayoutView() {
+            super("");
+        }
+    }
+
+    @Route(value = "preservedNested", layout=PreservedLayoutView.class)
+    private static class PreservedNestedView extends Text {
+        PreservedNestedView() {
+            super("");
         }
     }
 
