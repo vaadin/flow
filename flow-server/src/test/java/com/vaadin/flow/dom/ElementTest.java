@@ -2300,6 +2300,32 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    public void getAncestors_elementIsNested_ancestorsReturnedBottomUp() {
+        Element root = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        Element grandChild = ElementFactory.createDiv();
+
+        root.appendChild(child);
+        child.appendChild(grandChild);
+
+        final List<Element> ancestors = grandChild.getAncestors()
+                .collect(Collectors.toList());
+        Assert.assertEquals(Arrays.asList(child,root),ancestors);
+    }
+
+    @Test
+    public void getAncestors_elementInShadowRoot_noAncestors() {
+        ShadowRoot root = ElementFactory.createDiv().attachShadow();
+        Element child = ElementFactory.createDiv();
+
+        root.appendChild(child);
+
+        final List<Element> ancestors = child.getAncestors()
+                .collect(Collectors.toList());
+        Assert.assertTrue("Ancestors expected empty", ancestors.isEmpty());
+    }
+
+    @Test
     public void parentIsDisabled_childIsDisabled() {
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
