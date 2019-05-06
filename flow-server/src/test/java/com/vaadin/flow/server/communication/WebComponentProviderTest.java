@@ -41,6 +41,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
@@ -65,11 +66,13 @@ public class WebComponentProviderTest {
     VaadinServletRequest request;
     @Mock
     VaadinResponse response;
+    @Mock
+    VaadinService service;
+    @Mock
+    DeploymentConfiguration configuration;
 
     WebComponentProvider provider;
 
-    @Mock
-    VaadinService service;
 
     @Before
     public void init() {
@@ -78,6 +81,8 @@ public class WebComponentProviderTest {
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.isBowerMode()).thenReturn(false);
 
         provider = new WebComponentProvider();
     }
@@ -120,7 +125,6 @@ public class WebComponentProviderTest {
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
 
-        Assert.assertFalse(FrontendUtils.isBowerLegacyMode());
         Assert.assertFalse(
                 "Provider shouldn't handle html extensions in npm mode",
                 provider.handleRequest(session, request, response));
