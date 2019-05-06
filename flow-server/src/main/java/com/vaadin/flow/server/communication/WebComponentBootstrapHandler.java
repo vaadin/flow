@@ -194,8 +194,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
-            String varName = "vdnHdEl"; // generated head element
-            writer.append("var ").append(varName).append("= null");
+            String varName = "headElem"; // generated head element
+            writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
                 // we skip base href adjustment, since we are in a 3rd party
                 // context (TODO: there could be a problem, when Vaadin embeds Vaadin)
