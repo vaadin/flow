@@ -48,6 +48,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -103,16 +104,25 @@ public class WebComponentProviderTest {
 
     @Test
     public void faultyTag_handlerInformsNotHandled() throws IOException {
-        Mockito.when(request.getPathInfo()).thenReturn("/web-component/path");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component" +
+                "/extensionless-component");
 
-        Assert.assertFalse("Provider shouldn't handle non '.html' path",
+        Assert.assertFalse("Provider shouldn't handle path without extension",
                 provider.handleRequest(session, request, response));
 
         Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/component.html");
+                .thenReturn("/web-component/component.js");
 
         Assert.assertFalse(
-                "Provider shouldn't handle request for non custom element html name",
+                "Provider shouldn't handle request for non-custom element name",
+                provider.handleRequest(session, request, response));
+
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.html");
+
+        Assert.assertFalse(FrontendUtils.isBowerLegacyMode());
+        Assert.assertFalse(
+                "Provider shouldn't handle html extensions in npm mode",
                 provider.handleRequest(session, request, response));
     }
 
@@ -123,7 +133,7 @@ public class WebComponentProviderTest {
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
 
         Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.html");
+                .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
                 provider.handleRequest(session, request, response));
         Mockito.verify(response).sendError(HttpServletResponse.SC_NOT_FOUND,
@@ -145,7 +155,7 @@ public class WebComponentProviderTest {
         Mockito.when(configuration.getRootElementId()).thenReturn("");
 
         Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.html");
+                .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
                 provider.handleRequest(session, request, response));
 
@@ -172,12 +182,12 @@ public class WebComponentProviderTest {
         Mockito.when(configuration.getRootElementId()).thenReturn("");
 
         Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.html");
+                .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle first web-component request",
                 provider.handleRequest(session, request, response));
 
         Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/other-component.html");
+                .thenReturn("/web-component/other-component.js");
         Assert.assertTrue("Provider should handle second web-component request",
                 provider.handleRequest(session, request, response));
 
