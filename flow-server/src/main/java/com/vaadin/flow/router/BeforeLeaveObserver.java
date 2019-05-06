@@ -18,12 +18,12 @@ package com.vaadin.flow.router;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 
 /**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be
- * informed when they are being detached from the
- * {@link com.vaadin.flow.component.UI}.
+ * Any attached component implementing this interface will receive an event
+ * before leaving the current navigation state.
  * <p>
- * During this phase there is the possibility to reroute to another navigation
- * target or to postpone the navigation (to for instance get user input).
+ * During this event phase there is the possibility to reroute to another
+ * navigation target or to postpone the navigation (to for instance get user
+ * input).
  *
  * @author Vaadin Ltd
  * @since 1.0
