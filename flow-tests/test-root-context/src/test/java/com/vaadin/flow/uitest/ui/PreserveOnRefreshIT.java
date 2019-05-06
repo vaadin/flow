@@ -9,46 +9,52 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PreserveOnRefreshIT extends ChromeBrowserTest {
 
-    private final static String DIV_ID = "contents";
+    private final static String COMPONENT_ID = "contents";
+    private final static String NOTIFICATION_ID = "notification";
 
     @Test
-    public void refresh_componentIsReused() {
+    public void refresh_componentAndUiChildrenReused() {
         open();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String initialContents = findElement(By.id(DIV_ID)).getText();
+        final String componentId = getContents(COMPONENT_ID);
+        final String notificationId = getContents(NOTIFICATION_ID);
 
         open();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String newContents = findElement(By.id(DIV_ID)).getText();
+        final String newComponentId = getContents(COMPONENT_ID);
+        final String newNotificationId = getContents(NOTIFICATION_ID);
 
         Assert.assertEquals("Component contents expected identical",
-                initialContents, newContents);
+                componentId, newComponentId);
+        Assert.assertEquals("Notification contents expected identical",
+                notificationId, newNotificationId);
     }
 
     @Test
     public void navigateToNonRefreshing_refreshInDifferentWindow_componentIsRecreated() {
         open();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String initialContents = findElement(By.id(DIV_ID)).getText();
+        final String componentId = getContents(COMPONENT_ID);
+        final String notificationId = getContents(NOTIFICATION_ID);
 
         // navigate to some other page in between
         getDriver().get(getRootURL() +
                 "/view/com.vaadin.flow.uitest.ui.PageView");
 
         open();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String newContents = findElement(By.id(DIV_ID)).getText();
+        final String newComponentId = getContents(COMPONENT_ID);
+        final String newNotificationId = getContents(NOTIFICATION_ID);
 
         Assert.assertNotEquals("Component contents expected different",
-                initialContents, newContents);
+                componentId, newComponentId);
+        Assert.assertNotEquals("Notification contents expected different",
+                notificationId, newNotificationId);
     }
 
     @Test
     public void refreshInDifferentWindow_componentIsRecreated() {
         open();
         final String firstWin = getDriver().getWindowHandle();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String initialContents = findElement(By.id(DIV_ID)).getText();
+
+        final String componentId = getContents(COMPONENT_ID);
+        final String notificationId = getContents(NOTIFICATION_ID);
 
         ((JavascriptExecutor) getDriver()).executeScript(
                 "window.open('" + getTestURL() + "','_blank');");
@@ -58,10 +64,18 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
                 .findFirst()
                 .get();
         driver.switchTo().window(secondWin);
-        waitForElementPresent((By.id(DIV_ID)));
-        final String newContents = findElement(By.id(DIV_ID)).getText();
+
+        final String newComponentId = getContents(COMPONENT_ID);
+        final String newNotificationId = getContents(NOTIFICATION_ID);
 
         Assert.assertNotEquals("Component contents expected different",
-                initialContents, newContents);
+                componentId, newComponentId);
+        Assert.assertNotEquals("Notification contents expected different",
+                notificationId, newNotificationId);
+    }
+
+    private String getContents(String id) {
+        waitForElementPresent(By.id(id));
+        return findElement(By.id(COMPONENT_ID)).getText();
     }
 }
