@@ -85,7 +85,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        ComponentInfo componentInfo = new ComponentInfo(pathInfo);
+        final boolean bowerMode =
+                session.getService().getDeploymentConfiguration().isBowerMode();
+        final ComponentInfo componentInfo = new ComponentInfo(pathInfo);
 
         if (!componentInfo.hasExtension()) {
             LoggerFactory.getLogger(WebComponentProvider.class).info(
@@ -102,14 +104,14 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        if (componentInfo.isHTML() && !FrontendUtils.isBowerLegacyMode()) {
+        if (componentInfo.isHTML() && !bowerMode) {
             LoggerFactory.getLogger(WebComponentProvider.class).info(
                     "Received web-component request for html component in npm" +
                             " mode with request path {}", pathInfo);
             return false;
         }
 
-        if (componentInfo.isJS() && FrontendUtils.isBowerLegacyMode()) {
+        if (componentInfo.isJS() && bowerMode) {
             LoggerFactory.getLogger(WebComponentProvider.class).info(
                     "Received web-component request for js component in bower" +
                             " mode with request path {}", pathInfo);
@@ -131,7 +133,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                     optionalWebComponentConfiguration.get();
 
             String generated;
-            if (FrontendUtils.isBowerLegacyMode()) {
+            if (bowerMode) {
                 generated = cache.computeIfAbsent(componentInfo.tag,
                         moduleTag -> generateBowerResponse(webComponentConfiguration,
                                 session, servletRequest, response));
