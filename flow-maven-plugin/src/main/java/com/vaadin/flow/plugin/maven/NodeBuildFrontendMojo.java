@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -169,11 +170,14 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
                 new WebComponentModulesGenerator(new AnnotationValuesExtractor(
                         getClassFinder(project)), false);
 
-        File target = generatedFrontendDirectory;
-        target.mkdirs();
-
-        generator.getExporters().forEach(exporter ->
-                generator.generateModuleFile(exporter, target));
+        try {
+            FileUtils.forceMkdir(generatedFrontendDirectory);
+            generator.getExporters().forEach(exporter ->
+                    generator.generateModuleFile(exporter, generatedFrontendDirectory));
+        } catch (IOException e) {
+            getLog().error("Failed to create a directory for generated web " +
+                    "components", e);
+        }
     }
 
     private void runNodeUpdater() {
