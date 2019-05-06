@@ -52,13 +52,20 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVA
  * @since
  */
 public class WebComponentProvider extends SynchronizedRequestHandler {
-
     private static final String WEB_COMPONENT_PATH = "web-component/";
     private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
-    // match paths ending in words separated by at least one dash, and ending
-    // in either .js or .html (words cannot contain underscore)
+    private static final String HTML_EXTENSION = "html";
+    private static final String JS_EXTENSION = "js";
+    /**
+     * Matches paths ending in words separated by at least one dash, and ending
+     * in either .js or .html (words cannot contain underscore)
+     *
+     * @see com.vaadin.flow.server.communication.WebComponentProvider.ComponentInfo
+     *         for group usage
+     */
     private static final Pattern TAG_PATTERN = Pattern
-            .compile(".*/(([\\w&&[^_]]+-)+([\\w&&[^_]]+))(\\.js|\\.html)$");
+            .compile(".*/(([\\w&&[^_]]+-)+([\\w&&[^_]]+))\\." +
+                    "("+JS_EXTENSION+"|"+HTML_EXTENSION+")$");
 
     // tag name -> generated html
     private Map<String, String> cache;
@@ -77,19 +84,43 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<String> tag = parseTag(pathInfo);
-        if (!tag.isPresent()) {
+        ComponentInfo componentInfo = new ComponentInfo(pathInfo);
+
+        if (!componentInfo.hasExtension()) {
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request without extension " +
+                            "information (.js/.html) with request path {}",
+                    pathInfo);
+            return false;
+        }
+
+        if (componentInfo.getTag() == null) {
             LoggerFactory.getLogger(WebComponentProvider.class).info(
                     "Received web-component request for non-custom element with request path {}",
                     pathInfo);
             return false;
         }
+
+        if (componentInfo.isHTML() && !FrontendUtils.isBowerLegacyMode()) {
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request for html component in npm" +
+                            " mode with request path {}", pathInfo);
+            return false;
+        }
+
+        if (componentInfo.isJS() && FrontendUtils.isBowerLegacyMode()) {
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request for js component in bower" +
+                            " mode with request path {}", pathInfo);
+            return false;
+        }
+
         WebComponentConfigurationRegistry registry =
                 WebComponentConfigurationRegistry.getInstance(
                         ((VaadinServletRequest) request).getServletContext());
 
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
-                registry.getConfiguration(tag.get());
+                registry.getConfiguration(componentInfo.tag);
 
         if (optionalWebComponentConfiguration.isPresent()) {
             if (cache == null) {
@@ -100,12 +131,12 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
             String generated;
             if (FrontendUtils.isBowerLegacyMode()) {
-                generated = cache.computeIfAbsent(tag.get(),
+                generated = cache.computeIfAbsent(componentInfo.tag,
                         moduleTag -> generateBowerResponse(webComponentConfiguration,
                                 session, servletRequest, response));
             } else {
                 response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
-                generated = cache.computeIfAbsent(tag.get(),
+                generated = cache.computeIfAbsent(componentInfo.tag,
                         moduleTag -> generateNPMResponse());
             }
 
@@ -211,12 +242,39 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return contextPath + "/frontend/";
     }
 
-    private static Optional<String> parseTag(String pathInfo) {
-        Matcher matcher = TAG_PATTERN.matcher(pathInfo);
-        String tag = null;
-        if (matcher.find()) {
-            tag = matcher.group(1);
+    private static class ComponentInfo {
+        public final String tag;
+        public final String extension;
+
+        private ComponentInfo(String pathInfo) {
+            Matcher matcher = TAG_PATTERN.matcher(pathInfo);
+            if (matcher.find()) {
+                tag = matcher.group(1);
+                // the group index of the extension is 4, since the inner
+                // groups roll over with each new dash separated section;
+                // group 2 will be the second last part of the component name
+                // and group 3 will be the last part
+                extension = matcher.group(4);
+            } else {
+                tag = null;
+                extension = null;
+            }
         }
-        return Optional.ofNullable(tag);
+
+        public String getTag() {
+            return tag;
+        }
+
+        public boolean hasExtension() {
+            return extension != null;
+        }
+
+        public boolean isHTML() {
+            return HTML_EXTENSION.equals(extension);
+        }
+
+        public boolean isJS() {
+            return JS_EXTENSION.equals(extension);
+        }
     }
 }
