@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -242,7 +243,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return contextPath + "/frontend/";
     }
 
-    private static class ComponentInfo {
+    private static class ComponentInfo implements Serializable {
         public final String tag;
         public final String extension;
 

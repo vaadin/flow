@@ -197,9 +197,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
-                // we skip base href adjustment, since we are in a 3rd party
-                // context (TODO: there could be a problem, when Vaadin embeds Vaadin)
-                if ("base".equals(element.tagName())) {
+                if (elementShouldNotBeTransferred(element)) {
                     continue;
                 }
                 writer.append(varName).append("=");
@@ -223,6 +221,21 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 writer.append("document.head.appendChild(").append(varName).append(");");
             }
         }
+    }
+
+    private static boolean elementShouldNotBeTransferred(Element element) {
+        // we skip base href adjustment, since we are in a 3rd party
+        // context (TODO: there could be a problem, when Vaadin embeds Vaadin)
+        if ("base".equals(element.tagName())) {
+            return true;
+        }
+        // embedding context should not provide polyfill, it is left to the
+        // end-user
+        else if ("script".equals(element.tagName()) && element.attr("src").contains(
+                "webcomponents-loader.js")) {
+            return true;
+        }
+        return false;
     }
 
     private static String inlineHTML(String html) {
