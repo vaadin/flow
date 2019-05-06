@@ -41,6 +41,9 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
+
 /**
  * Request handler that supplies the script/html of the web component matching
  * the given tag.
@@ -95,14 +98,15 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             WebComponentConfiguration<? extends Component> webComponentConfiguration =
                     optionalWebComponentConfiguration.get();
 
-            String generated = "";
+            String generated;
             if (FrontendUtils.isBowerLegacyMode()) {
                 generated = cache.computeIfAbsent(tag.get(),
-                        moduleTag -> generateModule(webComponentConfiguration,
-                                session, servletRequest));
+                        moduleTag -> generateBowerResponse(webComponentConfiguration,
+                                session, servletRequest, response));
             } else {
+                response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
                 generated = cache.computeIfAbsent(tag.get(),
-                        moduleTag -> generateNPMImport());
+                        moduleTag -> generateNPMResponse());
             }
 
             IOUtils.write(generated, response.getOutputStream(),
@@ -115,15 +119,17 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return true;
     }
 
-    private String generateModule(
+    private String generateBowerResponse(
             WebComponentConfiguration<? extends Component> configuration,
-            VaadinSession session, VaadinServletRequest request) {
+            VaadinSession session, VaadinServletRequest request,
+            VaadinResponse response) {
         if (session.getConfiguration().useCompiledFrontendResources()) {
+            response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
             return generateCompiledUIDeclaration(session, request);
         } else {
+            response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
             return WebComponentGenerator.generateModule(configuration,
-                    getFrontendPath(request),
-                    FrontendUtils.isBowerLegacyMode());
+                    getFrontendPath(request), true);
         }
     }
 
@@ -165,7 +171,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + "document.head.insertBefore(link, " + jsParentRef + ".nextSibling);";
     }
 
-    private String generateNPMImport() {
+    private String generateNPMResponse() {
         // get the running script
         return "var scripts = document.head.getElementsByTagName( 'script' );"
                 + "var thisScript = scripts[ scripts.length - 1 ];"
