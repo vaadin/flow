@@ -22,6 +22,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.server.Constants;
 
 /**
@@ -61,7 +62,7 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
         // capture drop effect from server side, since it is meant for drag
         // end event
         dropEffect = source.getElement()
-                .getProperty(Constants.DROP_EFFECT_ELEMENT_PROPERTY);
+                .getProperty(DndUtil.DROP_EFFECT_ELEMENT_PROPERTY);
         // when the event is created, the drop target is always attached
         dragSourceComponent = getComponent().getUI()
                 .orElseThrow(() -> new IllegalStateException(
@@ -80,7 +81,7 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
      */
     public Optional<Object> getDragData() {
         return getDragSourceComponent().map(component -> ComponentUtil
-                .getData(component, Constants.DRAG_SOURCE_DATA_KEY));
+                .getData(component, DndUtil.DRAG_SOURCE_DATA_KEY));
     }
 
     /**

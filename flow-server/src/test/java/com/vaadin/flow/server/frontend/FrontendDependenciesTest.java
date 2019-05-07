@@ -1,19 +1,10 @@
 package com.vaadin.flow.server.frontend;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component0;
@@ -30,7 +21,12 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
-import org.mockito.Mockito;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -125,7 +121,7 @@ public class FrontendDependenciesTest {
 
         assertEquals(0, deps.getPackages().size());
 
-        assertEquals(2, deps.getScripts().size());
+        assertEquals(1, deps.getScripts().size());
         assertTrue(deps.getScripts().contains("frontend://theme-0.js"));
     }
 
@@ -138,7 +134,7 @@ public class FrontendDependenciesTest {
         assertEquals(0, deps.getImports().size());
         assertEquals(2, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(2, deps.getScripts().size());
+        assertEquals(1, deps.getScripts().size());
     }
 
     @Test
@@ -149,7 +145,7 @@ public class FrontendDependenciesTest {
         assertEquals(2, deps.getImports().size());
         assertEquals(8, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(7, deps.getScripts().size());
+        assertEquals(6, deps.getScripts().size());
     }
 
 
@@ -163,7 +159,7 @@ public class FrontendDependenciesTest {
         assertEquals(2, deps.getImports().size());
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(3, deps.getScripts().size());
+        assertEquals(2, deps.getScripts().size());
     }
 
     @Test
@@ -175,7 +171,7 @@ public class FrontendDependenciesTest {
         assertEquals(1, deps.getImports().size());
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(3, deps.getScripts().size());
+        assertEquals(2, deps.getScripts().size());
     }
 
 
@@ -188,7 +184,7 @@ public class FrontendDependenciesTest {
         assertEquals(2, deps.getImports().size());
         assertEquals(8, deps.getModules().size());
         assertEquals(1, deps.getPackages().size());
-        assertEquals(7, deps.getScripts().size());
+        assertEquals(6, deps.getScripts().size());
     }
 
     @Test
@@ -199,7 +195,7 @@ public class FrontendDependenciesTest {
         assertEquals(0, deps.getImports().size());
         assertEquals(1, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(1, deps.getScripts().size());
+        assertEquals(0, deps.getScripts().size());
         assertTrue(deps.getModules().contains("./my-component.js"));
     }
 }

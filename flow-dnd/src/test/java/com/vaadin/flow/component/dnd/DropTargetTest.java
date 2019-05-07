@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.Constants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class DropTargetTest {
 
         component.setActive(true);
         Assert.assertTrue(component.getElement()
-                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
 
         AtomicReference<DropEvent<TestComponent>> eventCapture = new AtomicReference<>();
         component.addDropListener(eventCapture::set);
@@ -72,24 +72,24 @@ public class DropTargetTest {
         DropTarget<RouterLink> dropTarget = DropTarget.create(component);
 
         Assert.assertTrue(component.getElement()
-                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
         Assert.assertNull(dropTarget.getDropEffect());
 
         DropTarget.configure(component, false);
         Assert.assertFalse(component.getElement()
-                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
 
         DropTarget.configure(component);
         Assert.assertFalse(component.getElement()
-                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
 
         DropTarget.configure(component, true);
         Assert.assertTrue(component.getElement()
-                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
 
         DropTarget.configure(component);
         Assert.assertTrue(component.getElement()
-                .getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY, false));
+                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
     }
 
     @Test
