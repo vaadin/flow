@@ -17,7 +17,6 @@
 package com.vaadin.flow.component.dnd.internal;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
@@ -27,11 +26,48 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @author Vaadin Ltd
  * @since 2.0
  */
-public class DnDUtil {
+public class DndUtil {
 
+    /**
+     * Resource path for importing dnd connector.
+     */
     public static final String DND_CONNECTOR = "frontend://dndConnector";
+    /**
+     * Property name for storing the
+     * {@link com.vaadin.flow.component.dnd.EffectAllowed} on element level.
+     */
+    public static final String EFFECT_ALLOWED_ELEMENT_PROPERTY = "__effectAllowed";
 
-    private DnDUtil() {
+    /**
+     * Key for storing server side drag data for a
+     * {@link com.vaadin.flow.component.dnd.DragSource}.
+     */
+    public static final String DRAG_SOURCE_DATA_KEY = "drag-source-data";
+
+    /**
+     * Key for storing an internal drag start listener registration for a
+     * {@link com.vaadin.flow.component.dnd.DragSource}.
+     */
+    public static final String START_LISTENER_REGISTRATION_KEY = "_startListenerRegistration";
+
+    /**
+     * Key for storing an internal drag end listener registration for a
+     * {@link com.vaadin.flow.component.dnd.DragSource}.
+     */
+    public static final String END_LISTENER_REGISTRATION_KEY = "_endListenerRegistration";
+
+    /**
+     * Property name for storing drop target activity data for an element.
+     */
+    public static final String DROP_TARGET_ACTIVE_PROPERTY = "__active";
+
+    /**
+     * Property name for storing the
+     * {@link com.vaadin.flow.component.dnd.DropEffect} on element level.
+     */
+    public static final String DROP_EFFECT_ELEMENT_PROPERTY = "__dropEffect";
+
+    private DndUtil() {
         // no instances from this class
     }
 
