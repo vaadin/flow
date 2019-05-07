@@ -14,19 +14,15 @@
  * the License.
  */
 
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.dnd;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.vaadin.flow.component.dnd.DragSource;
-import com.vaadin.flow.component.dnd.DragStartEvent;
-import com.vaadin.flow.component.dnd.DropEffect;
-import com.vaadin.flow.component.dnd.DropEvent;
-import com.vaadin.flow.component.dnd.DropTarget;
-import com.vaadin.flow.component.dnd.EffectAllowed;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.tests.util.MockUI;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

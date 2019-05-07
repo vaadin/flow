@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
-import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
@@ -1092,10 +1091,12 @@ public class UI extends Component
 
     /**
      * Gets the drag source of an active HTML5 drag event.
-     *
+     * <p>
+     * <em>NOTE: the generic drag and drop feature for Flow is available in
+     * another artifact, {@code flow-dnd} for now.</em>
+     * 
      * @return Extension of the drag source component if the drag event is
      *         active and originated from this UI, {@literal null} otherwise.
-     * @see DragSource
      * @since 2.0
      */
     public Component getActiveDragSourceComponent() {
