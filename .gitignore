@@ -34,7 +34,8 @@ driver
 bower_components
 node
 node_modules
-frontend
+/frontend
+*/flow-*/frontend
 package.json
 package-lock.json
 webpack.config.js
