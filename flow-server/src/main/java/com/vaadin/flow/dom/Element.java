@@ -614,23 +614,6 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets the transitive irreflexive closure of the {@link #getParent()}
-     * relation starting from this element
-     *
-     * @return A stream containing, in bottom-up order, the ancestors of this
-     * element.
-     */
-    @SuppressWarnings("rawtypes")
-    public Stream<Element> getAncestors() {
-        final Element parent = getParent();
-        if (parent == null) {
-            return Stream.empty();
-        } else {
-            return Stream.concat(Stream.of(parent), parent.getAncestors());
-        }
-    }
-
-    /**
      * Sets the given property to the given string value.
      * <p>
      * Note in order to update the following properties, you need to use the

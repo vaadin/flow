@@ -34,6 +34,7 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -495,26 +496,14 @@ public abstract class AbstractNavigationStateRenderer
                 // Re-use preserved chain for this route
                 chain = maybePreserved.get();
 
-                final Component componentInstance = (Component) chain.get(0);
-                final Element componentElement = componentInstance.getElement();
                 // Transfer all elements not on the ancestor chain of the routed
                 // component (typically dialogs and notifications) to the new UI
-                componentInstance.getUI().ifPresent(prevUi -> {
-                    final Set<Element> ancestorsReflexive =
-                            Stream.concat(Stream.of(componentElement),
-                                    componentElement.getAncestors())
-                                    .collect(Collectors.toSet());
-                    final List<Element> uiChildren = prevUi.getElement()
-                            .getChildren()
-                            .filter(elem -> !ancestorsReflexive.contains(elem))
-                            .collect(Collectors.toList());
-                    uiChildren.forEach(element -> {
-                        element.removeFromTree();
-                        ui.getElement().appendChild(element);
-                    });
-                });
+                final HasElement root = chain.get(chain.size()-1);
+                final Component component = (Component) chain.get(0);
+                component.getUI().ifPresent(prevUi ->
+                        moveAdjacentElementsToNewUI(root, prevUi, ui));
                 // Remove the top-level component from the tree
-                chain.get(chain.size()-1).getElement().getNode().removeFromTree();
+                root.getElement().getNode().removeFromTree();
             } else {
                 // Instantiate new chain for the route
                 chain = createChain(event);
@@ -580,6 +569,18 @@ public abstract class AbstractNavigationStateRenderer
                 || routeLayoutTypes.stream().anyMatch(layoutType ->
                 layoutType.isAnnotationPresent(PreserveOnRefresh.class)
         );
+    }
+
+    private void moveAdjacentElementsToNewUI(HasElement root, UI prevUi,
+                                             UI newUi) {
+        final List<Element> uiChildren = prevUi.getElement()
+                .getChildren()
+                .filter(elem -> elem != root.getElement())
+                .collect(Collectors.toList());
+        uiChildren.forEach(element -> {
+            element.removeFromTree();
+            newUi.getElement().appendChild(element);
+        });
     }
 
     // maps window.name to (location, chain)
