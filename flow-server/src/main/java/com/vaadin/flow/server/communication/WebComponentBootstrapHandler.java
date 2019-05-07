@@ -216,7 +216,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     private static boolean elementShouldNotBeTransferred(Element element) {
         // we skip base href adjustment, since we are in a 3rd party
-        // context (TODO: there could be a problem, when Vaadin embeds Vaadin)
+        // context
         if ("base".equals(element.tagName())) {
             return true;
         } else {

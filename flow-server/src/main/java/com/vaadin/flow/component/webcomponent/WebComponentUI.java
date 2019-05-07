@@ -80,7 +80,7 @@ public class WebComponentUI extends UI {
              * components will be contained within index.js
              */
             getConfigurationRegistry().getConfigurations().forEach(config ->
-                    getPage().addHtmlImport(getWebComponentPath(config)));
+                    getPage().addHtmlImport(getWebComponentHtmlPath(config)));
         }
     }
 
@@ -192,7 +192,7 @@ public class WebComponentUI extends UI {
         getPage().executeJs(builder.toString());
     }
 
-    private String getWebComponentPath(
+    private String getWebComponentHtmlPath(
             WebComponentConfiguration<? extends Component> config) {
         DeploymentConfiguration deploymentConfiguration = getSession()
                 .getService().getDeploymentConfiguration();
