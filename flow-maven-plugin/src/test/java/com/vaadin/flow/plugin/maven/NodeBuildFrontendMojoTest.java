@@ -390,7 +390,6 @@ public class NodeBuildFrontendMojoTest {
             "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
             "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
             "@vaadin/flow-frontend/ExampleConnector.js",
-            "@vaadin/flow-frontend/dndConnector.js",
             "./frontend-p3-template.js",
             "./local-p3-template.js",
             "./foo.js",

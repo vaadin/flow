@@ -23,13 +23,9 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dnd.internal.DnDUtil;
+import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.ExecutionContext;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Mixin interface that provides basic drag source API for any component.
@@ -50,7 +46,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @author Vaadin Ltd
  * @since 2.0
  */
-@JavaScript(DnDUtil.DND_CONNECTOR)
+@JavaScript(DndUtil.DND_CONNECTOR)
 public interface DragSource<T extends Component> extends HasElement {
 
     /**
@@ -89,7 +85,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * @see #configure(Component, boolean)
      */
     static <T extends Component> DragSource<T> configure(T component) {
-        DnDUtil.addDndConnectorWhenComponentAttached(component);
+        DndUtil.addDndConnectorWhenComponentAttached(component);
         return new DragSource<T>() {
             @Override
             public T getDragSourceComponent() {
@@ -185,10 +181,10 @@ public interface DragSource<T extends Component> extends HasElement {
                             .orElse(UI.getCurrent()).getInternals()
                             .setActiveDragSourceComponent(null));
             ComponentUtil.setData(getDragSourceComponent(),
-                    Constants.START_LISTENER_REGISTRATION_KEY,
+                    DndUtil.START_LISTENER_REGISTRATION_KEY,
                     startListenerRegistration);
             ComponentUtil.setData(getDragSourceComponent(),
-                    Constants.END_LISTENER_REGISTRATION_KEY,
+                    DndUtil.END_LISTENER_REGISTRATION_KEY,
                     endListenerRegistration);
         } else {
             getElement().removeProperty("draggable");
@@ -197,13 +193,13 @@ public interface DragSource<T extends Component> extends HasElement {
             // clear listeners for setting active data source
             Object startListenerRegistration = ComponentUtil.getData(
                     getDragSourceComponent(),
-                    Constants.START_LISTENER_REGISTRATION_KEY);
+                    DndUtil.START_LISTENER_REGISTRATION_KEY);
             if (startListenerRegistration instanceof Registration) {
                 ((Registration) startListenerRegistration).remove();
             }
             Object endListenerRegistration = ComponentUtil.getData(
                     getDragSourceComponent(),
-                    Constants.END_LISTENER_REGISTRATION_KEY);
+                    DndUtil.END_LISTENER_REGISTRATION_KEY);
             if (endListenerRegistration instanceof Registration) {
                 ((Registration) endListenerRegistration).remove();
             }
@@ -236,7 +232,7 @@ public interface DragSource<T extends Component> extends HasElement {
      */
     default void setDragData(Object data) {
         ComponentUtil.setData(getDragSourceComponent(),
-                Constants.DRAG_SOURCE_DATA_KEY, data);
+                DndUtil.DRAG_SOURCE_DATA_KEY, data);
     }
 
     /**
@@ -248,7 +244,7 @@ public interface DragSource<T extends Component> extends HasElement {
      */
     default Object getDragData() {
         return ComponentUtil.getData(getDragSourceComponent(),
-                Constants.DRAG_SOURCE_DATA_KEY);
+                DndUtil.DRAG_SOURCE_DATA_KEY);
     }
 
     /**
@@ -270,7 +266,7 @@ public interface DragSource<T extends Component> extends HasElement {
         if (effect == null) {
             throw new IllegalArgumentException("Allowed effect cannot be null");
         }
-        getElement().setProperty(Constants.EFFECT_ALLOWED_ELEMENT_PROPERTY,
+        getElement().setProperty(DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
                 effect.getClientPropertyValue());
     }
 
@@ -283,7 +279,7 @@ public interface DragSource<T extends Component> extends HasElement {
      */
     default EffectAllowed getEffectAllowed() {
         return EffectAllowed.valueOf(getElement().getProperty(
-                Constants.EFFECT_ALLOWED_ELEMENT_PROPERTY,
+                DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
                 EffectAllowed.UNINITIALIZED.getClientPropertyValue()
                         .toUpperCase(Locale.ENGLISH)));
     }
