@@ -217,11 +217,12 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static boolean elementShouldNotBeTransferred(Element element) {
         // we skip base href adjustment, since we are in a 3rd party
         // context (TODO: there could be a problem, when Vaadin embeds Vaadin)
-        if (!"script".equals(element.tagName())) {
+        if ("base".equals(element.tagName())) {
             return true;
         } else {
             // embedding context should not provide polyfill, it is left to the end-user
-            return element.attr("src").contains("webcomponents-loader.js");
+            return "script".equals(element.tagName())
+                    && element.attr("src").contains("webcomponents-loader.js");
         }
     }
 
