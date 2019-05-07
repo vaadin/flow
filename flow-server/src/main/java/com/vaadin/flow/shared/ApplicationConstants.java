@@ -130,6 +130,12 @@ public class ApplicationConstants implements Serializable {
     public static final String CONTENT_TYPE_TEXT_HTML_UTF_8 = "text/html; charset=utf-8";
 
     /**
+     * Content type to use for text/javascript responses (should always be
+     * UTF-8).
+     */
+    public static final String CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8 = "text/javascript; charset=utf-8";
+
+    /**
      * Name of the parameter used to transmit UI ids back and forth.
      */
     public static final String UI_ID_PARAMETER = "v-uiId";

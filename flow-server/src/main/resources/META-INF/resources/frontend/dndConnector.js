@@ -1,3 +1,5 @@
+window.Vaadin = window.Vaadin || {};
+window.Vaadin.Flow = window.Vaadin.Flow || {};
 window.Vaadin.Flow.dndConnector = {
 
   __ondragenterListener: function (event) {

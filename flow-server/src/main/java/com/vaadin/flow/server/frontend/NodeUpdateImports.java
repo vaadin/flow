@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,36 +42,41 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
- * or when flow-maven-plugin goals are run in order to update
- * Flow imports file and <code>node_module/@vaadin/flow-frontend</code>
- * contents by visiting all classes with {@link JsModule} {@link HtmlImport} and
- * {@link Theme} annotations.
+ * or when flow-maven-plugin goals are run in order to update Flow imports file
+ * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
+ * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
+ * annotations.
  */
 public class NodeUpdateImports extends NodeUpdater {
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
+    private final File generatedFrontendDirectory;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
-     *            a reusable class finder
+     *         a reusable class finder
      * @param frontendDirectory
-     *            a directory with project's frontend files
+     *         a directory with project's frontend files
+     * @param generatedFrontendDirectory
+     *         a directory with project's generated frontend files
      * @param generatedFlowImports
-     *            name of the JS file to update with the Flow project imports
+     *         name of the JS file to update with the Flow project imports
      * @param npmFolder
-     *            folder with the `package.json` file
+     *         folder with the `package.json` file
      * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the project
+     *         the path to the {@literal node_modules} directory of the project
      * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
+     *         true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(ClassFinder finder, File frontendDirectory,
-            File generatedFlowImports, File npmFolder, File nodeModulesPath,
-            boolean convertHtml) {
-        this(finder, null, frontendDirectory, generatedFlowImports, npmFolder, nodeModulesPath, convertHtml);
+    public NodeUpdateImports(
+            ClassFinder finder, File frontendDirectory,
+            File generatedFrontendDirectory, File generatedFlowImports,
+            File npmFolder, File nodeModulesPath, boolean convertHtml) {
+        this(finder, null, frontendDirectory, generatedFrontendDirectory,
+                generatedFlowImports, npmFolder, nodeModulesPath, convertHtml);
     }
 
 
@@ -78,27 +84,31 @@ public class NodeUpdateImports extends NodeUpdater {
      * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
-     *            a reusable class finder
+     *         a reusable class finder
      * @param frontendDependencies
-     *            a reusable frontend dependencies
+     *         a reusable frontend dependencies
      * @param frontendDirectory
-     *            a directory with project's frontend files
+     *         a directory with project's frontend files
+     * @param generatedFrontendDirectory
+     *         a directory with project's generated frontend files
      * @param generatedFlowImports
-     *            name of the JS file to update with the imports
+     *         name of the JS file to update with the imports
      * @param npmFolder
-     *            folder with the `package.json` file
+     *         folder with the `package.json` file
      * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the project
+     *         the path to the {@literal node_modules} directory of the project
      * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
+     *         true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(ClassFinder finder,
-            FrontendDependencies frontendDependencies, File frontendDirectory,
+    public NodeUpdateImports(
+            ClassFinder finder, FrontendDependencies frontendDependencies,
+            File frontendDirectory, File generatedFrontendDirectory,
             File generatedFlowImports, File npmFolder, File nodeModulesPath,
             boolean convertHtml) {
         super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
         this.generatedFlowImports = generatedFlowImports;
         this.frontendDirectory = frontendDirectory;
+        this.generatedFrontendDirectory = generatedFrontendDirectory;
     }
 
     @Override
@@ -109,12 +119,24 @@ public class NodeUpdateImports extends NodeUpdater {
         }
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
+        modules.addAll(getTargetFrontendModules(generatedFrontendDirectory,
+                Collections.singleton(FrontendUtils.FLOW_IMPORTS_FILE)));
+
         modules = sortModules(modules);
         try {
             updateMainJsFile(getMainJsContent(modules));
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", generatedFlowImports), e);
         }
+    }
+
+    private List<String> getExportedJsModules(List<File> exportedWebComponents) {
+        return exportedWebComponents.stream().map(file -> {
+            // get the import part of the file path and replace potential
+            // backward slashes with *nix compatible slashes
+            int index = file.getAbsolutePath().indexOf("@vaadin");
+            return file.getAbsolutePath().substring(index).replace('\\', '/');
+        }).collect(Collectors.toList());
     }
 
     private Set<String> sortModules(Set<String> modules) {
@@ -154,10 +176,10 @@ public class NodeUpdateImports extends NodeUpdater {
             }
             if (importedFileExists(translatedModulePath)) {
                 imports.add("import '" + toValidBrowserImport(
-                    translatedModulePath) + "';");
+                        translatedModulePath) + "';");
             } else if (importedFileExists(originalModulePath)) {
                 imports.add("import '" + toValidBrowserImport(
-                    originalModulePath) + "';");
+                        originalModulePath) + "';");
             } else {
                 unresolvedImports.put(originalModulePath, translatedModulePath);
             }
@@ -165,22 +187,22 @@ public class NodeUpdateImports extends NodeUpdater {
 
         if (!unresolvedImports.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder(String.format(
-                "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
-                    "nor in project files in '%s': ",
-                nodeModulesPath, frontendDirectory)).append("\n");
+                    "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
+                            "nor in project files in '%s': ",
+                    nodeModulesPath, frontendDirectory)).append("\n");
 
             unresolvedImports
-                .forEach((originalModulePath, translatedModulePath) -> {
-                    errorMessage.append(
-                        String.format("'%s'", translatedModulePath));
-                    if (!Objects.equals(originalModulePath,
-                        translatedModulePath)) {
-                        errorMessage.append(String.format(
-                            " (the import was translated by Flow from the path '%s')",
-                            originalModulePath));
-                    }
-                    errorMessage.append("\n");
-                });
+                    .forEach((originalModulePath, translatedModulePath) -> {
+                        errorMessage.append(
+                                String.format("'%s'", translatedModulePath));
+                        if (!Objects.equals(originalModulePath,
+                                translatedModulePath)) {
+                            errorMessage.append(String.format(
+                                    " (the import was translated by Flow from the path '%s')",
+                                    originalModulePath));
+                        }
+                        errorMessage.append("\n");
+                    });
 
             errorMessage.append("Double check that those files exist in the project structure.");
 
@@ -192,15 +214,19 @@ public class NodeUpdateImports extends NodeUpdater {
 
     private boolean importedFileExists(String jsImport) {
         return new File(frontendDirectory, jsImport).isFile()
-            || new File(nodeModulesPath, jsImport).isFile()
-            || new File(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME), jsImport).isFile();
+                || new File(nodeModulesPath, jsImport).isFile()
+                || new File(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME), jsImport).isFile()
+                || new File(generatedFrontendDirectory,
+                generatedResourcePathIntoRelativePath(jsImport)).isFile();
     }
 
     private String toValidBrowserImport(String s) {
-        if (s.startsWith("./")) {
+        if (s.startsWith(GENERATED_PREFIX)) {
+            return generatedResourcePathIntoRelativePath(s);
+        } else if (s.startsWith("./")) {
             return WEBPACK_PREFIX_ALIAS + s.substring(2);
         } else if (Character.isAlphabetic(s.charAt(0))
-            && !s.startsWith(WEBPACK_PREFIX_ALIAS)) {
+                && !s.startsWith(WEBPACK_PREFIX_ALIAS)) {
             return WEBPACK_PREFIX_ALIAS + s;
         }
         return s;
@@ -217,4 +243,8 @@ public class NodeUpdateImports extends NodeUpdater {
         }
     }
 
+
+    private static String generatedResourcePathIntoRelativePath(String path) {
+        return path.replace(GENERATED_PREFIX, "./");
+    }
 }

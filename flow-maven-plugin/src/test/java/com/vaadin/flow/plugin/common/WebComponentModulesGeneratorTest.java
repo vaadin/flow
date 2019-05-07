@@ -77,7 +77,7 @@ public class WebComponentModulesGeneratorTest {
 
         introspector = new ClassPathIntrospector(finder) {
         };
-        generator = new WebComponentModulesGenerator(introspector);
+        generator = new WebComponentModulesGenerator(introspector, true);
     }
 
     @Test

@@ -57,10 +57,18 @@ public class FrontendUtils {
     public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
     /**
+     * Folder that contains generated javascript files used to build the
+     * application.
+     */
+    public static final String FLOW_GENERATED_FOLDER = "frontend/";
+
+    /**
      * File that contains Flow application imports, javascript, and theme annotations.
      * It is also the entry-point for webpack.
      */
-    public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
+    public static final String FLOW_IMPORTS_FILE =
+            FLOW_GENERATED_FOLDER + "generated-flow-imports.js";
+
     /**
      *
      * A parameter for overriding the

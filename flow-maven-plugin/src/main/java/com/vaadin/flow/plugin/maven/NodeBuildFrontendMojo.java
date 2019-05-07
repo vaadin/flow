@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -37,12 +38,15 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
+import com.vaadin.flow.plugin.common.WebComponentModulesGenerator;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_GENERATED_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 
 /**
@@ -92,6 +96,12 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     private File generatedFlowImports;
 
     /**
+     * A directory for generated frontend source files.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_GENERATED_FOLDER)
+    private File generatedFrontendDirectory;
+
+    /**
      * A directory with project's frontend source files.
      */
     @Parameter(defaultValue = "${project.basedir}/frontend")
@@ -110,6 +120,13 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     private boolean runNpmInstall;
 
     /**
+     * Whether to generate embeddable web components from
+     * WebComponentExporter inheritors.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean generateEmbeddableWebComponents;
+
+    /**
      * Copy the `webapp.config.js` from the specified URL if missing. Default is
      * the template provided by this plugin. Set it to empty string to disable
      * the feature.
@@ -126,7 +143,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         }
 
         long start = System.nanoTime();
-
+        generateExportedWebComponents();
         runNodeUpdater();
 
         if (generateBundle) {
@@ -138,12 +155,39 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     }
 
 
+    /**
+     * Uses
+     * {@link com.vaadin.flow.plugin.common.WebComponentModulesGenerator} to
+     * generate JavaScript files from the {@code WebComponentExporters}
+     * present in the code base. The generated JavaScript files are placed in
+     * {@code ./target/frontend}.
+     */
+    private void generateExportedWebComponents() {
+        if (!generateEmbeddableWebComponents) {
+            return;
+        }
+        WebComponentModulesGenerator generator =
+                new WebComponentModulesGenerator(new AnnotationValuesExtractor(
+                        getClassFinder(project)), false);
+
+        try {
+            FileUtils.forceMkdir(generatedFrontendDirectory);
+            generator.getExporters().forEach(exporter ->
+                    generator.generateModuleFile(exporter, generatedFrontendDirectory));
+        } catch (IOException e) {
+            getLog().error("Failed to create a directory for generated web " +
+                    "components", e);
+        }
+    }
+
     private void runNodeUpdater() {
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
-                generatedFlowImports, npmFolder, nodeModulesPath, convertHtml)
-                        .withWebpack(getWebpackOutputDirectory(),
-                                webpackTemplate)
-                        .runNpmInstall(runNpmInstall).build().execute();
+                generatedFrontendDirectory, generatedFlowImports, npmFolder,
+                nodeModulesPath, convertHtml)
+                .withWebpack(getWebpackOutputDirectory(), webpackTemplate)
+                .runNpmInstall(runNpmInstall)
+                .withEmbeddableWebComponents(generateEmbeddableWebComponents)
+                .build().execute();
     }
 
     private void runWebpack() {
@@ -151,7 +195,8 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         File webpackExecutable = new File(nodeModulesPath, webpackCommand);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
-                    "Unable to locate webpack executable by path '%s'. Double check that the plugin us executed correctly",
+                    "Unable to locate webpack executable by path '%s'. Double" +
+                            " check that the plugin is executed correctly",
                     webpackExecutable.getAbsolutePath()));
         }
 
@@ -209,5 +254,4 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
                         "Unsupported packaging '%s'", project.getPackaging()));
         }
     }
-
 }

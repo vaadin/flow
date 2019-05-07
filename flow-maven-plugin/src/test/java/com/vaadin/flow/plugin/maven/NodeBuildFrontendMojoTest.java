@@ -79,6 +79,7 @@ public class NodeBuildFrontendMojoTest {
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
         File frontendDirectory = new File(tmpRoot, "frontend");
+        File generatedFrontendDirectory = new File(tmpRoot, "target/frontend");
 
         packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
@@ -86,6 +87,8 @@ public class NodeBuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFrontendDirectory", generatedFrontendDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "generateEmbeddableWebComponents", false);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);

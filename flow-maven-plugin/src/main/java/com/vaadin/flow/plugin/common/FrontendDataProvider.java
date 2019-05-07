@@ -203,7 +203,7 @@ public class FrontendDataProvider {
      */
     protected WebComponentModulesGenerator getWebComponentGenerator(
             ClassPathIntrospector introspector) {
-        return new WebComponentModulesGenerator(introspector);
+        return new WebComponentModulesGenerator(introspector, true);
     }
 
     private Map<String, Set<File>> resolveFragmentFiles(File es6SourceDirectory,
