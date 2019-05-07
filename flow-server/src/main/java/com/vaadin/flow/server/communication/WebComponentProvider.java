@@ -38,7 +38,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
@@ -66,7 +65,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      */
     private static final Pattern TAG_PATTERN = Pattern
             .compile(".*/(([\\w&&[^_]]+-)+([\\w&&[^_]]+))\\." +
-                    "("+JS_EXTENSION+"|"+HTML_EXTENSION+")$");
+                    "(" + JS_EXTENSION + "|" + HTML_EXTENSION + ")$");
 
     // tag name -> generated html
     private Map<String, String> cache;
@@ -215,6 +214,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 // figure out if we have already bootstrapped Vaadin client & ui
                 + "var bootstrapped = false;"
                 + "var bootstrapAddress=context+'web-component-bootstrap.js';"
+                // add the request address as a url parameter (used to get service url)
+                + "bootstrapAddress+='?url='+bootstrapAddress;"
                 + "for (var ii = 0; ii < scripts.length; ii++){"
                 + "if (scripts[ii].src === bootstrapAddress){"
                 + "bootstrapped=true; break;"
