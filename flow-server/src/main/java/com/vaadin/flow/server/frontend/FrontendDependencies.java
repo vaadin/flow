@@ -353,7 +353,6 @@ public class FrontendDependencies implements Serializable {
             EndPointData exporterData = new EndPointData(exporter);
             endPoints.put(exporterClassName, visitClass(exporterClassName, exporterData));
 
-            System.out.println("Exporter class is " + exporterClassName);
             if (!Modifier.isAbstract(exporter.getModifiers())) {
                 Class<? extends Component> componentClass =
                         (Class<? extends Component>) ReflectTools
