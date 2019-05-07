@@ -215,6 +215,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + "var bootstrapAddress=context+'web-component-bootstrap.js';"
                 // add the request address as a url parameter (used to get service url)
                 + "bootstrapAddress+='?url='+bootstrapAddress;"
+                // check if a script with the bootstrap source already exits
+                + "var scripts = document.getElementsByTagName('script');"
                 + "for (var ii = 0; ii < scripts.length; ii++){"
                 + "  if (scripts[ii].src === bootstrapAddress){"
                 + "    bootstrapped=true; break;"
