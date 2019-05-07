@@ -139,7 +139,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             } else {
                 response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
                 generated = cache.computeIfAbsent(componentInfo.tag,
-                        moduleTag -> generateNPMResponse());
+                        moduleTag -> generateNPMResponse(webComponentConfiguration.getTag()));
             }
 
             IOUtils.write(generated, response.getOutputStream(),
@@ -158,7 +158,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             VaadinResponse response) {
         if (session.getConfiguration().useCompiledFrontendResources()) {
             response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
-            return generateCompiledUIDeclaration(session, request);
+            return generateCompiledUIDeclaration(session, request,
+                    configuration.getTag());
         } else {
             response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
             return WebComponentGenerator.generateModule(configuration,
@@ -166,8 +167,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
     }
 
-    private String generateCompiledUIDeclaration(VaadinSession session,
-                                                 VaadinRequest request) {
+    private String generateCompiledUIDeclaration(
+            VaadinSession session, VaadinRequest request, String tagName) {
         String contextRootRelativePath = ServletHelper
                 .getContextRootRelativePath(request) + "/";
 
@@ -177,8 +178,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 .resolveVaadinUri(BootstrapHandler.POLYFILLS_JS);
         // <code>thisScript</code> below allows to refer the currently executing
         // script
-        return "var scripts = document.getElementsByTagName( 'script' );"
-                + "var thisScript = scripts[ scripts.length - 1 ];"
+        return getThisScript(tagName)
                 + generateAddPolyfillsScript(polyFillsUri, "thisScript")
                 + generateUiImport("thisScript");
     }
@@ -204,10 +204,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + "document.head.insertBefore(link, " + jsParentRef + ".nextSibling);";
     }
 
-    private String generateNPMResponse() {
+    private String generateNPMResponse(String tagName) {
         // get the running script
-        return "var scripts = document.head.getElementsByTagName( 'script' );"
-                + "var thisScript = scripts[ scripts.length - 1 ];"
+        return getThisScript(tagName)
                 + "var scriptUri = thisScript.src;"
                 + "var index = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH + "');"
                 + "var context = scriptUri.substring(0, index+" + WEB_COMPONENT_PATH.length() + ");"
@@ -217,15 +216,16 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 // add the request address as a url parameter (used to get service url)
                 + "bootstrapAddress+='?url='+bootstrapAddress;"
                 + "for (var ii = 0; ii < scripts.length; ii++){"
-                + "if (scripts[ii].src === bootstrapAddress){"
-                + "bootstrapped=true; break;"
-                + "}}"
+                + "  if (scripts[ii].src === bootstrapAddress){"
+                + "    bootstrapped=true; break;"
+                + "  }"
+                + "}"
                 // if no bootstrap -> bootstrap
                 + "if (!bootstrapped){"
-                + "var uiScript = document.createElement('script');"
-                + "uiScript.setAttribute('type','text/javascript');"
-                + "uiScript.setAttribute('src', bootstrapAddress);"
-                + "document.head.appendChild(uiScript);"
+                + "  var uiScript = document.createElement('script');"
+                + "  uiScript.setAttribute('type','text/javascript');"
+                + "  uiScript.setAttribute('src', bootstrapAddress);"
+                + "  document.head.appendChild(uiScript);"
                 + "}";
     }
 
@@ -244,6 +244,21 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             contextPath = contextPath.substring(0, contextPath.length() - 1);
         }
         return contextPath + "/frontend/";
+    }
+
+    private static String getThisScript(String tag) {
+        return "var thisScript;" //
+                + "if (document.currentScript) {" //
+                + "  thisScript = document.currentScript;" //
+                + "} else {" //
+                + "  var elements = document.getElementsByTagName('script');" //
+                + "  for (var ii = 0; ii < elements.length; ii++) {" //
+                + "    var script = elements[ii];" //
+                + "    if (script.src && script.src.indexOf('web-component/" + tag + "') != -1) {" //
+                + "      thisScript = script;" //
+                + "    }" //
+                + "  };" //
+                + "} ";
     }
 
     private static class ComponentInfo implements Serializable {
