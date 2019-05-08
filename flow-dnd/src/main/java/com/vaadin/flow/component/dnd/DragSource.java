@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,9 +22,14 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dnd.internal.DnDUtil;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Mixin interface that provides basic drag source API for any component.
@@ -32,6 +37,12 @@ import com.vaadin.flow.shared.Registration;
  * This can be used by either implementing this interface, or with the static
  * API {@link #create(Component)}, {@link #configure(Component)} or
  * {@link #configure(Component, boolean)}.
+ * <p>
+ * <em>NOTE: Starting a drag from a component that has contents inside shadow
+ * dom does not work in Firefox due to https://bugzilla.mozilla
+ * .org/show_bug.cgi?id=1521471. Thus currently Vaadin components like
+ * TextField, DatePicker and ComboBox cannot be dragged by the user in
+ * Firefox.</em>
  *
  * @param <T>
  *            the type of the drag source component
@@ -39,6 +50,7 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 2.0
  */
+@JavaScript(DnDUtil.DND_CONNECTOR)
 public interface DragSource<T extends Component> extends HasElement {
 
     /**
@@ -77,6 +89,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * @see #configure(Component, boolean)
      */
     static <T extends Component> DragSource<T> configure(T component) {
+        DnDUtil.addDndConnectorWhenComponentAttached(component);
         return new DragSource<T>() {
             @Override
             public T getDragSourceComponent() {
@@ -107,12 +120,7 @@ public interface DragSource<T extends Component> extends HasElement {
      */
     static <T extends Component> DragSource<T> configure(T component,
             boolean draggable) {
-        DragSource<T> dragSource = new DragSource<T>() {
-            @Override
-            public T getDragSourceComponent() {
-                return component;
-            }
-        };
+        DragSource<T> dragSource = configure(component);
         dragSource.setDraggable(draggable);
         return dragSource;
     }
