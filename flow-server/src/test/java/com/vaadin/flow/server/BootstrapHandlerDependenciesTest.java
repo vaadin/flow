@@ -1,5 +1,30 @@
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.shared.ui.LoadMode;
+import net.jcip.annotations.NotThreadSafe;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
@@ -12,34 +37,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.shared.ui.LoadMode;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class BootstrapHandlerDependenciesTest {
@@ -563,16 +560,19 @@ public class BootstrapHandlerDependenciesTest {
                 ui -> uiPageTestingMethod.accept(initUIAndGetPage(ui)));
     }
 
+    private String contextRootRelativePath(VaadinRequest request) {
+        return ServletHelper.getContextRootRelativePath((VaadinServletRequest)request) + "/";
+    }
+
     private Document initUIAndGetPage(UI ui) {
         ui.getInternals().setSession(mocks.getSession());
-        VaadinRequest request = new VaadinServletRequest(createRequest(),
+        VaadinServletRequest request = new VaadinServletRequest(createRequest(),
                 service);
         ui.doInit(request, 0);
-        ui.getInternals().setContextRoot(
-                ServletHelper.getContextRootRelativePath(request) + "/");
+        ui.getInternals().setContextRoot(this.contextRootRelativePath(request));
         UI.setCurrent(ui);
-        return BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, mocks.getSession(), ui));
+        return new BootstrapHandler.BootstrapPageBuilder(this::contextRootRelativePath).getBootstrapPage(
+                new BootstrapContext(request, null, mocks.getSession(), ui, this::contextRootRelativePath));
     }
 
     private HttpServletRequest createRequest() {

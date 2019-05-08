@@ -34,6 +34,7 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -44,11 +45,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     private static final String PATH_PREFIX = "/web-component/web-component-ui.html";
 
+    public WebComponentBootstrapHandler() {
+        super();
+    }
+
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
         private WebComponentBootstrapContext(VaadinRequest request,
-                                             VaadinResponse response, UI ui) {
-            super(request, response, ui.getInternals().getSession(), ui);
+                                             VaadinResponse response, UI ui,
+                                             Function<VaadinRequest, String> callback) {
+            super(request, response, ui.getInternals().getSession(), ui, callback);
         }
 
         @Override
@@ -124,7 +130,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
-                                                      VaadinResponse response, UI ui) {
-        return new WebComponentBootstrapContext(request, response, ui);
+                                                      VaadinResponse response, UI ui, Function<VaadinRequest, String> callback) {
+        return new WebComponentBootstrapContext(request, response, ui, callback);
     }
 }

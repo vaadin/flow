@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.shared.ApplicationConstants;
+
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.function.BiConsumer;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Contains helper methods for {@link VaadinServlet} and generally for handling
@@ -177,15 +177,14 @@ public class ServletHelper implements Serializable {
      *            the request for which the location should be determined
      * @return A relative path to the context root. Never ends with a slash (/).
      */
-    public static String getContextRootRelativePath(VaadinRequest request) {
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+    public static String getContextRootRelativePath(VaadinServletRequest request) {
         // Generate location from the request by finding how many "../" should
         // be added to the servlet path before we get to the context root
 
         // Should not take pathinfo into account because the base URI refers to
         // the servlet path
 
-        String servletPath = servletRequest.getServletPath();
+        String servletPath = request.getServletPath();
         assert servletPath != null;
         if (!servletPath.endsWith("/")) {
             servletPath += "/";

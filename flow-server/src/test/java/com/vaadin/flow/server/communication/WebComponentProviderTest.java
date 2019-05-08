@@ -24,6 +24,7 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -75,7 +76,7 @@ public class WebComponentProviderTest {
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
 
-        provider = new WebComponentProvider();
+        provider = new WebComponentProvider(r -> ServletHelper.getContextRootRelativePath((VaadinServletRequest)r) + "/");
     }
 
     @After

@@ -19,7 +19,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
-import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -36,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Request handler that supplies the script/html of the web component matching
@@ -49,8 +49,14 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
     private static final String SUFFIX = ".html";
 
+    private final Function<VaadinRequest, String> contextRootProvider;
+
     // tag name -> generated html
     private Map<String, String> cache;
+
+    public WebComponentProvider(Function<VaadinRequest, String> contextRootProvider) {
+        this.contextRootProvider = contextRootProvider;
+    }
 
     @Override
     public boolean synchronizedHandleRequest(
@@ -110,8 +116,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private String generateCompiledUIDeclaration(VaadinSession session,
                                                  VaadinRequest request) {
-        String contextRootRelativePath = ServletHelper
-                .getContextRootRelativePath(request) + "/";
+        String contextRootRelativePath = contextRootProvider.apply(request);
 
         BootstrapUriResolver resolver = new BootstrapUriResolver(
                 contextRootRelativePath, session);

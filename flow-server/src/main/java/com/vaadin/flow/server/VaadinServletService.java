@@ -79,7 +79,7 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        handlers.add(0, new BootstrapHandler());
+        handlers.add(0, new BootstrapHandler(this::getContextRootRelativePath));
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
@@ -377,6 +377,11 @@ public class VaadinServletService extends VaadinService {
                 .flatMap(server -> server.getWebJarResourcePath(path));
     }
 
-
-
+    @Override
+    protected String getContextRootRelativePath(VaadinRequest request) {
+        if(request instanceof VaadinServletRequest)
+            return ServletHelper.getContextRootRelativePath((VaadinServletRequest)request) + "/";
+        else throw new IllegalArgumentException("unknown type of VaadinRequest - "+
+                                                    request.getClass().getName());
+    }
 }
