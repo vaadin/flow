@@ -678,9 +678,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (conf.isBowerMode()) {
             appendWebComponentsPolyfills(head, context);
         } else {
-            conf.getPolyfills().forEach(polyfill -> head.appendChild(createJavaScriptElement(polyfill, false)));
-            head.appendChild(createJavaScriptElement(conf.getJsModuleBundle()).attr("type", "module"));
-            head.appendChild(createJavaScriptElement(conf.getJsModuleBundleEs5()).attr("nomodule", true));
+            BootstrapUriResolver resolver = context.getUriResolver();
+            conf.getPolyfills().forEach(polyfill -> head.appendChild(createJavaScriptElement(resolver.resolveVaadinUri(polyfill), false)));
+
+            String bundleUrl = resolver.resolveVaadinUri(conf.getJsModuleBundle());
+            String es5BundleUrl = resolver.resolveVaadinUri(conf.getJsModuleBundleEs5());
+            head.appendChild(createJavaScriptElement(bundleUrl).attr("type", "module"));
+            head.appendChild(createJavaScriptElement(es5BundleUrl).attr("nomodule", true));
         }
 
         if (context.getPushMode().isEnabled()) {

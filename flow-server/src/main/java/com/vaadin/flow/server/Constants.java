@@ -47,9 +47,9 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
 
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
-    public static final String JSBUNDLE_DEFAULT_VALUE = "build/index.js";
+    public static final String JSBUNDLE_DEFAULT_VALUE = "context://build/index.js";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
-    public static final String POLYFILLS_DEFAULT_VALUE = "build/webcomponentsjs/webcomponents-loader.js";
+    public static final String POLYFILLS_DEFAULT_VALUE = "context://build/webcomponentsjs/webcomponents-loader.js";
 
     /**
      * Configuration name for the parameter that determines whether Brotli

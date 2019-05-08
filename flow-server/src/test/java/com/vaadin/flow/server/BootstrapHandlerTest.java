@@ -69,14 +69,12 @@ public class BootstrapHandlerTest {
 
     static final String UI_TITLE = "UI_TITLE";
 
-    private static final String EXPECTED_THEME_CONTENTS =
-            "<script id=\"_theme-header-injection\">\n"
+    private static final String EXPECTED_THEME_CONTENTS = "<script id=\"_theme-header-injection\">\n"
             + "function _inlineHeader(tag, content){\n"
             + "var customStyle = document.createElement(tag);\n"
             + "customStyle.innerHTML= content;\n"
             + "var firstScript=document.head.querySelector('script');\n"
-            + "document.head.insertBefore(customStyle,firstScript);\n"
-            + "}\n"
+            + "document.head.insertBefore(customStyle,firstScript);\n" + "}\n"
             + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
             + "var script = document.getElementById('_theme-header-injection');"
             + "if ( script ) { document.head.removeChild(script);}\n"
@@ -1064,7 +1062,6 @@ public class BootstrapHandlerTest {
     public void theme_not_appended_to_head_in_npm()
             throws InvalidRouteConfigurationException {
 
-
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MyThemeTest.class));
 
@@ -1082,7 +1079,6 @@ public class BootstrapHandlerTest {
     public void index_appended_to_head_in_npm()
             throws InvalidRouteConfigurationException {
 
-
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MyThemeTest.class));
 
@@ -1091,20 +1087,23 @@ public class BootstrapHandlerTest {
 
         Elements allElements = page.head().getAllElements();
 
-        Assert.assertTrue("webcomponents-loader.js should be added to head. (not deferred)",
+        Assert.assertTrue(
+                "webcomponents-loader.js should be added to head. (not deferred)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" src=\"build/webcomponentsjs/webcomponents-loader.js\"></script>")));
+                                "<script type=\"text/javascript\" src=\"./build/webcomponentsjs/webcomponents-loader.js\"></script>")));
 
-        Assert.assertTrue("index.js should be added to head for ES6 browsers. (deferred and type module)",
+        Assert.assertTrue(
+                "index.js should be added to head for ES6 browsers. (deferred and type module)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"module\" defer src=\"build/index.js\"></script>")));
+                                "<script type=\"module\" defer src=\"./build/index.js\"></script>")));
 
-        Assert.assertTrue("index.js should be added to head for ES5 browsers. (deferred and nomodule)",
+        Assert.assertTrue(
+                "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" defer src=\"build/index.es5.js\" nomodule></script>")));
+                                "<script type=\"text/javascript\" defer src=\"./build/index.es5.js\" nomodule></script>")));
     }
 
     @Test // 3333
