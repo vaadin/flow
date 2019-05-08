@@ -331,7 +331,7 @@ public class FrontendDependencies implements Serializable {
      * {@link com.vaadin.flow.component.WebComponentExporter} and update an {@link
      * EndPointData} object with the info found.
      * <p>
-     * The last visited {@code exporter} will decide the the theme. If no
+     * The last visited {@code exporter} will decide the theme. If no
      * theme is found, {@code Lumo} is used. If the exporters have configured
      * different themes, this will be caught at runtime.
      *
@@ -373,11 +373,6 @@ public class FrontendDependencies implements Serializable {
                 themeInstance = new ThemeWrapper(theme);
             }
         }
-    }
-
-    private static EndPointData endPointDataFromExporter(Class<WebComponentExporter<? extends Component>> exporterClass) {
-        EndPointData data = new EndPointData(exporterClass);
-        return null;
     }
 
     /**
