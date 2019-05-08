@@ -32,6 +32,8 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
 
+        createDummyWindowVaadinFlow();
+
         invocations = JsCollections.array();
 
         ServerConnector connector = new ServerConnector(null) {
@@ -59,6 +61,16 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         Browser.getDocument().getBody().appendChild(boundElement);
         RouterLinkHandler.bind(registry, boundElement);
     }
+
+    private static native void createDummyWindowVaadinFlow()
+    /*-{
+      if (!$wnd.Vaadin) {
+        $wnd.Vaadin = {};
+      }
+      if (!$wnd.Vaadin.Flow) {
+        $wnd.Vaadin.Flow = {};
+      }
+    }-*/;
 
     public void testRouterLink_anchorWithRouterLink_eventIntercepted() {
         currentEvent = null;

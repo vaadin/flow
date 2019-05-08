@@ -77,8 +77,8 @@ public class ScrollPositionHandler {
 
     private final Registry registry;
 
-    private JsArray<Double> yPositions;
     private JsArray<Double> xPositions;
+    private JsArray<Double> yPositions;
 
     private HandlerRegistration responseHandlingEndedHandler;
 
@@ -276,7 +276,7 @@ public class ScrollPositionHandler {
             if (triggersServerSideRoundtrip) {
                 resetScrollAfterResponse();
             } else {
-                Browser.getWindow().scroll(0, 0);
+                setScrollPosition(new double[] { 0, 0 });
             }
         }
 
@@ -289,10 +289,10 @@ public class ScrollPositionHandler {
         }
 
         // remove old stored scroll positions
-        yPositions.splice(currentHistoryIndex,
-                yPositions.length() - currentHistoryIndex);
         xPositions.splice(currentHistoryIndex,
                 xPositions.length() - currentHistoryIndex);
+        yPositions.splice(currentHistoryIndex,
+                yPositions.length() - currentHistoryIndex);
     }
 
     private void resetScrollAfterResponse() {
@@ -302,18 +302,17 @@ public class ScrollPositionHandler {
                         resetScrollRegistration.removeHandler();
                         resetScrollRegistration = null;
 
-                        Browser.getWindow().scroll(0, 0);
+                        setScrollPosition(new double[] { 0, 0 });
                     });
         }
+
     }
 
     private void captureCurrentScrollPositions() {
-        // window.pageX/YOffset is an alias for scrollX/Y but also works in IE11
+        double[] xAndYPosition = getScrollPosition();
 
-        yPositions.set(currentHistoryIndex,
-                Double.valueOf(Browser.getWindow().getPageYOffset()));
-        xPositions.set(currentHistoryIndex,
-                Double.valueOf(Browser.getWindow().getPageXOffset()));
+        xPositions.set(currentHistoryIndex, Double.valueOf(xAndYPosition[0]));
+        yPositions.set(currentHistoryIndex, Double.valueOf(xAndYPosition[1]));
     }
 
     private JsonObject createStateObjectWithHistoryIndexAndToken() {
@@ -329,28 +328,29 @@ public class ScrollPositionHandler {
             responseHandlingEndedHandler.removeHandler();
         }
 
-        if (yPositions.length() < currentHistoryIndex
-                || xPositions.length() < currentHistoryIndex) {
-            Console.warn("No matching scroll position found (entries Y:"
-                    + yPositions.length() + ", X:" + xPositions.length()
+        if (xPositions.length() < currentHistoryIndex
+                || yPositions.length() < currentHistoryIndex) {
+            Console.warn("No matching scroll position found (entries X:"
+                    + xPositions.length() + ", Y:" + yPositions.length()
                     + ") for opened history index (" + currentHistoryIndex
                     + "). " + MISSING_STATE_VARIABLES_MESSAGE);
             resetScrollPositionTracking();
             return;
         }
 
-        int scrollY = yPositions.get(currentHistoryIndex).intValue();
         int scrollX = xPositions.get(currentHistoryIndex).intValue();
+        int scrollY = yPositions.get(currentHistoryIndex).intValue();
 
         if (delayAfterResponse) {
             responseHandlingEndedHandler = registry.getRequestResponseTracker()
                     .addResponseHandlingEndedHandler(
                             responseHandlingEndedEvent -> {
-                                Browser.getWindow().scrollTo(scrollX, scrollY);
+                                setScrollPosition(
+                                        new double[] { scrollX, scrollY });
                                 responseHandlingEndedHandler.removeHandler();
                             });
         } else {
-            Browser.getWindow().scrollTo(scrollX, scrollY);
+            setScrollPosition(new double[] { scrollX, scrollY });
         }
     }
 
@@ -368,5 +368,25 @@ public class ScrollPositionHandler {
        if ('scrollRestoration' in history) {
            history.scrollRestoration = "manual";
        }
+    }-*/;
+
+    private static native double[] getScrollPosition()
+    /*-{
+        if ($wnd.Vaadin.Flow.getScrollPosition) {
+          return $wnd.Vaadin.Flow.getScrollPosition();
+        } else {
+          // window.pageX/YOffset is an alias for scrollX/Y but also works in IE11
+          return [$wnd.pageXOffset, $wnd.pageYOffset];
+        }
+    }-*/;
+
+    // double[] here as well to maintain consistency with the getter
+    private static native void setScrollPosition(double[] xAndYPosition)
+    /*-{
+        if ($wnd.Vaadin.Flow.setScrollPosition) {
+          $wnd.Vaadin.Flow.setScrollPosition(xAndYPosition);
+        } else {
+          $wnd.scrollTo(xAndYPosition[0], xAndYPosition[1]);
+        }
     }-*/;
 }
