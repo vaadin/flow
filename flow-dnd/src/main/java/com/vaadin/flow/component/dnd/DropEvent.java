@@ -23,7 +23,6 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
-import com.vaadin.flow.server.Constants;
 
 /**
  * Server side drop event. Fired when an HTML5 drop happens on a valid drop
