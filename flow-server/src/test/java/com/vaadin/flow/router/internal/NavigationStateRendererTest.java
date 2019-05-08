@@ -322,6 +322,7 @@ public class NavigationStateRendererTest {
         // transferred from the previous UI to the new UI
         final Set<Element> uiChildren = ui1.getElement().getChildren()
                 .collect(Collectors.toSet());
+        Assert.assertEquals(2, uiChildren.size());
         Assert.assertTrue("Component element expected transferred",
                 uiChildren.contains(view.getElement()));
         Assert.assertTrue("Extra element expected transferred",

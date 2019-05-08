@@ -493,15 +493,17 @@ public abstract class AbstractNavigationStateRenderer
             if (maybePreserved.isPresent()) {
                 // Re-use preserved chain for this route
                 chain = maybePreserved.get();
-
-                // Transfer all elements not on the ancestor chain of the routed
-                // component (typically dialogs and notifications) to the new UI
                 final HasElement root = chain.get(chain.size()-1);
                 final Component component = (Component) chain.get(0);
-                component.getUI().ifPresent(prevUi ->
-                        moveAdjacentElementsToNewUI(root, prevUi, ui));
+                final Optional<UI> maybePrevUI = component.getUI();
+
                 // Remove the top-level component from the tree
-                root.getElement().getNode().removeFromTree();
+                root.getElement().removeFromTree();
+
+                // Transfer all remaining UI child elements (typically dialogs
+                // and notifications) to the new UI
+                maybePrevUI.ifPresent(prevUi ->
+                        moveElementsToNewUI(prevUi, ui));
             } else {
                 // Instantiate new chain for the route
                 chain = createChain(event);
@@ -569,11 +571,9 @@ public abstract class AbstractNavigationStateRenderer
         );
     }
 
-    private void moveAdjacentElementsToNewUI(HasElement root, UI prevUi,
-                                             UI newUi) {
+    private void moveElementsToNewUI(UI prevUi, UI newUi) {
         final List<Element> uiChildren = prevUi.getElement()
                 .getChildren()
-                .filter(elem -> elem != root.getElement())
                 .collect(Collectors.toList());
         uiChildren.forEach(element -> {
             element.removeFromTree();
