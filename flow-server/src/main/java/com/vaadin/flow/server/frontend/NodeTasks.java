@@ -69,7 +69,7 @@ public class NodeTasks implements Command {
          * Create a builder instance.
          *
          * @param classFinder
-         *            a class finder
+         *         a class finder
          */
         public Builder(ClassFinder classFinder) {
             this(classFinder, new File(getBaseDir(), "frontend"),
@@ -86,26 +86,26 @@ public class NodeTasks implements Command {
          * Create a builder instance.
          *
          * @param classFinder
-         *            a class finder
+         *         a class finder
          * @param frontendDirectory
-         *            a directory with project's frontend files
+         *         a directory with project's frontend files
          * @param generatedFrontendDirectory
-         *            a directory with project's generated frontend files
+         *         a directory with project's generated frontend files
          * @param generatedFlowImports
-         *            name of the JS file to update with the imports
+         *         name of the JS file to update with the imports
          * @param npmFolder
-         *            folder with the `package.json` file
+         *         folder with the `package.json` file
          * @param nodeModulesPath
-         *            the path to the {@literal node_modules} directory of the
-         *            project
+         *         the path to the {@literal node_modules} directory of the
+         *         project
          * @param convertHtml
-         *            <code>true</code> to enable polymer-2 annotated classes to
-         *            be considered. Default is <code>true</code>.
+         *         <code>true</code> to enable polymer-2 annotated classes to
+         *         be considered. Default is <code>true</code>.
          */
         public Builder(ClassFinder classFinder, File frontendDirectory,
                        File generatedFrontendDirectory,
-                File generatedFlowImports, File npmFolder, File nodeModulesPath,
-                boolean convertHtml) {
+                       File generatedFlowImports, File npmFolder, File nodeModulesPath,
+                       boolean convertHtml) {
             this.classFinder = classFinder;
             this.frontendDirectory = frontendDirectory;
             this.generatedFrontendDirectory = generatedFrontendDirectory;
@@ -117,6 +117,7 @@ public class NodeTasks implements Command {
             this.webpackTemplate = FrontendUtils.WEBPACK_CONFIG;
             this.enablePackagesUpdate = true;
             this.enableImportsUpdate = true;
+            this.generateEmbeddableWebComponents = true;
         }
 
         /**
@@ -132,15 +133,15 @@ public class NodeTasks implements Command {
          * Sets the webpack related properties.
          *
          * @param webpackOutputDirectory
-         *            the directory to set for webpack to output its build
-         *            results.
+         *         the directory to set for webpack to output its build
+         *         results.
          * @param webpackTemplate
-         *            name of the webpack resource to be used as template when
-         *            creating the <code>webpack.config.js</code> file.
+         *         name of the webpack resource to be used as template when
+         *         creating the <code>webpack.config.js</code> file.
          * @return this builder
          */
         public Builder withWebpack(File webpackOutputDirectory,
-                String webpackTemplate) {
+                                   String webpackTemplate) {
             this.webpackOutputDirectory = webpackOutputDirectory;
             this.webpackTemplate = webpackTemplate;
             return this;
@@ -151,8 +152,8 @@ public class NodeTasks implements Command {
          * <code>true</code>.
          *
          * @param enablePackagesUpdate
-         *            <code>true</code> to enable packages and webpack update,
-         *            otherwise <code>false</code>
+         *         <code>true</code> to enable packages and webpack update,
+         *         otherwise <code>false</code>
          * @return this builder
          */
         public Builder enablePackagesUpdate(boolean enablePackagesUpdate) {
@@ -165,8 +166,8 @@ public class NodeTasks implements Command {
          * <code>true</code>.
          *
          * @param enableImportsUpdate
-         *            <code>true</code> to enable imports file update, otherwise
-         *            <code>false</code>
+         *         <code>true</code> to enable imports file update, otherwise
+         *         <code>false</code>
          * @return this builder
          */
         public Builder enableImportsUpdate(boolean enableImportsUpdate) {
@@ -179,7 +180,7 @@ public class NodeTasks implements Command {
          * dependencies.
          *
          * @param runNpmInstall
-         *            run npm install. Default is <code>true</code>
+         *         run npm install. Default is <code>true</code>
          * @return the builder
          */
         public Builder runNpmInstall(boolean runNpmInstall) {
@@ -187,6 +188,14 @@ public class NodeTasks implements Command {
             return this;
         }
 
+        /**
+         * Sets whether to collect and package {@link com.vaadin.flow.component.WebComponentExporter}
+         * dependencies.
+         *
+         * @param generateEmbeddableWebComponents
+         *         collect dependencies. Default is {@code true}
+         * @return the builder
+         */
         public Builder withEmbeddableWebComponents(boolean generateEmbeddableWebComponents) {
             this.generateEmbeddableWebComponents =
                     generateEmbeddableWebComponents;
@@ -224,8 +233,7 @@ public class NodeTasks implements Command {
                     frontendDependencies, builder.frontendDirectory,
                     builder.generatedFrontendDirectory,
                     builder.generatedFlowImports, builder.npmFolder,
-                    builder.nodeModulesPath,
-                    builder.convertHtml));
+                    builder.nodeModulesPath, builder.convertHtml));
         }
 
     }

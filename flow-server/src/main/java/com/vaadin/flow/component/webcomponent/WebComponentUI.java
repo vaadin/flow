@@ -33,7 +33,6 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -81,7 +80,7 @@ public class WebComponentUI extends UI {
              * components will be contained within index.js
              */
             getConfigurationRegistry().getConfigurations().forEach(config ->
-                    getPage().addHtmlImport(getWebComponentPath(config)));
+                    getPage().addHtmlImport(getWebComponentHtmlPath(config)));
         }
     }
 
@@ -193,7 +192,7 @@ public class WebComponentUI extends UI {
         getPage().executeJs(builder.toString());
     }
 
-    private String getWebComponentPath(
+    private String getWebComponentHtmlPath(
             WebComponentConfiguration<? extends Component> config) {
         DeploymentConfiguration deploymentConfiguration = getSession()
                 .getService().getDeploymentConfiguration();

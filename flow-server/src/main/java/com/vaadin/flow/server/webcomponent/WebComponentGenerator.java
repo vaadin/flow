@@ -42,7 +42,6 @@ import elemental.json.JsonValue;
  * to the client.
  *
  * @author Vaadin Ltd.
- * @since
  */
 public class WebComponentGenerator {
     private static final String HTML_TEMPLATE = "webcomponent-template.html";

@@ -28,6 +28,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
@@ -46,7 +47,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
  */
-@HandlesTypes({ Route.class, NpmPackage.class })
+@HandlesTypes({ Route.class, NpmPackage.class, WebComponentExporter.class})
 public class DevModeInitializer implements ServletContainerInitializer, Serializable {
 
     @Override
@@ -80,6 +81,7 @@ public class DevModeInitializer implements ServletContainerInitializer, Serializ
                     .enableImportsUpdate(!config.getBooleanProperty(
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false))
                     .runNpmInstall(true)
+                    .withEmbeddableWebComponents(true)
                     .build().execute();
 
             DevModeHandler.start(config);
