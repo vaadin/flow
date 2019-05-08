@@ -16,18 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.communication.FaviconHandler;
-import com.vaadin.flow.server.communication.PushRequestHandler;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.AbstractTheme;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.GenericServlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,6 +23,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import javax.servlet.GenericServlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.communication.FaviconHandler;
+import com.vaadin.flow.server.communication.PushRequestHandler;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -238,15 +240,14 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
-        synchronized (getServlet().getServletContext()) {
-            final ServletContext context = getServlet().getServletContext();
+        ServletContext context = getServlet().getServletContext();
+        synchronized (context) {
             Object result = context.getAttribute(type.getName());
             if (result == null && defaultValueSupplier != null) {
                 result = defaultValueSupplier.get();
                 context.setAttribute(type.getName(), result);
-                return type.cast(result);
-            } else
-                return null;
+            }
+            return type.cast(result);
         }
     }
 

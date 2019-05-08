@@ -24,11 +24,8 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
@@ -40,7 +37,6 @@ public class MockServletServiceSessionSetup {
         private TestRouteRegistry routeRegistry;
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
-        private final Map<String, Object> attributes = new HashMap<>();
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -94,23 +90,6 @@ public class MockServletServiceSessionSetup {
                     listener -> listener.modifyBootstrapPage(response));
 
             super.modifyBootstrapPage(response);
-        }
-
-        @Override
-        public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
-            return
-                type.cast(attributes.computeIfAbsent(
-                    type.getName(),
-                    key -> Optional.ofNullable(defaultValueSupplier)
-                               .map(Supplier::get)
-                               .orElse(null))
-                );
-        }
-
-        @Override
-        public <T> void setAttribute(T value) {
-            assert value != null;
-            attributes.put(value.getClass().getName(), value);
         }
     }
 
