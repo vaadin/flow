@@ -69,15 +69,23 @@ public class FrontendToolsLocator implements Serializable {
      *         such tools
      */
     public Optional<File> tryLocateTool(String toolName) {
-        return executeCommand(isWindows() ? "where" : "which", toolName)
-                .map(this::omitErrorResult).map(CommandResult::getStdout)
-                // Add most common paths in unix #5611
-                .orElse(Arrays.asList(
-                        "/usr/local/bin/" + toolName,
-                        "/opt/local/bin/" + toolName,
-                        "/opt/bin/" + toolName))
-                .stream().map(File::new)
-                .filter(this::verifyTool).findFirst();
+        List<String> candidateLocations = executeCommand(
+                isWindows() ? "where" : "which", toolName)
+                        .map(this::omitErrorResult)
+                        .map(CommandResult::getStdout)
+                        .orElseGet(() -> Arrays.asList(
+                                // Add most common paths in unix #5611
+                                "/usr/local/bin/" + toolName,
+                                "/opt/local/bin/" + toolName,
+                                "/opt/bin/" + toolName));
+
+        for (String candidateLocation : candidateLocations) {
+            File candidate = new File(candidateLocation);
+            if (verifyTool(candidate)) {
+                return Optional.of(candidate);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -104,7 +112,8 @@ public class FrontendToolsLocator implements Serializable {
         String commandString = Arrays.toString(commandParts);
         Process process;
         try {
-            process = new ProcessBuilder(commandParts).start();
+            process = FrontendUtils
+                    .createProcessBuilder(Arrays.asList(commandParts)).start();
         } catch (IOException e) {
             log().error("Failed to execute the command '{}'", commandString, e);
             return Optional.empty();
