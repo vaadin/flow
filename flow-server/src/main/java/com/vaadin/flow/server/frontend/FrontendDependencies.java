@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.bytebuddy.jar.asm.ClassReader;
 
@@ -53,17 +54,17 @@ public class FrontendDependencies implements Serializable {
 
     private static final String MULTIPLE_VERSIONS =
             "%n%n======================================================================================================"
-            + "%nFailed to determine the version for the '%s' npm package."
-            + "%nFlow found multiple versions: %s"
-            + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
-            + "%nmeet the same version."
-            + "%n======================================================================================================%n";
+                    + "%nFailed to determine the version for the '%s' npm package."
+                    + "%nFlow found multiple versions: %s"
+                    + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
+                    + "%nmeet the same version."
+                    + "%n======================================================================================================%n";
 
     private static final String BAD_VERSIOM =
             "%n%n======================================================================================================"
-            + "%nFailed to determine the version for the '%s' npm package."
-            + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
-            + "%n======================================================================================================%n";
+                    + "%nFailed to determine the version for the '%s' npm package."
+                    + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
+                    + "%n======================================================================================================%n";
 
     /**
      * A wrapper for the Theme instance that use reflection for executing its
@@ -327,18 +328,21 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * Visits all classes extending
-     * {@link com.vaadin.flow.component.WebComponentExporter} and update an {@link
-     * EndPointData} object with the info found.
+     * Visits all classes extending {@link com.vaadin.flow.component.WebComponentExporter}
+     * and update an {@link EndPointData} object with the info found.
      * <p>
-     * The last visited {@code exporter} will decide the theme. If no
-     * theme is found, {@code Lumo} is used. If the exporters have configured
-     * different themes, this will be caught at runtime.
+     * The limitation with {@code WebComponentExporters} is that only one
+     * theme can be defined. If the more than one {@code @Theme} annotation
+     * is found on the exporters, {@code IllegalStateException} will be thrown.
+     * Having {@code @Theme} and {@code @NoTheme} is considered as two theme
+     * annotations. However, if no theme is found, {@code Lumo} is used, if
+     * available.
      *
      * @throws ClassNotFoundException
      * @throws IOException
      * @throws IllegalAccessException
      * @throws InstantiationException
+     * @throws IllegalStateException
      */
     @SuppressWarnings("unchecked")
     private void computeExporters() throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException {
@@ -347,7 +351,7 @@ public class FrontendDependencies implements Serializable {
         Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
         Class<WebComponentExporter<? extends Component>> exporterClass =
                 finder.loadClass(WebComponentExporter.class.getName());
-
+        HashSet<EndPointData> themedEndPoints = new HashSet<>();
         for (Class<?> exporter : finder.getSubTypesOf(exporterClass)) {
             String exporterClassName = exporter.getName();
             EndPointData exporterData = new EndPointData(exporter);
@@ -366,12 +370,19 @@ public class FrontendDependencies implements Serializable {
                 }
             }
             // any theme found on an exporter should be fine
-            Class<? extends AbstractTheme> theme = exporterData.theme != null ? finder.loadClass(exporterData.theme)
-                    : getLumoTheme();
-            if (theme != null) {
-                themeDefinition = new ThemeDefinition(theme, exporterData.variant != null ? exporterData.variant : "");
-                themeInstance = new ThemeWrapper(theme);
+            if (exporterData.theme != null || exporterData.notheme) {
+                themedEndPoints.add(exporterData);
             }
+        }
+
+        if (themedEndPoints.size() > 1) {
+            throw new IllegalStateException("WebComponentExporters should " +
+                    "define only 1 theme. Instead, found " + themedEndPoints.size() +
+                    " different themes: " + themedEndPoints.stream()
+                    .map(endpoint -> endpoint.theme)
+                    .collect(Collectors.joining(", ")));
+        } else {
+            setTheme(themedEndPoints.stream().findAny().orElse(null));
         }
     }
 
@@ -431,11 +442,11 @@ public class FrontendDependencies implements Serializable {
         // blacklist of some common name-spaces that would not have components.
         return className != null &&  // @formatter:off
                 !className.matches(
-                    "(^$|"
-                    + ".*(slf4j).*|"
-                    + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
-                    + ".*(Exception)$"
-                    + ")"); // @formatter:on
+                        "(^$|"
+                                + ".*(slf4j).*|"
+                                + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
+                                + ".*(Exception)$"
+                                + ")"); // @formatter:on
     }
 
     private URL getUrl(String className) {
