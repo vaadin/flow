@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -69,15 +70,23 @@ public class FrontendToolsLocator implements Serializable {
      *         such tools
      */
     public Optional<File> tryLocateTool(String toolName) {
-        return executeCommand(isWindows() ? "where" : "which", toolName)
-                .map(this::omitErrorResult).map(CommandResult::getStdout)
-                // Add most common paths in unix #5611
-                .orElse(Arrays.asList(
-                        "/usr/local/bin/" + toolName,
-                        "/opt/local/bin/" + toolName,
-                        "/opt/bin/" + toolName))
-                .stream().map(File::new)
-                .filter(this::verifyTool).findFirst();
+        List<String> candidateLocations = executeCommand(
+                isWindows() ? "where" : "which", toolName)
+                        .map(this::omitErrorResult)
+                        .map(CommandResult::getStdout)
+                        .orElseGet(() -> Arrays.asList(
+                                // Add most common paths in unix #5611
+                                "/usr/local/bin/" + toolName,
+                                "/opt/local/bin/" + toolName,
+                                "/opt/bin/" + toolName));
+
+        for (String candidateLocation : candidateLocations) {
+            File candidate = new File(candidateLocation);
+            if (verifyTool(candidate)) {
+                return Optional.of(candidate);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -104,7 +113,27 @@ public class FrontendToolsLocator implements Serializable {
         String commandString = Arrays.toString(commandParts);
         Process process;
         try {
-            process = new ProcessBuilder(commandParts).start();
+            ProcessBuilder processBuilder = new ProcessBuilder(commandParts);
+
+            /*
+             * Ensure the location of the command to run is on the PATH. This is
+             * in some cases needed by npm to locate a node binary.
+             */
+            File commandFile = new File(commandParts[0]);
+            if (commandFile.isAbsolute()) {
+                String commandPath = commandFile.getParent();
+
+                Map<String, String> environment = processBuilder.environment();
+                String path = environment.get("PATH");
+                if (path == null || path.isEmpty()) {
+                    path = commandPath;
+                } else if (!path.contains(commandPath)) {
+                    path += File.pathSeparatorChar + commandPath;
+                }
+                environment.put("PATH", path);
+            }
+
+            process = processBuilder.start();
         } catch (IOException e) {
             log().error("Failed to execute the command '{}'", commandString, e);
             return Optional.empty();
