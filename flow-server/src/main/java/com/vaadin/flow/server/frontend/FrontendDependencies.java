@@ -194,6 +194,18 @@ public class FrontendDependencies implements Serializable {
         }
         return all;
     }
+    /**
+     * get all Java classes considered when looking for used dependencies.
+     *
+     * @return the set of JS files
+     */
+    public Set<String> getClasses() {
+        Set<String> all = new HashSet<>();
+        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
+            all.addAll(r.classes);
+        }
+        return all;
+    }
 
     /**
      * get all HTML imports used in the application. It excludes imports from

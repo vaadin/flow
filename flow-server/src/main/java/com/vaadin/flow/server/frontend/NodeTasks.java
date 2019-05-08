@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import com.vaadin.flow.server.Command;
 
@@ -64,6 +65,8 @@ public class NodeTasks implements Command {
         private boolean runNpmInstall;
 
         private boolean generateEmbeddableWebComponents;
+
+        private Set<String> visitedClasses;
 
         /**
          * Create a builder instance.
@@ -201,6 +204,17 @@ public class NodeTasks implements Command {
                     generateEmbeddableWebComponents;
             return this;
         }
+        /**
+         * Sets a set to which the names of classes visited when finding
+         * dependencies will be collected.
+         * 
+         * @param visitedClasses a set to collect class name to, or <code>null</code> to not collect visited classes
+         * @return the builder, for chaining
+         */
+        public Builder collectVisitedClasses(Set<String> visitedClasses) {
+            this.visitedClasses = visitedClasses;
+            return this;
+        }
     }
 
     private final Collection<Command> commands = new ArrayList<>();
@@ -234,6 +248,11 @@ public class NodeTasks implements Command {
                     builder.generatedFrontendDirectory,
                     builder.generatedFlowImports, builder.npmFolder,
                     builder.nodeModulesPath, builder.convertHtml));
+
+            if (builder.visitedClasses != null) {
+                builder.visitedClasses
+                        .addAll(frontendDependencies.getClasses());
+            }
         }
 
     }
