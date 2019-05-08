@@ -15,22 +15,9 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Predicates;
-import com.google.javascript.jscomp.NodeUtil;
-import com.google.javascript.jscomp.SourceFile;
-import com.google.javascript.jscomp.parsing.Config;
-import com.google.javascript.jscomp.parsing.ParserRunner;
-import com.google.javascript.rhino.ErrorReporter;
-import com.google.javascript.rhino.Node;
-import com.google.javascript.rhino.SimpleErrorReporter;
-import com.google.javascript.rhino.StaticSourceFile;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -46,10 +33,8 @@ import static elemental.json.JsonType.STRING;
 /**
  * Parse statistics data provided by webpack.
  *
- * @see NpmTemplateParser
- *
  * @author Vaadin Ltd
- *
+ * @see NpmTemplateParser
  */
 public final class BundleParser {
 
@@ -58,12 +43,11 @@ public final class BundleParser {
     private static final String CHUNKS = "chunks";
     private static final String MODULES = "modules";
 
+    private static final Pattern TEMPLATE_PATTERN = Pattern.compile(
+            "template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`|\\'|\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
+
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
-
-    private static Config config = ParserRunner
-            .createConfig(Config.LanguageMode.ECMASCRIPT6, null,
-                    Config.StrictMode.STRICT);
 
     private static final String TEMPLATE_TAG_NAME = "template";
 
@@ -74,7 +58,8 @@ public final class BundleParser {
      * Gets the hash from the string content of a webpack stats file.
      * It uses regex to avoid parsing the entire string into a json object.
      *
-     * @param fileContents the content of the stats file
+     * @param fileContents
+     *         the content of the stats file
      * @return the hash
      */
     public static String getHashFromStatistics(String fileContents) {
@@ -85,7 +70,8 @@ public final class BundleParser {
     /**
      * Parses the content of the stats file to return a json object.
      *
-     * @param fileContents the content of the stats file
+     * @param fileContents
+     *         the content of the stats file
      * @return a JsonObject with the stats
      */
     public static JsonObject parseJsonStatistics(String fileContents) {
@@ -97,9 +83,9 @@ public final class BundleParser {
      * webpack.
      *
      * @param fileName
-     *            name of the file to get from the json
+     *         name of the file to get from the json
      * @param statistics
-     *            statistics json as a JsonObject
+     *         statistics json as a JsonObject
      * @return JsonObject for the file statistic
      */
     public static String getSourceFromStatistics(String fileName,
@@ -111,12 +97,13 @@ public final class BundleParser {
      * Get the template element for given statistics file object.
      *
      * @param name
-     *            the file name of the template
+     *         the file name of the template
      * @param statisticsJson
-     *            webpack profile json object
+     *         webpack profile json object
      * @return template element for the sources of the given file sources
      */
-    public static Element parseTemplateElement(String name, JsonObject statisticsJson) {
+    public static Element parseTemplateElement(String name,
+            JsonObject statisticsJson) {
         return parseTemplateElement(name, statisticsJson.getString(SOURCE));
     }
 
@@ -131,30 +118,18 @@ public final class BundleParser {
      */
     public static Element parseTemplateElement(String fileName, String source) {
 
-        ErrorReporter errorReporter = new SimpleErrorReporter();
-
-        // parse a source file into an ast.
-        SourceFile sourceFile = new SourceFile(fileName,
-                StaticSourceFile.SourceKind.STRONG);
-
-        ParserRunner.ParseResult parseResult = ParserRunner
-                .parse(sourceFile, source, config, errorReporter);
-
-        // run the visitor on the ast to extract the needed values.
-        DependencyVisitor visitor = new DependencyVisitor();
-        NodeUtil.visitPreOrder(parseResult.ast, visitor,
-                Predicates.alwaysTrue());
-
         Document templateDocument;
+        Matcher matcher = TEMPLATE_PATTERN.matcher(source);
 
-        if(visitor.getterContent.containsKey(TEMPLATE_TAG_NAME)) {
-            templateDocument = Jsoup.parse(visitor.getterContent.get(TEMPLATE_TAG_NAME));
+        if (matcher.find()) {
+            String group = matcher.group(2);
+
+            templateDocument = Jsoup.parse(group);
         } else {
             templateDocument = new Document("");
         }
 
         Element template = templateDocument.createElement(TEMPLATE_TAG_NAME);
-
         templateDocument.body().getAllElements().stream()
                 .filter(node -> !node.equals(templateDocument.body()))
                 .forEach(template::appendChild);
@@ -164,7 +139,8 @@ public final class BundleParser {
 
     // From the statistics json eecursively go through all chunks and modules to
     // find the first module whose name matches the file name
-    private static String getSourceFromObject(JsonObject module, String fileName) {
+    private static String getSourceFromObject(JsonObject module,
+            String fileName) {
         String source = null;
         if (validKey(module, MODULES, ARRAY)) {
             source = getSourceFromArray(module.getArray(MODULES), fileName);
@@ -172,7 +148,8 @@ public final class BundleParser {
         if (source == null && validKey(module, CHUNKS, ARRAY)) {
             source = getSourceFromArray(module.getArray(CHUNKS), fileName);
         }
-        if (source == null && validKey(module, NAME, STRING) && validKey(module, SOURCE, STRING)) {
+        if (source == null && validKey(module, NAME, STRING) && validKey(module,
+                SOURCE, STRING)) {
             String name = module.getString(NAME);
 
             // If the found module is
@@ -202,7 +179,8 @@ public final class BundleParser {
     }
 
     // Visits all elements of a JsonArray and returns the first element with a valid source module
-    private static String getSourceFromArray(JsonArray objects, String fileName) {
+    private static String getSourceFromArray(JsonArray objects,
+            String fileName) {
         String source = null;
         for (int i = 0; source == null && i < objects.length(); i++) {
             if (objects.get(i).getType().equals(OBJECT)) {
@@ -213,59 +191,8 @@ public final class BundleParser {
     }
 
     private static boolean validKey(JsonObject o, String k, JsonType t) {
-        boolean validKey = o != null && o.hasKey(k) && o.get(k).getType().equals(t);
+        boolean validKey =
+                o != null && o.hasKey(k) && o.get(k).getType().equals(t);
         return validKey && (!t.equals(STRING) || !o.getString(k).isEmpty());
     }
-
-    private static class DependencyVisitor implements NodeUtil.Visitor {
-
-        private List<String> imports = new ArrayList<>();
-        private List<String> getters = new ArrayList<>();
-
-        Map<String, String> getterContent = new HashMap<>();
-
-        @Override
-        public void visit(Node node) {
-            if (node != null) {
-                switch (node.getToken()) {
-                case IMPORT:
-                    addImport(node);
-                    break;
-                case GETTER_DEF:
-                    addGetter(node);
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-
-        private void addGetter(Node node) {
-            getters.add(node.getString());
-            if (TEMPLATE_TAG_NAME.equals(node.getString())) {
-                String content = getTextNode(node).getRawString();
-                getterContent.put(node.getString(), content);
-            }
-        }
-
-        private void addImport(Node node) {
-            if (node.hasChildren()) {
-                Node child = getTextNode(node);
-                imports.add(child.getString());
-            }
-        }
-
-        private Node getTextNode(Node node) {
-            Node child = node.getFirstChild();
-            while (child.getFirstChild() != null || child.getNext() != null) {
-                if (child.getNext() == null) {
-                    child = child.getFirstChild();
-                } else {
-                    child = child.getNext();
-                }
-            }
-            return child;
-        }
-    }
-
 }
