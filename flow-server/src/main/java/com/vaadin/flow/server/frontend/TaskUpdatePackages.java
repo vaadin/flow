@@ -19,30 +19,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
  * the classpath. It also visits classes annotated with {@link NpmPackage}
  */
-@NpmPackage(value = "@polymer/polymer", version = "3.1.0")
-public class NodeUpdatePackages extends NodeUpdater {
-
-    private static final String DEV_DEPENDENCIES = "devDependencies";
-    private static final String DEPENDENCIES = "dependencies";
-
-    boolean modified = false;
+public class TaskUpdatePackages extends NodeUpdater {
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -58,7 +47,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            whether to convert html imports or not during the package
      *            updates
      */
-    public NodeUpdatePackages(ClassFinder finder, File npmFolder,
+    public TaskUpdatePackages(ClassFinder finder, File npmFolder,
                               File nodeModulesPath, boolean convertHtml) {
         this(finder, null, npmFolder, nodeModulesPath, convertHtml);
     }
@@ -79,7 +68,7 @@ public class NodeUpdatePackages extends NodeUpdater {
      *            whether to convert html imports or not during the package
      *            updates
      */
-    public NodeUpdatePackages(ClassFinder finder,
+    public TaskUpdatePackages(ClassFinder finder,
             FrontendDependencies frontendDependencies, File npmFolder,
             File nodeModulesPath, boolean convertHtml) {
         super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
@@ -96,7 +85,7 @@ public class NodeUpdatePackages extends NodeUpdater {
             }
 
             modified = updatePackageJsonDependencies(packageJson, deps);
-            modified = updatePackageJsonDevDependencies(packageJson) || modified ;
+            modified = updateDefaultDependencies(packageJson) || modified ;
 
             if (modified) {
                 writePackageFile(packageJson);
@@ -119,66 +108,10 @@ public class NodeUpdatePackages extends NodeUpdater {
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson, Map<String, String> deps) {
         boolean added = false;
-        JsonObject json = packageJson.getObject(DEPENDENCIES);
         for(Entry<String, String> e : deps.entrySet()) {
-            String version = "=" + e.getValue();
-            if (!json.hasKey(e.getKey()) || !json.getString(e.getKey()).equals(version)) {
-                json.put(e.getKey(), version);
-                log().info("Added {}@{} dependency.", e.getKey(), version);
-                added = true;
-            }
-        }
-        if(!json.hasKey("@webcomponents/webcomponentsjs")) {
-            json.put("@webcomponents/webcomponentsjs", "2.2.10");
+            added = addDependency(packageJson, DEPENDENCIES, e.getKey(), e.getValue()) || added;
         }
         return added;
-    }
-
-    private boolean updatePackageJsonDevDependencies(JsonObject packageJson) {
-        boolean added = false;
-        JsonObject json = packageJson.getObject(DEV_DEPENDENCIES);
-        Map<String, String> devDependencies = new HashMap<>();
-        devDependencies.put("webpack", "4.30.0");
-        devDependencies.put("webpack-cli", "3.3.0");
-        devDependencies.put("webpack-dev-server", "3.3.0");
-        devDependencies.put("webpack-babel-multi-target-plugin", "2.1.0");
-        devDependencies.put("copy-webpack-plugin", "5.0.3");
-        for(Entry<String, String> entry: devDependencies.entrySet()) {
-            if(!json.hasKey(entry.getKey())) {
-                json.put(entry.getKey(), entry.getValue());
-                log().info("Added {} dependency.", entry.getKey());
-                added = true;
-            }
-        }
-        return added;
-    }
-
-    private void writePackageFile(JsonObject packageJson) throws IOException {
-        File packageFile = new File(npmFolder, PACKAGE_JSON);
-        FileUtils.writeStringToFile(packageFile, packageJson.toJson(), UTF_8.name());
-    }
-
-    JsonObject getPackageJson() throws IOException {
-        JsonObject packageJson;
-        File packageFile = new File(npmFolder, PACKAGE_JSON);
-
-        if (packageFile.exists()) {
-            String fileContent = FileUtils.readFileToString(packageFile, UTF_8.name());
-            packageJson = Json.parse(fileContent);
-        } else {
-            log().info("Creating a default {}", packageFile);
-            FileUtils.writeStringToFile(packageFile, "{}", UTF_8.name());
-            packageJson = Json.createObject();
-        }
-        ensureMissingObject(packageJson, DEPENDENCIES);
-        ensureMissingObject(packageJson, DEV_DEPENDENCIES);
-        return packageJson;
-    }
-
-    private void ensureMissingObject(JsonObject packageJson, String name) {
-        if (!packageJson.hasKey(name)) {
-            packageJson.put(name, Json.createObject());
-        }
     }
 
     /**

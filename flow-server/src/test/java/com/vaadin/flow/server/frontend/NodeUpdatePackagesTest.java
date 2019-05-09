@@ -42,8 +42,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private NodeUpdatePackages packageUpdater;
-    private WebpackUpdater webpackUpdater;
+    private TaskUpdatePackages packageUpdater;
+    private TaskUpdateWebpack webpackUpdater;
     private File packageJson;
     private File webpackConfig;
 
@@ -55,10 +55,10 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         NodeUpdateTestUtil.createStubNode(true, true);
 
-        packageUpdater = new NodeUpdatePackages(getClassFinder(), baseDir,
+        packageUpdater = new TaskUpdatePackages(getClassFinder(), baseDir,
                 new File(baseDir, "node_modules"), true);
 
-        webpackUpdater = new WebpackUpdater(baseDir, baseDir, WEBPACK_CONFIG,
+        webpackUpdater = new TaskUpdateWebpack(baseDir, baseDir, WEBPACK_CONFIG,
                 new File(baseDir, FLOW_IMPORTS_FILE));
 
         packageJson = new File(baseDir, PACKAGE_JSON);

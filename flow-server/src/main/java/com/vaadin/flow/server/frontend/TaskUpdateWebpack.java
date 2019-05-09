@@ -35,7 +35,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 /**
  * Updates the webpack config file according with current project settings.
  */
-public class WebpackUpdater implements Command {
+public class TaskUpdateWebpack implements Command {
 
     /**
      * The name of the webpack config file.
@@ -58,7 +58,7 @@ public class WebpackUpdater implements Command {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      */
-    public WebpackUpdater(File webpackConfigFolder, File webpackOutputDirectory,
+    public TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, File generatedFlowImports) {
         this.webpackTemplate = webpackTemplate;
         this.webpackOutputDirectory = webpackOutputDirectory.toPath();

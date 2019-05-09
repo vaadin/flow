@@ -28,9 +28,9 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 /**
  * Run <code>npm install</code> after dependencies have been updated.
  */
-public class NodeNpmInstall implements Command {
+public class TaskRunNpmInstall implements Command {
 
-    private final NodeUpdatePackages packageUpdater;
+    private final NodeUpdater packageUpdater;
 
     /**
      * Create an instance of the command.
@@ -39,7 +39,7 @@ public class NodeNpmInstall implements Command {
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
      */
-    public NodeNpmInstall(NodeUpdatePackages packageUpdater) {
+    public TaskRunNpmInstall(NodeUpdater packageUpdater) {
         this.packageUpdater = packageUpdater;
     }
 
