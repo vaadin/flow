@@ -16,19 +16,24 @@
 
 package com.vaadin.flow.server;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.Optional;
-import java.util.Properties;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.Optional;
+import java.util.Properties;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.shared.ApplicationConstants;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.isBowerLegacyMode;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -85,7 +90,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
     /**
      * Generate Property containing parameters for with all parameters contained
      * in current application.
-     * 
+     *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
      * @param servletConfig
@@ -118,7 +123,28 @@ public final class DeploymentConfigurationFactory implements Serializable {
             initParameters.setProperty(name,
                     servletConfig.getInitParameter(name));
         }
+
+        if (isBowerLegacyMode()) {
+            initParameters.setProperty(PropertyDeploymentConfiguration.IS_BOWER_DEV, Boolean.TRUE.toString());
+        }
+
+        if (isBowerLegacyProdMode(servletConfig.getServletContext())) {
+            initParameters.setProperty(PropertyDeploymentConfiguration.IS_BOWER_PROD, Boolean.TRUE.toString());
+        }
+
         return initParameters;
+    }
+
+    private static boolean isBowerLegacyProdMode(ServletContext context) {
+        try {
+            URL resource = context.getResource("/" + Constants.FRONTEND_URL_ES6_DEFAULT_VALUE.replace(
+                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")+ "vaadin-flow-bundle-manifest.json");
+            if (resource != null) {
+                return true;
+            }
+        } catch (MalformedURLException e) { //NOSONAR
+        }
+        return false;
     }
 
     private static void readUiFromEnclosingClass(

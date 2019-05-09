@@ -1,0 +1,10 @@
+{
+  "name": "flow-component-renderer",
+  "main": [
+    "flow-component-renderer.html"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "polymer": "^2.0.0"
+  }
+}

@@ -23,9 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
@@ -65,6 +62,8 @@ import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -1088,5 +1087,19 @@ public class UI extends Component
         }
         return new ShortcutRegistration(this, () -> this, listener, key)
                 .withModifiers(keyModifiers);
+    }
+
+    /**
+     * Gets the drag source of an active HTML5 drag event.
+     * <p>
+     * <em>NOTE: the generic drag and drop feature for Flow is available in
+     * another artifact, {@code flow-dnd} for now.</em>
+     * 
+     * @return Extension of the drag source component if the drag event is
+     *         active and originated from this UI, {@literal null} otherwise.
+     * @since 2.0
+     */
+    public Component getActiveDragSourceComponent() {
+        return getInternals().getActiveDragSourceComponent();
     }
 }

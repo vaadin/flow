@@ -33,7 +33,7 @@ public class ReturnChannelView extends AbstractDivView {
                 .registerChannel(arguments -> button.setText(
                         "Click registered: " + arguments.getString(0)));
 
-        button.executeJavaScript(
+        button.executeJs(
                 "this.addEventListener('click', function() { $0('hello') })",
                 channel);
 

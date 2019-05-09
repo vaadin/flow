@@ -15,15 +15,16 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Locale;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import java.util.Locale;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
+
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,8 +33,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.ApplicationConstants;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class I18NProviderTest {

@@ -45,10 +45,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.reflect.Modifier.isStatic;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
-import static java.lang.reflect.Modifier.isStatic;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -80,6 +79,9 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.textfield\\.SlotHelpers",
                 "com\\.vaadin\\.flow\\.component\\.orderedlayout\\.FlexConstants",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.DefaultTemplateParser",
+                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.NpmTemplateParser",
+                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser",
+                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser\\$DependencyVisitor",
                 "com\\.vaadin\\.flow\\.component\\.PropertyDescriptors(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.Shortcuts",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
@@ -133,6 +135,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.internal\\.ReflectionCache",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer",
+                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.IdCollector",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeList(\\$.*)?",
@@ -150,6 +153,8 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendClassVisitor(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendAnnotatedClassVisitor(\\$.*)?",
 
                 //Various test classes
                 ".*\\.test(s)?\\..*",
@@ -198,7 +203,7 @@ public abstract class ClassesSerializableTest {
     /**
      * The method is called right after a class instantiation and might be
      * overriden by subclasses to reset thread local values (ex. current UI).
-     * 
+     *
      * @see #setupThreadLocals
      */
     @SuppressWarnings("WeakerAccess")
@@ -209,7 +214,7 @@ public abstract class ClassesSerializableTest {
      * The method is called right a class instantiation and might be overriden
      * by subclasses to install some necessary thread local values (ex. current
      * UI).
-     * 
+     *
      * @see #resetThreadLocals
      */
     @SuppressWarnings("WeakerAccess")

@@ -59,7 +59,8 @@ public class WebComponentWrapperTest {
         exporter = new MyComponentExporter();
 
         // make component available and bind properties to it
-        binding = (WebComponentBinding<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
+        binding = (WebComponentBinding<MyComponent>) new WebComponentExporter
+                .WebComponentConfigurationFactory().create(exporter)
                 .createWebComponentBinding(new MockInstantiator(), element);
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
@@ -87,11 +88,11 @@ public class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, Json.create(4));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two string messages should have come through", 3,
+        Assert.assertEquals("Three string messages should have come through", 3,
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two integer messages should have come through", 3,
+        Assert.assertEquals("Three integer messages should have come through", 3,
                 component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
@@ -115,11 +116,11 @@ public class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, Json.create(4));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two string messages should have come through", 3,
+        Assert.assertEquals("Three string messages should have come through", 3,
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two integer messages should have come through", 3,
+        Assert.assertEquals("Three integer messages should have come through", 3,
                 component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
@@ -145,11 +146,11 @@ public class WebComponentWrapperTest {
         wrapper.sync(BOOLEAN_PROPERTY, Json.create(true));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two string messages should have come through", 3,
+        Assert.assertEquals("Three string messages should have come through", 3,
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Two integer messages should have come through", 3,
+        Assert.assertEquals("Three integer messages should have come through", 3,
                 component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",

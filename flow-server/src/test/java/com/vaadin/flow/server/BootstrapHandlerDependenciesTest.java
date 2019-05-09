@@ -250,6 +250,8 @@ public class BootstrapHandlerDependenciesTest {
         BootstrapHandler.clientEngineFile = () -> "foobar";
 
         mocks = new MockServletServiceSessionSetup();
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         service = mocks.getService();
         TestVaadinServlet servlet = mocks.getServlet();
         for (String type : new String[] { "html", "js", "css" }) {
@@ -482,6 +484,9 @@ public class BootstrapHandlerDependenciesTest {
                 if (foundClientEngine) {
                     if (userDependencyMinIndex > i) {
                         userDependencyMinIndex = i;
+                    }
+                    if (elementString.contains("dndConnector.js")) {
+                        continue;
                     }
                     assertThat(
                             "Expected to have here dependencies added with Flow public api",

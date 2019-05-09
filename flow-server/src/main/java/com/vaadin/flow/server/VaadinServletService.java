@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.servlet.GenericServlet;
 import javax.servlet.ServletContext;
@@ -237,6 +238,26 @@ public class VaadinServletService extends VaadinService {
         return Optional.empty();
     }
 
+    @Override
+    public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
+        ServletContext context = getServlet().getServletContext();
+        synchronized (context) {
+            Object result = context.getAttribute(type.getName());
+            if (result == null && defaultValueSupplier != null) {
+                result = defaultValueSupplier.get();
+                context.setAttribute(type.getName(), result);
+            }
+            return type.cast(result);
+        }
+    }
+
+    @Override
+    public <T> void setAttribute(T value) {
+        assert value != null;
+        getServlet().getServletContext()
+            .setAttribute(value.getClass().getName(), value);
+    }
+
     /**
      * Resolves the given {@code url} resource and tries to find a themed or raw
      * version.
@@ -356,5 +377,7 @@ public class VaadinServletService extends VaadinService {
         return getServlet().getWebJarServer()
                 .flatMap(server -> server.getWebJarResourcePath(path));
     }
+
+
 
 }

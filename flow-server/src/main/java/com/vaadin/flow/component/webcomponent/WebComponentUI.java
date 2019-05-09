@@ -18,8 +18,6 @@ package com.vaadin.flow.component.webcomponent;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.ServletContext;
-
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -34,7 +32,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -65,21 +62,25 @@ public class WebComponentUI extends UI {
         } else {
             uiElementId = session.getConfiguration().getRootElementId();
         }
-        getPage().executeJavaScript(
+        getPage().executeJs(
                 "document.body.dispatchEvent(new CustomEvent('root-element', { detail: '"
                         + uiElementId + "' }))");
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
-        if (deploymentConfiguration.useCompiledFrontendResources()) {
+        if (deploymentConfiguration.isBowerMode()
+                && deploymentConfiguration.useCompiledFrontendResources()) {
             /*
              * This code adds a number of HTML dependencies to the page but in
              * fact there are no such HTML files: they should have been
              * generated during transpilation via maven plugin. To be able to
              * activate transpiled code the embedded application imports the
              * "dependencies" which represent the transpiled files.
+             *
+             * This code is not needed when in npm mode, since the web
+             * components will be contained within index.js
              */
             getConfigurationRegistry().getConfigurations().forEach(config ->
-                    getPage().addHtmlImport(getWebComponentPath(config)));
+                    getPage().addHtmlImport(getWebComponentHtmlPath(config)));
         }
     }
 
@@ -95,10 +96,10 @@ public class WebComponentUI extends UI {
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentExporter =
+        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration =
                 getConfigurationRegistry().getConfiguration(tag);
 
-        if (!webComponentExporter.isPresent()) {
+        if (!webComponentConfiguration.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received connect request for non existing WebComponent '{}'",
                     tag);
@@ -113,14 +114,14 @@ public class WebComponentUI extends UI {
          * configureWebComponentInstance sets up the component-to-host linkage.
          */
         Element el = new Element(tag);
-        WebComponentBinding binding = webComponentExporter.get()
+        WebComponentBinding binding = webComponentConfiguration.get()
                 .createWebComponentBinding(Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), wrapper.getElement(),
                 NodeProperties.INJECT_BY_ID, webComponentElementId);
-        wrapper.getElement().executeJavaScript("$0.serverConnected()");
+        wrapper.getElement().executeJs("$0.serverConnected()");
     }
 
     @Override
@@ -188,10 +189,10 @@ public class WebComponentUI extends UI {
                 builder.append("elements[i].setAttribute('").append(attribute)
                         .append("', '").append(value).append("');"));
         builder.append("}");
-        getPage().executeJavaScript(builder.toString());
+        getPage().executeJs(builder.toString());
     }
 
-    private String getWebComponentPath(
+    private String getWebComponentHtmlPath(
             WebComponentConfiguration<? extends Component> config) {
         DeploymentConfiguration deploymentConfiguration = getSession()
                 .getService().getDeploymentConfiguration();

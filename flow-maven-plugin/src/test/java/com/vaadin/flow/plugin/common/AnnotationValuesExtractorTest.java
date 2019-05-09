@@ -16,16 +16,12 @@
 
 package com.vaadin.flow.plugin.common;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.ReflectionsClassFinder;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +31,12 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.frontend.ClassFinder;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Vaadin Ltd
@@ -44,11 +46,14 @@ public class AnnotationValuesExtractorTest {
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
 
-    private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+    ClassFinder finder = new ReflectionsClassFinder(
             TestUtils.getTestResource(TestUtils.SERVER_JAR),
             TestUtils.getTestResource(
                     "annotation-extractor-test/vaadin-grid-flow.jar"),
             TestUtils.getTestResource(TestUtils.DATA_JAR));
+
+    private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
+            finder);
 
     @Test
     public void extractAnnotationValues_incorrectMethod() {

@@ -25,7 +25,7 @@ import com.vaadin.flow.server.VaadinSession;
 public class MockUI extends UI {
 
     public MockUI() {
-        this(findOrcreateSession());
+        this(findOrCreateSession());
     }
 
     public MockUI(VaadinSession session) {
@@ -38,7 +38,7 @@ public class MockUI extends UI {
         // Do nothing
     }
 
-    private static VaadinSession findOrcreateSession() {
+    private static VaadinSession findOrCreateSession() {
         VaadinSession session = VaadinSession.getCurrent();
         if (session == null) {
             session = new AlwaysLockedVaadinSession(Mockito.mock(VaadinService.class));

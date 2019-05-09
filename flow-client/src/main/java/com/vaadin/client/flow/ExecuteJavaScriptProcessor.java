@@ -34,7 +34,7 @@ import elemental.json.JsonValue;
 
 /**
  * Processes the result of
- * {@link Page#executeJavaScript(String, java.io.Serializable...)} on the
+ * {@link Page#executeJs(String, java.io.Serializable...)} on the
  * client.
  *
  * @author Vaadin Ltd

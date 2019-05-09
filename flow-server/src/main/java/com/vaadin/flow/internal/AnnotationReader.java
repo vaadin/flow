@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 
 /**
@@ -67,6 +68,19 @@ public class AnnotationReader {
     public static List<JavaScript> getJavaScriptAnnotations(
             Class<? extends Component> componentClass) {
         return getAnnotationsFor(componentClass, JavaScript.class);
+    }
+
+    /**
+     * Finds all {@link JsModule} annotation on the given {@link Component}
+     * class, its super classes and implenented interfaces.
+     *
+     * @param componentClass
+     *         the component class to search for the annotation
+     * @return a list the JavaScript annotations found
+     */
+    public static List<JsModule> getJsModuleAnnotations(
+            Class<? extends Component> componentClass) {
+        return getAnnotationsFor(componentClass, JsModule.class);
     }
 
     /**
