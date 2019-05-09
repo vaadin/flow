@@ -25,50 +25,52 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Interface for annotated class searches.
+ * Interface for annotated and subclass class searches.
  */
 public interface ClassFinder extends Serializable {
 
     /**
-     * Implementation that search for annotated classes in a list of classes.
+     * Implementation that searches for annotated classes or subclasses in a
+     * list of classes.
      */
     class DefaultClassFinder implements ClassFinder {
-        private final Set<Class<?>> annotatedClasses;
+        private final Set<Class<?>> classes;
 
         private final transient ClassLoader classLoader;
 
         /**
          * It uses current classloader for getting resources or loading classes.
          *
-         * @param annotatedClasses The annotated classes.
+         * @param classes The classes.
          */
-        public DefaultClassFinder(Set<Class<?>> annotatedClasses) {
-            this.annotatedClasses = annotatedClasses;
+        public DefaultClassFinder(Set<Class<?>> classes) {
+            this.classes = classes;
             this.classLoader = getClass().getClassLoader();
         }
 
         /**
          * ClassFinder using a specified <code>ClassLoader</code> to load
-         * classes and a list of classes where to look for annotations.
+         * classes and a list of classes where to look for annotations or
+         * subclasses.
          *
          * @param classLoader
          *            classloader for getting resources or loading classes.
-         * @param annotatedClasses
-         *            classes where to look for annotations.
+         * @param classes
+         *            classes where to look for annotations or subclasses.
          */
         public DefaultClassFinder(ClassLoader classLoader,
-                Class<?>... annotatedClasses) {
+                Class<?>... classes) {
             this.classLoader = classLoader;
-            this.annotatedClasses = new HashSet<>();
-            for (Class<?> clazz : annotatedClasses) {
-                this.annotatedClasses.add(clazz);
+            this.classes = new HashSet<>();
+            for (Class<?> clazz : classes) {
+                this.classes.add(clazz);
             }
         }
 
         @Override
         public Set<Class<?>> getAnnotatedClasses(
                 Class<? extends Annotation> annotation) {
-            return annotatedClasses.stream().filter(
+            return classes.stream().filter(
                     cl -> cl.getAnnotationsByType(annotation).length > 0)
                     .collect(Collectors.toSet());
         }
@@ -86,8 +88,11 @@ public interface ClassFinder extends Serializable {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
-            throw new IllegalStateException("Unimplemented");
+            return this.classes.stream()
+                    .filter(cl -> type.isAssignableFrom(cl) && !type.equals(cl))
+                    .map(cl -> (Class<T>)cl).collect(Collectors.toSet());
         }
     }
 

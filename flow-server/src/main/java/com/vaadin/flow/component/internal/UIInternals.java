@@ -28,10 +28,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.dnd.DragSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
@@ -75,6 +71,8 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -1018,7 +1016,6 @@ public class UIInternals implements Serializable {
      *
      * @param activeDragSourceComponent
      *            the drag source component
-     * @see DragSource
      * @since 2.0
      */
     public void setActiveDragSourceComponent(
@@ -1031,7 +1028,6 @@ public class UIInternals implements Serializable {
      *
      * @return Extension of the drag source component if the drag event is
      *         active and originated from this UI, {@literal null} otherwise.
-     * @see DragSource
      * @since 2.0
      */
     public Component getActiveDragSourceComponent() {

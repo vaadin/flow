@@ -7,48 +7,59 @@ import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static com.vaadin.flow.uitest.ui.PreserveOnRefreshView.*;
+
 public class PreserveOnRefreshIT extends ChromeBrowserTest {
 
-    private final static String DIV_ID = "contents";
-
     @Test
-    public void refresh_componentIsReused() {
+    public void refresh_componentAndUiChildrenReused() {
         open();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String initialContents = findElement(By.id(DIV_ID)).getText();
+        final String componentId = getString(COMPONENT_ID);
+        final String notificationId = getString(NOTIFICATION_ID);
 
         open();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String newContents = findElement(By.id(DIV_ID)).getText();
+        final String newComponentId = getString(COMPONENT_ID);
+        final String newNotificationId = getString(NOTIFICATION_ID);
+        final int attachCount = getInt(ATTACHCOUNTER_ID);
 
         Assert.assertEquals("Component contents expected identical",
-                initialContents, newContents);
+                componentId, newComponentId);
+        Assert.assertEquals("Notification contents expected identical",
+                notificationId, newNotificationId);
+        Assert.assertEquals("Expected two attaches",
+                2, attachCount);
     }
 
     @Test
     public void navigateToNonRefreshing_refreshInDifferentWindow_componentIsRecreated() {
         open();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String initialContents = findElement(By.id(DIV_ID)).getText();
+        final String componentId = getString(COMPONENT_ID);
+        final String notificationId = getString(NOTIFICATION_ID);
 
         // navigate to some other page in between
         getDriver().get(getRootURL() +
                 "/view/com.vaadin.flow.uitest.ui.PageView");
 
         open();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String newContents = findElement(By.id(DIV_ID)).getText();
+        final String newComponentId = getString(COMPONENT_ID);
+        final String newNotificationId = getString(NOTIFICATION_ID);
+        final int attachCount = getInt(ATTACHCOUNTER_ID);
 
         Assert.assertNotEquals("Component contents expected different",
-                initialContents, newContents);
+                componentId, newComponentId);
+        Assert.assertNotEquals("Notification contents expected different",
+                notificationId, newNotificationId);
+        Assert.assertEquals("Expected one attach",
+                1, attachCount);
     }
 
     @Test
     public void refreshInDifferentWindow_componentIsRecreated() {
         open();
         final String firstWin = getDriver().getWindowHandle();
-        waitForElementPresent((By.id(DIV_ID)));
-        final String initialContents = findElement(By.id(DIV_ID)).getText();
+
+        final String componentId = getString(COMPONENT_ID);
+        final String notificationId = getString(NOTIFICATION_ID);
 
         ((JavascriptExecutor) getDriver()).executeScript(
                 "window.open('" + getTestURL() + "','_blank');");
@@ -58,10 +69,26 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
                 .findFirst()
                 .get();
         driver.switchTo().window(secondWin);
-        waitForElementPresent((By.id(DIV_ID)));
-        final String newContents = findElement(By.id(DIV_ID)).getText();
+
+        final String newComponentId = getString(COMPONENT_ID);
+        final String newNotificationId = getString(NOTIFICATION_ID);
+        final int attachCount = getInt(ATTACHCOUNTER_ID);
 
         Assert.assertNotEquals("Component contents expected different",
-                initialContents, newContents);
+                componentId, newComponentId);
+        Assert.assertNotEquals("Notification contents expected different",
+                notificationId, newNotificationId);
+        Assert.assertEquals("Expected one attach",
+                1, attachCount);
+    }
+
+    private String getString(String id) {
+        waitForElementPresent(By.id(id));
+        return findElement(By.id(id)).getText();
+    }
+
+    private int getInt(String id) {
+        return Integer.parseInt(getString(id));
+
     }
 }

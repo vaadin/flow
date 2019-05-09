@@ -47,9 +47,9 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
 
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
-    public static final String JSBUNDLE_DEFAULT_VALUE = "build/index.js";
+    public static final String JSBUNDLE_DEFAULT_VALUE = "context://build/index.js";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
-    public static final String POLYFILLS_DEFAULT_VALUE = "build/webcomponentsjs/webcomponents-loader.js";
+    public static final String POLYFILLS_DEFAULT_VALUE = "context://build/webcomponentsjs/webcomponents-loader.js";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -196,41 +196,6 @@ public final class Constants implements Serializable {
      * Configuration name  which disables the node dependencies updater.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM = "devmode.skip.update-npm-dependencies";
-
-    /**
-     * Property name for storing the
-     * {@link com.vaadin.flow.component.dnd.EffectAllowed} on element level.
-     */
-    public static final String EFFECT_ALLOWED_ELEMENT_PROPERTY = "__effectAllowed";
-
-    /**
-     * Key for storing server side drag data for a
-     * {@link com.vaadin.flow.component.dnd.DragSource}.
-     */
-    public static final String DRAG_SOURCE_DATA_KEY = "drag-source-data";
-
-    /**
-     * Key for storing an internal drag start listener registration for a
-     * {@link com.vaadin.flow.component.dnd.DragSource}.
-     */
-    public static final String START_LISTENER_REGISTRATION_KEY = "_startListenerRegistration";
-
-    /**
-     * Key for storing an internal drag end listener registration for a
-     * {@link com.vaadin.flow.component.dnd.DragSource}.
-     */
-    public static final String END_LISTENER_REGISTRATION_KEY = "_endListenerRegistration";
-
-    /**
-     * Property name for storing drop target activity data for an element.
-     */
-    public static final String DROP_TARGET_ACTIVE_PROPERTY = "__active";
-
-    /**
-     * Property name for storing the
-     * {@link com.vaadin.flow.component.dnd.DropEffect} on element level.
-     */
-    public static final String DROP_EFFECT_ELEMENT_PROPERTY = "__dropEffect";
 
     private Constants() {
         // prevent instantiation constants class only

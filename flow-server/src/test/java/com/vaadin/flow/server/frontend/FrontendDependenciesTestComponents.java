@@ -60,6 +60,10 @@ public class FrontendDependenciesTestComponents {
     static class Theme4 extends Theme0 {
     }
 
+    @JsModule("./theme-default.js")
+    static class ThemeDefault extends Theme0 {
+    }
+
     @NpmPackage(value = "@vaadin/component-0", version = "2.1.0")
     @JsModule("./component-0.js")
     @HtmlImport("frontend://component-0.html")

@@ -48,6 +48,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File importsFile;
     private File nodeModulesPath;
     private File frontendDirectory;
+    private File generatedFrontendDirectory;
     private NodeUpdateImports node;
 
     @Before
@@ -57,9 +58,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = new File(tmpRoot, "flow-imports.js");
         nodeModulesPath = new File(tmpRoot, "node_modules");
         frontendDirectory = new File(tmpRoot, "frontend");
+        generatedFrontendDirectory = new File(tmpRoot, "target/frontend");
 
         node = new NodeUpdateImports(getClassFinder(), frontendDirectory,
-                importsFile, tmpRoot, nodeModulesPath, true);
+                generatedFrontendDirectory, importsFile, tmpRoot,
+                nodeModulesPath, true);
 
         Assert.assertTrue(getFlowPackage().mkdirs());
 

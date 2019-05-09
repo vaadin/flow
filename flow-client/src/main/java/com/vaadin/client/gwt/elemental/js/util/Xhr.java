@@ -202,6 +202,7 @@ public class Xhr {
             xhr.setOnReadyStateChange(new Handler(callback));
             xhr.open(method, url);
             xhr.setRequestHeader("Content-type", contentType);
+            xhr.setWithCredentials(true);
             xhr.send(requestData);
         } catch (JavaScriptException e) {
             // Just fail.

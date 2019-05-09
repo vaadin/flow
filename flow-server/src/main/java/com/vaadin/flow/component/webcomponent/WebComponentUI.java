@@ -66,28 +66,32 @@ public class WebComponentUI extends UI {
                         + uiElementId + "' }))");
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
-        if (deploymentConfiguration.useCompiledFrontendResources()) {
+        if (deploymentConfiguration.isBowerMode()
+                && deploymentConfiguration.useCompiledFrontendResources()) {
             /*
              * This code adds a number of HTML dependencies to the page but in
              * fact there are no such HTML files: they should have been
              * generated during transpilation via maven plugin. To be able to
              * activate transpiled code the embedded application imports the
              * "dependencies" which represent the transpiled files.
+             *
+             * This code is not needed when in npm mode, since the web
+             * components will be contained within index.js
              */
             getConfigurationRegistry().getConfigurations().forEach(config ->
-                    getPage().addHtmlImport(getWebComponentPath(config)));
+                    getPage().addHtmlImport(getWebComponentHtmlPath(config)));
         }
     }
 
     /**
-     * Connect a client side web component element with a server side
-     * {@link Component} that's added as a virtual child to the UI as the actual
+     * Connect a client side web component element with a server side {@link
+     * Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
      * @param tag
-     *            web component tag
+     *         web component tag
      * @param webComponentElementId
-     *            client side id of the element
+     *         client side id of the element
      */
     @ClientCallable
     public void connectWebComponent(String tag, String webComponentElementId) {
@@ -184,10 +188,10 @@ public class WebComponentUI extends UI {
                 builder.append("elements[i].setAttribute('").append(attribute)
                         .append("', '").append(value).append("');"));
         builder.append("}");
-        getPage().executeJavaScript(builder.toString());
+        getPage().executeJs(builder.toString());
     }
 
-    private String getWebComponentPath(
+    private String getWebComponentHtmlPath(
             WebComponentConfiguration<? extends Component> config) {
         DeploymentConfiguration deploymentConfiguration = getSession()
                 .getService().getDeploymentConfiguration();

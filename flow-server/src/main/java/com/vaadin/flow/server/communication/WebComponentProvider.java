@@ -15,6 +15,19 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -26,28 +39,32 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 
 /**
  * Request handler that supplies the script/html of the web component matching
  * the given tag.
  *
  * @author Vaadin Ltd.
+ * @since
  */
 public class WebComponentProvider extends SynchronizedRequestHandler {
-
     private static final String WEB_COMPONENT_PATH = "web-component/";
     private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
-    private static final String SUFFIX = ".html";
+    private static final String HTML_EXTENSION = "html";
+    private static final String JS_EXTENSION = "js";
+    /**
+     * Matches paths ending in words separated by at least one dash, and ending
+     * in either .js or .html (words cannot contain underscore)
+     *
+     * @see com.vaadin.flow.server.communication.WebComponentProvider.ComponentInfo
+     *         for group usage
+     */
+    private static final Pattern TAG_PATTERN = Pattern
+            .compile(".*/(([\\w&&[^_]]+-)+([\\w&&[^_]]+))\\." +
+                    "(" + JS_EXTENSION + "|" + HTML_EXTENSION + ")$");
 
     private final Function<VaadinRequest, String> contextRootProvider;
 
@@ -71,27 +88,63 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        Optional<String> tag = parseTag(pathInfo);
-        if (!tag.isPresent()) {
+        final boolean bowerMode =
+                session.getService().getDeploymentConfiguration().isBowerMode();
+        final ComponentInfo componentInfo = new ComponentInfo(pathInfo);
+
+        if (!componentInfo.hasExtension()) {
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request without extension " +
+                            "information (.js/.html) with request path {}",
+                    pathInfo);
+            return false;
+        }
+
+        if (componentInfo.getTag() == null) {
             LoggerFactory.getLogger(WebComponentProvider.class).info(
                     "Received web-component request for non-custom element with request path {}",
                     pathInfo);
             return false;
         }
 
+        if (componentInfo.isHTML() && !bowerMode) {
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request for html component in npm" +
+                            " mode with request path {}", pathInfo);
+            return false;
+        }
+
+        if (componentInfo.isJS() && bowerMode) {
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request for js component in bower" +
+                            " mode with request path {}", pathInfo);
+            return false;
+        }
+
+        WebComponentConfigurationRegistry registry =
+                WebComponentConfigurationRegistry.getInstance(
+                        ((VaadinServletRequest) request).getServletContext());
+
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
-                WebComponentConfigurationRegistry.getInstance(VaadinService.getCurrent())
-                        .getConfiguration(tag.get());
+                registry.getConfiguration(componentInfo.tag);
 
         if (optionalWebComponentConfiguration.isPresent()) {
             if (cache == null) {
                 cache = new HashMap<>();
             }
-            WebComponentConfiguration<? extends Component> webComponentConfiguration = optionalWebComponentConfiguration
-                    .get();
-            String generated = cache.computeIfAbsent(tag.get(),
-                    moduleTag -> generateModule(webComponentConfiguration,
-                            session, request));
+            WebComponentConfiguration<? extends Component> webComponentConfiguration =
+                    optionalWebComponentConfiguration.get();
+
+            String generated;
+            if (bowerMode) {
+                generated = cache.computeIfAbsent(componentInfo.tag,
+                        moduleTag -> generateBowerResponse(webComponentConfiguration,
+                                session, servletRequest, response));
+            } else {
+                response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
+                generated = cache.computeIfAbsent(componentInfo.tag,
+                        moduleTag -> generateNPMResponse(webComponentConfiguration.getTag()));
+            }
 
             IOUtils.write(generated, response.getOutputStream(),
                     StandardCharsets.UTF_8);
@@ -103,19 +156,23 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return true;
     }
 
-    private String generateModule(
+    private String generateBowerResponse(
             WebComponentConfiguration<? extends Component> configuration,
-            VaadinSession session, VaadinRequest request) {
+            VaadinSession session, VaadinServletRequest request,
+            VaadinResponse response) {
         if (session.getConfiguration().useCompiledFrontendResources()) {
-            return generateCompiledUIDeclaration(session, request);
+            response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
+            return generateCompiledUIDeclaration(session, request,
+                    configuration.getTag());
         } else {
+            response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
             return WebComponentGenerator.generateModule(configuration,
-                    getFrontendPath(request));
+                    getFrontendPath(request), true);
         }
     }
 
-    private String generateCompiledUIDeclaration(VaadinSession session,
-                                                 VaadinRequest request) {
+    private String generateCompiledUIDeclaration(
+            VaadinSession session, VaadinRequest request, String tagName) {
         String contextRootRelativePath = contextRootProvider.apply(request);
 
         BootstrapUriResolver resolver = new BootstrapUriResolver(
@@ -124,47 +181,57 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 .resolveVaadinUri(BootstrapHandler.POLYFILLS_JS);
         // <code>thisScript</code> below allows to refer the currently executing
         // script
-        return "var scripts = document.getElementsByTagName( 'script' );"
-                + "var thisScript = scripts[ scripts.length - 1 ];"
+        return getThisScript(tagName)
                 + generateAddPolyfillsScript(polyFillsUri, "thisScript")
                 + generateUiImport("thisScript");
     }
 
     private String generateAddPolyfillsScript(String polyFillsUri,
                                               String jsParentRef) {
-        StringBuilder builder = new StringBuilder("var scriptUri = ");
-        builder.append(jsParentRef);
-        builder.append(".src;");
-        builder.append("var indx = scriptUri.lastIndexOf('");
-        builder.append(WEB_COMPONENT_PATH);
-        builder.append("');");
-        builder.append("var embeddedWebApp = scriptUri.substring(0, indx);");
-        builder.append("var js = document.createElement('script');"
+        return "var scriptUri = " + jsParentRef + ".src;"
+                + "var indx = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH + "');"
+                + "var embeddedWebApp = scriptUri.substring(0, indx);"
+                + "var js = document.createElement('script');"
                 + "js.setAttribute('type','text/javascript');"
-                + "js.setAttribute('src', embeddedWebApp+'");
-        builder.append(polyFillsUri);
-        builder.append("'); document.head.insertBefore(js, ");
-        builder.append(jsParentRef);
-        builder.append(".nextSibling);");
-        return builder.toString();
+                + "js.setAttribute('src', embeddedWebApp+'" + polyFillsUri + "');"
+                + "document.head.insertBefore(js, " + jsParentRef + ".nextSibling);";
     }
 
     private String generateUiImport(String jsParentRef) {
-        StringBuilder builder = new StringBuilder("var scriptUri = ");
-        builder.append(jsParentRef);
-        builder.append(".src;");
-        builder.append("var indx = scriptUri.lastIndexOf('");
-        builder.append(WEB_COMPONENT_PATH);
-        builder.append("');");
-        builder.append("var uiUri = scriptUri.substring(0, indx+");
-        builder.append(WEB_COMPONENT_PATH.length()).append(");");
-        builder.append("var link = document.createElement('link');"
+        return "var scriptUri = " + jsParentRef + ".src;"
+                + "var indx = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH + "');"
+                + "var uiUri = scriptUri.substring(0, indx+" + WEB_COMPONENT_PATH.length() + ");"
+                + "var link = document.createElement('link');"
                 + "link.setAttribute('rel','import');"
-                + "link.setAttribute('href', uiUri+'web-component-ui.html');");
-        builder.append("document.head.insertBefore(link, ");
-        builder.append(jsParentRef);
-        builder.append(".nextSibling);");
-        return builder.toString();
+                + "link.setAttribute('href', uiUri+'web-component-ui.html');"
+                + "document.head.insertBefore(link, " + jsParentRef + ".nextSibling);";
+    }
+
+    private String generateNPMResponse(String tagName) {
+        // get the running script
+        return getThisScript(tagName)
+                + "var scriptUri = thisScript.src;"
+                + "var index = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH + "');"
+                + "var context = scriptUri.substring(0, index+" + WEB_COMPONENT_PATH.length() + ");"
+                // figure out if we have already bootstrapped Vaadin client & ui
+                + "var bootstrapped = false;"
+                + "var bootstrapAddress=context+'web-component-bootstrap.js';"
+                // add the request address as a url parameter (used to get service url)
+                + "bootstrapAddress+='?url='+bootstrapAddress;"
+                // check if a script with the bootstrap source already exits
+                + "var scripts = document.getElementsByTagName('script');"
+                + "for (var ii = 0; ii < scripts.length; ii++){"
+                + "  if (scripts[ii].src === bootstrapAddress){"
+                + "    bootstrapped=true; break;"
+                + "  }"
+                + "}"
+                // if no bootstrap -> bootstrap
+                + "if (!bootstrapped){"
+                + "  var uiScript = document.createElement('script');"
+                + "  uiScript.setAttribute('type','text/javascript');"
+                + "  uiScript.setAttribute('src', bootstrapAddress);"
+                + "  document.head.appendChild(uiScript);"
+                + "}";
     }
 
     private static String getFrontendPath(VaadinRequest request) {
@@ -184,16 +251,54 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return contextPath + "/frontend/";
     }
 
-    private static Optional<String> parseTag(String pathInfo) {
-        String tag = pathInfo.substring(PATH_PREFIX.length());
-        if (!tag.endsWith(SUFFIX)) {
-            tag = null;
-        } else {
-            tag = tag.substring(0, tag.length() - SUFFIX.length());
-            if (!tag.contains("-")) {
+    private static String getThisScript(String tag) {
+        return "var thisScript;" //
+                + "if (document.currentScript) {" //
+                + "  thisScript = document.currentScript;" //
+                + "} else {" //
+                + "  var elements = document.getElementsByTagName('script');" //
+                + "  for (var ii = 0; ii < elements.length; ii++) {" //
+                + "    var script = elements[ii];" //
+                + "    if (script.src && script.src.indexOf('web-component/" + tag + "') != -1) {" //
+                + "      thisScript = script;" //
+                + "    }" //
+                + "  };" //
+                + "} ";
+    }
+
+    private static class ComponentInfo implements Serializable {
+        public final String tag;
+        public final String extension;
+
+        private ComponentInfo(String pathInfo) {
+            Matcher matcher = TAG_PATTERN.matcher(pathInfo);
+            if (matcher.find()) {
+                tag = matcher.group(1);
+                // the group index of the extension is 4, since the inner
+                // groups roll over with each new dash separated section;
+                // group 2 will be the second last part of the component name
+                // and group 3 will be the last part
+                extension = matcher.group(4);
+            } else {
                 tag = null;
+                extension = null;
             }
         }
-        return Optional.ofNullable(tag);
+
+        public String getTag() {
+            return tag;
+        }
+
+        public boolean hasExtension() {
+            return extension != null;
+        }
+
+        public boolean isHTML() {
+            return HTML_EXTENSION.equals(extension);
+        }
+
+        public boolean isJS() {
+            return JS_EXTENSION.equals(extension);
+        }
     }
 }

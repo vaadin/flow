@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -39,6 +40,7 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 2.0
  */
+@JavaScript(DndUtil.DND_CONNECTOR)
 public interface DropTarget<T extends Component> extends HasElement {
 
     /**
@@ -77,6 +79,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @see #create(Component)
      */
     static <T extends Component> DropTarget<T> configure(T component) {
+        DndUtil.addDndConnectorWhenComponentAttached(component);
         return new DropTarget<T>() {
             @Override
             public T getDropTargetComponent() {
@@ -147,10 +150,10 @@ public interface DropTarget<T extends Component> extends HasElement {
      */
     default void setActive(boolean active) {
         if (isActive() != active) {
-            getElement().setProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY,
+            getElement().setProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY,
                     active);
             if (active) {
-                getElement().executeJavaScript(
+                getElement().executeJs(
                         "window.Vaadin.Flow"
                                 + ".dndConnector.activateDropTarget($0)",
                         getElement());
@@ -169,7 +172,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @return {@code true} to allow drops, {@code false} to not
      */
     default boolean isActive() {
-        return getElement().getProperty(Constants.DROP_TARGET_ACTIVE_PROPERTY,
+        return getElement().getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY,
                 false);
     }
 
@@ -193,9 +196,9 @@ public interface DropTarget<T extends Component> extends HasElement {
         if (!Objects.equals(getDropEffect(), dropEffect)) {
             if (dropEffect == null) {
                 getElement()
-                        .removeProperty(Constants.DROP_EFFECT_ELEMENT_PROPERTY);
+                        .removeProperty(DndUtil.DROP_EFFECT_ELEMENT_PROPERTY);
             } else {
-                getElement().setProperty(Constants.DROP_EFFECT_ELEMENT_PROPERTY,
+                getElement().setProperty(DndUtil.DROP_EFFECT_ELEMENT_PROPERTY,
                         dropEffect.toString().toLowerCase(Locale.ENGLISH));
             }
         }
@@ -209,7 +212,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      */
     default DropEffect getDropEffect() {
         String dropEffect = getElement()
-                .getProperty(Constants.DROP_EFFECT_ELEMENT_PROPERTY, null);
+                .getProperty(DndUtil.DROP_EFFECT_ELEMENT_PROPERTY, null);
         return dropEffect == null ? null : DropEffect.fromString(dropEffect);
     }
 

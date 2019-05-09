@@ -48,7 +48,6 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@JavaScript("frontend://dndConnector.js")
 public abstract class Component
         implements HasElement, AttachNotifier, DetachNotifier {
 

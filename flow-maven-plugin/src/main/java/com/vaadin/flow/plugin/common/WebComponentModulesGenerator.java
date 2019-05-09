@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
 /**
  * @author Vaadin Ltd
+ * @since
  */
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
@@ -48,6 +50,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(WebComponentModulesGenerator.class);
+    private final boolean bowerMode;
 
     /**
      * Prepares the class to find web component exporters from the project
@@ -57,8 +60,10 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      *         another introspector whose reflection tools will be reused to
      *         find the web component exporters
      */
-    public WebComponentModulesGenerator(ClassPathIntrospector introspector) {
+    public WebComponentModulesGenerator(ClassPathIntrospector introspector,
+                                        boolean bowerMode) {
         super(introspector);
+        this.bowerMode = bowerMode;
     }
 
     /**
@@ -90,7 +95,8 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
             File outputFolder) {
         String tag = getTag(clazz);
 
-        Path generatedFile = outputFolder.toPath().resolve(tag + ".html");
+        String fileName = bowerMode ? tag + ".html" : tag + ".js";
+        Path generatedFile = outputFolder.toPath().resolve(fileName);
         if (generatedFile.toFile().exists()) {
             LOGGER.debug("File '{}' already exists in the '{}' directory."
                     + "It might be a previously generated web component " +
@@ -99,6 +105,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
                     generatedFile.getFileName(), outputFolder.getPath());
         }
         try {
+            FileUtils.forceMkdir(generatedFile.getParent().toFile());
             Files.write(generatedFile,
                     Collections.singletonList(generateModule(clazz)),
                     StandardCharsets.UTF_8);
@@ -115,14 +122,15 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
         Class<?> generatorClass = loadClassInProjectClassLoader(
                 WebComponentGenerator.class.getName());
         Method generateMethod = Stream.of(generatorClass.getDeclaredMethods())
-                .filter(method -> method.getParameters().length == 2
+                .filter(method -> method.getParameters().length == 3
                         && method.getName().equals(GENERATE_MODULE_METHOD)
                         && Class.class.isAssignableFrom(method.getParameterTypes()[0]))
                 .findFirst().orElseThrow(
                         () -> new IllegalStateException(ABSENT_METHOD_ERROR));
 
         try {
-            return (String) generateMethod.invoke(null, exporterClass, "../");
+            return (String) generateMethod.invoke(null, exporterClass, "../",
+                    bowerMode);
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException exception) {
             throw new RuntimeException(String.format(

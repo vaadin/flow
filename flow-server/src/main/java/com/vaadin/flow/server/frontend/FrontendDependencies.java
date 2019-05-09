@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,11 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.bytebuddy.jar.asm.ClassReader;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -39,26 +44,27 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VALUE;
 import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VERSION;
+
 /**
  * Represents the class dependency tree of the application.
  */
 public class FrontendDependencies implements Serializable {
 
-    private static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
+    public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
 
     private static final String MULTIPLE_VERSIONS =
             "%n%n======================================================================================================"
-            + "%nFailed to determine the version for the '%s' npm package."
-            + "%nFlow found multiple versions: %s"
-            + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
-            + "%nmeet the same version."
-            + "%n======================================================================================================%n";
+                    + "%nFailed to determine the version for the '%s' npm package."
+                    + "%nFlow found multiple versions: %s"
+                    + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
+                    + "%nmeet the same version."
+                    + "%n======================================================================================================%n";
 
     private static final String BAD_VERSIOM =
             "%n%n======================================================================================================"
-            + "%nFailed to determine the version for the '%s' npm package."
-            + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
-            + "%n======================================================================================================%n";
+                    + "%nFailed to determine the version for the '%s' npm package."
+                    + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
+                    + "%n======================================================================================================%n";
 
     /**
      * A wrapper for the Theme instance that use reflection for executing its
@@ -123,13 +129,32 @@ public class FrontendDependencies implements Serializable {
      * Default Constructor.
      *
      * @param finder
-     *            the class finder
+     *         the class finder
      */
     public FrontendDependencies(ClassFinder finder) {
+        this(finder, true);
+    }
+
+    /**
+     * Secondary constructor, which allows declaring whether embeddable web
+     * components should be checked for resource dependencies.
+     *
+     * @param finder
+     *         the class finder
+     * @param generateEmbeddableWebComponents
+     *         {@code true} checks the {@link com.vaadin.flow.component.WebComponentExporter}
+     *         classes for dependencies. {@code true} is default for {@link
+     *         FrontendDependencies#FrontendDependencies(ClassFinder)}
+     */
+    public FrontendDependencies(ClassFinder finder,
+                                boolean generateEmbeddableWebComponents) {
         this.finder = finder;
         try {
             computeEndpoints();
             computePackages();
+            if (generateEmbeddableWebComponents) {
+                computeExporters();
+            }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
             throw new IllegalStateException("Unable to compute frontend dependencies", e);
         }
@@ -143,6 +168,7 @@ public class FrontendDependencies implements Serializable {
     public Map<String, String> getPackages() {
         return packages;
     }
+
     /**
      * get all ES6 modules needed for run the application.
      *
@@ -155,6 +181,7 @@ public class FrontendDependencies implements Serializable {
         }
         return all;
     }
+
     /**
      * get all JS files used by the application.
      *
@@ -170,8 +197,8 @@ public class FrontendDependencies implements Serializable {
 
     /**
      * get all HTML imports used in the application. It excludes imports from
-     * classes that are already annotated with {@link NpmPackage} or
-     * {@link JsModule}
+     * classes that are already annotated with {@link NpmPackage} or {@link
+     * JsModule}
      *
      * @return the set of HTML imports
      */
@@ -206,9 +233,9 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * Visit all classes annotated with {@link Route} and update an
-     * {@link EndPointData} object with the info found.
-     *
+     * Visit all classes annotated with {@link Route} and update an {@link
+     * EndPointData} object with the info found.
+     * <p>
      * At the same time when the root level view is visited, compute the theme
      * to use and create its instance.
      *
@@ -218,6 +245,9 @@ public class FrontendDependencies implements Serializable {
      * @throws IllegalAccessException
      */
     private void computeEndpoints() throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
+
+        EndPointData rootData = null;
+
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
@@ -227,15 +257,41 @@ public class FrontendDependencies implements Serializable {
             endPoints.put(className, visitClass(className, data));
 
             // if this is the root level view, use its theme for the app
-            if (data.route.isEmpty() && !data.notheme) {
-                Class<? extends AbstractTheme> theme = data.theme != null ? finder.loadClass(data.theme)
-                        : getLumoTheme();
-                if (theme != null) {
-                    themeDefinition = new ThemeDefinition(theme, data.variant != null ? data.variant : "");
-                    themeInstance = new ThemeWrapper(theme);
-
-                }
+            if (rootData == null && data.route.isEmpty()) {
+                rootData = data;
             }
+        }
+
+        setTheme(rootData);
+    }
+
+    private void setTheme(EndPointData rootData) throws ClassNotFoundException,
+            InstantiationException, IllegalAccessException {
+
+        Class<? extends AbstractTheme> theme = null;
+        String variant = null;
+
+        if (rootData != null) {
+
+            if (rootData.notheme) {
+                return;
+            }
+
+            if (rootData.theme != null) {
+                theme = finder.loadClass(rootData.theme);
+                variant = rootData.variant;
+            }
+        }
+
+        if (theme == null) {
+            theme = getLumoTheme();
+            variant = null;
+        }
+
+        if (theme != null) {
+            themeDefinition = new ThemeDefinition(theme,
+                    variant != null ? variant : "");
+            themeInstance = new ThemeWrapper(theme);
         }
     }
 
@@ -246,7 +302,7 @@ public class FrontendDependencies implements Serializable {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    private void computePackages() throws ClassNotFoundException, IOException  {
+    private void computePackages() throws ClassNotFoundException, IOException {
         FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(NpmPackage.class.getName());
 
         for (Class<?> component : finder.getAnnotatedClasses(NpmPackage.class.getName())) {
@@ -268,6 +324,65 @@ public class FrontendDependencies implements Serializable {
             }
 
             packages.put(dependency, version);
+        }
+    }
+
+    /**
+     * Visits all classes extending {@link com.vaadin.flow.component.WebComponentExporter}
+     * and update an {@link EndPointData} object with the info found.
+     * <p>
+     * The limitation with {@code WebComponentExporters} is that only one
+     * theme can be defined. If the more than one {@code @Theme} annotation
+     * is found on the exporters, {@code IllegalStateException} will be thrown.
+     * Having {@code @Theme} and {@code @NoTheme} is considered as two theme
+     * annotations. However, if no theme is found, {@code Lumo} is used, if
+     * available.
+     *
+     * @throws ClassNotFoundException
+     * @throws IOException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws IllegalStateException
+     */
+    @SuppressWarnings("unchecked")
+    private void computeExporters() throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException {
+        // Because of different classLoaders we need compare against class
+        // references loaded by the specific class finder loader
+        Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
+        Class<WebComponentExporter<? extends Component>> exporterClass =
+                finder.loadClass(WebComponentExporter.class.getName());
+        HashSet<EndPointData> themedEndPoints = new HashSet<>();
+        for (Class<?> exporter : finder.getSubTypesOf(exporterClass)) {
+            String exporterClassName = exporter.getName();
+            EndPointData exporterData = new EndPointData(exporter);
+            endPoints.put(exporterClassName, visitClass(exporterClassName, exporterData));
+
+            if (!Modifier.isAbstract(exporter.getModifiers())) {
+                Class<? extends Component> componentClass =
+                        (Class<? extends Component>) ReflectTools
+                                .getGenericInterfaceType(exporter, exporterClass);
+                if (componentClass != null && !componentClass.isAnnotationPresent(routeClass)) {
+                    String componentClassName = componentClass.getName();
+                    EndPointData configurationData =
+                            new EndPointData(componentClass);
+                    endPoints.put(componentClassName,
+                            visitClass(componentClassName, configurationData));
+                }
+            }
+            // any theme found on an exporter should be fine
+            if (exporterData.theme != null || exporterData.notheme) {
+                themedEndPoints.add(exporterData);
+            }
+        }
+
+        if (themedEndPoints.size() > 1) {
+            throw new IllegalStateException("WebComponentExporters should " +
+                    "define only 1 theme. Instead, found " + themedEndPoints.size() +
+                    " different themes: " + themedEndPoints.stream()
+                    .map(endpoint -> endpoint.theme)
+                    .collect(Collectors.joining(", ")));
+        } else {
+            setTheme(themedEndPoints.stream().findAny().orElse(null));
         }
     }
 
@@ -327,11 +442,11 @@ public class FrontendDependencies implements Serializable {
         // blacklist of some common name-spaces that would not have components.
         return className != null &&  // @formatter:off
                 !className.matches(
-                    "(^$|"
-                    + ".*(slf4j).*|"
-                    + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
-                    + ".*(Exception)$"
-                    + ")"); // @formatter:on
+                        "(^$|"
+                                + ".*(slf4j).*|"
+                                + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
+                                + ".*(Exception)$"
+                                + ")"); // @formatter:on
     }
 
     private URL getUrl(String className) {

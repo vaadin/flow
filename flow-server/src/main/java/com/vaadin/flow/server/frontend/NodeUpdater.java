@@ -16,12 +16,16 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +42,11 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  */
 
 public abstract class NodeUpdater implements Command {
-
+    /**
+     * Relative paths of generated should be prefixed with this value, so
+     * they can be correctly separated from {projectDir}/frontend files.
+     */
+    static final String GENERATED_PREFIX = "GENERATED/";
     static final String VALUE = "value";
 
     /**
@@ -121,6 +129,26 @@ public abstract class NodeUpdater implements Command {
 
     Set<String> getJavascriptJsModules(Set<String> javascripts) {
         return javascripts.stream().map(this::resolveInFlowFrontendDirectory)
+                .collect(Collectors.toSet());
+    }
+
+    Set<String> getTargetFrontendModules(File directory, Set<String> excludes) {
+        if (!directory.exists()) {
+            return Collections.emptySet();
+        }
+
+        final Function<String, String> unixPath = str -> str.replace("\\", "/");
+
+        final URI baseDir = directory.toURI();
+
+        return FileUtils.listFiles(directory, new String[]{"js"}, true)
+                .stream()
+                .filter(file -> {
+                    String path = unixPath.apply(file.getPath());
+                    return excludes.stream().noneMatch(postfix ->
+                            path.endsWith(unixPath.apply(postfix)));
+                })
+                .map(file -> GENERATED_PREFIX + unixPath.apply(baseDir.relativize(file.toURI()).getPath()))
                 .collect(Collectors.toSet());
     }
 
