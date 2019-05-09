@@ -59,6 +59,8 @@ public class NodeTasks implements Command {
 
         private boolean enablePackagesUpdate;
 
+        private boolean createMissingPackageJson;
+
         private boolean enableImportsUpdate;
 
         private boolean runNpmInstall;
@@ -113,11 +115,15 @@ public class NodeTasks implements Command {
             this.npmFolder = npmFolder;
             this.nodeModulesPath = nodeModulesPath;
             this.convertHtml = convertHtml;
-            this.webpackOutputDirectory = new File("./src/main/webapp");
-            this.webpackTemplate = FrontendUtils.WEBPACK_CONFIG;
             this.enablePackagesUpdate = true;
             this.enableImportsUpdate = true;
             this.generateEmbeddableWebComponents = true;
+        }
+
+        public Builder(File npmFolder, File nodeModulesPath, File generatedFlowImports) {
+            this.npmFolder = npmFolder;
+            this.nodeModulesPath = nodeModulesPath;
+            this.generatedFlowImports = generatedFlowImports;
         }
 
         /**
@@ -201,35 +207,63 @@ public class NodeTasks implements Command {
                     generateEmbeddableWebComponents;
             return this;
         }
-    }
+
+
+        /**
+         * Sets whether to create the package file if missing.
+         *
+         * @param create create the package
+         * @return the builder
+         */
+        public Builder createMissingPackageJson(boolean create) {
+            this.createMissingPackageJson = create;
+            return this;
+        }
+     }
 
     private final Collection<Command> commands = new ArrayList<>();
 
     private NodeTasks(Builder builder) {
 
-        ClassFinder classFinder = new ClassFinder.CachedClassFinder(
-                builder.classFinder);
+        ClassFinder classFinder = null;
+        FrontendDependencies frontendDependencies = null;
 
-        FrontendDependencies frontendDependencies = new FrontendDependencies(
-                classFinder, builder.generateEmbeddableWebComponents);
+        if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
+            classFinder = new ClassFinder.CachedClassFinder(
+                    builder.classFinder);
+            frontendDependencies = new FrontendDependencies(
+                    classFinder, builder.generateEmbeddableWebComponents);
+        }
+
+        if (builder.createMissingPackageJson) {
+            TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(builder.npmFolder, builder.nodeModulesPath);
+            commands.add(packageCreator);
+
+            if (builder.runNpmInstall) {
+                commands.add(new TaskRunNpmInstall(packageCreator));
+            }
+        }
 
         if (builder.enablePackagesUpdate) {
-            NodeUpdatePackages packageUpdater = new NodeUpdatePackages(classFinder,
+            TaskUpdatePackages packageUpdater = new TaskUpdatePackages(classFinder,
                     frontendDependencies, builder.npmFolder,
                     builder.nodeModulesPath, builder.convertHtml);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
-                commands.add(new NodeNpmInstall(packageUpdater));
+                commands.add(new TaskRunNpmInstall(packageUpdater));
             }
 
-            commands.add(new WebpackUpdater(builder.npmFolder,
+        }
+
+        if (builder.webpackTemplate != null && !builder.webpackTemplate.isEmpty()) {
+            commands.add(new TaskUpdateWebpack(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
                     builder.generatedFlowImports));
         }
 
         if (builder.enableImportsUpdate) {
-            commands.add(new NodeUpdateImports(classFinder,
+            commands.add(new TaskUpdateImports(classFinder,
                     frontendDependencies, builder.frontendDirectory,
                     builder.generatedFrontendDirectory,
                     builder.generatedFlowImports, builder.npmFolder,

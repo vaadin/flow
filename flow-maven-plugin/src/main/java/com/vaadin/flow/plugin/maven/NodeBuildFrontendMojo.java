@@ -126,14 +126,6 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
-    /**
-     * Copy the `webapp.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
-    private String webpackTemplate;
-
     @Override
     public void execute() {
         // Do nothing when bower mode
@@ -186,7 +178,6 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
                 generatedFrontendDirectory, generatedFlowImports, npmFolder,
                 nodeModulesPath, convertHtml)
-                .withWebpack(getWebpackOutputDirectory(), webpackTemplate)
                 .runNpmInstall(runNpmInstall)
                 .withEmbeddableWebComponents(generateEmbeddableWebComponents)
                 .build().execute();
@@ -242,18 +233,4 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         }
     }
 
-    private File getWebpackOutputDirectory() {
-        Build buildInformation = project.getBuild();
-        switch (project.getPackaging()) {
-            case "jar":
-                return new File(buildInformation.getOutputDirectory(),
-                        "META-INF/resources");
-            case "war":
-                return new File(buildInformation.getDirectory(),
-                        buildInformation.getFinalName());
-            default:
-                throw new IllegalStateException(String.format(
-                        "Unsupported packaging '%s'", project.getPackaging()));
-        }
-    }
 }

@@ -16,10 +16,14 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -30,17 +34,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Command;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
  */
-
+@NpmPackage(value = "@polymer/polymer", version = "3.1.0")
+@NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.10")
 public abstract class NodeUpdater implements Command {
     /**
      * Relative paths of generated should be prefixed with this value, so
@@ -48,6 +60,8 @@ public abstract class NodeUpdater implements Command {
      */
     static final String GENERATED_PREFIX = "GENERATED/";
     static final String VALUE = "value";
+    static final String DEPENDENCIES = "dependencies";
+    private static final String DEV_DEPENDENCIES = "devDependencies";
 
     /**
      * Folder with the <code>package.json</code> file.
@@ -74,6 +88,8 @@ public abstract class NodeUpdater implements Command {
     private final ClassFinder finder;
 
     private final Set<String> flowModules = new HashSet<>();
+
+    boolean modified;
 
     /**
      * Constructor.
@@ -108,7 +124,7 @@ public abstract class NodeUpdater implements Command {
      *            true to enable polymer-2 annotated classes to be considered
      */
     protected NodeUpdater(ClassFinder finder, FrontendDependencies frontendDependencies, File npmFolder, File nodeModulesPath, boolean convertHtml) {
-        this.frontDeps = frontendDependencies == null
+        this.frontDeps = finder != null && frontendDependencies == null
                 ? new FrontendDependencies(finder)
                 : frontendDependencies;
         this.finder = finder;
@@ -189,6 +205,58 @@ public abstract class NodeUpdater implements Command {
           .replaceFirst("\\.html$", ".js")
         ); // @formatter:on
         return Objects.equals(module, htmlImport) ? null : module;
+    }
+
+    JsonObject createDefaultJson() {
+        log().info("Creating a default {} file ...", PACKAGE_JSON);
+        JsonObject packageJson = Json.createObject();
+        ensureMissingObject(packageJson, DEPENDENCIES);
+        ensureMissingObject(packageJson, DEV_DEPENDENCIES);
+        updatePackageJsonDevDependencies(packageJson);
+        return packageJson;
+    }
+
+    JsonObject getPackageJson() throws IOException {
+        JsonObject packageJson = null;
+        File packageFile = new File(npmFolder, PACKAGE_JSON);
+
+        if (packageFile.exists()) {
+            String fileContent = FileUtils.readFileToString(packageFile, UTF_8.name());
+            packageJson = Json.parse(fileContent);
+            ensureMissingObject(packageJson, DEPENDENCIES);
+            ensureMissingObject(packageJson, DEV_DEPENDENCIES);
+        }
+        return packageJson;
+    }
+
+    void ensureMissingObject(JsonObject packageJson, String name) {
+        if (!packageJson.hasKey(name)) {
+            packageJson.put(name, Json.createObject());
+        }
+    }
+
+    boolean updatePackageJsonDevDependencies(JsonObject packageJson) {
+        boolean added = false;
+        JsonObject json = packageJson.getObject(DEV_DEPENDENCIES);
+        Map<String, String> devDependencies = new HashMap<>();
+        devDependencies.put("webpack", "4.30.0");
+        devDependencies.put("webpack-cli", "3.3.0");
+        devDependencies.put("webpack-dev-server", "3.3.0");
+        devDependencies.put("webpack-babel-multi-target-plugin", "2.1.0");
+        devDependencies.put("copy-webpack-plugin", "5.0.3");
+        for(Entry<String, String> entry: devDependencies.entrySet()) {
+            if(!json.hasKey(entry.getKey())) {
+                json.put(entry.getKey(), entry.getValue());
+                log().info("Added {} dependency.", entry.getKey());
+                added = true;
+            }
+        }
+        return added;
+    }
+
+    void writePackageFile(JsonObject packageJson) throws IOException {
+        File packageFile = new File(npmFolder, PACKAGE_JSON);
+        FileUtils.writeStringToFile(packageFile, packageJson.toJson(), UTF_8.name());
     }
 
     static Logger log() {

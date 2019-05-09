@@ -49,7 +49,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File nodeModulesPath;
     private File frontendDirectory;
     private File generatedFrontendDirectory;
-    private NodeUpdateImports node;
+    private TaskUpdateImports node;
 
     @Before
     public void setup() throws Exception {
@@ -60,7 +60,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         frontendDirectory = new File(tmpRoot, "frontend");
         generatedFrontendDirectory = new File(tmpRoot, "target/frontend");
 
-        node = new NodeUpdateImports(getClassFinder(), frontendDirectory,
+        node = new TaskUpdateImports(getClassFinder(), frontendDirectory,
                 generatedFrontendDirectory, importsFile, tmpRoot,
                 nodeModulesPath, true);
 
