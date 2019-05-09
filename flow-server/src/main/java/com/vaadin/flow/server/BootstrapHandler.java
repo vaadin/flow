@@ -136,6 +136,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         this.contextRootProvider = contextRootProvider;
     }
 
+    protected BootstrapPageBuilder getPageBuilder() {
+        return this.pageBuilder;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(BootstrapHandler.class.getName());
     }
@@ -446,7 +450,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    static final class BootstrapPageBuilder {
+    protected static final class BootstrapPageBuilder {
 
         private final Function<VaadinRequest, String> contextRootRelativePathCallback;
 

@@ -15,19 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -39,6 +26,19 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
@@ -122,8 +122,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         WebComponentConfigurationRegistry registry =
-                WebComponentConfigurationRegistry.getInstance(
-                        ((VaadinServletRequest) request).getServletContext());
+                WebComponentConfigurationRegistry.getInstance(VaadinService.getCurrent());
 
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
                 registry.getConfiguration(componentInfo.tag);
@@ -139,7 +138,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             if (bowerMode) {
                 generated = cache.computeIfAbsent(componentInfo.tag,
                         moduleTag -> generateBowerResponse(webComponentConfiguration,
-                                session, servletRequest, response));
+                                session, request, response));
             } else {
                 response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
                 generated = cache.computeIfAbsent(componentInfo.tag,
@@ -158,7 +157,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private String generateBowerResponse(
             WebComponentConfiguration<? extends Component> configuration,
-            VaadinSession session, VaadinServletRequest request,
+            VaadinSession session, VaadinRequest request,
             VaadinResponse response) {
         if (session.getConfiguration().useCompiledFrontendResources()) {
             response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);

@@ -15,22 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.lang.annotation.Annotation;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Optional;
-import java.util.regex.Pattern;
-import java.util.function.Function;
-
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
@@ -46,6 +30,21 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.JsonObject;
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -162,7 +161,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
             String serviceUrl = getServiceUrl(request);
 
-            Document document = getBootstrapPage(context);
+            Document document = getPageBuilder().getBootstrapPage(context);
             writeBootstrapPage(response, document.head(), serviceUrl);
             return true;
         }
