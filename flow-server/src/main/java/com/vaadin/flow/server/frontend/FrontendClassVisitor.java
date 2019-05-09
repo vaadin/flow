@@ -138,11 +138,13 @@ class FrontendClassVisitor extends ClassVisitor {
             // We are interested in method instructions like Notification.show('bla')
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+                addSignatureToClasses(children, owner);
                 addSignatureToClasses(children, descriptor);
             }
             // Visit instructions that stores something in a field inside the method
             @Override
             public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+                addSignatureToClasses(children, owner);
                 addSignatureToClasses(children, descriptor);
             }
         };

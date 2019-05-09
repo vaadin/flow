@@ -195,6 +195,7 @@ public class FrontendDependenciesTestComponents {
         }
     }
 
+    @JsModule("./my-static-factory.js")
     public static class StaticComponentsFactory {
         public static AnotherComponent createAnotherComponent(String label) {
             return AnotherComponent.createMyComponent(label);
