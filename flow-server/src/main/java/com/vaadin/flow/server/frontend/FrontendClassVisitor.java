@@ -130,10 +130,20 @@ class FrontendClassVisitor extends ClassVisitor {
 
         // Visitor for each method in the class.
         methodVisitor = new MethodVisitor(Opcodes.ASM6) {
-            // We only are interested in the new instances created inside the method
+            // We are interested in the new instances created inside the method
             @Override
             public void visitTypeInsn(int opcode, String type) {
                 addSignatureToClasses(children, type);
+            }
+            // We are interested in method instructions like Notification.show('bla')
+            @Override
+            public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+                addSignatureToClasses(children, descriptor);
+            }
+            // Visit instructions that stores something in a field inside the method
+            @Override
+            public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+                addSignatureToClasses(children, descriptor);
             }
         };
         // Visitor for each annotation in the class.
