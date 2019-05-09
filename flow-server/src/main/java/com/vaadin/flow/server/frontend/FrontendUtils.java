@@ -153,11 +153,9 @@ public class FrontendUtils {
      * @return whether the project needs to be run in bower mode
      */
     public static boolean isBowerLegacyMode() {
-        boolean hasBowerFrontend = new File(getBaseDir(), "src/main/webapp/frontend").isDirectory();
-        boolean hasNpmFrontend = new File(getBaseDir(), "frontend").isDirectory();
         boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
                 && new File(getBaseDir(), WEBPACK_CONFIG).exists();
-        return hasBowerFrontend && !hasNpmFrontend && !hasNpmConfig ? true : false;
+        return !hasNpmConfig;
     }
 
     /**

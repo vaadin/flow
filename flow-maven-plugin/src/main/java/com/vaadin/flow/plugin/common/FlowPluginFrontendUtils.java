@@ -107,12 +107,7 @@ public class FlowPluginFrontendUtils {
      * @return true when in bower mode.
      */
     public static boolean isBowerMode(Log log) {
-        boolean bowerMode = Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE);
-        if (!bowerMode && com.vaadin.flow.server.frontend.FrontendUtils.isBowerLegacyMode()) {
-            log.warn("enabling `vaadin.bowerMode` because the project has not been migrated to `npm` yet.");
-            bowerMode = true;
-        }
-        return bowerMode;
+        return Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE);
     }
 
     /**
