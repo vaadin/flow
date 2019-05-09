@@ -27,6 +27,8 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
  * the classpath. It also visits classes annotated with {@link NpmPackage}
@@ -78,6 +80,9 @@ public class TaskUpdatePackages extends NodeUpdater {
     public void execute() {
         try {
             JsonObject packageJson = getPackageJson();
+            if (packageJson == null) {
+                throw new IllegalStateException("Unable to read '"  + PACKAGE_JSON + "' file in: " + npmFolder) ;
+            }
 
             Map<String, String> deps = frontDeps.getPackages();
             if (convertHtml) {

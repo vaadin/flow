@@ -144,11 +144,16 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isBowerMode() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, false)
+        boolean r =  getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, false)
                 || isBowerLegacyMode();
+        return r;
     }
 
     protected boolean isBowerLegacyMode() {
+        // User can force mode by setting bowerMode to some string value
+        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, null) != null) {
+            return false;
+        }
         return isProductionMode() && getBooleanProperty(IS_BOWER_PROD, false)
                 || !isProductionMode() && getBooleanProperty(IS_BOWER_DEV, false);
     }

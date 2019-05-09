@@ -130,15 +130,6 @@ public class TaskUpdateImports extends NodeUpdater {
         }
     }
 
-    private List<String> getExportedJsModules(List<File> exportedWebComponents) {
-        return exportedWebComponents.stream().map(file -> {
-            // get the import part of the file path and replace potential
-            // backward slashes with *nix compatible slashes
-            int index = file.getAbsolutePath().indexOf("@vaadin");
-            return file.getAbsolutePath().substring(index).replace('\\', '/');
-        }).collect(Collectors.toList());
-    }
-
     private Set<String> sortModules(Set<String> modules) {
         return modules.stream().sorted(Comparator.reverseOrder())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
