@@ -189,13 +189,13 @@ public class FrontendDependenciesTest {
 
     @Test
     public void should_resolveComponentFactories() throws Exception {
-
         FrontendDependencies deps = create(ThirdView.class);
 
-        assertEquals(0, deps.getImports().size());
-        assertEquals(1, deps.getModules().size());
-        assertEquals(0, deps.getPackages().size());
-        assertEquals(0, deps.getScripts().size());
-        assertTrue(deps.getModules().contains("./my-component.js"));
+         assertEquals(0, deps.getImports().size());
+         assertEquals(2, deps.getModules().size());
+         assertEquals(0, deps.getPackages().size());
+         assertEquals(0, deps.getScripts().size());
+         assertTrue(deps.getModules().contains("./my-component.js"));
+         assertTrue(deps.getModules().contains("./my-another-component.js"));
     }
 }

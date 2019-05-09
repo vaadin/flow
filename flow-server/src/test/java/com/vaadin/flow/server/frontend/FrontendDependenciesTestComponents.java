@@ -182,6 +182,9 @@ public class FrontendDependenciesTestComponents {
     public static class ThirdView {
         public void foo() {
             new ComponentFactory().createMyComponent();
+            this.add(StaticComponentsFactory.createAnotherComponent(null));
+        }
+        private void add(Object o) {
         }
     }
 
@@ -189,6 +192,19 @@ public class FrontendDependenciesTestComponents {
     public static class ComponentFactory {
         public MyComponent createMyComponent()  {
             return new MyComponent();
+        }
+    }
+
+    public static class StaticComponentsFactory {
+        public static AnotherComponent createAnotherComponent(String label) {
+            return AnotherComponent.createMyComponent(label);
+        }
+    }
+
+    @JsModule("./my-another-component.js")
+    public static class AnotherComponent {
+        public static AnotherComponent createMyComponent(String label)  {
+            return new AnotherComponent();
         }
     }
 }

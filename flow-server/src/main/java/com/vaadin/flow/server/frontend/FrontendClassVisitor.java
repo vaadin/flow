@@ -279,6 +279,18 @@ class FrontendClassVisitor extends ClassVisitor {
         addSignatureToClasses(children, descriptor);
         return null;
     }
+    
+//    @Override
+//    public void visitInnerClass(String name, String outerName, String innerName, int access) {
+//        addSignatureToClasses(children, name);
+//        addSignatureToClasses(children, outerName);
+//    }
+//
+//    @Override
+//    public void visitOuterClass(String owner, String name, String descriptor) {
+//        addSignatureToClasses(children, name);
+//        addSignatureToClasses(children, descriptor);
+//    }
 
     /**
      * Return all discovered classes in the visit.
