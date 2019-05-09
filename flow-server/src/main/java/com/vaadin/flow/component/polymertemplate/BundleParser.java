@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -38,13 +40,38 @@ import static elemental.json.JsonType.STRING;
  */
 public final class BundleParser {
 
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(BundleParser.class);
+
     private static final String SOURCE = "source";
     private static final String NAME = "name";
     private static final String CHUNKS = "chunks";
     private static final String MODULES = "modules";
 
+    /**
+     * Template pattern matches the template getter
+     * <pre>
+     *     static get template() {
+     *       return html`
+     *         &lt;style&gt;
+     *           .response { margin-top: 10px`; }
+     *         &lt;/style&gt;
+     *         &lt;paper-checkbox checked=&quot;{{liked}}&quot;&gt;I like web components.&lt;/paper-checkbox&gt;
+     *
+     *         &lt;div id=&quot;test&quot; hidden$=&quot;[[!liked]]&quot; class=&quot;response&quot;&gt;Web components like you, too.&lt;/div&gt;
+     *       `;
+     *     }
+     * </pre>
+     *
+     * <p>
+     * <code>get[\s]*template\(\)[\s]*\{</code> finds the template getter method
+     * <p>
+     * <code>[\s]*return[\s]*html([\`|\'|\"])</code> finds the return statement and captures the used string character
+     * <p></p>
+     * <code>([\s\S]*)\1;[\s]*\}</code> captures all text until we encounter the end character with <code>;}</code> e.g. <code>';}</code>
+     */
     private static final Pattern TEMPLATE_PATTERN = Pattern.compile(
-            "template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`|\\'|\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
+            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`|\\'|\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
 
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
@@ -121,12 +148,21 @@ public final class BundleParser {
         Document templateDocument;
         Matcher matcher = TEMPLATE_PATTERN.matcher(source);
 
-        if (matcher.find()) {
+        // GroupCount should be 2 as the first group contains `|'|" depending
+        // on what was in template return html' and the second is the
+        // template contents.
+        if (matcher.find() && matcher.groupCount() == 2) {
             String group = matcher.group(2);
+            LOGGER.trace("Found template content was {}", group);
 
             templateDocument = Jsoup.parse(group);
+            LOGGER.trace("The parsed template document was {}", templateDocument);
         } else {
+            LOGGER.warn("No template data found in {} sources.", fileName);
+
             templateDocument = new Document("");
+            templateDocument
+                    .appendChild(templateDocument.createElement("body"));
         }
 
         Element template = templateDocument.createElement(TEMPLATE_TAG_NAME);
