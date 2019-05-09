@@ -96,6 +96,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         return (PATH_PATTERN.matcher(pathInfo).find());
     }
 
+    protected String getRequestUrl(VaadinRequest request) {
+        return ((VaadinServletRequest)request).getRequestURL().toString();
+    }
+
     @Override
     protected BootstrapContext createAndInitUI(
             Class<? extends UI> uiClass, VaadinRequest request,
@@ -104,10 +108,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
 
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        String requestURL = servletRequest.getRequestURL().toString();
+        String requestURL = this.getRequestUrl(request);
 
-        if (!PATH_PATTERN.matcher(requestURL).find()) {
+        if(!this.canHandleRequest(request)) {
             throw new IllegalStateException("Unexpected request URL '"
                     + requestURL + "' in the bootstrap handler for web "
                     + "component UI which should handle path "
@@ -280,7 +283,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .replace("\r", "");
     }
 
-    private static String getServiceUrl(VaadinRequest request) {
+    protected String getServiceUrl(VaadinRequest request) {
         // get service url from 'url' parameter
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url
