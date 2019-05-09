@@ -198,7 +198,7 @@ public final class ParameterDeserializer {
         Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
 
 
-        return Stream.of(parameterClass.getMethods()).anyMatch(m ->
+        return Stream.of(navigationTarget.getMethods()).anyMatch(m ->
                 methodName.equals(m.getName())
                         && m.getParameterCount() == 2
                         && m.getParameterTypes()[0] == BeforeEvent.class
