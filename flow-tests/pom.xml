@@ -14,6 +14,7 @@
 
     <modules>
         <module>test-npm</module>
+        <module>test-npm-web-components</module>
         <module>test-pwa</module>
         <module>test-resources</module>
         <module>test-common</module>
